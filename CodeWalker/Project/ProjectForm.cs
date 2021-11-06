@@ -6143,10 +6143,10 @@ namespace CodeWalker.Project
             if (f.ShowDialog() == DialogResult.Cancel) return;
 
             var stypes = Scenarios.ScenarioTypes; //these are loaded by Scenarios.Init
-            ScenarioType defaulttype = null;
+            ScenarioTypeRef defaulttype = null;
             if (stypes != null)
             {
-                defaulttype = stypes.GetScenarioType(1194480618); //"drive";
+                defaulttype = stypes.GetScenarioTypeRef(1194480618); //"drive";
             }
 
             AmbientModelSet defaultmodelset = null;
@@ -6184,7 +6184,7 @@ namespace CodeWalker.Project
                 var action = CScenarioChainingEdge__eAction.Move;
                 var navMode = CScenarioChainingEdge__eNavMode.Direct;
                 var navSpeed = CScenarioChainingEdge__eNavSpeed.Unk_00_3279574318;
-                var stype = new ScenarioTypeRef(defaulttype);
+                var stype = defaulttype;
                 var modelset = defaultmodelset;
                 var flags = defaultflags;
                 var ok = true;
@@ -6216,22 +6216,10 @@ namespace CodeWalker.Project
                 if (vals.Length > 6)
                 {
                     var sthash = JenkHash.GenHash(vals[6].Trim().ToLowerInvariant());
-                    var st = stypes?.GetScenarioType(sthash);
-                    if (st != null)
+                    stype = stypes?.GetScenarioTypeRef(sthash);
+                    if (stype == null)
                     {
-                        stype = new ScenarioTypeRef(st);
-                    }
-                    else
-                    {
-                        var stg = stypes?.GetScenarioTypeGroup(sthash);
-                        if (stg != null)
-                        {
-                            stype = new ScenarioTypeRef(stg);
-                        }
-                        else
-                        {
-                            stype = new ScenarioTypeRef(defaulttype);
-                        }
+                        stype = defaulttype;
                     }
                 }
                 if (vals.Length > 7)

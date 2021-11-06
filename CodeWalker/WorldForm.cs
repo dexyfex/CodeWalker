@@ -1412,7 +1412,11 @@ namespace CodeWalker
                 MCScenarioPoint vpoint = sn.MyPoint ?? sn.ClusterMyPoint;
                 if ((vpoint != null) && (vpoint?.Type?.IsVehicle ?? false))
                 {
-                    var vhash = vpoint.ModelSet?.NameHash ?? vpoint.Type?.VehicleModelSetHash ?? 0;
+                    var vhash = vpoint.ModelSet?.NameHash ?? 493038497;//"none"
+                    if ((vhash == 0) || (vhash == 493038497))
+                    {
+                        vhash = vpoint.Type?.VehicleModelSetHash ?? 0;
+                    }
                     if ((vhash == 0) && (sn.ChainingNode?.Chain?.Edges != null) && (sn.ChainingNode.Chain.Edges.Length > 0))
                     {
                         var fedge = sn.ChainingNode.Chain.Edges[0]; //for chain nodes, show the first node's model...
@@ -1420,7 +1424,11 @@ namespace CodeWalker
                         if (fnode != null)
                         {
                             vpoint = fnode.MyPoint ?? fnode.ClusterMyPoint;
-                            vhash = vpoint.ModelSet?.NameHash ?? vpoint.Type?.VehicleModelSetHash ?? 0;
+                            vhash = vpoint.ModelSet?.NameHash ?? 493038497;//"none"
+                            if ((vhash == 0) || (vhash == 493038497))
+                            {
+                                vhash = vpoint.Type?.VehicleModelSetHash ?? 0;
+                            }
                         }
                     }
 
