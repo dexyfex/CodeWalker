@@ -579,8 +579,8 @@ namespace CodeWalker.GameFiles
             w.Write(Unk6);
 
             // FIXME: might be broken if changed without flags, see "iterations"
-            foreach (var item in Items)
-                item.Write(w);
+            for (int i = Items.Length - 1; i >= 0; i--)
+                Items[i].Write(w);
 
             // FIXME: might be broken if changed without flags
             uint flags = Unk1 & 0xFFFBFFFF;
@@ -699,20 +699,14 @@ namespace CodeWalker.GameFiles
         {
             Sections = new MrfStructStateMainSection[(int)count];
 
-            // FIXME: for-loop?
-            while (true)
-            {
-                Sections[(int)count - 1] = new MrfStructStateMainSection(r);
-
-                if (--count == 0)
-                    return;
-            }
+            for (int i = (int)count - 1; i >= 0; i--)
+                Sections[i] = new MrfStructStateMainSection(r);
         }
 
         public override void Write(DataWriter w)
         {
-            foreach (var section in Sections)
-                section.Write(w);
+            for (int i = Sections.Length - 1; i >= 0; i--)
+                Sections[i].Write(w);
         }
     }
 
@@ -815,8 +809,6 @@ namespace CodeWalker.GameFiles
     {
         public MetaHash StateName { get; }
         public uint UnkValue { get; }
-
-        public MrfNodeStateInfo __StateInfoNode { get; set; }
 
         public MrfStructStateMachineState(DataReader r)
         {
@@ -1113,8 +1105,8 @@ namespace CodeWalker.GameFiles
         {
             Header.Write(w);
 
-            foreach (var item in States)
-                item.Write(w);
+            foreach (var state in States)
+                state.Write(w);
 
             if (Header.Unk7 != 0)
                 Header_Unk7_Data.Write(w);
