@@ -1,13 +1,13 @@
 ﻿using System;
 using System.IO;
-using System.Diagnostics;
 using System.Collections.Generic;
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
 
 namespace CodeWalker.GameFiles
 {
-    // Unused by GTAV: 11, 12, 14, 16
+    // Unused node indexes by GTAV: 11, 12, 14, 16
+    // Exist in GTAV but not used in MRFs: 4, 8, 10, 17, 21, 22, 28, 29, 31, 32
     public enum MrfNodeInfoType : ushort
     {
         None = 0,
@@ -45,9 +45,11 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))]
     public abstract class MrfNodeInfoBase
     {
-        public abstract void Parse(DataReader r);
+        public abstract void Read(DataReader r);
 
         public abstract long CalculateSize(DataReader r);
+
+        public abstract void Write(DataWriter w);
 
         public abstract MrfNodeInfoType GetInfoType();
     }
@@ -60,7 +62,7 @@ namespace CodeWalker.GameFiles
         public MrfHeaderNodeInfo Header { get; set; }
         public uint Value { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNodeInfo(r);
             Value = r.ReadUInt32();
@@ -69,6 +71,12 @@ namespace CodeWalker.GameFiles
         public override long CalculateSize(DataReader r)
         {
             return 8;
+        }
+
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Value);
         }
     }
 
@@ -79,11 +87,11 @@ namespace CodeWalker.GameFiles
         public int Unk1 { get; set; }
         public int Unk2 { get; set; }
         public uint Unk3 { get; set; }
-        public float Unk4 { get; set; }
+        public MetaHash Unk4 { get; set; }
         public MetaHash Unk5 { get; set; }
-        public uint Unk6 { get; set; }
+        public MetaHash Unk6 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
             Unk1 = r.ReadInt32();
@@ -93,20 +101,18 @@ namespace CodeWalker.GameFiles
                 Unk3 = r.ReadUInt32();
 
             if ((Header.Flags & 3) != 0)
-                Unk4 = r.ReadSingle();
+                Unk4 = new MetaHash(r.ReadUInt32());
 
-            var unkTypeFlag = (Header.Flags >> 2) & 3;
-
-            // FIXME: optimized switch-case?
-            if (unkTypeFlag != 2)
+            switch ((Header.Flags >> 2) & 3)
             {
-                if (unkTypeFlag != 1)
-                    return;
-
-                Unk5 = new MetaHash(r.ReadUInt32());
+                case 1:
+                    Unk5 = new MetaHash(r.ReadUInt32());
+                    Unk6 = new MetaHash(r.ReadUInt32());
+                    break;
+                case 2:
+                    Unk6 = new MetaHash(r.ReadUInt32());
+                    break;
             }
-
-            Unk6 = r.ReadUInt32();
         }
 
         public override long CalculateSize(DataReader r)
@@ -133,6 +139,30 @@ namespace CodeWalker.GameFiles
 
             return result;
         }
+
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk1);
+            w.Write(Unk2);
+
+            if ((Header.Flags & 0x180000) == 0x80000)
+                w.Write(Unk3);
+
+            if ((Header.Flags & 3) != 0)
+                w.Write(Unk4);
+
+            switch ((Header.Flags >> 2) & 3)
+            {
+                case 1:
+                    w.Write(Unk5);
+                    w.Write(Unk6);
+                    break;
+                case 2:
+                    w.Write(Unk6);
+                    break;
+            }
+        }
     }
 
     [TC(typeof(EXP))]
@@ -143,23 +173,21 @@ namespace CodeWalker.GameFiles
         public MetaHash Unk2 { get; set; }
         public MetaHash Unk3 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
             Unk1 = r.ReadUInt32();
 
-            var unkTypeFlag = Header.Flags & 3;
-
-            // FIXME: optimized switch-case?
-            if (unkTypeFlag != 2)
+            switch (Header.Flags & 3)
             {
-                if (unkTypeFlag != 1)
-                    return;
-
-                Unk2 = new MetaHash(r.ReadUInt32()); // Filter Frame dict hash
+                case 1:
+                    Unk2 = new MetaHash(r.ReadUInt32()); // Filter Frame dict hash
+                    Unk3 = new MetaHash(r.ReadUInt32()); // Filter Frame name hash
+                    break;
+                case 2:
+                    Unk3 = new MetaHash(r.ReadUInt32());
+                    break;
             }
-
-            Unk3 = new MetaHash(r.ReadUInt32()); // Filter Frame name hash
         }
 
         public override long CalculateSize(DataReader r)
@@ -170,7 +198,7 @@ namespace CodeWalker.GameFiles
             var headerFlag = r.ReadUInt32();
             r.Position = startPos;
 
-            var unkTypeFlag = (headerFlag & 3);
+            var unkTypeFlag = headerFlag & 3;
 
             if (unkTypeFlag == 2)
                 return 20;
@@ -180,6 +208,23 @@ namespace CodeWalker.GameFiles
 
             return 16;
         }
+
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk1);
+
+            switch (Header.Flags & 3)
+            {
+                case 1:
+                    w.Write(Unk2);
+                    w.Write(Unk3);
+                    break;
+                case 2:
+                    w.Write(Unk3);
+                    break;
+            }
+        }
     }
 
     [TC(typeof(EXP))]
@@ -187,7 +232,7 @@ namespace CodeWalker.GameFiles
     {
         public MrfHeaderNameFlag Header { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
         }
@@ -195,6 +240,11 @@ namespace CodeWalker.GameFiles
         public override long CalculateSize(DataReader r)
         {
             return 12;
+        }
+
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
         }
     }
 
@@ -208,11 +258,11 @@ namespace CodeWalker.GameFiles
         public uint Unk4 { get; set; }
         public uint Unk5 { get; set; }
         public uint Unk6 { get; set; }
-        public uint[] Unk7 { get; set; }
+        public int[] Unk7 { get; set; }
         public MrfStructNegativeInfoDataUnk7[] Unk7_Items { get; set; }
         public uint[] Unk8 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
 
@@ -224,7 +274,7 @@ namespace CodeWalker.GameFiles
                 Unk1 = r.ReadUInt32();
 
             if (unkTypeFlag1 == 1)
-                Unk2 = r.ReadBytes(76);
+                Unk2 = r.ReadBytes(76); // Unused?
             else if (unkTypeFlag1 == 2)
                 Unk3 = r.ReadUInt32();
 
@@ -238,13 +288,12 @@ namespace CodeWalker.GameFiles
 
             if (unk7Count != 0)
             {
-                Unk7 = new uint[unk7Count];
+                Unk7 = new int[unk7Count];
 
                 for (int i = 0; i < unk7Count; i++)
-                    Unk7[i] = r.ReadUInt32();
+                    Unk7[i] = r.ReadInt32();
             }
 
-            var bufferBasePos = r.Position;
             var unk8Count = (((2 * unk7Count) | 7) + 1) >> 3;
 
             if (unk8Count != 0)
@@ -259,21 +308,17 @@ namespace CodeWalker.GameFiles
                 return;
 
             Unk7_Items = new MrfStructNegativeInfoDataUnk7[unk7Count];
-            var iteration = 0;
+            int iteration = 0;
 
             for (int i = 0; i < unk7Count; i++)
             {
-                var bufferPos = r.Position;
-                var readPos = bufferBasePos + 4 * (iteration >> 3);
-
-                r.Position = readPos;
-                var unkInt = r.ReadUInt32() >> (4 * (iteration & 7));
-                r.Position = bufferPos;
+                var unk8Value = Unk8[iteration >> 3];
+                var unk7Flag = unk8Value >> (4 * (iteration & 7));
+                var unkTypeFlag3 = (unk7Flag >> 4) & 3;
 
                 var item = new MrfStructNegativeInfoDataUnk7();
-                var unkTypeFlag3 = (unkInt >> 4) & 3;
 
-                if ((unkInt & 3) != 0)
+                if ((unk7Flag & 3) != 0)
                     item.Unk1 = r.ReadUInt32();
 
                 if (unkTypeFlag3 == 1)
@@ -346,12 +391,81 @@ namespace CodeWalker.GameFiles
 
             return result;
         }
+
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            var unkTypeFlag1 = Header.Flags & 3;
+            var unkTypeFlag2 = (Header.Flags >> 2) & 3;
+            var unk7Count = Header.Flags >> 26;
+
+            if ((Header.Flags & 0x180000) == 0x80000)
+                w.Write(Unk1);
+
+            if (unkTypeFlag1 == 1)
+                w.Write(Unk2);
+            else if (unkTypeFlag1 == 2)
+                w.Write(Unk3);
+
+            if (unkTypeFlag2 == 1)
+            {
+                w.Write(Unk4);
+                w.Write(Unk5);
+            }
+            else if (unkTypeFlag2 == 2)
+                w.Write(Unk6);
+
+            if (unk7Count > 0)
+            {
+                foreach (var value in Unk7)
+                    w.Write(value);
+            }
+
+            var unk8Count = (((2 * unk7Count) | 7) + 1) >> 3;
+
+            if (unk8Count > 0)
+            {
+                foreach (var value in Unk8)
+                    w.Write(value);
+            }
+
+            if (unk7Count == 0)
+                return;
+
+            int iteration = 0;
+
+            foreach (var item in Unk7_Items)
+            {
+                var unk8Value = Unk8[iteration >> 3];
+                var unk7Flag = unk8Value >> (4 * (iteration & 7));
+                var unkTypeFlag3 = (unk7Flag >> 4) & 3;
+
+                if ((unk7Flag & 3) != 0)
+                    w.Write(item.Unk1);
+
+                if (unkTypeFlag3 == 1)
+                {
+                    w.Write(item.Unk2);
+                    w.Write(item.Unk3);
+                }
+                else if (unkTypeFlag3 == 2)
+                    w.Write(item.Unk4);
+
+                iteration += 2;
+            }
+        }
     }
     #endregion
 
     #region mrf node structs
+    public abstract class MrfStructBase
+    {
+        public abstract void Write(DataWriter w);
+    }
+
     [TC(typeof(EXP))]
-    public struct MrfStructHeaderUnk1
+    public class MrfStructHeaderUnk1 : MrfStructBase
     {
         public uint Size { get; set; }
         public byte[] Bytes { get; set; }
@@ -361,10 +475,16 @@ namespace CodeWalker.GameFiles
             Size = r.ReadUInt32();
             Bytes = r.ReadBytes((int)Size);
         }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Size);
+            w.Write(Bytes);
+        }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructHeaderUnk2
+    public class MrfStructHeaderUnk2 : MrfStructBase
     {
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
@@ -374,10 +494,16 @@ namespace CodeWalker.GameFiles
             Unk1 = r.ReadUInt32();
             Unk2 = r.ReadUInt32();
         }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Unk1);
+            w.Write(Unk2);
+        }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructHeaderUnk3
+    public class MrfStructHeaderUnk3 : MrfStructBase
     {
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
@@ -387,10 +513,16 @@ namespace CodeWalker.GameFiles
             Unk1 = r.ReadUInt32();
             Unk2 = r.ReadUInt32();
         }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Unk1);
+            w.Write(Unk2);
+        }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateMainSection
+    public class MrfStructStateMainSection : MrfStructBase
     {
         public uint Unk1 { get; set; }
         public int Unk2 { get; set; }
@@ -400,7 +532,7 @@ namespace CodeWalker.GameFiles
         public uint Unk6 { get; set; }
         public uint Unk7 { get; set; }
         public uint Unk8 { get; set; }
-        public List<MrfStructStateLoopSection> Items { get; set; }
+        public MrfStructStateLoopSection[] Items { get; set; }
 
         public MrfStructStateMainSection(DataReader r)
         {
@@ -414,12 +546,12 @@ namespace CodeWalker.GameFiles
             uint flags = Unk1 & 0xFFFBFFFF;
             var iterations = (flags >> 20) & 0xF;
 
-            Items = new List<MrfStructStateLoopSection>();
+            Items = new MrfStructStateLoopSection[iterations];
 
             // FIXME: for-loop?
             while (iterations != 0)
             {
-                Items.Add(new MrfStructStateLoopSection(r));
+                Items[iterations - 1] = new MrfStructStateLoopSection(r);
 
                 if (--iterations == 0)
                     break;
@@ -436,10 +568,33 @@ namespace CodeWalker.GameFiles
                 Unk8 = 0;
             }
         }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Unk1);
+            w.Write(Unk2);
+            w.Write(Unk3);
+            w.Write(Unk4);
+            w.Write(Unk5);
+            w.Write(Unk6);
+
+            // FIXME: might be broken if changed without flags, see "iterations"
+            foreach (var item in Items)
+                item.Write(w);
+
+            // FIXME: might be broken if changed without flags
+            uint flags = Unk1 & 0xFFFBFFFF;
+
+            if ((flags & 0x40000000) != 0)
+            {
+                w.Write(Unk7);
+                w.Write(Unk8);
+            }
+        }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateLoopSection
+    public class MrfStructStateLoopSection : MrfStructBase
     {
         public short UnkType { get; }
         public short UnkIndex { get; }
@@ -494,10 +649,49 @@ namespace CodeWalker.GameFiles
                     }
             }
         }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(UnkType);
+            w.Write(UnkIndex);
+
+            // FIXME: might be broken if changed outside
+            switch (UnkType)
+            {
+                case 0:
+                case 1:
+                    {
+                        w.Write(Unk1_1);
+                        w.Write(Unk1_2);
+                        w.Write(Unk1_3);
+                        break;
+                    }
+                case 9:
+                case 10:
+                    {
+                        w.Write(Unk2_1);
+                        break;
+                    }
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 11:
+                case 12:
+                    {
+                        w.Write(Unk3_1);
+                        w.Write(Unk3_2);
+                        break;
+                    }
+            }
+        }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateSection
+    public class MrfStructStateSection : MrfStructBase
     {
         public MrfStructStateMainSection[] Sections { get; set; }
 
@@ -514,59 +708,88 @@ namespace CodeWalker.GameFiles
                     return;
             }
         }
-    }
 
-    [TC(typeof(EXP))]
-    public struct MrfStructStateInfoUnk2
-    {
-        public uint Unk1 { get; }
-        public ushort Unk2 { get; }
-        public ushort Unk3 { get; }
-        public uint Unk4 { get; }
-
-        public MrfStructStateInfoUnk2(DataReader r)
+        public override void Write(DataWriter w)
         {
-            Unk1 = r.ReadUInt32();
-            Unk2 = r.ReadUInt16();
-            Unk3 = r.ReadUInt16();
-            Unk4 = r.ReadUInt32();
+            foreach (var section in Sections)
+                section.Write(w);
         }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateInfoEvent
+    public class MrfStructStateInfoVariable : MrfStructBase
+    {
+        public MetaHash VariableName { get; }
+        public ushort Unk2 { get; }
+        public ushort Unk3 { get; }
+        public uint Unk4 { get; }
+
+        public MrfStructStateInfoVariable(DataReader r)
+        {
+            VariableName = new MetaHash(r.ReadUInt32());
+            Unk2 = r.ReadUInt16();
+            Unk3 = r.ReadUInt16();
+            Unk4 = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(VariableName);
+            w.Write(Unk2);
+            w.Write(Unk3);
+            w.Write(Unk4);
+        }
+    }
+
+    [TC(typeof(EXP))]
+    public class MrfStructStateInfoEvent : MrfStructBase
     {
         public ushort Unk1 { get; }
         public ushort Unk2 { get; }
-        public uint HashName { get; }
+        public MetaHash NameHash { get; }
 
         public MrfStructStateInfoEvent(DataReader r)
         {
             Unk1 = r.ReadUInt16();
             Unk2 = r.ReadUInt16();
-            HashName = r.ReadUInt32();
+            NameHash = new MetaHash(r.ReadUInt32());
+        }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Unk1);
+            w.Write(Unk2);
+            w.Write(NameHash);
         }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateInfoUnk6
+    public class MrfStructStateInfoUnk6 : MrfStructBase
     {
-        public uint Unk1 { get; }
+        public MetaHash Unk1 { get; }
         public ushort Unk2 { get; }
         public ushort Unk3 { get; }
         public uint Unk4 { get; }
 
         public MrfStructStateInfoUnk6(DataReader r)
         {
-            Unk1 = r.ReadUInt32();
+            Unk1 = new MetaHash(r.ReadUInt32());
             Unk2 = r.ReadUInt16();
             Unk3 = r.ReadUInt16();
             Unk4 = r.ReadUInt32();
         }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Unk1);
+            w.Write(Unk2);
+            w.Write(Unk3);
+            w.Write(Unk4);
+        }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateInfoSignalDataUnk3
+    public class MrfStructStateInfoSignalDataUnk3 : MrfStructBase
     {
         public uint UnkValue { get; }
         public uint UnkDefault { get; }
@@ -578,23 +801,40 @@ namespace CodeWalker.GameFiles
             UnkDefault = r.ReadUInt32();
             UnkRange = r.ReadUInt64(); // 2 merged 32 bit values?
         }
-    }
 
-    [TC(typeof(EXP))]
-    public struct MrfStructStateMachineEntry
-    {
-        public MetaHash Value { get; }
-        public uint Unk { get; }
-
-        public MrfStructStateMachineEntry(DataReader r)
+        public override void Write(DataWriter w)
         {
-            Value = new MetaHash(r.ReadUInt32());
-            Unk = r.ReadUInt32();
+            w.Write(UnkValue);
+            w.Write(UnkDefault);
+            w.Write(UnkRange);
         }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateInfoSignalData
+    public class MrfStructStateMachineState : MrfStructBase
+    {
+        public MetaHash StateName { get; }
+        public uint UnkValue { get; }
+
+        public MrfNodeStateInfo __StateInfoNode { get; set; }
+
+        public MrfStructStateMachineState(DataReader r)
+        {
+            StateName = new MetaHash(r.ReadUInt32());
+            UnkValue = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(StateName);
+            w.Write(UnkValue);
+        }
+    }
+
+    // FIXME: most likely broken
+
+    [TC(typeof(EXP))]
+    public class MrfStructStateInfoSignalData : MrfStructBase
     {
         public uint UnkType { get; }
         public uint NameHash { get; }
@@ -607,12 +847,6 @@ namespace CodeWalker.GameFiles
 
         public MrfStructStateInfoSignalData(DataReader r)
         {
-            Unk1 = 0;
-            Unk2 = 0;
-            Unk3_Count = 0;
-            Unk3_Items = null;
-            Unk4 = 0;
-
             UnkType = r.ReadUInt32();
             NameHash = r.ReadUInt32();
 
@@ -622,33 +856,51 @@ namespace CodeWalker.GameFiles
             Unk1 = r.ReadUInt32();
             Unk2 = r.ReadUInt32(); // Default value too?
             Unk3_Count = r.ReadUInt32();
-            Unk3_Items = new MrfStructStateInfoSignalDataUnk3[Unk3_Count];
             Unk4 = r.ReadUInt32();
+
+            Unk3_Items = new MrfStructStateInfoSignalDataUnk3[Unk3_Count];
 
             for (int i = 0; i < Unk3_Count; i++)
                 Unk3_Items[i] = new MrfStructStateInfoSignalDataUnk3(r);
         }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(UnkType);
+            w.Write(NameHash);
+
+            if (UnkType != 5)
+                return;
+
+            w.Write(Unk1);
+            w.Write(Unk2);
+            w.Write(Unk3_Count);
+            w.Write(Unk4);
+
+            // FIXME: might be broken if changed outside
+            foreach (var item in Unk3_Items)
+                item.Write(w);
+        }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructStateInfoSignal
+    public class MrfStructStateInfoSignal : MrfStructBase
     {
-        public ushort Header1 { get; }
-        public ushort Header2 { get; }
-        public ushort Header3 { get; }
-        public ushort Header4 { get; }
-        public List<MrfStructStateInfoSignalData> Items { get; }
+        public ushort Unk1 { get; }
+        public ushort Unk2 { get; }
+        public ushort Unk3 { get; }
+        public ushort Unk4 { get; }
+        public MrfStructStateInfoSignalData[] Items { get; }
 
         public MrfStructStateInfoSignal(DataReader r)
         {
-            Items = new List<MrfStructStateInfoSignalData>();
-
-            Header1 = r.ReadUInt16();
-            Header2 = r.ReadUInt16();
-            Header3 = r.ReadUInt16();
-            Header4 = r.ReadUInt16();
+            Unk1 = r.ReadUInt16();
+            Unk2 = r.ReadUInt16();
+            Unk3 = r.ReadUInt16();
+            Unk4 = r.ReadUInt16();
 
             uint shouldContinue;
+            var itemsList = new List<MrfStructStateInfoSignalData>();
 
             // FIXME: those loops looks weird
             do
@@ -656,7 +908,7 @@ namespace CodeWalker.GameFiles
                 while (true)
                 {
                     var data = new MrfStructStateInfoSignalData(r);
-                    Items.Add(data);
+                    itemsList.Add(data);
 
                     shouldContinue = data.UnkType;
 
@@ -665,23 +917,44 @@ namespace CodeWalker.GameFiles
                 }
             }
             while (shouldContinue != 0);
+
+            Items = itemsList.ToArray();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Unk1);
+            w.Write(Unk2);
+            w.Write(Unk3);
+            w.Write(Unk4);
+
+            foreach (var item in Items)
+                item.Write(w);
         }
     }
 
     [TC(typeof(EXP))]
-    public struct MrfStructNegativeInfoDataUnk7
+    public class MrfStructNegativeInfoDataUnk7 : MrfStructBase
     {
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
         public uint Unk4 { get; set; }
 
-        public MrfStructNegativeInfoDataUnk7(DataReader r)
+        public MrfStructNegativeInfoDataUnk7()
         {
             Unk1 = 0;
             Unk2 = 0;
             Unk3 = 0;
             Unk4 = 0;
+        }
+
+        public override void Write(DataWriter w)
+        {
+            w.Write(Unk1);
+            w.Write(Unk2);
+            w.Write(Unk3);
+            w.Write(Unk4);
         }
     }
     #endregion
@@ -702,6 +975,12 @@ namespace CodeWalker.GameFiles
             NodeInfoType = (MrfNodeInfoType)r.ReadUInt16();
             NodeInfoUnk = r.ReadUInt16();
         }
+
+        public virtual void Write(DataWriter w)
+        {
+            w.Write((ushort)NodeInfoType);
+            w.Write(NodeInfoUnk);
+        }
     }
 
     [TC(typeof(EXP))]
@@ -716,34 +995,56 @@ namespace CodeWalker.GameFiles
             NameHash = new MetaHash(r.ReadUInt32());
             Flags = r.ReadUInt32();
         }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(NameHash);
+            w.Write(Flags);
+        }
     }
 
     [TC(typeof(EXP))]
-    public class MrfHeaderStateMachine : MrfHeaderNodeInfo
+    public class MrfHeaderStateBase : MrfHeaderNodeInfo
     {
-        public MetaHash StateName { get; set; } // Used as an identifier for transitions
+        public MetaHash NameHash { get; set; } // Used as an identifier for transitions
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
         public byte Unk4 { get; set; }
         public byte Unk5 { get; set; }
-        public byte Unk6 { get; set; }
+        public byte StateCount { get; set; }
         public byte Unk7 { get; set; }
         public uint Unk8 { get; set; }
         public uint Unk9 { get; set; }
         public uint Unk10 { get; set; }
 
-        public MrfHeaderStateMachine(DataReader r) : base(r)
+        public MrfHeaderStateBase(DataReader r) : base(r)
         {
-            StateName = new MetaHash(r.ReadUInt32());
+            NameHash = new MetaHash(r.ReadUInt32());
             Unk2 = r.ReadUInt32();
             Unk3 = r.ReadUInt32();
             Unk4 = r.ReadByte();
             Unk5 = r.ReadByte();
-            Unk6 = r.ReadByte();
+            StateCount = r.ReadByte();
             Unk7 = r.ReadByte();
             Unk8 = r.ReadUInt32();
             Unk9 = r.ReadUInt32();
             Unk10 = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(NameHash);
+            w.Write(Unk2);
+            w.Write(Unk3);
+            w.Write(Unk4);
+            w.Write(Unk5);
+            w.Write(StateCount);
+            w.Write(Unk7);
+            w.Write(Unk8);
+            w.Write(Unk9);
+            w.Write(Unk10);
         }
     }
     #endregion
@@ -753,22 +1054,20 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))]
     public class MrfNodeStateMachineClassInfo : MrfNodeInfoBase
     {
-        public MrfHeaderStateMachine Header { get; set; }
-        public MrfStructStateMachineEntry[] Items { get; set; }
+        public MrfHeaderStateBase Header { get; set; }
+        public MrfStructStateMachineState[] States { get; set; }
         public MrfStructStateSection Header_Unk7_Data { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
-            Header = new MrfHeaderStateMachine(r);
-            Items = new MrfStructStateMachineEntry[Header.Unk6];
+            Header = new MrfHeaderStateBase(r);
+            States = new MrfStructStateMachineState[Header.StateCount];
 
-            for (int i = 0; i < Header.Unk6; i++)
-                Items[i] = new MrfStructStateMachineEntry(r);
+            for (int i = 0; i < Header.StateCount; i++)
+                States[i] = new MrfStructStateMachineState(r);
 
             if (Header.Unk7 != 0)
-            {
                 Header_Unk7_Data = new MrfStructStateSection(r, Header.Unk7);
-            }
         }
 
         public override long CalculateSize(DataReader r)
@@ -810,6 +1109,17 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            foreach (var item in States)
+                item.Write(w);
+
+            if (Header.Unk7 != 0)
+                Header_Unk7_Data.Write(w);
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.StateMachineClass;
@@ -827,19 +1137,19 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))]
     public class MrfNodeInlinedStateMachineInfo : MrfNodeInfoBase
     {
-        public MrfHeaderStateMachine Header { get; set; }
+        public MrfHeaderStateBase Header { get; set; }
         public uint Unk { get; set; }
-        public MrfStructStateMachineEntry[] Items { get; set; }
+        public MrfStructStateMachineState[] Items { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
-            Header = new MrfHeaderStateMachine(r);
-            Items = new MrfStructStateMachineEntry[Header.Unk6];
+            Header = new MrfHeaderStateBase(r);
+            Items = new MrfStructStateMachineState[Header.StateCount];
 
             Unk = r.ReadUInt32();
 
-            for (int i = 0; i < Header.Unk6; i++)
-                Items[i] = new MrfStructStateMachineEntry(r);
+            for (int i = 0; i < Header.StateCount; i++)
+                Items[i] = new MrfStructStateMachineState(r);
         }
 
         public override long CalculateSize(DataReader r)
@@ -853,13 +1163,22 @@ namespace CodeWalker.GameFiles
             return 8 * length + 36;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk);
+
+            foreach (var item in Items)
+                item.Write(w);
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.InlinedStateMachine;
         }
     }
 
-    // rage__mvNode* (4)
+    // rage__mvNode* (4) not used in final game
     [TC(typeof(EXP))]
     public class MrfNodeUnk4Info : MrfNodeInfoBase
     {
@@ -873,7 +1192,7 @@ namespace CodeWalker.GameFiles
         public uint Unk6 { get; set; }
         public uint Unk7 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
 
@@ -949,6 +1268,39 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            switch (Header.Flags & 3)
+            {
+                case 1:
+                    {
+                        w.Write(Unk2_Count);
+                        w.Write(Unk2_Bytes);
+                        break;
+                    }
+                case 2:
+                    w.Write(Unk1);
+                    break;
+            }
+
+            if (((Header.Flags >> 2) & 3) != 0)
+                w.Write(Unk3);
+
+            if (((Header.Flags >> 4) & 3) != 0)
+                w.Write(Unk4);
+
+            if (((Header.Flags >> 6) & 3) != 0)
+                w.Write(Unk5);
+
+            if (((Header.Flags >> 8) & 3) != 0)
+                w.Write(Unk6);
+
+            if (((Header.Flags >> 10) & 3) != 0)
+                w.Write(Unk7);
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Unk4;
@@ -993,7 +1345,7 @@ namespace CodeWalker.GameFiles
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNodeInfo(r);
 
@@ -1025,6 +1377,20 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            w.Write(Unk1);
+            w.Write(Flags);
+
+            if ((Flags & 3) != 0)
+                w.Write(Unk2);
+
+            if ((Flags & 0x30) != 0)
+                w.Write(Unk3);
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Frame;
@@ -1050,16 +1416,16 @@ namespace CodeWalker.GameFiles
     public class MrfNodeClipInfo : MrfNodeInfoBase
     {
         public MrfHeaderNameFlag Header { get; set; }
-        public uint Unk1 { get; set; }
+        public MetaHash VariableName { get; set; }
         public uint Unk2 { get; set; }
         public MetaHash DictName { get; set; }
         public MetaHash ClipName { get; set; }
-        public float Unk5 { get; set; }
-        public float Unk6 { get; set; }
+        public MetaHash Unk5 { get; set; }
+        public MetaHash Unk6 { get; set; }
         public uint Unk7 { get; set; }
         public uint Unk8 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
 
@@ -1076,15 +1442,15 @@ namespace CodeWalker.GameFiles
                         break;
                     }
                 case 2:
-                    Unk1 = r.ReadUInt32();
+                    VariableName = new MetaHash(r.ReadUInt32());
                     break;
             }
 
             if (((Header.Flags >> 2) & 3) != 0)
-                Unk5 = r.ReadSingle();
+                Unk5 = new MetaHash(r.ReadUInt32());
 
             if (((Header.Flags >> 4) & 3) != 0)
-                Unk6 = r.ReadSingle();
+                Unk6 = new MetaHash(r.ReadUInt32());
 
             if (((Header.Flags >> 6) & 3) != 0)
                 Unk7 = r.ReadUInt32();
@@ -1133,6 +1499,40 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            switch (Header.Flags & 3)
+            {
+                case 1:
+                    {
+                        w.Write(Unk2);
+                        w.Write(DictName);
+
+                        if (Unk2 != 3)
+                            w.Write(ClipName);
+
+                        break;
+                    }
+                case 2:
+                    w.Write(VariableName);
+                    break;
+            }
+
+            if (((Header.Flags >> 2) & 3) != 0)
+                w.Write(Unk5);
+
+            if (((Header.Flags >> 4) & 3) != 0)
+                w.Write(Unk6);
+
+            if (((Header.Flags >> 6) & 3) != 0)
+                w.Write(Unk7);
+
+            if (((Header.Flags >> 6) & 3) != 0)
+                w.Write(Unk8);
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Clip;
@@ -1152,7 +1552,7 @@ namespace CodeWalker.GameFiles
         public uint Unk5 { get; set; }
         public uint[] Unk6 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
 
@@ -1234,6 +1634,36 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            if ((Header.Flags & 3) == 1)
+            {
+                w.Write(Unk1_Count);
+                w.Write(Unk1_Bytes);
+            }
+            else if ((Header.Flags & 3) == 2)
+                w.Write(Unk2);
+
+            if (((Header.Flags >> 2) & 3) != 0)
+                w.Write(Unk3);
+
+            if (((Header.Flags >> 4) & 3) != 0)
+                w.Write(Unk4);
+
+            if ((Header.Flags >> 6) != 0)
+                w.Write(Unk5);
+
+            var unk6Count = (Header.Flags >> 10) & 0xF;
+
+            if (unk6Count > 0)
+            {
+                foreach (var value in Unk6)
+                    w.Write(value);
+            }
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Unk17;
@@ -1248,7 +1678,7 @@ namespace CodeWalker.GameFiles
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
             Unk1 = r.ReadUInt32();
@@ -1268,6 +1698,15 @@ namespace CodeWalker.GameFiles
             return ((headerFlags & 3) != 0) ? 20 : 16;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk1);
+
+            if ((Header.Flags & 3) != 0)
+                w.Write(Unk2);
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Unk18;
@@ -1283,11 +1722,11 @@ namespace CodeWalker.GameFiles
         public uint Unk2 { get; set; }
         public MetaHash ExpressionDict { get; set; }
         public MetaHash ExpressionName { get; set; }
-        public uint Unk5 { get; set; }
-        public float Unk6 { get; set; }
+        public MetaHash VariableName { get; set; }
+        public uint Unk6 { get; set; }
         public uint[][] Unk7 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
             Unk1 = r.ReadUInt32();
@@ -1299,31 +1738,31 @@ namespace CodeWalker.GameFiles
                     ExpressionName = new MetaHash(r.ReadUInt32());
                     break;
                 case 2:
-                    Unk5 = r.ReadUInt32();
+                    VariableName = new MetaHash(r.ReadUInt32());
                     break;
             }
 
             if (((Header.Flags >> 2) & 3) != 0)
-                Unk6 = r.ReadSingle();
+                Unk6 = r.ReadUInt32();
 
             var unk7Count = (Header.Flags >> 28);
 
             if (unk7Count == 0)
                 return;
 
-            var unkOffset = (Header.Flags >> 4) & 0xFFFFFF;
+            var unkHeaderFlag = (Header.Flags >> 4) & 0xFFFFFF;
             var offset = 0;
 
             Unk7 = new uint[unk7Count][];
 
             for (int i = 0; i < unk7Count; i++)
             {
-                var unkFlag = (unkOffset >> offset) & 3;
+                var unkTypeFlag = (unkHeaderFlag >> offset) & 3;
 
                 var value1 = r.ReadUInt32();
                 uint value2 = 0;
 
-                if (unkFlag == 2 || unkFlag == 1)
+                if (unkTypeFlag == 2 || unkTypeFlag == 1)
                     value2 = r.ReadUInt32();
 
                 Unk7[i] = new uint[2] { value1, value2 };
@@ -1376,6 +1815,46 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk1);
+
+            switch (Header.Flags & 3)
+            {
+                case 1:
+                    w.Write(ExpressionDict);
+                    w.Write(ExpressionName);
+                    break;
+                case 2:
+                    w.Write(VariableName);
+                    break;
+            }
+
+            if (((Header.Flags >> 2) & 3) != 0)
+                w.Write(Unk6);
+
+            var unk7Count = (Header.Flags >> 28);
+
+            if (unk7Count == 0)
+                return;
+
+            var unkHeaderFlag = (Header.Flags >> 4) & 0xFFFFFF;
+            var offset = 0;
+
+            foreach (var item in Unk7)
+            {
+                var unkTypeFlag = (unkHeaderFlag >> offset) & 3;
+
+                w.Write(item[0]);
+
+                if (unkTypeFlag == 2 || unkTypeFlag == 1)
+                    w.Write(item[1]);
+
+                offset += 2;
+            }
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Expression;
@@ -1391,7 +1870,7 @@ namespace CodeWalker.GameFiles
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
             Unk1 = r.ReadUInt32();
@@ -1419,6 +1898,18 @@ namespace CodeWalker.GameFiles
                 result += 4;
 
             return result;
+        }
+
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk1);
+
+            if ((Header.Flags & 3) != 0)
+                w.Write(Unk2);
+
+            if ((Header.Flags & 0x30) != 0)
+                w.Write(Unk3);
         }
 
         public override MrfNodeInfoType GetInfoType()
@@ -1457,29 +1948,27 @@ namespace CodeWalker.GameFiles
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
         public MetaHash Unk4 { get; set; }
-        public uint Unk5 { get; set; }
+        public MetaHash Unk5 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
+            Unk1 = r.ReadUInt32();
             Unk2 = r.ReadUInt32();
-            Unk3 = r.ReadUInt32();
 
             if ((Header.Flags & 0x180000) == 0x80000)
                 Unk3 = r.ReadUInt32();
 
-            var unkTypeFlag = (Header.Flags & 3);
-
-            // FIXME: optimized switch-case?
-            if (unkTypeFlag != 2)
+            switch (Header.Flags & 3)
             {
-                if (unkTypeFlag != 1)
-                    return;
-
-                Unk4 = new MetaHash(r.ReadUInt32());
+                case 1:
+                    Unk4 = new MetaHash(r.ReadUInt32());
+                    Unk5 = new MetaHash(r.ReadUInt32());
+                    break;
+                case 2:
+                    Unk5 = new MetaHash(r.ReadUInt32());
+                    break;
             }
-
-            Unk5 = r.ReadUInt32();
         }
 
         public override long CalculateSize(DataReader r)
@@ -1507,6 +1996,27 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk1);
+            w.Write(Unk2);
+
+            if ((Header.Flags & 0x180000) == 0x80000)
+                w.Write(Unk3);
+
+            switch (Header.Flags & 3)
+            {
+                case 1:
+                    w.Write(Unk4);
+                    w.Write(Unk5);
+                    break;
+                case 2:
+                    w.Write(Unk5);
+                    break;
+            }
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Unk24;
@@ -1520,7 +2030,7 @@ namespace CodeWalker.GameFiles
         public MrfHeaderNameFlag Header { get; set; }
         public uint Unk1 { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
 
@@ -1537,6 +2047,14 @@ namespace CodeWalker.GameFiles
             r.Position = startPos;
 
             return ((headerFlag & 3) != 0) ? 16 : 12;
+        }
+
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            if ((Header.Flags & 3) != 0)
+                w.Write(Unk1);
         }
 
         public override MrfNodeInfoType GetInfoType()
@@ -1556,9 +2074,9 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))]
     public class MrfNodeStateInfo : MrfNodeInfoBase
     {
-        public MrfHeaderStateMachine Header { get; set; }
+        public MrfHeaderStateBase Header { get; set; }
         public uint Unk1 { get; set; }
-        public uint Unk2_Count { get; set; }
+        public uint VariablesCount { get; set; }
         public uint Unk3 { get; set; }
         public uint EventsCount { get; set; }
         public uint Unk5 { get; set; }
@@ -1567,17 +2085,17 @@ namespace CodeWalker.GameFiles
         public uint SignalsCount { get; set; }
 
         public MrfStructStateSection Header_Unk7_Data { get; set; }
-        public MrfStructStateInfoUnk2[] Unk2_Items { get; set; }
-        public MrfStructStateInfoEvent[] EventsItems { get; set; }
+        public MrfStructStateInfoVariable[] Variables { get; set; }
+        public MrfStructStateInfoEvent[] Events { get; set; }
         public MrfStructStateInfoUnk6[] Unk6_Items { get; set; }
-        public MrfStructStateInfoSignal[] SignalsItems { get; set; }
+        public MrfStructStateInfoSignal[] Signals { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
-            Header = new MrfHeaderStateMachine(r);
+            Header = new MrfHeaderStateBase(r);
 
             Unk1 = r.ReadUInt32();
-            Unk2_Count = r.ReadUInt32();
+            VariablesCount = r.ReadUInt32();
             Unk3 = r.ReadUInt32();
             EventsCount = r.ReadUInt32();
             Unk5 = r.ReadUInt32();
@@ -1585,28 +2103,25 @@ namespace CodeWalker.GameFiles
             Unk7 = r.ReadUInt32();
             SignalsCount = r.ReadUInt32();
 
-            Unk2_Items = new MrfStructStateInfoUnk2[Unk2_Count];
-            EventsItems = new MrfStructStateInfoEvent[EventsCount];
+            Variables = new MrfStructStateInfoVariable[VariablesCount];
+            Events = new MrfStructStateInfoEvent[EventsCount];
             Unk6_Items = new MrfStructStateInfoUnk6[Unk6_Count];
-            SignalsItems = new MrfStructStateInfoSignal[SignalsCount];
+            Signals = new MrfStructStateInfoSignal[SignalsCount];
 
             if (Header.Unk7 != 0)
                 Header_Unk7_Data = new MrfStructStateSection(r, Header.Unk7);
 
-            for (int i = 0; i < Unk2_Count; i++)
-                Unk2_Items[i] = new MrfStructStateInfoUnk2(r);
+            for (int i = 0; i < VariablesCount; i++)
+                Variables[i] = new MrfStructStateInfoVariable(r);
 
             for (int i = 0; i < EventsCount; i++)
-                EventsItems[i] = new MrfStructStateInfoEvent(r);
+                Events[i] = new MrfStructStateInfoEvent(r);
 
             for (int i = 0; i < Unk6_Count; i++)
                 Unk6_Items[i] = new MrfStructStateInfoUnk6(r);
 
-            if (SignalsCount != 0)
-            {
-                for (int i = 0; i < SignalsCount; i++)
-                    SignalsItems[i] = new MrfStructStateInfoSignal(r);
-            }
+            for (int i = 0; i < SignalsCount; i++)
+                Signals[i] = new MrfStructStateInfoSignal(r);
         }
 
         public override long CalculateSize(DataReader r)
@@ -1711,6 +2226,35 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+
+            w.Write(Unk1);
+            w.Write(VariablesCount);
+            w.Write(Unk3);
+            w.Write(EventsCount);
+            w.Write(Unk5);
+            w.Write(Unk6_Count);
+            w.Write(Unk7);
+            w.Write(SignalsCount);
+
+            if (Header.Unk7 != 0)
+                Header_Unk7_Data.Write(w);
+
+            foreach (var item in Variables)
+                item.Write(w);
+
+            foreach (var item in Events)
+                item.Write(w);
+
+            foreach (var item in Unk6_Items)
+                item.Write(w);
+
+            foreach (var item in Signals)
+                item.Write(w);
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.State;
@@ -1753,7 +2297,7 @@ namespace CodeWalker.GameFiles
         public uint Unk5_Count { get; set; }
         public uint[][] Unk5_Items { get; set; }
 
-        public override void Parse(DataReader r)
+        public override void Read(DataReader r)
         {
             Header = new MrfHeaderNameFlag(r);
             Unk1 = r.ReadUInt32();
@@ -1826,6 +2370,53 @@ namespace CodeWalker.GameFiles
             return 12 * count1 + 8 * (count2 + count3 + count4 + 4);
         }
 
+        public override void Write(DataWriter w)
+        {
+            Header.Write(w);
+            w.Write(Unk1);
+            w.Write(Unk2_Count);
+            w.Write(Unk3_Count);
+            w.Write(Unk4_Count);
+            w.Write(Unk5_Count);
+
+            if (Unk3_Count > 0)
+            {
+                foreach (var entry in Unk3_Items)
+                {
+                    w.Write(entry[0]);
+                    w.Write(entry[1]);
+                }
+            }
+
+            if (Unk4_Count > 0)
+            {
+                foreach (var entry in Unk4_Items)
+                {
+                    w.Write(entry[0]);
+                    w.Write(entry[1]);
+                }
+            }
+
+            if (Unk5_Count > 0)
+            {
+                foreach (var entry in Unk5_Items)
+                {
+                    w.Write(entry[0]);
+                    w.Write(entry[1]);
+                }
+            }
+
+            if (Unk2_Count > 0)
+            {
+                foreach (var entry in Unk2_Items)
+                {
+                    w.Write(entry[0]);
+                    w.Write(entry[1]);
+                    w.Write(entry[2]);
+                }
+            }
+        }
+
         public override MrfNodeInfoType GetInfoType()
         {
             return MrfNodeInfoType.Unk31;
@@ -1883,13 +2474,72 @@ namespace CodeWalker.GameFiles
 
         public byte[] Save()
         {
-            // TODO
-            var buf = new byte[4];
+            MemoryStream s = new MemoryStream();
+            DataWriter w = new DataWriter(s);
+
+            Write(w);
+
+            var buf = new byte[s.Length];
+            s.Position = 0;
+            s.Read(buf, 0, buf.Length);
             return buf;
         }
 
         private void Write(DataWriter w)
         {
+            if (Magic != 0x45566F4D || Version != 2 || HeaderUnk1 != 0 || HeaderUnk2 != 0)
+                throw new Exception("Failed to write MRF, header is invalid!");
+
+            w.Write(Magic);
+            w.Write(Version);
+            w.Write(HeaderUnk1);
+            w.Write(HeaderUnk2);
+            w.Write(HeaderUnk3);
+            w.Write(DataLength);
+            w.Write(FlagsCount);
+
+            // Unused in final game
+            w.Write(Unk1_Count);
+
+            if (Unk1_Count > 0)
+            {
+                foreach (var entry in Unk1_Items)
+                {
+                    w.Write(entry.Size);
+                    w.Write(entry.Bytes);
+                }
+            }
+
+            w.Write(Unk2_Count);
+
+            if (Unk2_Count > 0)
+            {
+                foreach (var entry in Unk2_Items)
+                {
+                    w.Write(entry.Unk1);
+                    w.Write(entry.Unk2);
+                }
+            }
+
+            w.Write(Unk3_Count);
+
+            if (Unk3_Count > 0)
+            {
+                foreach (var entry in Unk3_Items)
+                {
+                    w.Write(entry.Unk1);
+                    w.Write(entry.Unk2);
+                }
+            }
+
+            if (Nodes != null)
+            {
+                foreach (var node in Nodes)
+                    node.Write(w);
+            }
+
+            for (int i = 0; i < FlagsCount; i++)
+                w.Write(FlagsItems[i]);
         }
 
         private void Read(DataReader r)
@@ -1905,6 +2555,7 @@ namespace CodeWalker.GameFiles
             if (Magic != 0x45566F4D || Version != 2 || HeaderUnk1 != 0 || HeaderUnk2 != 0)
                 throw new Exception("Failed to read MRF, header is invalid!");
 
+            // Unused in final game
             Unk1_Count = r.ReadUInt32();
             if (Unk1_Count > 0)
             {
@@ -1953,7 +2604,7 @@ namespace CodeWalker.GameFiles
                     throw new Exception($"Parsed mrf node type ({nodeHandler.GetInfoType()}) is not equals expected type ({nodeType})");
 
                 // Finally we can parse it.
-                nodeHandler.Parse(r);
+                nodeHandler.Read(r);
 
                 if (expectedPos != r.Position)
                     throw new Exception($"Position of reader ({r.Position}) is not equals expected position ({expectedPos})");
@@ -1993,9 +2644,6 @@ namespace CodeWalker.GameFiles
 
         private MrfNodeInfoBase GetNextMrfNodeHandler(MrfNodeInfoType infoType)
         {
-            if (infoType == MrfNodeInfoType.None)
-                throw new Exception($"Attempt to get a handler of none mrf node");
-
             switch (infoType)
             {
                 case MrfNodeInfoType.StateMachineClass:
@@ -2054,7 +2702,7 @@ namespace CodeWalker.GameFiles
                     return new MrfNodeUnk31Info();
             }
 
-            throw new Exception($"A handler for ({infoType}) mrf node type is not implemented");
+            throw new Exception($"A handler for ({infoType}) mrf node type is not valid");
         }
     }
 }
