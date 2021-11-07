@@ -139,7 +139,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags)
+        public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags, uint usedPages)
         {
             var sys = (basePosition == 0x50000000);
 
@@ -249,7 +249,7 @@ namespace CodeWalker.GameFiles
 
                 pageFlags = new RpfResourcePageFlags(pageCounts, baseShift);
 
-                if ((pageCount == pageFlags.Count) && (pageFlags.Size >= currentPosition)) //make sure page counts fit in the flags value
+                if ((pageCount == pageFlags.Count) && (pageFlags.Size >= currentPosition) && (pageFlags.Count + usedPages <= 128)) //make sure page counts fit in the flags value
                 {
                     break;
                 }
@@ -263,19 +263,18 @@ namespace CodeWalker.GameFiles
 
         public static byte[] Build(ResourceFileBase fileBase, int version, bool compress = true)
         {
-
-            fileBase.FilePagesInfo = new ResourcePagesInfo();
+            // Create a mock ResourcePagesInfo block to ensure size to fit real one
+            fileBase.FilePagesInfo = new ResourcePagesInfo(64, 64);
 
             IList<IResourceBlock> systemBlocks;
             IList<IResourceBlock> graphicBlocks;
             GetBlocks(fileBase, out systemBlocks, out graphicBlocks);
             
-            RpfResourcePageFlags systemPageFlags;
-            AssignPositions(systemBlocks, 0x50000000, out systemPageFlags);
-            
             RpfResourcePageFlags graphicsPageFlags;
-            AssignPositions(graphicBlocks, 0x60000000, out graphicsPageFlags);
-
+            AssignPositions(graphicBlocks, 0x60000000, out graphicsPageFlags, 0);
+            
+            RpfResourcePageFlags systemPageFlags;
+            AssignPositions(systemBlocks, 0x50000000, out systemPageFlags, graphicsPageFlags.Count);
 
             fileBase.FilePagesInfo.SystemPagesCount = (byte)systemPageFlags.Count;
             fileBase.FilePagesInfo.GraphicsPagesCount = (byte)graphicsPageFlags.Count;

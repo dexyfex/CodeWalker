@@ -96,7 +96,7 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength
         {
-            get { return 20 + (256 * 16); }
+            get { return 16 + (8 * (SystemPagesCount + GraphicsPagesCount)); }
         }
 
         // structure data
@@ -106,7 +106,17 @@ namespace CodeWalker.GameFiles
         public byte GraphicsPagesCount { get; set; }
         public ushort Unknown_Ah { get; set; }
         public uint Unknown_Ch { get; set; }
-        public uint Unknown_10h { get; set; }
+
+        public ResourcePagesInfo()
+        {
+
+        }
+
+        public ResourcePagesInfo(byte systemPagesCount, byte graphicsPagesCount)
+        {
+            SystemPagesCount = systemPagesCount;
+            GraphicsPagesCount = graphicsPagesCount;
+        }
 
         /// <summary>
         /// Reads the data-block from a stream.
@@ -120,7 +130,8 @@ namespace CodeWalker.GameFiles
             this.GraphicsPagesCount = reader.ReadByte();
             this.Unknown_Ah = reader.ReadUInt16();
             this.Unknown_Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
+
+            reader.Position += 8 * (SystemPagesCount + GraphicsPagesCount);
         }
 
         /// <summary>
@@ -135,10 +146,10 @@ namespace CodeWalker.GameFiles
             writer.Write(this.GraphicsPagesCount);
             writer.Write(this.Unknown_Ah);
             writer.Write(this.Unknown_Ch);
-            writer.Write(this.Unknown_10h);
 
-            var pad = 256 * 16;
-            writer.Write(new byte[pad]);
+            var pagesCount = SystemPagesCount + GraphicsPagesCount;
+            for (int i = 0; i < pagesCount; i++)
+                writer.Write(0UL);
         }
 
         public override string ToString()
