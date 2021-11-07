@@ -620,9 +620,9 @@ namespace CodeWalker.Project.Panels
 
 
             var zones = new List<Dat151AmbientZone>();
-            var emitters = new List<Dat151AmbientEmitter>();
+            var emitters = new List<Dat151AmbientRule>();
             var zonelists = new List<Dat151AmbientZoneList>();
-            var emitterlists = new List<Dat151AmbientEmitterList>();
+            var emitterlists = new List<Dat151StaticEmitterList>();
             var interiors = new List<Dat151Interior>();
             var interiorrooms = new List<Dat151InteriorRoom>();
 
@@ -632,17 +632,17 @@ namespace CodeWalker.Project.Panels
                 {
                     zones.Add(reldata as Dat151AmbientZone);
                 }
-                if (reldata is Dat151AmbientEmitter)
+                if (reldata is Dat151AmbientRule)
                 {
-                    emitters.Add(reldata as Dat151AmbientEmitter);
+                    emitters.Add(reldata as Dat151AmbientRule);
                 }
                 if (reldata is Dat151AmbientZoneList)
                 {
                     zonelists.Add(reldata as Dat151AmbientZoneList);
                 }
-                if (reldata is Dat151AmbientEmitterList)
+                if (reldata is Dat151StaticEmitterList)
                 {
-                    emitterlists.Add(reldata as Dat151AmbientEmitterList);
+                    emitterlists.Add(reldata as Dat151StaticEmitterList);
                 }
                 if (reldata is Dat151Interior)
                 {
@@ -1479,7 +1479,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        public TreeNode FindAudioEmitterListTreeNode(Dat151StaticEmitterList list)
         {
             if (list == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(list.Rel);
@@ -1990,7 +1990,7 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void TrySelectAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        public void TrySelectAudioEmitterListTreeNode(Dat151StaticEmitterList list)
         {
             TreeNode tnode = FindAudioEmitterListTreeNode(list);
             if (tnode == null)
@@ -2210,7 +2210,7 @@ namespace CodeWalker.Project.Panels
                 tn.Text = list.NameHash.ToString();
             }
         }
-        public void UpdateAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        public void UpdateAudioEmitterListTreeNode(Dat151StaticEmitterList list)
         {
             var tn = FindAudioEmitterListTreeNode(list);
             if (tn != null)
@@ -2429,12 +2429,12 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioEmitterTreeNode(emitter);
             if ((tn != null) && (tn.Parent != null))
             {
-                var emitters = new List<Dat151AmbientEmitter>();
+                var emitters = new List<Dat151AmbientRule>();
                 foreach (var reldata in emitter.RelFile.RelDatas)
                 {
-                    if (reldata is Dat151AmbientEmitter)
+                    if (reldata is Dat151AmbientRule)
                     {
-                        emitters.Add(reldata as Dat151AmbientEmitter);
+                        emitters.Add(reldata as Dat151AmbientRule);
                     }
                 }
 
@@ -2460,17 +2460,17 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-        public void RemoveAudioEmitterListTreeNode(Dat151AmbientEmitterList list)
+        public void RemoveAudioEmitterListTreeNode(Dat151StaticEmitterList list)
         {
             var tn = FindAudioEmitterListTreeNode(list);
             if ((tn != null) && (tn.Parent != null))
             {
-                var emitterlists = new List<Dat151AmbientEmitterList>();
+                var emitterlists = new List<Dat151StaticEmitterList>();
                 foreach (var reldata in list.Rel.RelDatas)
                 {
-                    if (reldata is Dat151AmbientEmitterList)
+                    if (reldata is Dat151StaticEmitterList)
                     {
-                        emitterlists.Add(reldata as Dat151AmbientEmitterList);
+                        emitterlists.Add(reldata as Dat151StaticEmitterList);
                     }
                 }
 

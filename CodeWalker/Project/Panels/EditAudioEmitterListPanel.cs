@@ -14,7 +14,7 @@ namespace CodeWalker.Project.Panels
     public partial class EditAudioEmitterListPanel : ProjectPanel
     {
         public ProjectForm ProjectForm;
-        public Dat151AmbientEmitterList CurrentEmitterList { get; set; }
+        public Dat151StaticEmitterList CurrentEmitterList { get; set; }
 
         private bool populatingui = false;
 
@@ -25,7 +25,7 @@ namespace CodeWalker.Project.Panels
             InitializeComponent();
         }
 
-        public void SetEmitterList(Dat151AmbientEmitterList list)
+        public void SetEmitterList(Dat151StaticEmitterList list)
         {
             CurrentEmitterList = list;
             Tag = list;

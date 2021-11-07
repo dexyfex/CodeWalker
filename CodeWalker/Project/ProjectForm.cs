@@ -75,7 +75,7 @@ namespace CodeWalker.Project
         private AudioPlacement CurrentAudioZone;
         private AudioPlacement CurrentAudioEmitter;
         private Dat151AmbientZoneList CurrentAudioZoneList;
-        private Dat151AmbientEmitterList CurrentAudioEmitterList;
+        private Dat151StaticEmitterList CurrentAudioEmitterList;
         private Dat151Interior CurrentAudioInterior;
         private Dat151InteriorRoom CurrentAudioInteriorRoom;
 
@@ -830,7 +830,7 @@ namespace CodeWalker.Project
             CurrentAudioZone = item as AudioPlacement;
             CurrentAudioEmitter = item as AudioPlacement;
             CurrentAudioZoneList = item as Dat151AmbientZoneList;
-            CurrentAudioEmitterList = item as Dat151AmbientEmitterList;
+            CurrentAudioEmitterList = item as Dat151StaticEmitterList;
             CurrentAudioInterior = item as Dat151Interior;
             CurrentAudioInteriorRoom = item as Dat151InteriorRoom;
             CurrentMloRoom = item as MCMloRoomDef;
@@ -842,7 +842,7 @@ namespace CodeWalker.Project
 
             //need to create a temporary AudioPlacement wrapper for these, since AudioPlacements usually come from WorldForm
             var daz = item as Dat151AmbientZone;
-            var dae = item as Dat151AmbientEmitter;
+            var dae = item as Dat151AmbientRule;
             if (daz != null) CurrentAudioZone = new AudioPlacement(daz.Rel, daz);
             if (dae != null) CurrentAudioEmitter = new AudioPlacement(dae.Rel, dae);
 
@@ -6509,16 +6509,16 @@ namespace CodeWalker.Project
             zone.Flags1 = cp ? copy.AudioZone.Flags1 : 0;
             zone.Flags2 = cp ? copy.AudioZone.Flags2 : 0;
             zone.Shape = cp ? copy.AudioZone.Shape : Dat151ZoneShape.Box;
-            zone.InnerSize = cp ? copy.AudioZone.InnerSize : Vector3.One * 10.0f;
-            zone.InnerAngle = cp ? copy.AudioZone.InnerAngle : 0;
-            zone.InnerVec1 = cp ? copy.AudioZone.InnerVec1 : Vector4.Zero;
-            zone.InnerVec2 = cp ? copy.AudioZone.InnerVec2 : new Vector4(1, 1, 1, 0);
-            zone.InnerVec3 = cp ? copy.AudioZone.InnerVec3 : Vector3.Zero;
-            zone.OuterSize = cp ? copy.AudioZone.OuterSize : Vector3.One * 15.0f;
-            zone.OuterAngle = cp ? copy.AudioZone.OuterAngle : 0;
-            zone.OuterVec1 = cp ? copy.AudioZone.OuterVec1 : Vector4.Zero;
-            zone.OuterVec2 = cp ? copy.AudioZone.OuterVec2 : new Vector4(1, 1, 1, 0);
-            zone.OuterVec3 = cp ? copy.AudioZone.OuterVec3 : Vector3.Zero;
+            zone.PlaybackZoneSize = cp ? copy.AudioZone.PlaybackZoneSize : Vector3.One * 10.0f;
+            zone.PlaybackZoneAngle = cp ? copy.AudioZone.PlaybackZoneAngle : 0;
+            zone.PlaybackZoneVec1 = cp ? copy.AudioZone.PlaybackZoneVec1 : Vector4.Zero;
+            zone.PlaybackZoneVec2 = cp ? copy.AudioZone.PlaybackZoneVec2 : new Vector4(1, 1, 1, 0);
+            zone.PlaybackZoneVec3 = cp ? copy.AudioZone.PlaybackZoneVec3 : Vector3.Zero;
+            zone.ActivationZoneSize = cp ? copy.AudioZone.ActivationZoneSize : Vector3.One * 15.0f;
+            zone.ActivationZoneAngle = cp ? copy.AudioZone.ActivationZoneAngle : 0;
+            zone.ActivationZoneVec1 = cp ? copy.AudioZone.ActivationZoneVec1 : Vector4.Zero;
+            zone.ActivationZoneVec2 = cp ? copy.AudioZone.ActivationZoneVec2 : new Vector4(1, 1, 1, 0);
+            zone.ActivationZoneVec3 = cp ? copy.AudioZone.ActivationZoneVec3 : Vector3.Zero;
             zone.UnkVec1 = cp ? copy.AudioZone.UnkVec1 : new Vector4(0, 0, 1, 0);
             zone.UnkVec2 = cp ? copy.AudioZone.UnkVec2 : new Vector4(1, -1, -1, 0);
             zone.UnkHash0 = cp ? copy.AudioZone.UnkHash0 : 0;
@@ -6527,8 +6527,8 @@ namespace CodeWalker.Project
             zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
             zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
             zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
-            zone.HashesCount = cp ? copy.AudioZone.HashesCount: (byte)0;
-            zone.Hashes = cp ? copy.AudioZone.Hashes : null;
+            zone.RulesCount = cp ? copy.AudioZone.RulesCount: (byte)0;
+            zone.Rules = cp ? copy.AudioZone.Rules : null;
             zone.ExtParamsCount = cp ? copy.AudioZone.ExtParamsCount : 0;
             zone.ExtParams = cp ? copy.AudioZone.ExtParams : null;
             zone.Name = "zone1";
@@ -6628,7 +6628,7 @@ namespace CodeWalker.Project
 
             bool cp = copyPosition && (copy != null);
 
-            var emitter = new Dat151AmbientEmitter(CurrentAudioFile);
+            var emitter = new Dat151AmbientRule(CurrentAudioFile);
 
             emitter.Flags0 = cp ? copy.AudioEmitter.Flags0.Value : 0xAA001100;
             emitter.Flags5 = cp ? copy.AudioEmitter.Flags5.Value : 0xFFFFFFFF;
@@ -6807,7 +6807,7 @@ namespace CodeWalker.Project
             if (CurrentAudioFile == null) return;
 
 
-            var emlist = new Dat151AmbientEmitterList(CurrentAudioFile);
+            var emlist = new Dat151StaticEmitterList(CurrentAudioFile);
 
             emlist.Name = "emitterlist1";
             emlist.NameHash = JenkHash.GenHash(emlist.Name);
@@ -6864,7 +6864,7 @@ namespace CodeWalker.Project
 
             return true;
         }
-        public bool IsCurrentAudioEmitterList(Dat151AmbientEmitterList list)
+        public bool IsCurrentAudioEmitterList(Dat151StaticEmitterList list)
         {
             return list == CurrentAudioEmitterList;
         }
