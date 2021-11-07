@@ -126,7 +126,6 @@
             this.ScenarioEntityPointSpawnTypeHashLabel = new System.Windows.Forms.Label();
             this.ScenarioEntityPointSpawnTypeTextBox = new System.Windows.Forms.TextBox();
             this.label120 = new System.Windows.Forms.Label();
-            this.ScenarioEntityPointRotationTextBox = new System.Windows.Forms.TextBox();
             this.label118 = new System.Windows.Forms.Label();
             this.ScenarioEntityPointGoToButton = new System.Windows.Forms.Button();
             this.ScenarioEntityPointPositionTextBox = new System.Windows.Forms.TextBox();
@@ -224,6 +223,7 @@
             this.label154 = new System.Windows.Forms.Label();
             this.ScenarioClusterPointTypeComboBox = new System.Windows.Forms.ComboBox();
             this.label155 = new System.Windows.Forms.Label();
+            this.ScenarioEntityPointRotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
             this.ScenarioTabControl.SuspendLayout();
             this.ScenarioPointTabPage.SuspendLayout();
             this.ScenarioPointOuterPanel.SuspendLayout();
@@ -1012,6 +1012,7 @@
             this.ScenarioEntityPointPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointRotationQuatBox);
             this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointNameHashLabel);
             this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointNameTextBox);
             this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointFlagsCheckedListBox);
@@ -1047,7 +1048,6 @@
             this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointSpawnTypeHashLabel);
             this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointSpawnTypeTextBox);
             this.ScenarioEntityPointPanel.Controls.Add(this.label120);
-            this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointRotationTextBox);
             this.ScenarioEntityPointPanel.Controls.Add(this.label118);
             this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointGoToButton);
             this.ScenarioEntityPointPanel.Controls.Add(this.ScenarioEntityPointPositionTextBox);
@@ -1436,16 +1436,6 @@
             this.label120.Size = new System.Drawing.Size(66, 13);
             this.label120.TabIndex = 13;
             this.label120.Text = "Spawn type:";
-            // 
-            // ScenarioEntityPointRotationTextBox
-            // 
-            this.ScenarioEntityPointRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioEntityPointRotationTextBox.Location = new System.Drawing.Point(109, 27);
-            this.ScenarioEntityPointRotationTextBox.Name = "ScenarioEntityPointRotationTextBox";
-            this.ScenarioEntityPointRotationTextBox.Size = new System.Drawing.Size(313, 20);
-            this.ScenarioEntityPointRotationTextBox.TabIndex = 9;
-            this.ScenarioEntityPointRotationTextBox.TextChanged += new System.EventHandler(this.ScenarioEntityPointRotationTextBox_TextChanged);
             // 
             // label118
             // 
@@ -2584,6 +2574,17 @@
             this.label155.TabIndex = 10;
             this.label155.Text = "Type:";
             // 
+            // ScenarioEntityPointRotationQuatBox
+            // 
+            this.ScenarioEntityPointRotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioEntityPointRotationQuatBox.Location = new System.Drawing.Point(109, 25);
+            this.ScenarioEntityPointRotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
+            this.ScenarioEntityPointRotationQuatBox.Name = "ScenarioEntityPointRotationQuatBox";
+            this.ScenarioEntityPointRotationQuatBox.Size = new System.Drawing.Size(387, 24);
+            this.ScenarioEntityPointRotationQuatBox.TabIndex = 9;
+            this.ScenarioEntityPointRotationQuatBox.ValueChanged += new System.EventHandler(this.ScenarioEntityPointRotationQuatBox_ValueChanged);
+            // 
             // EditScenarioNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2746,7 +2747,6 @@
         private System.Windows.Forms.Label ScenarioEntityPointSpawnTypeHashLabel;
         private System.Windows.Forms.TextBox ScenarioEntityPointSpawnTypeTextBox;
         private System.Windows.Forms.Label label120;
-        private System.Windows.Forms.TextBox ScenarioEntityPointRotationTextBox;
         private System.Windows.Forms.Label label118;
         private System.Windows.Forms.Button ScenarioEntityPointGoToButton;
         private System.Windows.Forms.TextBox ScenarioEntityPointPositionTextBox;
@@ -2844,5 +2844,6 @@
         private System.Windows.Forms.Label label154;
         private System.Windows.Forms.ComboBox ScenarioClusterPointTypeComboBox;
         private System.Windows.Forms.Label label155;
+        private WinForms.QuaternionBox ScenarioEntityPointRotationQuatBox;
     }
 }

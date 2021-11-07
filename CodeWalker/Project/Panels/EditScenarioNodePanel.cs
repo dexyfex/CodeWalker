@@ -327,7 +327,7 @@ namespace CodeWalker.Project.Panels
                 ScenarioEntityPointNameTextBox.Text = "";
                 ScenarioEntityPointNameHashLabel.Text = "Hash: 0";
                 ScenarioEntityPointPositionTextBox.Text = "";
-                ScenarioEntityPointRotationTextBox.Text = "";
+                ScenarioEntityPointRotationQuatBox.Value = Quaternion.Identity;
                 ScenarioEntityPointSpawnTypeTextBox.Text = "";
                 ScenarioEntityPointSpawnTypeHashLabel.Text = "Hash: 0";
                 ScenarioEntityPointPedTypeTextBox.Text = "";
@@ -362,7 +362,7 @@ namespace CodeWalker.Project.Panels
                 ScenarioEntityPointNameTextBox.Text = p.NameHash.ToString();
                 ScenarioEntityPointNameHashLabel.Text = "Hash: " + p.NameHash.Hash.ToString();
                 ScenarioEntityPointPositionTextBox.Text = FloatUtil.GetVector3String(p.OffsetPosition);
-                ScenarioEntityPointRotationTextBox.Text = FloatUtil.GetVector4String(p.OffsetRotation);
+                ScenarioEntityPointRotationQuatBox.Value = p.OffsetRotation.ToQuaternion();
                 ScenarioEntityPointSpawnTypeTextBox.Text = p.SpawnType.ToString();
                 ScenarioEntityPointSpawnTypeHashLabel.Text = "Hash: " + p.SpawnType.Hash.ToString();
                 ScenarioEntityPointPedTypeTextBox.Text = p.PedType.ToString();
@@ -1266,19 +1266,20 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void ScenarioEntityPointRotationTextBox_TextChanged(object sender, EventArgs e)
+        private void ScenarioEntityPointRotationQuatBox_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.EntityPoint == null) return;
-            Vector4 v = FloatUtil.ParseVector4String(ScenarioEntityPointRotationTextBox.Text);
+            Quaternion q = ScenarioEntityPointRotationQuatBox.Value;
+            Vector4 v = q.ToVector4();
             bool change = false;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.EntityPoint.OffsetRotation != v)
                 {
                     CurrentScenarioNode.EntityPoint.OffsetRotation = v;
-                    CurrentScenarioNode.Orientation = new Quaternion(v);
+                    CurrentScenarioNode.Orientation = q;
                     ProjectForm.SetScenarioHasChanged(true);
                     change = true;
                 }
@@ -2394,8 +2395,5 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-
-
-
     }
 }

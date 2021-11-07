@@ -1,4 +1,5 @@
 ﻿using CodeWalker.GameFiles;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -102,7 +103,7 @@ namespace CodeWalker.Project.Panels
                 SetCheckedListBoxValues(CompFlags1CheckedListBox, 0);
                 SetCheckedListBoxValues(CompFlags2CheckedListBox, 0);
                 CompPositionTextBox.Text = string.Empty;
-                CompRotationTextBox.Text = string.Empty;
+                CompRotationQuatBox.Value = Quaternion.Identity;
                 CompScaleTextBox.Text = string.Empty;
                 VertexCountLabel.Text = "0 vertices";
                 PolyCountLabel.Text = "0 polygons";
@@ -167,7 +168,7 @@ namespace CodeWalker.Project.Panels
                     SetCheckedListBoxValues(CompFlags1CheckedListBox, (uint)b.CompositeFlags1.Flags1);
                     SetCheckedListBoxValues(CompFlags2CheckedListBox, (uint)b.CompositeFlags1.Flags2);
                     CompPositionTextBox.Text = FloatUtil.GetVector3String(b.Position);
-                    CompRotationTextBox.Text = FloatUtil.GetVector4String(b.Orientation.ToVector4());
+                    CompRotationQuatBox.Value = b.Orientation;
                     CompScaleTextBox.Text = FloatUtil.GetVector3String(b.Scale);
                 }
                 else
@@ -177,7 +178,7 @@ namespace CodeWalker.Project.Panels
                     SetCheckedListBoxValues(CompFlags1CheckedListBox, 0);
                     SetCheckedListBoxValues(CompFlags2CheckedListBox, 0);
                     CompPositionTextBox.Text = string.Empty;
-                    CompRotationTextBox.Text = string.Empty;
+                    CompRotationQuatBox.Value = Quaternion.Identity;
                     CompScaleTextBox.Text = string.Empty;
                 }
 
@@ -571,11 +572,11 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void CompRotationTextBox_TextChanged(object sender, EventArgs e)
+        private void CompRotationQuatBox_ValueChanged(object sender, EventArgs e)
         {
             if (CollisionBounds == null) return;
             if (populatingui) return;
-            var q = FloatUtil.ParseVector4String(CompRotationTextBox.Text).ToQuaternion();
+            var q = CompRotationQuatBox.Value;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CollisionBounds.Orientation != q)
