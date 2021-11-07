@@ -7841,6 +7841,11 @@ namespace CodeWalker.Project
 
             if (!YmapExistsInProject(lodlight.Ymap))
             {
+                if (lodlight.DistLodLights?.Ymap != null)
+                {
+                    AddYmapToProject(lodlight.DistLodLights.Ymap);
+                    lodlight.DistLodLights.Ymap.HasChanged = true;
+                }
                 lodlight.Ymap.HasChanged = true;
                 AddYmapToProject(lodlight.Ymap);
                 ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
