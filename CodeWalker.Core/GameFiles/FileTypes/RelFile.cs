@@ -732,7 +732,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Alarm: return new Dat151Alarm(d, br);
                 case Dat151RelType.Unk105: return new Dat151Unk105(d, br);
                 case Dat151RelType.Scenario: return new Dat151Scenario(d, br);
-                case Dat151RelType.Unk107: return new Dat151Unk107(d, br);
+                case Dat151RelType.AudioOcclusionOverride: return new Dat151AudioOcclusionOverride(d, br);
                 case Dat151RelType.ElectricEngine: return new Dat151ElectricEngine(d, br);
                 case Dat151RelType.Unk109: return new Dat151Unk109(d, br);
                 case Dat151RelType.Unk110: return new Dat151Unk110(d, br);
@@ -899,7 +899,7 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.Alarm: return new Dat151Alarm(this);
                         case Dat151RelType.Unk105: return new Dat151Unk105(this);
                         case Dat151RelType.Scenario: return new Dat151Scenario(this);
-                        case Dat151RelType.Unk107: return new Dat151Unk107(this);
+                        case Dat151RelType.AudioOcclusionOverride: return new Dat151AudioOcclusionOverride(this);
                         case Dat151RelType.ElectricEngine: return new Dat151ElectricEngine(this);
                         case Dat151RelType.Unk109: return new Dat151Unk109(this);
                         case Dat151RelType.Unk110: return new Dat151Unk110(this);
@@ -5021,7 +5021,7 @@ namespace CodeWalker.GameFiles
         ForceRadioTrackAction = 104, //suffixed _frta
         Unk105 = 105, //SlowMotion settings for weapons, jumps, other slow squences etc.
         Scenario = 106, //eg world_human_musician
-        Unk107 = 107, //world changes, broken window vs fixed windows at certain interiors (Michael's house, car showroom, etc)
+        AudioOcclusionOverride = 107, //world changes, broken window vs fixed windows at certain interiors (Michael's house, car showroom, etc)
         ElectricEngine = 108,  //voltic_electric_engine
         Unk109 = 109,
         Unk110 = 110, //conversation/speech related - for scenarios?
@@ -17821,18 +17821,21 @@ namespace CodeWalker.GameFiles
             ItemCount = (Items?.Length ?? 0);
         }
     }
-    [TC(typeof(EXP))] public class Dat151Unk107 : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151AudioOcclusionOverride : Dat151RelData
     {
-        public float Unk01 { get; set; }
+        //used in conjunction with the 'SET_PORTAL_SETTINGS_OVERRIDE'
+        //and 'REMOVE_PORTAL_SETTINGS_OVERRIDE' natives to do real time changes to audio occlusion for interior portals.
 
-        public Dat151Unk107(RelFile rel) : base(rel)
+        public float MaxOcclusion { get; set; } //value to override for a particular portal
+
+        public Dat151AudioOcclusionOverride(RelFile rel) : base(rel)
         {
-            Type = Dat151RelType.Unk107;
+            Type = Dat151RelType.AudioOcclusionOverride;
             TypeID = (byte)Type;
         }
-        public Dat151Unk107(RelData d, BinaryReader br) : base(d, br)
+        public Dat151AudioOcclusionOverride(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk01 = br.ReadSingle();
+            MaxOcclusion = br.ReadSingle();
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -17842,15 +17845,15 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk01);
+            bw.Write(MaxOcclusion);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+            RelXml.ValueTag(sb, indent, "MaxOcclusion", FloatUtil.ToString(MaxOcclusion));
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
+            MaxOcclusion = Xml.GetChildFloatAttribute(node, "MaxOcclusion", "value");
         }
     }
     [TC(typeof(EXP))] public class Dat151ElectricEngine : Dat151RelData
