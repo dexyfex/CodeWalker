@@ -4304,8 +4304,8 @@ namespace CodeWalker
                     {
                         WeatherComboBox.Items.Add(wt);
                     }
-                    WeatherComboBox.SelectedIndex = 0;
-                    WeatherRegionComboBox.SelectedIndex = 0;
+                    WeatherComboBox.SelectedIndex = Math.Max(WeatherComboBox.FindString(Settings.Default.Weather), 0);
+                    WeatherRegionComboBox.SelectedIndex = Math.Max(WeatherRegionComboBox.FindString(Settings.Default.Region), 0);
                 }
             }
             catch { }
@@ -4617,6 +4617,15 @@ namespace CodeWalker
             StatusBarCheckBox.Checked = s.ShowStatusBar;
             SnapGridSizeUpDown.Value = (decimal)s.SnapGridSize;
             SetRotationSnapping(s.SnapRotationDegrees);
+            TimeOfDayTrackBar.Value = s.TimeOfDay;
+            setTime(s.TimeOfDay);
+            LODLightsCheckBox.Checked = s.LODLights;
+            WeatherComboBox.SelectedIndex = Math.Max(WeatherComboBox.FindString(s.Weather), 0);
+            Renderer.SetWeatherType(s.Weather);
+            WeatherRegionComboBox.SelectedIndex = Math.Max(WeatherRegionComboBox.FindString(s.Region), 0);
+            Renderer.individualcloudfrag = s.Clouds;
+            NaturalAmbientLightCheckBox.Checked = s.NatrualAmbientLight;
+            ArtificialAmbientLightCheckBox.Checked = s.ArtificialAmbientLight;
             
 
             EnableModsCheckBox.Checked = s.EnableMods;
@@ -4655,7 +4664,13 @@ namespace CodeWalker
             s.ShowStatusBar = StatusBarCheckBox.Checked;
             s.SnapRotationDegrees = (float)SnapAngleUpDown.Value;
             s.SnapGridSize = (float)SnapGridSizeUpDown.Value;
-
+            s.TimeOfDay = TimeOfDayTrackBar.Value;
+            s.LODLights = LODLightsCheckBox.Checked;
+            s.Weather = WeatherComboBox.Text;
+            s.NatrualAmbientLight = NaturalAmbientLightCheckBox.Checked;
+            s.ArtificialAmbientLight = ArtificialAmbientLightCheckBox.Checked;
+            s.Region = WeatherRegionComboBox.Text;
+            s.Clouds = CloudsComboBox.Text;
 
             //additional settings from gamefilecache...
             s.EnableMods = gameFileCache.EnableMods;
@@ -6994,8 +7009,12 @@ namespace CodeWalker
 
         private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
         {
-            int v = TimeOfDayTrackBar.Value;
-            float hour = v / 60.0f;
+            setTime(TimeOfDayTrackBar.Value);
+        }
+
+        private void setTime(int time)
+        {
+            float hour = time / 60.0f;
             UpdateTimeOfDayLabel();
             lock (Renderer.RenderSyncRoot)
             {
