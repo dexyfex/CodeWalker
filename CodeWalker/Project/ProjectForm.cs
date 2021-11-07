@@ -1781,13 +1781,7 @@ namespace CodeWalker.Project
                     { return; }
                 }
 
-                filepath = filepath.ToLowerInvariant();
-                string newname = Path.GetFileNameWithoutExtension(filepath);
-                JenkIndex.Ensure(newname);
-                CurrentYmapFile.FilePath = filepath;
-                CurrentYmapFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
-                CurrentYmapFile.Name = CurrentYmapFile.RpfFileEntry.Name;
-                CurrentYmapFile._CMapData.name = new MetaHash(JenkHash.GenHash(newname));
+                CurrentYmapFile.SetFilePath(filepath);
 
                 data = CurrentYmapFile.Save();
             }
@@ -8340,12 +8334,14 @@ namespace CodeWalker.Project
         {
             if (CurrentYmapFile == null) return;
 
-            bool changechange = changed != CurrentYmapFile.HasChanged;
-            if (!changechange) return;
-
             CurrentYmapFile.HasChanged = changed;
 
             ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, changed);
+
+            RefreshUI();
+
+            bool changechange = changed != CurrentYmapFile.HasChanged;
+            if (!changechange) return;
 
             PromoteIfPreviewPanelActive();
         }

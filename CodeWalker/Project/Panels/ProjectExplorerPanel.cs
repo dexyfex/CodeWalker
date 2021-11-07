@@ -755,10 +755,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYmapHasChanged(YmapFile ymap, bool changed)
         {
-            if (ymap != null)
-            {
-                ymap.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -783,10 +779,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYtypHasChanged(YtypFile ytyp, bool changed)
         {
-            if (ytyp != null)
-            {
-                ytyp.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -811,10 +803,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYbnHasChanged(YbnFile ybn, bool changed)
         {
-            if (ybn != null)
-            {
-                ybn.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -839,10 +827,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYndHasChanged(YndFile ynd, bool changed)
         {
-            if (ynd != null)
-            {
-                ynd.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -867,10 +851,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYnvHasChanged(YnvFile ynv, bool changed)
         {
-            if (ynv != null)
-            {
-                ynv.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -895,10 +875,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetTrainTrackHasChanged(TrainTrack track, bool changed)
         {
-            if (track != null)
-            {
-                track.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -923,10 +899,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetScenarioHasChanged(YmtFile scenario, bool changed)
         {
-            if (scenario != null)
-            {
-                scenario.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -951,10 +923,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetAudioRelHasChanged(RelFile rel, bool changed)
         {
-            if (rel != null)
-            {
-                rel.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -979,10 +947,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetGrassBatchHasChanged(YmapGrassInstanceBatch batch, bool changed)
         {
-            if (batch?.Ymap != null)
-            {
-                batch.Ymap.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var gbnode = FindGrassTreeNode(batch);
