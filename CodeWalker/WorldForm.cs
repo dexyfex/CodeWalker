@@ -4618,14 +4618,15 @@ namespace CodeWalker
             SnapGridSizeUpDown.Value = (decimal)s.SnapGridSize;
             SetRotationSnapping(s.SnapRotationDegrees);
             TimeOfDayTrackBar.Value = s.TimeOfDay;
-            setTime(s.TimeOfDay);
             LODLightsCheckBox.Checked = s.LODLights;
             WeatherComboBox.SelectedIndex = Math.Max(WeatherComboBox.FindString(s.Weather), 0);
-            Renderer.SetWeatherType(s.Weather);
             WeatherRegionComboBox.SelectedIndex = Math.Max(WeatherRegionComboBox.FindString(s.Region), 0);
             Renderer.individualcloudfrag = s.Clouds;
             NaturalAmbientLightCheckBox.Checked = s.NatrualAmbientLight;
             ArtificialAmbientLightCheckBox.Checked = s.ArtificialAmbientLight;
+            
+            SetTimeOfDay(s.TimeOfDay);
+            Renderer.SetWeatherType(s.Weather);
             
 
             EnableModsCheckBox.Checked = s.EnableMods;
@@ -5780,6 +5781,17 @@ namespace CodeWalker
         }
 
 
+
+
+        private void SetTimeOfDay(int minute)
+        {
+            float hour = minute / 60.0f;
+            UpdateTimeOfDayLabel();
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.SetTimeOfDay(hour);
+            }
+        }
 
 
 
@@ -7009,17 +7021,7 @@ namespace CodeWalker
 
         private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
         {
-            setTime(TimeOfDayTrackBar.Value);
-        }
-
-        private void setTime(int time)
-        {
-            float hour = time / 60.0f;
-            UpdateTimeOfDayLabel();
-            lock (Renderer.RenderSyncRoot)
-            {
-                Renderer.SetTimeOfDay(hour);
-            }
+            SetTimeOfDay(TimeOfDayTrackBar.Value);
         }
 
         private void WeatherComboBox_SelectedIndexChanged(object sender, EventArgs e)
