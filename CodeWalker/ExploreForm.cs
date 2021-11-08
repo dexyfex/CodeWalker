@@ -307,6 +307,7 @@ namespace CodeWalker
             InitFileType(".ipl", "Item Placements", 21, FileTypeAction.ViewText);
             InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc, true);
             InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel, true);
+            InitFileType(".nametable", "Name Table", 5, FileTypeAction.ViewNametable);
 
             InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat, true);
             InitSubFileType(".dat", "heightmap.dat", "Heightmap", 6, FileTypeAction.ViewHeightmap, true);
@@ -1534,6 +1535,9 @@ namespace CodeWalker
                     case FileTypeAction.ViewMrf:
                         ViewMrf(name, path, data, fe);
                         break;
+                    case FileTypeAction.ViewNametable:
+                        ViewNametable(name, path, data, fe);
+                        break;
                     case FileTypeAction.ViewHex:
                     default:
                         ViewHex(name, path, data);
@@ -1694,9 +1698,12 @@ namespace CodeWalker
         private void ViewGxt(string name, string path, byte[] data, RpfFileEntry e)
         {
             var gxt = RpfFile.GetFile<Gxt2File>(e, data);
-            GxtForm f = new GxtForm();
+            //GxtForm f = new GxtForm();
+            //f.Show();
+            //f.LoadGxt2(gxt);
+            TextForm f = new TextForm(this);
             f.Show();
-            f.LoadGxt2(gxt);
+            f.LoadGxt2(name, path, gxt);
         }
         private void ViewRel(string name, string path, byte[] data, RpfFileEntry e)
         {
@@ -1782,6 +1789,13 @@ namespace CodeWalker
             f.Show();
             f.LoadFile(mrf, mrf.RpfFileEntry);
         }
+        private void ViewNametable(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            TextForm f = new TextForm(this);
+            f.Show();
+            f.LoadNametable(name, path, data, e);
+        }
+
         private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
         {
             //this should only really be used when loading a file from the filesystem.
@@ -4704,6 +4718,7 @@ namespace CodeWalker
         ViewYfd = 22,
         ViewHeightmap = 23,
         ViewMrf = 24,
+        ViewNametable = 25,
     }
 
 
