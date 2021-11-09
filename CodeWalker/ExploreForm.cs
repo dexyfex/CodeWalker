@@ -1698,9 +1698,6 @@ namespace CodeWalker
         private void ViewGxt(string name, string path, byte[] data, RpfFileEntry e)
         {
             var gxt = RpfFile.GetFile<Gxt2File>(e, data);
-            //GxtForm f = new GxtForm();
-            //f.Show();
-            //f.LoadGxt2(gxt);
             TextForm f = new TextForm(this);
             f.Show();
             f.LoadGxt2(name, path, gxt);
@@ -2582,7 +2579,6 @@ namespace CodeWalker
             RefreshMainListView();
 
         }
-
         private void ImportXmlDialog()
         {
             if (!EditMode) return;
@@ -2596,7 +2592,6 @@ namespace CodeWalker
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK) return;
             ImportXml(OpenFileDialog.FileNames);
         }
-
         private void ImportXml(string[] fpaths)
         {
             foreach (var fpath in fpaths)
