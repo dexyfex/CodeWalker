@@ -9441,12 +9441,27 @@ namespace CodeWalker.Project
             OptionsAutoCalcYmapExtentsMenu.Checked = !OptionsAutoCalcYmapExtentsMenu.Checked;
             autoymapextents = OptionsAutoCalcYmapExtentsMenu.Checked;
         }
-
         private void OptionsDisplayEntityIndexesMenu_Click(object sender, EventArgs e)
         {
             OptionsDisplayEntityIndexesMenu.Checked = !OptionsDisplayEntityIndexesMenu.Checked;
             displayentityindexes = OptionsDisplayEntityIndexesMenu.Checked;
             ProjectExplorer?.LoadProjectTree(CurrentProjectFile);
+            
+            //make sure the current item is selected in the project explorer, let's just assume it's an entity
+            //(for things other than entities, they will need to be re-selected manually by the user to sync project explorer again)
+            if (CurrentEntity != null)
+            {
+                MloInstanceData mloInstance = CurrentEntity.MloParent?.MloInstance;
+                if (mloInstance != null) //indexes aren't shown for MLO entities, but just in case one was selected
+                {
+                    MCEntityDef entityDef = mloInstance.TryGetArchetypeEntity(CurrentEntity);
+                    ProjectExplorer?.TrySelectMloEntityTreeNode(entityDef);
+                }
+                else
+                {
+                    ProjectExplorer?.TrySelectEntityTreeNode(CurrentEntity);
+                }
+            }
         }
 
         private void ToolbarNewButton_ButtonClick(object sender, EventArgs e)
