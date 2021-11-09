@@ -2582,7 +2582,8 @@ namespace CodeWalker
             RefreshMainListView();
 
         }
-        private void ImportXml()
+
+        private void ImportXmlDialog()
         {
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
@@ -2591,14 +2592,13 @@ namespace CodeWalker
 
             if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
 
-
             OpenFileDialog.Filter = "XML Files|*.xml";
-            if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
-            {
-                return;//canceled
-            }
+            if (OpenFileDialog.ShowDialog(this) != DialogResult.OK) return;
+            ImportXml(OpenFileDialog.FileNames);
+        }
 
-            var fpaths = OpenFileDialog.FileNames;
+        private void ImportXml(string[] fpaths)
+        {
             foreach (var fpath in fpaths)
             {
 #if !DEBUG
@@ -3704,7 +3704,7 @@ namespace CodeWalker
                     else if (ctrl) ExtractRaw();
                     break;
                 case Keys.Insert:
-                    if (shft) ImportXml();
+                    if (shft) ImportXmlDialog();
                     else if (!ctrl) ImportRaw();
                     break;
                 case Keys.C:
@@ -3883,7 +3883,19 @@ namespace CodeWalker
                 var files = e.Data.GetData(DataFormats.FileDrop) as string[];
                 if ((files == null) || (files.Length <= 0)) return;
                 if (files[0].StartsWith(GetDropFolder(), StringComparison.InvariantCultureIgnoreCase)) return; //don't dry to drop on ourselves...
-                ImportRaw(files);
+
+                //Import as raw regardless of file type while pressing shift
+                if ((e.KeyState & 4) == 4)
+                {
+                    ImportRaw(files);
+                    return;
+                }
+
+                var raw = files.Where(x => !x.EndsWith(".xml"));
+                var xml = files.Except(raw);
+
+                if (raw.Count() > 0) ImportRaw(raw.ToArray());
+                if (xml.Count() > 0) ImportXml(xml.ToArray());
             }
         }
 
@@ -4095,7 +4107,7 @@ namespace CodeWalker
 
         private void ListContextImportXmlMenu_Click(object sender, EventArgs e)
         {
-            ImportXml();
+            ImportXmlDialog();
         }
 
         private void ListContextImportRawMenu_Click(object sender, EventArgs e)
@@ -4190,7 +4202,7 @@ namespace CodeWalker
 
         private void EditImportXmlMenu_Click(object sender, EventArgs e)
         {
-            ImportXml();
+            ImportXmlDialog();
         }
 
         private void EditImportRawMenu_Click(object sender, EventArgs e)
