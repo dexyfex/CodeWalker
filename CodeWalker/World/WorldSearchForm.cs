@@ -307,6 +307,7 @@ namespace CodeWalker.World
             EntitySearchAbortButton.Enabled = true;
             EntitySearchLoadedOnlyCheckBox.Enabled = false;
             EntitySearchExportResultsButton.Enabled = false;
+            EntitySearchSetMarkersButton.Enabled = false;
             AbortOperation = false;
             EntityResults.Clear();
             EntityResultsListView.VirtualListSize = 0;
@@ -412,6 +413,7 @@ namespace CodeWalker.World
                     EntitySearchAbortButton.Enabled = false;
                     EntitySearchLoadedOnlyCheckBox.Enabled = true;
                     EntitySearchExportResultsButton.Enabled = true;
+                    EntitySearchSetMarkersButton.Enabled = true;
                 }
             }
             catch { }
@@ -446,6 +448,19 @@ namespace CodeWalker.World
             }
 
             File.WriteAllText(fname, sb.ToString());
+        }
+
+        private void EntitySearchSetMarkersButton_Click(object sender, EventArgs e)
+        {
+            var usetextbox = EntityResults.Count < 250;
+            if (!usetextbox) MessageBox.Show("Markers will not be placed into the markers textbox\nbecause there are too many.", "Too many markers", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            Task.Run(() =>
+            {
+                foreach (var ent in EntityResults)
+                {
+                    WorldForm.AddMarker(ent.Position, ent.Name, usetextbox);
+                }
+            });
         }
 
         private void EntityResultsListView_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
