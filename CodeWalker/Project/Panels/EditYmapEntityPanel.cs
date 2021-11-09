@@ -233,14 +233,20 @@ namespace CodeWalker.Project.Panels
             TreeNode tn = ProjectForm.ProjectExplorer?.FindEntityTreeNode(CurrentEntity);
             if (tn != null)
             {
-                tn.Text = name;
+                if (ProjectForm.displayentityindexes)
+                    tn.Text = $"[{tn.Index}] {name}";
+                else
+                    tn.Text = name;
             }
             else
             {
                 tn = ProjectForm.ProjectExplorer?.FindMloEntityTreeNode(CurrentMCEntity);
                 if (tn != null)
                 {
-                    tn.Text = name;
+                    if (ProjectForm.displayentityindexes)
+                        tn.Text = $"[{tn.Index}] {name}";
+                    else
+                        tn.Text = name;
                 }
             }
 

@@ -88,6 +88,7 @@ namespace CodeWalker.Project
         private bool hidegtavmap = false;
         private bool autoymapflags = true;
         private bool autoymapextents = true;
+        public bool displayentityindexes = false;
 
         private object projectsyncroot = new object();
         public object ProjectSyncRoot { get { return projectsyncroot; } }
@@ -9439,6 +9440,13 @@ namespace CodeWalker.Project
         {
             OptionsAutoCalcYmapExtentsMenu.Checked = !OptionsAutoCalcYmapExtentsMenu.Checked;
             autoymapextents = OptionsAutoCalcYmapExtentsMenu.Checked;
+        }
+
+        private void OptionsDisplayEntityIndexesMenu_Click(object sender, EventArgs e)
+        {
+            OptionsDisplayEntityIndexesMenu.Checked = !OptionsDisplayEntityIndexesMenu.Checked;
+            displayentityindexes = OptionsDisplayEntityIndexesMenu.Checked;
+            ProjectExplorer?.LoadProjectTree(CurrentProjectFile);
         }
 
         private void ToolbarNewButton_ButtonClick(object sender, EventArgs e)

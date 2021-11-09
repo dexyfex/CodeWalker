@@ -238,7 +238,12 @@ namespace CodeWalker.Project.Panels
                 {
                     var ent = ents[i];
                     var edef = ent.CEntityDef;
-                    var enode = entsnode.Nodes.Add(edef.archetypeName.ToString());
+                    TreeNode enode;
+                    if (ProjectForm.displayentityindexes)
+                        enode = entsnode.Nodes.Add($"[{i}] {edef.archetypeName}");
+                    else
+                        enode = entsnode.Nodes.Add(edef.archetypeName.ToString());
+
                     enode.Tag = ent;
                 }
             }
