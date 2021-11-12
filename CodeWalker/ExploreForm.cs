@@ -3886,8 +3886,8 @@ namespace CodeWalker
                     return;
                 }
 
-                var raw = files.Where(x => !x.EndsWith(".xml"));
-                var xml = files.Except(raw);
+                var xml = files.Where(x => x.EndsWith(".xml") && (x.IndexOf('.') != x.LastIndexOf('.')));
+                var raw = files.Except(xml);
 
                 if (raw.Count() > 0) ImportRaw(raw.ToArray());
                 if (xml.Count() > 0) ImportXml(xml.ToArray());
