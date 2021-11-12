@@ -169,6 +169,7 @@ namespace CodeWalker
         MapSelection SelectedItem;
         MapSelection CopiedItem;
         WorldInfoForm InfoForm = null;
+        public MapSelection CurrentMapSelection { get { return SelectedItem; } }
 
 
         TransformWidget Widget = new TransformWidget();
@@ -5864,7 +5865,7 @@ namespace CodeWalker
                     }
                     else
                     {
-                        if (ShowWidget && Widget.IsUnderMouse)
+                        if (ShowWidget && Widget.IsUnderMouse && !Input.kbmoving)
                         {
                             GrabbedWidget = Widget;
                             GrabbedWidget.IsDragging = true;
@@ -6157,7 +6158,7 @@ namespace CodeWalker
             }
 
 
-            if (!Input.kbmoving) //don't trigger further actions if moving.
+            if (!Input.kbmoving && !Widget.IsDragging) //don't trigger further actions if camera moving or widget dragging 
             {
                 if (!ctrl)
                 {
@@ -6230,10 +6231,11 @@ namespace CodeWalker
                             break;
                     }
                 }
-                if (k == Keys.Escape) //temporary? panic get cursor back when in first person mode
-                {
-                    if (ControlMode != WorldControlMode.Free) SetControlMode(WorldControlMode.Free);
-                }
+            }
+
+            if (k == Keys.Escape) //temporary? panic get cursor back when in first person mode
+            {
+                if (ControlMode != WorldControlMode.Free) SetControlMode(WorldControlMode.Free);
             }
 
             if (ControlMode != WorldControlMode.Free || ControlBrushEnabled)

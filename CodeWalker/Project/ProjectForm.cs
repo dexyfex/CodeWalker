@@ -8374,16 +8374,16 @@ namespace CodeWalker.Project
         {
             if (CurrentYmapFile == null) return;
 
+            bool changechange = changed != CurrentYmapFile.HasChanged;
+            if (!changechange) return;
+
             CurrentYmapFile.HasChanged = changed;
 
             ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, changed);
 
-            RefreshUI();
-
-            bool changechange = changed != CurrentYmapFile.HasChanged;
-            if (!changechange) return;
-
             PromoteIfPreviewPanelActive();
+
+            RefreshUI();
         }
         public void SetYtypHasChanged(bool changed)
         {

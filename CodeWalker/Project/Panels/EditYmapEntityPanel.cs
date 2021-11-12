@@ -156,7 +156,11 @@ namespace CodeWalker.Project.Panels
                 UpdateTabVisibility();
 
 
-                ProjectForm.WorldForm?.SelectObject(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
+                var ms = ProjectForm.WorldForm?.CurrentMapSelection;
+                if ((ms?.EntityDef != CurrentEntity) && (ms?.MloEntityDef != CurrentEntity))
+                {
+                    ProjectForm.WorldForm?.SelectObject(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
+                }
 
                 ////struct CEntityDef:
                 //MetaHash archetypeName { get; set; } //8   8: Hash: 0: archetypeName
