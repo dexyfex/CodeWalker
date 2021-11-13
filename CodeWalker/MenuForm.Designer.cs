@@ -29,8 +29,6 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MenuForm));
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.ExtractScriptsButton = new System.Windows.Forms.Button();
             this.BinarySearchButton = new System.Windows.Forms.Button();
             this.RPFBrowserButton = new System.Windows.Forms.Button();
@@ -187,7 +185,7 @@
             this.RPFExplorerButton.UseVisualStyleBackColor = true;
             this.RPFExplorerButton.Click += new System.EventHandler(this.RPFExplorerButton_Click);
             // 
-            // MainForm
+            // MenuForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -207,7 +205,7 @@
             this.Controls.Add(this.BinarySearchButton);
             this.Controls.Add(this.ExtractScriptsButton);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "MainForm";
+            this.Name = "MenuForm";
             this.Text = "CodeWalker Menu";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
@@ -216,8 +214,6 @@
         }
 
         #endregion
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
-        private System.Windows.Forms.OpenFileDialog OpenFileDialog;
         private System.Windows.Forms.Button ExtractScriptsButton;
         private System.Windows.Forms.Button BinarySearchButton;
         private System.Windows.Forms.Button RPFBrowserButton;

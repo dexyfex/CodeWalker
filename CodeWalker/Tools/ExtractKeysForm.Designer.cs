@@ -34,7 +34,6 @@
             this.FolderBrowseButton = new System.Windows.Forms.Button();
             this.FolderTextBox = new System.Windows.Forms.TextBox();
             this.StatusLabel = new System.Windows.Forms.Label();
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.label2 = new System.Windows.Forms.Label();
             this.ExeBrowseButton = new System.Windows.Forms.Button();
             this.ExeTextBox = new System.Windows.Forms.TextBox();
@@ -151,7 +150,6 @@
         private System.Windows.Forms.Button FolderBrowseButton;
         private System.Windows.Forms.TextBox FolderTextBox;
         private System.Windows.Forms.Label StatusLabel;
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button ExeBrowseButton;
         private System.Windows.Forms.TextBox ExeTextBox;
