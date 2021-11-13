@@ -280,7 +280,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentEmitter?.AudioEmitter == null) return;
 
-            byte unk = (byte)StartTimeUpDown.Value;
+            ushort unk = (ushort)StartTimeUpDown.Value;
             if (CurrentEmitter.AudioEmitter.StartTime.Value != unk)
             {
                 CurrentEmitter.AudioEmitter.StartTime = unk;
@@ -293,7 +293,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentEmitter?.AudioEmitter == null) return;
 
-            byte unk = (byte)EndTimeUpDown.Value;
+            ushort unk = (ushort)EndTimeUpDown.Value;
             if (CurrentEmitter.AudioEmitter.EndTime.Value != unk)
             {
                 CurrentEmitter.AudioEmitter.EndTime = unk;
