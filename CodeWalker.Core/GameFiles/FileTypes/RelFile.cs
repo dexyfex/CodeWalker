@@ -4449,7 +4449,7 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat54AutomationSound : Dat54Sound
     {
-        public MetaHash AutomationChildSound { get; set; }  //??
+        public MetaHash FallBackSound { get; set; }  //fallback oneshot note if the map notes cannot be found.
         public float PlaybackRate { get; set; } //0x4-0x8 //rate at which the midi is played back, 1.0 default
         public float PlaybackRateVariance { get; set; } //0x8-0xC //variance of the playback rate
         public MetaHash PlaybackRateParameter { get; set; } //0xC-0x10 //parameter override for playback rate
@@ -4463,12 +4463,12 @@ namespace CodeWalker.GameFiles
         { }
         public Dat54AutomationSound(RelData d, BinaryReader br) : base(d, br)
         {
-            AutomationChildSound = br.ReadUInt32();
+            FallBackSound = br.ReadUInt32();
             PlaybackRate = br.ReadSingle();
             PlaybackRateVariance = br.ReadSingle();
             PlaybackRateParameter = br.ReadUInt32();
             Map = br.ReadUInt32();
-            AudioTrackHashes = new[] { AutomationChildSound, Map };
+            AudioTrackHashes = new[] { FallBackSound, Map };
             ContainerName = br.ReadUInt32();
             FileName = br.ReadUInt32();
             UnkDataCount = br.ReadInt32();
@@ -4481,7 +4481,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            AutomationChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "AutomationChildSound"));
+            FallBackSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "FallBackSound"));
             PlaybackRate = Xml.GetChildFloatAttribute(node, "PlaybackRate", "value");
             PlaybackRateVariance = Xml.GetChildFloatAttribute(node, "PlaybackRateVariance", "value");
             PlaybackRateParameter = XmlRel.GetHash(Xml.GetChildInnerText(node, "PlaybackRateParameter"));
@@ -4494,7 +4494,7 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            RelXml.StringTag(sb, indent, "AutomationChildSound", RelXml.HashString(AutomationChildSound));
+            RelXml.StringTag(sb, indent, "FallBackSound", RelXml.HashString(FallBackSound));
             RelXml.ValueTag(sb, indent, "PlaybackRate", FloatUtil.ToString(PlaybackRate));
             RelXml.ValueTag(sb, indent, "PlaybackRateVariance", FloatUtil.ToString(PlaybackRateVariance));
             RelXml.StringTag(sb, indent, "PlaybackRateParameter", RelXml.HashString(PlaybackRateParameter));
@@ -4506,7 +4506,7 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
-            bw.Write(AutomationChildSound);
+            bw.Write(FallBackSound);
             bw.Write(PlaybackRate);
             bw.Write(PlaybackRateVariance);
             bw.Write(PlaybackRateParameter);
