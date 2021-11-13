@@ -141,6 +141,7 @@ namespace CodeWalker.GameFiles
                     //error parsing hash, probably should tell the user about this somehow
                 }
             }
+            entries.Sort((a, b) => a.Hash.CompareTo(b.Hash));
             gxt.TextEntries = entries.ToArray();
             gxt.EntryCount = (uint)entries.Count;
             return gxt;
