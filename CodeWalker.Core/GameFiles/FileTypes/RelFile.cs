@@ -4677,6 +4677,11 @@ namespace CodeWalker.GameFiles
             base.ReadXml(node);
             Items = XmlRel.ReadItemArray<Dat54SoundSetItem>(node, "Items");
             ItemCount = (Items?.Length ?? 0);
+
+            if (Items != null)
+            {
+                Array.Sort(Items, (a, b) => a.ScriptName.Hash.CompareTo(b.ScriptName.Hash));
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
