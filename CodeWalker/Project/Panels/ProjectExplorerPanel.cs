@@ -2092,6 +2092,32 @@ namespace CodeWalker.Project.Panels
                 tn.Text = archetype._BaseArchetypeDef.ToString();
             }
         }
+        public void UpdateEntityTreeNode(YmapEntityDef ent)
+        {
+            if (ent == null) return;
+            var tn = FindEntityTreeNode(ent);
+            var name = ent.CEntityDef.archetypeName.ToString();
+            if (tn != null)
+            {
+                if (ProjectForm.displayentityindexes)
+                    tn.Text = $"[{tn.Index}] {name}";
+                else
+                    tn.Text = name;
+            }
+            else
+            {
+                var instance = ent.MloParent?.MloInstance;
+                var mcent = instance?.TryGetArchetypeEntity(ent);
+                tn = FindMloEntityTreeNode(mcent);
+                if (tn != null)
+                {
+                    if (ProjectForm.displayentityindexes)
+                        tn.Text = $"[{tn.Index}] {name}";
+                    else
+                        tn.Text = name;
+                }
+            }
+        }
         public void UpdateCarGenTreeNode(YmapCarGen cargen)
         {
             var tn = FindCarGenTreeNode(cargen);

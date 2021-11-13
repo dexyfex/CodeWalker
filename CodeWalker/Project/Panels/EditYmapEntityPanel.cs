@@ -234,26 +234,6 @@ namespace CodeWalker.Project.Panels
                 EntityArchetypeHashLabel.Text += " (not found)";
             }
 
-            TreeNode tn = ProjectForm.ProjectExplorer?.FindEntityTreeNode(CurrentEntity);
-            if (tn != null)
-            {
-                if (ProjectForm.displayentityindexes)
-                    tn.Text = $"[{tn.Index}] {name}";
-                else
-                    tn.Text = name;
-            }
-            else
-            {
-                tn = ProjectForm.ProjectExplorer?.FindMloEntityTreeNode(CurrentMCEntity);
-                if (tn != null)
-                {
-                    if (ProjectForm.displayentityindexes)
-                        tn.Text = $"[{tn.Index}] {name}";
-                    else
-                        tn.Text = name;
-                }
-            }
-
             if (CurrentEntity != null)
             {
                 lock (ProjectForm.ProjectSyncRoot)
@@ -278,6 +258,8 @@ namespace CodeWalker.Project.Panels
                     }
                 }
             }
+
+            ProjectForm.ProjectExplorer?.UpdateEntityTreeNode(CurrentEntity);
         }
 
         private void ProjectItemChanged()
