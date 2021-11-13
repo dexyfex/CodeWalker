@@ -5909,8 +5909,8 @@ namespace CodeWalker.GameFiles
             Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
             InnerRad = Xml.GetChildFloatAttribute(node, "InnerRad", "value");
             OuterRad = Xml.GetChildFloatAttribute(node, "OuterRad", "value");
-            StartTime = (byte)Xml.GetChildUIntAttribute(node, "StartTime", "value");
-            EndTime = (byte)Xml.GetChildUIntAttribute(node, "EndTime", "value");
+            StartTime = (ushort)Xml.GetChildUIntAttribute(node, "StartTime", "value");
+            EndTime = (ushort)Xml.GetChildUIntAttribute(node, "EndTime", "value");
             Unk06 = (ushort)Xml.GetChildUIntAttribute(node, "Unk06", "value");
             Unk07 = (ushort)Xml.GetChildUIntAttribute(node, "Unk07", "value");
             Unk08 = (byte)Xml.GetChildUIntAttribute(node, "Unk08", "value");
