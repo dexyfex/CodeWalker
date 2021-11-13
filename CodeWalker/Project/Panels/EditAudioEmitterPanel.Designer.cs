@@ -67,9 +67,9 @@
             this.Flags4TextBox = new System.Windows.Forms.TextBox();
             this.label23 = new System.Windows.Forms.Label();
             this.Flags5TextBox = new System.Windows.Forms.TextBox();
-            this.Unk02UpDown = new System.Windows.Forms.NumericUpDown();
+            this.StartTimeUpDown = new System.Windows.Forms.NumericUpDown();
             this.Unk03UpDown = new System.Windows.Forms.NumericUpDown();
-            this.Unk04UpDown = new System.Windows.Forms.NumericUpDown();
+            this.EndTimeUpDown = new System.Windows.Forms.NumericUpDown();
             this.Unk05UpDown = new System.Windows.Forms.NumericUpDown();
             this.Unk06UpDown = new System.Windows.Forms.NumericUpDown();
             this.Unk08UpDown = new System.Windows.Forms.NumericUpDown();
@@ -81,9 +81,9 @@
             this.Unk13UpDown = new System.Windows.Forms.NumericUpDown();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk02UpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.StartTimeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk03UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk04UpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.EndTimeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk05UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk06UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk08UpDown)).BeginInit();
@@ -129,9 +129,9 @@
             this.tabPage1.Controls.Add(this.Unk08UpDown);
             this.tabPage1.Controls.Add(this.Unk06UpDown);
             this.tabPage1.Controls.Add(this.Unk05UpDown);
-            this.tabPage1.Controls.Add(this.Unk04UpDown);
+            this.tabPage1.Controls.Add(this.EndTimeUpDown);
             this.tabPage1.Controls.Add(this.Unk03UpDown);
-            this.tabPage1.Controls.Add(this.Unk02UpDown);
+            this.tabPage1.Controls.Add(this.StartTimeUpDown);
             this.tabPage1.Controls.Add(this.label23);
             this.tabPage1.Controls.Add(this.Flags5TextBox);
             this.tabPage1.Controls.Add(this.label22);
@@ -511,57 +511,31 @@
             this.Flags5TextBox.TabIndex = 71;
             this.Flags5TextBox.TextChanged += new System.EventHandler(this.Flags5TextBox_TextChanged);
             // 
-            // Unk02UpDown
+            // StartTimeUpDown
             // 
-            this.Unk02UpDown.Location = new System.Drawing.Point(84, 175);
-            this.Unk02UpDown.Maximum = new decimal(new int[] {
+            this.StartTimeUpDown.Location = new System.Drawing.Point(84, 175);
+            this.StartTimeUpDown.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.Unk02UpDown.Name = "Unk02UpDown";
-            this.Unk02UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk02UpDown.TabIndex = 44;
-            this.Unk02UpDown.ValueChanged += new System.EventHandler(this.Unk02UpDown_ValueChanged);
+            this.StartTimeUpDown.Name = "StartTimeUpDown";
+            this.StartTimeUpDown.Size = new System.Drawing.Size(48, 20);
+            this.StartTimeUpDown.TabIndex = 44;
+            this.StartTimeUpDown.ValueChanged += new System.EventHandler(this.StartTimeUpDown_ValueChanged);
             // 
-            // Unk03UpDown
+            // EndTimeUpDown
             // 
-            this.Unk03UpDown.Location = new System.Drawing.Point(138, 175);
-            this.Unk03UpDown.Maximum = new decimal(new int[] {
+            this.EndTimeUpDown.Location = new System.Drawing.Point(192, 175);
+            this.EndTimeUpDown.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.Unk03UpDown.Name = "Unk03UpDown";
-            this.Unk03UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk03UpDown.TabIndex = 45;
-            this.Unk03UpDown.ValueChanged += new System.EventHandler(this.Unk03UpDown_ValueChanged);
-            // 
-            // Unk04UpDown
-            // 
-            this.Unk04UpDown.Location = new System.Drawing.Point(192, 175);
-            this.Unk04UpDown.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.Unk04UpDown.Name = "Unk04UpDown";
-            this.Unk04UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk04UpDown.TabIndex = 46;
-            this.Unk04UpDown.ValueChanged += new System.EventHandler(this.Unk04UpDown_ValueChanged);
-            // 
-            // Unk05UpDown
-            // 
-            this.Unk05UpDown.Location = new System.Drawing.Point(246, 175);
-            this.Unk05UpDown.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.Unk05UpDown.Name = "Unk05UpDown";
-            this.Unk05UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk05UpDown.TabIndex = 47;
-            this.Unk05UpDown.ValueChanged += new System.EventHandler(this.Unk05UpDown_ValueChanged);
+            this.EndTimeUpDown.Name = "EndTimeUpDown";
+            this.EndTimeUpDown.Size = new System.Drawing.Size(48, 20);
+            this.EndTimeUpDown.TabIndex = 46;
+            this.EndTimeUpDown.ValueChanged += new System.EventHandler(this.EndTimeUpDown_ValueChanged);
             // 
             // Unk06UpDown
             // 
@@ -680,10 +654,8 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk02UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk03UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk04UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk05UpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.StartTimeUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.EndTimeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk06UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk08UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk07UpDown)).EndInit();
@@ -738,9 +710,9 @@
         private System.Windows.Forms.TextBox Flags3TextBox;
         private System.Windows.Forms.NumericUpDown Unk06UpDown;
         private System.Windows.Forms.NumericUpDown Unk05UpDown;
-        private System.Windows.Forms.NumericUpDown Unk04UpDown;
+        private System.Windows.Forms.NumericUpDown EndTimeUpDown;
         private System.Windows.Forms.NumericUpDown Unk03UpDown;
-        private System.Windows.Forms.NumericUpDown Unk02UpDown;
+        private System.Windows.Forms.NumericUpDown StartTimeUpDown;
         private System.Windows.Forms.NumericUpDown Unk07UpDown;
         private System.Windows.Forms.NumericUpDown Unk08UpDown;
         private System.Windows.Forms.NumericUpDown Unk13UpDown;

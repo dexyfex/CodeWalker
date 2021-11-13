@@ -5514,10 +5514,8 @@ namespace CodeWalker.GameFiles
         public float Unk01 { get; set; }        //1, 5, 100, ...
         public float InnerRad { get; set; }        //0, 4,         ...     100 ... min value?
         public float OuterRad { get; set; }        //15, 16, 12, 10, 20,   300 ... max value?
-        public FlagsByte Unk02 { get; set; }
-        public FlagsByte Unk03 { get; set; }    //0,1,2,3,4,5
-        public FlagsByte Unk04 { get; set; }
-        public FlagsByte Unk05 { get; set; }    //0,1,2,3,4,5
+        public FlagsUshort StartTime { get; set; }
+        public FlagsUshort EndTime { get; set; }
         public FlagsUshort Unk06 { get; set; }  //0..600
         public FlagsUshort Unk07 { get; set; }  //0..150
         public FlagsByte Unk08 { get; set; }    //0,1,2
@@ -5585,10 +5583,8 @@ namespace CodeWalker.GameFiles
             Unk01 = br.ReadSingle();    //1, 5, 100, ...
             InnerRad = br.ReadSingle();    //0, 4,         ...     100 ... min value?
             OuterRad = br.ReadSingle();    //15, 16, 12, 10, 20,   300 ... max value?
-            Unk02 = br.ReadByte();     
-            Unk03 = br.ReadByte();      //0,1,2,3,4,5
-            Unk04 = br.ReadByte();     
-            Unk05 = br.ReadByte();      //0,1,2,3,4,5
+            StartTime = br.ReadUInt16();
+            EndTime = br.ReadUInt16();
             Unk06 = br.ReadUInt16();    //0..600
             Unk07 = br.ReadUInt16();    //0..150
             Unk08 = br.ReadByte();      //0,1,2
@@ -5622,37 +5618,13 @@ namespace CodeWalker.GameFiles
 
             #region testing
 
-            switch (Unk02.Value)//no pattern?
+            switch (StartTime.Value)
             {
                 default:
                     break;
             }
-            switch (Unk03.Value)
+            switch (EndTime.Value)
             {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk04.Value)//no pattern?
-            {
-                default:
-                    break;
-            }
-            switch (Unk05.Value)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                    break;
                 default:
                     break;
             }
@@ -5872,10 +5844,8 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk01);
             bw.Write(InnerRad);
             bw.Write(OuterRad);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
+            bw.Write(StartTime);
+            bw.Write(EndTime);
             bw.Write(Unk06);
             bw.Write(Unk07);
             bw.Write(Unk08);
@@ -5912,10 +5882,8 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
             RelXml.ValueTag(sb, indent, "InnerRad", FloatUtil.ToString(InnerRad));
             RelXml.ValueTag(sb, indent, "OuterRad", FloatUtil.ToString(OuterRad));
-            RelXml.ValueTag(sb, indent, "Unk02", Unk02.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk03", Unk03.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk04", Unk04.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk05", Unk05.Value.ToString());
+            RelXml.ValueTag(sb, indent, "StartTime", StartTime.Value.ToString());
+            RelXml.ValueTag(sb, indent, "EndTime", EndTime.Value.ToString());
             RelXml.ValueTag(sb, indent, "Unk06", Unk06.Value.ToString());
             RelXml.ValueTag(sb, indent, "Unk07", Unk07.Value.ToString());
             RelXml.ValueTag(sb, indent, "Unk08", Unk08.Value.ToString());
@@ -5941,10 +5909,8 @@ namespace CodeWalker.GameFiles
             Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
             InnerRad = Xml.GetChildFloatAttribute(node, "InnerRad", "value");
             OuterRad = Xml.GetChildFloatAttribute(node, "OuterRad", "value");
-            Unk02 = (byte)Xml.GetChildUIntAttribute(node, "Unk02", "value");
-            Unk03 = (byte)Xml.GetChildUIntAttribute(node, "Unk03", "value");
-            Unk04 = (byte)Xml.GetChildUIntAttribute(node, "Unk04", "value");
-            Unk05 = (byte)Xml.GetChildUIntAttribute(node, "Unk05", "value");
+            StartTime = (byte)Xml.GetChildUIntAttribute(node, "StartTime", "value");
+            EndTime = (byte)Xml.GetChildUIntAttribute(node, "EndTime", "value");
             Unk06 = (ushort)Xml.GetChildUIntAttribute(node, "Unk06", "value");
             Unk07 = (ushort)Xml.GetChildUIntAttribute(node, "Unk07", "value");
             Unk08 = (byte)Xml.GetChildUIntAttribute(node, "Unk08", "value");

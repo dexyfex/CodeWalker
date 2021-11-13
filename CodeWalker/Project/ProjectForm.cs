@@ -6647,10 +6647,8 @@ namespace CodeWalker.Project
             emitter.InnerRad = cp ? copy.AudioEmitter.InnerRad : 0.0f;
             emitter.OuterRad = cp ? copy.AudioEmitter.OuterRad : 20.0f;
             emitter.Unk01 = cp ? copy.AudioEmitter.Unk01 : 1.0f;
-            emitter.Unk02 = cp ? copy.AudioEmitter.Unk02.Value : (byte)0;
-            emitter.Unk03 = cp ? copy.AudioEmitter.Unk03.Value : (byte)0;
-            emitter.Unk04 = cp ? copy.AudioEmitter.Unk04.Value : (byte)160;
-            emitter.Unk05 = cp ? copy.AudioEmitter.Unk05.Value : (byte)5;
+            emitter.StartTime = cp ? copy.AudioEmitter.StartTime.Value : (byte)0;
+            emitter.EndTime = cp ? copy.AudioEmitter.EndTime.Value : (byte)160;
             emitter.Unk06 = cp ? copy.AudioEmitter.Unk06.Value : (ushort)0;
             emitter.Unk07 = cp ? copy.AudioEmitter.Unk07.Value : (ushort)0;
             emitter.Unk08 = cp ? copy.AudioEmitter.Unk08.Value : (byte)0;
