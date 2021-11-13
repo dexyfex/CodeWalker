@@ -197,6 +197,7 @@ namespace CodeWalker.GameFiles
                 //TestYpts();
                 //TestYnvs();
                 //TestYmaps();
+                //TestMrfs();
                 //TestPlacements();
                 //TestDrawables();
                 //TestHeightmaps();
@@ -4169,6 +4170,29 @@ namespace CodeWalker.GameFiles
                             UpdateStatus(string.Format(entry.Path));
                             YmapFile ymapfile = RpfMan.GetFile<YmapFile>(entry);
                             if ((ymapfile != null))// && (ymapfile.Meta != null))
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
+        }
+        public void TestMrfs()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        if (entry.NameLower.EndsWith(".mrf"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            MrfFile mrffile = RpfMan.GetFile<MrfFile>(entry);
+                            if (mrffile != null)
                             { }
                         }
                     }

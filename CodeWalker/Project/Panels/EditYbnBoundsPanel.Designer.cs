@@ -77,17 +77,17 @@
             this.CenterGeomTextBox = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
             this.CompositeFlagsTabPage = new System.Windows.Forms.TabPage();
-            this.CompFlags1CheckedListBox = new System.Windows.Forms.CheckedListBox();
-            this.label21 = new System.Windows.Forms.Label();
             this.label22 = new System.Windows.Forms.Label();
             this.CompFlags2CheckedListBox = new System.Windows.Forms.CheckedListBox();
+            this.label21 = new System.Windows.Forms.Label();
+            this.CompFlags1CheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.CompositeXformTabPage = new System.Windows.Forms.TabPage();
             this.CompScaleTextBox = new System.Windows.Forms.TextBox();
             this.label23 = new System.Windows.Forms.Label();
-            this.CompRotationTextBox = new System.Windows.Forms.TextBox();
             this.CompPositionTextBox = new System.Windows.Forms.TextBox();
             this.label24 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
+            this.CompRotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
             this.BoundsTabControl.SuspendLayout();
             this.BoundsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.UnkTypeUpDown)).BeginInit();
@@ -632,60 +632,6 @@
             this.CompositeFlagsTabPage.Text = "Composite Flags";
             this.CompositeFlagsTabPage.UseVisualStyleBackColor = true;
             // 
-            // CompFlags1CheckedListBox
-            // 
-            this.CompFlags1CheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.CompFlags1CheckedListBox.CheckOnClick = true;
-            this.CompFlags1CheckedListBox.FormattingEnabled = true;
-            this.CompFlags1CheckedListBox.Items.AddRange(new object[] {
-            "0 - Unknown",
-            "1 - Map Weapon",
-            "2 - Map Dynamic",
-            "3 - Map Animal",
-            "4 - Map Cover",
-            "5 - Map Vehicle",
-            "6 - Vehicle Not BVH",
-            "7 - Vehicle BVH",
-            "8 - Vehicle Box",
-            "9 - Ped",
-            "10 - Ragdoll",
-            "11 - Animal",
-            "12 - Animal Ragdoll",
-            "13 - Object",
-            "14 - Object Env Cloth",
-            "15 - Plant",
-            "16 - Projectile",
-            "17 - Explosion",
-            "18 - Pickup",
-            "19 - Foliage",
-            "20 - Forklift Forks",
-            "21 - Test Weapon",
-            "22 - Test Camera",
-            "23 - Test AI",
-            "24 - Test Script",
-            "25 - Test Vehicle Wheel",
-            "26 - Glass",
-            "27 - Map River",
-            "28 - Smoke",
-            "29 - Unsmashed",
-            "30 - Map Stairs",
-            "31 - Map Deep Surface"});
-            this.CompFlags1CheckedListBox.Location = new System.Drawing.Point(53, 3);
-            this.CompFlags1CheckedListBox.Name = "CompFlags1CheckedListBox";
-            this.CompFlags1CheckedListBox.Size = new System.Drawing.Size(174, 484);
-            this.CompFlags1CheckedListBox.TabIndex = 32;
-            this.CompFlags1CheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CompFlags1CheckedListBox_ItemCheck);
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(3, 3);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(44, 13);
-            this.label21.TabIndex = 33;
-            this.label21.Text = "Flags 1:";
-            // 
             // label22
             // 
             this.label22.AutoSize = true;
@@ -740,11 +686,65 @@
             this.CompFlags2CheckedListBox.TabIndex = 34;
             this.CompFlags2CheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CompFlags2CheckedListBox_ItemCheck);
             // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(3, 3);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(44, 13);
+            this.label21.TabIndex = 33;
+            this.label21.Text = "Flags 1:";
+            // 
+            // CompFlags1CheckedListBox
+            // 
+            this.CompFlags1CheckedListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.CompFlags1CheckedListBox.CheckOnClick = true;
+            this.CompFlags1CheckedListBox.FormattingEnabled = true;
+            this.CompFlags1CheckedListBox.Items.AddRange(new object[] {
+            "0 - Unknown",
+            "1 - Map Weapon",
+            "2 - Map Dynamic",
+            "3 - Map Animal",
+            "4 - Map Cover",
+            "5 - Map Vehicle",
+            "6 - Vehicle Not BVH",
+            "7 - Vehicle BVH",
+            "8 - Vehicle Box",
+            "9 - Ped",
+            "10 - Ragdoll",
+            "11 - Animal",
+            "12 - Animal Ragdoll",
+            "13 - Object",
+            "14 - Object Env Cloth",
+            "15 - Plant",
+            "16 - Projectile",
+            "17 - Explosion",
+            "18 - Pickup",
+            "19 - Foliage",
+            "20 - Forklift Forks",
+            "21 - Test Weapon",
+            "22 - Test Camera",
+            "23 - Test AI",
+            "24 - Test Script",
+            "25 - Test Vehicle Wheel",
+            "26 - Glass",
+            "27 - Map River",
+            "28 - Smoke",
+            "29 - Unsmashed",
+            "30 - Map Stairs",
+            "31 - Map Deep Surface"});
+            this.CompFlags1CheckedListBox.Location = new System.Drawing.Point(53, 3);
+            this.CompFlags1CheckedListBox.Name = "CompFlags1CheckedListBox";
+            this.CompFlags1CheckedListBox.Size = new System.Drawing.Size(174, 484);
+            this.CompFlags1CheckedListBox.TabIndex = 32;
+            this.CompFlags1CheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.CompFlags1CheckedListBox_ItemCheck);
+            // 
             // CompositeXformTabPage
             // 
+            this.CompositeXformTabPage.Controls.Add(this.CompRotationQuatBox);
             this.CompositeXformTabPage.Controls.Add(this.CompScaleTextBox);
             this.CompositeXformTabPage.Controls.Add(this.label23);
-            this.CompositeXformTabPage.Controls.Add(this.CompRotationTextBox);
             this.CompositeXformTabPage.Controls.Add(this.CompPositionTextBox);
             this.CompositeXformTabPage.Controls.Add(this.label24);
             this.CompositeXformTabPage.Controls.Add(this.label25);
@@ -774,16 +774,6 @@
             this.label23.TabIndex = 11;
             this.label23.Text = "Scale:";
             // 
-            // CompRotationTextBox
-            // 
-            this.CompRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CompRotationTextBox.Location = new System.Drawing.Point(72, 38);
-            this.CompRotationTextBox.Name = "CompRotationTextBox";
-            this.CompRotationTextBox.Size = new System.Drawing.Size(500, 20);
-            this.CompRotationTextBox.TabIndex = 10;
-            this.CompRotationTextBox.TextChanged += new System.EventHandler(this.CompRotationTextBox_TextChanged);
-            // 
             // CompPositionTextBox
             // 
             this.CompPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -811,6 +801,17 @@
             this.label25.Size = new System.Drawing.Size(47, 13);
             this.label25.TabIndex = 7;
             this.label25.Text = "Position:";
+            // 
+            // CompRotationQuatBox
+            // 
+            this.CompRotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.CompRotationQuatBox.Location = new System.Drawing.Point(72, 36);
+            this.CompRotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
+            this.CompRotationQuatBox.Name = "CompRotationQuatBox";
+            this.CompRotationQuatBox.Size = new System.Drawing.Size(500, 24);
+            this.CompRotationQuatBox.TabIndex = 10;
+            this.CompRotationQuatBox.ValueChanged += new System.EventHandler(this.CompRotationQuatBox_ValueChanged);
             // 
             // EditYbnBoundsPanel
             // 
@@ -898,9 +899,9 @@
         private System.Windows.Forms.TabPage CompositeXformTabPage;
         private System.Windows.Forms.TextBox CompScaleTextBox;
         private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.TextBox CompRotationTextBox;
         private System.Windows.Forms.TextBox CompPositionTextBox;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label25;
+        private WinForms.QuaternionBox CompRotationQuatBox;
     }
 }

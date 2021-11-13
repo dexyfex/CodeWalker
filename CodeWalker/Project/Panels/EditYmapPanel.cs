@@ -362,14 +362,13 @@ namespace CodeWalker.Project.Panels
             {
                 lock (ProjectForm.ProjectSyncRoot)
                 {
-                    string ymname = name + ".ymap";
-                    if (Ymap.Name != ymname)
+                    Ymap.SetName(name);
+                    if (!File.Exists(Ymap.FilePath))
                     {
-                        Ymap.Name = ymname;
-                        Ymap._CMapData.name = new MetaHash(hash);
-                        SetYmapHasChanged(true);
-                        UpdateFormTitle();
+                        Ymap.FilePath = name;
                     }
+                    SetYmapHasChanged(true);
+                    UpdateFormTitle();
                 }
             }
         }

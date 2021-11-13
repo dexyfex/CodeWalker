@@ -130,11 +130,8 @@ namespace CodeWalker.Project.Panels
             if (types == null)
             { return; }
 
-            var stypes = types.GetScenarioTypes();
+            var stypes = types.GetScenarioTypeRefs();
             if (stypes == null) return;
-
-            var stgroups = types.GetScenarioTypeGroups();
-            if (stgroups == null) return;
 
             var pmsets = types.GetPedModelSets();
             if (pmsets == null) return;
@@ -150,17 +147,9 @@ namespace CodeWalker.Project.Panels
             ScenarioChainNodeTypeComboBox.Items.Add("");
             foreach (var stype in stypes)
             {
-                ScenarioTypeRef? typeRef = new ScenarioTypeRef(stype);
-                ScenarioPointTypeComboBox.Items.Add(typeRef);
-                ScenarioClusterPointTypeComboBox.Items.Add(typeRef);
-                ScenarioChainNodeTypeComboBox.Items.Add(typeRef);
-            }
-            foreach (var stgroup in stgroups)
-            {
-                ScenarioTypeRef? typeRef = new ScenarioTypeRef(stgroup);
-                ScenarioPointTypeComboBox.Items.Add(typeRef);
-                ScenarioClusterPointTypeComboBox.Items.Add(typeRef);
-                ScenarioChainNodeTypeComboBox.Items.Add(typeRef);
+                ScenarioPointTypeComboBox.Items.Add(stype);
+                ScenarioClusterPointTypeComboBox.Items.Add(stype);
+                ScenarioChainNodeTypeComboBox.Items.Add(stype);
             }
 
             ScenarioPointModelSetComboBox.Items.Clear();
@@ -338,7 +327,7 @@ namespace CodeWalker.Project.Panels
                 ScenarioEntityPointNameTextBox.Text = "";
                 ScenarioEntityPointNameHashLabel.Text = "Hash: 0";
                 ScenarioEntityPointPositionTextBox.Text = "";
-                ScenarioEntityPointRotationTextBox.Text = "";
+                ScenarioEntityPointRotationQuatBox.Value = Quaternion.Identity;
                 ScenarioEntityPointSpawnTypeTextBox.Text = "";
                 ScenarioEntityPointSpawnTypeHashLabel.Text = "Hash: 0";
                 ScenarioEntityPointPedTypeTextBox.Text = "";
@@ -373,7 +362,7 @@ namespace CodeWalker.Project.Panels
                 ScenarioEntityPointNameTextBox.Text = p.NameHash.ToString();
                 ScenarioEntityPointNameHashLabel.Text = "Hash: " + p.NameHash.Hash.ToString();
                 ScenarioEntityPointPositionTextBox.Text = FloatUtil.GetVector3String(p.OffsetPosition);
-                ScenarioEntityPointRotationTextBox.Text = FloatUtil.GetVector4String(p.OffsetRotation);
+                ScenarioEntityPointRotationQuatBox.Value = p.OffsetRotation.ToQuaternion();
                 ScenarioEntityPointSpawnTypeTextBox.Text = p.SpawnType.ToString();
                 ScenarioEntityPointSpawnTypeHashLabel.Text = "Hash: " + p.SpawnType.Hash.ToString();
                 ScenarioEntityPointPedTypeTextBox.Text = p.PedType.ToString();
@@ -838,7 +827,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.MyPoint == null) return;
-            ScenarioTypeRef? stype = ScenarioPointTypeComboBox.SelectedItem as ScenarioTypeRef?;
+            ScenarioTypeRef stype = ScenarioPointTypeComboBox.SelectedItem as ScenarioTypeRef;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.MyPoint.Type != stype)
@@ -1277,19 +1266,20 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void ScenarioEntityPointRotationTextBox_TextChanged(object sender, EventArgs e)
+        private void ScenarioEntityPointRotationQuatBox_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.EntityPoint == null) return;
-            Vector4 v = FloatUtil.ParseVector4String(ScenarioEntityPointRotationTextBox.Text);
+            Quaternion q = ScenarioEntityPointRotationQuatBox.Value;
+            Vector4 v = q.ToVector4();
             bool change = false;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.EntityPoint.OffsetRotation != v)
                 {
                     CurrentScenarioNode.EntityPoint.OffsetRotation = v;
-                    CurrentScenarioNode.Orientation = new Quaternion(v);
+                    CurrentScenarioNode.Orientation = q;
                     ProjectForm.SetScenarioHasChanged(true);
                     change = true;
                 }
@@ -1722,7 +1712,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ChainingNode == null) return;
-            ScenarioTypeRef? stype = ScenarioChainNodeTypeComboBox.SelectedItem as ScenarioTypeRef?;
+            ScenarioTypeRef stype = ScenarioChainNodeTypeComboBox.SelectedItem as ScenarioTypeRef;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ChainingNode.Type != stype)
@@ -2144,7 +2134,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ClusterMyPoint == null) return;
-            ScenarioTypeRef? stype = ScenarioClusterPointTypeComboBox.SelectedItem as ScenarioTypeRef?;
+            ScenarioTypeRef stype = ScenarioClusterPointTypeComboBox.SelectedItem as ScenarioTypeRef;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.ClusterMyPoint.Type != stype)
@@ -2405,8 +2395,5 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-
-
-
     }
 }

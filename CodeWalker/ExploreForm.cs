@@ -297,7 +297,7 @@ namespace CodeWalker
             InitFileType(".png", "Portable Network Graphics", 16);
             InitFileType(".dds", "DirectDraw Surface", 16);
             InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd, true);
-            InitFileType(".mrf", "MRF File", 18);
+            InitFileType(".mrf", "Move Network File", 18, FileTypeAction.ViewMrf);
             InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd, true);
             InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel, true);
             InitFileType(".ybn", "Static Collisions", 19, FileTypeAction.ViewModel, true);
@@ -307,6 +307,7 @@ namespace CodeWalker
             InitFileType(".ipl", "Item Placements", 21, FileTypeAction.ViewText);
             InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc, true);
             InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel, true);
+            InitFileType(".nametable", "Name Table", 5, FileTypeAction.ViewNametable);
 
             InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat, true);
             InitSubFileType(".dat", "heightmap.dat", "Heightmap", 6, FileTypeAction.ViewHeightmap, true);
@@ -1401,6 +1402,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYld:
                 case FileTypeAction.ViewYfd:
                 case FileTypeAction.ViewHeightmap:
+                case FileTypeAction.ViewMrf:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1529,6 +1531,12 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewHeightmap:
                         ViewHeightmap(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewMrf:
+                        ViewMrf(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewNametable:
+                        ViewNametable(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1690,9 +1698,9 @@ namespace CodeWalker
         private void ViewGxt(string name, string path, byte[] data, RpfFileEntry e)
         {
             var gxt = RpfFile.GetFile<Gxt2File>(e, data);
-            GxtForm f = new GxtForm();
+            TextForm f = new TextForm(this);
             f.Show();
-            f.LoadGxt2(gxt);
+            f.LoadGxt2(name, path, gxt);
         }
         private void ViewRel(string name, string path, byte[] data, RpfFileEntry e)
         {
@@ -1770,6 +1778,19 @@ namespace CodeWalker
             MetaForm f = new MetaForm(this);
             f.Show();
             f.LoadMeta(heightmap);
+        }
+        private void ViewMrf(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var mrf = RpfFile.GetFile<MrfFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(mrf, mrf.RpfFileEntry);
+        }
+        private void ViewNametable(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            TextForm f = new TextForm(this);
+            f.Show();
+            f.LoadNametable(name, path, data, e);
         }
 
         private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
@@ -2012,7 +2033,7 @@ namespace CodeWalker
                 FolderBrowserDialog.SelectedPath = selpath;
             }
 
-            if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return "";
+            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return "";
             string folderpath = FolderBrowserDialog.SelectedPath;
             if (!folderpath.EndsWith("\\")) folderpath += "\\";
 
@@ -2558,7 +2579,7 @@ namespace CodeWalker
             RefreshMainListView();
 
         }
-        private void ImportXml()
+        private void ImportXmlDialog()
         {
             if (!EditMode) return;
             if (CurrentFolder?.IsSearchResults ?? false) return;
@@ -2567,14 +2588,12 @@ namespace CodeWalker
 
             if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
 
-
             OpenFileDialog.Filter = "XML Files|*.xml";
-            if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
-            {
-                return;//canceled
-            }
-
-            var fpaths = OpenFileDialog.FileNames;
+            if (OpenFileDialog.ShowDialog(this) != DialogResult.OK) return;
+            ImportXml(OpenFileDialog.FileNames);
+        }
+        private void ImportXml(string[] fpaths)
+        {
             foreach (var fpath in fpaths)
             {
 #if !DEBUG
@@ -3680,7 +3699,7 @@ namespace CodeWalker
                     else if (ctrl) ExtractRaw();
                     break;
                 case Keys.Insert:
-                    if (shft) ImportXml();
+                    if (shft) ImportXmlDialog();
                     else if (!ctrl) ImportRaw();
                     break;
                 case Keys.C:
@@ -3859,7 +3878,19 @@ namespace CodeWalker
                 var files = e.Data.GetData(DataFormats.FileDrop) as string[];
                 if ((files == null) || (files.Length <= 0)) return;
                 if (files[0].StartsWith(GetDropFolder(), StringComparison.InvariantCultureIgnoreCase)) return; //don't dry to drop on ourselves...
-                ImportRaw(files);
+
+                //Import as raw regardless of file type while pressing shift
+                if ((e.KeyState & 4) == 4)
+                {
+                    ImportRaw(files);
+                    return;
+                }
+
+                var xml = files.Where(x => x.EndsWith(".xml") && (x.IndexOf('.') != x.LastIndexOf('.')));
+                var raw = files.Except(xml);
+
+                if (raw.Count() > 0) ImportRaw(raw.ToArray());
+                if (xml.Count() > 0) ImportXml(xml.ToArray());
             }
         }
 
@@ -4071,7 +4102,7 @@ namespace CodeWalker
 
         private void ListContextImportXmlMenu_Click(object sender, EventArgs e)
         {
-            ImportXml();
+            ImportXmlDialog();
         }
 
         private void ListContextImportRawMenu_Click(object sender, EventArgs e)
@@ -4166,7 +4197,7 @@ namespace CodeWalker
 
         private void EditImportXmlMenu_Click(object sender, EventArgs e)
         {
-            ImportXml();
+            ImportXmlDialog();
         }
 
         private void EditImportRawMenu_Click(object sender, EventArgs e)
@@ -4693,6 +4724,8 @@ namespace CodeWalker
         ViewYld = 21,
         ViewYfd = 22,
         ViewHeightmap = 23,
+        ViewMrf = 24,
+        ViewNametable = 25,
     }
 
 

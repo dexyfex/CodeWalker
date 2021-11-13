@@ -88,6 +88,7 @@ namespace CodeWalker.Project
         private bool hidegtavmap = false;
         private bool autoymapflags = true;
         private bool autoymapextents = true;
+        public bool displayentityindexes = false;
 
         private object projectsyncroot = new object();
         public object ProjectSyncRoot { get { return projectsyncroot; } }
@@ -1781,13 +1782,7 @@ namespace CodeWalker.Project
                     { return; }
                 }
 
-                filepath = filepath.ToLowerInvariant();
-                string newname = Path.GetFileNameWithoutExtension(filepath);
-                JenkIndex.Ensure(newname);
-                CurrentYmapFile.FilePath = filepath;
-                CurrentYmapFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
-                CurrentYmapFile.Name = CurrentYmapFile.RpfFileEntry.Name;
-                CurrentYmapFile._CMapData.name = new MetaHash(JenkHash.GenHash(newname));
+                CurrentYmapFile.SetFilePath(filepath);
 
                 data = CurrentYmapFile.Save();
             }
@@ -3119,7 +3114,8 @@ namespace CodeWalker.Project
                     CurrentYtypFile.FilePath = filepath;
                     CurrentYtypFile.RpfFileEntry.Name = new FileInfo(filepath).Name;
                     CurrentYtypFile.Name = CurrentYtypFile.RpfFileEntry.Name;
-                    CurrentYtypFile._CMapTypes.name = new MetaHash(JenkHash.GenHash(newname));
+                    CurrentYtypFile.NameHash = JenkHash.GenHash(newname);
+                    CurrentYtypFile._CMapTypes.name = CurrentYtypFile.NameHash;
                 }
 
                 data = CurrentYtypFile.Save();
@@ -3216,6 +3212,44 @@ namespace CodeWalker.Project
             AddProjectArchetype(archetype);
 
             return archetype;
+        }
+        public void NewArchetypesFromYdrs()
+        {
+            if (CurrentYtypFile == null) return;
+
+            string[] files = ShowOpenDialogMulti("Ydr files|*.ydr", string.Empty);
+            if (files == null) return;
+            if (files.Length == 0) return;
+
+            Archetype archetype = null;
+            foreach (var file in files)
+            {
+                archetype = CurrentYtypFile.AddArchetype();
+                YdrFile ydr = new YdrFile();
+                RpfFile.LoadResourceFile(ydr, File.ReadAllBytes(file), 165);
+                var name = Path.GetFileNameWithoutExtension(file);
+                var hash = JenkHash.GenHash(name);
+                archetype._BaseArchetypeDef.name = hash;
+                archetype._BaseArchetypeDef.assetName = hash;
+                archetype._BaseArchetypeDef.assetType = rage__fwArchetypeDef__eAssetType.ASSET_TYPE_DRAWABLE;
+                archetype._BaseArchetypeDef.specialAttribute = 0;
+                archetype._BaseArchetypeDef.flags = 32;
+                archetype._BaseArchetypeDef.bbMin = ydr.Drawable.BoundingBoxMin;
+                archetype._BaseArchetypeDef.bbMax = ydr.Drawable.BoundingBoxMax;
+                archetype._BaseArchetypeDef.bsCentre = ydr.Drawable.BoundingCenter;
+                archetype._BaseArchetypeDef.bsRadius = ydr.Drawable.BoundingSphereRadius;
+                archetype._BaseArchetypeDef.hdTextureDist = 60.0f;
+                archetype._BaseArchetypeDef.lodDist = 60.0f;
+                if (ydr.Drawable.ShaderGroup.TextureDictionary != null) archetype._BaseArchetypeDef.textureDictionary = hash;
+                if (ydr.Drawable.Bound != null) archetype._BaseArchetypeDef.physicsDictionary = hash;
+
+                AddProjectArchetype(archetype);
+            }
+
+            LoadProjectTree();
+            ProjectExplorer?.TrySelectArchetypeTreeNode(archetype);
+            CurrentArchetype = archetype;
+
         }
         public YmapEntityDef NewMloEntity(YmapEntityDef copy = null, bool copyTransform = false, bool selectNew = true)
         {
@@ -6143,10 +6177,10 @@ namespace CodeWalker.Project
             if (f.ShowDialog() == DialogResult.Cancel) return;
 
             var stypes = Scenarios.ScenarioTypes; //these are loaded by Scenarios.Init
-            ScenarioType defaulttype = null;
+            ScenarioTypeRef defaulttype = null;
             if (stypes != null)
             {
-                defaulttype = stypes.GetScenarioType(1194480618); //"drive";
+                defaulttype = stypes.GetScenarioTypeRef(1194480618); //"drive";
             }
 
             AmbientModelSet defaultmodelset = null;
@@ -6184,7 +6218,7 @@ namespace CodeWalker.Project
                 var action = CScenarioChainingEdge__eAction.Move;
                 var navMode = CScenarioChainingEdge__eNavMode.Direct;
                 var navSpeed = CScenarioChainingEdge__eNavSpeed.Unk_00_3279574318;
-                var stype = new ScenarioTypeRef(defaulttype);
+                var stype = defaulttype;
                 var modelset = defaultmodelset;
                 var flags = defaultflags;
                 var ok = true;
@@ -6216,22 +6250,10 @@ namespace CodeWalker.Project
                 if (vals.Length > 6)
                 {
                     var sthash = JenkHash.GenHash(vals[6].Trim().ToLowerInvariant());
-                    var st = stypes?.GetScenarioType(sthash);
-                    if (st != null)
+                    stype = stypes?.GetScenarioTypeRef(sthash);
+                    if (stype == null)
                     {
-                        stype = new ScenarioTypeRef(st);
-                    }
-                    else
-                    {
-                        var stg = stypes?.GetScenarioTypeGroup(sthash);
-                        if (stg != null)
-                        {
-                            stype = new ScenarioTypeRef(stg);
-                        }
-                        else
-                        {
-                            stype = new ScenarioTypeRef(defaulttype);
-                        }
+                        stype = defaulttype;
                     }
                 }
                 if (vals.Length > 7)
@@ -7851,6 +7873,11 @@ namespace CodeWalker.Project
 
             if (!YmapExistsInProject(lodlight.Ymap))
             {
+                if (lodlight.DistLodLights?.Ymap != null)
+                {
+                    AddYmapToProject(lodlight.DistLodLights.Ymap);
+                    lodlight.DistLodLights.Ymap.HasChanged = true;
+                }
                 lodlight.Ymap.HasChanged = true;
                 AddYmapToProject(lodlight.Ymap);
                 ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
@@ -8353,6 +8380,8 @@ namespace CodeWalker.Project
             ProjectExplorer?.SetYmapHasChanged(CurrentYmapFile, changed);
 
             PromoteIfPreviewPanelActive();
+
+            RefreshUI();
         }
         public void SetYtypHasChanged(bool changed)
         {
@@ -8725,6 +8754,7 @@ namespace CodeWalker.Project
             bool ismlo = ((CurrentEntity != null) && (CurrentEntity.MloParent != null)) || (CurrentMloRoom != null) || (CurrentMloPortal != null) || (CurrentMloEntitySet != null) || (CurrentArchetype is MloArchetype);
 
             YtypNewArchetypeMenu.Enabled = enable && inproj;
+            YtypNewArchetypeFromYdrMenu.Enabled = enable && inproj;
             YtypMloToolStripMenuItem.Enabled = enable && inproj && ismlo;
             YtypMloNewEntityToolStripMenuItem.Enabled = YtypMloToolStripMenuItem.Enabled;
 
@@ -9224,6 +9254,10 @@ namespace CodeWalker.Project
         {
             NewArchetype();
         }
+        private void YtypNewArchetypeFromYdrMenu_Click(object sender, EventArgs e)
+        {
+            NewArchetypesFromYdrs();
+        }
         private void YtypMloNewEntityToolStripMenuItem_Click(object sender, EventArgs e)
         {
             NewMloEntity();
@@ -9448,6 +9482,28 @@ namespace CodeWalker.Project
         {
             OptionsAutoCalcYmapExtentsMenu.Checked = !OptionsAutoCalcYmapExtentsMenu.Checked;
             autoymapextents = OptionsAutoCalcYmapExtentsMenu.Checked;
+        }
+        private void OptionsDisplayEntityIndexesMenu_Click(object sender, EventArgs e)
+        {
+            OptionsDisplayEntityIndexesMenu.Checked = !OptionsDisplayEntityIndexesMenu.Checked;
+            displayentityindexes = OptionsDisplayEntityIndexesMenu.Checked;
+            ProjectExplorer?.LoadProjectTree(CurrentProjectFile);
+            
+            //make sure the current item is selected in the project explorer, let's just assume it's an entity
+            //(for things other than entities, they will need to be re-selected manually by the user to sync project explorer again)
+            if (CurrentEntity != null)
+            {
+                MloInstanceData mloInstance = CurrentEntity.MloParent?.MloInstance;
+                if (mloInstance != null) //indexes aren't shown for MLO entities, but just in case one was selected
+                {
+                    MCEntityDef entityDef = mloInstance.TryGetArchetypeEntity(CurrentEntity);
+                    ProjectExplorer?.TrySelectMloEntityTreeNode(entityDef);
+                }
+                else
+                {
+                    ProjectExplorer?.TrySelectEntityTreeNode(CurrentEntity);
+                }
+            }
         }
 
         private void ToolbarNewButton_ButtonClick(object sender, EventArgs e)

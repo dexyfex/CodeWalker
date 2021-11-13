@@ -238,7 +238,12 @@ namespace CodeWalker.Project.Panels
                 {
                     var ent = ents[i];
                     var edef = ent.CEntityDef;
-                    var enode = entsnode.Nodes.Add(edef.archetypeName.ToString());
+                    TreeNode enode;
+                    if (ProjectForm.displayentityindexes)
+                        enode = entsnode.Nodes.Add($"[{i}] {edef.archetypeName}");
+                    else
+                        enode = entsnode.Nodes.Add(edef.archetypeName.ToString());
+
                     enode.Tag = ent;
                 }
             }
@@ -755,10 +760,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYmapHasChanged(YmapFile ymap, bool changed)
         {
-            if (ymap != null)
-            {
-                ymap.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -783,10 +784,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYtypHasChanged(YtypFile ytyp, bool changed)
         {
-            if (ytyp != null)
-            {
-                ytyp.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -811,10 +808,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYbnHasChanged(YbnFile ybn, bool changed)
         {
-            if (ybn != null)
-            {
-                ybn.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -839,10 +832,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYndHasChanged(YndFile ynd, bool changed)
         {
-            if (ynd != null)
-            {
-                ynd.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -867,10 +856,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYnvHasChanged(YnvFile ynv, bool changed)
         {
-            if (ynv != null)
-            {
-                ynv.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -895,10 +880,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetTrainTrackHasChanged(TrainTrack track, bool changed)
         {
-            if (track != null)
-            {
-                track.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -923,10 +904,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetScenarioHasChanged(YmtFile scenario, bool changed)
         {
-            if (scenario != null)
-            {
-                scenario.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -951,10 +928,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetAudioRelHasChanged(RelFile rel, bool changed)
         {
-            if (rel != null)
-            {
-                rel.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -979,10 +952,6 @@ namespace CodeWalker.Project.Panels
         }
         public void SetGrassBatchHasChanged(YmapGrassInstanceBatch batch, bool changed)
         {
-            if (batch?.Ymap != null)
-            {
-                batch.Ymap.HasChanged = true;
-            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var gbnode = FindGrassTreeNode(batch);
@@ -2121,6 +2090,32 @@ namespace CodeWalker.Project.Panels
             if (tn != null)
             {
                 tn.Text = archetype._BaseArchetypeDef.ToString();
+            }
+        }
+        public void UpdateEntityTreeNode(YmapEntityDef ent)
+        {
+            if (ent == null) return;
+            var tn = FindEntityTreeNode(ent);
+            var name = ent.CEntityDef.archetypeName.ToString();
+            if (tn != null)
+            {
+                if (ProjectForm.displayentityindexes)
+                    tn.Text = $"[{tn.Index}] {name}";
+                else
+                    tn.Text = name;
+            }
+            else
+            {
+                var instance = ent.MloParent?.MloInstance;
+                var mcent = instance?.TryGetArchetypeEntity(ent);
+                tn = FindMloEntityTreeNode(mcent);
+                if (tn != null)
+                {
+                    if (ProjectForm.displayentityindexes)
+                        tn.Text = $"[{tn.Index}] {name}";
+                    else
+                        tn.Text = name;
+                }
             }
         }
         public void UpdateCarGenTreeNode(YmapCarGen cargen)

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,7 @@ namespace CodeWalker.GameFiles
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
-            Name = entry.Name;
+            Name = entry?.Name ?? "";
             FileEntry = entry;
             //Dict = new Dictionary<uint, string>();
 
@@ -66,6 +67,86 @@ namespace CodeWalker.GameFiles
 
             }
         }
+        public byte[] Save()
+        {
+            if (TextEntries == null) TextEntries = new Gxt2Entry[0];
+            EntryCount = (uint)TextEntries.Length;
+            uint offset = 16 + (EntryCount * 8);
+            List<byte[]> datas = new List<byte[]>();
+
+            var ms = new MemoryStream();
+            var bw = new BinaryWriter(ms);
+
+            bw.Write(1196971058); //"GXT2"
+            bw.Write(EntryCount);
+            foreach (var e in TextEntries)
+            {
+                e.Offset = offset;
+                var d = Encoding.UTF8.GetBytes(e.Text + "\0");
+                datas.Add(d);
+                offset += (uint)d.Length;
+                bw.Write(e.Hash);
+                bw.Write(e.Offset);
+            }
+            bw.Write(1196971058); //"GXT2"
+            bw.Write(offset);
+            foreach (var d in datas)
+            {
+                bw.Write(d);
+            }
+
+            bw.Flush();
+            ms.Position = 0;
+            var data = new byte[ms.Length];
+            ms.Read(data, 0, (int)ms.Length);
+
+            return data;
+        }
+
+
+        public string ToText()
+        {
+            StringBuilder sb = new StringBuilder();
+            if (TextEntries != null)
+            {
+                foreach (var entry in TextEntries)
+                {
+                    sb.Append("0x");
+                    sb.Append(entry.Hash.ToString("X").PadLeft(8, '0'));
+                    sb.Append(" = ");
+                    sb.Append(entry.Text);
+                    sb.AppendLine();
+                }
+            }
+            return sb.ToString();
+        }
+        public static Gxt2File FromText(string text)
+        {
+            var gxt = new Gxt2File();
+            var lines = text?.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+            var entries = new List<Gxt2Entry>();
+            foreach (var line in lines)
+            {
+                var tline = line.Trim();
+                if (tline.Length < 13) continue;
+                if (uint.TryParse(tline.Substring(2, 8), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint hash))
+                {
+                    var entry = new Gxt2Entry();
+                    entry.Hash = hash;
+                    entry.Text = (tline.Length > 13) ? tline.Substring(13) : "";
+                    entries.Add(entry);
+                }
+                else
+                {
+                    //error parsing hash, probably should tell the user about this somehow
+                }
+            }
+            entries.Sort((a, b) => a.Hash.CompareTo(b.Hash));
+            gxt.TextEntries = entries.ToArray();
+            gxt.EntryCount = (uint)entries.Count;
+            return gxt;
+        }
+    
     }
 
 

@@ -10,6 +10,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -24,6 +25,7 @@ namespace CodeWalker.World
         MapSelection Selection;
         string SelectionMode = "";
         bool MouseSelectEnable = false;
+        Texture currentTex; // Used by save button
 
         public WorldInfoForm(WorldForm worldForm)
         {
@@ -343,52 +345,13 @@ namespace CodeWalker.World
             Texture tex = texbase as Texture;
             YtdFile ytd = null;
             string errstr = string.Empty;
-            if ((tex == null)&&(texbase!=null))
+            if ((tex == null) && (texbase != null))
             {
-                //need to load from txd.
-                var arch = Selection.Archetype;
-                uint texhash = texbase.NameHash;
-                uint txdHash = (arch != null) ? arch.TextureDict.Hash : 0;
-                tex = TryGetTextureFromYtd(texhash, txdHash, out ytd);
-                if (tex == null)
-                { //search parent ytds...
-                    uint ptxdhash = WorldForm.GameFileCache.TryGetParentYtdHash(txdHash);
-                    while ((ptxdhash != 0) && (tex == null))
-                    {
-                        tex = TryGetTextureFromYtd(texhash, ptxdhash, out ytd);
-                        if (tex == null)
-                        {
-                            ptxdhash = WorldForm.GameFileCache.TryGetParentYtdHash(ptxdhash);
-                        }
-                        else
-                        { }
-                    }
-                    if (tex == null)
-                    {
-                        ytd = WorldForm.GameFileCache.TryGetTextureDictForTexture(texhash);
-                        if (ytd != null)
-                        {
-                            int tries = 0;
-                            while (!ytd.Loaded && (tries < 500)) //wait upto ~5 sec
-                            {
-                                System.Threading.Thread.Sleep(10);
-                                tries++;
-                            }
-                            if (ytd.Loaded)
-                            {
-                                tex = ytd.TextureDict.Lookup(texhash);
-                            }
-                        }
-                        if (tex == null)
-                        {
-                            ytd = null;
-                            errstr = "<Couldn't find texture!>";
-                        }
-                    }
-                }
+                tex = TryGetTexture(texbase, out ytd, ref errstr);
             }
             if (tex != null)
             {
+                currentTex = tex;
                 int mip = 0;
                 if (mipchange)
                 {
@@ -414,6 +377,7 @@ namespace CodeWalker.World
 
                 SelTextureNameTextBox.Text = tex.Name;
                 SelTextureDictionaryTextBox.Text = (ytd != null) ? ytd.Name : (ydr != null) ? ydr.Name : (ydd != null) ? ydd.Name : (yft != null) ? yft.Name : string.Empty;
+                SaveTextureButton.Enabled = true;
             }
             else
             {
@@ -423,7 +387,55 @@ namespace CodeWalker.World
                 SelTextureMipTrackBar.Value = 0;
                 SelTextureMipTrackBar.Maximum = 0;
                 SelTextureDimensionsLabel.Text = "-";
+                SaveTextureButton.Enabled = false;
+                currentTex = null;
             }
+        }
+
+        private Texture TryGetTexture(TextureBase texbase, out YtdFile ytd, ref string errstr)
+        {
+            //need to load from txd.
+            var arch = Selection.Archetype;
+            uint texhash = texbase.NameHash;
+            uint txdHash = (arch != null) ? arch.TextureDict.Hash : 0;
+            var tex = TryGetTextureFromYtd(texhash, txdHash, out ytd);
+            if (tex == null)
+            { //search parent ytds...
+                uint ptxdhash = WorldForm.GameFileCache.TryGetParentYtdHash(txdHash);
+                while ((ptxdhash != 0) && (tex == null))
+                {
+                    tex = TryGetTextureFromYtd(texhash, ptxdhash, out ytd);
+                    if (tex == null)
+                    {
+                        ptxdhash = WorldForm.GameFileCache.TryGetParentYtdHash(ptxdhash);
+                    }
+                    else
+                    { }
+                }
+                if (tex == null)
+                {
+                    ytd = WorldForm.GameFileCache.TryGetTextureDictForTexture(texhash);
+                    if (ytd != null)
+                    {
+                        int tries = 0;
+                        while (!ytd.Loaded && (tries < 500)) //wait upto ~5 sec
+                        {
+                            System.Threading.Thread.Sleep(10);
+                            tries++;
+                        }
+                        if (ytd.Loaded)
+                        {
+                            tex = ytd.TextureDict.Lookup(texhash);
+                        }
+                    }
+                    if (tex == null)
+                    {
+                        ytd = null;
+                        errstr = "<Couldn't find texture!>";
+                    }
+                }
+            }
+            return tex;
         }
 
         private Texture TryGetTextureFromYtd(uint texHash, uint txdHash, out YtdFile ytd)
@@ -522,6 +534,57 @@ namespace CodeWalker.World
         {
             var sele = HierarchyTreeView.SelectedNode?.Tag as YmapEntityDef;
             HierarchyPropertyGrid.SelectedObject = sele;
+        }
+
+        private void SaveAllTexturesButton_Click(object sender, EventArgs e)
+        {
+            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return;
+            string folderpath = FolderBrowserDialog.SelectedPath;
+            if (!folderpath.EndsWith("\\")) folderpath += "\\";
+
+            var texs = new List<Texture>();
+            foreach (TreeNode modelnode in SelDrawableTexturesTreeView.Nodes)
+            {
+                foreach (TreeNode geomnode in modelnode.Nodes)
+                {
+                    foreach (TreeNode texnode in geomnode.Nodes)
+                    {
+                        var texbase = texnode.Tag as TextureBase;
+                        var tex = texbase as Texture;
+                        string errstr = "";
+                        if ((tex == null) && (texbase != null))
+                        {
+                            tex = TryGetTexture(texbase, out _, ref errstr);
+                        }
+                        if (tex != null)
+                        {
+                            if (!texs.Contains(tex))
+                            {
+                                texs.Add(tex);
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var tex in texs)
+            {
+                string fpath = folderpath + tex.Name + ".dds";
+                byte[] dds = DDSIO.GetDDSFile(tex);
+                File.WriteAllBytes(fpath, dds);
+            }
+
+        }
+
+        private void SaveTextureButton_Click(object sender, EventArgs e)
+        {
+            if (currentTex == null) return;
+            string fname = currentTex.Name + ".dds";
+            SaveFileDialog.FileName = fname;
+            if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+            string fpath = SaveFileDialog.FileName;
+            byte[] dds = DDSIO.GetDDSFile(currentTex);
+            File.WriteAllBytes(fpath, dds);
         }
     }
 }

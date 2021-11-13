@@ -315,6 +315,8 @@ namespace CodeWalker.GameFiles
             {
                 rooms[i].Index = i;
             }
+
+            UpdatePortalCounts();//portal room indices probably would need to be updated anyway
         }
 
         public void AddPortal(MCMloPortalDef portal)
@@ -327,6 +329,8 @@ namespace CodeWalker.GameFiles
             var newportals = portals?.ToList() ?? new List<MCMloPortalDef>();
             newportals.Add(portal);
             portals = newportals.ToArray();
+
+            UpdatePortalCounts();
         }
         public void RemovePortal(MCMloPortalDef portal)
         {
@@ -340,6 +344,8 @@ namespace CodeWalker.GameFiles
             {
                 portals[i].Index = i;
             }
+
+            UpdatePortalCounts();
         }
 
         public void AddEntitySet(MCMloEntitySet set)
@@ -431,6 +437,26 @@ namespace CodeWalker.GameFiles
                 }
             }
         }
+
+        public void UpdatePortalCounts()
+        {
+            if ((rooms == null) || (portals == null)) return;
+
+            foreach (var room in rooms)
+            {
+                uint count = 0;
+                foreach (var portal in portals)
+                {
+                    if ((portal._Data.roomFrom == room.Index) || (portal._Data.roomTo == room.Index))
+                    {
+                        count++;
+                    }
+                }
+                room._Data.portalCount = count;
+            }
+
+        }
+
 
         public void LoadChildren(Meta meta)
         {

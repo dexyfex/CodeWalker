@@ -4743,7 +4743,7 @@ namespace CodeWalker.GameFiles
 
 
         public byte TypeId { get { return _Data.iType; } set { _Data.iType = value; } }
-        public ScenarioTypeRef? Type { get; set; }
+        public ScenarioTypeRef Type { get; set; }
 
         public byte ModelSetId { get { return _Data.ModelSetId; } set { _Data.ModelSetId = value; } }
         public AmbientModelSet ModelSet { get; set; }
@@ -5327,7 +5327,7 @@ namespace CodeWalker.GameFiles
         public Vector3 Position { get { return _Data.Position; } set { _Data.Position = value; } }
         public MetaHash Unk1 { get { return _Data.Unk_2602393771; } set { _Data.Unk_2602393771 = value; } }
         public MetaHash TypeHash { get { return _Data.ScenarioType; } set { _Data.ScenarioType = value; } }
-        public ScenarioTypeRef? Type { get; set; }
+        public ScenarioTypeRef Type { get; set; }
         public bool NotFirst { get { return _Data.Unk_407126079_NotFirst == 1; } set { _Data.Unk_407126079_NotFirst = (byte)(value ? 1 : 0); } }
         public bool NotLast { get { return _Data.Unk_1308720135_NotLast == 1; } set { _Data.Unk_1308720135_NotLast = (byte)(value ? 1 : 0); } }
 

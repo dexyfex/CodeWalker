@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
@@ -228,6 +229,91 @@ namespace CodeWalker
     }
 
 
+    public static class FolderBrowserExtension
+    {
+
+        public static DialogResult ShowDialogNew(this FolderBrowserDialog fbd)
+        {
+            return ShowDialogNew(fbd, (IntPtr)0);
+        }
+        public static DialogResult ShowDialogNew(this FolderBrowserDialog fbd, IntPtr hWndOwner)
+        {
+            if (Environment.OSVersion.Version.Major >= 6)
+            {
+                var ofd = new OpenFileDialog();
+                ofd.Filter = "Folders|\n";
+                ofd.AddExtension = false;
+                ofd.CheckFileExists = false;
+                ofd.DereferenceLinks = true;
+                ofd.Multiselect = false;
+                ofd.InitialDirectory = fbd.SelectedPath;
+
+                int result = 0;
+                var ns = "System.Windows.Forms";
+                var asmb = Assembly.GetAssembly(typeof(OpenFileDialog));
+                var dialogint = GetType(asmb, ns, "FileDialogNative.IFileDialog");
+                var dialog = Call(typeof(OpenFileDialog), ofd, "CreateVistaDialog");
+                Call(typeof(OpenFileDialog), ofd, "OnBeforeVistaDialog", dialog);
+                var options = Convert.ToUInt32(Call(typeof(FileDialog), ofd, "GetOptions"));
+                options |= Convert.ToUInt32(GetEnumValue(asmb, ns, "FileDialogNative.FOS", "FOS_PICKFOLDERS"));
+                Call(dialogint, dialog, "SetOptions", options);
+                var pfde = New(asmb, ns, "FileDialog.VistaDialogEvents", ofd);
+                var parameters = new object[] { pfde, (uint)0 };
+                Call(dialogint, dialog, "Advise", parameters);
+                var adviseres = Convert.ToUInt32(parameters[1]);
+                try { result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner)); }
+                finally { Call(dialogint, dialog, "Unadvise", adviseres); }
+                GC.KeepAlive(pfde);
+
+                fbd.SelectedPath = ofd.FileName;
+
+                return (result == 0) ? DialogResult.OK : DialogResult.Cancel;
+            }
+            else
+            {
+                return fbd.ShowDialog();
+            }
+        }
+
+
+        private static Type GetType(Assembly asmb, string ns, string name)
+        {
+            Type type = null;
+            string[] names = name.Split('.');
+            if (names.Length > 0)
+            {
+                type = asmb.GetType(ns + "." + names[0]);
+            }
+            for (int i = 1; i < names.Length; i++)
+            {
+                type = type.GetNestedType(names[i], BindingFlags.NonPublic);
+            }
+            return type;
+        }
+        private static object Call(Type type, object obj, string func, params object[] parameters)
+        {
+            var mi = type.GetMethod(func, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            if (mi == null) return null;
+            return mi.Invoke(obj, parameters);
+        }
+        private static object GetEnumValue(Assembly asmb, string ns, string typeName, string name)
+        {
+            var type = GetType(asmb, ns, typeName);
+            var fieldInfo = type.GetField(name);
+            return fieldInfo.GetValue(null);
+        }
+        private static object New(Assembly asmb, string ns, string name, params object[] parameters)
+        {
+            var type = GetType(asmb, ns, name);
+            var ctorInfos = type.GetConstructors();
+            foreach (ConstructorInfo ci in ctorInfos)
+            {
+                try { return ci.Invoke(parameters); }
+                catch { }
+            }
+            return null;
+        }
+    }
 
 
     public static class Prompt

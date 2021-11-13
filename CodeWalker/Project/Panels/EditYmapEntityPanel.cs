@@ -22,11 +22,12 @@ namespace CodeWalker.Project.Panels
 
         public void SetEntity(YmapEntityDef entity)
         {
+            var sameEntity = (entity == CurrentEntity);
             CurrentEntity = entity;
             MloInstanceData instance = entity?.MloParent?.MloInstance;
             CurrentMCEntity = instance?.TryGetArchetypeEntity(entity);
             Tag = entity;
-            LoadEntity();
+            LoadEntity(sameEntity);
             UpdateFormTitle();
         }
 
@@ -55,7 +56,7 @@ namespace CodeWalker.Project.Panels
         }
 
 
-        private void LoadEntity()
+        private void LoadEntity(bool sameEntity)
         {
             if (CurrentEntity == null)
             {
@@ -67,7 +68,7 @@ namespace CodeWalker.Project.Panels
                 EntityFlagsTextBox.Text = string.Empty;
                 EntityGuidTextBox.Text = string.Empty;
                 EntityPositionTextBox.Text = string.Empty;
-                EntityRotationTextBox.Text = string.Empty;
+                EntityRotationQuatBox.Value = Quaternion.Identity;
                 EntityScaleXYTextBox.Text = string.Empty;
                 EntityScaleZTextBox.Text = string.Empty;
                 EntityParentIndexTextBox.Text = string.Empty;
@@ -81,7 +82,7 @@ namespace CodeWalker.Project.Panels
                 EntityTintValueTextBox.Text = string.Empty;
                 EntityPivotEditCheckBox.Checked = false;
                 EntityPivotPositionTextBox.Text = string.Empty;
-                EntityPivotRotationTextBox.Text = string.Empty;
+                EntityPivotRotationQuatBox.Value = Quaternion.Identity;
                 foreach (int i in EntityFlagsCheckedListBox.CheckedIndices)
                 {
                     EntityFlagsCheckedListBox.SetItemCheckState(i, CheckState.Unchecked);
@@ -92,6 +93,8 @@ namespace CodeWalker.Project.Panels
                 populatingui = true;
                 var e = CurrentEntity._CEntityDef;
                 var po = CurrentEntity.PivotOrientation;
+                var rot = new Quaternion(e.rotation);
+                var rotupd = (EntityRotationQuatBox.Value != rot);
                 //EntityPanel.Enabled = true;
                 EntityAddToProjectButton.Enabled = CurrentEntity.Ymap != null ? !ProjectForm.YmapExistsInProject(CurrentEntity.Ymap) : !ProjectForm.YtypExistsInProject(CurrentEntity.MloParent?.Archetype?.Ytyp);
                 EntityDeleteButton.Enabled = !EntityAddToProjectButton.Enabled;
@@ -100,7 +103,7 @@ namespace CodeWalker.Project.Panels
                 EntityFlagsTextBox.Text = e.flags.ToString();
                 EntityGuidTextBox.Text = e.guid.ToString();
                 EntityPositionTextBox.Text = FloatUtil.GetVector3String(e.position);
-                EntityRotationTextBox.Text = FloatUtil.GetVector4String(e.rotation);
+                EntityRotationQuatBox.Value = rot;
                 EntityScaleXYTextBox.Text = FloatUtil.ToString(e.scaleXY);
                 EntityScaleZTextBox.Text = FloatUtil.ToString(e.scaleZ);
                 EntityParentIndexTextBox.Text = e.parentIndex.ToString();
@@ -113,7 +116,7 @@ namespace CodeWalker.Project.Panels
                 EntityArtificialAOTextBox.Text = e.artificialAmbientOcclusion.ToString();
                 EntityTintValueTextBox.Text = e.tintValue.ToString();
                 EntityPivotPositionTextBox.Text = FloatUtil.GetVector3String(CurrentEntity.PivotPosition);
-                EntityPivotRotationTextBox.Text = FloatUtil.GetVector4String(new Vector4(po.X, po.Y, po.Z, po.W));
+                EntityPivotRotationQuatBox.Value = po;
                 for (int i = 0; i < EntityFlagsCheckedListBox.Items.Count; i++)
                 {
                     var cv = ((e.flags & (1u << i)) > 0);
@@ -156,7 +159,17 @@ namespace CodeWalker.Project.Panels
                 UpdateTabVisibility();
 
 
-                ProjectForm.WorldForm?.SelectObject(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
+                if (rotupd && sameEntity)
+                {
+                    UpdateRotationFlag();
+                }
+
+
+                var ms = ProjectForm.WorldForm?.CurrentMapSelection;
+                if ((ms?.EntityDef != CurrentEntity) && (ms?.MloEntityDef != CurrentEntity))
+                {
+                    ProjectForm.WorldForm?.SelectObject(CurrentEntity); //hopefully the drawable is already loaded - this will try get from cache
+                }
 
                 ////struct CEntityDef:
                 //MetaHash archetypeName { get; set; } //8   8: Hash: 0: archetypeName
@@ -211,6 +224,17 @@ namespace CodeWalker.Project.Panels
         }
 
 
+        private void UpdateRotationFlag()
+        {
+            if (CurrentEntity == null) return;
+
+            var eul = EntityRotationQuatBox.EulerDeg;
+            var flag = (eul.X != 0.0f) || (eul.Y != 0.0f); //this isn't fully correct, but probably better than nothing
+
+            EntityFlagsCheckedListBox.SetItemChecked(0, flag);
+        }
+
+
         private void EntityArchetypeTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
@@ -228,20 +252,6 @@ namespace CodeWalker.Project.Panels
             if (arch == null)
             {
                 EntityArchetypeHashLabel.Text += " (not found)";
-            }
-
-            TreeNode tn = ProjectForm.ProjectExplorer?.FindEntityTreeNode(CurrentEntity);
-            if (tn != null)
-            {
-                tn.Text = name;
-            }
-            else
-            {
-                tn = ProjectForm.ProjectExplorer?.FindMloEntityTreeNode(CurrentMCEntity);
-                if (tn != null)
-                {
-                    tn.Text = name;
-                }
             }
 
             if (CurrentEntity != null)
@@ -268,6 +278,8 @@ namespace CodeWalker.Project.Panels
                     }
                 }
             }
+
+            ProjectForm.ProjectExplorer?.UpdateEntityTreeNode(CurrentEntity);
         }
 
         private void ProjectItemChanged()
@@ -394,16 +406,16 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void EntityRotationTextBox_TextChanged(object sender, EventArgs e)
+        private void EntityRotationQuatBox_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentEntity == null) return;
-            Vector4 v = FloatUtil.ParseVector4String(EntityRotationTextBox.Text);
+            Quaternion q = EntityRotationQuatBox.Value;
+            Vector4 v = q.ToVector4();
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentEntity._CEntityDef.rotation != v)
                 {
-                    Quaternion q = v.ToQuaternion();
                     var wf = ProjectForm.WorldForm;
 
                     if (CurrentEntity.MloParent != null)
@@ -424,6 +436,8 @@ namespace CodeWalker.Project.Panels
                     }));
                 }
             }
+
+            UpdateRotationFlag();
         }
 
         private void EntityScaleXYTextBox_TextChanged(object sender, EventArgs e)
@@ -643,13 +657,6 @@ namespace CodeWalker.Project.Panels
             ProjectForm.WorldForm.GoToPosition(CurrentEntity.Position, Vector3.One * CurrentEntity.BSRadius);
         }
 
-        private void EntityNormalizeRotationButton_Click(object sender, EventArgs e)
-        {
-            Vector4 v = FloatUtil.ParseVector4String(EntityRotationTextBox.Text);
-            Quaternion q = Quaternion.Normalize(new Quaternion(v));
-            EntityRotationTextBox.Text = FloatUtil.GetVector4String(new Vector4(q.X, q.Y, q.Z, q.W));
-        }
-
         private void EntityAddToProjectButton_Click(object sender, EventArgs e)
         {
             ProjectForm.SetProjectItem(CurrentEntity);
@@ -696,12 +703,11 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void EntityPivotRotationTextBox_TextChanged(object sender, EventArgs e)
+        private void EntityPivotRotationQuatBox_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentEntity == null) return;
-            Vector4 v = FloatUtil.ParseVector4String(EntityPivotRotationTextBox.Text);
-            Quaternion q = new Quaternion(v);
+            Quaternion q = EntityPivotRotationQuatBox.Value;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentEntity.PivotOrientation != q)
@@ -721,13 +727,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
             }
-        }
 
-        private void EntityPivotRotationNormalizeButton_Click(object sender, EventArgs e)
-        {
-            Vector4 v = FloatUtil.ParseVector4String(EntityPivotRotationTextBox.Text);
-            Quaternion q = Quaternion.Normalize(new Quaternion(v));
-            EntityPivotRotationTextBox.Text = FloatUtil.GetVector4String(new Vector4(q.X, q.Y, q.Z, q.W));
         }
 
         private void MiloGroupIDTextBox_TextChanged(object sender, EventArgs e)
@@ -815,9 +815,5 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void EntityFlagsCheckedListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }

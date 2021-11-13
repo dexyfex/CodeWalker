@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -47,7 +48,7 @@ namespace CodeWalker.Project.Panels
             if (Items == null)
             {
                 PositionTextBox.Text = string.Empty;
-                RotationTextBox.Text = string.Empty;
+                RotationQuatBox.Value = Quaternion.Identity;
                 ScaleTextBox.Text = string.Empty;
                 ItemsListBox.Items.Clear();
             }
@@ -57,7 +58,7 @@ namespace CodeWalker.Project.Panels
 
 
                 PositionTextBox.Text = FloatUtil.GetVector3String(MultiItem.MultipleSelectionCenter);
-                RotationTextBox.Text = FloatUtil.GetVector4String(MultiItem.MultipleSelectionRotation.ToVector4());
+                RotationQuatBox.Value = MultiItem.MultipleSelectionRotation;
                 ScaleTextBox.Text = FloatUtil.GetVector3String(MultiItem.MultipleSelectionScale);
                 ItemsListBox.Items.Clear();
                 foreach (var item in Items)
@@ -90,21 +91,20 @@ namespace CodeWalker.Project.Panels
 
         }
 
-        private void RotationTextBox_TextChanged(object sender, EventArgs e)
+        private void RotationQuatBox_ValueChanged(object sender, EventArgs e)
         {
             if (Items == null) return;
             if (populatingui) return;
-            var v = FloatUtil.ParseVector4String(RotationTextBox.Text);
+            var q = RotationQuatBox.Value;
 
             var wf = ProjectForm.WorldForm;
             if (wf != null)
             {
                 wf.BeginInvoke(new Action(() =>
                 {
-                    wf.ChangeMultiRotation(Items, v.ToQuaternion(), false);
+                    wf.ChangeMultiRotation(Items, q, false);
                 }));
             }
-
         }
 
         private void ScaleTextBox_TextChanged(object sender, EventArgs e)

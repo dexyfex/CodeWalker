@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditYmapEntityPanel));
             this.EntityTabControl = new System.Windows.Forms.TabControl();
             this.EntityGeneralTabPage = new System.Windows.Forms.TabPage();
+            this.EntityRotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
             this.EntityEditArchetypeButton = new System.Windows.Forms.Button();
             this.EntityFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.label13 = new System.Windows.Forms.Label();
@@ -62,10 +63,8 @@
             this.EntityArchetypeTextBox = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.EntityPositionTextBox = new System.Windows.Forms.TextBox();
-            this.EntityNormalizeRotationButton = new System.Windows.Forms.Button();
             this.EntityGoToButton = new System.Windows.Forms.Button();
             this.label17 = new System.Windows.Forms.Label();
-            this.EntityRotationTextBox = new System.Windows.Forms.TextBox();
             this.EntityLodTabPage = new System.Windows.Forms.TabPage();
             this.label20 = new System.Windows.Forms.Label();
             this.EntityParentIndexTextBox = new System.Windows.Forms.TextBox();
@@ -74,13 +73,12 @@
             this.EntityExtensionsTabPage = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
             this.EntityPivotTabPage = new System.Windows.Forms.TabPage();
+            this.EntityPivotRotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
             this.label95 = new System.Windows.Forms.Label();
             this.EntityPivotEditCheckBox = new System.Windows.Forms.CheckBox();
             this.label93 = new System.Windows.Forms.Label();
             this.EntityPivotPositionTextBox = new System.Windows.Forms.TextBox();
-            this.EntityPivotRotationNormalizeButton = new System.Windows.Forms.Button();
             this.label94 = new System.Windows.Forms.Label();
-            this.EntityPivotRotationTextBox = new System.Windows.Forms.TextBox();
             this.EntityMiloTabPage = new System.Windows.Forms.TabPage();
             this.MiloFlagsTextBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
@@ -118,6 +116,7 @@
             // 
             // EntityGeneralTabPage
             // 
+            this.EntityGeneralTabPage.Controls.Add(this.EntityRotationQuatBox);
             this.EntityGeneralTabPage.Controls.Add(this.EntityEditArchetypeButton);
             this.EntityGeneralTabPage.Controls.Add(this.EntityFlagsCheckedListBox);
             this.EntityGeneralTabPage.Controls.Add(this.label13);
@@ -149,10 +148,8 @@
             this.EntityGeneralTabPage.Controls.Add(this.EntityArchetypeTextBox);
             this.EntityGeneralTabPage.Controls.Add(this.label16);
             this.EntityGeneralTabPage.Controls.Add(this.EntityPositionTextBox);
-            this.EntityGeneralTabPage.Controls.Add(this.EntityNormalizeRotationButton);
             this.EntityGeneralTabPage.Controls.Add(this.EntityGoToButton);
             this.EntityGeneralTabPage.Controls.Add(this.label17);
-            this.EntityGeneralTabPage.Controls.Add(this.EntityRotationTextBox);
             this.EntityGeneralTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityGeneralTabPage.Name = "EntityGeneralTabPage";
             this.EntityGeneralTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -160,6 +157,17 @@
             this.EntityGeneralTabPage.TabIndex = 0;
             this.EntityGeneralTabPage.Text = "General";
             this.EntityGeneralTabPage.UseVisualStyleBackColor = true;
+            // 
+            // EntityRotationQuatBox
+            // 
+            this.EntityRotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityRotationQuatBox.Location = new System.Drawing.Point(93, 33);
+            this.EntityRotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
+            this.EntityRotationQuatBox.Name = "EntityRotationQuatBox";
+            this.EntityRotationQuatBox.Size = new System.Drawing.Size(456, 24);
+            this.EntityRotationQuatBox.TabIndex = 5;
+            this.EntityRotationQuatBox.ValueChanged += new System.EventHandler(this.EntityRotationQuatBox_ValueChanged);
             // 
             // EntityEditArchetypeButton
             // 
@@ -185,7 +193,7 @@
             "8 - Unk04",
             "16 - Unk05",
             "32 - Static entity",
-            "64 - Object isn't dark at night",
+            "64 - Object isn\'t dark at night",
             "128 - Unk08",
             "256 - Unk09",
             "512 - Disable embedded light source",
@@ -498,17 +506,6 @@
             this.EntityPositionTextBox.TabIndex = 2;
             this.EntityPositionTextBox.TextChanged += new System.EventHandler(this.EntityPositionTextBox_TextChanged);
             // 
-            // EntityNormalizeRotationButton
-            // 
-            this.EntityNormalizeRotationButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityNormalizeRotationButton.Location = new System.Drawing.Point(481, 33);
-            this.EntityNormalizeRotationButton.Name = "EntityNormalizeRotationButton";
-            this.EntityNormalizeRotationButton.Size = new System.Drawing.Size(68, 23);
-            this.EntityNormalizeRotationButton.TabIndex = 6;
-            this.EntityNormalizeRotationButton.Text = "Normalize";
-            this.EntityNormalizeRotationButton.UseVisualStyleBackColor = true;
-            this.EntityNormalizeRotationButton.Click += new System.EventHandler(this.EntityNormalizeRotationButton_Click);
-            // 
             // EntityGoToButton
             // 
             this.EntityGoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -528,16 +525,6 @@
             this.label17.Size = new System.Drawing.Size(50, 13);
             this.label17.TabIndex = 4;
             this.label17.Text = "Rotation:";
-            // 
-            // EntityRotationTextBox
-            // 
-            this.EntityRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityRotationTextBox.Location = new System.Drawing.Point(93, 35);
-            this.EntityRotationTextBox.Name = "EntityRotationTextBox";
-            this.EntityRotationTextBox.Size = new System.Drawing.Size(382, 20);
-            this.EntityRotationTextBox.TabIndex = 5;
-            this.EntityRotationTextBox.TextChanged += new System.EventHandler(this.EntityRotationTextBox_TextChanged);
             // 
             // EntityLodTabPage
             // 
@@ -612,19 +599,29 @@
             // 
             // EntityPivotTabPage
             // 
+            this.EntityPivotTabPage.Controls.Add(this.EntityPivotRotationQuatBox);
             this.EntityPivotTabPage.Controls.Add(this.label95);
             this.EntityPivotTabPage.Controls.Add(this.EntityPivotEditCheckBox);
             this.EntityPivotTabPage.Controls.Add(this.label93);
             this.EntityPivotTabPage.Controls.Add(this.EntityPivotPositionTextBox);
-            this.EntityPivotTabPage.Controls.Add(this.EntityPivotRotationNormalizeButton);
             this.EntityPivotTabPage.Controls.Add(this.label94);
-            this.EntityPivotTabPage.Controls.Add(this.EntityPivotRotationTextBox);
             this.EntityPivotTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityPivotTabPage.Name = "EntityPivotTabPage";
             this.EntityPivotTabPage.Size = new System.Drawing.Size(555, 476);
             this.EntityPivotTabPage.TabIndex = 3;
             this.EntityPivotTabPage.Text = "Pivot";
             this.EntityPivotTabPage.UseVisualStyleBackColor = true;
+            // 
+            // EntityPivotRotationQuatBox
+            // 
+            this.EntityPivotRotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.EntityPivotRotationQuatBox.Location = new System.Drawing.Point(93, 94);
+            this.EntityPivotRotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
+            this.EntityPivotRotationQuatBox.Name = "EntityPivotRotationQuatBox";
+            this.EntityPivotRotationQuatBox.Size = new System.Drawing.Size(456, 24);
+            this.EntityPivotRotationQuatBox.TabIndex = 25;
+            this.EntityPivotRotationQuatBox.ValueChanged += new System.EventHandler(this.EntityPivotRotationQuatBox_ValueChanged);
             // 
             // label95
             // 
@@ -665,17 +662,6 @@
             this.EntityPivotPositionTextBox.TabIndex = 22;
             this.EntityPivotPositionTextBox.TextChanged += new System.EventHandler(this.EntityPivotPositionTextBox_TextChanged);
             // 
-            // EntityPivotRotationNormalizeButton
-            // 
-            this.EntityPivotRotationNormalizeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityPivotRotationNormalizeButton.Location = new System.Drawing.Point(481, 94);
-            this.EntityPivotRotationNormalizeButton.Name = "EntityPivotRotationNormalizeButton";
-            this.EntityPivotRotationNormalizeButton.Size = new System.Drawing.Size(68, 23);
-            this.EntityPivotRotationNormalizeButton.TabIndex = 26;
-            this.EntityPivotRotationNormalizeButton.Text = "Normalize";
-            this.EntityPivotRotationNormalizeButton.UseVisualStyleBackColor = true;
-            this.EntityPivotRotationNormalizeButton.Click += new System.EventHandler(this.EntityPivotRotationNormalizeButton_Click);
-            // 
             // label94
             // 
             this.label94.AutoSize = true;
@@ -684,16 +670,6 @@
             this.label94.Size = new System.Drawing.Size(50, 13);
             this.label94.TabIndex = 24;
             this.label94.Text = "Rotation:";
-            // 
-            // EntityPivotRotationTextBox
-            // 
-            this.EntityPivotRotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.EntityPivotRotationTextBox.Location = new System.Drawing.Point(93, 96);
-            this.EntityPivotRotationTextBox.Name = "EntityPivotRotationTextBox";
-            this.EntityPivotRotationTextBox.Size = new System.Drawing.Size(382, 20);
-            this.EntityPivotRotationTextBox.TabIndex = 25;
-            this.EntityPivotRotationTextBox.TextChanged += new System.EventHandler(this.EntityPivotRotationTextBox_TextChanged);
             // 
             // EntityMiloTabPage
             // 
@@ -862,10 +838,8 @@
         private System.Windows.Forms.TextBox EntityArchetypeTextBox;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox EntityPositionTextBox;
-        private System.Windows.Forms.Button EntityNormalizeRotationButton;
         private System.Windows.Forms.Button EntityGoToButton;
         private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.TextBox EntityRotationTextBox;
         private System.Windows.Forms.TabPage EntityLodTabPage;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.TextBox EntityParentIndexTextBox;
@@ -877,9 +851,7 @@
         private System.Windows.Forms.CheckBox EntityPivotEditCheckBox;
         private System.Windows.Forms.Label label93;
         private System.Windows.Forms.TextBox EntityPivotPositionTextBox;
-        private System.Windows.Forms.Button EntityPivotRotationNormalizeButton;
         private System.Windows.Forms.Label label94;
-        private System.Windows.Forms.TextBox EntityPivotRotationTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TabPage EntityMiloTabPage;
         private System.Windows.Forms.CheckedListBox MiloEntitySetsListBox;
@@ -893,5 +865,7 @@
         private System.Windows.Forms.TextBox MiloFlagsTextBox;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button EntityEditArchetypeButton;
+        private WinForms.QuaternionBox EntityRotationQuatBox;
+        private WinForms.QuaternionBox EntityPivotRotationQuatBox;
     }
 }

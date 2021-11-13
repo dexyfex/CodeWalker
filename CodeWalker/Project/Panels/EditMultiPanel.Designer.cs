@@ -31,12 +31,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditMultiPanel));
             this.ScaleTextBox = new System.Windows.Forms.TextBox();
             this.label23 = new System.Windows.Forms.Label();
-            this.RotationTextBox = new System.Windows.Forms.TextBox();
             this.PositionTextBox = new System.Windows.Forms.TextBox();
             this.label24 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
             this.ItemsListBox = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
+            this.RotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
             this.SuspendLayout();
             // 
             // ScaleTextBox
@@ -57,16 +57,6 @@
             this.label23.Size = new System.Drawing.Size(37, 13);
             this.label23.TabIndex = 17;
             this.label23.Text = "Scale:";
-            // 
-            // RotationTextBox
-            // 
-            this.RotationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.RotationTextBox.Location = new System.Drawing.Point(75, 38);
-            this.RotationTextBox.Name = "RotationTextBox";
-            this.RotationTextBox.Size = new System.Drawing.Size(478, 20);
-            this.RotationTextBox.TabIndex = 16;
-            this.RotationTextBox.TextChanged += new System.EventHandler(this.RotationTextBox_TextChanged);
             // 
             // PositionTextBox
             // 
@@ -104,7 +94,7 @@
             this.ItemsListBox.Location = new System.Drawing.Point(75, 108);
             this.ItemsListBox.Name = "ItemsListBox";
             this.ItemsListBox.Size = new System.Drawing.Size(202, 355);
-            this.ItemsListBox.TabIndex = 19;
+            this.ItemsListBox.TabIndex = 21;
             this.ItemsListBox.SelectedIndexChanged += new System.EventHandler(this.ItemsListBox_SelectedIndexChanged);
             // 
             // label1
@@ -116,16 +106,27 @@
             this.label1.TabIndex = 20;
             this.label1.Text = "Items:";
             // 
+            // RotationQuatBox
+            // 
+            this.RotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.RotationQuatBox.Location = new System.Drawing.Point(75, 36);
+            this.RotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
+            this.RotationQuatBox.Name = "RotationQuatBox";
+            this.RotationQuatBox.Size = new System.Drawing.Size(478, 24);
+            this.RotationQuatBox.TabIndex = 16;
+            this.RotationQuatBox.ValueChanged += new System.EventHandler(this.RotationQuatBox_ValueChanged);
+            // 
             // EditMultiPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(565, 505);
+            this.Controls.Add(this.RotationQuatBox);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.ItemsListBox);
             this.Controls.Add(this.ScaleTextBox);
             this.Controls.Add(this.label23);
-            this.Controls.Add(this.RotationTextBox);
             this.Controls.Add(this.PositionTextBox);
             this.Controls.Add(this.label24);
             this.Controls.Add(this.label25);
@@ -141,11 +142,11 @@
 
         private System.Windows.Forms.TextBox ScaleTextBox;
         private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.TextBox RotationTextBox;
         private System.Windows.Forms.TextBox PositionTextBox;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.ListBox ItemsListBox;
         private System.Windows.Forms.Label label1;
+        private WinForms.QuaternionBox RotationQuatBox;
     }
 }

@@ -45,6 +45,15 @@ namespace CodeWalker.Forms
         public RpfFileEntry rpfFileEntry { get; private set; } = null;
 
 
+        public enum TextFileType
+        {
+            Text = 0,
+            GXT2 = 1,
+            Nametable = 2,
+        }
+        private TextFileType fileType = TextFileType.Text;
+
+
 
         public TextForm(ExploreForm owner)
         {
@@ -57,16 +66,36 @@ namespace CodeWalker.Forms
 
         public void LoadText(string filename, string filepath, string text, RpfFileEntry e)
         {
+            fileType = TextFileType.Text;
             FileName = filename;
             FilePath = filepath;
             TextValue = text;
             rpfFileEntry = e;
             modified = false;
         }
+        public void LoadGxt2(string filename, string filepath, Gxt2File gxt)
+        {
+            fileType = TextFileType.GXT2;
+            FileName = filename;
+            FilePath = filepath;
+            TextValue = gxt?.ToText() ?? "";
+            rpfFileEntry = gxt?.FileEntry;
+            modified = false;
+        }
+        public void LoadNametable(string filename, string filepath, byte[] data, RpfFileEntry e)
+        {
+            fileType = TextFileType.Nametable;
+            FileName = filename;
+            FilePath = filepath;
+            TextValue = Encoding.UTF8.GetString(data).Replace('\0', '\n');
+            rpfFileEntry = e;
+            modified = false;
+        }
+
 
         private void UpdateFormTitle()
         {
-            Text = fileName + " - Text Editor - CodeWalker by dexyfex";
+            Text = fileName + " - " + fileType.ToString() + " Editor - CodeWalker by dexyfex";
         }
 
         private void UpdateTextBoxFromData()
@@ -105,6 +134,7 @@ namespace CodeWalker.Forms
                 }
             }
 
+            fileType = TextFileType.Text;
             FilePath = "";
             FileName = "";
             TextValue = "";
@@ -116,6 +146,7 @@ namespace CodeWalker.Forms
         {
             if (!CloseDocument()) return; //same thing really..
 
+            fileType = TextFileType.Text;
             FileName = "New.txt";
         }
         private void OpenDocument()
@@ -128,7 +159,25 @@ namespace CodeWalker.Forms
 
             if (!File.Exists(fn)) return; //couldn't find file?
 
-            TextValue = File.ReadAllText(fn);
+
+            var fnl = fn.ToLowerInvariant();
+            if (fnl.EndsWith(".gxt2"))
+            {
+                var gxt = new Gxt2File();
+                gxt.Load(File.ReadAllBytes(fn), null);
+                fileType = TextFileType.GXT2;
+                TextValue = gxt.ToText();
+            }
+            else if (fnl.EndsWith(".nametable"))
+            {
+                fileType = TextFileType.Nametable;
+                TextValue = File.ReadAllText(fn).Replace('\0', '\n');
+            }
+            else
+            {
+                fileType = TextFileType.Text;
+                TextValue = File.ReadAllText(fn);
+            }
 
             modified = false;
             FilePath = fn;
@@ -165,7 +214,22 @@ namespace CodeWalker.Forms
                 fn = SaveFileDialog.FileName;
             }
 
-            File.WriteAllText(fn, textValue);
+            if (fileType == TextFileType.Text)
+            {
+                File.WriteAllText(fn, textValue);
+            }
+            else if (fileType == TextFileType.GXT2)
+            {
+                var gxt = Gxt2File.FromText(textValue);
+                var data = gxt.Save();
+                File.WriteAllBytes(fn, data);
+            }
+            else if (fileType == TextFileType.Nametable)
+            {
+                File.WriteAllText(fn, textValue.Replace("\r", "").Replace('\n', '\0'));
+            }
+
+
 
             modified = false;
             FilePath = fn;
@@ -183,7 +247,20 @@ namespace CodeWalker.Forms
 
             byte[] data = null;
 
-            data = Encoding.UTF8.GetBytes(txt);
+            if (fileType == TextFileType.Text)
+            {
+                data = Encoding.UTF8.GetBytes(txt);
+            }
+            else if (fileType == TextFileType.GXT2)
+            {
+                var gxt = Gxt2File.FromText(txt);
+                data = gxt.Save();
+            }
+            else if (fileType == TextFileType.Nametable)
+            {
+                if (!txt.EndsWith("\n")) txt = txt + "\n";
+                data = Encoding.UTF8.GetBytes(txt.Replace("\r", "").Replace('\n', '\0'));
+            }
 
             if (data == null)
             {
@@ -212,7 +289,7 @@ namespace CodeWalker.Forms
 
                 modified = false;
 
-                StatusLabel.Text = "Text file saved successfully at " + DateTime.Now.ToString();
+                StatusLabel.Text = fileType.ToString() + " file saved successfully at " + DateTime.Now.ToString();
 
                 return true; //victory!
             }
