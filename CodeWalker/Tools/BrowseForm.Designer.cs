@@ -33,7 +33,6 @@
             this.FolderBrowseButton = new System.Windows.Forms.Button();
             this.FolderTextBox = new System.Windows.Forms.TextBox();
             this.ScanButton = new System.Windows.Forms.Button();
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -790,7 +789,6 @@
         private System.Windows.Forms.Button FolderBrowseButton;
         private System.Windows.Forms.TextBox FolderTextBox;
         private System.Windows.Forms.Button ScanButton;
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.SplitContainer splitContainer1;
         private System.Windows.Forms.TreeView MainTreeView;
         private System.Windows.Forms.StatusStrip MainStatusStrip;

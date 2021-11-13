@@ -174,6 +174,11 @@
             this.OptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsRenderGtavMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsRenderProjectItemsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator27 = new System.Windows.Forms.ToolStripSeparator();
+            this.OptionsAutoCalcYmapFlagsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.OptionsAutoCalcYmapExtentsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator28 = new System.Windows.Forms.ToolStripSeparator();
+            this.OptionsDisplayEntityIndexesMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainDockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
@@ -202,9 +207,7 @@
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator27 = new System.Windows.Forms.ToolStripSeparator();
-            this.OptionsAutoCalcYmapFlagsMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.OptionsAutoCalcYmapExtentsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypNewArchetypeFromYdrMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -678,6 +681,7 @@
             this.YtypNameMenu,
             this.toolStripSeparator13,
             this.YtypNewArchetypeMenu,
+            this.YtypNewArchetypeFromYdrMenu,
             this.YtypMloToolStripMenuItem,
             this.toolStripSeparator15,
             this.YtypAddToProjectMenu,
@@ -691,19 +695,19 @@
             // 
             this.YtypNameMenu.Enabled = false;
             this.YtypNameMenu.Name = "YtypNameMenu";
-            this.YtypNameMenu.Size = new System.Drawing.Size(192, 22);
+            this.YtypNameMenu.Size = new System.Drawing.Size(218, 22);
             this.YtypNameMenu.Text = "(No .ytyp file selected)";
             // 
             // toolStripSeparator13
             // 
             this.toolStripSeparator13.Name = "toolStripSeparator13";
-            this.toolStripSeparator13.Size = new System.Drawing.Size(189, 6);
+            this.toolStripSeparator13.Size = new System.Drawing.Size(215, 6);
             // 
             // YtypNewArchetypeMenu
             // 
             this.YtypNewArchetypeMenu.Enabled = false;
             this.YtypNewArchetypeMenu.Name = "YtypNewArchetypeMenu";
-            this.YtypNewArchetypeMenu.Size = new System.Drawing.Size(192, 22);
+            this.YtypNewArchetypeMenu.Size = new System.Drawing.Size(218, 22);
             this.YtypNewArchetypeMenu.Text = "New Archetype";
             this.YtypNewArchetypeMenu.Click += new System.EventHandler(this.YtypNewArchetypeMenu_Click);
             // 
@@ -716,7 +720,7 @@
             this.YtypMloNewEntitySetToolStripMenuItem});
             this.YtypMloToolStripMenuItem.Enabled = false;
             this.YtypMloToolStripMenuItem.Name = "YtypMloToolStripMenuItem";
-            this.YtypMloToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.YtypMloToolStripMenuItem.Size = new System.Drawing.Size(218, 22);
             this.YtypMloToolStripMenuItem.Text = "Mlo";
             // 
             // YtypMloNewEntityToolStripMenuItem
@@ -750,13 +754,13 @@
             // toolStripSeparator15
             // 
             this.toolStripSeparator15.Name = "toolStripSeparator15";
-            this.toolStripSeparator15.Size = new System.Drawing.Size(189, 6);
+            this.toolStripSeparator15.Size = new System.Drawing.Size(215, 6);
             // 
             // YtypAddToProjectMenu
             // 
             this.YtypAddToProjectMenu.Enabled = false;
             this.YtypAddToProjectMenu.Name = "YtypAddToProjectMenu";
-            this.YtypAddToProjectMenu.Size = new System.Drawing.Size(192, 22);
+            this.YtypAddToProjectMenu.Size = new System.Drawing.Size(218, 22);
             this.YtypAddToProjectMenu.Text = "Add to Project";
             this.YtypAddToProjectMenu.Click += new System.EventHandler(this.YtypAddToProjectMenu_Click);
             // 
@@ -764,7 +768,7 @@
             // 
             this.YtypRemoveFromProjectMenu.Enabled = false;
             this.YtypRemoveFromProjectMenu.Name = "YtypRemoveFromProjectMenu";
-            this.YtypRemoveFromProjectMenu.Size = new System.Drawing.Size(192, 22);
+            this.YtypRemoveFromProjectMenu.Size = new System.Drawing.Size(218, 22);
             this.YtypRemoveFromProjectMenu.Text = "Remove from Project";
             this.YtypRemoveFromProjectMenu.Click += new System.EventHandler(this.YtypRemoveFromProjectMenu_Click);
             // 
@@ -1361,7 +1365,9 @@
             this.OptionsRenderProjectItemsMenu,
             this.toolStripSeparator27,
             this.OptionsAutoCalcYmapFlagsMenu,
-            this.OptionsAutoCalcYmapExtentsMenu});
+            this.OptionsAutoCalcYmapExtentsMenu,
+            this.toolStripSeparator28,
+            this.OptionsDisplayEntityIndexesMenu});
             this.OptionsMenu.Name = "OptionsMenu";
             this.OptionsMenu.Size = new System.Drawing.Size(61, 20);
             this.OptionsMenu.Text = "Options";
@@ -1383,6 +1389,41 @@
             this.OptionsRenderProjectItemsMenu.Size = new System.Drawing.Size(226, 22);
             this.OptionsRenderProjectItemsMenu.Text = "Render Project Items";
             this.OptionsRenderProjectItemsMenu.Click += new System.EventHandler(this.OptionsRenderProjectItemsMenu_Click);
+            // 
+            // toolStripSeparator27
+            // 
+            this.toolStripSeparator27.Name = "toolStripSeparator27";
+            this.toolStripSeparator27.Size = new System.Drawing.Size(223, 6);
+            // 
+            // OptionsAutoCalcYmapFlagsMenu
+            // 
+            this.OptionsAutoCalcYmapFlagsMenu.Checked = true;
+            this.OptionsAutoCalcYmapFlagsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.OptionsAutoCalcYmapFlagsMenu.Name = "OptionsAutoCalcYmapFlagsMenu";
+            this.OptionsAutoCalcYmapFlagsMenu.Size = new System.Drawing.Size(226, 22);
+            this.OptionsAutoCalcYmapFlagsMenu.Text = "Auto Calculate Ymap Flags";
+            this.OptionsAutoCalcYmapFlagsMenu.Click += new System.EventHandler(this.OptionsAutoCalcYmapFlagsMenu_Click);
+            // 
+            // OptionsAutoCalcYmapExtentsMenu
+            // 
+            this.OptionsAutoCalcYmapExtentsMenu.Checked = true;
+            this.OptionsAutoCalcYmapExtentsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.OptionsAutoCalcYmapExtentsMenu.Name = "OptionsAutoCalcYmapExtentsMenu";
+            this.OptionsAutoCalcYmapExtentsMenu.Size = new System.Drawing.Size(226, 22);
+            this.OptionsAutoCalcYmapExtentsMenu.Text = "Auto Calculate Ymap Extents";
+            this.OptionsAutoCalcYmapExtentsMenu.Click += new System.EventHandler(this.OptionsAutoCalcYmapExtentsMenu_Click);
+            // 
+            // toolStripSeparator28
+            // 
+            this.toolStripSeparator28.Name = "toolStripSeparator28";
+            this.toolStripSeparator28.Size = new System.Drawing.Size(223, 6);
+            // 
+            // OptionsDisplayEntityIndexesMenu
+            // 
+            this.OptionsDisplayEntityIndexesMenu.Name = "OptionsDisplayEntityIndexesMenu";
+            this.OptionsDisplayEntityIndexesMenu.Size = new System.Drawing.Size(226, 22);
+            this.OptionsDisplayEntityIndexesMenu.Text = "Display Entity Indexes";
+            this.OptionsDisplayEntityIndexesMenu.Click += new System.EventHandler(this.OptionsDisplayEntityIndexesMenu_Click);
             // 
             // MainDockPanel
             // 
@@ -1610,28 +1651,13 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
-            // toolStripSeparator27
+            // YtypNewArchetypeFromYdrMenu
             // 
-            this.toolStripSeparator27.Name = "toolStripSeparator27";
-            this.toolStripSeparator27.Size = new System.Drawing.Size(223, 6);
-            // 
-            // OptionsAutoCalcYmapFlagsMenu
-            // 
-            this.OptionsAutoCalcYmapFlagsMenu.Checked = true;
-            this.OptionsAutoCalcYmapFlagsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.OptionsAutoCalcYmapFlagsMenu.Name = "OptionsAutoCalcYmapFlagsMenu";
-            this.OptionsAutoCalcYmapFlagsMenu.Size = new System.Drawing.Size(226, 22);
-            this.OptionsAutoCalcYmapFlagsMenu.Text = "Auto Calculate Ymap Flags";
-            this.OptionsAutoCalcYmapFlagsMenu.Click += new System.EventHandler(this.OptionsAutoCalcYmapFlagsMenu_Click);
-            // 
-            // OptionsAutoCalcYmapExtentsMenu
-            // 
-            this.OptionsAutoCalcYmapExtentsMenu.Checked = true;
-            this.OptionsAutoCalcYmapExtentsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.OptionsAutoCalcYmapExtentsMenu.Name = "OptionsAutoCalcYmapExtentsMenu";
-            this.OptionsAutoCalcYmapExtentsMenu.Size = new System.Drawing.Size(226, 22);
-            this.OptionsAutoCalcYmapExtentsMenu.Text = "Auto Calculate Ymap Extents";
-            this.OptionsAutoCalcYmapExtentsMenu.Click += new System.EventHandler(this.OptionsAutoCalcYmapExtentsMenu_Click);
+            this.YtypNewArchetypeFromYdrMenu.Enabled = false;
+            this.YtypNewArchetypeFromYdrMenu.Name = "YtypNewArchetypeFromYdrMenu";
+            this.YtypNewArchetypeFromYdrMenu.Size = new System.Drawing.Size(218, 22);
+            this.YtypNewArchetypeFromYdrMenu.Text = "New Archetype from YDR...";
+            this.YtypNewArchetypeFromYdrMenu.Click += new System.EventHandler(this.YtypNewArchetypeFromYdrMenu_Click);
             // 
             // ProjectForm
             // 
@@ -1834,5 +1860,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
         private System.Windows.Forms.ToolStripMenuItem OptionsAutoCalcYmapFlagsMenu;
         private System.Windows.Forms.ToolStripMenuItem OptionsAutoCalcYmapExtentsMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator28;
+        private System.Windows.Forms.ToolStripMenuItem OptionsDisplayEntityIndexesMenu;
+        private System.Windows.Forms.ToolStripMenuItem YtypNewArchetypeFromYdrMenu;
     }
 }

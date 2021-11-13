@@ -248,7 +248,7 @@ namespace CodeWalker.Forms
         private void SaveAll()
         {
             if (TexDict?.Textures?.data_items == null) return;
-            if (FolderBrowserDialog.ShowDialog() != DialogResult.OK) return;
+            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return;
             var folder = FolderBrowserDialog.SelectedPath;
             foreach (var tex in TexDict.Textures.data_items)
             {

@@ -49,6 +49,7 @@ namespace CodeWalker.World
             this.SelDrawableTexturesTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.SaveTextureButton = new System.Windows.Forms.Button();
             this.SelTextureDimensionsLabel = new System.Windows.Forms.Label();
             this.SelTextureMipTrackBar = new System.Windows.Forms.TrackBar();
             this.SelTextureMipLabel = new System.Windows.Forms.Label();
@@ -68,6 +69,9 @@ namespace CodeWalker.World
             this.label1 = new System.Windows.Forms.Label();
             this.label25 = new System.Windows.Forms.Label();
             this.SelectionModeComboBox = new System.Windows.Forms.ComboBox();
+            this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.SaveAllTexturesButton = new System.Windows.Forms.Button();
+            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.SelectionTabControl.SuspendLayout();
             this.SelectionEntityTabPage.SuspendLayout();
             this.SelectionArchetypeTabPage.SuspendLayout();
@@ -277,6 +281,8 @@ namespace CodeWalker.World
             // 
             // splitContainer2.Panel1
             // 
+            this.splitContainer2.Panel1.Controls.Add(this.SaveAllTexturesButton);
+            this.splitContainer2.Panel1.Controls.Add(this.SaveTextureButton);
             this.splitContainer2.Panel1.Controls.Add(this.SelDrawableTexturesTreeView);
             // 
             // splitContainer2.Panel2
@@ -294,7 +300,7 @@ namespace CodeWalker.World
             this.SelDrawableTexturesTreeView.HideSelection = false;
             this.SelDrawableTexturesTreeView.Location = new System.Drawing.Point(0, 0);
             this.SelDrawableTexturesTreeView.Name = "SelDrawableTexturesTreeView";
-            this.SelDrawableTexturesTreeView.Size = new System.Drawing.Size(300, 454);
+            this.SelDrawableTexturesTreeView.Size = new System.Drawing.Size(300, 412);
             this.SelDrawableTexturesTreeView.TabIndex = 2;
             this.SelDrawableTexturesTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.SelDrawableTexturesTreeView_AfterSelect);
             // 
@@ -329,11 +335,23 @@ namespace CodeWalker.World
             this.tabPage3.Text = "Texture";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
+            // SaveTextureButton
+            // 
+            this.SaveTextureButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.SaveTextureButton.Enabled = false;
+            this.SaveTextureButton.Location = new System.Drawing.Point(124, 419);
+            this.SaveTextureButton.Name = "SaveTextureButton";
+            this.SaveTextureButton.Size = new System.Drawing.Size(100, 23);
+            this.SaveTextureButton.TabIndex = 4;
+            this.SaveTextureButton.Text = "Save Selected...";
+            this.SaveTextureButton.UseVisualStyleBackColor = true;
+            this.SaveTextureButton.Click += new System.EventHandler(this.SaveTextureButton_Click);
+            // 
             // SelTextureDimensionsLabel
             // 
             this.SelTextureDimensionsLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.SelTextureDimensionsLabel.AutoSize = true;
-            this.SelTextureDimensionsLabel.Location = new System.Drawing.Point(334, 400);
+            this.SelTextureDimensionsLabel.Location = new System.Drawing.Point(262, 400);
             this.SelTextureDimensionsLabel.Name = "SelTextureDimensionsLabel";
             this.SelTextureDimensionsLabel.Size = new System.Drawing.Size(10, 13);
             this.SelTextureDimensionsLabel.TabIndex = 37;
@@ -348,7 +366,7 @@ namespace CodeWalker.World
             this.SelTextureMipTrackBar.Location = new System.Drawing.Point(59, 394);
             this.SelTextureMipTrackBar.Maximum = 0;
             this.SelTextureMipTrackBar.Name = "SelTextureMipTrackBar";
-            this.SelTextureMipTrackBar.Size = new System.Drawing.Size(265, 31);
+            this.SelTextureMipTrackBar.Size = new System.Drawing.Size(187, 31);
             this.SelTextureMipTrackBar.TabIndex = 36;
             this.SelTextureMipTrackBar.Scroll += new System.EventHandler(this.SelTextureMipTrackBar_Scroll);
             // 
@@ -553,6 +571,17 @@ namespace CodeWalker.World
             this.SelectionModeComboBox.TabIndex = 31;
             this.SelectionModeComboBox.SelectedIndexChanged += new System.EventHandler(this.SelectionModeComboBox_SelectedIndexChanged);
             // 
+            // SaveAllTexturesButton
+            // 
+            this.SaveAllTexturesButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.SaveAllTexturesButton.Location = new System.Drawing.Point(3, 419);
+            this.SaveAllTexturesButton.Name = "SaveAllTexturesButton";
+            this.SaveAllTexturesButton.Size = new System.Drawing.Size(100, 23);
+            this.SaveAllTexturesButton.TabIndex = 3;
+            this.SaveAllTexturesButton.Text = "Save All...";
+            this.SaveAllTexturesButton.UseVisualStyleBackColor = true;
+            this.SaveAllTexturesButton.Click += new System.EventHandler(this.SaveAllTexturesButton_Click);
+            // 
             // WorldInfoForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -639,5 +668,9 @@ namespace CodeWalker.World
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.TreeView HierarchyTreeView;
         private PropertyGridFix HierarchyPropertyGrid;
+        private System.Windows.Forms.Button SaveTextureButton;
+        private System.Windows.Forms.SaveFileDialog SaveFileDialog;
+        private System.Windows.Forms.Button SaveAllTexturesButton;
+        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
     }
 }

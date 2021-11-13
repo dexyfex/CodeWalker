@@ -1332,6 +1332,31 @@ namespace CodeWalker.GameFiles
 
 
 
+        public void SetName(string newname)
+        {
+            var newnamel = newname.ToLowerInvariant();
+            var newnamex = newname + ".ymap";
+            var newnamexl = newname.ToLowerInvariant();
+            var newhash = JenkHash.GenHash(newnamel);
+            JenkIndex.Ensure(newnamel);
+            if (RpfFileEntry != null)
+            {
+                RpfFileEntry.Name = newnamex;
+                RpfFileEntry.NameLower = newnamexl;
+                RpfFileEntry.NameHash = JenkHash.GenHash(newnamexl);
+                RpfFileEntry.ShortNameHash = newhash;
+            }
+            Name = newnamex;
+            _CMapData.name = newhash;
+        }
+        public void SetFilePath(string filepath)
+        {
+            FilePath = filepath.ToLowerInvariant();
+            var newname = Path.GetFileNameWithoutExtension(filepath);
+            SetName(newname);
+        }
+
+
         public bool CalcFlags()
         {
             uint flags = 0;

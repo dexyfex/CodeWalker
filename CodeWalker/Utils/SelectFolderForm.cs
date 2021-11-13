@@ -33,7 +33,7 @@ namespace CodeWalker.Utils
         private void FolderBrowseButton_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog.SelectedPath = FolderTextBox.Text;
-            DialogResult res = FolderBrowserDialog.ShowDialog();
+            DialogResult res = FolderBrowserDialog.ShowDialogNew();
             if (res == DialogResult.OK)
             {
                 FolderTextBox.Text = FolderBrowserDialog.SelectedPath;

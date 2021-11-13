@@ -32,7 +32,6 @@ namespace CodeWalker
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorldForm));
-            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.StatusStrip = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.MousedLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -178,6 +177,7 @@ namespace CodeWalker
             this.BoundsStyleComboBox = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.OptionsLightingTabPage = new System.Windows.Forms.TabPage();
+            this.HDLightsCheckBox = new System.Windows.Forms.CheckBox();
             this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
             this.WeatherRegionComboBox = new System.Windows.Forms.ComboBox();
             this.label29 = new System.Windows.Forms.Label();
@@ -312,7 +312,6 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
-            this.HDLightsCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -2283,6 +2282,19 @@ namespace CodeWalker
             this.OptionsLightingTabPage.Text = "Lighting";
             this.OptionsLightingTabPage.UseVisualStyleBackColor = true;
             // 
+            // HDLightsCheckBox
+            // 
+            this.HDLightsCheckBox.AutoSize = true;
+            this.HDLightsCheckBox.Checked = true;
+            this.HDLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDLightsCheckBox.Location = new System.Drawing.Point(10, 93);
+            this.HDLightsCheckBox.Name = "HDLightsCheckBox";
+            this.HDLightsCheckBox.Size = new System.Drawing.Size(69, 17);
+            this.HDLightsCheckBox.TabIndex = 34;
+            this.HDLightsCheckBox.Text = "HD lights";
+            this.HDLightsCheckBox.UseVisualStyleBackColor = true;
+            this.HDLightsCheckBox.CheckedChanged += new System.EventHandler(this.HDLightsCheckBox_CheckedChanged);
+            // 
             // DeferredShadingCheckBox
             // 
             this.DeferredShadingCheckBox.AutoSize = true;
@@ -3592,19 +3604,6 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
-            // HDLightsCheckBox
-            // 
-            this.HDLightsCheckBox.AutoSize = true;
-            this.HDLightsCheckBox.Checked = true;
-            this.HDLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDLightsCheckBox.Location = new System.Drawing.Point(10, 93);
-            this.HDLightsCheckBox.Name = "HDLightsCheckBox";
-            this.HDLightsCheckBox.Size = new System.Drawing.Size(69, 17);
-            this.HDLightsCheckBox.TabIndex = 34;
-            this.HDLightsCheckBox.Text = "HD lights";
-            this.HDLightsCheckBox.UseVisualStyleBackColor = true;
-            this.HDLightsCheckBox.CheckedChanged += new System.EventHandler(this.HDLightsCheckBox_CheckedChanged);
-            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3696,8 +3695,6 @@ namespace CodeWalker
         }
 
         #endregion
-
-        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.StatusStrip StatusStrip;
         private System.Windows.Forms.ToolStripStatusLabel StatusLabel;
         private System.Windows.Forms.ComboBox ModelComboBox;

@@ -82,6 +82,7 @@
             this.MainTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.MainTextBox.DelayedEventsInterval = 10;
             this.MainTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.MainTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.MainTextBox.IsReplaceMode = false;
             this.MainTextBox.LeftBracket = '<';
             this.MainTextBox.LeftBracket2 = '(';
@@ -238,11 +239,11 @@
             // 
             // OpenFileDialog
             // 
-            this.OpenFileDialog.Filter = "Text files|*.txt|All files|*.*";
+            this.OpenFileDialog.Filter = "Text files|*.txt;*.gxt2;*.nametable|All files|*.*";
             // 
             // SaveFileDialog
             // 
-            this.SaveFileDialog.Filter = "Text files|*.txt|All files|*.*";
+            this.SaveFileDialog.Filter = "Text files|*.txt;*.gxt2;*.nametable|All files|*.*";
             this.SaveFileDialog.FilterIndex = 2;
             // 
             // TextForm

@@ -169,6 +169,7 @@ namespace CodeWalker
         MapSelection SelectedItem;
         MapSelection CopiedItem;
         WorldInfoForm InfoForm = null;
+        public MapSelection CurrentMapSelection { get { return SelectedItem; } }
 
 
         TransformWidget Widget = new TransformWidget();
@@ -1412,7 +1413,11 @@ namespace CodeWalker
                 MCScenarioPoint vpoint = sn.MyPoint ?? sn.ClusterMyPoint;
                 if ((vpoint != null) && (vpoint?.Type?.IsVehicle ?? false))
                 {
-                    var vhash = vpoint.ModelSet?.NameHash ?? vpoint.Type?.VehicleModelSetHash ?? 0;
+                    var vhash = vpoint.ModelSet?.NameHash ?? 493038497;//"none"
+                    if ((vhash == 0) || (vhash == 493038497))
+                    {
+                        vhash = vpoint.Type?.VehicleModelSetHash ?? 0;
+                    }
                     if ((vhash == 0) && (sn.ChainingNode?.Chain?.Edges != null) && (sn.ChainingNode.Chain.Edges.Length > 0))
                     {
                         var fedge = sn.ChainingNode.Chain.Edges[0]; //for chain nodes, show the first node's model...
@@ -1420,7 +1425,11 @@ namespace CodeWalker
                         if (fnode != null)
                         {
                             vpoint = fnode.MyPoint ?? fnode.ClusterMyPoint;
-                            vhash = vpoint.ModelSet?.NameHash ?? vpoint.Type?.VehicleModelSetHash ?? 0;
+                            vhash = vpoint.ModelSet?.NameHash ?? 493038497;//"none"
+                            if ((vhash == 0) || (vhash == 493038497))
+                            {
+                                vhash = vpoint.Type?.VehicleModelSetHash ?? 0;
+                            }
                         }
                     }
 
@@ -4296,8 +4305,8 @@ namespace CodeWalker
                     {
                         WeatherComboBox.Items.Add(wt);
                     }
-                    WeatherComboBox.SelectedIndex = 0;
-                    WeatherRegionComboBox.SelectedIndex = 0;
+                    WeatherComboBox.SelectedIndex = Math.Max(WeatherComboBox.FindString(Settings.Default.Weather), 0);
+                    WeatherRegionComboBox.SelectedIndex = Math.Max(WeatherRegionComboBox.FindString(Settings.Default.Region), 0);
                 }
             }
             catch { }
@@ -4489,7 +4498,7 @@ namespace CodeWalker
             camera.TargetDistance = bl > 1f ? bl : 1f;
         }
 
-        private MapMarker AddMarker(Vector3 pos, string name, bool addtotxtbox = false)
+        public MapMarker AddMarker(Vector3 pos, string name, bool addtotxtbox = false)
         {
             string str = pos.X.ToString() + ", " + pos.Y.ToString() + ", " + pos.Z.ToString();
             if (!string.IsNullOrEmpty(name))
@@ -4609,6 +4618,16 @@ namespace CodeWalker
             StatusBarCheckBox.Checked = s.ShowStatusBar;
             SnapGridSizeUpDown.Value = (decimal)s.SnapGridSize;
             SetRotationSnapping(s.SnapRotationDegrees);
+            TimeOfDayTrackBar.Value = s.TimeOfDay;
+            LODLightsCheckBox.Checked = s.LODLights;
+            WeatherComboBox.SelectedIndex = Math.Max(WeatherComboBox.FindString(s.Weather), 0);
+            WeatherRegionComboBox.SelectedIndex = Math.Max(WeatherRegionComboBox.FindString(s.Region), 0);
+            Renderer.individualcloudfrag = s.Clouds;
+            NaturalAmbientLightCheckBox.Checked = s.NatrualAmbientLight;
+            ArtificialAmbientLightCheckBox.Checked = s.ArtificialAmbientLight;
+            
+            SetTimeOfDay(s.TimeOfDay);
+            Renderer.SetWeatherType(s.Weather);
             
 
             EnableModsCheckBox.Checked = s.EnableMods;
@@ -4647,7 +4666,13 @@ namespace CodeWalker
             s.ShowStatusBar = StatusBarCheckBox.Checked;
             s.SnapRotationDegrees = (float)SnapAngleUpDown.Value;
             s.SnapGridSize = (float)SnapGridSizeUpDown.Value;
-
+            s.TimeOfDay = TimeOfDayTrackBar.Value;
+            s.LODLights = LODLightsCheckBox.Checked;
+            s.Weather = WeatherComboBox.Text;
+            s.NatrualAmbientLight = NaturalAmbientLightCheckBox.Checked;
+            s.ArtificialAmbientLight = ArtificialAmbientLightCheckBox.Checked;
+            s.Region = WeatherRegionComboBox.Text;
+            s.Clouds = CloudsComboBox.Text;
 
             //additional settings from gamefilecache...
             s.EnableMods = gameFileCache.EnableMods;
@@ -5759,6 +5784,17 @@ namespace CodeWalker
 
 
 
+        private void SetTimeOfDay(int minute)
+        {
+            float hour = minute / 60.0f;
+            UpdateTimeOfDayLabel();
+            lock (Renderer.RenderSyncRoot)
+            {
+                Renderer.SetTimeOfDay(hour);
+            }
+        }
+
+
 
 
 
@@ -5829,7 +5865,7 @@ namespace CodeWalker
                     }
                     else
                     {
-                        if (ShowWidget && Widget.IsUnderMouse)
+                        if (ShowWidget && Widget.IsUnderMouse && !Input.kbmoving)
                         {
                             GrabbedWidget = Widget;
                             GrabbedWidget.IsDragging = true;
@@ -6122,7 +6158,7 @@ namespace CodeWalker
             }
 
 
-            if (!Input.kbmoving) //don't trigger further actions if moving.
+            if (!Input.kbmoving && !Widget.IsDragging) //don't trigger further actions if camera moving or widget dragging 
             {
                 if (!ctrl)
                 {
@@ -6195,10 +6231,11 @@ namespace CodeWalker
                             break;
                     }
                 }
-                if (k == Keys.Escape) //temporary? panic get cursor back when in first person mode
-                {
-                    if (ControlMode != WorldControlMode.Free) SetControlMode(WorldControlMode.Free);
-                }
+            }
+
+            if (k == Keys.Escape) //temporary? panic get cursor back when in first person mode
+            {
+                if (ControlMode != WorldControlMode.Free) SetControlMode(WorldControlMode.Free);
             }
 
             if (ControlMode != WorldControlMode.Free || ControlBrushEnabled)
@@ -6986,13 +7023,7 @@ namespace CodeWalker
 
         private void TimeOfDayTrackBar_Scroll(object sender, EventArgs e)
         {
-            int v = TimeOfDayTrackBar.Value;
-            float hour = v / 60.0f;
-            UpdateTimeOfDayLabel();
-            lock (Renderer.RenderSyncRoot)
-            {
-                Renderer.SetTimeOfDay(hour);
-            }
+            SetTimeOfDay(TimeOfDayTrackBar.Value);
         }
 
         private void WeatherComboBox_SelectedIndexChanged(object sender, EventArgs e)

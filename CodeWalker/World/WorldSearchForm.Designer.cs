@@ -31,6 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorldSearchForm));
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.EntitySearchTabPage = new System.Windows.Forms.TabPage();
+            this.EntitySearchSetMarkersButton = new System.Windows.Forms.Button();
+            this.EntitySearchExportResultsButton = new System.Windows.Forms.Button();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.EntityResultsListView = new System.Windows.Forms.ListView();
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -52,6 +54,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.EntitySearchTextBox = new System.Windows.Forms.TextBox();
             this.ArchetypeSearchTabPage = new System.Windows.Forms.TabPage();
+            this.ArchetypeSearchExportResultsButton = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.ArchetypeResultsListView = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -70,8 +73,6 @@
             this.ArchetypeSearchButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.ArchetypeSearchTextBox = new System.Windows.Forms.TextBox();
-            this.EntitySearchExportResultsButton = new System.Windows.Forms.Button();
-            this.ArchetypeSearchExportResultsButton = new System.Windows.Forms.Button();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.MainTabControl.SuspendLayout();
             this.EntitySearchTabPage.SuspendLayout();
@@ -103,6 +104,7 @@
             // 
             // EntitySearchTabPage
             // 
+            this.EntitySearchTabPage.Controls.Add(this.EntitySearchSetMarkersButton);
             this.EntitySearchTabPage.Controls.Add(this.EntitySearchExportResultsButton);
             this.EntitySearchTabPage.Controls.Add(this.splitContainer2);
             this.EntitySearchTabPage.Controls.Add(this.EntitySearchStatusLabel);
@@ -119,6 +121,28 @@
             this.EntitySearchTabPage.TabIndex = 0;
             this.EntitySearchTabPage.Text = "Entity Search";
             this.EntitySearchTabPage.UseVisualStyleBackColor = true;
+            // 
+            // EntitySearchSetMarkersButton
+            // 
+            this.EntitySearchSetMarkersButton.Enabled = false;
+            this.EntitySearchSetMarkersButton.Location = new System.Drawing.Point(426, 16);
+            this.EntitySearchSetMarkersButton.Name = "EntitySearchSetMarkersButton";
+            this.EntitySearchSetMarkersButton.Size = new System.Drawing.Size(89, 23);
+            this.EntitySearchSetMarkersButton.TabIndex = 9;
+            this.EntitySearchSetMarkersButton.Text = "Set markers...";
+            this.EntitySearchSetMarkersButton.UseVisualStyleBackColor = true;
+            this.EntitySearchSetMarkersButton.Click += new System.EventHandler(this.EntitySearchSetMarkersButton_Click);
+            // 
+            // EntitySearchExportResultsButton
+            // 
+            this.EntitySearchExportResultsButton.Enabled = false;
+            this.EntitySearchExportResultsButton.Location = new System.Drawing.Point(426, 43);
+            this.EntitySearchExportResultsButton.Name = "EntitySearchExportResultsButton";
+            this.EntitySearchExportResultsButton.Size = new System.Drawing.Size(89, 23);
+            this.EntitySearchExportResultsButton.TabIndex = 6;
+            this.EntitySearchExportResultsButton.Text = "Export results...";
+            this.EntitySearchExportResultsButton.UseVisualStyleBackColor = true;
+            this.EntitySearchExportResultsButton.Click += new System.EventHandler(this.EntitySearchExportResultsButton_Click);
             // 
             // splitContainer2
             // 
@@ -359,6 +383,17 @@
             this.ArchetypeSearchTabPage.Text = "Archetype Search";
             this.ArchetypeSearchTabPage.UseVisualStyleBackColor = true;
             // 
+            // ArchetypeSearchExportResultsButton
+            // 
+            this.ArchetypeSearchExportResultsButton.Enabled = false;
+            this.ArchetypeSearchExportResultsButton.Location = new System.Drawing.Point(426, 43);
+            this.ArchetypeSearchExportResultsButton.Name = "ArchetypeSearchExportResultsButton";
+            this.ArchetypeSearchExportResultsButton.Size = new System.Drawing.Size(89, 23);
+            this.ArchetypeSearchExportResultsButton.TabIndex = 5;
+            this.ArchetypeSearchExportResultsButton.Text = "Export results...";
+            this.ArchetypeSearchExportResultsButton.UseVisualStyleBackColor = true;
+            this.ArchetypeSearchExportResultsButton.Click += new System.EventHandler(this.ArchetypeSearchExportResultsButton_Click);
+            // 
             // splitContainer1
             // 
             this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -560,28 +595,6 @@
             this.ArchetypeSearchTextBox.TabIndex = 0;
             this.ArchetypeSearchTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ArchetypeSearchTextBox_KeyPress);
             // 
-            // EntitySearchExportResultsButton
-            // 
-            this.EntitySearchExportResultsButton.Enabled = false;
-            this.EntitySearchExportResultsButton.Location = new System.Drawing.Point(426, 43);
-            this.EntitySearchExportResultsButton.Name = "EntitySearchExportResultsButton";
-            this.EntitySearchExportResultsButton.Size = new System.Drawing.Size(89, 23);
-            this.EntitySearchExportResultsButton.TabIndex = 6;
-            this.EntitySearchExportResultsButton.Text = "Export results...";
-            this.EntitySearchExportResultsButton.UseVisualStyleBackColor = true;
-            this.EntitySearchExportResultsButton.Click += new System.EventHandler(this.EntitySearchExportResultsButton_Click);
-            // 
-            // ArchetypeSearchExportResultsButton
-            // 
-            this.ArchetypeSearchExportResultsButton.Enabled = false;
-            this.ArchetypeSearchExportResultsButton.Location = new System.Drawing.Point(426, 43);
-            this.ArchetypeSearchExportResultsButton.Name = "ArchetypeSearchExportResultsButton";
-            this.ArchetypeSearchExportResultsButton.Size = new System.Drawing.Size(89, 23);
-            this.ArchetypeSearchExportResultsButton.TabIndex = 5;
-            this.ArchetypeSearchExportResultsButton.Text = "Export results...";
-            this.ArchetypeSearchExportResultsButton.UseVisualStyleBackColor = true;
-            this.ArchetypeSearchExportResultsButton.Click += new System.EventHandler(this.ArchetypeSearchExportResultsButton_Click);
-            // 
             // SaveFileDialog
             // 
             this.SaveFileDialog.AddExtension = false;
@@ -664,5 +677,6 @@
         private System.Windows.Forms.Button EntitySearchExportResultsButton;
         private System.Windows.Forms.Button ArchetypeSearchExportResultsButton;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
+        private System.Windows.Forms.Button EntitySearchSetMarkersButton;
     }
 }

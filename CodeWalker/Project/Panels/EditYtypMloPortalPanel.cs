@@ -103,6 +103,7 @@ namespace CodeWalker.Project.Panels
                 if (CurrentPortal._Data.roomFrom != u)
                 {
                     CurrentPortal._Data.roomFrom = u;
+                    CurrentPortal.OwnerMlo?.UpdatePortalCounts();
                     ProjectForm.SetYtypHasChanged(true);
                 }
             }
@@ -123,6 +124,7 @@ namespace CodeWalker.Project.Panels
                 if (CurrentPortal._Data.roomTo != u)
                 {
                     CurrentPortal._Data.roomTo = u;
+                    CurrentPortal.OwnerMlo?.UpdatePortalCounts();
                     ProjectForm.SetYtypHasChanged(true);
                 }
             }
