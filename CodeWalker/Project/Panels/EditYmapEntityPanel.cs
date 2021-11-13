@@ -22,11 +22,12 @@ namespace CodeWalker.Project.Panels
 
         public void SetEntity(YmapEntityDef entity)
         {
+            var sameEntity = (entity == CurrentEntity);
             CurrentEntity = entity;
             MloInstanceData instance = entity?.MloParent?.MloInstance;
             CurrentMCEntity = instance?.TryGetArchetypeEntity(entity);
             Tag = entity;
-            LoadEntity();
+            LoadEntity(sameEntity);
             UpdateFormTitle();
         }
 
@@ -55,7 +56,7 @@ namespace CodeWalker.Project.Panels
         }
 
 
-        private void LoadEntity()
+        private void LoadEntity(bool sameEntity)
         {
             if (CurrentEntity == null)
             {
@@ -92,6 +93,8 @@ namespace CodeWalker.Project.Panels
                 populatingui = true;
                 var e = CurrentEntity._CEntityDef;
                 var po = CurrentEntity.PivotOrientation;
+                var rot = new Quaternion(e.rotation);
+                var rotupd = (EntityRotationQuatBox.Value != rot);
                 //EntityPanel.Enabled = true;
                 EntityAddToProjectButton.Enabled = CurrentEntity.Ymap != null ? !ProjectForm.YmapExistsInProject(CurrentEntity.Ymap) : !ProjectForm.YtypExistsInProject(CurrentEntity.MloParent?.Archetype?.Ytyp);
                 EntityDeleteButton.Enabled = !EntityAddToProjectButton.Enabled;
@@ -100,7 +103,7 @@ namespace CodeWalker.Project.Panels
                 EntityFlagsTextBox.Text = e.flags.ToString();
                 EntityGuidTextBox.Text = e.guid.ToString();
                 EntityPositionTextBox.Text = FloatUtil.GetVector3String(e.position);
-                EntityRotationQuatBox.Value = new Quaternion(e.rotation);
+                EntityRotationQuatBox.Value = rot;
                 EntityScaleXYTextBox.Text = FloatUtil.ToString(e.scaleXY);
                 EntityScaleZTextBox.Text = FloatUtil.ToString(e.scaleZ);
                 EntityParentIndexTextBox.Text = e.parentIndex.ToString();
@@ -154,6 +157,12 @@ namespace CodeWalker.Project.Panels
 
 
                 UpdateTabVisibility();
+
+
+                if (rotupd && sameEntity)
+                {
+                    UpdateRotationFlag();
+                }
 
 
                 var ms = ProjectForm.WorldForm?.CurrentMapSelection;
@@ -212,6 +221,17 @@ namespace CodeWalker.Project.Panels
             {
                 EntityTabControl.SelectedTab = seltab;
             }
+        }
+
+
+        private void UpdateRotationFlag()
+        {
+            if (CurrentEntity == null) return;
+
+            var eul = EntityRotationQuatBox.EulerDeg;
+            var flag = (eul.X != 0.0f) || (eul.Y != 0.0f); //this isn't fully correct, but probably better than nothing
+
+            EntityFlagsCheckedListBox.SetItemChecked(0, flag);
         }
 
 
@@ -416,6 +436,8 @@ namespace CodeWalker.Project.Panels
                     }));
                 }
             }
+
+            UpdateRotationFlag();
         }
 
         private void EntityScaleXYTextBox_TextChanged(object sender, EventArgs e)
@@ -793,9 +815,5 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void EntityFlagsCheckedListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
     }
 }

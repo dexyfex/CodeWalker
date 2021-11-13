@@ -32,6 +32,13 @@ namespace CodeWalker.WinForms
                 UpdateFromValue();
             }
         }
+        public Vector3 EulerDeg
+        {
+            get
+            {
+                return new Vector3((float)EulerXUpDown.Value, (float)EulerYUpDown.Value, (float)EulerZUpDown.Value);
+            }
+        }
 
         private Quaternion _Value = Quaternion.Identity;
         private bool suppressEvents = false;
