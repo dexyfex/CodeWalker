@@ -68,11 +68,13 @@
             this.TimeFlagsTextBox = new System.Windows.Forms.TextBox();
             this.TimeFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.label15 = new System.Windows.Forms.Label();
+            this.MloUpdatePortalCountsButton = new System.Windows.Forms.Button();
             this.BaseArchetypeTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SpecialAttributeNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HDTextureDistNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.LodDistNumericUpDown)).BeginInit();
             this.TabControl.SuspendLayout();
+            this.MloArchetypeTabPage.SuspendLayout();
             this.TimeArchetypeTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -308,7 +310,7 @@
             "1024 - UV anims (YCD)",
             "2048 - Unk12",
             "4096 - Unk13",
-            "8192 - Object won't cast shadow",
+            "8192 - Object won\'t cast shadow",
             "16384 - Unk15",
             "32768 - Unk16",
             "65536 - Double-sided rendering",
@@ -496,6 +498,7 @@
             // 
             // MloArchetypeTabPage
             // 
+            this.MloArchetypeTabPage.Controls.Add(this.MloUpdatePortalCountsButton);
             this.MloArchetypeTabPage.Location = new System.Drawing.Point(4, 22);
             this.MloArchetypeTabPage.Name = "MloArchetypeTabPage";
             this.MloArchetypeTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -578,6 +581,16 @@
             this.label15.TabIndex = 68;
             this.label15.Text = "Time Flags:";
             // 
+            // MloUpdatePortalCountsButton
+            // 
+            this.MloUpdatePortalCountsButton.Location = new System.Drawing.Point(49, 35);
+            this.MloUpdatePortalCountsButton.Name = "MloUpdatePortalCountsButton";
+            this.MloUpdatePortalCountsButton.Size = new System.Drawing.Size(153, 23);
+            this.MloUpdatePortalCountsButton.TabIndex = 0;
+            this.MloUpdatePortalCountsButton.Text = "Update Portal Counts";
+            this.MloUpdatePortalCountsButton.UseVisualStyleBackColor = true;
+            this.MloUpdatePortalCountsButton.Click += new System.EventHandler(this.MloUpdatePortalCountsButton_Click);
+            // 
             // EditYtypArchetypePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -595,6 +608,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.HDTextureDistNumericUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.LodDistNumericUpDown)).EndInit();
             this.TabControl.ResumeLayout(false);
+            this.MloArchetypeTabPage.ResumeLayout(false);
             this.TimeArchetypeTabPage.ResumeLayout(false);
             this.TimeArchetypeTabPage.PerformLayout();
             this.ResumeLayout(false);
@@ -642,5 +656,6 @@
         private System.Windows.Forms.TextBox TimeFlagsTextBox;
         private System.Windows.Forms.CheckedListBox TimeFlagsCheckedListBox;
         private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Button MloUpdatePortalCountsButton;
     }
 }

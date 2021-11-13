@@ -359,6 +359,14 @@ namespace CodeWalker.Project.Panels
             ProjectForm.DeleteArchetype();
         }
 
+        private void MloUpdatePortalCountsButton_Click(object sender, EventArgs e)
+        {
+            var mlo = CurrentArchetype as MloArchetype;
+            if (mlo == null) return;
+
+            mlo.UpdatePortalCounts();
+        }
+
         private void TimeFlagsTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
