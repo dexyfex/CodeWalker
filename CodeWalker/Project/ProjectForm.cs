@@ -765,6 +765,19 @@ namespace CodeWalker.Project
         {
             if (item is object[] arr)
             {
+
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    if (arr[i] is MCEntityDef mcent)//for MLO entities, need to transform this into an actual entity instance
+                    {
+                        var instance = TryGetMloInstance(mcent.OwnerMlo);
+                        if (instance != null)
+                        {
+                            arr[i] = instance.TryGetYmapEntity(mcent);
+                        }
+                    }
+                }
+
                 var multisel = MapSelection.FromProjectObject(arr); //convert to MapSelection array
                 item = multisel.MultipleSelectionItems;
             }
