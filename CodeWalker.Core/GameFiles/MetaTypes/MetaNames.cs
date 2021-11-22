@@ -3354,6 +3354,7 @@ namespace CodeWalker.GameFiles
         CScenarioChainingEdge = 4255409560,
         Points = 702683191,
         Chains = 3254907796,
+        ChainingGraph = 3696045377,
         rage__spdSphere = 1062159465,
         EdgeIds = 934700563,
         TypeNames = 3057471271,
@@ -13136,7 +13137,7 @@ namespace CodeWalker.GameFiles
         HDAO_ScenePreset = 4069244622,
         HDDistance = 4095925965,
         HDTextureDist = 3433689757,
-        HIDE_IT = 1095875445,
+        //HIDE_IT = 1095875445, //causes hash collision with something in scenario .ymt's which is obviously not this
         HIGH = 1475850173,
         HI_OCTANE = 3613106599,
         HORSE_ON_FOOT = 140327661,

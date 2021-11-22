@@ -865,9 +865,157 @@ namespace CodeWalker.World
             return res;
         }
 
+        public bool RemoveChain(MCScenarioChain chain, bool delpoints)
+        {
+            var paths = Region?.Paths;
+            if (paths == null) return false;
+
+
+            Dictionary<MCScenarioChainingNode, int> ndict = new Dictionary<MCScenarioChainingNode, int>();
+
+            var edges = chain.Edges;
+            if (edges != null)
+            {
+                foreach (var edge in edges)
+                {
+                    //paths.RemoveEdge(edge); //removing nodes also removes edges!
+                    paths.RemoveNode(edge.NodeFrom);
+                    paths.RemoveNode(edge.NodeTo);
+
+                    ndict[edge.NodeFrom] = 1;
+                    ndict[edge.NodeTo] = 1;
+                }
+            }
+
+            paths.RemoveChain(chain);
+
+
+            List<ScenarioNode> delnodes = new List<ScenarioNode>();
+            foreach (var node in Nodes)
+            {
+                if ((node.ChainingNode != null) && (ndict.ContainsKey(node.ChainingNode)))
+                {
+                    delnodes.Add(node);
+                }
+            }
+            foreach (var delnode in delnodes)
+            {
+                delnode.ChainingNode = null;//this chaining node has been removed from the region. remove this association.
+                if (delpoints)
+                {
+                    RemoveNode(delnode);
+                }
+            }
+
+            return true;
+        }
+
+        public bool RemoveCluster(MCScenarioPointCluster cluster, bool delpoints)
+        {
+            var crgn = Region;
+            if (crgn == null) return false;
+
+
+            crgn.RemoveCluster(cluster);
 
 
 
+
+
+            Dictionary<MCScenarioPoint, int> ndict = new Dictionary<MCScenarioPoint, int>();
+            if (cluster?.Points?.MyPoints != null)
+            {
+                foreach (var point in cluster.Points.MyPoints)
+                {
+                    ndict[point] = 1;
+                }
+            }
+            List<ScenarioNode> delnodes = new List<ScenarioNode>();
+            foreach (var node in Nodes)
+            {
+                if ((node.ClusterMyPoint != null) && (ndict.ContainsKey(node.ClusterMyPoint)))
+                {
+                    delnodes.Add(node);
+                }
+                else if (node.Cluster == cluster)
+                {
+                    delnodes.Add(node);
+                }
+            }
+            foreach (var delnode in delnodes)
+            {
+                if (!delpoints && (crgn.Points != null) && (delnode.ClusterMyPoint != null))
+                {
+                    var copypt = new MCScenarioPoint(crgn, delnode.ClusterMyPoint);
+                    crgn.Points.AddMyPoint(copypt);
+                    delnode.MyPoint = copypt;
+                }
+                bool iscl = false;
+                if ((delnode.Cluster != null) && (delnode.ClusterMyPoint == null) && (delnode.ClusterLoadSavePoint == null))
+                {
+                    iscl = true;
+                }
+                delnode.Cluster = null;
+                delnode.ClusterMyPoint = null;//this cluster point has been removed from the region. remove this association.
+                delnode.ClusterLoadSavePoint = null;
+                if (delpoints)
+                {
+                    //if ((delnode.ChainingNode == null) && (delnode.EntityPoint == null))
+                    {
+                        RemoveNode(delnode);
+                    }
+                }
+                else if (iscl)
+                {
+                    RemoveNode(delnode); //remove the cluster node itself.
+                }
+            }
+
+
+            return true;
+        }
+
+        public bool RemoveEntity(MCScenarioEntityOverride entity)
+        {
+            var crgn = Region;
+            if (crgn == null) return false;
+
+
+            crgn.RemoveEntity(entity);
+
+
+
+
+
+            Dictionary<MCExtensionDefSpawnPoint, int> ndict = new Dictionary<MCExtensionDefSpawnPoint, int>();
+            if (entity.ScenarioPoints != null)
+            {
+                foreach (var point in entity.ScenarioPoints)
+                {
+                    ndict[point] = 1;
+                }
+            }
+            List<ScenarioNode> delnodes = new List<ScenarioNode>();
+            foreach (var node in Nodes)
+            {
+                if ((node.EntityPoint != null) && (ndict.ContainsKey(node.EntityPoint)))
+                {
+                    delnodes.Add(node);
+                }
+                else if (node.Entity == entity)
+                {
+                    delnodes.Add(node);
+                }
+            }
+            foreach (var delnode in delnodes)
+            {
+                delnode.Entity = null;
+                delnode.EntityPoint = null;//this entity point has been removed from the region. remove this association.
+                RemoveNode(delnode);
+            }
+
+            return true;
+        }
 
 
 

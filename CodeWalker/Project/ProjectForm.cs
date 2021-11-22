@@ -5246,7 +5246,7 @@ namespace CodeWalker.Project
                     ymt.CScenarioPointRegion = new MCScenarioPointRegion();
                     ymt.CScenarioPointRegion.Ymt = ymt;
                     ymt.CScenarioPointRegion.Points = new MCScenarioPointContainer(ymt.CScenarioPointRegion);
-                    ymt.CScenarioPointRegion.Paths = new MUnk_4023740759(ymt.CScenarioPointRegion);
+                    ymt.CScenarioPointRegion.Paths = new MCScenarioChainingGraph(ymt.CScenarioPointRegion);
                     ymt.CScenarioPointRegion.LookUps = new MCScenarioPointLookUps(ymt.CScenarioPointRegion);
 
                     ymt.ScenarioRegion = new ScenarioRegion();
@@ -5888,9 +5888,6 @@ namespace CodeWalker.Project
 
             var chain = CurrentScenarioNode.ChainingNode.Chain;
 
-            var paths = CurrentScenario.CScenarioPointRegion?.Paths;
-            if (paths == null) return;
-
             var rgn = CurrentScenario.ScenarioRegion;
             if (rgn == null) return;
 
@@ -5908,43 +5905,7 @@ namespace CodeWalker.Project
 
 
 
-            Dictionary<MCScenarioChainingNode, int> ndict = new Dictionary<MCScenarioChainingNode, int>();
-
-            var edges = chain.Edges;
-            if (edges != null)
-            {
-                foreach (var edge in edges)
-                {
-                    //paths.RemoveEdge(edge); //removing nodes also removes edges!
-                    paths.RemoveNode(edge.NodeFrom);
-                    paths.RemoveNode(edge.NodeTo);
-
-                    ndict[edge.NodeFrom] = 1;
-                    ndict[edge.NodeTo] = 1;
-                }
-            }
-
-            paths.RemoveChain(chain);
-
-
-
-
-            List<ScenarioNode> delnodes = new List<ScenarioNode>();
-            foreach (var node in rgn.Nodes)
-            {
-                if ((node.ChainingNode != null) && (ndict.ContainsKey(node.ChainingNode)))
-                {
-                    delnodes.Add(node);
-                }
-            }
-            foreach (var delnode in delnodes)
-            {
-                delnode.ChainingNode = null;//this chaining node has been removed from the region. remove this association.
-                if (delpoints)
-                {
-                    rgn.RemoveNode(delnode);
-                }
-            }
+            rgn.RemoveChain(chain, delpoints);
 
 
 
@@ -5989,9 +5950,6 @@ namespace CodeWalker.Project
             var rgn = CurrentScenario.ScenarioRegion;
             if (rgn == null) return;
 
-            var crgn = CurrentScenario.CScenarioPointRegion;
-            if (crgn == null) return;
-
 
             if (MessageBox.Show("Are you sure you want to delete this scenario cluster?\n" + cluster.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
             {
@@ -6005,60 +5963,7 @@ namespace CodeWalker.Project
             }
 
 
-            crgn.RemoveCluster(cluster);
-
-
-
-
-
-            Dictionary<MCScenarioPoint, int> ndict = new Dictionary<MCScenarioPoint, int>();
-            if (cluster?.Points?.MyPoints != null)
-            {
-                foreach (var point in cluster.Points.MyPoints)
-                {
-                    ndict[point] = 1;
-                }
-            }
-            List<ScenarioNode> delnodes = new List<ScenarioNode>();
-            foreach (var node in rgn.Nodes)
-            {
-                if ((node.ClusterMyPoint != null) && (ndict.ContainsKey(node.ClusterMyPoint)))
-                {
-                    delnodes.Add(node);
-                }
-                else if (node.Cluster == cluster)
-                {
-                    delnodes.Add(node);
-                }
-            }
-            foreach (var delnode in delnodes)
-            {
-                if (!delpoints && (crgn.Points != null) && (delnode.ClusterMyPoint != null))
-                {
-                    var copypt = new MCScenarioPoint(crgn, delnode.ClusterMyPoint);
-                    crgn.Points.AddMyPoint(copypt);
-                    delnode.MyPoint = copypt;
-                }
-                bool iscl = false;
-                if ((delnode.Cluster != null) && (delnode.ClusterMyPoint == null) && (delnode.ClusterLoadSavePoint == null))
-                {
-                    iscl = true;
-                }
-                delnode.Cluster = null;
-                delnode.ClusterMyPoint = null;//this cluster point has been removed from the region. remove this association.
-                delnode.ClusterLoadSavePoint = null;
-                if (delpoints)
-                {
-                    //if ((delnode.ChainingNode == null) && (delnode.EntityPoint == null))
-                    {
-                        rgn.RemoveNode(delnode);
-                    }
-                }
-                else if (iscl)
-                {
-                    rgn.RemoveNode(delnode); //remove the cluster node itself.
-                }
-            }
+            rgn.RemoveCluster(cluster, delpoints);
 
 
 
@@ -6104,9 +6009,6 @@ namespace CodeWalker.Project
             var rgn = CurrentScenario.ScenarioRegion;
             if (rgn == null) return;
 
-            var crgn = CurrentScenario.CScenarioPointRegion;
-            if (crgn == null) return;
-
 
             if (MessageBox.Show("Are you sure you want to delete this scenario entity override, and all its override points?\n" + entity.ToString() + "\n\nThis operation cannot be undone. Continue?", "Confirm delete", MessageBoxButtons.YesNo) != DialogResult.Yes)
             {
@@ -6120,38 +6022,7 @@ namespace CodeWalker.Project
             //}
 
 
-            crgn.RemoveEntity(entity);
-
-
-
-
-
-            Dictionary<MCExtensionDefSpawnPoint, int> ndict = new Dictionary<MCExtensionDefSpawnPoint, int>();
-            if (entity.ScenarioPoints != null)
-            {
-                foreach (var point in entity.ScenarioPoints)
-                {
-                    ndict[point] = 1;
-                }
-            }
-            List<ScenarioNode> delnodes = new List<ScenarioNode>();
-            foreach (var node in rgn.Nodes)
-            {
-                if ((node.EntityPoint != null) && (ndict.ContainsKey(node.EntityPoint)))
-                {
-                    delnodes.Add(node);
-                }
-                else if (node.Entity == entity)
-                {
-                    delnodes.Add(node);
-                }
-            }
-            foreach (var delnode in delnodes)
-            {
-                delnode.Entity = null;
-                delnode.EntityPoint = null;//this entity point has been removed from the region. remove this association.
-                rgn.RemoveNode(delnode);
-            }
+            rgn.RemoveEntity(entity);
 
 
 

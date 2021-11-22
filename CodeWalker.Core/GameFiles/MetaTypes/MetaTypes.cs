@@ -306,8 +306,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPoint),
                      new MetaStructureEntryInfo_s(MetaName.MyPoints, 16, MetaStructureEntryDataType.Array, 0, 2, 0)
                     );
-                case (MetaName)4023740759:
-                    return new MetaStructureInfo((MetaName)4023740759, 88255871, 768, 88,
+                case MetaName.CScenarioChainingGraph:
+                    return new MetaStructureInfo(MetaName.CScenarioChainingGraph, 88255871, 768, 88,
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
                      new MetaStructureEntryInfo_s(MetaName.Nodes, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
@@ -345,7 +345,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.Points, 8, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioEntityOverride),
                      new MetaStructureEntryInfo_s(MetaName.EntityOverrides, 72, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3696045377, 96, MetaStructureEntryDataType.Structure, 0, 0, (MetaName)4023740759),
+                     new MetaStructureEntryInfo_s(MetaName.ChainingGraph, 96, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingGraph),
                      new MetaStructureEntryInfo_s(MetaName.AccelGrid, 184, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdGrid2D),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)3844724227, 248, MetaStructureEntryDataType.Array, 0, 6, 0),
@@ -388,7 +388,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.group, 56, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.interior, 60, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.requiredImap, 64, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.availableInMpSp, 68, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
+                     new MetaStructureEntryInfo_s(MetaName.availableInMpSp, 68, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CSpawnPoint__AvailabilityMpSp),
                      new MetaStructureEntryInfo_s(MetaName.probability, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.timeTillPedLeaves, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.radius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
@@ -1140,7 +1140,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 37, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.Group, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ModelSet, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, (MetaName)3573596290),
+                     new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CSpawnPoint__AvailabilityMpSp),
                      new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
                      new MetaStructureEntryInfo_s(MetaName.Radius, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.TimeTillPedLeaves, 60, MetaStructureEntryDataType.Float, 0, 0, 0)
@@ -1279,8 +1279,8 @@ namespace CodeWalker.GameFiles
                      new MetaEnumEntryInfo_s((MetaName)1111379709, 29),
                      new MetaEnumEntryInfo_s(MetaName.IgnoreWeatherRestrictions, 30)
                     );
-                case (MetaName)3573596290:
-                    return new MetaEnumInfo((MetaName)3573596290, 671739257,
+                case MetaName.CSpawnPoint__AvailabilityMpSp:
+                    return new MetaEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp, 671739257,
                      new MetaEnumEntryInfo_s(MetaName.kBoth, 0),
                      new MetaEnumEntryInfo_s(MetaName.kOnlySp, 1),
                      new MetaEnumEntryInfo_s(MetaName.kOnlyMp, 2)
@@ -2130,7 +2130,7 @@ namespace CodeWalker.GameFiles
         IgnoreWeatherRestrictions = 1073741824,//30,
     }
 
-    public enum Unk_3573596290 //SCENARIO Spawn point availability availableInMpSp
+    public enum CSpawnPoint__AvailabilityMpSp //SCENARIO Spawn point availability availableInMpSp
         : int //Key:671739257
     {
         kBoth = 0,
@@ -3641,7 +3641,7 @@ namespace CodeWalker.GameFiles
         public MetaHash group { get; set; } //56   56: Hash: 0: group
         public MetaHash interior { get; set; } //60   60: Hash: 0: interior
         public MetaHash requiredImap { get; set; } //64   64: Hash: 0: requiredImap
-        public Unk_3573596290 availableInMpSp { get; set; } //68   68: IntEnum: 3573596290: availableInMpSp
+        public CSpawnPoint__AvailabilityMpSp availableInMpSp { get; set; } //68   68: IntEnum: CSpawnPoint__AvailabilityMpSp: availableInMpSp
         public float probability { get; set; } //72   72: Float: 0: probability
         public float timeTillPedLeaves { get; set; } //76   76: Float: 0: timeTillPedLeaves
         public float radius { get; set; } //80   80: Float: 0: radius
@@ -3676,7 +3676,7 @@ namespace CodeWalker.GameFiles
         public MetaHash Group { get { return _Data.group; } set { _Data.group = value; } }
         public MetaHash Interior { get { return _Data.interior; } set { _Data.interior = value; } }
         public MetaHash RequiredImap { get { return _Data.requiredImap; } set { _Data.requiredImap = value; } }
-        public Unk_3573596290 AvailableInMpSp { get { return _Data.availableInMpSp; } set { _Data.availableInMpSp = value; } }
+        public CSpawnPoint__AvailabilityMpSp AvailableInMpSp { get { return _Data.availableInMpSp; } set { _Data.availableInMpSp = value; } }
         public float Probability { get { return _Data.probability; } set { _Data.probability = value; } }
         public float TimeTillPedLeaves { get { return _Data.timeTillPedLeaves; } set { _Data.timeTillPedLeaves = value; } }
         public float Radius { get { return _Data.radius; } set { _Data.radius = value; } }
@@ -3715,7 +3715,7 @@ namespace CodeWalker.GameFiles
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
-            mb.AddEnumInfo((MetaName)3573596290);
+            mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
             mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
             return mb.AddItemPtr(MetaName.CExtensionDefSpawnPoint, _Data);
@@ -3749,7 +3749,7 @@ namespace CodeWalker.GameFiles
         public ushort Unused4 { get; set; }//38
         public MetaHash Group { get; set; } //40   40: Hash: 0: Group
         public MetaHash ModelSet { get; set; } //44   44: Hash: 0: ModelSet
-        public Unk_3573596290 AvailabilityInMpSp { get; set; } //48   48: IntEnum: 3573596290: AvailabilityInMpSp//2932681318
+        public CSpawnPoint__AvailabilityMpSp AvailabilityInMpSp { get; set; } //48   48: IntEnum: CSpawnPoint__AvailabilityMpSp: AvailabilityInMpSp//2932681318
         public CScenarioPointFlags__Flags Flags { get; set; } //52   52: IntFlags2: 700327466: Flags
         public float Radius { get; set; } //56   56: Float: 0: Radius
         public float TimeTillPedLeaves { get; set; } //60   60: Float: 0: TimeTillPedLeaves//4073598194
@@ -3771,7 +3771,7 @@ namespace CodeWalker.GameFiles
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
-            mb.AddEnumInfo((MetaName)3573596290);
+            mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
             mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPointOverride);
             return mb.AddItemPtr(MetaName.CExtensionDefSpawnPointOverride, _Data);
@@ -4120,7 +4120,7 @@ namespace CodeWalker.GameFiles
         public Array_Structure EntityOverrides { get; set; } //72   72: Array: 0: EntityOverrides//697469539  {0: Structure: CScenarioEntityOverride//4213733800: 256}
         public uint Unused5 { get; set; }//88
         public uint Unused6 { get; set; }//92
-        public Unk_4023740759 Unk_3696045377 { get; set; } //[PATHS] 96   96: Structure: 4023740759: 3696045377
+        public CScenarioChainingGraph ChainingGraph { get; set; } //[PATHS] 96   96: Structure: CScenarioChainingGraph: ChainingGraph
         public rage__spdGrid2D AccelGrid { get; set; } //184   184: Structure: rage__spdGrid2D: AccelGrid//3053155275
         public Array_ushort Unk_3844724227 { get; set; } //248   248: Array: 0: 3844724227  {0: UnsignedShort: 0: 256}
         public Array_Structure Clusters { get; set; } //264   264: Array: 0: Clusters//3587988394  {0: Structure: CScenarioPointCluster//750308016: 256}
@@ -4135,7 +4135,7 @@ namespace CodeWalker.GameFiles
 
         public MCScenarioPointContainer Points { get; set; }
         public MCScenarioEntityOverride[] EntityOverrides { get; set; }
-        public MUnk_4023740759 Paths { get; set; }
+        public MCScenarioChainingGraph Paths { get; set; }
         public ushort[] Unk_3844724227 { get; set; } //GRID DATA - 2d dimensions - AccelGrid ((MaxX-MinX)+1)*((MaxY-MinY)+1)
         public MCScenarioPointCluster[] Clusters { get; set; }
         public MCScenarioPointLookUps LookUps { get; set; }
@@ -4166,7 +4166,7 @@ namespace CodeWalker.GameFiles
             }
 
 
-            Paths = new MUnk_4023740759(this, meta, _Data.Unk_3696045377);
+            Paths = new MCScenarioChainingGraph(this, meta, _Data.ChainingGraph);
 
 
             var clusters = MetaTypes.ConvertDataArray<CScenarioPointCluster>(meta, MetaName.CScenarioPointCluster, _Data.Clusters);
@@ -4229,7 +4229,7 @@ namespace CodeWalker.GameFiles
             //var pntb = mb.EnsureBlock(MetaName.CScenarioPoint);
 
             mb.AddStructureInfo(MetaName.CScenarioPointContainer);
-            mb.AddStructureInfo((MetaName)4023740759);
+            mb.AddStructureInfo(MetaName.CScenarioChainingGraph);
             mb.AddStructureInfo(MetaName.rage__spdGrid2D);
             mb.AddStructureInfo(MetaName.CScenarioPointLookUps);
             mb.AddStructureInfo(MetaName.CScenarioPointRegion);
@@ -4243,7 +4243,7 @@ namespace CodeWalker.GameFiles
                 if (loadSavePoints != null)//this never seems to be used...
                 {
                     mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
-                    mb.AddEnumInfo((MetaName)3573596290);
+                    mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
                     mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.LoadSavePoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, loadSavePoints);
                 }
@@ -4278,7 +4278,7 @@ namespace CodeWalker.GameFiles
                     if (scps != null)
                     {
                         mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
-                        mb.AddEnumInfo((MetaName)3573596290);
+                        mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
                         mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                         cent.ScenarioPoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, scps);
                     }
@@ -4295,7 +4295,7 @@ namespace CodeWalker.GameFiles
 
             if (Paths != null)
             {
-                var pd = new Unk_4023740759();
+                var pd = new CScenarioChainingGraph();
 
                 var nodes = Paths.GetCNodes();
                 if (nodes != null)
@@ -4333,11 +4333,11 @@ namespace CodeWalker.GameFiles
                     pd.Chains = mb.AddItemArrayPtr(MetaName.CScenarioChain, chains);
                 }
 
-                _Data.Unk_3696045377 = pd;
+                _Data.ChainingGraph = pd;
             }
             else
             {
-                _Data.Unk_3696045377 = new Unk_4023740759();
+                _Data.ChainingGraph = new CScenarioChainingGraph();
             }
 
 
@@ -4914,7 +4914,7 @@ namespace CodeWalker.GameFiles
             if (ScenarioPoints != null)
             {
                 mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
-                mb.AddEnumInfo((MetaName)3573596290);
+                mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
                 mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                 _Data.ScenarioPoints = mb.AddWrapperArray(ScenarioPoints);
             }
@@ -4987,7 +4987,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct Unk_4023740759  //SCENARIO PATH ARRAYS //88 bytes, Key:88255871
+    [TC(typeof(EXP))] public struct CScenarioChainingGraph  //SCENARIO PATH ARRAYS //88 bytes, Key:88255871
     {
         public Array_Structure Nodes { get; set; } //0   0: Array: 0: Nodes  {0: Structure: CScenarioChainingNode//3340683255: 256}
         public Array_Structure Edges { get; set; } //16   16: Array: 0: Edges  {0: Structure: CScenarioChainingEdge//4255409560: 256}
@@ -5008,20 +5008,20 @@ namespace CodeWalker.GameFiles
             return Nodes.Count1.ToString() + " Nodes, " + Edges.Count1.ToString() + " Edges, " + Chains.Count1.ToString() + " Chains";
         }
     }
-    [TC(typeof(EXP))] public class MUnk_4023740759 : MetaWrapper
+    [TC(typeof(EXP))] public class MCScenarioChainingGraph : MetaWrapper
     {
         public MCScenarioPointRegion Region { get; private set; }
 
-        public Unk_4023740759 _Data;
-        public Unk_4023740759 Data { get { return _Data; } set { _Data = value; } }
+        public CScenarioChainingGraph _Data;
+        public CScenarioChainingGraph Data { get { return _Data; } set { _Data = value; } }
 
         public MCScenarioChainingNode[] Nodes { get; set; }
         public MCScenarioChainingEdge[] Edges { get; set; }
         public MCScenarioChain[] Chains { get; set; }
 
-        public MUnk_4023740759() { }
-        public MUnk_4023740759(MCScenarioPointRegion region) { Region = region; }
-        public MUnk_4023740759(MCScenarioPointRegion region, Meta meta, Unk_4023740759 d)
+        public MCScenarioChainingGraph() { }
+        public MCScenarioChainingGraph(MCScenarioPointRegion region) { Region = region; }
+        public MCScenarioChainingGraph(MCScenarioPointRegion region, Meta meta, CScenarioChainingGraph d)
         {
             Region = region;
             _Data = d;
@@ -5063,7 +5063,7 @@ namespace CodeWalker.GameFiles
 
         public override void Load(Meta meta, MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<Unk_4023740759>(meta, ptr);
+            _Data = MetaTypes.GetData<CScenarioChainingGraph>(meta, ptr);
             Init(meta);
         }
 
@@ -5071,8 +5071,8 @@ namespace CodeWalker.GameFiles
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
-            mb.AddStructureInfo((MetaName)4023740759);
-            return mb.AddItemPtr((MetaName)4023740759, _Data);
+            mb.AddStructureInfo(MetaName.CScenarioChainingGraph);
+            return mb.AddItemPtr(MetaName.CScenarioChainingGraph, _Data);
         }
 
 
@@ -5159,26 +5159,6 @@ namespace CodeWalker.GameFiles
             {
                 //first remove any edges referencing this node...
                 List<MCScenarioChainingEdge> remedges = new List<MCScenarioChainingEdge>();
-                if (Chains != null)
-                {
-                    foreach (var chain in Chains)
-                    {
-                        if (chain.Edges == null) continue;
-                        remedges.Clear();
-                        foreach (var edge in chain.Edges)
-                        {
-                            if ((edge.NodeFrom == n) || (edge.NodeTo == n))
-                            {
-                                remedges.Add(edge);
-                            }
-                        }
-                        foreach (var edge in remedges)
-                        {
-                            chain.RemoveEdge(edge);
-                        }
-                    }
-                }
-                remedges.Clear();
                 foreach (var edge in Edges)
                 {
                     if ((edge.NodeFrom == n) || (edge.NodeTo == n))
@@ -5243,15 +5223,21 @@ namespace CodeWalker.GameFiles
                 {
                     Edges = newedges.ToArray();
 
+                    var remchains = new List<MCScenarioChain>();
                     foreach (var c in Chains)
                     {
-                        if ((c?.Edges != null) && (c?.EdgeIds != null))
+                        if (c == null) continue;
+                        if (c.RemoveEdge(e))
                         {
-                            for (int i = 0; i < c.Edges.Length; i++)
+                            if ((c.Edges?.Length ?? 0) == 0)
                             {
-                                c.EdgeIds[i] = (ushort)c.Edges[i].EdgeIndex;
+                                remchains.Add(c);
                             }
                         }
+                    }
+                    foreach (var c in remchains)
+                    {
+                        RemoveChain(c);
                     }
                 }
             }
@@ -5289,7 +5275,7 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return "Unk_4023740759 (Scenario paths) " + _Data.ToString();
+                return "CScenarioChainingGraph " + _Data.ToString();
             }
         }
         public override string ToString()
@@ -5317,7 +5303,7 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class MCScenarioChainingNode : MetaWrapper
     {
-        [TC(typeof(EXP))] public MUnk_4023740759 Parent { get; set; }
+        [TC(typeof(EXP))] public MCScenarioChainingGraph Parent { get; set; }
         public MCScenarioPointRegion Region { get; set; }
         public ScenarioNode ScenarioNode { get; set; }
 
@@ -5336,7 +5322,7 @@ namespace CodeWalker.GameFiles
 
 
         public MCScenarioChainingNode() { }
-        public MCScenarioChainingNode(MCScenarioPointRegion region, Meta meta, CScenarioChainingNode d, MUnk_4023740759 parent, int index)
+        public MCScenarioChainingNode(MCScenarioPointRegion region, Meta meta, CScenarioChainingNode d, MCScenarioChainingGraph parent, int index)
         {
             Region = region;
             Parent = parent;
@@ -5673,7 +5659,7 @@ namespace CodeWalker.GameFiles
                 if (loadSavePoints != null)//this never seems to be used...
                 {
                     mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
-                    mb.AddEnumInfo((MetaName)3573596290);
+                    mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
                     mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
                     scp.LoadSavePoints = mb.AddItemArrayPtr(MetaName.CExtensionDefSpawnPoint, loadSavePoints);
                 }

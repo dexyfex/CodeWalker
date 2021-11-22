@@ -169,9 +169,9 @@ namespace CodeWalker.Project.Panels
 
 
             ScenarioEntityPointAvailableInMpSpComboBox.Items.Clear();
-            ScenarioEntityPointAvailableInMpSpComboBox.Items.Add(Unk_3573596290.kBoth);
-            ScenarioEntityPointAvailableInMpSpComboBox.Items.Add(Unk_3573596290.kOnlySp);
-            ScenarioEntityPointAvailableInMpSpComboBox.Items.Add(Unk_3573596290.kOnlyMp);
+            ScenarioEntityPointAvailableInMpSpComboBox.Items.Add(CSpawnPoint__AvailabilityMpSp.kBoth);
+            ScenarioEntityPointAvailableInMpSpComboBox.Items.Add(CSpawnPoint__AvailabilityMpSp.kOnlySp);
+            ScenarioEntityPointAvailableInMpSpComboBox.Items.Add(CSpawnPoint__AvailabilityMpSp.kOnlyMp);
 
 
             ScenarioChainEdgeActionComboBox.Items.Clear();
@@ -662,7 +662,6 @@ namespace CodeWalker.Project.Panels
                 return;
             }
 
-            chain.RemoveEdge(CurrentScenarioChainEdge);
             paths.RemoveEdge(CurrentScenarioChainEdge);
 
             LoadScenarioChainTabPage();
@@ -1439,7 +1438,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.EntityPoint == null) return;
-            Unk_3573596290 v = (Unk_3573596290)ScenarioEntityPointAvailableInMpSpComboBox.SelectedItem;
+            var v = (CSpawnPoint__AvailabilityMpSp)ScenarioEntityPointAvailableInMpSpComboBox.SelectedItem;
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentScenarioNode.EntityPoint.AvailableInMpSp != v)
