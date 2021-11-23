@@ -71,6 +71,8 @@
             this.ScenarioEntityTabPage = new System.Windows.Forms.TabPage();
             this.ScenarioEntityDeleteButton = new System.Windows.Forms.Button();
             this.ScenarioEntityPanel = new System.Windows.Forms.Panel();
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox = new System.Windows.Forms.CheckBox();
+            this.ScenarioEntityMayNotAlwaysExistCheckBox = new System.Windows.Forms.CheckBox();
             this.label160 = new System.Windows.Forms.Label();
             this.ScenarioEntityAddPointButton = new System.Windows.Forms.Button();
             this.label161 = new System.Windows.Forms.Label();
@@ -220,8 +222,6 @@
             this.label154 = new System.Windows.Forms.Label();
             this.ScenarioClusterPointTypeComboBox = new System.Windows.Forms.ComboBox();
             this.label155 = new System.Windows.Forms.Label();
-            this.ScenarioEntityMayNotAlwaysExistCheckBox = new System.Windows.Forms.CheckBox();
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox = new System.Windows.Forms.CheckBox();
             this.ScenarioTabControl.SuspendLayout();
             this.ScenarioPointTabPage.SuspendLayout();
             this.ScenarioPointOuterPanel.SuspendLayout();
@@ -452,33 +452,33 @@
             "1 - IgnoreMaxInRange",
             "2 - NoSpawn",
             "4 - StationaryReactions",
-            "8 - Unk",
-            "16 - Unk",
+            "8 - OnlySpawnInSameInterior",
+            "16 - SpawnedPedIsArrestable",
             "32 - ActivateVehicleSiren",
             "64 - AggressiveVehicleDriving",
-            "128 - Unk",
-            "256 - Unk",
-            "512 - Unk",
+            "128 - LandVehicleOnArrival",
+            "256 - IgnoreThreatsIfLosNotClear",
+            "512 - EventsInRadiusTriggerDisputes",
             "1024 - AerialVehiclePoint",
             "2048 - TerritorialScenario",
-            "4096 - Unk",
-            "8192 - Unk",
-            "16384 - Unk",
-            "32768 - Unk",
+            "4096 - EndScenarioIfPlayerWithinRadius",
+            "8192 - EventsInRadiusTriggerThreatResponse",
+            "16384 - TaxiPlaneOnGround",
+            "32768 - FlyOffToOblivion",
             "65536 - InWater",
-            "131072 - Unk",
+            "131072 - AllowInvestigation",
             "262144 - OpenDoor",
             "524288 - PreciseUseTime",
-            "1048576 - Unk",
-            "2097152 - Unk",
+            "1048576 - NoRespawnUntilStreamedOut",
+            "2097152 - NoVehicleSpawnMaxDistance",
             "4194304 - ExtendedRange",
             "8388608 - ShortRange",
             "16777216 - HighPriority",
             "33554432 - IgnoreLoitering",
             "67108864 - UseSearchlight",
             "134217728 - ResetNoCollisionOnCleanUp",
-            "268435456 - Unk",
-            "536870912 - Unk",
+            "268435456 - CheckCrossedArrivalPlane",
+            "536870912 - UseVehicleFrontForArrival",
             "1073741824 - IgnoreWeatherRestrictions"});
             this.ScenarioPointFlagsCheckedListBox.Location = new System.Drawing.Point(195, 167);
             this.ScenarioPointFlagsCheckedListBox.Name = "ScenarioPointFlagsCheckedListBox";
@@ -799,6 +799,28 @@
             this.ScenarioEntityPanel.Size = new System.Drawing.Size(551, 385);
             this.ScenarioEntityPanel.TabIndex = 8;
             // 
+            // ScenarioEntitySpecificallyPreventArtPointsCheckBox
+            // 
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.AutoSize = true;
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Location = new System.Drawing.Point(91, 84);
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Name = "ScenarioEntitySpecificallyPreventArtPointsCheckBox";
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Size = new System.Drawing.Size(167, 17);
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.TabIndex = 13;
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Text = "Specifically Prevent Art Points";
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.UseVisualStyleBackColor = true;
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioEntitySpecificallyPreventArtPointsCheckBox_CheckedChanged);
+            // 
+            // ScenarioEntityMayNotAlwaysExistCheckBox
+            // 
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.AutoSize = true;
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Location = new System.Drawing.Point(91, 60);
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Name = "ScenarioEntityMayNotAlwaysExistCheckBox";
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Size = new System.Drawing.Size(156, 17);
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.TabIndex = 11;
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Text = "Entity May Not Always Exist";
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.UseVisualStyleBackColor = true;
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioEntityMayNotAlwaysExistCheckBox_CheckedChanged);
+            // 
             // label160
             // 
             this.label160.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -1050,33 +1072,33 @@
             "1 - IgnoreMaxInRange",
             "2 - NoSpawn",
             "4 - StationaryReactions",
-            "8 - Unk",
-            "16 - Unk",
+            "8 - OnlySpawnInSameInterior",
+            "16 - SpawnedPedIsArrestable",
             "32 - ActivateVehicleSiren",
             "64 - AggressiveVehicleDriving",
-            "128 - Unk",
-            "256 - Unk",
-            "512 - Unk",
+            "128 - LandVehicleOnArrival",
+            "256 - IgnoreThreatsIfLosNotClear",
+            "512 - EventsInRadiusTriggerDisputes",
             "1024 - AerialVehiclePoint",
             "2048 - TerritorialScenario",
-            "4096 - Unk",
-            "8192 - Unk",
-            "16384 - Unk",
-            "32768 - Unk",
+            "4096 - EndScenarioIfPlayerWithinRadius",
+            "8192 - EventsInRadiusTriggerThreatResponse",
+            "16384 - TaxiPlaneOnGround",
+            "32768 - FlyOffToOblivion",
             "65536 - InWater",
-            "131072 - Unk",
+            "131072 - AllowInvestigation",
             "262144 - OpenDoor",
             "524288 - PreciseUseTime",
-            "1048576 - Unk",
-            "2097152 - Unk",
+            "1048576 - NoRespawnUntilStreamedOut",
+            "2097152 - NoVehicleSpawnMaxDistance",
             "4194304 - ExtendedRange",
             "8388608 - ShortRange",
             "16777216 - HighPriority",
             "33554432 - IgnoreLoitering",
             "67108864 - UseSearchlight",
             "134217728 - ResetNoCollisionOnCleanUp",
-            "268435456 - Unk",
-            "536870912 - Unk",
+            "268435456 - CheckCrossedArrivalPlane",
+            "536870912 - UseVehicleFrontForArrival",
             "1073741824 - IgnoreWeatherRestrictions"});
             this.ScenarioEntityPointFlagsCheckedListBox.Location = new System.Drawing.Point(269, 193);
             this.ScenarioEntityPointFlagsCheckedListBox.Name = "ScenarioEntityPointFlagsCheckedListBox";
@@ -2534,28 +2556,6 @@
             this.label155.Size = new System.Drawing.Size(34, 13);
             this.label155.TabIndex = 10;
             this.label155.Text = "Type:";
-            // 
-            // ScenarioEntityMayNotAlwaysExistCheckBox
-            // 
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.AutoSize = true;
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.Location = new System.Drawing.Point(91, 60);
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.Name = "ScenarioEntityMayNotAlwaysExistCheckBox";
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.Size = new System.Drawing.Size(156, 17);
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.TabIndex = 11;
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.Text = "Entity May Not Always Exist";
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.UseVisualStyleBackColor = true;
-            this.ScenarioEntityMayNotAlwaysExistCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioEntityMayNotAlwaysExistCheckBox_CheckedChanged);
-            // 
-            // ScenarioEntitySpecificallyPreventArtPointsCheckBox
-            // 
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.AutoSize = true;
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Location = new System.Drawing.Point(91, 84);
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Name = "ScenarioEntitySpecificallyPreventArtPointsCheckBox";
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Size = new System.Drawing.Size(167, 17);
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.TabIndex = 13;
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Text = "Specifically Prevent Art Points";
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.UseVisualStyleBackColor = true;
-            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioEntitySpecificallyPreventArtPointsCheckBox_CheckedChanged);
             // 
             // EditScenarioNodePanel
             // 
