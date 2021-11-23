@@ -76,10 +76,6 @@
             this.label161 = new System.Windows.Forms.Label();
             this.ScenarioEntityPointsListBox = new System.Windows.Forms.ListBox();
             this.ScenarioEntityInfoLabel = new System.Windows.Forms.Label();
-            this.label114 = new System.Windows.Forms.Label();
-            this.ScenarioEntityUnk2UpDown = new System.Windows.Forms.NumericUpDown();
-            this.label113 = new System.Windows.Forms.Label();
-            this.ScenarioEntityUnk1UpDown = new System.Windows.Forms.NumericUpDown();
             this.ScenarioEntityTypeHashLabel = new System.Windows.Forms.Label();
             this.ScenarioEntityTypeTextBox = new System.Windows.Forms.TextBox();
             this.label112 = new System.Windows.Forms.Label();
@@ -91,6 +87,7 @@
             this.ScenarioEntityPointDeleteButton = new System.Windows.Forms.Button();
             this.ScenarioEntityPointAddToProjectButton = new System.Windows.Forms.Button();
             this.ScenarioEntityPointPanel = new System.Windows.Forms.Panel();
+            this.ScenarioEntityPointRotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
             this.ScenarioEntityPointNameHashLabel = new System.Windows.Forms.Label();
             this.ScenarioEntityPointNameTextBox = new System.Windows.Forms.TextBox();
             this.ScenarioEntityPointFlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
@@ -223,7 +220,8 @@
             this.label154 = new System.Windows.Forms.Label();
             this.ScenarioClusterPointTypeComboBox = new System.Windows.Forms.ComboBox();
             this.label155 = new System.Windows.Forms.Label();
-            this.ScenarioEntityPointRotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
+            this.ScenarioEntityMayNotAlwaysExistCheckBox = new System.Windows.Forms.CheckBox();
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox = new System.Windows.Forms.CheckBox();
             this.ScenarioTabControl.SuspendLayout();
             this.ScenarioPointTabPage.SuspendLayout();
             this.ScenarioPointOuterPanel.SuspendLayout();
@@ -237,8 +235,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.ScenarioPointTimeStartUpDown)).BeginInit();
             this.ScenarioEntityTabPage.SuspendLayout();
             this.ScenarioEntityPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.ScenarioEntityUnk2UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ScenarioEntityUnk1UpDown)).BeginInit();
             this.ScenarioEntityPointTabPage.SuspendLayout();
             this.ScenarioEntityPointPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ScenarioEntityPointFlagsUpDown)).BeginInit();
@@ -785,15 +781,13 @@
             this.ScenarioEntityPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntitySpecificallyPreventArtPointsCheckBox);
+            this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityMayNotAlwaysExistCheckBox);
             this.ScenarioEntityPanel.Controls.Add(this.label160);
             this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityAddPointButton);
             this.ScenarioEntityPanel.Controls.Add(this.label161);
             this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityPointsListBox);
             this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityInfoLabel);
-            this.ScenarioEntityPanel.Controls.Add(this.label114);
-            this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityUnk2UpDown);
-            this.ScenarioEntityPanel.Controls.Add(this.label113);
-            this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityUnk1UpDown);
             this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityTypeHashLabel);
             this.ScenarioEntityPanel.Controls.Add(this.ScenarioEntityTypeTextBox);
             this.ScenarioEntityPanel.Controls.Add(this.label112);
@@ -855,50 +849,6 @@
             this.ScenarioEntityInfoLabel.Size = new System.Drawing.Size(85, 13);
             this.ScenarioEntityInfoLabel.TabIndex = 14;
             this.ScenarioEntityInfoLabel.Text = "0 override points";
-            // 
-            // label114
-            // 
-            this.label114.AutoSize = true;
-            this.label114.Location = new System.Drawing.Point(46, 83);
-            this.label114.Name = "label114";
-            this.label114.Size = new System.Drawing.Size(39, 13);
-            this.label114.TabIndex = 12;
-            this.label114.Text = "Unk 2:";
-            // 
-            // ScenarioEntityUnk2UpDown
-            // 
-            this.ScenarioEntityUnk2UpDown.Location = new System.Drawing.Point(91, 81);
-            this.ScenarioEntityUnk2UpDown.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.ScenarioEntityUnk2UpDown.Name = "ScenarioEntityUnk2UpDown";
-            this.ScenarioEntityUnk2UpDown.Size = new System.Drawing.Size(57, 20);
-            this.ScenarioEntityUnk2UpDown.TabIndex = 13;
-            this.ScenarioEntityUnk2UpDown.ValueChanged += new System.EventHandler(this.ScenarioEntityUnk2UpDown_ValueChanged);
-            // 
-            // label113
-            // 
-            this.label113.AutoSize = true;
-            this.label113.Location = new System.Drawing.Point(46, 57);
-            this.label113.Name = "label113";
-            this.label113.Size = new System.Drawing.Size(39, 13);
-            this.label113.TabIndex = 10;
-            this.label113.Text = "Unk 1:";
-            // 
-            // ScenarioEntityUnk1UpDown
-            // 
-            this.ScenarioEntityUnk1UpDown.Location = new System.Drawing.Point(91, 55);
-            this.ScenarioEntityUnk1UpDown.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.ScenarioEntityUnk1UpDown.Name = "ScenarioEntityUnk1UpDown";
-            this.ScenarioEntityUnk1UpDown.Size = new System.Drawing.Size(57, 20);
-            this.ScenarioEntityUnk1UpDown.TabIndex = 11;
-            this.ScenarioEntityUnk1UpDown.ValueChanged += new System.EventHandler(this.ScenarioEntityUnk1UpDown_ValueChanged);
             // 
             // ScenarioEntityTypeHashLabel
             // 
@@ -1057,6 +1007,17 @@
             this.ScenarioEntityPointPanel.Name = "ScenarioEntityPointPanel";
             this.ScenarioEntityPointPanel.Size = new System.Drawing.Size(551, 414);
             this.ScenarioEntityPointPanel.TabIndex = 4;
+            // 
+            // ScenarioEntityPointRotationQuatBox
+            // 
+            this.ScenarioEntityPointRotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioEntityPointRotationQuatBox.Location = new System.Drawing.Point(109, 25);
+            this.ScenarioEntityPointRotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
+            this.ScenarioEntityPointRotationQuatBox.Name = "ScenarioEntityPointRotationQuatBox";
+            this.ScenarioEntityPointRotationQuatBox.Size = new System.Drawing.Size(387, 24);
+            this.ScenarioEntityPointRotationQuatBox.TabIndex = 9;
+            this.ScenarioEntityPointRotationQuatBox.ValueChanged += new System.EventHandler(this.ScenarioEntityPointRotationQuatBox_ValueChanged);
             // 
             // ScenarioEntityPointNameHashLabel
             // 
@@ -2574,16 +2535,27 @@
             this.label155.TabIndex = 10;
             this.label155.Text = "Type:";
             // 
-            // ScenarioEntityPointRotationQuatBox
+            // ScenarioEntityMayNotAlwaysExistCheckBox
             // 
-            this.ScenarioEntityPointRotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioEntityPointRotationQuatBox.Location = new System.Drawing.Point(109, 25);
-            this.ScenarioEntityPointRotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
-            this.ScenarioEntityPointRotationQuatBox.Name = "ScenarioEntityPointRotationQuatBox";
-            this.ScenarioEntityPointRotationQuatBox.Size = new System.Drawing.Size(387, 24);
-            this.ScenarioEntityPointRotationQuatBox.TabIndex = 9;
-            this.ScenarioEntityPointRotationQuatBox.ValueChanged += new System.EventHandler(this.ScenarioEntityPointRotationQuatBox_ValueChanged);
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.AutoSize = true;
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Location = new System.Drawing.Point(91, 60);
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Name = "ScenarioEntityMayNotAlwaysExistCheckBox";
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Size = new System.Drawing.Size(156, 17);
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.TabIndex = 11;
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.Text = "Entity May Not Always Exist";
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.UseVisualStyleBackColor = true;
+            this.ScenarioEntityMayNotAlwaysExistCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioEntityMayNotAlwaysExistCheckBox_CheckedChanged);
+            // 
+            // ScenarioEntitySpecificallyPreventArtPointsCheckBox
+            // 
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.AutoSize = true;
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Location = new System.Drawing.Point(91, 84);
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Name = "ScenarioEntitySpecificallyPreventArtPointsCheckBox";
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Size = new System.Drawing.Size(167, 17);
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.TabIndex = 13;
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.Text = "Specifically Prevent Art Points";
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.UseVisualStyleBackColor = true;
+            this.ScenarioEntitySpecificallyPreventArtPointsCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioEntitySpecificallyPreventArtPointsCheckBox_CheckedChanged);
             // 
             // EditScenarioNodePanel
             // 
@@ -2609,8 +2581,6 @@
             this.ScenarioEntityTabPage.ResumeLayout(false);
             this.ScenarioEntityPanel.ResumeLayout(false);
             this.ScenarioEntityPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.ScenarioEntityUnk2UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.ScenarioEntityUnk1UpDown)).EndInit();
             this.ScenarioEntityPointTabPage.ResumeLayout(false);
             this.ScenarioEntityPointPanel.ResumeLayout(false);
             this.ScenarioEntityPointPanel.PerformLayout();
@@ -2697,10 +2667,6 @@
         private System.Windows.Forms.Label label161;
         private System.Windows.Forms.ListBox ScenarioEntityPointsListBox;
         private System.Windows.Forms.Label ScenarioEntityInfoLabel;
-        private System.Windows.Forms.Label label114;
-        private System.Windows.Forms.NumericUpDown ScenarioEntityUnk2UpDown;
-        private System.Windows.Forms.Label label113;
-        private System.Windows.Forms.NumericUpDown ScenarioEntityUnk1UpDown;
         private System.Windows.Forms.Label ScenarioEntityTypeHashLabel;
         private System.Windows.Forms.TextBox ScenarioEntityTypeTextBox;
         private System.Windows.Forms.Label label112;
@@ -2845,5 +2811,7 @@
         private System.Windows.Forms.ComboBox ScenarioClusterPointTypeComboBox;
         private System.Windows.Forms.Label label155;
         private WinForms.QuaternionBox ScenarioEntityPointRotationQuatBox;
+        private System.Windows.Forms.CheckBox ScenarioEntityMayNotAlwaysExistCheckBox;
+        private System.Windows.Forms.CheckBox ScenarioEntitySpecificallyPreventArtPointsCheckBox;
     }
 }

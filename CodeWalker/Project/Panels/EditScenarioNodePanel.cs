@@ -279,8 +279,8 @@ namespace CodeWalker.Project.Panels
                 ScenarioEntityPositionTextBox.Text = "";
                 ScenarioEntityTypeTextBox.Text = "";
                 ScenarioEntityTypeHashLabel.Text = "Hash: 0";
-                ScenarioEntityUnk1UpDown.Value = 0;
-                ScenarioEntityUnk2UpDown.Value = 0;
+                ScenarioEntityMayNotAlwaysExistCheckBox.Checked = false;
+                ScenarioEntitySpecificallyPreventArtPointsCheckBox.Checked = false;
                 ScenarioEntityInfoLabel.Text = "0 override points";
                 ScenarioEntityPointsListBox.Items.Clear();
                 ScenarioEntityAddPointButton.Enabled = false;
@@ -294,8 +294,8 @@ namespace CodeWalker.Project.Panels
                 ScenarioEntityPositionTextBox.Text = FloatUtil.GetVector3String(e.Position);
                 ScenarioEntityTypeTextBox.Text = e.TypeName.ToString();
                 ScenarioEntityTypeHashLabel.Text = "Hash: " + e.TypeName.Hash.ToString();
-                ScenarioEntityUnk1UpDown.Value = e.Unk1;
-                ScenarioEntityUnk2UpDown.Value = e.Unk2;
+                ScenarioEntityMayNotAlwaysExistCheckBox.Checked = e.EntityMayNotAlwaysExist;
+                ScenarioEntitySpecificallyPreventArtPointsCheckBox.Checked = e.SpecificallyPreventArtPoints;
                 var pc = e.ScenarioPoints?.Length ?? 0;
                 ScenarioEntityInfoLabel.Text = pc.ToString() + " override point" + ((pc != 1) ? "s" : "");
                 ScenarioEntityPointsListBox.Items.Clear();
@@ -1157,33 +1157,33 @@ namespace CodeWalker.Project.Panels
             ProjectForm.ProjectExplorer?.UpdateScenarioNodeTreeNode(CurrentScenarioNode);
         }
 
-        private void ScenarioEntityUnk1UpDown_ValueChanged(object sender, EventArgs e)
+        private void ScenarioEntityMayNotAlwaysExistCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.Entity == null) return;
-            byte v = (byte)ScenarioEntityUnk1UpDown.Value;
+            bool v = ScenarioEntityMayNotAlwaysExistCheckBox.Checked;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentScenarioNode.Entity.Unk1 != v)
+                if (CurrentScenarioNode.Entity.EntityMayNotAlwaysExist != v)
                 {
-                    CurrentScenarioNode.Entity.Unk1 = v;
+                    CurrentScenarioNode.Entity.EntityMayNotAlwaysExist = v;
                     ProjectForm.SetScenarioHasChanged(true);
                 }
             }
         }
 
-        private void ScenarioEntityUnk2UpDown_ValueChanged(object sender, EventArgs e)
+        private void ScenarioEntitySpecificallyPreventArtPointsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.Entity == null) return;
-            byte v = (byte)ScenarioEntityUnk2UpDown.Value;
+            bool v = ScenarioEntitySpecificallyPreventArtPointsCheckBox.Checked;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentScenarioNode.Entity.Unk2 != v)
+                if (CurrentScenarioNode.Entity.SpecificallyPreventArtPoints != v)
                 {
-                    CurrentScenarioNode.Entity.Unk2 = v;
+                    CurrentScenarioNode.Entity.SpecificallyPreventArtPoints = v;
                     ProjectForm.SetScenarioHasChanged(true);
                 }
             }
@@ -2394,5 +2394,6 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
+
     }
 }

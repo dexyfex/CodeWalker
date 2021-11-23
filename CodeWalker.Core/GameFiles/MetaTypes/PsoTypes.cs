@@ -13247,10 +13247,10 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.numAlternatives, PsoDataType.UByte, 1, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPVTextureData),
                      new PsoStructureEntryInfo(MetaName.aTexData, PsoDataType.Array, 8, 0, (MetaName)2),
-                     new PsoStructureEntryInfo(MetaName.clothData, PsoDataType.Structure, 24, 0, (MetaName)2236980467)
+                     new PsoStructureEntryInfo(MetaName.clothData, PsoDataType.Structure, 24, 0, MetaName.CPVDrawblData__CPVClothComponentData)
                     );
-                case (MetaName)2236980467:
-                    return new PsoStructureInfo((MetaName)2236980467, 0, 0, 24,
+                case MetaName.CPVDrawblData__CPVClothComponentData:
+                    return new PsoStructureInfo(MetaName.CPVDrawblData__CPVClothComponentData, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ownsCloth, PsoDataType.Bool, 0, 0, 0)
                     );
                 case MetaName.CPVTextureData:
