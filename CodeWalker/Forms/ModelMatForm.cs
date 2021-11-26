@@ -253,42 +253,9 @@ namespace CodeWalker.Forms
                 parm.Data = vecs;
             }
 
-
-            var geom = ModelsTreeView.SelectedNode?.Tag as DrawableGeometry;
-            if (geom != null)
-            {
-                if (Drawable != null)
-                {
-                    UpdateRenderableParams(Drawable, geom.Shader);
-                }
-                if (DrawableDict != null)
-                {
-                    foreach (var dwbl in DrawableDict.Values)
-                    {
-                        UpdateRenderableParams(dwbl, geom.Shader);
-                    }
-                }
-            }
-
+            ModelForm.UpdateGraphics();
             ModelForm.OnModelModified();
-
         }
-
-        private void UpdateRenderableParams(DrawableBase dwbl, ShaderFX shader)
-        {
-            foreach (var model in dwbl.AllModels)
-            {
-                if (model?.Geometries == null) continue;
-                foreach (var geom in model.Geometries)
-                {
-                    if (geom.Shader == shader)
-                    {
-                        geom.UpdateRenderableParameters = true;
-                    }
-                }
-            }
-        }
-
 
         private void ModelMatForm_FormClosed(object sender, FormClosedEventArgs e)
         {

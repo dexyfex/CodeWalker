@@ -330,7 +330,7 @@ namespace CodeWalker.Rendering
                 {
                     var rlight = new RenderableLight();
                     rlight.Owner = this;
-                    rlight.Init(ref lights[i]);
+                    rlight.Init(lights[i]);
                     rlights[i] = rlight;
                 }
                 Lights = rlights;
@@ -1370,8 +1370,9 @@ namespace CodeWalker.Rendering
         public float CullingPlaneOffset;
         public uint TimeFlags;
         public MetaHash TextureHash;
+        public LightAttributes LightAttribute;
 
-        public void Init(ref LightAttributes_s l)
+        public void Init(LightAttributes l)
         {
             var pos = l.Position;
             var dir = l.Direction;
@@ -1400,6 +1401,7 @@ namespace CodeWalker.Rendering
             CullingPlaneOffset = l.CullingPlaneOffset;
             TimeFlags = l.TimeFlags;
             TextureHash = l.ProjectedTextureHash;
+            LightAttribute = l;
         }
     }
 

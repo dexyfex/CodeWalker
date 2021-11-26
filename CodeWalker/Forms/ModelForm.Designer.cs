@@ -52,42 +52,49 @@
             this.ClipDictComboBox = new System.Windows.Forms.ComboBox();
             this.ModelsTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.ToolsMaterialsTabPage = new System.Windows.Forms.TabPage();
-            this.MaterialEditorButton = new System.Windows.Forms.Button();
             this.TextureViewerButton = new System.Windows.Forms.Button();
             this.TexturesTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.ToolsDetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
             this.ToolsOptionsTabPage = new System.Windows.Forms.TabPage();
+            this.OptionsTabControl = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.RenderModeComboBox = new System.Windows.Forms.ComboBox();
+            this.FragGlassCheckBox = new System.Windows.Forms.CheckBox();
+            this.label14 = new System.Windows.Forms.Label();
             this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
+            this.AnisotropicFilteringCheckBox = new System.Windows.Forms.CheckBox();
             this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
-            this.TimeOfDayLabel = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
-            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
-            this.ControlLightDirCheckBox = new System.Windows.Forms.CheckBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.TextureCoordsComboBox = new System.Windows.Forms.ComboBox();
+            this.TextureSamplerComboBox = new System.Windows.Forms.ComboBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.WireframeCheckBox = new System.Windows.Forms.CheckBox();
             this.ShowCollisionMeshesCheckBox = new System.Windows.Forms.CheckBox();
             this.GridCheckBox = new System.Windows.Forms.CheckBox();
             this.GridCountComboBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.GridSizeComboBox = new System.Windows.Forms.ComboBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.StatusBarCheckBox = new System.Windows.Forms.CheckBox();
             this.ErrorConsoleCheckBox = new System.Windows.Forms.CheckBox();
+            this.GridSizeComboBox = new System.Windows.Forms.ComboBox();
+            this.StatusBarCheckBox = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
+            this.HDLightsCheckBox = new System.Windows.Forms.CheckBox();
+            this.label19 = new System.Windows.Forms.Label();
             this.HDRRenderingCheckBox = new System.Windows.Forms.CheckBox();
-            this.SkydomeCheckBox = new System.Windows.Forms.CheckBox();
+            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
             this.ShadowsCheckBox = new System.Windows.Forms.CheckBox();
-            this.WireframeCheckBox = new System.Windows.Forms.CheckBox();
-            this.RenderModeComboBox = new System.Windows.Forms.ComboBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.TextureSamplerComboBox = new System.Windows.Forms.ComboBox();
-            this.TextureCoordsComboBox = new System.Windows.Forms.ComboBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.AnisotropicFilteringCheckBox = new System.Windows.Forms.CheckBox();
-            this.label14 = new System.Windows.Forms.Label();
+            this.ControlLightDirCheckBox = new System.Windows.Forms.CheckBox();
+            this.SkydomeCheckBox = new System.Windows.Forms.CheckBox();
+            this.TimeOfDayLabel = new System.Windows.Forms.Label();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.LightEditorButton = new System.Windows.Forms.Button();
+            this.MaterialEditorButton = new System.Windows.Forms.Button();
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.FragGlassCheckBox = new System.Windows.Forms.CheckBox();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
@@ -98,7 +105,11 @@
             this.ToolsMaterialsTabPage.SuspendLayout();
             this.ToolsDetailsTabPage.SuspendLayout();
             this.ToolsOptionsTabPage.SuspendLayout();
+            this.OptionsTabControl.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
+            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // StatsUpdateTimer
@@ -338,7 +349,6 @@
             // 
             // ToolsMaterialsTabPage
             // 
-            this.ToolsMaterialsTabPage.Controls.Add(this.MaterialEditorButton);
             this.ToolsMaterialsTabPage.Controls.Add(this.TextureViewerButton);
             this.ToolsMaterialsTabPage.Controls.Add(this.TexturesTreeView);
             this.ToolsMaterialsTabPage.Location = new System.Drawing.Point(4, 22);
@@ -348,16 +358,6 @@
             this.ToolsMaterialsTabPage.TabIndex = 1;
             this.ToolsMaterialsTabPage.Text = "Materials";
             this.ToolsMaterialsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // MaterialEditorButton
-            // 
-            this.MaterialEditorButton.Location = new System.Drawing.Point(3, 6);
-            this.MaterialEditorButton.Name = "MaterialEditorButton";
-            this.MaterialEditorButton.Size = new System.Drawing.Size(91, 23);
-            this.MaterialEditorButton.TabIndex = 3;
-            this.MaterialEditorButton.Text = "Material editor";
-            this.MaterialEditorButton.UseVisualStyleBackColor = true;
-            this.MaterialEditorButton.Click += new System.EventHandler(this.MaterialEditorButton_Click);
             // 
             // TextureViewerButton
             // 
@@ -406,32 +406,7 @@
             // 
             // ToolsOptionsTabPage
             // 
-            this.ToolsOptionsTabPage.Controls.Add(this.FragGlassCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.HDTexturesCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.SkeletonsCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.TimeOfDayLabel);
-            this.ToolsOptionsTabPage.Controls.Add(this.label19);
-            this.ToolsOptionsTabPage.Controls.Add(this.TimeOfDayTrackBar);
-            this.ToolsOptionsTabPage.Controls.Add(this.ControlLightDirCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.ShowCollisionMeshesCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.GridCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.GridCountComboBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.label2);
-            this.ToolsOptionsTabPage.Controls.Add(this.GridSizeComboBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.label1);
-            this.ToolsOptionsTabPage.Controls.Add(this.StatusBarCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.ErrorConsoleCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.HDRRenderingCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.SkydomeCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.ShadowsCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.WireframeCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.RenderModeComboBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.label11);
-            this.ToolsOptionsTabPage.Controls.Add(this.TextureSamplerComboBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.TextureCoordsComboBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.label10);
-            this.ToolsOptionsTabPage.Controls.Add(this.AnisotropicFilteringCheckBox);
-            this.ToolsOptionsTabPage.Controls.Add(this.label14);
+            this.ToolsOptionsTabPage.Controls.Add(this.OptionsTabControl);
             this.ToolsOptionsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsOptionsTabPage.Name = "ToolsOptionsTabPage";
             this.ToolsOptionsTabPage.Size = new System.Drawing.Size(217, 500);
@@ -439,12 +414,93 @@
             this.ToolsOptionsTabPage.Text = "Options";
             this.ToolsOptionsTabPage.UseVisualStyleBackColor = true;
             // 
+            // OptionsTabControl
+            // 
+            this.OptionsTabControl.Controls.Add(this.tabPage1);
+            this.OptionsTabControl.Controls.Add(this.tabPage2);
+            this.OptionsTabControl.Controls.Add(this.tabPage3);
+            this.OptionsTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.OptionsTabControl.Location = new System.Drawing.Point(0, 0);
+            this.OptionsTabControl.Name = "OptionsTabControl";
+            this.OptionsTabControl.SelectedIndex = 0;
+            this.OptionsTabControl.Size = new System.Drawing.Size(217, 500);
+            this.OptionsTabControl.TabIndex = 26;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.RenderModeComboBox);
+            this.tabPage1.Controls.Add(this.FragGlassCheckBox);
+            this.tabPage1.Controls.Add(this.label14);
+            this.tabPage1.Controls.Add(this.HDTexturesCheckBox);
+            this.tabPage1.Controls.Add(this.AnisotropicFilteringCheckBox);
+            this.tabPage1.Controls.Add(this.SkeletonsCheckBox);
+            this.tabPage1.Controls.Add(this.label10);
+            this.tabPage1.Controls.Add(this.TextureCoordsComboBox);
+            this.tabPage1.Controls.Add(this.TextureSamplerComboBox);
+            this.tabPage1.Controls.Add(this.label11);
+            this.tabPage1.Controls.Add(this.WireframeCheckBox);
+            this.tabPage1.Controls.Add(this.ShowCollisionMeshesCheckBox);
+            this.tabPage1.Controls.Add(this.GridCheckBox);
+            this.tabPage1.Controls.Add(this.GridCountComboBox);
+            this.tabPage1.Controls.Add(this.label2);
+            this.tabPage1.Controls.Add(this.ErrorConsoleCheckBox);
+            this.tabPage1.Controls.Add(this.GridSizeComboBox);
+            this.tabPage1.Controls.Add(this.StatusBarCheckBox);
+            this.tabPage1.Controls.Add(this.label1);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(209, 474);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Render";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // RenderModeComboBox
+            // 
+            this.RenderModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.RenderModeComboBox.FormattingEnabled = true;
+            this.RenderModeComboBox.Items.AddRange(new object[] {
+            "Default",
+            "Single texture",
+            "Vertex normals",
+            "Vertex tangents",
+            "Vertex colour 1",
+            "Vertex colour 2",
+            "Texture coord 1",
+            "Texture coord 2",
+            "Texture coord 3"});
+            this.RenderModeComboBox.Location = new System.Drawing.Point(86, 15);
+            this.RenderModeComboBox.Name = "RenderModeComboBox";
+            this.RenderModeComboBox.Size = new System.Drawing.Size(114, 21);
+            this.RenderModeComboBox.TabIndex = 12;
+            this.RenderModeComboBox.SelectedIndexChanged += new System.EventHandler(this.RenderModeComboBox_SelectedIndexChanged);
+            // 
+            // FragGlassCheckBox
+            // 
+            this.FragGlassCheckBox.AutoSize = true;
+            this.FragGlassCheckBox.Location = new System.Drawing.Point(6, 218);
+            this.FragGlassCheckBox.Name = "FragGlassCheckBox";
+            this.FragGlassCheckBox.Size = new System.Drawing.Size(175, 17);
+            this.FragGlassCheckBox.TabIndex = 25;
+            this.FragGlassCheckBox.Text = "Show Fragments Glass Outlines";
+            this.FragGlassCheckBox.UseVisualStyleBackColor = true;
+            this.FragGlassCheckBox.CheckedChanged += new System.EventHandler(this.FragGlassCheckBox_CheckedChanged);
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(6, 72);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(63, 13);
+            this.label14.TabIndex = 15;
+            this.label14.Text = "Tex coords:";
+            // 
             // HDTexturesCheckBox
             // 
             this.HDTexturesCheckBox.AutoSize = true;
             this.HDTexturesCheckBox.Checked = true;
             this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDTexturesCheckBox.Location = new System.Drawing.Point(19, 231);
+            this.HDTexturesCheckBox.Location = new System.Drawing.Point(6, 149);
             this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
             this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
             this.HDTexturesCheckBox.TabIndex = 10;
@@ -452,10 +508,23 @@
             this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
             this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
             // 
+            // AnisotropicFilteringCheckBox
+            // 
+            this.AnisotropicFilteringCheckBox.AutoSize = true;
+            this.AnisotropicFilteringCheckBox.Checked = true;
+            this.AnisotropicFilteringCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.AnisotropicFilteringCheckBox.Location = new System.Drawing.Point(6, 126);
+            this.AnisotropicFilteringCheckBox.Name = "AnisotropicFilteringCheckBox";
+            this.AnisotropicFilteringCheckBox.Size = new System.Drawing.Size(114, 17);
+            this.AnisotropicFilteringCheckBox.TabIndex = 9;
+            this.AnisotropicFilteringCheckBox.Text = "Anisotropic filtering";
+            this.AnisotropicFilteringCheckBox.UseVisualStyleBackColor = true;
+            this.AnisotropicFilteringCheckBox.CheckedChanged += new System.EventHandler(this.AnisotropicFilteringCheckBox_CheckedChanged);
+            // 
             // SkeletonsCheckBox
             // 
             this.SkeletonsCheckBox.AutoSize = true;
-            this.SkeletonsCheckBox.Location = new System.Drawing.Point(19, 426);
+            this.SkeletonsCheckBox.Location = new System.Drawing.Point(6, 195);
             this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
             this.SkeletonsCheckBox.Size = new System.Drawing.Size(103, 17);
             this.SkeletonsCheckBox.TabIndex = 22;
@@ -463,54 +532,65 @@
             this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
             this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
             // 
-            // TimeOfDayLabel
+            // label10
             // 
-            this.TimeOfDayLabel.AutoSize = true;
-            this.TimeOfDayLabel.Location = new System.Drawing.Point(78, 99);
-            this.TimeOfDayLabel.Name = "TimeOfDayLabel";
-            this.TimeOfDayLabel.Size = new System.Drawing.Size(34, 13);
-            this.TimeOfDayLabel.TabIndex = 5;
-            this.TimeOfDayLabel.Text = "12:00";
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(6, 18);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(74, 13);
+            this.label10.TabIndex = 11;
+            this.label10.Text = "Render mode:";
             // 
-            // label19
+            // TextureCoordsComboBox
             // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(7, 99);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(65, 13);
-            this.label19.TabIndex = 4;
-            this.label19.Text = "Time of day:";
+            this.TextureCoordsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TextureCoordsComboBox.Enabled = false;
+            this.TextureCoordsComboBox.FormattingEnabled = true;
+            this.TextureCoordsComboBox.Items.AddRange(new object[] {
+            "Texture coord 1",
+            "Texture coord 2",
+            "Texture coord 3"});
+            this.TextureCoordsComboBox.Location = new System.Drawing.Point(86, 69);
+            this.TextureCoordsComboBox.Name = "TextureCoordsComboBox";
+            this.TextureCoordsComboBox.Size = new System.Drawing.Size(114, 21);
+            this.TextureCoordsComboBox.TabIndex = 16;
+            this.TextureCoordsComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureCoordsComboBox_SelectedIndexChanged);
             // 
-            // TimeOfDayTrackBar
+            // TextureSamplerComboBox
             // 
-            this.TimeOfDayTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.TimeOfDayTrackBar.LargeChange = 60;
-            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(9, 115);
-            this.TimeOfDayTrackBar.Maximum = 1440;
-            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
-            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.TimeOfDayTrackBar.TabIndex = 6;
-            this.TimeOfDayTrackBar.TickFrequency = 60;
-            this.TimeOfDayTrackBar.Value = 720;
-            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
+            this.TextureSamplerComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TextureSamplerComboBox.Enabled = false;
+            this.TextureSamplerComboBox.FormattingEnabled = true;
+            this.TextureSamplerComboBox.Location = new System.Drawing.Point(86, 42);
+            this.TextureSamplerComboBox.Name = "TextureSamplerComboBox";
+            this.TextureSamplerComboBox.Size = new System.Drawing.Size(114, 21);
+            this.TextureSamplerComboBox.TabIndex = 14;
+            this.TextureSamplerComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureSamplerComboBox_SelectedIndexChanged);
             // 
-            // ControlLightDirCheckBox
+            // label11
             // 
-            this.ControlLightDirCheckBox.AutoSize = true;
-            this.ControlLightDirCheckBox.Location = new System.Drawing.Point(19, 77);
-            this.ControlLightDirCheckBox.Name = "ControlLightDirCheckBox";
-            this.ControlLightDirCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.ControlLightDirCheckBox.TabIndex = 3;
-            this.ControlLightDirCheckBox.Text = "Control light direction";
-            this.ControlLightDirCheckBox.UseVisualStyleBackColor = true;
-            this.ControlLightDirCheckBox.CheckedChanged += new System.EventHandler(this.ControlLightDirCheckBox_CheckedChanged);
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 45);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(67, 13);
+            this.label11.TabIndex = 13;
+            this.label11.Text = "Tex sampler:";
+            // 
+            // WireframeCheckBox
+            // 
+            this.WireframeCheckBox.AutoSize = true;
+            this.WireframeCheckBox.Location = new System.Drawing.Point(6, 103);
+            this.WireframeCheckBox.Name = "WireframeCheckBox";
+            this.WireframeCheckBox.Size = new System.Drawing.Size(74, 17);
+            this.WireframeCheckBox.TabIndex = 8;
+            this.WireframeCheckBox.Text = "Wireframe";
+            this.WireframeCheckBox.UseVisualStyleBackColor = true;
+            this.WireframeCheckBox.CheckedChanged += new System.EventHandler(this.WireframeCheckBox_CheckedChanged);
             // 
             // ShowCollisionMeshesCheckBox
             // 
             this.ShowCollisionMeshesCheckBox.AutoSize = true;
-            this.ShowCollisionMeshesCheckBox.Location = new System.Drawing.Point(19, 162);
+            this.ShowCollisionMeshesCheckBox.Location = new System.Drawing.Point(6, 172);
             this.ShowCollisionMeshesCheckBox.Name = "ShowCollisionMeshesCheckBox";
             this.ShowCollisionMeshesCheckBox.Size = new System.Drawing.Size(132, 17);
             this.ShowCollisionMeshesCheckBox.TabIndex = 7;
@@ -521,7 +601,7 @@
             // GridCheckBox
             // 
             this.GridCheckBox.AutoSize = true;
-            this.GridCheckBox.Location = new System.Drawing.Point(19, 345);
+            this.GridCheckBox.Location = new System.Drawing.Point(6, 257);
             this.GridCheckBox.Name = "GridCheckBox";
             this.GridCheckBox.Size = new System.Drawing.Size(45, 17);
             this.GridCheckBox.TabIndex = 17;
@@ -538,7 +618,7 @@
             "40",
             "60",
             "100"});
-            this.GridCountComboBox.Location = new System.Drawing.Point(83, 392);
+            this.GridCountComboBox.Location = new System.Drawing.Point(86, 308);
             this.GridCountComboBox.Name = "GridCountComboBox";
             this.GridCountComboBox.Size = new System.Drawing.Size(114, 21);
             this.GridCountComboBox.TabIndex = 21;
@@ -547,11 +627,22 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(7, 395);
+            this.label2.Location = new System.Drawing.Point(6, 311);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(59, 13);
             this.label2.TabIndex = 20;
             this.label2.Text = "Grid count:";
+            // 
+            // ErrorConsoleCheckBox
+            // 
+            this.ErrorConsoleCheckBox.AutoSize = true;
+            this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(94, 476);
+            this.ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
+            this.ErrorConsoleCheckBox.Size = new System.Drawing.Size(88, 17);
+            this.ErrorConsoleCheckBox.TabIndex = 24;
+            this.ErrorConsoleCheckBox.Text = "Error console";
+            this.ErrorConsoleCheckBox.UseVisualStyleBackColor = true;
+            this.ErrorConsoleCheckBox.CheckedChanged += new System.EventHandler(this.ErrorConsoleCheckBox_CheckedChanged);
             // 
             // GridSizeComboBox
             // 
@@ -562,27 +653,18 @@
             "1.0",
             "10",
             "100"});
-            this.GridSizeComboBox.Location = new System.Drawing.Point(83, 365);
+            this.GridSizeComboBox.Location = new System.Drawing.Point(86, 281);
             this.GridSizeComboBox.Name = "GridSizeComboBox";
             this.GridSizeComboBox.Size = new System.Drawing.Size(114, 21);
             this.GridSizeComboBox.TabIndex = 19;
             this.GridSizeComboBox.SelectedIndexChanged += new System.EventHandler(this.GridSizeComboBox_SelectedIndexChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 368);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(70, 13);
-            this.label1.TabIndex = 18;
-            this.label1.Text = "Grid unit size:";
             // 
             // StatusBarCheckBox
             // 
             this.StatusBarCheckBox.AutoSize = true;
             this.StatusBarCheckBox.Checked = true;
             this.StatusBarCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.StatusBarCheckBox.Location = new System.Drawing.Point(19, 480);
+            this.StatusBarCheckBox.Location = new System.Drawing.Point(8, 476);
             this.StatusBarCheckBox.Name = "StatusBarCheckBox";
             this.StatusBarCheckBox.Size = new System.Drawing.Size(74, 17);
             this.StatusBarCheckBox.TabIndex = 23;
@@ -590,23 +672,73 @@
             this.StatusBarCheckBox.UseVisualStyleBackColor = true;
             this.StatusBarCheckBox.CheckedChanged += new System.EventHandler(this.StatusBarCheckBox_CheckedChanged);
             // 
-            // ErrorConsoleCheckBox
+            // label1
             // 
-            this.ErrorConsoleCheckBox.AutoSize = true;
-            this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(105, 480);
-            this.ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
-            this.ErrorConsoleCheckBox.Size = new System.Drawing.Size(88, 17);
-            this.ErrorConsoleCheckBox.TabIndex = 24;
-            this.ErrorConsoleCheckBox.Text = "Error console";
-            this.ErrorConsoleCheckBox.UseVisualStyleBackColor = true;
-            this.ErrorConsoleCheckBox.CheckedChanged += new System.EventHandler(this.ErrorConsoleCheckBox_CheckedChanged);
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 284);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(70, 13);
+            this.label1.TabIndex = 18;
+            this.label1.Text = "Grid unit size:";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.DeferredShadingCheckBox);
+            this.tabPage2.Controls.Add(this.HDLightsCheckBox);
+            this.tabPage2.Controls.Add(this.label19);
+            this.tabPage2.Controls.Add(this.HDRRenderingCheckBox);
+            this.tabPage2.Controls.Add(this.TimeOfDayTrackBar);
+            this.tabPage2.Controls.Add(this.ShadowsCheckBox);
+            this.tabPage2.Controls.Add(this.ControlLightDirCheckBox);
+            this.tabPage2.Controls.Add(this.SkydomeCheckBox);
+            this.tabPage2.Controls.Add(this.TimeOfDayLabel);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(209, 474);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Lighting";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // DeferredShadingCheckBox
+            // 
+            this.DeferredShadingCheckBox.AutoSize = true;
+            this.DeferredShadingCheckBox.Location = new System.Drawing.Point(7, 6);
+            this.DeferredShadingCheckBox.Name = "DeferredShadingCheckBox";
+            this.DeferredShadingCheckBox.Size = new System.Drawing.Size(107, 17);
+            this.DeferredShadingCheckBox.TabIndex = 36;
+            this.DeferredShadingCheckBox.Text = "Deferred shading";
+            this.DeferredShadingCheckBox.UseVisualStyleBackColor = true;
+            this.DeferredShadingCheckBox.CheckedChanged += new System.EventHandler(this.DeferredShadingCheckBox_CheckedChanged);
+            // 
+            // HDLightsCheckBox
+            // 
+            this.HDLightsCheckBox.AutoSize = true;
+            this.HDLightsCheckBox.Checked = true;
+            this.HDLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.HDLightsCheckBox.Location = new System.Drawing.Point(7, 98);
+            this.HDLightsCheckBox.Name = "HDLightsCheckBox";
+            this.HDLightsCheckBox.Size = new System.Drawing.Size(69, 17);
+            this.HDLightsCheckBox.TabIndex = 35;
+            this.HDLightsCheckBox.Text = "HD lights";
+            this.HDLightsCheckBox.UseVisualStyleBackColor = true;
+            this.HDLightsCheckBox.CheckedChanged += new System.EventHandler(this.HDLightsCheckBox_CheckedChanged);
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(4, 147);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(65, 13);
+            this.label19.TabIndex = 4;
+            this.label19.Text = "Time of day:";
             // 
             // HDRRenderingCheckBox
             // 
             this.HDRRenderingCheckBox.AutoSize = true;
             this.HDRRenderingCheckBox.Checked = true;
             this.HDRRenderingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDRRenderingCheckBox.Location = new System.Drawing.Point(19, 14);
+            this.HDRRenderingCheckBox.Location = new System.Drawing.Point(7, 29);
             this.HDRRenderingCheckBox.Name = "HDRRenderingCheckBox";
             this.HDRRenderingCheckBox.Size = new System.Drawing.Size(97, 17);
             this.HDRRenderingCheckBox.TabIndex = 0;
@@ -614,23 +746,27 @@
             this.HDRRenderingCheckBox.UseVisualStyleBackColor = true;
             this.HDRRenderingCheckBox.CheckedChanged += new System.EventHandler(this.HDRRenderingCheckBox_CheckedChanged);
             // 
-            // SkydomeCheckBox
+            // TimeOfDayTrackBar
             // 
-            this.SkydomeCheckBox.AutoSize = true;
-            this.SkydomeCheckBox.Location = new System.Drawing.Point(19, 56);
-            this.SkydomeCheckBox.Name = "SkydomeCheckBox";
-            this.SkydomeCheckBox.Size = new System.Drawing.Size(70, 17);
-            this.SkydomeCheckBox.TabIndex = 2;
-            this.SkydomeCheckBox.Text = "Skydome";
-            this.SkydomeCheckBox.UseVisualStyleBackColor = true;
-            this.SkydomeCheckBox.CheckedChanged += new System.EventHandler(this.SkydomeCheckBox_CheckedChanged);
+            this.TimeOfDayTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.TimeOfDayTrackBar.LargeChange = 60;
+            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(3, 163);
+            this.TimeOfDayTrackBar.Maximum = 1440;
+            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
+            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(205, 45);
+            this.TimeOfDayTrackBar.TabIndex = 6;
+            this.TimeOfDayTrackBar.TickFrequency = 60;
+            this.TimeOfDayTrackBar.Value = 720;
+            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
             // 
             // ShadowsCheckBox
             // 
             this.ShadowsCheckBox.AutoSize = true;
             this.ShadowsCheckBox.Checked = true;
             this.ShadowsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ShadowsCheckBox.Location = new System.Drawing.Point(19, 35);
+            this.ShadowsCheckBox.Location = new System.Drawing.Point(7, 52);
             this.ShadowsCheckBox.Name = "ShadowsCheckBox";
             this.ShadowsCheckBox.Size = new System.Drawing.Size(70, 17);
             this.ShadowsCheckBox.TabIndex = 1;
@@ -638,102 +774,68 @@
             this.ShadowsCheckBox.UseVisualStyleBackColor = true;
             this.ShadowsCheckBox.CheckedChanged += new System.EventHandler(this.ShadowsCheckBox_CheckedChanged);
             // 
-            // WireframeCheckBox
+            // ControlLightDirCheckBox
             // 
-            this.WireframeCheckBox.AutoSize = true;
-            this.WireframeCheckBox.Location = new System.Drawing.Point(19, 185);
-            this.WireframeCheckBox.Name = "WireframeCheckBox";
-            this.WireframeCheckBox.Size = new System.Drawing.Size(74, 17);
-            this.WireframeCheckBox.TabIndex = 8;
-            this.WireframeCheckBox.Text = "Wireframe";
-            this.WireframeCheckBox.UseVisualStyleBackColor = true;
-            this.WireframeCheckBox.CheckedChanged += new System.EventHandler(this.WireframeCheckBox_CheckedChanged);
+            this.ControlLightDirCheckBox.AutoSize = true;
+            this.ControlLightDirCheckBox.Location = new System.Drawing.Point(7, 121);
+            this.ControlLightDirCheckBox.Name = "ControlLightDirCheckBox";
+            this.ControlLightDirCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.ControlLightDirCheckBox.TabIndex = 3;
+            this.ControlLightDirCheckBox.Text = "Control light direction";
+            this.ControlLightDirCheckBox.UseVisualStyleBackColor = true;
+            this.ControlLightDirCheckBox.CheckedChanged += new System.EventHandler(this.ControlLightDirCheckBox_CheckedChanged);
             // 
-            // RenderModeComboBox
+            // SkydomeCheckBox
             // 
-            this.RenderModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.RenderModeComboBox.FormattingEnabled = true;
-            this.RenderModeComboBox.Items.AddRange(new object[] {
-            "Default",
-            "Single texture",
-            "Vertex normals",
-            "Vertex tangents",
-            "Vertex colour 1",
-            "Vertex colour 2",
-            "Texture coord 1",
-            "Texture coord 2",
-            "Texture coord 3"});
-            this.RenderModeComboBox.Location = new System.Drawing.Point(83, 255);
-            this.RenderModeComboBox.Name = "RenderModeComboBox";
-            this.RenderModeComboBox.Size = new System.Drawing.Size(114, 21);
-            this.RenderModeComboBox.TabIndex = 12;
-            this.RenderModeComboBox.SelectedIndexChanged += new System.EventHandler(this.RenderModeComboBox_SelectedIndexChanged);
+            this.SkydomeCheckBox.AutoSize = true;
+            this.SkydomeCheckBox.Location = new System.Drawing.Point(7, 75);
+            this.SkydomeCheckBox.Name = "SkydomeCheckBox";
+            this.SkydomeCheckBox.Size = new System.Drawing.Size(70, 17);
+            this.SkydomeCheckBox.TabIndex = 2;
+            this.SkydomeCheckBox.Text = "Skydome";
+            this.SkydomeCheckBox.UseVisualStyleBackColor = true;
+            this.SkydomeCheckBox.CheckedChanged += new System.EventHandler(this.SkydomeCheckBox_CheckedChanged);
             // 
-            // label11
+            // TimeOfDayLabel
             // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(7, 285);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(67, 13);
-            this.label11.TabIndex = 13;
-            this.label11.Text = "Tex sampler:";
+            this.TimeOfDayLabel.AutoSize = true;
+            this.TimeOfDayLabel.Location = new System.Drawing.Point(75, 147);
+            this.TimeOfDayLabel.Name = "TimeOfDayLabel";
+            this.TimeOfDayLabel.Size = new System.Drawing.Size(34, 13);
+            this.TimeOfDayLabel.TabIndex = 5;
+            this.TimeOfDayLabel.Text = "12:00";
             // 
-            // TextureSamplerComboBox
+            // tabPage3
             // 
-            this.TextureSamplerComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.TextureSamplerComboBox.Enabled = false;
-            this.TextureSamplerComboBox.FormattingEnabled = true;
-            this.TextureSamplerComboBox.Location = new System.Drawing.Point(83, 282);
-            this.TextureSamplerComboBox.Name = "TextureSamplerComboBox";
-            this.TextureSamplerComboBox.Size = new System.Drawing.Size(114, 21);
-            this.TextureSamplerComboBox.TabIndex = 14;
-            this.TextureSamplerComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureSamplerComboBox_SelectedIndexChanged);
+            this.tabPage3.Controls.Add(this.LightEditorButton);
+            this.tabPage3.Controls.Add(this.MaterialEditorButton);
+            this.tabPage3.Location = new System.Drawing.Point(4, 22);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage3.Size = new System.Drawing.Size(209, 474);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Editors";
+            this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // TextureCoordsComboBox
+            // LightEditorButton
             // 
-            this.TextureCoordsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.TextureCoordsComboBox.Enabled = false;
-            this.TextureCoordsComboBox.FormattingEnabled = true;
-            this.TextureCoordsComboBox.Items.AddRange(new object[] {
-            "Texture coord 1",
-            "Texture coord 2",
-            "Texture coord 3"});
-            this.TextureCoordsComboBox.Location = new System.Drawing.Point(83, 309);
-            this.TextureCoordsComboBox.Name = "TextureCoordsComboBox";
-            this.TextureCoordsComboBox.Size = new System.Drawing.Size(114, 21);
-            this.TextureCoordsComboBox.TabIndex = 16;
-            this.TextureCoordsComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureCoordsComboBox_SelectedIndexChanged);
+            this.LightEditorButton.Location = new System.Drawing.Point(6, 35);
+            this.LightEditorButton.Name = "LightEditorButton";
+            this.LightEditorButton.Size = new System.Drawing.Size(197, 23);
+            this.LightEditorButton.TabIndex = 37;
+            this.LightEditorButton.Text = "Light editor";
+            this.LightEditorButton.UseVisualStyleBackColor = true;
+            this.LightEditorButton.Click += new System.EventHandler(this.LightEditorButton_Click);
             // 
-            // label10
+            // MaterialEditorButton
             // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(7, 258);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(74, 13);
-            this.label10.TabIndex = 11;
-            this.label10.Text = "Render mode:";
-            // 
-            // AnisotropicFilteringCheckBox
-            // 
-            this.AnisotropicFilteringCheckBox.AutoSize = true;
-            this.AnisotropicFilteringCheckBox.Checked = true;
-            this.AnisotropicFilteringCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AnisotropicFilteringCheckBox.Location = new System.Drawing.Point(19, 208);
-            this.AnisotropicFilteringCheckBox.Name = "AnisotropicFilteringCheckBox";
-            this.AnisotropicFilteringCheckBox.Size = new System.Drawing.Size(114, 17);
-            this.AnisotropicFilteringCheckBox.TabIndex = 9;
-            this.AnisotropicFilteringCheckBox.Text = "Anisotropic filtering";
-            this.AnisotropicFilteringCheckBox.UseVisualStyleBackColor = true;
-            this.AnisotropicFilteringCheckBox.CheckedChanged += new System.EventHandler(this.AnisotropicFilteringCheckBox_CheckedChanged);
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(7, 312);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(63, 13);
-            this.label14.TabIndex = 15;
-            this.label14.Text = "Tex coords:";
+            this.MaterialEditorButton.Location = new System.Drawing.Point(6, 6);
+            this.MaterialEditorButton.Name = "MaterialEditorButton";
+            this.MaterialEditorButton.Size = new System.Drawing.Size(197, 23);
+            this.MaterialEditorButton.TabIndex = 3;
+            this.MaterialEditorButton.Text = "Material editor";
+            this.MaterialEditorButton.UseVisualStyleBackColor = true;
+            this.MaterialEditorButton.Click += new System.EventHandler(this.MaterialEditorButton_Click);
             // 
             // ToolsPanelHideButton
             // 
@@ -772,17 +874,6 @@
             // 
             this.SaveFileDialog.Filter = "All files|*.*";
             // 
-            // FragGlassCheckBox
-            // 
-            this.FragGlassCheckBox.AutoSize = true;
-            this.FragGlassCheckBox.Location = new System.Drawing.Point(19, 449);
-            this.FragGlassCheckBox.Name = "FragGlassCheckBox";
-            this.FragGlassCheckBox.Size = new System.Drawing.Size(175, 17);
-            this.FragGlassCheckBox.TabIndex = 25;
-            this.FragGlassCheckBox.Text = "Show Fragments Glass Outlines";
-            this.FragGlassCheckBox.UseVisualStyleBackColor = true;
-            this.FragGlassCheckBox.CheckedChanged += new System.EventHandler(this.FragGlassCheckBox_CheckedChanged);
-            // 
             // ModelForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -819,8 +910,13 @@
             this.ToolsMaterialsTabPage.ResumeLayout(false);
             this.ToolsDetailsTabPage.ResumeLayout(false);
             this.ToolsOptionsTabPage.ResumeLayout(false);
-            this.ToolsOptionsTabPage.PerformLayout();
+            this.OptionsTabControl.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
+            this.tabPage3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -886,5 +982,12 @@
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.ComboBox ClipDictComboBox;
         private System.Windows.Forms.CheckBox FragGlassCheckBox;
+        private System.Windows.Forms.TabControl OptionsTabControl;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.CheckBox HDLightsCheckBox;
+        private System.Windows.Forms.CheckBox DeferredShadingCheckBox;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.Button LightEditorButton;
     }
 }
