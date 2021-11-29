@@ -401,6 +401,10 @@ namespace CodeWalker.Rendering
         {
             renderableCache.Invalidate(bounds);
         }
+        public void Invalidate(DrawableBase drawable)
+        {
+            renderableCache.Invalidate(drawable);
+        }
         public void Invalidate(BasePathData path)
         {
             renderableCache.Invalidate(path);
@@ -1023,6 +1027,40 @@ namespace CodeWalker.Rendering
             v.Position = c7; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
             v.Position = c8; SelectionLineVerts.Add(v); SelectionLineVerts.Add(v);
             v.Position = c5; SelectionLineVerts.Add(v);
+        }
+
+        public void RenderSelectionDrawableLight(LightAttributes dlight)
+        {
+            var colblu = (uint)(new Color(0, 0, 255, 255).ToRgba());
+            var colwht = (uint)(new Color(255, 255, 255, 255).ToRgba());
+
+            RenderableLight light = new RenderableLight();
+            light.Init(dlight);
+
+            var pos = light.Position;
+            var dir = light.Direction;
+            var tx = light.TangentX;
+            var ty = light.TangentY;
+            var extent = light.Falloff;
+            var innerAngle = light.ConeInnerAngle;
+            var outerAngle = light.ConeOuterAngle;
+            var type = light.Type;
+            switch (type)
+            {
+                case LightType.Point:
+                    RenderSelectionCircle(pos, Vector3.UnitX, Vector3.UnitZ, extent, colwht);
+                    RenderSelectionCircle(pos, Vector3.UnitX, Vector3.UnitY, extent, colwht);
+                    RenderSelectionCircle(pos, Vector3.UnitY, Vector3.UnitZ, extent, colwht);
+                    break;
+                case LightType.Spot:
+                    RenderSelectionCone(pos, tx, ty, dir, (float)Math.Sin(outerAngle) * extent, (float)Math.Cos(outerAngle) * extent, colblu);
+                    RenderSelectionCone(pos, tx, ty, dir, (float)Math.Sin(innerAngle) * extent, (float)Math.Cos(innerAngle) * extent, colwht);
+                    break;
+                case LightType.Capsule:
+                    outerAngle = light.ConeOuterAngle * 0.25f;
+                    RenderSelectionCapsule(pos, tx, ty, dir, extent, outerAngle, colwht);
+                    break;
+            }
         }
 
         public void RenderSelectionLodLight(YmapLODLight lodlight)
@@ -3321,12 +3359,6 @@ namespace CodeWalker.Rendering
                     {
                         var geom = model.Geometries[gi];
                         var dgeom = geom.DrawableGeom;
-
-                        if (dgeom.UpdateRenderableParameters) //when edited by material editor
-                        {
-                            geom.Init(dgeom);
-                            dgeom.UpdateRenderableParameters = false;
-                        }
 
                         if (isselected)
                         {

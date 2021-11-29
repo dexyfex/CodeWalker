@@ -253,6 +253,10 @@ namespace CodeWalker.Rendering
             lodlights.UpdateImmediate(lodlightsonly?.Ymap, currentDevice);
         }
 
+        public void Invalidate(DrawableBase drawable)
+        {
+            renderables.Invalidate(drawable);
+        }
     }
 
 

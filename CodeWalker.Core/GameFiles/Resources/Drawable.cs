@@ -3219,10 +3219,6 @@ namespace CodeWalker.GameFiles
         public ushort ShaderID { get; set; }//read/written by parent model
         public AABB_s AABB { get; set; }//read/written by parent model
 
-
-        public bool UpdateRenderableParameters = false; //used by model material editor...
-
-
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
@@ -4493,8 +4489,13 @@ namespace CodeWalker.GameFiles
         Capsule = 4,
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct LightAttributes_s : IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class LightAttributes : ResourceSystemBlock, IMetaXmlItem
     {
+        public override long BlockLength
+        {
+            get { return 168; }
+        }
+
         // structure data
         public uint Unknown_0h { get; set; } // 0x00000000
         public uint Unknown_4h { get; set; } // 0x00000000
@@ -4541,6 +4542,105 @@ namespace CodeWalker.GameFiles
         public Vector3 Extent { get; set; }
         public MetaHash ProjectedTextureHash { get; set; }
         public uint Unknown_A4h { get; set; } // 0x00000000
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            //read structure data
+            Unknown_0h = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Position = reader.ReadVector3();
+            Unknown_14h = reader.ReadUInt32();
+            ColorR = reader.ReadByte();
+            ColorG = reader.ReadByte();
+            ColorB = reader.ReadByte();
+            Flashiness = reader.ReadByte();
+            Intensity = reader.ReadSingle();
+            Flags = reader.ReadUInt32();
+            BoneId = reader.ReadUInt16();
+            Type = (LightType)reader.ReadByte();
+            GroupId = reader.ReadByte();
+            TimeFlags = reader.ReadUInt32();
+            Falloff = reader.ReadSingle();
+            FalloffExponent = reader.ReadSingle();
+            CullingPlaneNormal = reader.ReadVector3();
+            CullingPlaneOffset = reader.ReadSingle();
+            ShadowBlur = reader.ReadByte();
+            Unknown_45h = reader.ReadByte();
+            Unknown_46h = reader.ReadUInt16();
+            Unknown_48h = reader.ReadUInt32();
+            VolumeIntensity = reader.ReadSingle();
+            VolumeSizeScale = reader.ReadSingle();
+            VolumeOuterColorR = reader.ReadByte();
+            VolumeOuterColorG = reader.ReadByte();
+            VolumeOuterColorB = reader.ReadByte();
+            LightHash = reader.ReadByte();
+            VolumeOuterIntensity = reader.ReadSingle();
+            CoronaSize = reader.ReadSingle();
+            VolumeOuterExponent = reader.ReadSingle();
+            LightFadeDistance = reader.ReadByte();
+            ShadowFadeDistance = reader.ReadByte();
+            SpecularFadeDistance = reader.ReadByte();
+            VolumetricFadeDistance = reader.ReadByte();
+            ShadowNearClip = reader.ReadSingle();
+            CoronaIntensity = reader.ReadSingle();
+            CoronaZBias = reader.ReadSingle();
+            Direction = reader.ReadVector3();
+            Tangent = reader.ReadVector3();
+            ConeInnerAngle = reader.ReadSingle();
+            ConeOuterAngle = reader.ReadSingle();
+            Extent = reader.ReadVector3();
+            ProjectedTextureHash = new MetaHash(reader.ReadUInt32());
+            Unknown_A4h = reader.ReadUInt32();
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            //write structure data
+            writer.Write(this.Unknown_0h);
+            writer.Write(this.Unknown_4h);
+            writer.Write(this.Position);
+            writer.Write(this.Unknown_14h);
+            writer.Write(this.ColorR);
+            writer.Write(this.ColorG);
+            writer.Write(this.ColorB);
+            writer.Write(this.Flashiness);
+            writer.Write(this.Intensity);
+            writer.Write(this.Flags);
+            writer.Write(this.BoneId);
+            writer.Write((byte)this.Type);
+            writer.Write(this.GroupId);
+            writer.Write(this.TimeFlags);
+            writer.Write(this.Falloff);
+            writer.Write(this.FalloffExponent);
+            writer.Write(this.CullingPlaneNormal);
+            writer.Write(this.CullingPlaneOffset);
+            writer.Write(this.ShadowBlur);
+            writer.Write(this.Unknown_45h);
+            writer.Write(this.Unknown_46h);
+            writer.Write(this.Unknown_48h);
+            writer.Write(this.VolumeIntensity);
+            writer.Write(this.VolumeSizeScale);
+            writer.Write(this.VolumeOuterColorR);
+            writer.Write(this.VolumeOuterColorG);
+            writer.Write(this.VolumeOuterColorB);
+            writer.Write(this.LightHash);
+            writer.Write(this.VolumeOuterIntensity);
+            writer.Write(this.CoronaSize);
+            writer.Write(this.VolumeOuterExponent);
+            writer.Write(this.LightFadeDistance);
+            writer.Write(this.ShadowFadeDistance);
+            writer.Write(this.SpecularFadeDistance);
+            writer.Write(this.VolumetricFadeDistance);
+            writer.Write(this.ShadowNearClip);
+            writer.Write(this.CoronaIntensity);
+            writer.Write(this.CoronaZBias);
+            writer.Write(this.Direction);
+            writer.Write(this.Tangent);
+            writer.Write(this.ConeInnerAngle);
+            writer.Write(this.ConeOuterAngle);
+            writer.Write(this.Extent);
+            writer.Write(this.ProjectedTextureHash.Hash);
+            writer.Write(this.Unknown_A4h);
+        }
 
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -4621,6 +4721,40 @@ namespace CodeWalker.GameFiles
             ConeOuterAngle = Xml.GetChildFloatAttribute(node, "ConeOuterAngle", "value");
             Extent = Xml.GetChildVector3Attributes(node, "Extent");
             ProjectedTextureHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "ProjectedTextureHash"));
+        }
+
+        public Quaternion GetRotation()
+        {
+            Vector3 tx = new Vector3();
+            Vector3 ty = new Vector3();
+
+            switch (Type)
+            {
+                case LightType.Point:
+                    return Quaternion.Identity;
+                case LightType.Spot:
+                    tx = Vector3.Normalize(Direction.GetPerpVec());
+                    ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
+                    break;
+                case LightType.Capsule:
+                    tx = -Vector3.Normalize(Direction.GetPerpVec());
+                    ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
+                    break;
+            }
+
+            var m = new Matrix();
+            m.Row1 = new Vector4(tx, 0);
+            m.Row2 = new Vector4(ty, 0);
+            m.Row3 = new Vector4(Direction, 0);
+            return Quaternion.RotationMatrix(m);
+        }
+
+        public void SetRotation(Quaternion rot)
+        {
+            var inv = Quaternion.Invert(GetRotation());
+            var delta = rot * inv;
+            Direction = Vector3.Normalize(delta.Multiply(Direction));
+            Tangent = Vector3.Normalize(Direction.GetPerpVec());
         }
     }
 
@@ -4713,6 +4847,9 @@ namespace CodeWalker.GameFiles
         public Dictionary<ulong, VertexDeclaration> VertexDecls { get; set; }
 
         public object Owner { get; set; }
+
+        //for renderer to know when the drawables data has been updated
+        public bool updated = false;
 
         public long MemoryUsage
         {
@@ -5336,7 +5473,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong NamePointer { get; set; }
-        public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
+        public ResourceSimpleList64<LightAttributes> LightAttributes { get; set; }
         public ulong UnkPointer { get; set; } 
         public ulong BoundPointer { get; set; }
 
@@ -5361,7 +5498,7 @@ namespace CodeWalker.GameFiles
 
             // read structure data
             this.NamePointer = reader.ReadUInt64();
-            this.LightAttributes = reader.ReadBlock<ResourceSimpleList64_s<LightAttributes_s>>();
+            this.LightAttributes = reader.ReadBlock<ResourceSimpleList64<LightAttributes>>();
             this.UnkPointer = reader.ReadUInt64();
             this.BoundPointer = reader.ReadUInt64();
 
@@ -5431,9 +5568,8 @@ namespace CodeWalker.GameFiles
                 Bound = Bounds.ReadXmlNode(bnode, this);
             }
 
-            LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
-            LightAttributes.data_items = XmlMeta.ReadItemArray<LightAttributes_s>(node, "Lights");
-
+            LightAttributes = new ResourceSimpleList64<LightAttributes>();
+            LightAttributes.data_items = XmlMeta.ReadItemArray<LightAttributes>(node, "Lights");
         }
         public static void WriteXmlNode(Drawable d, StringBuilder sb, int indent, string ddsfolder, string name = "Drawable")
         {
