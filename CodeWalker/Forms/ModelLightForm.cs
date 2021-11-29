@@ -157,6 +157,8 @@ namespace CodeWalker.Forms
                 SpecularFadeDistanceTextBox.Text = "";
                 VolumetricFadeDistanceTextBox.Text = "";
                 ShadowNearClipTextBox.Text = "";
+                CullingPlaneNormalTextBox.Text = "";
+                CullingPlaneOffsetTextBox.Text = "";
                 TimeFlagsTextBox.Text = "";
                 populatingui = false;
             }
@@ -196,6 +198,8 @@ namespace CodeWalker.Forms
                 SpecularFadeDistanceTextBox.Text = FloatUtil.ToString(light.SpecularFadeDistance);
                 VolumetricFadeDistanceTextBox.Text = FloatUtil.ToString(light.VolumetricFadeDistance);
                 ShadowNearClipTextBox.Text = FloatUtil.ToString(light.ShadowNearClip);
+                CullingPlaneNormalTextBox.Text = FloatUtil.GetVector3String(light.CullingPlaneNormal);
+                CullingPlaneOffsetTextBox.Text = FloatUtil.ToString(light.CullingPlaneOffset);
                 TimeFlagsTextBox.Text = light.TimeFlags.ToString();
                 UpdateFlagsCheckBoxes();
                 populatingui = false;
@@ -791,6 +795,29 @@ namespace CodeWalker.Forms
             if (selectedLight.ProjectedTextureHash != v)
             {
                 selectedLight.ProjectedTextureHash = v;
+            }
+        }
+
+        private void CullingPlaneNormalTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            Vector3 v = FloatUtil.ParseVector3String(CullingPlaneNormalTextBox.Text);
+            if (selectedLight.CullingPlaneNormal != v)
+            {
+                selectedLight.CullingPlaneNormal = v;
+            }
+        }
+
+        private void CullingPlaneOffsetTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            float v = FloatUtil.Parse(CullingPlaneOffsetTextBox.Text);
+            if (selectedLight.CullingPlaneOffset != v)
+            {
+                selectedLight.CullingPlaneOffset = v;
+                ModelForm.UpdateGraphics();
             }
         }
 

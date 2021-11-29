@@ -33,6 +33,10 @@
             this.LightsTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.label1 = new System.Windows.Forms.Label();
             this.LightPropertiesPanel = new System.Windows.Forms.Panel();
+            this.label30 = new System.Windows.Forms.Label();
+            this.CullingPlaneOffsetTextBox = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.CullingPlaneNormalTextBox = new System.Windows.Forms.TextBox();
             this.GroupIDTextBox = new System.Windows.Forms.TextBox();
             this.BoneIDTextBox = new System.Windows.Forms.TextBox();
             this.label29 = new System.Windows.Forms.Label();
@@ -139,8 +143,8 @@
             // MainSplitContainer.Panel2
             // 
             this.MainSplitContainer.Panel2.Controls.Add(this.LightPropertiesPanel);
-            this.MainSplitContainer.Size = new System.Drawing.Size(707, 517);
-            this.MainSplitContainer.SplitterDistance = 166;
+            this.MainSplitContainer.Size = new System.Drawing.Size(732, 544);
+            this.MainSplitContainer.SplitterDistance = 171;
             this.MainSplitContainer.TabIndex = 0;
             // 
             // LightsTreeView
@@ -153,7 +157,7 @@
             this.LightsTreeView.Location = new System.Drawing.Point(3, 24);
             this.LightsTreeView.Name = "LightsTreeView";
             this.LightsTreeView.ShowRootLines = false;
-            this.LightsTreeView.Size = new System.Drawing.Size(187, 494);
+            this.LightsTreeView.Size = new System.Drawing.Size(192, 521);
             this.LightsTreeView.TabIndex = 5;
             this.LightsTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.LightsTreeView_AfterSelect);
             // 
@@ -172,6 +176,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LightPropertiesPanel.AutoScroll = true;
+            this.LightPropertiesPanel.Controls.Add(this.label30);
+            this.LightPropertiesPanel.Controls.Add(this.CullingPlaneOffsetTextBox);
+            this.LightPropertiesPanel.Controls.Add(this.label24);
+            this.LightPropertiesPanel.Controls.Add(this.CullingPlaneNormalTextBox);
             this.LightPropertiesPanel.Controls.Add(this.GroupIDTextBox);
             this.LightPropertiesPanel.Controls.Add(this.BoneIDTextBox);
             this.LightPropertiesPanel.Controls.Add(this.label29);
@@ -240,8 +248,42 @@
             this.LightPropertiesPanel.Controls.Add(this.label31);
             this.LightPropertiesPanel.Location = new System.Drawing.Point(4, 3);
             this.LightPropertiesPanel.Name = "LightPropertiesPanel";
-            this.LightPropertiesPanel.Size = new System.Drawing.Size(530, 510);
+            this.LightPropertiesPanel.Size = new System.Drawing.Size(550, 537);
             this.LightPropertiesPanel.TabIndex = 1;
+            // 
+            // label30
+            // 
+            this.label30.AutoSize = true;
+            this.label30.Location = new System.Drawing.Point(261, 301);
+            this.label30.Name = "label30";
+            this.label30.Size = new System.Drawing.Size(99, 13);
+            this.label30.TabIndex = 218;
+            this.label30.Text = "Culling plane offset:";
+            // 
+            // CullingPlaneOffsetTextBox
+            // 
+            this.CullingPlaneOffsetTextBox.Location = new System.Drawing.Point(365, 296);
+            this.CullingPlaneOffsetTextBox.Name = "CullingPlaneOffsetTextBox";
+            this.CullingPlaneOffsetTextBox.Size = new System.Drawing.Size(156, 20);
+            this.CullingPlaneOffsetTextBox.TabIndex = 219;
+            this.CullingPlaneOffsetTextBox.TextChanged += new System.EventHandler(this.CullingPlaneOffsetTextBox_TextChanged);
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(261, 275);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(104, 13);
+            this.label24.TabIndex = 216;
+            this.label24.Text = "Culling plane normal:";
+            // 
+            // CullingPlaneNormalTextBox
+            // 
+            this.CullingPlaneNormalTextBox.Location = new System.Drawing.Point(365, 270);
+            this.CullingPlaneNormalTextBox.Name = "CullingPlaneNormalTextBox";
+            this.CullingPlaneNormalTextBox.Size = new System.Drawing.Size(156, 20);
+            this.CullingPlaneNormalTextBox.TabIndex = 217;
+            this.CullingPlaneNormalTextBox.TextChanged += new System.EventHandler(this.CullingPlaneNormalTextBox_TextChanged);
             // 
             // GroupIDTextBox
             // 
@@ -285,7 +327,7 @@
             "21:00 - 22:00",
             "22:00 - 23:00",
             "23:00 - 00:00"});
-            this.TimeFlagsPMCheckedListBox.Location = new System.Drawing.Point(426, 301);
+            this.TimeFlagsPMCheckedListBox.Location = new System.Drawing.Point(426, 348);
             this.TimeFlagsPMCheckedListBox.Name = "TimeFlagsPMCheckedListBox";
             this.TimeFlagsPMCheckedListBox.Size = new System.Drawing.Size(95, 184);
             this.TimeFlagsPMCheckedListBox.TabIndex = 168;
@@ -308,7 +350,7 @@
             "09:00 - 10:00",
             "10:00 - 11:00",
             "11:00 - 12:00"});
-            this.TimeFlagsAMCheckedListBox.Location = new System.Drawing.Point(325, 301);
+            this.TimeFlagsAMCheckedListBox.Location = new System.Drawing.Point(325, 348);
             this.TimeFlagsAMCheckedListBox.Name = "TimeFlagsAMCheckedListBox";
             this.TimeFlagsAMCheckedListBox.Size = new System.Drawing.Size(95, 184);
             this.TimeFlagsAMCheckedListBox.TabIndex = 167;
@@ -325,7 +367,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(261, 275);
+            this.label10.Location = new System.Drawing.Point(261, 328);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(58, 13);
             this.label10.TabIndex = 169;
@@ -342,7 +384,7 @@
             // 
             // TimeFlagsTextBox
             // 
-            this.TimeFlagsTextBox.Location = new System.Drawing.Point(365, 272);
+            this.TimeFlagsTextBox.Location = new System.Drawing.Point(365, 322);
             this.TimeFlagsTextBox.Name = "TimeFlagsTextBox";
             this.TimeFlagsTextBox.Size = new System.Drawing.Size(156, 20);
             this.TimeFlagsTextBox.TabIndex = 170;
@@ -892,7 +934,7 @@
             // NormalizeDirectionButton
             // 
             this.NormalizeDirectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NormalizeDirectionButton.Location = new System.Drawing.Point(453, 34);
+            this.NormalizeDirectionButton.Location = new System.Drawing.Point(473, 34);
             this.NormalizeDirectionButton.Name = "NormalizeDirectionButton";
             this.NormalizeDirectionButton.Size = new System.Drawing.Size(68, 23);
             this.NormalizeDirectionButton.TabIndex = 148;
@@ -915,14 +957,14 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DirectionTextBox.Location = new System.Drawing.Point(88, 36);
             this.DirectionTextBox.Name = "DirectionTextBox";
-            this.DirectionTextBox.Size = new System.Drawing.Size(359, 20);
+            this.DirectionTextBox.Size = new System.Drawing.Size(379, 20);
             this.DirectionTextBox.TabIndex = 147;
             this.DirectionTextBox.TextChanged += new System.EventHandler(this.DirectionTextBox_TextChanged);
             // 
             // GoToButton
             // 
             this.GoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.GoToButton.Location = new System.Drawing.Point(453, 8);
+            this.GoToButton.Location = new System.Drawing.Point(473, 8);
             this.GoToButton.Name = "GoToButton";
             this.GoToButton.Size = new System.Drawing.Size(68, 23);
             this.GoToButton.TabIndex = 145;
@@ -936,7 +978,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.PositionTextBox.Location = new System.Drawing.Point(88, 10);
             this.PositionTextBox.Name = "PositionTextBox";
-            this.PositionTextBox.Size = new System.Drawing.Size(359, 20);
+            this.PositionTextBox.Size = new System.Drawing.Size(379, 20);
             this.PositionTextBox.TabIndex = 144;
             this.PositionTextBox.TextChanged += new System.EventHandler(this.PositionTextBox_TextChanged);
             // 
@@ -958,7 +1000,7 @@
             this.rotateToolStripMenuItem});
             this.menuStripFix1.Location = new System.Drawing.Point(0, 0);
             this.menuStripFix1.Name = "menuStripFix1";
-            this.menuStripFix1.Size = new System.Drawing.Size(707, 24);
+            this.menuStripFix1.Size = new System.Drawing.Size(732, 24);
             this.menuStripFix1.TabIndex = 1;
             this.menuStripFix1.Text = "menuStripFix1";
             // 
@@ -1021,7 +1063,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(707, 541);
+            this.ClientSize = new System.Drawing.Size(732, 568);
             this.Controls.Add(this.MainSplitContainer);
             this.Controls.Add(this.menuStripFix1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1133,5 +1175,9 @@
         private System.Windows.Forms.ToolStripMenuItem showGizmosToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem moveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rotateToolStripMenuItem;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.TextBox CullingPlaneNormalTextBox;
+        private System.Windows.Forms.Label label30;
+        private System.Windows.Forms.TextBox CullingPlaneOffsetTextBox;
     }
 }

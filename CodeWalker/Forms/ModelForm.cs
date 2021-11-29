@@ -582,34 +582,15 @@ namespace CodeWalker.Forms
                 }
             }
         }
-        public void SetWidgetPosition(Vector3 pos, bool enableUndo = false)
+        public void SetWidgetPosition(Vector3 pos)
         {
-            if (enableUndo)
-            {
-                SetWidgetMode("Position");
-                //MarkUndoStart(Widget);
-            }
-
+            SetWidgetMode("Position");
             Widget.Position = pos;
-
-            if (enableUndo)
-            {
-                //MarkUndoEnd(Widget);
-            }
         }
-        public void SetWidgetRotation(Quaternion q, bool enableUndo = false)
+        public void SetWidgetRotation(Quaternion q)
         {
-            if (enableUndo)
-            {
-                SetWidgetMode("Rotation");
-            }
-
+            SetWidgetMode("Rotation");
             Widget.Rotation = q;
-
-            if (enableUndo)
-            {
-                //MarkUndoEnd(Widget);
-            }
         }
         public void SetWidgetMode(string mode)
         {
