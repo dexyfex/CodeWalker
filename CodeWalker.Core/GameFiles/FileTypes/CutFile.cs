@@ -276,9 +276,9 @@ namespace CodeWalker.GameFiles
                 case "rage__cutfTriggerLightEffectEventArgs": return new CutTriggerLightEffectEventArgs();
                 case "rage__cutfVehicleExtraEventArgs": return new CutVehicleExtraEventArgs();
                 case "rage__cutfFixupModelObject": return new CutFixupModelObject();
-                case "hash_63D1D732": return new Cut_1674696498();
-                case "hash_60F51ABE": return new Cut_1626675902();
-                case "hash_2139D1CA": return new Cut_557437386();
+                case "cutf_float": return new CutFloat();
+                case "cutf_int": return new CutInt();
+                case "cutf_string": return new CutString();
                 default: return null;
             }
         }
@@ -355,7 +355,7 @@ namespace CodeWalker.GameFiles
             return (Items?.Length ?? 0).ToString() + " items";
         }
     }
-    [TC(typeof(EXP))] public class Cut_1626675902 : CutBase
+    [TC(typeof(EXP))] public class CutInt : CutBase
     {
         public MetaHash Name { get; set; } // PsoDataType.String, 8, 8, 0),
         public int Value { get; set; } // PsoDataType.SInt, 16, 0, 0)
@@ -371,7 +371,7 @@ namespace CodeWalker.GameFiles
             return Name.ToString() + ": " + Value.ToString();
         }
     }
-    [TC(typeof(EXP))] public class Cut_1674696498 : CutBase
+    [TC(typeof(EXP))] public class CutFloat : CutBase
     {
         public MetaHash Name { get; set; } // PsoDataType.String, 8, 8, 0),
         public float Value { get; set; } // PsoDataType.Float, 16, 0, 0)
@@ -387,7 +387,7 @@ namespace CodeWalker.GameFiles
             return Name.ToString() + ": " + Value.ToString();
         }
     }
-    [TC(typeof(EXP))] public class Cut_557437386 : CutBase
+    [TC(typeof(EXP))] public class CutString : CutBase
     {
         public MetaHash Name { get; set; } // PsoDataType.String, 8, 8, 0),
         public string Value { get; set; } // PsoDataType.String, 16, 3, 0)
