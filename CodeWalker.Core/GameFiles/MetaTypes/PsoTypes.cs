@@ -13200,8 +13200,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.Position, PsoDataType.Float3a, 16, 0, 0),
                      new PsoStructureEntryInfo((MetaName)2602393771, PsoDataType.String, 32, 7, 0),
                      new PsoStructureEntryInfo(MetaName.ScenarioType, PsoDataType.String, 36, 7, 0),
-                     new PsoStructureEntryInfo((MetaName)407126079, PsoDataType.Bool, 40, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)1308720135, PsoDataType.Bool, 41, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.HasIncomingEdges, PsoDataType.Bool, 40, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.HasOutgoingEdges, PsoDataType.Bool, 41, 0, 0)
                     );
                 case MetaName.CScenarioChainingEdge:
                     return new PsoStructureInfo(MetaName.CScenarioChainingEdge, 0, 0, 16,

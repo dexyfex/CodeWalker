@@ -5563,8 +5563,8 @@ namespace CodeWalker.Project
                 n2.ChainingNode.CopyFrom(copyn);
             }
 
-            n1.ChainingNode.NotLast = true;
-            n2.ChainingNode.NotFirst = true;
+            n1.ChainingNode.HasOutgoingEdges = true;
+            n2.ChainingNode.HasIncomingEdges = true;
 
             n1.ChainingNode.ScenarioNode = n1;
             n2.ChainingNode.ScenarioNode = n2;
@@ -6167,8 +6167,8 @@ namespace CodeWalker.Project
                 thisnode.ChainingNode.Chain = chain;
                 thisnode.ChainingNode.Type = stype;
                 thisnode.ChainingNode.TypeHash = stype.NameHash;
-                thisnode.ChainingNode.NotLast = (i < (lines.Length - 1));
-                thisnode.ChainingNode.NotFirst = (lastnode != null);
+                thisnode.ChainingNode.HasOutgoingEdges = (i < (lines.Length - 1));
+                thisnode.ChainingNode.HasIncomingEdges = (lastnode != null);
 
                 thisnode.SetPosition(pos);
                 thisnode.Orientation = thisnode.MyPoint.Orientation;

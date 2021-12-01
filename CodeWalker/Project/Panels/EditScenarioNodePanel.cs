@@ -469,11 +469,11 @@ namespace CodeWalker.Project.Panels
                 ScenarioChainNodeAddToProjectButton.Enabled = false;
                 ScenarioChainNodeDeleteButton.Enabled = false;
                 ScenarioChainNodePositionTextBox.Text = "";
-                ScenarioChainNodeUnk1TextBox.Text = "";
-                ScenarioChainNodeUnk1HashLabel.Text = "Hash: 0";
+                ScenarioChainNodePropTextBox.Text = "";
+                ScenarioChainNodePropHashLabel.Text = "Hash: 0";
                 ScenarioChainNodeTypeComboBox.SelectedItem = null;
-                ScenarioChainNodeFirstCheckBox.Checked = false;
-                ScenarioChainNodeLastCheckBox.Checked = false;
+                ScenarioChainNodeHasIncomingCheckBox.Checked = false;
+                ScenarioChainNodeHasOutgoingCheckBox.Checked = false;
                 ScenarioChainNodeIndexTextBox.Text = "";
             }
             else
@@ -483,11 +483,11 @@ namespace CodeWalker.Project.Panels
                 ScenarioChainNodeDeleteButton.Enabled = ProjectForm.ScenarioExistsInProject(CurrentScenario);
                 ScenarioChainNodeAddToProjectButton.Enabled = !ScenarioChainNodeDeleteButton.Enabled;
                 ScenarioChainNodePositionTextBox.Text = FloatUtil.GetVector3String(n.Position);
-                ScenarioChainNodeUnk1TextBox.Text = n.Unk1.ToString();
-                ScenarioChainNodeUnk1HashLabel.Text = "Hash: " + n.Unk1.Hash.ToString();
+                ScenarioChainNodePropTextBox.Text = n.PropHash.ToString();
+                ScenarioChainNodePropHashLabel.Text = "Hash: " + n.PropHash.Hash.ToString();
                 ScenarioChainNodeTypeComboBox.SelectedItem = ((object)n.Type) ?? "";
-                ScenarioChainNodeFirstCheckBox.Checked = !n.NotFirst;
-                ScenarioChainNodeLastCheckBox.Checked = !n.NotLast;
+                ScenarioChainNodeHasIncomingCheckBox.Checked = n.HasIncomingEdges;
+                ScenarioChainNodeHasOutgoingCheckBox.Checked = n.HasOutgoingEdges;
                 ScenarioChainNodeIndexTextBox.Text = n.NodeIndex.ToString();
             }
         }
@@ -1683,24 +1683,24 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void ScenarioChainNodeUnk1TextBox_TextChanged(object sender, EventArgs e)
+        private void ScenarioChainNodePropTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ChainingNode == null) return;
             uint hash = 0;
-            string name = ScenarioChainNodeUnk1TextBox.Text;
+            string name = ScenarioChainNodePropTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(name);
                 JenkIndex.Ensure(name);
             }
-            ScenarioChainNodeUnk1HashLabel.Text = "Hash: " + hash.ToString();
+            ScenarioChainNodePropHashLabel.Text = "Hash: " + hash.ToString();
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentScenarioNode.ChainingNode.Unk1 != hash)
+                if (CurrentScenarioNode.ChainingNode.PropHash != hash)
                 {
-                    CurrentScenarioNode.ChainingNode.Unk1 = hash;
+                    CurrentScenarioNode.ChainingNode.PropHash = hash;
                     ProjectForm.SetScenarioHasChanged(true);
                 }
             }
@@ -1724,18 +1724,18 @@ namespace CodeWalker.Project.Panels
             ProjectForm.ProjectExplorer?.UpdateScenarioNodeTreeNode(CurrentScenarioNode);
         }
 
-        private void ScenarioChainNodeFirstCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void ScenarioChainNodeHasIncomingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ChainingNode == null) return;
-            bool v = !ScenarioChainNodeFirstCheckBox.Checked;
+            bool v = ScenarioChainNodeHasIncomingCheckBox.Checked;
             bool change = false;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentScenarioNode.ChainingNode.NotFirst != v)
+                if (CurrentScenarioNode.ChainingNode.HasIncomingEdges != v)
                 {
-                    CurrentScenarioNode.ChainingNode.NotFirst = v;
+                    CurrentScenarioNode.ChainingNode.HasIncomingEdges = v;
                     ProjectForm.SetScenarioHasChanged(true);
                     change = true;
                 }
@@ -1749,18 +1749,18 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void ScenarioChainNodeLastCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void ScenarioChainNodeHasOutgoingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentScenarioNode == null) return;
             if (CurrentScenarioNode.ChainingNode == null) return;
-            bool v = !ScenarioChainNodeLastCheckBox.Checked;
+            bool v = ScenarioChainNodeHasOutgoingCheckBox.Checked;
             bool change = false;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentScenarioNode.ChainingNode.NotLast != v)
+                if (CurrentScenarioNode.ChainingNode.HasOutgoingEdges != v)
                 {
-                    CurrentScenarioNode.ChainingNode.NotLast = v;
+                    CurrentScenarioNode.ChainingNode.HasOutgoingEdges = v;
                     ProjectForm.SetScenarioHasChanged(true);
                     change = true;
                 }

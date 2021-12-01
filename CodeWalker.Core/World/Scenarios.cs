@@ -458,8 +458,8 @@ namespace CodeWalker.World
                                 if ((vid1 >= r.Paths.Nodes.Length) || (vid2 >= r.Paths.Nodes.Length)) continue;
                                 var v1 = r.Paths.Nodes[vid1];
                                 var v2 = r.Paths.Nodes[vid2];
-                                byte cr1 = (v1.NotFirst) ? (byte)255 : (byte)0;
-                                byte cr2 = (v2.NotFirst) ? (byte)255 : (byte)0;
+                                byte cr1 = (v1.HasIncomingEdges) ? (byte)255 : (byte)0;
+                                byte cr2 = (v2.HasIncomingEdges) ? (byte)255 : (byte)0;
                                 byte cg = 0;// (chain._Data.Unk_1156691834 > 1) ? (byte)255 : (byte)0;
                                 //cg = ((v1.Unk1 != 0) || (v2.Unk1 != 0)) ? (byte)255 : (byte)0;
                                 //cg = (edge.Action == CScenarioChainingEdge__eAction.Unk_7865678) ? (byte)255 : (byte)0;
@@ -469,8 +469,8 @@ namespace CodeWalker.World
                                 byte cb2 = (byte)(255 - cr2);
                                 pv1.Position = v1.Position;
                                 pv2.Position = v2.Position;
-                                pv1.Colour = (uint)new Color(cr1, cg, cb1, (byte)255).ToRgba();// (v1._Data.Unk_407126079 == 1) ? cred : cblu;
-                                pv2.Colour = (uint)new Color(cr2, cg, cb2, (byte)255).ToRgba();// (v2._Data.Unk_407126079 == 1) ? cred : cblu;
+                                pv1.Colour = (uint)new Color(cr1, cg, cb1, (byte)255).ToRgba();// (v1._Data.HasIncomingEdges == 1) ? cred : cblu;
+                                pv2.Colour = (uint)new Color(cr2, cg, cb2, (byte)255).ToRgba();// (v2._Data.HasIncomingEdges == 1) ? cred : cblu;
                                 pathverts.Add(pv1);
                                 pathverts.Add(pv2);
                             }
@@ -794,8 +794,8 @@ namespace CodeWalker.World
                             Region.Paths.AddEdge(newEdge);
 
                             //chain start/end have these flags set... make sure they are updated!
-                            copy.ChainingNode.NotLast = true;
-                            n.ChainingNode.NotLast = false;
+                            copy.ChainingNode.HasOutgoingEdges = true;
+                            n.ChainingNode.HasOutgoingEdges = false;
 
                             if (copy.Region == Region) //only add the new edge if we're in the same region...
                             {

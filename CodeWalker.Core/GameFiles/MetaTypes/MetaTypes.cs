@@ -404,8 +404,8 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)2602393771, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.ScenarioType, 20, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)407126079, 24, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1308720135, 25, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.HasIncomingEdges, 24, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.HasOutgoingEdges, 25, MetaStructureEntryDataType.Boolean, 0, 0, 0)
                     );
                 case MetaName.CScenarioChainingEdge:
                     return new MetaStructureInfo(MetaName.CScenarioChainingEdge, 2004985940, 256, 8,
@@ -5287,16 +5287,16 @@ namespace CodeWalker.GameFiles
     {
         public Vector3 Position { get; set; } //0   0: Float_XYZ: 0: Position
         public float Unused0 { get; set; }//12
-        public MetaHash Unk_2602393771 { get; set; } //16   16: Hash: 0: 2602393771
+        public MetaHash Unk_2602393771 { get; set; } //16   16: Hash: 0: 2602393771  prop name, eg. prop_parknmeter_01, prop_atm_01, prop_bench_01a
         public MetaHash ScenarioType { get; set; } //20   20: Hash: 0: ScenarioType
-        public byte Unk_407126079_NotFirst { get; set; } //24   24: Boolean: 0: 407126079 //can move backwards? (not first node)
-        public byte Unk_1308720135_NotLast { get; set; } //25   25: Boolean: 0: 1308720135 //can move forwards? (not last node)
+        public byte HasIncomingEdges { get; set; } //24   24: Boolean: 0: HasIncomingEdges (not first node)
+        public byte HasOutgoingEdges { get; set; } //25   25: Boolean: 0: HasOutgoingEdges (not last node)
         public ushort Unused1 { get; set; }//26
         public uint Unused2 { get; set; }//28
 
         public override string ToString()
         {
-            return //Unk_407126079.ToString() + ", " + Unk_1308720135.ToString() + ", " + 
+            return 
                 ScenarioType.ToString() + ", " + Unk_2602393771.ToString();
         }
     }
@@ -5310,11 +5310,11 @@ namespace CodeWalker.GameFiles
         public CScenarioChainingNode Data { get { return _Data; } set { _Data = value; } }
 
         public Vector3 Position { get { return _Data.Position; } set { _Data.Position = value; } }
-        public MetaHash Unk1 { get { return _Data.Unk_2602393771; } set { _Data.Unk_2602393771 = value; } }
+        public MetaHash PropHash { get { return _Data.Unk_2602393771; } set { _Data.Unk_2602393771 = value; } }
         public MetaHash TypeHash { get { return _Data.ScenarioType; } set { _Data.ScenarioType = value; } }
         public ScenarioTypeRef Type { get; set; }
-        public bool NotFirst { get { return _Data.Unk_407126079_NotFirst == 1; } set { _Data.Unk_407126079_NotFirst = (byte)(value ? 1 : 0); } }
-        public bool NotLast { get { return _Data.Unk_1308720135_NotLast == 1; } set { _Data.Unk_1308720135_NotLast = (byte)(value ? 1 : 0); } }
+        public bool HasIncomingEdges { get { return _Data.HasIncomingEdges == 1; } set { _Data.HasIncomingEdges = (byte)(value ? 1 : 0); } }
+        public bool HasOutgoingEdges { get { return _Data.HasOutgoingEdges == 1; } set { _Data.HasOutgoingEdges = (byte)(value ? 1 : 0); } }
 
         public int NodeIndex { get; set; }
         public MCScenarioChain Chain { get; set; }

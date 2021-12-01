@@ -3356,6 +3356,8 @@ namespace CodeWalker.GameFiles
         Chains = 3254907796,
         ChainingGraph = 3696045377,
         rage__spdSphere = 1062159465,
+        HasIncomingEdges = 407126079,
+        HasOutgoingEdges = 1308720135,
         EdgeIds = 934700563,
         TypeNames = 3057471271,
         GroupNames = 2506712617,

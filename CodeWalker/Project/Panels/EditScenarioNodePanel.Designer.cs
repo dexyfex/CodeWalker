@@ -158,11 +158,11 @@
             this.ScenarioChainNodeTypeComboBox = new System.Windows.Forms.ComboBox();
             this.ScenarioChainNodeIndexTextBox = new System.Windows.Forms.TextBox();
             this.label115 = new System.Windows.Forms.Label();
-            this.ScenarioChainNodeLastCheckBox = new System.Windows.Forms.CheckBox();
-            this.ScenarioChainNodeFirstCheckBox = new System.Windows.Forms.CheckBox();
+            this.ScenarioChainNodeHasOutgoingCheckBox = new System.Windows.Forms.CheckBox();
+            this.ScenarioChainNodeHasIncomingCheckBox = new System.Windows.Forms.CheckBox();
             this.label123 = new System.Windows.Forms.Label();
-            this.ScenarioChainNodeUnk1HashLabel = new System.Windows.Forms.Label();
-            this.ScenarioChainNodeUnk1TextBox = new System.Windows.Forms.TextBox();
+            this.ScenarioChainNodePropHashLabel = new System.Windows.Forms.Label();
+            this.ScenarioChainNodePropTextBox = new System.Windows.Forms.TextBox();
             this.label119 = new System.Windows.Forms.Label();
             this.ScenarioChainNodeGoToButton = new System.Windows.Forms.Button();
             this.ScenarioChainNodePositionTextBox = new System.Windows.Forms.TextBox();
@@ -1760,11 +1760,11 @@
             this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeTypeComboBox);
             this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeIndexTextBox);
             this.ScenarioChainNodePanel.Controls.Add(this.label115);
-            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeLastCheckBox);
-            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeFirstCheckBox);
+            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeHasOutgoingCheckBox);
+            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeHasIncomingCheckBox);
             this.ScenarioChainNodePanel.Controls.Add(this.label123);
-            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeUnk1HashLabel);
-            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeUnk1TextBox);
+            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodePropHashLabel);
+            this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodePropTextBox);
             this.ScenarioChainNodePanel.Controls.Add(this.label119);
             this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodeGoToButton);
             this.ScenarioChainNodePanel.Controls.Add(this.ScenarioChainNodePositionTextBox);
@@ -1806,27 +1806,27 @@
             this.label115.TabIndex = 16;
             this.label115.Text = "Index:";
             // 
-            // ScenarioChainNodeLastCheckBox
+            // ScenarioChainNodeHasOutgoingCheckBox
             // 
-            this.ScenarioChainNodeLastCheckBox.AutoSize = true;
-            this.ScenarioChainNodeLastCheckBox.Location = new System.Drawing.Point(73, 105);
-            this.ScenarioChainNodeLastCheckBox.Name = "ScenarioChainNodeLastCheckBox";
-            this.ScenarioChainNodeLastCheckBox.Size = new System.Drawing.Size(86, 17);
-            this.ScenarioChainNodeLastCheckBox.TabIndex = 15;
-            this.ScenarioChainNodeLastCheckBox.Text = "Last in chain";
-            this.ScenarioChainNodeLastCheckBox.UseVisualStyleBackColor = true;
-            this.ScenarioChainNodeLastCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioChainNodeLastCheckBox_CheckedChanged);
+            this.ScenarioChainNodeHasOutgoingCheckBox.AutoSize = true;
+            this.ScenarioChainNodeHasOutgoingCheckBox.Location = new System.Drawing.Point(73, 105);
+            this.ScenarioChainNodeHasOutgoingCheckBox.Name = "ScenarioChainNodeHasOutgoingCheckBox";
+            this.ScenarioChainNodeHasOutgoingCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.ScenarioChainNodeHasOutgoingCheckBox.TabIndex = 15;
+            this.ScenarioChainNodeHasOutgoingCheckBox.Text = "Has Outgoing Edges";
+            this.ScenarioChainNodeHasOutgoingCheckBox.UseVisualStyleBackColor = true;
+            this.ScenarioChainNodeHasOutgoingCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioChainNodeHasOutgoingCheckBox_CheckedChanged);
             // 
-            // ScenarioChainNodeFirstCheckBox
+            // ScenarioChainNodeHasIncomingCheckBox
             // 
-            this.ScenarioChainNodeFirstCheckBox.AutoSize = true;
-            this.ScenarioChainNodeFirstCheckBox.Location = new System.Drawing.Point(73, 82);
-            this.ScenarioChainNodeFirstCheckBox.Name = "ScenarioChainNodeFirstCheckBox";
-            this.ScenarioChainNodeFirstCheckBox.Size = new System.Drawing.Size(85, 17);
-            this.ScenarioChainNodeFirstCheckBox.TabIndex = 14;
-            this.ScenarioChainNodeFirstCheckBox.Text = "First in chain";
-            this.ScenarioChainNodeFirstCheckBox.UseVisualStyleBackColor = true;
-            this.ScenarioChainNodeFirstCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioChainNodeFirstCheckBox_CheckedChanged);
+            this.ScenarioChainNodeHasIncomingCheckBox.AutoSize = true;
+            this.ScenarioChainNodeHasIncomingCheckBox.Location = new System.Drawing.Point(73, 82);
+            this.ScenarioChainNodeHasIncomingCheckBox.Name = "ScenarioChainNodeHasIncomingCheckBox";
+            this.ScenarioChainNodeHasIncomingCheckBox.Size = new System.Drawing.Size(124, 17);
+            this.ScenarioChainNodeHasIncomingCheckBox.TabIndex = 14;
+            this.ScenarioChainNodeHasIncomingCheckBox.Text = "Has Incoming Edges";
+            this.ScenarioChainNodeHasIncomingCheckBox.UseVisualStyleBackColor = true;
+            this.ScenarioChainNodeHasIncomingCheckBox.CheckedChanged += new System.EventHandler(this.ScenarioChainNodeHasIncomingCheckBox_CheckedChanged);
             // 
             // label123
             // 
@@ -1837,34 +1837,34 @@
             this.label123.TabIndex = 11;
             this.label123.Text = "Type:";
             // 
-            // ScenarioChainNodeUnk1HashLabel
+            // ScenarioChainNodePropHashLabel
             // 
-            this.ScenarioChainNodeUnk1HashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioChainNodeUnk1HashLabel.AutoSize = true;
-            this.ScenarioChainNodeUnk1HashLabel.Location = new System.Drawing.Point(382, 32);
-            this.ScenarioChainNodeUnk1HashLabel.Name = "ScenarioChainNodeUnk1HashLabel";
-            this.ScenarioChainNodeUnk1HashLabel.Size = new System.Drawing.Size(44, 13);
-            this.ScenarioChainNodeUnk1HashLabel.TabIndex = 10;
-            this.ScenarioChainNodeUnk1HashLabel.Text = "Hash: 0";
+            this.ScenarioChainNodePropHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ScenarioChainNodePropHashLabel.AutoSize = true;
+            this.ScenarioChainNodePropHashLabel.Location = new System.Drawing.Point(382, 32);
+            this.ScenarioChainNodePropHashLabel.Name = "ScenarioChainNodePropHashLabel";
+            this.ScenarioChainNodePropHashLabel.Size = new System.Drawing.Size(44, 13);
+            this.ScenarioChainNodePropHashLabel.TabIndex = 10;
+            this.ScenarioChainNodePropHashLabel.Text = "Hash: 0";
             // 
-            // ScenarioChainNodeUnk1TextBox
+            // ScenarioChainNodePropTextBox
             // 
-            this.ScenarioChainNodeUnk1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ScenarioChainNodePropTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioChainNodeUnk1TextBox.Location = new System.Drawing.Point(73, 29);
-            this.ScenarioChainNodeUnk1TextBox.Name = "ScenarioChainNodeUnk1TextBox";
-            this.ScenarioChainNodeUnk1TextBox.Size = new System.Drawing.Size(303, 20);
-            this.ScenarioChainNodeUnk1TextBox.TabIndex = 9;
-            this.ScenarioChainNodeUnk1TextBox.TextChanged += new System.EventHandler(this.ScenarioChainNodeUnk1TextBox_TextChanged);
+            this.ScenarioChainNodePropTextBox.Location = new System.Drawing.Point(73, 29);
+            this.ScenarioChainNodePropTextBox.Name = "ScenarioChainNodePropTextBox";
+            this.ScenarioChainNodePropTextBox.Size = new System.Drawing.Size(303, 20);
+            this.ScenarioChainNodePropTextBox.TabIndex = 9;
+            this.ScenarioChainNodePropTextBox.TextChanged += new System.EventHandler(this.ScenarioChainNodePropTextBox_TextChanged);
             // 
             // label119
             // 
             this.label119.AutoSize = true;
-            this.label119.Location = new System.Drawing.Point(28, 32);
+            this.label119.Location = new System.Drawing.Point(35, 32);
             this.label119.Name = "label119";
-            this.label119.Size = new System.Drawing.Size(39, 13);
+            this.label119.Size = new System.Drawing.Size(32, 13);
             this.label119.TabIndex = 8;
-            this.label119.Text = "Unk 1:";
+            this.label119.Text = "Prop:";
             // 
             // ScenarioChainNodeGoToButton
             // 
@@ -2746,11 +2746,11 @@
         private System.Windows.Forms.ComboBox ScenarioChainNodeTypeComboBox;
         private System.Windows.Forms.TextBox ScenarioChainNodeIndexTextBox;
         private System.Windows.Forms.Label label115;
-        private System.Windows.Forms.CheckBox ScenarioChainNodeLastCheckBox;
-        private System.Windows.Forms.CheckBox ScenarioChainNodeFirstCheckBox;
+        private System.Windows.Forms.CheckBox ScenarioChainNodeHasOutgoingCheckBox;
+        private System.Windows.Forms.CheckBox ScenarioChainNodeHasIncomingCheckBox;
         private System.Windows.Forms.Label label123;
-        private System.Windows.Forms.Label ScenarioChainNodeUnk1HashLabel;
-        private System.Windows.Forms.TextBox ScenarioChainNodeUnk1TextBox;
+        private System.Windows.Forms.Label ScenarioChainNodePropHashLabel;
+        private System.Windows.Forms.TextBox ScenarioChainNodePropTextBox;
         private System.Windows.Forms.Label label119;
         private System.Windows.Forms.Button ScenarioChainNodeGoToButton;
         private System.Windows.Forms.TextBox ScenarioChainNodePositionTextBox;
