@@ -13568,13 +13568,13 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 3, 0),
                      new PsoStructureEntryInfo(MetaName.Items, PsoDataType.Array, 0, 0, 0)
                     );
-                case (MetaName)1626675902:
-                    return new PsoStructureInfo((MetaName)1626675902, 0, 0, 24,
+                case MetaName.cutf_int:
+                    return new PsoStructureInfo(MetaName.cutf_int, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 8, 0),
                      new PsoStructureEntryInfo(MetaName.Value, PsoDataType.SInt, 16, 0, 0)
                     );
-                case (MetaName)1674696498:
-                    return new PsoStructureInfo((MetaName)1674696498, 0, 0, 24,
+                case MetaName.cutf_float:
+                    return new PsoStructureInfo(MetaName.cutf_float, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 8, 0),
                      new PsoStructureEntryInfo(MetaName.Value, PsoDataType.Float, 16, 0, 0)
                     );
@@ -13827,8 +13827,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.iLivery2, PsoDataType.SInt, 64, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fDirtLevel, PsoDataType.Float, 68, 0, 0)
                     );
-                case (MetaName)557437386:
-                    return new PsoStructureInfo((MetaName)557437386, 0, 0, 32,
+                case MetaName.cutf_string:
+                    return new PsoStructureInfo(MetaName.cutf_string, 0, 0, 32,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 8, 0),
                      new PsoStructureEntryInfo(MetaName.Value, PsoDataType.String, 16, 3, 0)
                     );
