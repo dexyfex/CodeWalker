@@ -1385,7 +1385,7 @@ namespace CodeWalker
                 }
                 foreach (var kvp in pathYnds)
                 {
-                    wf.UpdatePathYndGraphics(kvp.Key, true);
+                    wf.UpdatePathYndGraphics(kvp.Key, false);
                 }
                 foreach (var kvp in navYnvs)
                 {
@@ -1419,7 +1419,7 @@ namespace CodeWalker
             {
                 if (PathNode != null)
                 {
-                    wf.UpdatePathYndGraphics(PathNode.Ynd, true);
+                    wf.UpdatePathYndGraphics(PathNode.Ynd, false);
                 }
                 if (NavPoly != null)
                 {
