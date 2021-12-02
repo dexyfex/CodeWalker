@@ -312,6 +312,8 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
+            this.ToolbarSelectCalmingQuadButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectWaveQuadButton = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -1084,6 +1086,8 @@ namespace CodeWalker
             "Car Generator",
             "Grass",
             "Water Quad",
+            "Water Calming Quad",
+            "Water Wave Quad",
             "Collision",
             "Nav Mesh",
             "Path",
@@ -3080,6 +3084,8 @@ namespace CodeWalker
             this.ToolbarSelectCarGeneratorButton,
             this.ToolbarSelectGrassButton,
             this.ToolbarSelectWaterQuadButton,
+            this.ToolbarSelectCalmingQuadButton,
+            this.ToolbarSelectWaveQuadButton,
             this.ToolbarSelectCollisionButton,
             this.ToolbarSelectNavMeshButton,
             this.ToolbarSelectPathButton,
@@ -3604,6 +3610,20 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
+            // ToolbarSelectCalmingQuadButton
+            // 
+            this.ToolbarSelectCalmingQuadButton.Name = "ToolbarSelectCalmingQuadButton";
+            this.ToolbarSelectCalmingQuadButton.Size = new System.Drawing.Size(185, 22);
+            this.ToolbarSelectCalmingQuadButton.Text = "Water Calming Quad";
+            this.ToolbarSelectCalmingQuadButton.Click += new System.EventHandler(this.ToolbarSelectCalmingQuadButton_Click);
+            // 
+            // ToolbarSelectWaveQuadButton
+            // 
+            this.ToolbarSelectWaveQuadButton.Name = "ToolbarSelectWaveQuadButton";
+            this.ToolbarSelectWaveQuadButton.Size = new System.Drawing.Size(185, 22);
+            this.ToolbarSelectWaveQuadButton.Text = "Water Wave Quad";
+            this.ToolbarSelectWaveQuadButton.Click += new System.EventHandler(this.ToolbarSelectWaveQuadButton_Click);
+            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3975,5 +3995,7 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping90Button;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSnapGridSizeButton;
         private System.Windows.Forms.CheckBox HDLightsCheckBox;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSelectCalmingQuadButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarSelectWaveQuadButton;
     }
 }
