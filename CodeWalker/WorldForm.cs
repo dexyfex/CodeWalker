@@ -2917,7 +2917,7 @@ namespace CodeWalker
             Ray mray = new Ray();
             mray.Position = camera.MouseRay.Position + camera.Position;
             mray.Direction = camera.MouseRay.Direction;
-            float hitdist = float.MaxValue;
+            float hitdist;
 
 
             foreach (T quad in waterquads)
@@ -2932,15 +2932,21 @@ namespace CodeWalker
 
                 bbox.Minimum = mb.BBMin;
                 bbox.Maximum = mb.BBMax;
-                if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
-                {
-                    CurMouseHit.HitDist = hitdist;
-                    CurMouseHit.CamRel = mb.CamRelPos;
-                    CurMouseHit.AABB = bbox;
 
-                    CurMouseHit.WaterQuad = quad as WaterQuad;
-                    CurMouseHit.WaveQuad = quad as WaterWaveQuad;
-                    CurMouseHit.CalmingQuad = quad as WaterCalmingQuad;
+                if(mray.Intersects(ref bbox, out hitdist) && hitdist > 0)
+                {
+                    float curSize = CurMouseHit.AABB.Size.X * CurMouseHit.AABB.Size.Y;
+                    float newSize = bbox.Size.X * bbox.Size.Y;
+                    if ((curSize == 0) || (newSize < curSize))
+                    {
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+
+                        CurMouseHit.WaterQuad = quad as WaterQuad;
+                        CurMouseHit.WaveQuad = quad as WaterWaveQuad;
+                        CurMouseHit.CalmingQuad = quad as WaterCalmingQuad;
+                    }
                 }
             }
         }
