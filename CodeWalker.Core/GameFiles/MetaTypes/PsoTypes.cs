@@ -13169,7 +13169,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.VersionNumber, PsoDataType.SInt, 8, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
                      new PsoStructureEntryInfo(MetaName.ScenarioPoints, PsoDataType.Array, 16, 0, (MetaName)1),
-                     new PsoStructureEntryInfo((MetaName)3696045377, PsoDataType.Structure, 32, 0, (MetaName)4023740759)
+                     new PsoStructureEntryInfo(MetaName.ChainingGraph, PsoDataType.Structure, 32, 0, MetaName.CScenarioChainingGraph)
                     );
                 case MetaName.CExtensionDefSpawnPoint:
                     return new PsoStructureInfo(MetaName.CExtensionDefSpawnPoint, 0, 0, 80,
@@ -13179,7 +13179,7 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.spawnType, PsoDataType.String, 48, 7, 0),
                      new PsoStructureEntryInfo(MetaName.pedType, PsoDataType.String, 52, 7, 0),
                      new PsoStructureEntryInfo(MetaName.group, PsoDataType.String, 56, 7, 0),
-                     new PsoStructureEntryInfo(MetaName.availableInMpSp, PsoDataType.Enum, 60, 0, (MetaName)3573596290),
+                     new PsoStructureEntryInfo(MetaName.availableInMpSp, PsoDataType.Enum, 60, 0, MetaName.CSpawnPoint__AvailabilityMpSp),
                      new PsoStructureEntryInfo(MetaName.timeTillPedLeaves, PsoDataType.Float, 64, 0, 0),
                      new PsoStructureEntryInfo(MetaName.start, PsoDataType.UByte, 68, 0, 0),
                      new PsoStructureEntryInfo(MetaName.end, PsoDataType.UByte, 69, 0, 0),
@@ -13188,8 +13188,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.highPri, PsoDataType.Bool, 76, 0, 0),
                      new PsoStructureEntryInfo(MetaName.extendedRange, PsoDataType.Bool, 77, 0, 0)
                     );
-                case (MetaName)4023740759:
-                    return new PsoStructureInfo((MetaName)4023740759, 0, 0, 40,
+                case MetaName.CScenarioChainingGraph:
+                    return new PsoStructureInfo(MetaName.CScenarioChainingGraph, 0, 0, 40,
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
                      new PsoStructureEntryInfo(MetaName.Nodes, PsoDataType.Array, 8, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
@@ -13200,8 +13200,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.Position, PsoDataType.Float3a, 16, 0, 0),
                      new PsoStructureEntryInfo((MetaName)2602393771, PsoDataType.String, 32, 7, 0),
                      new PsoStructureEntryInfo(MetaName.ScenarioType, PsoDataType.String, 36, 7, 0),
-                     new PsoStructureEntryInfo((MetaName)407126079, PsoDataType.Bool, 40, 0, 0),
-                     new PsoStructureEntryInfo((MetaName)1308720135, PsoDataType.Bool, 41, 0, 0)
+                     new PsoStructureEntryInfo(MetaName.HasIncomingEdges, PsoDataType.Bool, 40, 0, 0),
+                     new PsoStructureEntryInfo(MetaName.HasOutgoingEdges, PsoDataType.Bool, 41, 0, 0)
                     );
                 case MetaName.CScenarioChainingEdge:
                     return new PsoStructureInfo(MetaName.CScenarioChainingEdge, 0, 0, 16,
@@ -13247,10 +13247,10 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.numAlternatives, PsoDataType.UByte, 1, 0, 0),
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPVTextureData),
                      new PsoStructureEntryInfo(MetaName.aTexData, PsoDataType.Array, 8, 0, (MetaName)2),
-                     new PsoStructureEntryInfo(MetaName.clothData, PsoDataType.Structure, 24, 0, (MetaName)2236980467)
+                     new PsoStructureEntryInfo(MetaName.clothData, PsoDataType.Structure, 24, 0, MetaName.CPVDrawblData__CPVClothComponentData)
                     );
-                case (MetaName)2236980467:
-                    return new PsoStructureInfo((MetaName)2236980467, 0, 0, 24,
+                case MetaName.CPVDrawblData__CPVClothComponentData:
+                    return new PsoStructureInfo(MetaName.CPVDrawblData__CPVClothComponentData, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.ownsCloth, PsoDataType.Bool, 0, 0, 0)
                     );
                 case MetaName.CPVTextureData:
@@ -13568,13 +13568,13 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 3, 0),
                      new PsoStructureEntryInfo(MetaName.Items, PsoDataType.Array, 0, 0, 0)
                     );
-                case (MetaName)1626675902:
-                    return new PsoStructureInfo((MetaName)1626675902, 0, 0, 24,
+                case MetaName.cutf_int:
+                    return new PsoStructureInfo(MetaName.cutf_int, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 8, 0),
                      new PsoStructureEntryInfo(MetaName.Value, PsoDataType.SInt, 16, 0, 0)
                     );
-                case (MetaName)1674696498:
-                    return new PsoStructureInfo((MetaName)1674696498, 0, 0, 24,
+                case MetaName.cutf_float:
+                    return new PsoStructureInfo(MetaName.cutf_float, 0, 0, 24,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 8, 0),
                      new PsoStructureEntryInfo(MetaName.Value, PsoDataType.Float, 16, 0, 0)
                     );
@@ -13827,8 +13827,8 @@ namespace CodeWalker.GameFiles
                      new PsoStructureEntryInfo(MetaName.iLivery2, PsoDataType.SInt, 64, 0, 0),
                      new PsoStructureEntryInfo(MetaName.fDirtLevel, PsoDataType.Float, 68, 0, 0)
                     );
-                case (MetaName)557437386:
-                    return new PsoStructureInfo((MetaName)557437386, 0, 0, 32,
+                case MetaName.cutf_string:
+                    return new PsoStructureInfo(MetaName.cutf_string, 0, 0, 32,
                      new PsoStructureEntryInfo(MetaName.Name, PsoDataType.String, 8, 8, 0),
                      new PsoStructureEntryInfo(MetaName.Value, PsoDataType.String, 16, 3, 0)
                     );
@@ -15729,8 +15729,8 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo(MetaName.ForceLowCornerWestFaceSouth, 19),
                      new PsoEnumEntryInfo(MetaName.NoCoverVehicleDoors, 20)
                     );
-                case (MetaName)3573596290:
-                    return new PsoEnumInfo((MetaName)3573596290, 1,
+                case MetaName.CSpawnPoint__AvailabilityMpSp:
+                    return new PsoEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp, 1,
                      new PsoEnumEntryInfo(MetaName.kBoth, 0),
                      new PsoEnumEntryInfo(MetaName.kOnlySp, 1),
                      new PsoEnumEntryInfo(MetaName.kOnlyMp, 2)

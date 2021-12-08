@@ -25,7 +25,7 @@ namespace CodeWalker.GameFiles
         // structure data
         public int Unknown_10h { get; set; } = 0x50524430;
         public short Unknown_14h { get; set; } = 0x0079;
-        public byte HasUselessData { get; set; }
+        public byte HasEncryptedStrings { get; set; }
         public byte Unknown_17h { get; set; } = 0x00;
         public int Unknown_18h { get; set; } = 0x00000000;
         public int RootBlockIndex { get; set; }
@@ -33,7 +33,7 @@ namespace CodeWalker.GameFiles
         public long EnumInfosPointer { get; set; }
         public long DataBlocksPointer { get; set; }
         public long NamePointer { get; set; }
-        public long UselessPointer { get; set; }
+        public long EncryptedStringsPointer { get; set; }
         public short StructureInfosCount { get; set; }
         public short EnumInfosCount { get; set; }
         public short DataBlocksCount { get; set; }
@@ -53,8 +53,14 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleArray<MetaDataBlock> DataBlocks { get; set; }
         public string Name { get; set; }
         //public string[] Strings { get; set; }
+        public MetaEncryptedStringsBlock EncryptedStrings { get; set; }
 
         private string_r NameBlock = null;
+
+
+#if DEBUG
+        public ResourceAnalyzer Analyzer { get; set; }
+#endif
 
 
         /// <summary>
@@ -67,7 +73,7 @@ namespace CodeWalker.GameFiles
             // read structure data
             this.Unknown_10h = reader.ReadInt32();
             this.Unknown_14h = reader.ReadInt16();
-            this.HasUselessData = reader.ReadByte();
+            this.HasEncryptedStrings = reader.ReadByte();
             this.Unknown_17h = reader.ReadByte();
             this.Unknown_18h = reader.ReadInt32();
             this.RootBlockIndex = reader.ReadInt32();
@@ -75,7 +81,7 @@ namespace CodeWalker.GameFiles
             this.EnumInfosPointer = reader.ReadInt64();
             this.DataBlocksPointer = reader.ReadInt64();
             this.NamePointer = reader.ReadInt64();
-            this.UselessPointer = reader.ReadInt64();
+            this.EncryptedStringsPointer = reader.ReadInt64();
             this.StructureInfosCount = reader.ReadInt16();
             this.EnumInfosCount = reader.ReadInt16();
             this.DataBlocksCount = reader.ReadInt16();
@@ -113,6 +119,13 @@ namespace CodeWalker.GameFiles
             { }
 
             //Strings = MetaTypes.GetStrings(this);
+
+#if DEBUG
+            EncryptedStrings = reader.ReadBlockAt<MetaEncryptedStringsBlock>((ulong)EncryptedStringsPointer);
+
+            Analyzer = new ResourceAnalyzer(reader);
+#endif
+
         }
 
         /// <summary>
@@ -127,7 +140,7 @@ namespace CodeWalker.GameFiles
             this.EnumInfosPointer = this.EnumInfos?.FilePosition ?? 0;
             this.DataBlocksPointer = this.DataBlocks?.FilePosition ?? 0;
             this.NamePointer = this.NameBlock?.FilePosition ?? 0;
-            this.UselessPointer = 0;
+            this.EncryptedStringsPointer = 0;
             this.StructureInfosCount = (short)(this.StructureInfos?.Count ?? 0);
             this.EnumInfosCount = (short)(this.EnumInfos?.Count ?? 0);
             this.DataBlocksCount = (short)(this.DataBlocks?.Count ?? 0);
@@ -135,7 +148,7 @@ namespace CodeWalker.GameFiles
             // write structure data
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
-            writer.Write(this.HasUselessData);
+            writer.Write(this.HasEncryptedStrings);
             writer.Write(this.Unknown_17h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.RootBlockIndex);
@@ -143,7 +156,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.EnumInfosPointer);
             writer.Write(this.DataBlocksPointer);
             writer.Write(this.NamePointer);
-            writer.Write(this.UselessPointer);
+            writer.Write(this.EncryptedStringsPointer);
             writer.Write(this.StructureInfosCount);
             writer.Write(this.EnumInfosCount);
             writer.Write(this.DataBlocksCount);
@@ -584,7 +597,48 @@ namespace CodeWalker.GameFiles
     }
 
 
+    [TC(typeof(EXP))] public class MetaEncryptedStringsBlock : ResourceSystemBlock
+    {
+        public override long BlockLength
+        {
+            get
+            {
+                return 4 + Count;// + PadCount;
+            }
+        }
 
+        public uint Count { get; set; }
+        public byte[] EncryptedData { get; set; }
+        //public uint PadCount { get; set; }
+        //public byte[] PadData { get; set; }
+        //public string[] TestStrings { get; set; }
+
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            Count = MetaTypes.SwapBytes(reader.ReadUInt32()); //okay. so this is big endian
+            EncryptedData = reader.ReadBytes((int)Count);
+            //PadCount = (uint)((8 - (reader.Position % 8)) % 8);//maybe next block just needs to be aligned instead?
+            //PadData = reader.ReadBytes((int)PadCount);
+
+
+            ////none of these work :(
+            //var strs = new List<string>();
+            //foreach (var key in GTA5Keys.PC_NG_KEYS)
+            //{
+            //    var decr = GTACrypto.DecryptNG(EncryptedData, key);
+            //    strs.Add(Encoding.ASCII.GetString(decr));
+            //}
+            //TestStrings = strs.ToArray();
+
+
+        }
+
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
 
 

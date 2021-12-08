@@ -458,8 +458,8 @@ namespace CodeWalker.World
                                 if ((vid1 >= r.Paths.Nodes.Length) || (vid2 >= r.Paths.Nodes.Length)) continue;
                                 var v1 = r.Paths.Nodes[vid1];
                                 var v2 = r.Paths.Nodes[vid2];
-                                byte cr1 = (v1.NotFirst) ? (byte)255 : (byte)0;
-                                byte cr2 = (v2.NotFirst) ? (byte)255 : (byte)0;
+                                byte cr1 = (v1.HasIncomingEdges) ? (byte)255 : (byte)0;
+                                byte cr2 = (v2.HasIncomingEdges) ? (byte)255 : (byte)0;
                                 byte cg = 0;// (chain._Data.Unk_1156691834 > 1) ? (byte)255 : (byte)0;
                                 //cg = ((v1.Unk1 != 0) || (v2.Unk1 != 0)) ? (byte)255 : (byte)0;
                                 //cg = (edge.Action == CScenarioChainingEdge__eAction.Unk_7865678) ? (byte)255 : (byte)0;
@@ -469,8 +469,8 @@ namespace CodeWalker.World
                                 byte cb2 = (byte)(255 - cr2);
                                 pv1.Position = v1.Position;
                                 pv2.Position = v2.Position;
-                                pv1.Colour = (uint)new Color(cr1, cg, cb1, (byte)255).ToRgba();// (v1._Data.Unk_407126079 == 1) ? cred : cblu;
-                                pv2.Colour = (uint)new Color(cr2, cg, cb2, (byte)255).ToRgba();// (v2._Data.Unk_407126079 == 1) ? cred : cblu;
+                                pv1.Colour = (uint)new Color(cr1, cg, cb1, (byte)255).ToRgba();// (v1._Data.HasIncomingEdges == 1) ? cred : cblu;
+                                pv2.Colour = (uint)new Color(cr2, cg, cb2, (byte)255).ToRgba();// (v2._Data.HasIncomingEdges == 1) ? cred : cblu;
                                 pathverts.Add(pv1);
                                 pathverts.Add(pv2);
                             }
@@ -794,8 +794,8 @@ namespace CodeWalker.World
                             Region.Paths.AddEdge(newEdge);
 
                             //chain start/end have these flags set... make sure they are updated!
-                            copy.ChainingNode.NotLast = true;
-                            n.ChainingNode.NotLast = false;
+                            copy.ChainingNode.HasOutgoingEdges = true;
+                            n.ChainingNode.HasOutgoingEdges = false;
 
                             if (copy.Region == Region) //only add the new edge if we're in the same region...
                             {
@@ -865,9 +865,157 @@ namespace CodeWalker.World
             return res;
         }
 
+        public bool RemoveChain(MCScenarioChain chain, bool delpoints)
+        {
+            var paths = Region?.Paths;
+            if (paths == null) return false;
+
+
+            Dictionary<MCScenarioChainingNode, int> ndict = new Dictionary<MCScenarioChainingNode, int>();
+
+            var edges = chain.Edges;
+            if (edges != null)
+            {
+                foreach (var edge in edges)
+                {
+                    //paths.RemoveEdge(edge); //removing nodes also removes edges!
+                    paths.RemoveNode(edge.NodeFrom);
+                    paths.RemoveNode(edge.NodeTo);
+
+                    ndict[edge.NodeFrom] = 1;
+                    ndict[edge.NodeTo] = 1;
+                }
+            }
+
+            paths.RemoveChain(chain);
+
+
+            List<ScenarioNode> delnodes = new List<ScenarioNode>();
+            foreach (var node in Nodes)
+            {
+                if ((node.ChainingNode != null) && (ndict.ContainsKey(node.ChainingNode)))
+                {
+                    delnodes.Add(node);
+                }
+            }
+            foreach (var delnode in delnodes)
+            {
+                delnode.ChainingNode = null;//this chaining node has been removed from the region. remove this association.
+                if (delpoints)
+                {
+                    RemoveNode(delnode);
+                }
+            }
+
+            return true;
+        }
+
+        public bool RemoveCluster(MCScenarioPointCluster cluster, bool delpoints)
+        {
+            var crgn = Region;
+            if (crgn == null) return false;
+
+
+            crgn.RemoveCluster(cluster);
 
 
 
+
+
+            Dictionary<MCScenarioPoint, int> ndict = new Dictionary<MCScenarioPoint, int>();
+            if (cluster?.Points?.MyPoints != null)
+            {
+                foreach (var point in cluster.Points.MyPoints)
+                {
+                    ndict[point] = 1;
+                }
+            }
+            List<ScenarioNode> delnodes = new List<ScenarioNode>();
+            foreach (var node in Nodes)
+            {
+                if ((node.ClusterMyPoint != null) && (ndict.ContainsKey(node.ClusterMyPoint)))
+                {
+                    delnodes.Add(node);
+                }
+                else if (node.Cluster == cluster)
+                {
+                    delnodes.Add(node);
+                }
+            }
+            foreach (var delnode in delnodes)
+            {
+                if (!delpoints && (crgn.Points != null) && (delnode.ClusterMyPoint != null))
+                {
+                    var copypt = new MCScenarioPoint(crgn, delnode.ClusterMyPoint);
+                    crgn.Points.AddMyPoint(copypt);
+                    delnode.MyPoint = copypt;
+                }
+                bool iscl = false;
+                if ((delnode.Cluster != null) && (delnode.ClusterMyPoint == null) && (delnode.ClusterLoadSavePoint == null))
+                {
+                    iscl = true;
+                }
+                delnode.Cluster = null;
+                delnode.ClusterMyPoint = null;//this cluster point has been removed from the region. remove this association.
+                delnode.ClusterLoadSavePoint = null;
+                if (delpoints)
+                {
+                    //if ((delnode.ChainingNode == null) && (delnode.EntityPoint == null))
+                    {
+                        RemoveNode(delnode);
+                    }
+                }
+                else if (iscl)
+                {
+                    RemoveNode(delnode); //remove the cluster node itself.
+                }
+            }
+
+
+            return true;
+        }
+
+        public bool RemoveEntity(MCScenarioEntityOverride entity)
+        {
+            var crgn = Region;
+            if (crgn == null) return false;
+
+
+            crgn.RemoveEntity(entity);
+
+
+
+
+
+            Dictionary<MCExtensionDefSpawnPoint, int> ndict = new Dictionary<MCExtensionDefSpawnPoint, int>();
+            if (entity.ScenarioPoints != null)
+            {
+                foreach (var point in entity.ScenarioPoints)
+                {
+                    ndict[point] = 1;
+                }
+            }
+            List<ScenarioNode> delnodes = new List<ScenarioNode>();
+            foreach (var node in Nodes)
+            {
+                if ((node.EntityPoint != null) && (ndict.ContainsKey(node.EntityPoint)))
+                {
+                    delnodes.Add(node);
+                }
+                else if (node.Entity == entity)
+                {
+                    delnodes.Add(node);
+                }
+            }
+            foreach (var delnode in delnodes)
+            {
+                delnode.Entity = null;
+                delnode.EntityPoint = null;//this entity point has been removed from the region. remove this association.
+                RemoveNode(delnode);
+            }
+
+            return true;
+        }
 
 
 
