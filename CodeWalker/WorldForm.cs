@@ -1860,6 +1860,7 @@ namespace CodeWalker
             }
             else
             {
+                ynd.UpdateAllNodePositions();
                 space.BuildYndVerts(ynd);
             }
             //lock (Renderer.RenderSyncRoot)
@@ -5871,7 +5872,16 @@ namespace CodeWalker
                             GrabbedWidget.IsDragging = true;
                             if (Input.ShiftPressed)
                             {
-                                CloneItem();
+                                var ms = CurrentMapSelection.MultipleSelectionItems;
+                                if (ms?.Length > 0 && ms[0].PathNode != null)
+                                {
+                                    MessageBox.Show("You cannot clone multiple path nodes at once", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                    GrabbedWidget.IsDragging = false;
+                                    GrabbedWidget = null;
+                                } else
+                                {
+                                    CloneItem();
+                                }
                             }
                             MarkUndoStart(GrabbedWidget);
                         }
