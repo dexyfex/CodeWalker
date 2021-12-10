@@ -1242,6 +1242,8 @@ namespace CodeWalker.Rendering
             {
                 case MapSelectionMode.NavMesh:
                 case MapSelectionMode.WaterQuad:
+                case MapSelectionMode.CalmingQuad:
+                case MapSelectionMode.WaveQuad:
                 case MapSelectionMode.MloInstance:
                     clip = false;
                     break;
@@ -1326,6 +1328,8 @@ namespace CodeWalker.Rendering
             switch (mode)
             {
                 case MapSelectionMode.WaterQuad:
+                case MapSelectionMode.CalmingQuad:
+                case MapSelectionMode.WaveQuad:
                 case MapSelectionMode.MloInstance:
                     clip = false;
                     break;

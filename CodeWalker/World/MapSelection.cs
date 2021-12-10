@@ -36,6 +36,8 @@ namespace CodeWalker
         Watermap = 17,
         Audio = 18,
         Occlusion = 19,
+        CalmingQuad = 20,
+        WaveQuad = 21,
     }
 
 
@@ -58,6 +60,8 @@ namespace CodeWalker
         public YmapEntityDef MloEntityDef { get; set; }
         public MCMloRoomDef MloRoomDef { get; set; }
         public WaterQuad WaterQuad { get; set; }
+        public WaterCalmingQuad CalmingQuad { get; set; }
+        public WaterWaveQuad WaveQuad { get; set; }
         public Bounds CollisionBounds { get; set; }
         public BoundPolygon CollisionPoly { get; set; }
         public BoundVertex CollisionVertex { get; set; }
@@ -100,6 +104,8 @@ namespace CodeWalker
                     (CarGenerator != null) ||
                     (GrassBatch != null) ||
                     (WaterQuad != null) ||
+                    (CalmingQuad != null) ||
+                    (WaveQuad != null) ||
                     (CollisionBounds != null) ||
                     (CollisionPoly != null) ||
                     (CollisionVertex != null) ||
@@ -139,6 +145,8 @@ namespace CodeWalker
                 || (BoxOccluder != mhit.BoxOccluder)
                 || (OccludeModelTri != mhit.OccludeModelTri)
                 || (WaterQuad != mhit.WaterQuad)
+                || (CalmingQuad != mhit.CalmingQuad)
+                || (WaveQuad != mhit.WaveQuad)
                 || (CollisionBounds != mhit.CollisionBounds)
                 || (CollisionPoly != mhit.CollisionPoly)
                 || (CollisionVertex != mhit.CollisionVertex)
@@ -166,6 +174,8 @@ namespace CodeWalker
                 || (BoxOccluder != null)
                 || (OccludeModelTri != null)
                 || (WaterQuad != null)
+                || (CalmingQuad != null)
+                || (WaveQuad != null)
                 || (CollisionBounds != null)
                 || (CollisionPoly != null)
                 || (CollisionVertex != null)
@@ -195,6 +205,8 @@ namespace CodeWalker
             BoxOccluder = null;
             OccludeModelTri = null;
             WaterQuad = null;
+            CalmingQuad = null;
+            WaveQuad = null;
             CollisionBounds = null;
             CollisionPoly = null;
             CollisionVertex = null;
@@ -276,6 +288,14 @@ namespace CodeWalker
             else if (WaterQuad != null)
             {
                 name = "WaterQuad " + WaterQuad.ToString();
+            }
+            else if (CalmingQuad != null)
+            {
+                name = "WaterCalmingQuad " + CalmingQuad.ToString();
+            }
+            else if (WaveQuad != null)
+            {
+                name = "WaterWaveQuad " + WaveQuad.ToString();
             }
             else if (NavPoly != null)
             {

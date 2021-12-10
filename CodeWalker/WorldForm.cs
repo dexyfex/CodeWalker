@@ -127,7 +127,6 @@ namespace CodeWalker
         List<YndFile> renderpathynds = new List<YndFile>();
 
         bool renderwaterquads = true;
-        List<WaterQuad> renderwaterquadlist = new List<WaterQuad>();
 
         bool rendertraintracks = false;
         List<TrainTrack> rendertraintracklist = new List<TrainTrack>();
@@ -710,6 +709,14 @@ namespace CodeWalker
             {
                 RenderWorldWaterQuads();
             }
+            if (SelectionMode == MapSelectionMode.WaveQuad)
+            {
+                RenderWorldWaterWaveQuads();
+            }
+            if (SelectionMode == MapSelectionMode.CalmingQuad)
+            {
+                RenderWorldWaterCalmingQuads();
+            }
             if (rendercollisionmeshes || (SelectionMode == MapSelectionMode.Collision))
             {
                 RenderWorldCollisionMeshes();
@@ -804,19 +811,23 @@ namespace CodeWalker
 
         private void RenderWorldWaterQuads()
         {
-            renderwaterquadlist.Clear();
+            var quads = RenderWorldBaseWaterQuads(water.WaterQuads, MapSelectionMode.WaterQuad);
+            Renderer.RenderWaterQuads(quads);
+        }
 
-            water.GetVisibleQuads(camera, renderwaterquadlist);
+        private void RenderWorldWaterCalmingQuads() => RenderWorldBaseWaterQuads(water.CalmingQuads, MapSelectionMode.CalmingQuad);
 
-            if (ProjectForm != null)
-            {
-                ProjectForm.GetVisibleWaterQuads(camera, renderwaterquadlist);
-            }
+        private void RenderWorldWaterWaveQuads() => RenderWorldBaseWaterQuads(water.WaveQuads, MapSelectionMode.WaveQuad);
 
-            Renderer.RenderWaterQuads(renderwaterquadlist);
+        private List<T> RenderWorldBaseWaterQuads<T>(IEnumerable<T> quads, MapSelectionMode requiredMode) where T : BaseWaterQuad
+        {
+            List<T> renderwaterquadlist = water.GetVisibleQuads<T>(camera, quads);
 
-            UpdateMouseHits(renderwaterquadlist);
+            ProjectForm?.GetVisibleWaterQuads<T>(camera, renderwaterquadlist);
 
+            if(SelectionMode == requiredMode) UpdateMouseHits(renderwaterquadlist);
+
+            return renderwaterquadlist;
         }
 
         private void RenderWorldPaths()
@@ -1378,6 +1389,15 @@ namespace CodeWalker
 
                     Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
                 }
+            }
+            if (selectionItem.WaveQuad != null)
+            {
+                var quad = selectionItem.WaveQuad;
+                Vector3 quadArrowPos = new Vector3(quad.minX + (quad.maxX - quad.minX) * 0.5f, quad.minY + (quad.maxY - quad.minY) * 0.5f, 5);
+                Quaternion waveOri = quad.WaveOrientation;
+                float arrowlen = quad.Amplitude * 50;
+                float arrowrad = arrowlen * 0.066f;
+                Renderer.RenderSelectionArrowOutline(quadArrowPos, Vector3.UnitX, Vector3.UnitY, waveOri, arrowlen, arrowrad, cgrn);
             }
             if (selectionItem.LodLight != null)
             {
@@ -2901,35 +2921,42 @@ namespace CodeWalker
             }
 
         }
-        private void UpdateMouseHits(List<WaterQuad> waterquads)
+        private void UpdateMouseHits<T>(List<T> waterquads) where T : BaseWaterQuad
         {
-            if (SelectionMode != MapSelectionMode.WaterQuad) return;
-
             BoundingBox bbox = new BoundingBox();
             Ray mray = new Ray();
             mray.Position = camera.MouseRay.Position + camera.Position;
             mray.Direction = camera.MouseRay.Direction;
-            float hitdist = float.MaxValue;
+            float hitdist;
 
 
-            foreach (var quad in waterquads)
+            foreach (T quad in waterquads)
             {
                 MapBox mb = new MapBox();
                 mb.CamRelPos = -camera.Position;
-                mb.BBMin = new Vector3(quad.minX, quad.minY, quad.z);
-                mb.BBMax = new Vector3(quad.maxX, quad.maxY, quad.z);
+                mb.BBMin = new Vector3(quad.minX, quad.minY, quad.z ?? 0);
+                mb.BBMax = new Vector3(quad.maxX, quad.maxY, quad.z ?? 0);
                 mb.Orientation = Quaternion.Identity;
                 mb.Scale = Vector3.One;
                 Renderer.BoundingBoxes.Add(mb);
 
                 bbox.Minimum = mb.BBMin;
                 bbox.Maximum = mb.BBMax;
-                if (mray.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
+
+                if(mray.Intersects(ref bbox, out hitdist) && hitdist > 0 && hitdist <= CurMouseHit.HitDist)
                 {
-                    CurMouseHit.WaterQuad = quad;
-                    CurMouseHit.HitDist = hitdist;
-                    CurMouseHit.CamRel = mb.CamRelPos;
-                    CurMouseHit.AABB = bbox;
+                    float curSize = CurMouseHit.AABB.Size.X * CurMouseHit.AABB.Size.Y;
+                    float newSize = bbox.Size.X * bbox.Size.Y;
+                    if ((curSize == 0) || (newSize < curSize))
+                    {
+                        CurMouseHit.HitDist = hitdist;
+                        CurMouseHit.CamRel = mb.CamRelPos;
+                        CurMouseHit.AABB = bbox;
+
+                        CurMouseHit.WaterQuad = quad as WaterQuad;
+                        CurMouseHit.WaveQuad = quad as WaterWaveQuad;
+                        CurMouseHit.CalmingQuad = quad as WaterCalmingQuad;
+                    }
                 }
             }
         }
@@ -3722,6 +3749,16 @@ namespace CodeWalker
             {
                 SelectionEntityTabPage.Text = "WaterQuad";
                 SelEntityPropertyGrid.SelectedObject = item.WaterQuad;
+            }
+            else if (item.CalmingQuad != null)
+            {
+                SelectionEntityTabPage.Text = "CalmingQuad";
+                SelEntityPropertyGrid.SelectedObject = item.CalmingQuad;
+            }
+            else if (item.WaveQuad != null)
+            {
+                SelectionEntityTabPage.Text = "WaveQuad";
+                SelEntityPropertyGrid.SelectedObject = item.WaveQuad;
             }
             else if (item.PathNode != null)
             {
@@ -5552,6 +5589,14 @@ namespace CodeWalker
                     mode = MapSelectionMode.WaterQuad;
                     ToolbarSelectWaterQuadButton.Checked = true;
                     break;
+                case "Water Calming Quad":
+                    mode = MapSelectionMode.CalmingQuad;
+                    ToolbarSelectCalmingQuadButton.Checked = true;
+                    break;
+                case "Water Wave Quad":
+                    mode = MapSelectionMode.WaveQuad;
+                    ToolbarSelectWaveQuadButton.Checked = true;
+                    break;
                 case "Collision":
                     mode = MapSelectionMode.Collision;
                     ToolbarSelectCollisionButton.Checked = true;
@@ -7316,6 +7361,18 @@ namespace CodeWalker
         private void ToolbarSelectWaterQuadButton_Click(object sender, EventArgs e)
         {
             SetSelectionMode("Water Quad");
+            SetMouseSelect(true);
+        }
+
+        private void ToolbarSelectCalmingQuadButton_Click(object sender, EventArgs e)
+        {
+            SetSelectionMode("Water Calming Quad");
+            SetMouseSelect(true);
+        }
+
+        private void ToolbarSelectWaveQuadButton_Click(object sender, EventArgs e)
+        {
+            SetSelectionMode("Water Wave Quad");
             SetMouseSelect(true);
         }
 

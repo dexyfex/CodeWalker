@@ -7242,7 +7242,7 @@ namespace CodeWalker.Project
 
 
         }
-        public void GetVisibleWaterQuads(Camera camera, List<WaterQuad> quads)
+        public void GetVisibleWaterQuads<T>(Camera camera, List<T> quads) where T : BaseWaterQuad
         {
             if (hidegtavmap)
             {
