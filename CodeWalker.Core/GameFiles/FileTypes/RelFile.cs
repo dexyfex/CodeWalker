@@ -5519,8 +5519,8 @@ namespace CodeWalker.GameFiles
         public float Unk01 { get; set; }        //1, 5, 100, ...
         public float InnerRad { get; set; }        //0, 4,         ...     100 ... min value?
         public float OuterRad { get; set; }        //15, 16, 12, 10, 20,   300 ... max value?
-        public FlagsUshort StartTime { get; set; }
-        public FlagsUshort EndTime { get; set; }
+        public ushort StartTime { get; set; }   //game minutes
+        public ushort EndTime { get; set; }
         public FlagsUshort Unk06 { get; set; }  //0..600
         public FlagsUshort Unk07 { get; set; }  //0..150
         public FlagsByte Unk08 { get; set; }    //0,1,2
@@ -5623,16 +5623,6 @@ namespace CodeWalker.GameFiles
 
             #region testing
 
-            switch (StartTime.Value)//ushort in minutes
-            {
-                default:
-                    break;
-            }
-            switch (EndTime.Value)//ushort in minutes
-            {
-                default:
-                    break;
-            }
             switch (Unk06.Value)
             {
                 case 0:
@@ -5887,8 +5877,8 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
             RelXml.ValueTag(sb, indent, "InnerRad", FloatUtil.ToString(InnerRad));
             RelXml.ValueTag(sb, indent, "OuterRad", FloatUtil.ToString(OuterRad));
-            RelXml.ValueTag(sb, indent, "StartTime", StartTime.Value.ToString());
-            RelXml.ValueTag(sb, indent, "EndTime", EndTime.Value.ToString());
+            RelXml.ValueTag(sb, indent, "StartTime", StartTime.ToString());
+            RelXml.ValueTag(sb, indent, "EndTime", EndTime.ToString());
             RelXml.ValueTag(sb, indent, "Unk06", Unk06.Value.ToString());
             RelXml.ValueTag(sb, indent, "Unk07", Unk07.Value.ToString());
             RelXml.ValueTag(sb, indent, "Unk08", Unk08.Value.ToString());

@@ -89,8 +89,8 @@ namespace CodeWalker.Project.Panels
                 Hash1TextBox.Text = e.Hash1.ToString();
                 Hash2TextBox.Text = e.Hash2.ToString();
                 Unk01TextBox.Text = FloatUtil.ToString(e.Unk01);
-                StartTimeUpDown.Value = e.StartTime.Value;
-                EndTimeUpDown.Value = e.EndTime.Value;
+                StartTimeUpDown.Value = e.StartTime;
+                EndTimeUpDown.Value = e.EndTime;
                 Unk06UpDown.Value = e.Unk06.Value;
                 Unk07UpDown.Value = e.Unk07.Value;
                 Unk08UpDown.Value = e.Unk08.Value;
@@ -281,7 +281,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             ushort unk = (ushort)StartTimeUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.StartTime.Value != unk)
+            if (CurrentEmitter.AudioEmitter.StartTime != unk)
             {
                 CurrentEmitter.AudioEmitter.StartTime = unk;
 
@@ -295,7 +295,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             ushort unk = (ushort)EndTimeUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.EndTime.Value != unk)
+            if (CurrentEmitter.AudioEmitter.EndTime != unk)
             {
                 CurrentEmitter.AudioEmitter.EndTime = unk;
 
