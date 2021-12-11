@@ -2938,23 +2938,23 @@ namespace CodeWalker.Rendering
                     for (int i = 0; i < f.GlassWindows.data_items.Length; i++)
                     {
                         var gw = f.GlassWindows.data_items[i];
-                        var projt = new Vector3(gw.UnkFloat1, gw.UnkFloat2, gw.UnkFloat3);//row0? or row3? maybe investigate more
-                        var proju = new Vector3(gw.UnkFloat5, gw.UnkFloat6, gw.UnkFloat7);//row1 of XYZ>UV projection
-                        var projv = new Vector3(gw.UnkFloat9, gw.UnkFloat10, gw.UnkFloat11);//row2 of XYZ>UV projection
+                        var projt = gw.ProjectionRow1;//row0? or row3? maybe investigate more
+                        var proju = gw.ProjectionRow2;//row1 of XYZ>UV projection
+                        var projv = gw.ProjectionRow3;//row2 of XYZ>UV projection
                         //var unk01 = new Vector2(gw.UnkFloat13, gw.UnkFloat14);//offset?
                         //var unk02 = new Vector2(gw.UnkFloat15, gw.UnkFloat16);//scale? sum of this and above often gives integers eg 1, 6
-                        //var thick = gw.UnkFloat17; //thickness of the glass
+                        //var thick = gw.Thickness; //thickness of the glass
                         //var unkuv = new Vector2(gw.UnkFloat18, gw.UnkFloat19); //another scale in UV space..?
-                        //var tangt = new Vector3(gw.UnkFloat20, gw.UnkFloat21, gw.UnkFloat22);//direction of surface tangent
+                        //var tangt = gw.Tangent;//direction of surface tangent
                         //var bones = f.Drawable?.Skeleton?.Bones?.Items; //todo: use bones instead?
                         var grp = gw.Group;
                         var grplod = gw.GroupLOD;
                         var xforms = grplod?.FragTransforms?.Matrices;
                         var xoffs = Vector3.Zero;
-                        if ((grp != null) && (xforms != null) && (grp.Index < xforms.Length) && (grplod != null))
+                        if ((grp != null) && (xforms != null) && (grp.ChildIndex < xforms.Length) && (grplod != null))
                         {
-                            var xform = xforms[grp.Index];
-                            xoffs = xform.TranslationVector + grplod.Unknown_30h;
+                            var xform = xforms[grp.ChildIndex];
+                            xoffs = xform.TranslationVector + grplod.PositionOffset;
                         }
                         var m = new Matrix();
                         m.Row1 = new Vector4(projt, 0);
@@ -2981,17 +2981,11 @@ namespace CodeWalker.Rendering
                     for (int i = 0; i < f.VehicleGlassWindows.Windows.Length; i++)
                     {
                         var vgw = f.VehicleGlassWindows.Windows[i];
-                        var projt = new Vector3(vgw.UnkFloat1, vgw.UnkFloat2, vgw.UnkFloat3);//row1
-                        var proju = new Vector3(vgw.UnkFloat5, vgw.UnkFloat6, vgw.UnkFloat7);//row2
-                        var projv = new Vector3(vgw.UnkFloat9, vgw.UnkFloat10, vgw.UnkFloat11);//row3
-                        var projw = new Vector3(vgw.UnkFloat13, vgw.UnkFloat14, vgw.UnkFloat15);//row4
                         //var grp = vgw.Group;
                         //var grplod = vgw.GroupLOD;
-                        var m = new Matrix();
-                        m.Row1 = new Vector4(projt, 0);
-                        m.Row2 = new Vector4(proju, 0);
-                        m.Row3 = new Vector4(projv, 0);
-                        m.Row4 = new Vector4(projw, 1);
+                        var m = vgw.Projection;
+                        m.M44 = 1.0f;
+                        m.Transpose();
                         m.Invert();//ouch
                         var min = (new Vector3(0, 0, 0));
                         var max = (new Vector3(vgw.ShatterMapWidth, vgw.ItemDataCount, 1));

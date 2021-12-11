@@ -1135,31 +1135,23 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public float UnkFloat1 { get; set; }
-        public float UnkFloat2 { get; set; }
-        public float UnkFloat3 { get; set; }
+        public Vector3 ProjectionRow1 { get; set; }
         public uint UnkUint1 = 0x7f800001; // 0x7f800001
-        public float UnkFloat5 { get; set; }
-        public float UnkFloat6 { get; set; }
-        public float UnkFloat7 { get; set; }
+        public Vector3 ProjectionRow2 { get; set; }
         public uint UnkUint2 = 0x7f800001; // 0x7f800001
-        public float UnkFloat9 { get; set; }
-        public float UnkFloat10 { get; set; }
-        public float UnkFloat11 { get; set; }
+        public Vector3 ProjectionRow3 { get; set; }
         public uint UnkUint3 = 0x7f800001; // 0x7f800001
-        public float UnkFloat13 { get; set; }
-        public float UnkFloat14 { get; set; }
-        public float UnkFloat15 { get; set; }
-        public float UnkFloat16 { get; set; }
+        public float UnkFloat13 { get; set; } //offset? Vector2
+        public float UnkFloat14 { get; set; } //offset?
+        public float UnkFloat15 { get; set; } //scale? sum of this and above often gives integers eg 1, 6
+        public float UnkFloat16 { get; set; } //(as above, Vector2)
         public VertexDeclaration VertexDeclaration { get; set; } = new VertexDeclaration(); //this all equates to VertexTypePNCTT
-        public float UnkFloat17 { get; set; }
+        public float Thickness { get; set; } //probably
         public ushort UnkUshort1 = 2; //2
         public ushort Flags { get; set; }//512, 768, 1280 etc ... flags
-        public float UnkFloat18 { get; set; }
-        public float UnkFloat19 { get; set; }
-        public float UnkFloat20 { get; set; }
-        public float UnkFloat21 { get; set; }
-        public float UnkFloat22 { get; set; }
+        public float UnkFloat18 { get; set; } //another scale in UV space..?
+        public float UnkFloat19 { get; set; } //(as above, Vector2)
+        public Vector3 Tangent { get; set; }
         public uint UnkUint4 = 0x7f800001; // 0x7f800001
 
         public byte FlagsLo { get { return (byte)((Flags >> 0) & 0xFF); } }
@@ -1170,31 +1162,23 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.UnkFloat1 = reader.ReadSingle();
-            this.UnkFloat2 = reader.ReadSingle();
-            this.UnkFloat3 = reader.ReadSingle();
+            this.ProjectionRow1 = reader.ReadVector3();
             this.UnkUint1 = reader.ReadUInt32();
-            this.UnkFloat5 = reader.ReadSingle();
-            this.UnkFloat6 = reader.ReadSingle();
-            this.UnkFloat7 = reader.ReadSingle();
+            this.ProjectionRow2 = reader.ReadVector3();
             this.UnkUint2 = reader.ReadUInt32();
-            this.UnkFloat9 = reader.ReadSingle();
-            this.UnkFloat10 = reader.ReadSingle();
-            this.UnkFloat11 = reader.ReadSingle();
+            this.ProjectionRow3 = reader.ReadVector3();
             this.UnkUint3 = reader.ReadUInt32();
             this.UnkFloat13 = reader.ReadSingle();
             this.UnkFloat14 = reader.ReadSingle();
             this.UnkFloat15 = reader.ReadSingle();
             this.UnkFloat16 = reader.ReadSingle();
             this.VertexDeclaration.Read(reader);
-            this.UnkFloat17 = reader.ReadSingle();
+            this.Thickness = reader.ReadSingle();
             this.UnkUshort1 = reader.ReadUInt16();
             this.Flags = reader.ReadUInt16();
             this.UnkFloat18 = reader.ReadSingle();
             this.UnkFloat19 = reader.ReadSingle();
-            this.UnkFloat20 = reader.ReadSingle();
-            this.UnkFloat21 = reader.ReadSingle();
-            this.UnkFloat22 = reader.ReadSingle();
+            this.Tangent = reader.ReadVector3();
             this.UnkUint4 = reader.ReadUInt32();
 
             //if (UnkUint1 != 0x7f800001)
@@ -1213,79 +1197,59 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.UnkFloat1);
-            writer.Write(this.UnkFloat2);
-            writer.Write(this.UnkFloat3);
+            writer.Write(this.ProjectionRow1);
             writer.Write(this.UnkUint1);
-            writer.Write(this.UnkFloat5);
-            writer.Write(this.UnkFloat6);
-            writer.Write(this.UnkFloat7);
+            writer.Write(this.ProjectionRow2);
             writer.Write(this.UnkUint2);
-            writer.Write(this.UnkFloat9);
-            writer.Write(this.UnkFloat10);
-            writer.Write(this.UnkFloat11);
+            writer.Write(this.ProjectionRow3);
             writer.Write(this.UnkUint3);
             writer.Write(this.UnkFloat13);
             writer.Write(this.UnkFloat14);
             writer.Write(this.UnkFloat15);
             writer.Write(this.UnkFloat16);
             this.VertexDeclaration.Write(writer);
-            writer.Write(this.UnkFloat17);
+            writer.Write(this.Thickness);
             writer.Write(this.UnkUshort1);
             writer.Write(this.Flags);
             writer.Write(this.UnkFloat18);
             writer.Write(this.UnkFloat19);
-            writer.Write(this.UnkFloat20);
-            writer.Write(this.UnkFloat21);
-            writer.Write(this.UnkFloat22);
+            writer.Write(this.Tangent);
             writer.Write(this.UnkUint4);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YftXml.ValueTag(sb, indent, "Flags", Flags.ToString());
-            YftXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(UnkFloat1));
-            YftXml.ValueTag(sb, indent, "UnkFloat2", FloatUtil.ToString(UnkFloat2));
-            YftXml.ValueTag(sb, indent, "UnkFloat3", FloatUtil.ToString(UnkFloat3));
-            YftXml.ValueTag(sb, indent, "UnkFloat5", FloatUtil.ToString(UnkFloat5));
-            YftXml.ValueTag(sb, indent, "UnkFloat6", FloatUtil.ToString(UnkFloat6));
-            YftXml.ValueTag(sb, indent, "UnkFloat7", FloatUtil.ToString(UnkFloat7));
-            YftXml.ValueTag(sb, indent, "UnkFloat9", FloatUtil.ToString(UnkFloat9));
-            YftXml.ValueTag(sb, indent, "UnkFloat10", FloatUtil.ToString(UnkFloat10));
-            YftXml.ValueTag(sb, indent, "UnkFloat11", FloatUtil.ToString(UnkFloat11));
+            YftXml.OpenTag(sb, indent, "Projection");
+            YftXml.WriteRawArrayContent(sb, new Matrix3x3() { Row1 = ProjectionRow1, Row2 = ProjectionRow2, Row3 = ProjectionRow3 }.ToArray(), indent + 1, FloatUtil.ToString, 3);
+            YftXml.CloseTag(sb, indent, "Projection");
             YftXml.ValueTag(sb, indent, "UnkFloat13", FloatUtil.ToString(UnkFloat13));
             YftXml.ValueTag(sb, indent, "UnkFloat14", FloatUtil.ToString(UnkFloat14));
             YftXml.ValueTag(sb, indent, "UnkFloat15", FloatUtil.ToString(UnkFloat15));
             YftXml.ValueTag(sb, indent, "UnkFloat16", FloatUtil.ToString(UnkFloat16));
-            YftXml.ValueTag(sb, indent, "UnkFloat17", FloatUtil.ToString(UnkFloat17));
+            YftXml.ValueTag(sb, indent, "Thickness", FloatUtil.ToString(Thickness));
             YftXml.ValueTag(sb, indent, "UnkFloat18", FloatUtil.ToString(UnkFloat18));
             YftXml.ValueTag(sb, indent, "UnkFloat19", FloatUtil.ToString(UnkFloat19));
-            YftXml.ValueTag(sb, indent, "UnkFloat20", FloatUtil.ToString(UnkFloat20));
-            YftXml.ValueTag(sb, indent, "UnkFloat21", FloatUtil.ToString(UnkFloat21));
-            YftXml.ValueTag(sb, indent, "UnkFloat22", FloatUtil.ToString(UnkFloat22));
+            YftXml.SelfClosingTag(sb, indent, "Tangent " + FloatUtil.GetVector3XmlString(Tangent));
             VertexDeclaration.WriteXml(sb, indent, "Layout");
         }
         public void ReadXml(XmlNode node)
         {
             Flags = (ushort)Xml.GetChildUIntAttribute(node, "Flags", "value");
-            UnkFloat1 = Xml.GetChildFloatAttribute(node, "UnkFloat1", "value");
-            UnkFloat2 = Xml.GetChildFloatAttribute(node, "UnkFloat2", "value");
-            UnkFloat3 = Xml.GetChildFloatAttribute(node, "UnkFloat3", "value");
-            UnkFloat5 = Xml.GetChildFloatAttribute(node, "UnkFloat5", "value");
-            UnkFloat6 = Xml.GetChildFloatAttribute(node, "UnkFloat6", "value");
-            UnkFloat7 = Xml.GetChildFloatAttribute(node, "UnkFloat7", "value");
-            UnkFloat9 = Xml.GetChildFloatAttribute(node, "UnkFloat9", "value");
-            UnkFloat10 = Xml.GetChildFloatAttribute(node, "UnkFloat10", "value");
-            UnkFloat11 = Xml.GetChildFloatAttribute(node, "UnkFloat11", "value");
+            var proj = Xml.GetChildRawFloatArray(node, "Projection");
+            if ((proj?.Length ?? 0) == 9)
+            {
+                ProjectionRow1 = new Vector3(proj[0], proj[1], proj[2]);
+                ProjectionRow2 = new Vector3(proj[3], proj[4], proj[5]);
+                ProjectionRow3 = new Vector3(proj[6], proj[7], proj[8]);
+            }
             UnkFloat13 = Xml.GetChildFloatAttribute(node, "UnkFloat13", "value");
             UnkFloat14 = Xml.GetChildFloatAttribute(node, "UnkFloat14", "value");
             UnkFloat15 = Xml.GetChildFloatAttribute(node, "UnkFloat15", "value");
             UnkFloat16 = Xml.GetChildFloatAttribute(node, "UnkFloat16", "value");
-            UnkFloat17 = Xml.GetChildFloatAttribute(node, "UnkFloat17", "value");
+            Thickness = Xml.GetChildFloatAttribute(node, "Thickness", "value");
             UnkFloat18 = Xml.GetChildFloatAttribute(node, "UnkFloat18", "value");
             UnkFloat19 = Xml.GetChildFloatAttribute(node, "UnkFloat19", "value");
-            UnkFloat20 = Xml.GetChildFloatAttribute(node, "UnkFloat20", "value");
-            UnkFloat21 = Xml.GetChildFloatAttribute(node, "UnkFloat21", "value");
-            UnkFloat22 = Xml.GetChildFloatAttribute(node, "UnkFloat22", "value");
+            Tangent = Xml.GetChildVector3Attributes(node, "Tangent");
             VertexDeclaration.ReadXml(node.SelectSingleNode("Layout"));
         }
     }
@@ -1308,22 +1272,7 @@ namespace CodeWalker.GameFiles
         }
         [TypeConverter(typeof(ExpandableObjectConverter))] public class Window
         {
-            public float UnkFloat1 { get; set; }
-            public float UnkFloat2 { get; set; }
-            public float UnkFloat3 { get; set; }
-            public float UnkFloat4; // 0
-            public float UnkFloat5 { get; set; }
-            public float UnkFloat6 { get; set; }
-            public float UnkFloat7 { get; set; }
-            public float UnkFloat8; // 0
-            public float UnkFloat9 { get; set; }
-            public float UnkFloat10 { get; set; }
-            public float UnkFloat11 { get; set; }
-            public float UnkFloat12; // 0
-            public float UnkFloat13 { get; set; }
-            public float UnkFloat14 { get; set; }
-            public float UnkFloat15 { get; set; }
-            public float UnkFloat16 { get; set; }
+            public Matrix Projection { get; set; } //NOTE: M44 is not actually part of this matrix, what actually is it? the value needs to be 1.0 for projection to be correct, but file contains other values. maybe some scaling factor?
             public uint UnkUint1 { get; set; } = 0x56475743; // "VGWC"    vehicle glass window C..?
             public ushort ItemID { get; set; }
             public ushort UnkUshort1 { get; set; }
@@ -1373,22 +1322,7 @@ namespace CodeWalker.GameFiles
 
             public void Read(ResourceDataReader reader)
             {
-                UnkFloat1 = reader.ReadSingle();
-                UnkFloat2 = reader.ReadSingle();
-                UnkFloat3 = reader.ReadSingle();
-                UnkFloat4 = reader.ReadSingle();
-                UnkFloat5 = reader.ReadSingle();
-                UnkFloat6 = reader.ReadSingle();
-                UnkFloat7 = reader.ReadSingle();
-                UnkFloat8 = reader.ReadSingle();
-                UnkFloat9 = reader.ReadSingle();
-                UnkFloat10 = reader.ReadSingle();
-                UnkFloat11 = reader.ReadSingle();
-                UnkFloat12 = reader.ReadSingle();
-                UnkFloat13 = reader.ReadSingle();
-                UnkFloat14 = reader.ReadSingle();
-                UnkFloat15 = reader.ReadSingle();
-                UnkFloat16 = reader.ReadSingle();
+                Projection = reader.ReadMatrix();
                 UnkUint1 = reader.ReadUInt32(); //0x56475743 "VGWC"
                 ItemID = reader.ReadUInt16();
                 UnkUshort1 = reader.ReadUInt16();
@@ -1513,22 +1447,7 @@ namespace CodeWalker.GameFiles
             }
             public void Write(ResourceDataWriter writer)
             {
-                writer.Write(UnkFloat1);
-                writer.Write(UnkFloat2);
-                writer.Write(UnkFloat3);
-                writer.Write(UnkFloat4);
-                writer.Write(UnkFloat5);
-                writer.Write(UnkFloat6);
-                writer.Write(UnkFloat7);
-                writer.Write(UnkFloat8);
-                writer.Write(UnkFloat9);
-                writer.Write(UnkFloat10);
-                writer.Write(UnkFloat11);
-                writer.Write(UnkFloat12);
-                writer.Write(UnkFloat13);
-                writer.Write(UnkFloat14);
-                writer.Write(UnkFloat15);
-                writer.Write(UnkFloat16);
+                writer.Write(Projection);
                 writer.Write(UnkUint1);
                 writer.Write(ItemID);
                 writer.Write(UnkUshort1);
@@ -1567,19 +1486,9 @@ namespace CodeWalker.GameFiles
                 YftXml.ValueTag(sb, indent, "UnkUshort1", UnkUshort1.ToString());
                 YftXml.ValueTag(sb, indent, "UnkUshort4", UnkUshort4.ToString());
                 YftXml.ValueTag(sb, indent, "UnkUshort5", UnkUshort5.ToString());
-                YftXml.ValueTag(sb, indent, "UnkFloat1", FloatUtil.ToString(UnkFloat1));
-                YftXml.ValueTag(sb, indent, "UnkFloat2", FloatUtil.ToString(UnkFloat2));
-                YftXml.ValueTag(sb, indent, "UnkFloat3", FloatUtil.ToString(UnkFloat3));
-                YftXml.ValueTag(sb, indent, "UnkFloat5", FloatUtil.ToString(UnkFloat5));
-                YftXml.ValueTag(sb, indent, "UnkFloat6", FloatUtil.ToString(UnkFloat6));
-                YftXml.ValueTag(sb, indent, "UnkFloat7", FloatUtil.ToString(UnkFloat7));
-                YftXml.ValueTag(sb, indent, "UnkFloat9", FloatUtil.ToString(UnkFloat9));
-                YftXml.ValueTag(sb, indent, "UnkFloat10", FloatUtil.ToString(UnkFloat10));
-                YftXml.ValueTag(sb, indent, "UnkFloat11", FloatUtil.ToString(UnkFloat11));
-                YftXml.ValueTag(sb, indent, "UnkFloat13", FloatUtil.ToString(UnkFloat13));
-                YftXml.ValueTag(sb, indent, "UnkFloat14", FloatUtil.ToString(UnkFloat14));
-                YftXml.ValueTag(sb, indent, "UnkFloat15", FloatUtil.ToString(UnkFloat15));
-                YftXml.ValueTag(sb, indent, "UnkFloat16", FloatUtil.ToString(UnkFloat16));
+                YftXml.OpenTag(sb, indent, "Projection");
+                YftXml.WriteRawArrayContent(sb, Projection.ToArray(), indent + 1, FloatUtil.ToString, 4);
+                YftXml.CloseTag(sb, indent, "Projection");
                 YftXml.ValueTag(sb, indent, "UnkFloat17", FloatUtil.ToString(UnkFloat17));
                 YftXml.ValueTag(sb, indent, "UnkFloat18", FloatUtil.ToString(UnkFloat18));
                 YftXml.ValueTag(sb, indent, "CracksTextureTiling", FloatUtil.ToString(CracksTextureTiling));
@@ -1601,19 +1510,7 @@ namespace CodeWalker.GameFiles
                 UnkUshort1 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort1", "value");
                 UnkUshort4 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort4", "value");
                 UnkUshort5 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort5", "value");
-                UnkFloat1 = Xml.GetChildFloatAttribute(node, "UnkFloat1", "value");
-                UnkFloat2 = Xml.GetChildFloatAttribute(node, "UnkFloat2", "value");
-                UnkFloat3 = Xml.GetChildFloatAttribute(node, "UnkFloat3", "value");
-                UnkFloat5 = Xml.GetChildFloatAttribute(node, "UnkFloat5", "value");
-                UnkFloat6 = Xml.GetChildFloatAttribute(node, "UnkFloat6", "value");
-                UnkFloat7 = Xml.GetChildFloatAttribute(node, "UnkFloat7", "value");
-                UnkFloat9 = Xml.GetChildFloatAttribute(node, "UnkFloat9", "value");
-                UnkFloat10 = Xml.GetChildFloatAttribute(node, "UnkFloat10", "value");
-                UnkFloat11 = Xml.GetChildFloatAttribute(node, "UnkFloat11", "value");
-                UnkFloat13 = Xml.GetChildFloatAttribute(node, "UnkFloat13", "value");
-                UnkFloat14 = Xml.GetChildFloatAttribute(node, "UnkFloat14", "value");
-                UnkFloat15 = Xml.GetChildFloatAttribute(node, "UnkFloat15", "value");
-                UnkFloat16 = Xml.GetChildFloatAttribute(node, "UnkFloat16", "value");
+                Projection = Xml.GetChildMatrix(node, "Projection");
                 UnkFloat17 = Xml.GetChildFloatAttribute(node, "UnkFloat17", "value");
                 UnkFloat18 = Xml.GetChildFloatAttribute(node, "UnkFloat18", "value");
                 CracksTextureTiling = Xml.GetChildFloatAttribute(node, "CracksTextureTiling", "value");
@@ -2216,7 +2113,7 @@ namespace CodeWalker.GameFiles
         public float Unknown_1Ch { get; set; }
         public ulong ArticulatedBodyTypePointer { get; set; }
         public ulong ChildrenUnkFloatsPointer { get; set; }
-        public Vector3 Unknown_30h { get; set; }
+        public Vector3 PositionOffset { get; set; }
         public uint Unknown_3Ch { get; set; } = 0x7fc00001; // 0x7f800001, 0x7fc00001
         public Vector3 Unknown_40h { get; set; }
         public uint Unknown_4Ch { get; set; } = 0x7fc00001; // 0x7f800001, 0x7fc00001
@@ -2291,7 +2188,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadSingle();
             this.ArticulatedBodyTypePointer = reader.ReadUInt64();
             this.ChildrenUnkFloatsPointer = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadVector3();
+            this.PositionOffset = reader.ReadVector3();
             this.Unknown_3Ch = reader.ReadUInt32();
             this.Unknown_40h = reader.ReadVector3();
             this.Unknown_4Ch = reader.ReadUInt32();
@@ -2490,7 +2387,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.ArticulatedBodyTypePointer);
             writer.Write(this.ChildrenUnkFloatsPointer);
-            writer.Write(this.Unknown_30h);
+            writer.Write(this.PositionOffset);
             writer.Write(this.Unknown_3Ch);
             writer.Write(this.Unknown_40h);
             writer.Write(this.Unknown_4Ch);
@@ -2535,7 +2432,7 @@ namespace CodeWalker.GameFiles
             YftXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
             YftXml.ValueTag(sb, indent, "Unknown18", FloatUtil.ToString(Unknown_18h));
             YftXml.ValueTag(sb, indent, "Unknown1C", FloatUtil.ToString(Unknown_1Ch));
-            YftXml.SelfClosingTag(sb, indent, "Unknown30 " + FloatUtil.GetVector3XmlString(Unknown_30h));
+            YftXml.SelfClosingTag(sb, indent, "PositionOffset " + FloatUtil.GetVector3XmlString(PositionOffset));
             YftXml.SelfClosingTag(sb, indent, "Unknown40 " + FloatUtil.GetVector3XmlString(Unknown_40h));
             YftXml.SelfClosingTag(sb, indent, "Unknown50 " + FloatUtil.GetVector3XmlString(Unknown_50h));
             YftXml.SelfClosingTag(sb, indent, "DampingLinearC " + FloatUtil.GetVector3XmlString(DampingLinearC));
@@ -2610,7 +2507,7 @@ namespace CodeWalker.GameFiles
             Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14", "value");
             Unknown_18h = Xml.GetChildFloatAttribute(node, "Unknown18", "value");
             Unknown_1Ch = Xml.GetChildFloatAttribute(node, "Unknown1C", "value");
-            Unknown_30h = Xml.GetChildVector3Attributes(node, "Unknown30");
+            PositionOffset = Xml.GetChildVector3Attributes(node, "PositionOffset");
             Unknown_40h = Xml.GetChildVector3Attributes(node, "Unknown40");
             Unknown_50h = Xml.GetChildVector3Attributes(node, "Unknown50");
             DampingLinearC = Xml.GetChildVector3Attributes(node, "DampingLinearC");
@@ -2714,15 +2611,67 @@ namespace CodeWalker.GameFiles
             var rootgrps = 0;
             if (Groups?.data_items != null)
             {
-                foreach (var grp in Groups.data_items)
+                for (int i = 0; i < Groups.data_items.Length; i++)
                 {
+                    var grp = Groups.data_items[i];
                     grpnames.Add(grp.Name);
                     if (grp.ParentIndex == 255)
                     {
                         rootgrps++;
                     }
-                    //else if (grp.ParentGroupIndex >= Groups.data_items.Length)
-                    //{ }//testing
+
+
+                    ////just testing
+                    //var childGroupIndex = grp.ChildGroupIndex;
+                    //var childGroupCount = grp.ChildGroupCount;
+                    //var childIndex = grp.ChildIndex;
+                    //var childCount = grp.ChildCount;
+
+
+                    grp.ChildGroupIndex = 255;
+                    grp.ChildGroupCount = 0;
+                    grp.ChildIndex = 255;
+                    grp.ChildCount = 0;
+                    bool childfound = false;
+                    for(int ii = 0; ii < Groups.data_items.Length; ii++)
+                    {
+                        var grp2 = Groups.data_items[ii];
+                        if (grp2.ParentIndex == i)
+                        {
+                            grp.ChildGroupCount++;
+                            if (childfound == false)
+                            {
+                                grp.ChildGroupIndex = (byte)ii;
+                                childfound = true;
+                            }
+                        }
+                    }
+                    childfound = false;
+                    var childrencount = Children?.data_items?.Length ?? 0;
+                    for (int ii = 0; ii < childrencount; ii++)
+                    {
+                        var child = Children.data_items[ii];
+                        if (child == null) continue;
+                        if (child.GroupIndex == i)
+                        {
+                            grp.ChildCount++;
+                            if (childfound == false)
+                            {
+                                grp.ChildIndex = (byte)ii;
+                                childfound = true;
+                            }
+                        }
+                    }
+
+                    ////just testing
+                    //if (grp.ChildGroupIndex != childGroupIndex)
+                    //{ }
+                    //if (grp.ChildGroupCount != childGroupCount)
+                    //{ }
+                    //if (grp.ChildIndex != childIndex)
+                    //{ }
+                    //if (grp.ChildCount != childCount)
+                    //{ }
                 }
             }
 
@@ -3997,12 +3946,12 @@ namespace CodeWalker.GameFiles
         public float LatchStrength { get; set; }
         public float Mass { get; set; }
         public float Unknown_48h; // 0x00000000
-        public byte UnkByte4C { get; set; }
-        public byte ParentIndex { get; set; }
-        public byte Index { get; set; }
-        public byte ChildCount { get; set; }
-        public byte GroupCount { get; set; }
-        public byte UnkByte51 { get; set; } = 255; //0xFF
+        public byte ChildGroupIndex { get; set; } //index of the first child group of this group, 255 if no children - calc on XML import! (from ParentIndex)
+        public byte ParentIndex { get; set; } //index of the parent group.
+        public byte ChildIndex { get; set; } //index of first BoundComposite child, AND fragment child - calc on XML import! (from FragPhysTypeChild.GroupIndex)
+        public byte ChildCount { get; set; } //number of BoundComposite children, AND fragment children - calc on XML import! (from FragPhysTypeChild.GroupIndex)
+        public byte ChildGroupCount { get; set; } //number of groups with this as the direct parent - calc on XML import! (from ParentIndex)
+        public byte UnkByte51 { get; set; } = 255; //0xFF  (always)
         public byte GlassWindowIndex { get; set; }//GlassWindows index
         public byte GlassFlags { get; set; }//flags: 1=?, 2=glass, 4=?, ...
         public float MinDamageForce { get; set; }
@@ -4041,11 +3990,11 @@ namespace CodeWalker.GameFiles
             this.LatchStrength = reader.ReadSingle();
             this.Mass = reader.ReadSingle();
             this.Unknown_48h = reader.ReadSingle();
-            this.UnkByte4C = reader.ReadByte();
+            this.ChildGroupIndex = reader.ReadByte();
             this.ParentIndex = reader.ReadByte();
-            this.Index = reader.ReadByte();
+            this.ChildIndex = reader.ReadByte();
             this.ChildCount = reader.ReadByte();
-            this.GroupCount = reader.ReadByte();
+            this.ChildGroupCount = reader.ReadByte();
             this.UnkByte51 = reader.ReadByte();
             this.GlassWindowIndex = reader.ReadByte();
             this.GlassFlags = reader.ReadByte();
@@ -4164,11 +4113,11 @@ namespace CodeWalker.GameFiles
             writer.Write(LatchStrength);
             writer.Write(Mass);
             writer.Write(Unknown_48h);
-            writer.Write(UnkByte4C);
+            writer.Write(ChildGroupIndex);
             writer.Write(ParentIndex);
-            writer.Write(Index);
+            writer.Write(ChildIndex);
             writer.Write(ChildCount);
-            writer.Write(GroupCount);
+            writer.Write(ChildGroupCount);
             writer.Write(UnkByte51);
             writer.Write(GlassWindowIndex);
             writer.Write(GlassFlags);
@@ -4190,12 +4139,7 @@ namespace CodeWalker.GameFiles
         public void WriteXml(StringBuilder sb, int indent)
         {
             YftXml.StringTag(sb, indent, "Name", YftXml.XmlEscape(Name.ToString()));
-            YftXml.ValueTag(sb, indent, "Index", Index.ToString());
             YftXml.ValueTag(sb, indent, "ParentIndex", ParentIndex.ToString());
-            YftXml.ValueTag(sb, indent, "UnkByte4C", UnkByte4C.ToString());
-            YftXml.ValueTag(sb, indent, "ChildCount", ChildCount.ToString());
-            YftXml.ValueTag(sb, indent, "GroupCount", GroupCount.ToString());
-            YftXml.ValueTag(sb, indent, "UnkByte51", UnkByte51.ToString());
             YftXml.ValueTag(sb, indent, "GlassWindowIndex", GlassWindowIndex.ToString());
             YftXml.ValueTag(sb, indent, "GlassFlags", GlassFlags.ToString());
             YftXml.ValueTag(sb, indent, "Strength", FloatUtil.ToString(Strength));
@@ -4227,12 +4171,7 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node)
         {
             Name = new FragPhysNameStruct_s(Xml.GetChildInnerText(node, "Name"));
-            Index = (byte)Xml.GetChildUIntAttribute(node, "Index", "value");
             ParentIndex = (byte)Xml.GetChildUIntAttribute(node, "ParentIndex", "value");
-            UnkByte4C = (byte)Xml.GetChildUIntAttribute(node, "UnkByte4C", "value");
-            ChildCount = (byte)Xml.GetChildUIntAttribute(node, "ChildCount", "value");
-            GroupCount = (byte)Xml.GetChildUIntAttribute(node, "GroupCount", "value");
-            UnkByte51 = (byte)Xml.GetChildUIntAttribute(node, "UnkByte51", "value");
             GlassWindowIndex = (byte)Xml.GetChildUIntAttribute(node, "GlassWindowIndex", "value");
             GlassFlags = (byte)Xml.GetChildUIntAttribute(node, "GlassFlags", "value");
             Strength = Xml.GetChildFloatAttribute(node, "Strength", "value");
