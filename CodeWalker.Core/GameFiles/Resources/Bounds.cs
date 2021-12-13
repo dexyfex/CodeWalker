@@ -100,6 +100,7 @@ namespace CodeWalker.GameFiles
 
     public enum BoundsType : byte
     {
+        None = 255, //not contained in files, but used as a placeholder in XML conversion
         Sphere = 0,
         Capsule = 1,
         Box = 3,
@@ -466,10 +467,16 @@ namespace CodeWalker.GameFiles
         }
         public static void WriteXmlNode(Bounds b, StringBuilder sb, int indent, string name = "Bounds")
         {
-            if (b == null) return;
-            YbnXml.OpenTag(sb, indent, name + " type=\"" + b.Type.ToString() + "\"");
-            b.WriteXml(sb, indent + 1);
-            YbnXml.CloseTag(sb, indent, name);
+            if (b == null)
+            {
+                YbnXml.SelfClosingTag(sb, indent, "Item type=\"" + BoundsType.None.ToString() + "\"");
+            }
+            else
+            {
+                YbnXml.OpenTag(sb, indent, name + " type=\"" + b.Type.ToString() + "\"");
+                b.WriteXml(sb, indent + 1);
+                YbnXml.CloseTag(sb, indent, name);
+            }
         }
         public static Bounds ReadXmlNode(XmlNode node, object owner = null, BoundComposite parent = null)
         {
@@ -498,6 +505,7 @@ namespace CodeWalker.GameFiles
         {
             switch (type)
             {
+                case BoundsType.None: return null;
                 case BoundsType.Sphere: return new BoundSphere();
                 case BoundsType.Capsule: return new BoundCapsule();
                 case BoundsType.Box: return new BoundBox();
@@ -2657,14 +2665,7 @@ namespace CodeWalker.GameFiles
                 YbnXml.OpenTag(sb, indent, "Children");
                 foreach (var child in c)
                 {
-                    if (c == null)
-                    {
-                        YbnXml.SelfClosingTag(sb, cind, "Item");
-                    }
-                    else
-                    {
-                        Bounds.WriteXmlNode(child, sb, cind, "Item");
-                    }
+                    Bounds.WriteXmlNode(child, sb, cind, "Item");
                 }
                 YbnXml.CloseTag(sb, indent, "Children");
             }
@@ -2682,15 +2683,8 @@ namespace CodeWalker.GameFiles
                     var blist = new List<Bounds>();
                     foreach (XmlNode inode in cnodes)
                     {
-                        if (inode.HasChildNodes)
-                        {
-                            var b = Bounds.ReadXmlNode(inode, Owner, this);
-                            blist.Add(b);
-                        }
-                        else
-                        {
-                            blist.Add(null);
-                        }
+                        var b = Bounds.ReadXmlNode(inode, Owner, this);
+                        blist.Add(b);
                     }
                     var arr = blist.ToArray();
                     Children = new ResourcePointerArray64<Bounds>();
