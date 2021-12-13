@@ -141,6 +141,13 @@ namespace CodeWalker.GameFiles
 
         public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags)
         {
+            if ((blocks.Count > 0) && (blocks[0] is Meta))
+            {
+                //use naive packing strategy for Meta resources, due to crashes caused by the improved packing
+                AssignPositionsForMeta(blocks, basePosition, out pageFlags);
+                return;
+            }
+
             var sys = (basePosition == 0x50000000);
 
             long pad(long p)
@@ -257,6 +264,66 @@ namespace CodeWalker.GameFiles
                 startPageSize *= 2;
                 pageSizeMult *= 2;
             }
+
+        }
+
+        public static void AssignPositionsForMeta(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags)
+        {
+            // find largest structure
+            long largestBlockSize = 0;
+            foreach (var block in blocks)
+            {
+                if (largestBlockSize < block.BlockLength)
+                    largestBlockSize = block.BlockLength;
+            }
+
+            // find minimum page size
+            long currentPageSize = 0x2000;
+            while (currentPageSize < largestBlockSize)
+                currentPageSize *= 2;
+
+            long currentPageCount;
+            long currentPosition;
+            while (true)
+            {
+                currentPageCount = 0;
+                currentPosition = 0;
+
+                // reset all positions
+                foreach (var block in blocks)
+                    block.FilePosition = -1;
+
+                foreach (var block in blocks)
+                {
+                    if (block.FilePosition != -1)
+                        throw new Exception("Block was already assigned a position!");
+
+                    // check if new page is necessary...
+                    // if yes, add a new page and align to it
+                    long maxSpace = currentPageCount * currentPageSize - currentPosition;
+                    if (maxSpace < (block.BlockLength + SKIP_SIZE))
+                    {
+                        currentPageCount++;
+                        currentPosition = currentPageSize * (currentPageCount - 1);
+                    }
+
+                    // set position
+                    block.FilePosition = basePosition + currentPosition;
+                    currentPosition += block.BlockLength; // + SKIP_SIZE; //is padding everywhere really necessary??
+
+                    // align...
+                    if ((currentPosition % ALIGN_SIZE) != 0)
+                        currentPosition += (ALIGN_SIZE - (currentPosition % ALIGN_SIZE));
+                }
+
+                // break if everything fits...
+                if (currentPageCount < 128)
+                    break;
+
+                currentPageSize *= 2;
+            }
+
+            pageFlags = new RpfResourcePageFlags(RpfResourceFileEntry.GetFlagsFromBlocks((uint)currentPageCount, (uint)currentPageSize, 0));
 
         }
 
