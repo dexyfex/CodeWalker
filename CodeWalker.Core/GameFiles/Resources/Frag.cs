@@ -2277,6 +2277,14 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+            if (Archetype1 != null)
+            {
+                Archetype1.Owner = this;
+            }
+            if (Archetype2 != null)
+            {
+                Archetype2.Owner = this;
+            }
             if (Bound != null)
             {
                 Bound.Owner = this;
@@ -2520,12 +2528,14 @@ namespace CodeWalker.GameFiles
             if (a1node != null)
             {
                 Archetype1 = new FragPhysArchetype();
+                Archetype1.Owner = this;
                 Archetype1.ReadXml(a1node);
             }
             var a2node = node.SelectSingleNode("Archetype2");
             if (a2node != null)
             {
                 Archetype2 = new FragPhysArchetype();
+                Archetype2.Owner = this;
                 Archetype2.ReadXml(a2node);
             }
             var abnode = node.SelectSingleNode("ArticulatedBody");
@@ -3348,6 +3358,8 @@ namespace CodeWalker.GameFiles
 
 
         private string_r NameBlock = null;//used only when saving
+
+        public FragPhysicsLOD Owner { get; set; } //required for correct bounds BVH generation
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)

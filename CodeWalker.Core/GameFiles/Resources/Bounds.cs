@@ -2222,7 +2222,7 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            BuildBVH();
+            BuildBVH(false);
 
             var list = new List<IResourceBlock>(base.GetReferences());
             if (BVH != null) list.Add(BVH);
@@ -2232,7 +2232,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public void BuildBVH()
+        public void BuildBVH(bool updateParent = true)
         {
             if ((Polygons?.Length ?? 0) <= 0) //in some des_ drawables?
             {
@@ -2308,7 +2308,7 @@ namespace CodeWalker.GameFiles
 
             BVH = bvh;
 
-            if (Parent != null)
+            if (updateParent && (Parent != null)) //only update parent when live editing in world view!
             {
                 Parent.BuildBVH();
             }
@@ -2766,7 +2766,14 @@ namespace CodeWalker.GameFiles
                 if (!(Owner is FragPhysicsLOD) && !(Owner is FragPhysArchetype) && !(Owner is VerletCloth))
                 { }
             }
-
+            if (Owner is FragPhysArchetype fpa)
+            {
+                if (fpa == fpa.Owner?.Archetype2) //for destroyed yft archetype, don't use a BVH.
+                {
+                    BVH = null;
+                    return;
+                }
+            }
 
             var items = new List<BVHBuilderItem>();
             for (int i = 0; i < Children.data_items.Length; i++)
@@ -2782,6 +2789,10 @@ namespace CodeWalker.GameFiles
                     it.Index = i;
                     it.Bounds = child;
                     items.Add(it);
+                }
+                else
+                {
+                    items.Add(null);//items need to have correct count to set the correct capacity for the BVH!
                 }
             }
 
@@ -4424,9 +4435,12 @@ namespace CodeWalker.GameFiles
             var max = new Vector3(float.MinValue);
             var nodes = new List<BVHBuilderNode>();
             var trees = new List<BVHBuilderNode>();
+            var iteml = new List<BVHBuilderItem>();
             for (int i = 0; i < items.Count; i++)
             {
                 var item = items[i];
+                if (item == null) continue;
+                iteml.Add(item);
                 min = Vector3.Min(min, item.Min);
                 max = Vector3.Max(max, item.Max);
             }
@@ -4438,7 +4452,7 @@ namespace CodeWalker.GameFiles
             bvh.QuantumInverse = new Vector4(1.0f / bvh.Quantum.XYZ(), float.NaN);
 
             var root = new BVHBuilderNode();
-            root.Items = items.ToList();
+            root.Items = iteml.ToList();
             root.Build(itemThreshold);
             root.GatherNodes(nodes);
             root.GatherTrees(trees);
@@ -4491,8 +4505,21 @@ namespace CodeWalker.GameFiles
             }
 
 
+            var nodecount = bvhnodes.Count;
+            if (itemThreshold <= 1) //for composites, capacity needs to be (numchildren*2)+1, with empty nodes filling up the space..
+            {
+                var capacity = (items.Count * 2) + 1;
+                var emptynode = new BVHNode_s();
+                emptynode.ItemId = 1;
+                while (bvhnodes.Count < capacity)
+                {
+                    bvhnodes.Add(emptynode);
+                }
+            }
+
             bvh.Nodes = new ResourceSimpleList64b_s<BVHNode_s>();
             bvh.Nodes.data_items = bvhnodes.ToArray();
+            bvh.Nodes.EntriesCount = (uint)nodecount;
 
             bvh.Trees = new ResourceSimpleList64_s<BVHTreeInfo_s>();
             bvh.Trees.data_items = bvhtrees.ToArray();

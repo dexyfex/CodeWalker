@@ -906,7 +906,7 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ulong EntriesPointer { get; private set; }
-        public uint EntriesCount { get; private set; }
+        public uint EntriesCount { get; set; } //this needs to be set manually for this type! make sure it's <= capacity
         public uint EntriesCapacity { get; private set; }
 
         // reference data
@@ -939,7 +939,7 @@ namespace CodeWalker.GameFiles
         {
             // update structure data //TODO: fix
             this.EntriesPointer = (ulong)(this.data_block != null ? this.data_block.FilePosition : 0);
-            this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
+            //this.EntriesCount = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
             this.EntriesCapacity = (ushort)(this.data_block != null ? this.data_block.ItemCount : 0);
 
             // write structure data
