@@ -259,7 +259,16 @@ namespace CodeWalker.Forms
             else if (fileType == TextFileType.Nametable)
             {
                 if (!txt.EndsWith("\n")) txt = txt + "\n";
-                data = Encoding.UTF8.GetBytes(txt.Replace("\r", "").Replace('\n', '\0'));
+                txt = txt.Replace("\r", "");
+                var lines = txt.Split('\n');
+                foreach (var line in lines)
+                {
+                    var str = line.Trim();
+                    if (string.IsNullOrEmpty(str)) continue;
+                    var strl = str.ToLowerInvariant();
+                    JenkIndex.Ensure(strl);
+                }
+                data = Encoding.UTF8.GetBytes(txt.Replace('\n', '\0'));
             }
 
             if (data == null)

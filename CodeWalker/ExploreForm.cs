@@ -4292,6 +4292,18 @@ namespace CodeWalker
             f.Show(this);
         }
 
+        private void ToolsJenkGenMenu_Click(object sender, EventArgs e)
+        {
+            JenkGenForm f = new JenkGenForm();
+            f.Show(this);
+        }
+
+        private void ToolsJenkIndMenu_Click(object sender, EventArgs e)
+        {
+            JenkIndForm f = new JenkIndForm(FileCache);
+            f.Show(this);
+        }
+
         private void OptionsStartInEditModeMenu_Click(object sender, EventArgs e)
         {
             OptionsStartInEditModeMenu.Checked = !OptionsStartInEditModeMenu.Checked;
