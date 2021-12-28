@@ -99,7 +99,6 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node, string ddsfolder)
         {
             var textures = new List<Texture>();
-            var texturehashes = new List<uint>();
 
             var inodes = node.SelectNodes("Item");
             if (inodes != null)
@@ -109,15 +108,10 @@ namespace CodeWalker.GameFiles
                     var tex = new Texture();
                     tex.ReadXml(inode, ddsfolder);
                     textures.Add(tex);
-                    texturehashes.Add(tex.NameHash);
                 }
             }
 
-            TextureNameHashes = new ResourceSimpleList64_uint();
-            TextureNameHashes.data_items = texturehashes.ToArray();
-            Textures = new ResourcePointerList64<Texture>();
-            Textures.data_items = textures.ToArray();
-            BuildDict();
+            BuildFromTextureList(textures);
         }
         public static void WriteXmlNode(TextureDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "TextureDictionary")
         {
@@ -173,6 +167,23 @@ namespace CodeWalker.GameFiles
                 }
             }
             Dict = dict;
+        }
+
+        public void BuildFromTextureList(List<Texture> textures)
+        {
+            textures.Sort((a, b) => a.NameHash.CompareTo(b.NameHash));
+            
+            var texturehashes = new List<uint>();
+            foreach (var tex in textures)
+            {
+                texturehashes.Add(tex.NameHash);
+            }
+
+            TextureNameHashes = new ResourceSimpleList64_uint();
+            TextureNameHashes.data_items = texturehashes.ToArray();
+            Textures = new ResourcePointerList64<Texture>();
+            Textures.data_items = textures.ToArray();
+            BuildDict();
         }
 
     }

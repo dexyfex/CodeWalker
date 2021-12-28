@@ -1608,7 +1608,7 @@ namespace CodeWalker
         private void ViewYtd(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ytd = RpfFile.GetFile<YtdFile>(e, data);
-            YtdForm f = new YtdForm();
+            YtdForm f = new YtdForm(this);
             f.Show();
             f.LoadYtd(ytd);
         }

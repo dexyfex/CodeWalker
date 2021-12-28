@@ -17,15 +17,20 @@ namespace CodeWalker.Forms
 {
     public partial class YtdForm : Form
     {
-        private string fileName;
+        private string FileName;
         private YtdFile Ytd { get; set; }
         private TextureDictionary TexDict { get; set; }
         private Texture CurrentTexture = null;
         private float CurrentZoom = 0.0f; //1.0 = 100%, 0.0 = stretch
+        private bool Modified = false;
+        private ExploreForm ExploreForm = null;
+        private ModelForm ModelForm = null;
 
 
-        public YtdForm()
+        public YtdForm(ExploreForm exploreForm = null, ModelForm modelForm = null)
         {
+            ExploreForm = exploreForm;
+            ModelForm = modelForm;
             InitializeComponent();
         }
 
@@ -34,18 +39,18 @@ namespace CodeWalker.Forms
         {
             Ytd = ytd;
 
-            fileName = ytd?.Name;
-            if (string.IsNullOrEmpty(fileName))
+            FileName = ytd?.Name;
+            if (string.IsNullOrEmpty(FileName))
             {
-                fileName = ytd?.RpfFileEntry?.Name;
+                FileName = ytd?.RpfFileEntry?.Name;
             }
 
-            LoadTexDict(ytd.TextureDict, fileName);
+            LoadTexDict(ytd.TextureDict, FileName);
         }
         public void LoadTexDict(TextureDictionary texdict, string filename)
         {
             TexDict = texdict;
-            fileName = filename;
+            FileName = filename;
 
             TexturesListView.Items.Clear();
             SelTexturePictureBox.Image = null;
@@ -82,6 +87,7 @@ namespace CodeWalker.Forms
 
 
             UpdateFormTitle();
+            UpdateSaveYTDAs();
         }
 
         private string GetTexCountStr()
@@ -92,11 +98,24 @@ namespace CodeWalker.Forms
         }
 
 
+        private void SelectTexture(Texture tex)
+        {
+            TexturesListView.SelectedItems.Clear();
+            if (tex == null) return;
+            foreach (ListViewItem lvi in TexturesListView.Items)
+            {
+                if (lvi.Tag == tex)
+                {
+                    lvi.Selected = true;
+                    break;
+                }
+            }
+        }
 
         private void ShowTextureMip(Texture tex, int mip, bool mipchange)
         {
             CurrentTexture = tex;
-            UpdateSaveAs();
+            UpdateSaveTextureAs();
 
             if (tex == null)
             {
@@ -107,9 +126,14 @@ namespace CodeWalker.Forms
                 SelTextureMipTrackBar.Value = 0;
                 SelTextureMipTrackBar.Maximum = 0;
                 DetailsPropertyGrid.SelectedObject = null;
+                RemoveTextureButton.Enabled = false;
+                ReplaceTextureButton.Enabled = false;
                 UpdateStatus(GetTexCountStr());
                 return;
             }
+
+            RemoveTextureButton.Enabled = true;
+            ReplaceTextureButton.Enabled = true;
 
 
             if (mipchange)
@@ -169,10 +193,156 @@ namespace CodeWalker.Forms
         }
 
 
+        private void AddTexture()
+        {
+            if (TexDict.Textures?.data_items == null) return;
+
+            var tex = OpenDDSFile();
+            if (tex == null) return;
+
+            var textures = new List<Texture>();
+            textures.AddRange(TexDict.Textures.data_items);
+            textures.Add(tex);
+
+            TexDict.BuildFromTextureList(textures);
+
+            Modified = true;
+
+            LoadTexDict(TexDict, FileName);
+
+            SelectTexture(tex);
+
+            UpdateModelFormTextures();
+        }
+
+        private void RemoveTexture()
+        {
+            if (TexDict?.Textures?.data_items == null) return;
+            if (CurrentTexture == null) return;
+
+            var textures = new List<Texture>();
+            foreach (var tex in TexDict.Textures.data_items)
+            {
+                if (tex != CurrentTexture)
+                {
+                    textures.Add(tex);
+                }
+            }
+
+            TexDict.BuildFromTextureList(textures);
+
+            Modified = true;
+
+            LoadTexDict(TexDict, FileName);
+
+            SelectTexture(null);
+
+            UpdateModelFormTextures();
+        }
+
+        private void ReplaceTexture()
+        {
+            if (TexDict?.Textures?.data_items == null) return;
+            if (CurrentTexture == null) return;
+
+            var tex = OpenDDSFile();
+            if (tex == null) return;
+
+            tex.Name = CurrentTexture.Name;
+            tex.NameHash = CurrentTexture.NameHash;
+
+            var textures = new List<Texture>();
+            foreach (var t in TexDict.Textures.data_items)
+            {
+                if (t != CurrentTexture)
+                {
+                    textures.Add(t);
+                }
+            }
+            textures.Add(tex);
+
+            TexDict.BuildFromTextureList(textures);
+
+            Modified = true;
+
+            LoadTexDict(TexDict, FileName);
+
+            SelectTexture(tex);
+
+            UpdateModelFormTextures();
+        }
+
+        private void RenameTexture(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return;
+            if (TexDict?.Textures?.data_items == null) return;
+            if (CurrentTexture == null) return;
+            if (CurrentTexture.Name == name) return;
+
+            var tex = CurrentTexture;
+
+            tex.Name = name;
+            tex.NameHash = JenkHash.GenHash(name.ToLowerInvariant());
+
+            var textures = new List<Texture>();
+            textures.AddRange(TexDict.Textures.data_items);
+
+            TexDict.BuildFromTextureList(textures);
+
+            Modified = true;
+
+            foreach (ListViewItem lvi in TexturesListView.Items)
+            {
+                if (lvi.Tag == tex)
+                {
+                    lvi.Text = tex.Name;
+                    lvi.ToolTipText = tex.Name;
+                    break;
+                }
+            }
+
+            UpdateFormTitle();
+            UpdateSaveYTDAs();
+            UpdateModelFormTextures();
+        }
+
+
+        private Texture OpenDDSFile()
+        {
+            if (OpenDDSFileDialog.ShowDialog() != DialogResult.OK) return null;
+            
+            var fn = OpenDDSFileDialog.FileName;
+
+            if (!File.Exists(fn)) return null; //couldn't find file?
+
+            try
+            {
+                var dds = File.ReadAllBytes(fn);
+                var tex = DDSIO.GetTexture(dds);
+                tex.Name = Path.GetFileNameWithoutExtension(fn);
+                tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
+                JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
+                return tex;
+            }
+            catch
+            {
+                MessageBox.Show("Unable to load " + fn + ".\nAre you sure it's a valid .dds file?");
+            }
+
+            return null;
+        }
+
+
+        private void UpdateModelFormTextures()
+        {
+            if (ModelForm == null) return;
+
+            //TODO: live update of model form view when changes have been made...
+        }
 
         private void UpdateFormTitle()
         {
-            Text = fileName + " - Texture Dictionary - CodeWalker by dexyfex";
+            Text = FileName + (Modified ? "*" : "") + " - Texture Dictionary - CodeWalker by dexyfex";
         }
 
         private void UpdateStatus(string text)
@@ -211,41 +381,141 @@ namespace CodeWalker.Forms
 
 
 
+        private void UpdateSaveYTDAs()
+        {
+            if (Ytd == null)
+            {
+                FileSaveMenu.Text = "Save YTD";
+                FileSaveAsMenu.Text = "Save YTD As...";
+                ToolbarSaveMenu.Text = "Save YTD";
+                ToolbarSaveAsMenu.Text = "Save YTD As...";
+                FileSaveMenu.Enabled = false;
+                FileSaveAsMenu.Enabled = false;
+                ToolbarSaveMenu.Enabled = false;
+                ToolbarSaveAsMenu.Enabled = false;
+            }
+            else
+            {
+                var cansave = (ExploreForm?.EditMode ?? false);
+                var s = "Save " + FileName;
+                var sas = "Save " + FileName + " As...";
+                FileSaveMenu.Text = s;
+                FileSaveAsMenu.Text = sas;
+                ToolbarSaveMenu.Text = s;
+                ToolbarSaveAsMenu.Text = sas;
+                FileSaveMenu.Enabled = cansave;
+                FileSaveAsMenu.Enabled = true;
+                ToolbarSaveMenu.Enabled = cansave;
+                ToolbarSaveAsMenu.Enabled = true;
+            }
+        }
 
-
-        private void UpdateSaveAs()
+        private void UpdateSaveTextureAs()
         {
             if (CurrentTexture == null)
             {
-                FileSaveAsMenu.Text = "Save As...";
-                ToolbarSaveAsMenu.Text = "Save As...";
-                FileSaveAsMenu.Enabled = false;
-                ToolbarSaveAsMenu.Enabled = false;
+                FileSaveTextureAsMenu.Text = "Save Texture As...";
+                ToolbarSaveTextureAsMenu.Text = "Save Texture As...";
+                FileSaveTextureAsMenu.Enabled = false;
+                ToolbarSaveTextureAsMenu.Enabled = false;
             }
             else
             {
                 string fname = CurrentTexture.Name + ".dds";
                 string sas = "Save " + fname + " As...";
-                FileSaveAsMenu.Text = sas;
-                ToolbarSaveAsMenu.Text = sas;
-                FileSaveAsMenu.Enabled = true;
-                ToolbarSaveAsMenu.Enabled = true;
+                FileSaveTextureAsMenu.Text = sas;
+                ToolbarSaveTextureAsMenu.Text = sas;
+                FileSaveTextureAsMenu.Enabled = true;
+                ToolbarSaveTextureAsMenu.Enabled = true;
             }
         }
 
 
-        private void SaveAs()
+
+        private void SaveYTD(bool saveas = false)
+        {
+            if (Ytd == null) return;
+            if (!(ExploreForm?.EditMode ?? false))
+            {
+                saveas = true;
+            }
+
+            var isinrpf = false;
+            var rpfFileEntry = Ytd.RpfFileEntry;
+            if (rpfFileEntry == null)
+            {
+                saveas = true;
+            }
+            else
+            {
+                if (rpfFileEntry?.Parent != null)
+                {
+                    if (!saveas)
+                    {
+                        isinrpf = true;
+                        if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+                        {
+                            if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                            {
+                                saveas = true;//that was a close one
+                                isinrpf = false;
+                            }
+                        }
+                    }
+                }
+                else if (!string.IsNullOrEmpty(rpfFileEntry?.Path))
+                {
+                    isinrpf = false; //saving direct to filesystem in RPF explorer...
+                }
+                else
+                {
+                    saveas = true;//this probably shouldn't happen
+                }
+            }
+
+            var data = Ytd.Save();
+
+            if (saveas) //save direct to filesystem in external location
+            {
+                SaveYTDFileDialog.FileName = FileName;
+                if (SaveYTDFileDialog.ShowDialog() != DialogResult.OK) return;
+                string fpath = SaveYTDFileDialog.FileName;
+                File.WriteAllBytes(fpath, data);
+            }
+            else if (!isinrpf) //save direct to filesystem in RPF explorer
+            {
+                File.WriteAllBytes(rpfFileEntry.Path, data);
+                ExploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+            }
+            else //save to RPF...
+            {
+                if (!(ExploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false))
+                {
+                    MessageBox.Show("Unable to save file, RPF encryption needs to be OPEN for this operation!");
+                    return;
+                }
+
+                Ytd.RpfFileEntry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
+                ExploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+            }
+
+            Modified = false;
+            UpdateStatus("YTD file saved successfully at " + DateTime.Now.ToString());
+            UpdateFormTitle();
+        }
+
+        private void SaveTextureAs()
         {
             if (CurrentTexture == null) return;
             string fname = CurrentTexture.Name + ".dds";
-            SaveFileDialog.FileName = fname;
-            if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
-            string fpath = SaveFileDialog.FileName;
+            SaveDDSFileDialog.FileName = fname;
+            if (SaveDDSFileDialog.ShowDialog() != DialogResult.OK) return;
+            string fpath = SaveDDSFileDialog.FileName;
             byte[] dds = DDSIO.GetDDSFile(CurrentTexture);
             File.WriteAllBytes(fpath, dds);
         }
 
-        private void SaveAll()
+        private void SaveAllTextures()
         {
             if (TexDict?.Textures?.data_items == null) return;
             if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return;
@@ -305,29 +575,76 @@ namespace CodeWalker.Forms
             UpdateZoom();
         }
 
-        private void FileSaveAllMenu_Click(object sender, EventArgs e)
+        private void FileSaveMenu_Click(object sender, EventArgs e)
         {
-            SaveAll();
+            SaveYTD();
         }
 
         private void FileSaveAsMenu_Click(object sender, EventArgs e)
         {
-            SaveAs();
+            SaveYTD(true);
+        }
+
+        private void FileSaveTextureAsMenu_Click(object sender, EventArgs e)
+        {
+            SaveTextureAs();
+        }
+
+        private void FileSaveAllTexturesMenu_Click(object sender, EventArgs e)
+        {
+            SaveAllTextures();
         }
 
         private void SaveButton_ButtonClick(object sender, EventArgs e)
         {
-            SaveAs();
+            if (Ytd != null)
+            {
+                SaveYTD();
+            }
+            else
+            {
+                SaveTextureAs();
+            }
+        }
+
+        private void ToolbarSaveMenu_Click(object sender, EventArgs e)
+        {
+            SaveYTD();
         }
 
         private void ToolbarSaveAsMenu_Click(object sender, EventArgs e)
         {
-            SaveAs();
+            SaveYTD(true);
         }
 
-        private void ToolbarSaveAllMenu_Click(object sender, EventArgs e)
+        private void ToolbarSaveTextureAsMenu_Click(object sender, EventArgs e)
         {
-            SaveAll();
+            SaveTextureAs();
+        }
+
+        private void ToolbarSaveAllTexturesMenu_Click(object sender, EventArgs e)
+        {
+            SaveAllTextures();
+        }
+
+        private void AddTextureButton_Click(object sender, EventArgs e)
+        {
+            AddTexture();
+        }
+
+        private void RemoveTextureButton_Click(object sender, EventArgs e)
+        {
+            RemoveTexture();
+        }
+
+        private void ReplaceTextureButton_Click(object sender, EventArgs e)
+        {
+            ReplaceTexture();
+        }
+
+        private void SelTextureNameTextBox_TextChanged(object sender, EventArgs e)
+        {
+            RenameTexture(SelTextureNameTextBox.Text);
         }
     }
 }

@@ -26,6 +26,7 @@ namespace CodeWalker.GameFiles
         public void Load(byte[] data, RpfFileEntry entry)
         {
             Name = entry.Name;
+            RpfFileEntry = entry;
 
 
             RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
