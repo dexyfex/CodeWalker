@@ -7549,10 +7549,6 @@ namespace CodeWalker.Project
                         ShowCurrentProjectItem(false);
                         ShowProjectItemInProcess = false;
                     }
-                    if (WorldForm != null)
-                    {
-                        WorldForm.Focus();//sometimes newly created panel steals focus from the WorldForm, this is a hack to give it back
-                    }
                 }
             }
             catch { }
