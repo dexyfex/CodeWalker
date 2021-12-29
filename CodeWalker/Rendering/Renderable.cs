@@ -330,7 +330,7 @@ namespace CodeWalker.Rendering
                 {
                     var rlight = new RenderableLight();
                     rlight.Owner = this;
-                    rlight.Init(ref lights[i]);
+                    rlight.Init(lights[i]);
                     rlights[i] = rlight;
                 }
                 Lights = rlights;
@@ -1353,6 +1353,7 @@ namespace CodeWalker.Rendering
 
     public class RenderableLight
     {
+        public LightAttributes OwnerLight;
         public Renderable Owner;
         public Vector3 Position;
         public Vector3 Colour;
@@ -1371,8 +1372,9 @@ namespace CodeWalker.Rendering
         public uint TimeFlags;
         public MetaHash TextureHash;
 
-        public void Init(ref LightAttributes_s l)
+        public void Init(LightAttributes l)
         {
+            OwnerLight = l;
             var pos = l.Position;
             var dir = l.Direction;
             var tan = l.Tangent;

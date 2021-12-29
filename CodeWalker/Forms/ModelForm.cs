@@ -103,6 +103,13 @@ namespace CodeWalker.Forms
         ModelMatForm materialForm = null;
         bool modelModified = false;
 
+        TransformWidget Widget = new TransformWidget();
+        TransformWidget GrabbedWidget = null;
+        ModelLightForm lightForm = null;
+        bool editingLights = false;
+        public LightAttributes selectedLight = null;
+        public bool showLightGizmos = true;
+
         ExploreForm exploreForm = null;
         RpfFileEntry rpfFileEntry = null;
 
@@ -165,6 +172,13 @@ namespace CodeWalker.Forms
                 Close();
                 return;
             }
+
+            Widget.Position = new Vector3(0f, 0f, 0f);
+            Widget.Rotation = Quaternion.Identity;
+            Widget.Scale = Vector3.One;
+            Widget.Visible = false;
+            Widget.OnPositionChange += Widget_OnPositionChange;
+            Widget.OnRotationChange += Widget_OnRotationChange;
 
             ShaderParamNames[] texsamplers = RenderableGeometry.GetTextureSamplerList();
             foreach (var texsampler in texsamplers)
@@ -259,6 +273,7 @@ namespace CodeWalker.Forms
 
             Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
+            UpdateWidgets();
 
             Renderer.BeginRender(context);
 
@@ -270,6 +285,7 @@ namespace CodeWalker.Forms
 
             RenderGrid(context);
 
+            RenderLightSelection();
 
             Renderer.RenderQueued();
 
@@ -277,6 +293,7 @@ namespace CodeWalker.Forms
 
             Renderer.RenderFinalPass();
 
+            RenderWidgets();
 
             Renderer.EndRender();
 
@@ -520,10 +537,98 @@ namespace CodeWalker.Forms
             }
         }
 
+        public void SetCameraPosition(Vector3 p, float distance = 2.0f)
+        {
+            Renderer.camera.FollowEntity.Position = p;
+            camera.TargetDistance = distance;
+        }
 
+        private void RenderLightSelection()
+        {
+            if (editingLights)
+            {
+                if (selectedLight != null)
+                {
+                    if (showLightGizmos)
+                    {
+                        Renderer.RenderSelectionDrawableLight(selectedLight);
+                    }
+                }
+            }
+        }
 
-
-
+        private void RenderWidgets()
+        {
+            if (Widget.Visible)
+            {
+                Renderer.RenderTransformWidget(Widget);
+            }
+        }
+        private void UpdateWidgets()
+        {
+            Widget.Update(camera);
+        }
+        public void UpdateWidget(bool rotate = false)
+        {
+            if(selectedLight != null)
+            {
+                if (!rotate)
+                {
+                    SetWidgetPosition(selectedLight.Position);
+                }
+                else
+                {
+                    SetWidgetRotation(selectedLight.GetRotation());
+                }
+            }
+        }
+        public void SetWidgetPosition(Vector3 pos)
+        {
+            SetWidgetMode("Position");
+            Widget.Position = pos;
+        }
+        public void SetWidgetRotation(Quaternion q)
+        {
+            SetWidgetMode("Rotation");
+            Widget.Rotation = q;
+        }
+        public void SetWidgetMode(string mode)
+        {
+            lock (Renderer.RenderSyncRoot)
+            {
+                switch (mode)
+                {
+                    case "Default":
+                        Widget.Mode = WidgetMode.Default;
+                        break;
+                    case "Position":
+                        Widget.Mode = WidgetMode.Position;
+                        break;
+                    case "Rotation":
+                        Widget.Mode = WidgetMode.Rotation;
+                        break;
+                    case "Scale":
+                        Widget.Mode = WidgetMode.Scale;
+                        break;
+                }
+            }
+        }
+        private void Widget_OnPositionChange(Vector3 newpos, Vector3 oldpos)
+        {
+            //called during UpdateWidgets()
+            if (newpos == oldpos) return;
+            if (selectedLight == null || lightForm == null || !editingLights) return;
+            selectedLight.Position = newpos;
+            selectedLight.HasChanged = true;
+        }
+        private void Widget_OnRotationChange(Quaternion newrot, Quaternion oldrot)
+        {
+            //called during UpdateWidgets()
+            if (newrot == oldrot) return;
+            if (selectedLight == null || lightForm == null || !editingLights) return;
+            selectedLight.SetRotation(newrot);
+            selectedLight.HasChanged = true;
+        }
 
 
         private void RenderSingleItem()
@@ -631,6 +736,11 @@ namespace CodeWalker.Forms
                 MoveCameraToView(ydr.Drawable.BoundingCenter, ydr.Drawable.BoundingSphereRadius);
             }
 
+            if(ydr.Drawable?.LightAttributes.data_items.Length > 0)
+            {
+                DeferredShadingCheckBox.Checked = true;
+            }
+
             UpdateModelsUI(ydr.Drawable);
         }
         public void LoadModels(YddFile ydd)
@@ -649,6 +759,15 @@ namespace CodeWalker.Forms
                     maxrad = Math.Max(maxrad, d.BoundingSphereRadius);
                 }
                 MoveCameraToView(Vector3.Zero, maxrad);
+            }
+
+            foreach(var draw in ydd.Drawables)
+            {
+                if (draw?.LightAttributes.data_items.Length > 0)
+                {
+                    DeferredShadingCheckBox.Checked = true;
+                    break;
+                }
             }
 
             UpdateModelsUI(ydd.Dict);
@@ -678,6 +797,11 @@ namespace CodeWalker.Forms
             if (dr != null)
             {
                 MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
+            }
+
+            if (yft.Fragment?.LightAttributes.data_items.Length > 0)
+            {
+                DeferredShadingCheckBox.Checked = true;
             }
 
             UpdateModelsUI(yft.Fragment?.Drawable, yft.Fragment);
@@ -1220,7 +1344,13 @@ namespace CodeWalker.Forms
         }
 
 
-
+        public void OnLightFormClosed()
+        {
+            lightForm = null;
+            editingLights = false;
+            selectedLight = null;
+            Widget.Visible = false;
+        }
 
         public void OnMaterialFormClosed()
         {
@@ -1409,6 +1539,23 @@ namespace CodeWalker.Forms
             MouseDownPoint = e.Location;
             MouseLastPoint = MouseDownPoint;
 
+            if (MouseLButtonDown)
+            {
+                if (Widget.IsUnderMouse && !Input.kbmoving)
+                {
+                    GrabbedWidget = Widget;
+                    GrabbedWidget.IsDragging = true;
+                }
+            }
+            else
+            {
+                if (GrabbedWidget != null)
+                {
+                    GrabbedWidget.IsDragging = false;
+                    GrabbedWidget = null;
+                }
+            }
+
 
             if (MouseRButtonDown)
             {
@@ -1427,11 +1574,20 @@ namespace CodeWalker.Forms
                 case MouseButtons.Right: MouseRButtonDown = false; break;
             }
 
+            if (e.Button == MouseButtons.Left)
+            {
+                if (GrabbedWidget != null)
+                {
+                    GrabbedWidget.IsDragging = false;
+                    //GrabbedWidget.Position = SelectedItem.WidgetPosition;//in case of any snapping, make sure widget is in correct position at the end
+                    GrabbedWidget = null;
+                    lightForm.UpdateUI(); //do this so position and direction textboxes are updated after a drag
+                }
+            }
             //lock (MouseControlSyncRoot)
             //{
             //    MouseControlButtons &= ~e.Button;
             //}
-
         }
 
         private void ModelForm_MouseMove(object sender, MouseEventArgs e)
@@ -1446,7 +1602,10 @@ namespace CodeWalker.Forms
 
             if (MouseLButtonDown)
             {
-                camera.MouseRotate(dx, dy);
+                if (GrabbedWidget == null)
+                {
+                        camera.MouseRotate(dx, dy);
+                }
             }
             if (MouseRButtonDown)
             {
@@ -1979,6 +2138,59 @@ namespace CodeWalker.Forms
 
         }
 
+        private void LightEditorButton_Click(object sender, EventArgs e)
+        {
+            DrawableBase drawable = null;
+            Dictionary<uint, Drawable> dict = null;
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                drawable = Ydr.Drawable;
+            }
+            else if ((Ydd != null) && (Ydd.Loaded))
+            {
+                dict = Ydd.Dict;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                drawable = Yft.Fragment?.Drawable;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                //dict = Ypt.DrawableDict;
+            }
+            else
+            {
+                MessageBox.Show("Light editor not supported for the current file.");
+            }
+
+            if (lightForm == null)
+            {
+                lightForm = new ModelLightForm(this);
+
+                if (drawable != null)
+                {
+                    lightForm.LoadModel(drawable);
+                }
+                else if (dict != null)
+                {
+                    lightForm.LoadModels(dict);
+                }
+
+                editingLights = true;
+                Widget.Visible = true;
+                lightForm.Show(this);
+            }
+            else
+            {
+                if (lightForm.WindowState == FormWindowState.Minimized)
+                {
+                    lightForm.WindowState = FormWindowState.Normal;
+                }
+                lightForm.Focus();
+            }
+        }
+
         private void SaveButton_ButtonClick(object sender, EventArgs e)
         {
             Save();
@@ -2007,6 +2219,16 @@ namespace CodeWalker.Forms
         private void EnableRootMotionCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             EnableRootMotion = EnableRootMotionCheckBox.Checked;
+        }
+
+        private void DeferredShadingCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.shaders.deferred = DeferredShadingCheckBox.Checked;
+        }
+
+        private void HDLightsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderlights = HDLightsCheckBox.Checked;
         }
     }
 }

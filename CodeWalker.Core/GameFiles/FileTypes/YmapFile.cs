@@ -2118,7 +2118,7 @@ namespace CodeWalker.GameFiles
             var dd = db as Drawable;
             var fd = db as FragDrawable;
             var skel = db.Skeleton;
-            LightAttributes_s[] lightAttrs = null;
+            LightAttributes[] lightAttrs = null;
             Bounds b = null;
             if (dd != null)
             {
@@ -2246,7 +2246,7 @@ namespace CodeWalker.GameFiles
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public class LightInstance
         {
-            public LightAttributes_s Attributes { get; set; } //just for display purposes!
+            public LightAttributes Attributes { get; set; } //just for display purposes!
             public uint Hash { get; set; }
             public Vector3 Position { get; set; }
             public Vector3 Direction { get; set; }
