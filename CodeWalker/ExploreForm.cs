@@ -2483,6 +2483,42 @@ namespace CodeWalker
             }
 
         }
+        private void NewYtdFile()
+        {
+            if (CurrentFolder == null) return;//shouldn't happen
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+            string fname = Prompt.ShowDialog(this, "Enter a name for the new YTD file:", "Create YTD (Texture Dictionary)", "new");
+            if (string.IsNullOrEmpty(fname))
+            {
+                return;//no name was provided.
+            }
+            if (!IsFilenameOk(fname)) return; //new name contains invalid char(s). don't do anything
+
+            if (!fname.ToLowerInvariant().EndsWith(".ytd"))
+            {
+                fname = fname + ".ytd";//make sure it ends with .ytd
+            }
+
+            var ytd = new YtdFile();
+            ytd.TextureDict = new TextureDictionary();
+            ytd.TextureDict.Textures = new ResourcePointerList64<Texture>();
+            ytd.TextureDict.TextureNameHashes = new ResourceSimpleList64_uint();
+            var data = ytd.Save();
+
+            if (CurrentFolder.RpfFolder != null) //create in RPF archive
+            {
+                RpfFile.CreateFile(CurrentFolder.RpfFolder, fname, data);
+            }
+            else //create in filesystem
+            {
+                var outfpath = Path.Combine(CurrentFolder.FullPath, fname);
+                File.WriteAllBytes(outfpath, data);
+                CurrentFolder.EnsureFile(outfpath);
+            }
+
+            RefreshMainListView();
+        }
         private void ImportFbx()
         {
             if (!EditMode) return;
@@ -4093,6 +4129,11 @@ namespace CodeWalker
         private void ListContextNewRpfArchiveMenu_Click(object sender, EventArgs e)
         {
             NewRpfArchive();
+        }
+
+        private void ListContextNewYtdFileMenu_Click(object sender, EventArgs e)
+        {
+            NewYtdFile();
         }
 
         private void ListContextImportFbxMenu_Click(object sender, EventArgs e)
