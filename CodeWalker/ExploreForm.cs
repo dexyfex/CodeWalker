@@ -268,6 +268,7 @@ namespace CodeWalker
             InitFileType(".ini", "Config Text", 5, FileTypeAction.ViewText);
             InitFileType(".vdf", "Steam Script File", 5, FileTypeAction.ViewText);
             InitFileType(".sps", "Shader Preset", 5, FileTypeAction.ViewText);
+            InitFileType(".ugc", "User-Generated Content", 5, FileTypeAction.ViewText);
             InitFileType(".xml", "XML File", 6, FileTypeAction.ViewXml);
             InitFileType(".meta", "Metadata (XML)", 6, FileTypeAction.ViewXml);
             InitFileType(".ymt", "Metadata (Binary)", 6, FileTypeAction.ViewYmt, true);
