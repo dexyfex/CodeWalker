@@ -281,6 +281,10 @@ namespace CodeWalker.Rendering
                     Thread.Sleep(10); //don't hog CPU when minimised
                     if (dxform.Form.IsDisposed) return; //if closed while minimised
                 }
+                if (Form.ActiveForm == null)
+                {
+                    Thread.Sleep(100); //reduce the FPS when the app isn't active (maybe this should be configurable?)
+                }
 
                 Rendering = true;
                 if(!Monitor.TryEnter(syncroot, 50))
