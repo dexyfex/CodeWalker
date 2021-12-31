@@ -176,9 +176,11 @@ namespace CodeWalker.Forms
             Widget.Position = new Vector3(0f, 0f, 0f);
             Widget.Rotation = Quaternion.Identity;
             Widget.Scale = Vector3.One;
+            Widget.SnapAngleDegrees = 0;
             Widget.Visible = false;
             Widget.OnPositionChange += Widget_OnPositionChange;
             Widget.OnRotationChange += Widget_OnRotationChange;
+            Widget.OnScaleChange += Widget_OnScaleChange;
 
             ShaderParamNames[] texsamplers = RenderableGeometry.GetTextureSamplerList();
             foreach (var texsampler in texsamplers)
@@ -568,50 +570,24 @@ namespace CodeWalker.Forms
         {
             Widget.Update(camera);
         }
-        public void UpdateWidget(bool rotate = false)
+        public void SetWidgetTransform(Vector3 p, Quaternion q, Vector3 s)
         {
-            if(selectedLight != null)
-            {
-                if (!rotate)
-                {
-                    SetWidgetPosition(selectedLight.Position);
-                }
-                else
-                {
-                    SetWidgetRotation(selectedLight.GetRotation());
-                }
-            }
-        }
-        public void SetWidgetPosition(Vector3 pos)
-        {
-            SetWidgetMode("Position");
-            Widget.Position = pos;
-        }
-        public void SetWidgetRotation(Quaternion q)
-        {
-            SetWidgetMode("Rotation");
+            Widget.Position = p;
             Widget.Rotation = q;
+            Widget.Scale = s;
         }
-        public void SetWidgetMode(string mode)
+        public void SetWidgetMode(WidgetMode mode)
         {
             lock (Renderer.RenderSyncRoot)
             {
-                switch (mode)
-                {
-                    case "Default":
-                        Widget.Mode = WidgetMode.Default;
-                        break;
-                    case "Position":
-                        Widget.Mode = WidgetMode.Position;
-                        break;
-                    case "Rotation":
-                        Widget.Mode = WidgetMode.Rotation;
-                        break;
-                    case "Scale":
-                        Widget.Mode = WidgetMode.Scale;
-                        break;
-                }
+                Widget.Mode = mode;
             }
+
+            ToolbarMoveButton.Checked = (mode == WidgetMode.Position);
+            ToolbarRotateButton.Checked = (mode == WidgetMode.Rotation);
+            ToolbarScaleButton.Checked = (mode == WidgetMode.Scale);
+
+            lightForm?.SetWidgetModeUI(mode);
         }
         private void Widget_OnPositionChange(Vector3 newpos, Vector3 oldpos)
         {
@@ -619,15 +595,23 @@ namespace CodeWalker.Forms
             if (newpos == oldpos) return;
             if (selectedLight == null || lightForm == null || !editingLights) return;
             selectedLight.Position = newpos;
-            selectedLight.HasChanged = true;
+            selectedLight.UpdateRenderable = true;
         }
         private void Widget_OnRotationChange(Quaternion newrot, Quaternion oldrot)
         {
             //called during UpdateWidgets()
             if (newrot == oldrot) return;
             if (selectedLight == null || lightForm == null || !editingLights) return;
-            selectedLight.SetRotation(newrot);
-            selectedLight.HasChanged = true;
+            selectedLight.Orientation = newrot;
+            selectedLight.UpdateRenderable = true;
+        }
+        private void Widget_OnScaleChange(Vector3 newscale, Vector3 oldscale)
+        {
+            //called during UpdateWidgets()
+            if (newscale == oldscale) return;
+            if (selectedLight == null || lightForm == null || !editingLights) return;
+            selectedLight.Falloff = newscale.Z;
+            selectedLight.UpdateRenderable = true;
         }
 
 
@@ -2053,7 +2037,7 @@ namespace CodeWalker.Forms
             StatusStrip.Visible = StatusBarCheckBox.Checked;
         }
 
-        private void TextureViewerButton_Click(object sender, EventArgs e)
+        private void TextureEditorButton_Click(object sender, EventArgs e)
         {
             TextureDictionary td = null;
 
@@ -2189,6 +2173,7 @@ namespace CodeWalker.Forms
                 }
                 lightForm.Focus();
             }
+            DeferredShadingCheckBox.Checked = true; //make sure we can see the lights we're editing (maybe this is bad for potatoes but meh)
         }
 
         private void SaveButton_ButtonClick(object sender, EventArgs e)
@@ -2229,6 +2214,36 @@ namespace CodeWalker.Forms
         private void HDLightsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             Renderer.renderlights = HDLightsCheckBox.Checked;
+        }
+
+        private void ToolbarMaterialEditorButton_Click(object sender, EventArgs e)
+        {
+            MaterialEditorButton_Click(sender, e);
+        }
+
+        private void ToolbarTextureEditorButton_Click(object sender, EventArgs e)
+        {
+            TextureEditorButton_Click(sender, e);
+        }
+
+        private void ToolbarLightEditorButton_Click(object sender, EventArgs e)
+        {
+            LightEditorButton_Click(sender, e);
+        }
+
+        private void ToolbarMoveButton_Click(object sender, EventArgs e)
+        {
+            SetWidgetMode(ToolbarMoveButton.Checked ? WidgetMode.Default : WidgetMode.Position);
+        }
+
+        private void ToolbarRotateButton_Click(object sender, EventArgs e)
+        {
+            SetWidgetMode(ToolbarRotateButton.Checked ? WidgetMode.Default : WidgetMode.Rotation);
+        }
+
+        private void ToolbarScaleButton_Click(object sender, EventArgs e)
+        {
+            SetWidgetMode(ToolbarScaleButton.Checked ? WidgetMode.Default : WidgetMode.Scale);
         }
     }
 }

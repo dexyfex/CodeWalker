@@ -4547,7 +4547,45 @@ namespace CodeWalker.GameFiles
         public MetaHash ProjectedTextureHash { get; set; }
         public uint Unknown_A4h { get; set; } // 0x00000000
 
-        public bool HasChanged = false; //used by model light form
+        public bool UpdateRenderable = false; //used by model light form
+
+
+        public Quaternion Orientation
+        {
+            get
+            {
+                Vector3 tx = new Vector3();
+                Vector3 ty = new Vector3();
+
+                switch (Type)
+                {
+                    case LightType.Point:
+                        return Quaternion.Identity;
+                    case LightType.Spot:
+                        tx = Vector3.Normalize(Tangent);
+                        ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
+                        break;
+                    case LightType.Capsule:
+                        tx = -Vector3.Normalize(Tangent);
+                        ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
+                        break;
+                }
+
+                var m = new Matrix();
+                m.Row1 = new Vector4(tx, 0);
+                m.Row2 = new Vector4(ty, 0);
+                m.Row3 = new Vector4(Direction, 0);
+                return Quaternion.RotationMatrix(m);
+            }
+            set
+            {
+                var inv = Quaternion.Invert(Orientation);
+                var delta = value * inv;
+                Direction = Vector3.Normalize(delta.Multiply(Direction));
+                Tangent = Vector3.Normalize(delta.Multiply(Tangent));
+            }
+        }
+
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -4729,39 +4767,6 @@ namespace CodeWalker.GameFiles
             ProjectedTextureHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "ProjectedTextureHash"));
         }
 
-        public Quaternion GetRotation()
-        {
-            Vector3 tx = new Vector3();
-            Vector3 ty = new Vector3();
-
-            switch (Type)
-            {
-                case LightType.Point:
-                    return Quaternion.Identity;
-                case LightType.Spot:
-                    tx = Vector3.Normalize(Direction.GetPerpVec());
-                    ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
-                    break;
-                case LightType.Capsule:
-                    tx = -Vector3.Normalize(Direction.GetPerpVec());
-                    ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
-                    break;
-            }
-
-            var m = new Matrix();
-            m.Row1 = new Vector4(tx, 0);
-            m.Row2 = new Vector4(ty, 0);
-            m.Row3 = new Vector4(Direction, 0);
-            return Quaternion.RotationMatrix(m);
-        }
-
-        public void SetRotation(Quaternion rot)
-        {
-            var inv = Quaternion.Invert(GetRotation());
-            var delta = rot * inv;
-            Direction = Vector3.Normalize(delta.Multiply(Direction));
-            Tangent = Vector3.Normalize(Direction.GetPerpVec());
-        }
     }
 
 

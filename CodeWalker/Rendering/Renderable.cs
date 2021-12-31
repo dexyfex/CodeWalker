@@ -325,20 +325,25 @@ namespace CodeWalker.Rendering
             }
             if (lights != null)
             {
-                var rlights = new RenderableLight[lights.Length];
-                for (int i = 0; i < lights.Length; i++)
-                {
-                    var rlight = new RenderableLight();
-                    rlight.Owner = this;
-                    rlight.Init(lights[i]);
-                    rlights[i] = rlight;
-                }
-                Lights = rlights;
+                InitLights(lights);
             }
 
 
             UpdateBoneTransforms();
 
+        }
+
+        public void InitLights(LightAttributes[] lights)
+        {
+            var rlights = new RenderableLight[lights.Length];
+            for (int i = 0; i < lights.Length; i++)
+            {
+                var rlight = new RenderableLight();
+                rlight.Owner = this;
+                rlight.Init(lights[i]);
+                rlights[i] = rlight;
+            }
+            Lights = rlights;
         }
 
         private RenderableModel InitModel(DrawableModel dm)

@@ -40,6 +40,14 @@
             this.ToolsPanel = new System.Windows.Forms.Panel();
             this.MainToolbarPanel = new System.Windows.Forms.Panel();
             this.MainToolbar = new System.Windows.Forms.ToolStrip();
+            this.ToolbarMaterialEditorButton = new System.Windows.Forms.ToolStripButton();
+            this.ToolbarTextureEditorButton = new System.Windows.Forms.ToolStripButton();
+            this.ToolbarLightEditorButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.ToolbarMoveButton = new System.Windows.Forms.ToolStripButton();
+            this.ToolbarRotateButton = new System.Windows.Forms.ToolStripButton();
+            this.ToolbarScaleButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.SaveButton = new System.Windows.Forms.ToolStripSplitButton();
             this.SaveMenuButton = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveAsMenuButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -52,13 +60,14 @@
             this.ClipDictComboBox = new System.Windows.Forms.ComboBox();
             this.ModelsTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.ToolsMaterialsTabPage = new System.Windows.Forms.TabPage();
-            this.TextureViewerButton = new System.Windows.Forms.Button();
+            this.TextureEditorButton = new System.Windows.Forms.Button();
             this.TexturesTreeView = new CodeWalker.WinForms.TreeViewFix();
+            this.MaterialEditorButton = new System.Windows.Forms.Button();
             this.ToolsDetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
             this.ToolsOptionsTabPage = new System.Windows.Forms.TabPage();
             this.OptionsTabControl = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.OptionsRenderTabPage = new System.Windows.Forms.TabPage();
             this.RenderModeComboBox = new System.Windows.Forms.ComboBox();
             this.FragGlassCheckBox = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
@@ -78,8 +87,9 @@
             this.GridSizeComboBox = new System.Windows.Forms.ComboBox();
             this.StatusBarCheckBox = new System.Windows.Forms.CheckBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.OptionsLightingTabPage = new System.Windows.Forms.TabPage();
             this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
+            this.LightEditorButton = new System.Windows.Forms.Button();
             this.HDLightsCheckBox = new System.Windows.Forms.CheckBox();
             this.label19 = new System.Windows.Forms.Label();
             this.HDRRenderingCheckBox = new System.Windows.Forms.CheckBox();
@@ -88,9 +98,6 @@
             this.ControlLightDirCheckBox = new System.Windows.Forms.CheckBox();
             this.SkydomeCheckBox = new System.Windows.Forms.CheckBox();
             this.TimeOfDayLabel = new System.Windows.Forms.Label();
-            this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.LightEditorButton = new System.Windows.Forms.Button();
-            this.MaterialEditorButton = new System.Windows.Forms.Button();
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
@@ -106,10 +113,9 @@
             this.ToolsDetailsTabPage.SuspendLayout();
             this.ToolsOptionsTabPage.SuspendLayout();
             this.OptionsTabControl.SuspendLayout();
-            this.tabPage1.SuspendLayout();
-            this.tabPage2.SuspendLayout();
+            this.OptionsRenderTabPage.SuspendLayout();
+            this.OptionsLightingTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
-            this.tabPage3.SuspendLayout();
             this.SuspendLayout();
             // 
             // StatsUpdateTimer
@@ -195,27 +201,110 @@
             // 
             // MainToolbarPanel
             // 
-            this.MainToolbarPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.MainToolbarPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.MainToolbarPanel.BackColor = System.Drawing.SystemColors.ControlDark;
             this.MainToolbarPanel.Controls.Add(this.MainToolbar);
-            this.MainToolbarPanel.Location = new System.Drawing.Point(193, 2);
+            this.MainToolbarPanel.Location = new System.Drawing.Point(39, 2);
             this.MainToolbarPanel.Name = "MainToolbarPanel";
-            this.MainToolbarPanel.Size = new System.Drawing.Size(34, 24);
+            this.MainToolbarPanel.Size = new System.Drawing.Size(188, 24);
             this.MainToolbarPanel.TabIndex = 4;
             // 
             // MainToolbar
             // 
             this.MainToolbar.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.MainToolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolbarMaterialEditorButton,
+            this.ToolbarTextureEditorButton,
+            this.ToolbarLightEditorButton,
+            this.toolStripSeparator1,
+            this.ToolbarMoveButton,
+            this.ToolbarRotateButton,
+            this.ToolbarScaleButton,
+            this.toolStripSeparator2,
             this.SaveButton});
             this.MainToolbar.Location = new System.Drawing.Point(0, 0);
             this.MainToolbar.Name = "MainToolbar";
-            this.MainToolbar.Size = new System.Drawing.Size(34, 25);
+            this.MainToolbar.Size = new System.Drawing.Size(188, 25);
             this.MainToolbar.TabIndex = 7;
             this.MainToolbar.Text = "Main Toolbar";
             // 
+            // ToolbarMaterialEditorButton
+            // 
+            this.ToolbarMaterialEditorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarMaterialEditorButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarMaterialEditorButton.Image")));
+            this.ToolbarMaterialEditorButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarMaterialEditorButton.Name = "ToolbarMaterialEditorButton";
+            this.ToolbarMaterialEditorButton.Size = new System.Drawing.Size(23, 22);
+            this.ToolbarMaterialEditorButton.Text = "Material Editor";
+            this.ToolbarMaterialEditorButton.Click += new System.EventHandler(this.ToolbarMaterialEditorButton_Click);
+            // 
+            // ToolbarTextureEditorButton
+            // 
+            this.ToolbarTextureEditorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarTextureEditorButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarTextureEditorButton.Image")));
+            this.ToolbarTextureEditorButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarTextureEditorButton.Name = "ToolbarTextureEditorButton";
+            this.ToolbarTextureEditorButton.Size = new System.Drawing.Size(23, 22);
+            this.ToolbarTextureEditorButton.Text = "Texture Editor";
+            this.ToolbarTextureEditorButton.Click += new System.EventHandler(this.ToolbarTextureEditorButton_Click);
+            // 
+            // ToolbarLightEditorButton
+            // 
+            this.ToolbarLightEditorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarLightEditorButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarLightEditorButton.Image")));
+            this.ToolbarLightEditorButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarLightEditorButton.Name = "ToolbarLightEditorButton";
+            this.ToolbarLightEditorButton.Size = new System.Drawing.Size(23, 22);
+            this.ToolbarLightEditorButton.Text = "Light Editor";
+            this.ToolbarLightEditorButton.Click += new System.EventHandler(this.ToolbarLightEditorButton_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarMoveButton
+            // 
+            this.ToolbarMoveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarMoveButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarMoveButton.Image")));
+            this.ToolbarMoveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarMoveButton.Name = "ToolbarMoveButton";
+            this.ToolbarMoveButton.Size = new System.Drawing.Size(23, 22);
+            this.ToolbarMoveButton.Text = "Move";
+            this.ToolbarMoveButton.ToolTipText = "Move";
+            this.ToolbarMoveButton.Click += new System.EventHandler(this.ToolbarMoveButton_Click);
+            // 
+            // ToolbarRotateButton
+            // 
+            this.ToolbarRotateButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarRotateButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarRotateButton.Image")));
+            this.ToolbarRotateButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarRotateButton.Name = "ToolbarRotateButton";
+            this.ToolbarRotateButton.Size = new System.Drawing.Size(23, 22);
+            this.ToolbarRotateButton.Text = "Rotate";
+            this.ToolbarRotateButton.ToolTipText = "Rotate";
+            this.ToolbarRotateButton.Click += new System.EventHandler(this.ToolbarRotateButton_Click);
+            // 
+            // ToolbarScaleButton
+            // 
+            this.ToolbarScaleButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ToolbarScaleButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarScaleButton.Image")));
+            this.ToolbarScaleButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ToolbarScaleButton.Name = "ToolbarScaleButton";
+            this.ToolbarScaleButton.Size = new System.Drawing.Size(23, 22);
+            this.ToolbarScaleButton.Text = "Scale";
+            this.ToolbarScaleButton.ToolTipText = "Scale";
+            this.ToolbarScaleButton.Click += new System.EventHandler(this.ToolbarScaleButton_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
             // SaveButton
             // 
+            this.SaveButton.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.SaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.SaveButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.SaveMenuButton,
@@ -223,7 +312,7 @@
             this.SaveButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveButton.Image")));
             this.SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SaveButton.Name = "SaveButton";
-            this.SaveButton.Size = new System.Drawing.Size(32, 22);
+            this.SaveButton.Size = new System.Drawing.Size(32, 20);
             this.SaveButton.Text = "Save";
             this.SaveButton.ButtonClick += new System.EventHandler(this.SaveButton_ButtonClick);
             // 
@@ -349,8 +438,9 @@
             // 
             // ToolsMaterialsTabPage
             // 
-            this.ToolsMaterialsTabPage.Controls.Add(this.TextureViewerButton);
+            this.ToolsMaterialsTabPage.Controls.Add(this.TextureEditorButton);
             this.ToolsMaterialsTabPage.Controls.Add(this.TexturesTreeView);
+            this.ToolsMaterialsTabPage.Controls.Add(this.MaterialEditorButton);
             this.ToolsMaterialsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsMaterialsTabPage.Name = "ToolsMaterialsTabPage";
             this.ToolsMaterialsTabPage.Padding = new System.Windows.Forms.Padding(3);
@@ -359,26 +449,36 @@
             this.ToolsMaterialsTabPage.Text = "Materials";
             this.ToolsMaterialsTabPage.UseVisualStyleBackColor = true;
             // 
-            // TextureViewerButton
+            // TextureEditorButton
             // 
-            this.TextureViewerButton.Location = new System.Drawing.Point(111, 6);
-            this.TextureViewerButton.Name = "TextureViewerButton";
-            this.TextureViewerButton.Size = new System.Drawing.Size(91, 23);
-            this.TextureViewerButton.TabIndex = 2;
-            this.TextureViewerButton.Text = "Texture viewer";
-            this.TextureViewerButton.UseVisualStyleBackColor = true;
-            this.TextureViewerButton.Click += new System.EventHandler(this.TextureViewerButton_Click);
+            this.TextureEditorButton.Location = new System.Drawing.Point(111, 3);
+            this.TextureEditorButton.Name = "TextureEditorButton";
+            this.TextureEditorButton.Size = new System.Drawing.Size(100, 23);
+            this.TextureEditorButton.TabIndex = 2;
+            this.TextureEditorButton.Text = "Texture editor...";
+            this.TextureEditorButton.UseVisualStyleBackColor = true;
+            this.TextureEditorButton.Click += new System.EventHandler(this.TextureEditorButton_Click);
             // 
             // TexturesTreeView
             // 
             this.TexturesTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.TexturesTreeView.Location = new System.Drawing.Point(0, 34);
+            this.TexturesTreeView.Location = new System.Drawing.Point(0, 32);
             this.TexturesTreeView.Name = "TexturesTreeView";
             this.TexturesTreeView.ShowRootLines = false;
-            this.TexturesTreeView.Size = new System.Drawing.Size(205, 466);
+            this.TexturesTreeView.Size = new System.Drawing.Size(217, 468);
             this.TexturesTreeView.TabIndex = 1;
+            // 
+            // MaterialEditorButton
+            // 
+            this.MaterialEditorButton.Location = new System.Drawing.Point(6, 3);
+            this.MaterialEditorButton.Name = "MaterialEditorButton";
+            this.MaterialEditorButton.Size = new System.Drawing.Size(100, 23);
+            this.MaterialEditorButton.TabIndex = 3;
+            this.MaterialEditorButton.Text = "Material editor...";
+            this.MaterialEditorButton.UseVisualStyleBackColor = true;
+            this.MaterialEditorButton.Click += new System.EventHandler(this.MaterialEditorButton_Click);
             // 
             // ToolsDetailsTabPage
             // 
@@ -400,7 +500,7 @@
             this.DetailsPropertyGrid.Name = "DetailsPropertyGrid";
             this.DetailsPropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
             this.DetailsPropertyGrid.ReadOnly = true;
-            this.DetailsPropertyGrid.Size = new System.Drawing.Size(205, 497);
+            this.DetailsPropertyGrid.Size = new System.Drawing.Size(217, 497);
             this.DetailsPropertyGrid.TabIndex = 1;
             this.DetailsPropertyGrid.ToolbarVisible = false;
             // 
@@ -416,9 +516,8 @@
             // 
             // OptionsTabControl
             // 
-            this.OptionsTabControl.Controls.Add(this.tabPage1);
-            this.OptionsTabControl.Controls.Add(this.tabPage2);
-            this.OptionsTabControl.Controls.Add(this.tabPage3);
+            this.OptionsTabControl.Controls.Add(this.OptionsRenderTabPage);
+            this.OptionsTabControl.Controls.Add(this.OptionsLightingTabPage);
             this.OptionsTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.OptionsTabControl.Location = new System.Drawing.Point(0, 0);
             this.OptionsTabControl.Name = "OptionsTabControl";
@@ -426,34 +525,34 @@
             this.OptionsTabControl.Size = new System.Drawing.Size(217, 500);
             this.OptionsTabControl.TabIndex = 26;
             // 
-            // tabPage1
+            // OptionsRenderTabPage
             // 
-            this.tabPage1.Controls.Add(this.RenderModeComboBox);
-            this.tabPage1.Controls.Add(this.FragGlassCheckBox);
-            this.tabPage1.Controls.Add(this.label14);
-            this.tabPage1.Controls.Add(this.HDTexturesCheckBox);
-            this.tabPage1.Controls.Add(this.AnisotropicFilteringCheckBox);
-            this.tabPage1.Controls.Add(this.SkeletonsCheckBox);
-            this.tabPage1.Controls.Add(this.label10);
-            this.tabPage1.Controls.Add(this.TextureCoordsComboBox);
-            this.tabPage1.Controls.Add(this.TextureSamplerComboBox);
-            this.tabPage1.Controls.Add(this.label11);
-            this.tabPage1.Controls.Add(this.WireframeCheckBox);
-            this.tabPage1.Controls.Add(this.ShowCollisionMeshesCheckBox);
-            this.tabPage1.Controls.Add(this.GridCheckBox);
-            this.tabPage1.Controls.Add(this.GridCountComboBox);
-            this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.ErrorConsoleCheckBox);
-            this.tabPage1.Controls.Add(this.GridSizeComboBox);
-            this.tabPage1.Controls.Add(this.StatusBarCheckBox);
-            this.tabPage1.Controls.Add(this.label1);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(209, 474);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Render";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.OptionsRenderTabPage.Controls.Add(this.RenderModeComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.FragGlassCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label14);
+            this.OptionsRenderTabPage.Controls.Add(this.HDTexturesCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.AnisotropicFilteringCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.SkeletonsCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label10);
+            this.OptionsRenderTabPage.Controls.Add(this.TextureCoordsComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.TextureSamplerComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label11);
+            this.OptionsRenderTabPage.Controls.Add(this.WireframeCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.ShowCollisionMeshesCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.GridCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.GridCountComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label2);
+            this.OptionsRenderTabPage.Controls.Add(this.ErrorConsoleCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.GridSizeComboBox);
+            this.OptionsRenderTabPage.Controls.Add(this.StatusBarCheckBox);
+            this.OptionsRenderTabPage.Controls.Add(this.label1);
+            this.OptionsRenderTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsRenderTabPage.Name = "OptionsRenderTabPage";
+            this.OptionsRenderTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.OptionsRenderTabPage.Size = new System.Drawing.Size(209, 474);
+            this.OptionsRenderTabPage.TabIndex = 0;
+            this.OptionsRenderTabPage.Text = "Render";
+            this.OptionsRenderTabPage.UseVisualStyleBackColor = true;
             // 
             // RenderModeComboBox
             // 
@@ -681,24 +780,25 @@
             this.label1.TabIndex = 18;
             this.label1.Text = "Grid unit size:";
             // 
-            // tabPage2
+            // OptionsLightingTabPage
             // 
-            this.tabPage2.Controls.Add(this.DeferredShadingCheckBox);
-            this.tabPage2.Controls.Add(this.HDLightsCheckBox);
-            this.tabPage2.Controls.Add(this.label19);
-            this.tabPage2.Controls.Add(this.HDRRenderingCheckBox);
-            this.tabPage2.Controls.Add(this.TimeOfDayTrackBar);
-            this.tabPage2.Controls.Add(this.ShadowsCheckBox);
-            this.tabPage2.Controls.Add(this.ControlLightDirCheckBox);
-            this.tabPage2.Controls.Add(this.SkydomeCheckBox);
-            this.tabPage2.Controls.Add(this.TimeOfDayLabel);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(209, 474);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Lighting";
-            this.tabPage2.UseVisualStyleBackColor = true;
+            this.OptionsLightingTabPage.Controls.Add(this.DeferredShadingCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.LightEditorButton);
+            this.OptionsLightingTabPage.Controls.Add(this.HDLightsCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.label19);
+            this.OptionsLightingTabPage.Controls.Add(this.HDRRenderingCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.TimeOfDayTrackBar);
+            this.OptionsLightingTabPage.Controls.Add(this.ShadowsCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.ControlLightDirCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.SkydomeCheckBox);
+            this.OptionsLightingTabPage.Controls.Add(this.TimeOfDayLabel);
+            this.OptionsLightingTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsLightingTabPage.Name = "OptionsLightingTabPage";
+            this.OptionsLightingTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.OptionsLightingTabPage.Size = new System.Drawing.Size(209, 474);
+            this.OptionsLightingTabPage.TabIndex = 1;
+            this.OptionsLightingTabPage.Text = "Lighting";
+            this.OptionsLightingTabPage.UseVisualStyleBackColor = true;
             // 
             // DeferredShadingCheckBox
             // 
@@ -710,6 +810,16 @@
             this.DeferredShadingCheckBox.Text = "Deferred shading";
             this.DeferredShadingCheckBox.UseVisualStyleBackColor = true;
             this.DeferredShadingCheckBox.CheckedChanged += new System.EventHandler(this.DeferredShadingCheckBox_CheckedChanged);
+            // 
+            // LightEditorButton
+            // 
+            this.LightEditorButton.Location = new System.Drawing.Point(7, 214);
+            this.LightEditorButton.Name = "LightEditorButton";
+            this.LightEditorButton.Size = new System.Drawing.Size(90, 23);
+            this.LightEditorButton.TabIndex = 37;
+            this.LightEditorButton.Text = "Light editor...";
+            this.LightEditorButton.UseVisualStyleBackColor = true;
+            this.LightEditorButton.Click += new System.EventHandler(this.LightEditorButton_Click);
             // 
             // HDLightsCheckBox
             // 
@@ -788,6 +898,8 @@
             // SkydomeCheckBox
             // 
             this.SkydomeCheckBox.AutoSize = true;
+            this.SkydomeCheckBox.Checked = true;
+            this.SkydomeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.SkydomeCheckBox.Location = new System.Drawing.Point(7, 75);
             this.SkydomeCheckBox.Name = "SkydomeCheckBox";
             this.SkydomeCheckBox.Size = new System.Drawing.Size(70, 17);
@@ -804,38 +916,6 @@
             this.TimeOfDayLabel.Size = new System.Drawing.Size(34, 13);
             this.TimeOfDayLabel.TabIndex = 5;
             this.TimeOfDayLabel.Text = "12:00";
-            // 
-            // tabPage3
-            // 
-            this.tabPage3.Controls.Add(this.LightEditorButton);
-            this.tabPage3.Controls.Add(this.MaterialEditorButton);
-            this.tabPage3.Location = new System.Drawing.Point(4, 22);
-            this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage3.Size = new System.Drawing.Size(209, 474);
-            this.tabPage3.TabIndex = 2;
-            this.tabPage3.Text = "Editors";
-            this.tabPage3.UseVisualStyleBackColor = true;
-            // 
-            // LightEditorButton
-            // 
-            this.LightEditorButton.Location = new System.Drawing.Point(6, 35);
-            this.LightEditorButton.Name = "LightEditorButton";
-            this.LightEditorButton.Size = new System.Drawing.Size(197, 23);
-            this.LightEditorButton.TabIndex = 37;
-            this.LightEditorButton.Text = "Light editor";
-            this.LightEditorButton.UseVisualStyleBackColor = true;
-            this.LightEditorButton.Click += new System.EventHandler(this.LightEditorButton_Click);
-            // 
-            // MaterialEditorButton
-            // 
-            this.MaterialEditorButton.Location = new System.Drawing.Point(6, 6);
-            this.MaterialEditorButton.Name = "MaterialEditorButton";
-            this.MaterialEditorButton.Size = new System.Drawing.Size(197, 23);
-            this.MaterialEditorButton.TabIndex = 3;
-            this.MaterialEditorButton.Text = "Material editor";
-            this.MaterialEditorButton.UseVisualStyleBackColor = true;
-            this.MaterialEditorButton.Click += new System.EventHandler(this.MaterialEditorButton_Click);
             // 
             // ToolsPanelHideButton
             // 
@@ -911,12 +991,11 @@
             this.ToolsDetailsTabPage.ResumeLayout(false);
             this.ToolsOptionsTabPage.ResumeLayout(false);
             this.OptionsTabControl.ResumeLayout(false);
-            this.tabPage1.ResumeLayout(false);
-            this.tabPage1.PerformLayout();
-            this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
+            this.OptionsRenderTabPage.ResumeLayout(false);
+            this.OptionsRenderTabPage.PerformLayout();
+            this.OptionsLightingTabPage.ResumeLayout(false);
+            this.OptionsLightingTabPage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
-            this.tabPage3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -967,7 +1046,7 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TrackBar TimeOfDayTrackBar;
         private System.Windows.Forms.CheckBox SkeletonsCheckBox;
-        private System.Windows.Forms.Button TextureViewerButton;
+        private System.Windows.Forms.Button TextureEditorButton;
         private System.Windows.Forms.CheckBox HDTexturesCheckBox;
         private System.Windows.Forms.Button MaterialEditorButton;
         private System.Windows.Forms.Panel MainToolbarPanel;
@@ -983,11 +1062,18 @@
         private System.Windows.Forms.ComboBox ClipDictComboBox;
         private System.Windows.Forms.CheckBox FragGlassCheckBox;
         private System.Windows.Forms.TabControl OptionsTabControl;
-        private System.Windows.Forms.TabPage tabPage1;
-        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TabPage OptionsRenderTabPage;
+        private System.Windows.Forms.TabPage OptionsLightingTabPage;
         private System.Windows.Forms.CheckBox HDLightsCheckBox;
         private System.Windows.Forms.CheckBox DeferredShadingCheckBox;
-        private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.Button LightEditorButton;
+        private System.Windows.Forms.ToolStripButton ToolbarMaterialEditorButton;
+        private System.Windows.Forms.ToolStripButton ToolbarTextureEditorButton;
+        private System.Windows.Forms.ToolStripButton ToolbarLightEditorButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton ToolbarMoveButton;
+        private System.Windows.Forms.ToolStripButton ToolbarRotateButton;
+        private System.Windows.Forms.ToolStripButton ToolbarScaleButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }

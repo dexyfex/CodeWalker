@@ -117,11 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <metadata name="menuStripFix1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <metadata name="MainMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="moveToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="MoveMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
         vAAADrwBlbxySQAAAKtJREFUOE+lUlsOgCAM40iegcPxz0n9IfwqXTatk5EYmzQM1paHphlaa1vvfS+l
@@ -130,7 +130,7 @@
         ZG1O6QTGlgf4FZ9QVAAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="rotateToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="RotateMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
         vAAADrwBlbxySQAAAVFJREFUOE99kzFug0AQRTlCjpAj5AgRPVJadyno6alSubXokVK65Aa4pqKhDz3F
@@ -140,6 +140,14 @@
         O2LbRn1UoJ1CS+7BAGRZ5oRwPB6t0508BmhU7wwYivBETQjavu93ZwJQQ210vV7fRGz0ZQEGFG87oPD3
         N9S6afQmrfYcg60p0Nngv1iLwyVj/SmFFQZqGk5kYH7yJc8Xs46JdsH/TJXc/eOmiKJfGa9fWzDSupYA
         AAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="ScaleMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        wwAADsMBx2+oZAAAAHhJREFUOE/dkLsNwCAMRBkpMzAc69IgWuJLsGUQH4cyJz1Alu8VOEtSSlfOORKl
+        p67Mw+UQQvHeN2wFq7IIcFjpRZg9Aj3coSWNAPeMvoQbM3rHRsBLI1jCQpTxR2aB3pMyciKQMnIiqNU3
+        PxPsWAqsDAVfqVWKczdonTmVYM9FFwAAAABJRU5ErkJggg==
 </value>
   </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">

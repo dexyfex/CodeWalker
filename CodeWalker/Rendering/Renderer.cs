@@ -3304,16 +3304,32 @@ namespace CodeWalker.Rendering
             {
                 entity?.EnsureLights(rndbl.Key);
 
+
+
+                //reinit lights when added/removed from editor
+                var dd = rndbl.Key as Drawable;
+                var fd = rndbl.Key as FragDrawable;
+                var lights = dd?.LightAttributes?.data_items;
+                if ((lights == null) && (fd != null) && (fd?.OwnerFragment?.Drawable == fd))
+                {
+                    lights = fd.OwnerFragment.LightAttributes?.data_items;
+                }
+                if ((lights != null) && (lights.Length != rndbl.Lights.Length))
+                {
+                    rndbl.InitLights(lights);
+                }
+
+
                 var linst = new RenderableLightInst();
                 for (int i = 0; i < rndbl.Lights.Length; i++)
                 {
                     var rndlight = rndbl.Lights[i];
                     var light = rndlight.OwnerLight;
 
-                    if (light.HasChanged == true)
+                    if (light.UpdateRenderable == true)
                     {
                         rndlight.Init(light);
-                        light.HasChanged = false;
+                        light.UpdateRenderable = false;
                     }
 
                     linst.EntityPosition = position;

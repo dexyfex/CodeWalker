@@ -1,4 +1,5 @@
 ﻿using CodeWalker.GameFiles;
+using CodeWalker.World;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -92,7 +93,7 @@ namespace CodeWalker.Forms
             {
                 var tnc = LightsTreeView.Nodes;
                 var light = lights[mi];
-                string mprefix = "Light" + (mi + 1).ToString();
+                string mprefix = "Light" + (mi + 1).ToString() + " : " + light.Type.ToString();
                 var mnode = parent == null ? tnc.Add(mprefix) : parent.Nodes.Add(mprefix);
                 mnode.Tag = light;
                 mnode.Expand();
@@ -108,37 +109,40 @@ namespace CodeWalker.Forms
 
             if(light == null)
             {
+                DeleteLightButton.Enabled = false;
+                EditDeleteLightMenu.Enabled = false;
                 populatingui = true;
                 PositionTextBox.Text = "";
                 DirectionTextBox.Text = "";
+                TangentTextBox.Text = "";
                 TypeComboBox.SelectedItem = "Point";
                 ColourRUpDown.Value = 0;
                 ColourGUpDown.Value = 0;
                 ColourBUpDown.Value = 0;
-                IntensityUpDown.Value = 0;
-                FlashinessTextBox.Text = "";
-                BoneIDTextBox.Text = "";
-                GroupIDTextBox.Text = "";
+                IntensityTextBox.Text = "";
+                FlashinessUpDown.Value = 0;
+                BoneIDUpDown.Value = 0;
+                GroupIDUpDown.Value = 0;
                 FalloffTextBox.Text = "";
                 FalloffExponentTextBox.Text = "";
-                InnerAngleUpDown.Value = 0;
-                OuterAngleUpDown.Value = 0;
+                InnerAngleTextBox.Text = "";
+                OuterAngleTextBox.Text = "";
                 CoronaSizeTextBox.Text = "";
-                CoronaIntensityUpDown.Value = 0;
+                CoronaIntensityTextBox.Text = "";
                 ExtentTextBox.Text = "";
-                ShadowBlurTextBox.Text = "";
-                LightFadeDistanceTextBox.Text = "";
+                ShadowBlurUpDown.Value = 0;
+                LightFadeDistanceUpDown.Value = 0;
                 CoronaZBiasTextBox.Text = "";
-                HashTextBox.Text = "";
+                TextureHashTextBox.Text = "";
                 VolumeIntensityTextBox.Text = "";
                 VolumeSizeScaleTextBox.Text = "";
                 VolumeColorRUpDown.Value = 0;
                 VolumeColorGUpDown.Value = 0;
                 VolumeColorBUpDown.Value = 0;
                 VolumeOuterExponentTextBox.Text = "";
-                ShadowFadeDistanceTextBox.Text = "";
-                SpecularFadeDistanceTextBox.Text = "";
-                VolumetricFadeDistanceTextBox.Text = "";
+                ShadowFadeDistanceUpDown.Value = 0;
+                SpecularFadeDistanceUpDown.Value = 0;
+                VolumetricFadeDistanceUpDown.Value = 0;
                 ShadowNearClipTextBox.Text = "";
                 CullingPlaneNormalTextBox.Text = "";
                 CullingPlaneOffsetTextBox.Text = "";
@@ -147,29 +151,32 @@ namespace CodeWalker.Forms
             }
             else
             {
+                DeleteLightButton.Enabled = true;
+                EditDeleteLightMenu.Enabled = true;
                 populatingui = true;
                 PositionTextBox.Text = FloatUtil.GetVector3String(light.Position);
                 DirectionTextBox.Text = FloatUtil.GetVector3String(light.Direction);
+                TangentTextBox.Text = FloatUtil.GetVector3String(light.Tangent);
                 TypeComboBox.SelectedItem = light.Type.ToString();
                 ColourRUpDown.Value = light.ColorR;
                 ColourGUpDown.Value = light.ColorG;
                 ColourBUpDown.Value = light.ColorB;
                 ColourLabel.BackColor = System.Drawing.Color.FromArgb(light.ColorR, light.ColorG, light.ColorB);
-                IntensityUpDown.Value = (decimal)light.Intensity > IntensityUpDown.Maximum ? IntensityUpDown.Maximum : (decimal)light.Intensity;
-                FlashinessTextBox.Text = FloatUtil.ToString(light.Flashiness);
-                BoneIDTextBox.Text = FloatUtil.ToString(light.BoneId);
-                GroupIDTextBox.Text = FloatUtil.ToString(light.GroupId);
+                IntensityTextBox.Text = FloatUtil.ToString(light.Intensity);
+                FlashinessUpDown.Value = light.Flashiness;
+                BoneIDUpDown.Value = light.BoneId;
+                GroupIDUpDown.Value = light.GroupId;
                 FalloffTextBox.Text = FloatUtil.ToString(light.Falloff);
                 FalloffExponentTextBox.Text = FloatUtil.ToString(light.FalloffExponent);
-                InnerAngleUpDown.Value = (decimal)light.ConeInnerAngle > InnerAngleUpDown.Maximum ? InnerAngleUpDown.Maximum : (decimal)light.ConeInnerAngle;
-                OuterAngleUpDown.Value = (decimal)light.ConeOuterAngle > OuterAngleUpDown.Maximum ? OuterAngleUpDown.Maximum : (decimal)light.ConeOuterAngle;
+                InnerAngleTextBox.Text = FloatUtil.ToString(light.ConeInnerAngle);
+                OuterAngleTextBox.Text = FloatUtil.ToString(light.ConeOuterAngle);
                 CoronaSizeTextBox.Text = FloatUtil.ToString(light.CoronaSize);
-                CoronaIntensityUpDown.Value = (decimal)light.CoronaIntensity > CoronaIntensityUpDown.Maximum ? CoronaIntensityUpDown.Maximum : (decimal)light.CoronaIntensity;
+                CoronaIntensityTextBox.Text = FloatUtil.ToString(light.CoronaIntensity);
                 ExtentTextBox.Text = FloatUtil.GetVector3String(light.Extent);
-                ShadowBlurTextBox.Text = FloatUtil.ToString(light.ShadowBlur);
-                LightFadeDistanceTextBox.Text = FloatUtil.ToString(light.LightFadeDistance);
+                ShadowBlurUpDown.Value = light.ShadowBlur;
+                LightFadeDistanceUpDown.Value = light.LightFadeDistance;
                 CoronaZBiasTextBox.Text = FloatUtil.ToString(light.CoronaZBias);
-                HashTextBox.Text = light.ProjectedTextureHash.Hash.ToString();
+                TextureHashTextBox.Text = light.ProjectedTextureHash.ToCleanString();
                 VolumeIntensityTextBox.Text = FloatUtil.ToString(light.VolumeIntensity);
                 VolumeSizeScaleTextBox.Text = FloatUtil.ToString(light.VolumeSizeScale);
                 VolumeColorRUpDown.Value = light.VolumeOuterColorR;
@@ -177,9 +184,9 @@ namespace CodeWalker.Forms
                 VolumeColorBUpDown.Value = light.VolumeOuterColorB;
                 VolumeColorLabel.BackColor = System.Drawing.Color.FromArgb(light.VolumeOuterColorR, light.VolumeOuterColorG, light.VolumeOuterColorB);
                 VolumeOuterExponentTextBox.Text = FloatUtil.ToString(light.VolumeOuterExponent);
-                ShadowFadeDistanceTextBox.Text = FloatUtil.ToString(light.ShadowFadeDistance);
-                SpecularFadeDistanceTextBox.Text = FloatUtil.ToString(light.SpecularFadeDistance);
-                VolumetricFadeDistanceTextBox.Text = FloatUtil.ToString(light.VolumetricFadeDistance);
+                ShadowFadeDistanceUpDown.Value = light.ShadowFadeDistance;
+                SpecularFadeDistanceUpDown.Value = light.SpecularFadeDistance;
+                VolumetricFadeDistanceUpDown.Value = light.VolumetricFadeDistance;
                 ShadowNearClipTextBox.Text = FloatUtil.ToString(light.ShadowNearClip);
                 CullingPlaneNormalTextBox.Text = FloatUtil.GetVector3String(light.CullingPlaneNormal);
                 CullingPlaneOffsetTextBox.Text = FloatUtil.ToString(light.CullingPlaneOffset);
@@ -191,7 +198,8 @@ namespace CodeWalker.Forms
 
         public void UpdateLightParams()
         {
-            selectedLight.HasChanged = true;
+            if (selectedLight == null) return;
+            selectedLight.UpdateRenderable = true;
         }
 
 
@@ -199,8 +207,8 @@ namespace CodeWalker.Forms
         {
             LightAttributes light = new LightAttributes();
             light.Direction = Vector3.BackwardLH;
-            light.Tangent = Vector3.Normalize(Vector3.BackwardLH.GetPerpVec());
-            light.Intensity = 20;
+            light.Tangent = Vector3.Right;
+            light.Intensity = 5;
             light.ConeInnerAngle = 5;
             light.ConeOuterAngle = 35;
             light.Extent = Vector3.One;
@@ -209,6 +217,7 @@ namespace CodeWalker.Forms
             light.ColorR = 255;
             light.ColorG = 255;
             light.ColorB = 255;
+            light.TimeFlags = 14680191;
             return light;
         }
         private void SelectLight(LightAttributes light)
@@ -218,30 +227,57 @@ namespace CodeWalker.Forms
                 selectedLight = null;
                 ModelForm.selectedLight = null;
                 UpdateUI();
-                ModelForm.UpdateWidget();
             }
             else
             {
                 selectedLight = light;
                 ModelForm.selectedLight = light;
                 UpdateUI();
-                ModelForm.UpdateWidget();
+                ModelForm.SetWidgetTransform(light.Position, light.Orientation, new Vector3(light.Falloff));
+            }
+        }
+        private void SelectLightTreeNode(LightAttributes light)
+        {
+            foreach (TreeNode rn in LightsTreeView.Nodes)
+            {
+                if (rn.Tag == light)
+                {
+                    LightsTreeView.SelectedNode = rn;
+                    break;
+                }
+                var found = false;
+                foreach (TreeNode tn in rn.Nodes)
+                {
+                    if (tn.Tag == light)
+                    {
+                        LightsTreeView.SelectedNode = tn;
+                        found = true;
+                        break;
+                    }
+                }
+                if (found)
+                {
+                    break;
+                }
             }
         }
         private void CreateLight()
         {
+            selectedLight = NewLightAttribute();
             if(Drawable != null)
             {
-                List<LightAttributes> lights = Drawable.LightAttributes.data_items.ToList();
-                lights.Add(NewLightAttribute());
+                if (Drawable.LightAttributes == null) Drawable.LightAttributes = new ResourceSimpleList64<LightAttributes>();
+                List<LightAttributes> lights = Drawable.LightAttributes.data_items?.ToList() ?? new List<LightAttributes>();
+                lights.Add(selectedLight);
                 Drawable.LightAttributes.data_items = lights.ToArray();
                 UpdateLightParams();
                 LoadModel(Drawable);
             }
             else if(FragDrawable != null)
             {
-                List<LightAttributes> lights = FragDrawable.OwnerFragment.LightAttributes.data_items.ToList();
-                lights.Add(NewLightAttribute());
+                if (FragDrawable.OwnerFragment.LightAttributes == null) FragDrawable.OwnerFragment.LightAttributes = new ResourceSimpleList64<LightAttributes>();
+                List<LightAttributes> lights = FragDrawable.OwnerFragment.LightAttributes.data_items?.ToList() ?? new List<LightAttributes>();
+                lights.Add(selectedLight);
                 FragDrawable.OwnerFragment.LightAttributes.data_items = lights.ToArray();
                 UpdateLightParams();
                 LoadModel(FragDrawable);
@@ -255,14 +291,16 @@ namespace CodeWalker.Forms
                     if (dr == null) { dr = n.Parent.Tag as Drawable; } //try parent node tag also
                     if (dr!= null)
                     {
-                        List<LightAttributes> lights = dr.LightAttributes.data_items.ToList();
-                        lights.Add(NewLightAttribute());
+                        if (dr.LightAttributes == null) dr.LightAttributes = new ResourceSimpleList64<LightAttributes>();
+                        List<LightAttributes> lights = dr.LightAttributes.data_items?.ToList() ?? new List<LightAttributes>();
+                        lights.Add(selectedLight);
                         dr.LightAttributes.data_items = lights.ToArray();
                         UpdateLightParams();
                         LoadModels(DrawableDict);
                     }
                 }
             }
+            SelectLightTreeNode(selectedLight);
         }
         private void DeleteLight()
         {
@@ -372,6 +410,21 @@ namespace CodeWalker.Forms
             }
         }
 
+
+
+        public void SetWidgetModeUI(WidgetMode mode)
+        {
+            MoveMenuItem.Checked = (mode == WidgetMode.Position);
+            MoveMenuItem.BackColor = (mode == WidgetMode.Position) ? SystemColors.GradientActiveCaption : SystemColors.Control;
+            RotateMenuItem.Checked = (mode == WidgetMode.Rotation);
+            RotateMenuItem.BackColor = (mode == WidgetMode.Rotation) ? SystemColors.GradientActiveCaption : SystemColors.Control;
+            ScaleMenuItem.Checked = (mode == WidgetMode.Scale);
+            ScaleMenuItem.BackColor = (mode == WidgetMode.Scale) ? SystemColors.GradientActiveCaption : SystemColors.Control;
+        }
+
+
+
+
         private void LightsTreeView_AfterSelect(object sender, TreeViewEventArgs e)
         {
             SelectLight(e.Node.Tag as LightAttributes);
@@ -385,12 +438,6 @@ namespace CodeWalker.Forms
         private void GoToButton_Click(object sender, EventArgs e)
         {
             ModelForm.SetCameraPosition(selectedLight.Position, selectedLight.Falloff * 2f);
-        }
-
-        private void NormalizeDirectionButton_Click(object sender, EventArgs e)
-        {
-            Vector3 d = Vector3.Normalize(FloatUtil.ParseVector3String(DirectionTextBox.Text));
-            DirectionTextBox.Text = FloatUtil.GetVector3String(d);
         }
 
         private void PositionTextBox_TextChanged(object sender, EventArgs e)
@@ -425,11 +472,11 @@ namespace CodeWalker.Forms
             UpdateLightParams();
         }
 
-        private void IntensityUpDown_ValueChanged(object sender, EventArgs e)
+        private void IntensityTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(IntensityUpDown.Text);
+            float v = FloatUtil.Parse(IntensityTextBox.Text);
             if (selectedLight.Intensity != v)
             {
                 selectedLight.Intensity = v;
@@ -488,11 +535,11 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void InnerAngleUpDown_ValueChanged(object sender, EventArgs e)
+        private void InnerAngleTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(InnerAngleUpDown.Text);
+            float v = FloatUtil.Parse(InnerAngleTextBox.Text);
             if (selectedLight.ConeInnerAngle != v)
             {
                 selectedLight.ConeInnerAngle = v;
@@ -500,11 +547,11 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void OuterAngleUpDown_ValueChanged(object sender, EventArgs e)
+        private void OuterAngleTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(OuterAngleUpDown.Text);
+            float v = FloatUtil.Parse(OuterAngleTextBox.Text);
             if (selectedLight.ConeOuterAngle != v)
             {
                 selectedLight.ConeOuterAngle = v;
@@ -512,11 +559,11 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void CoronaIntensityUpDown_ValueChanged(object sender, EventArgs e)
+        private void CoronaIntensityTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(CoronaIntensityUpDown.Text);
+            float v = FloatUtil.Parse(CoronaIntensityTextBox.Text);
             if (selectedLight.CoronaIntensity != v)
             {
                 selectedLight.CoronaIntensity = v;
@@ -544,43 +591,79 @@ namespace CodeWalker.Forms
             if (selectedLight.Direction != v)
             {
                 selectedLight.Direction = v;
-                selectedLight.Tangent = Vector3.Normalize(selectedLight.Direction.GetPerpVec());
                 UpdateLightParams();
             }
         }
 
-        private void FlashinessTextBox_TextChanged(object sender, EventArgs e)
+        private void NormalizeDirectionButton_Click(object sender, EventArgs e)
+        {
+            Vector3 d = Vector3.Normalize(FloatUtil.ParseVector3String(DirectionTextBox.Text));
+            DirectionTextBox.Text = FloatUtil.GetVector3String(d);
+        }
+
+        private void TangentTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(FlashinessTextBox.Text);
+            Vector3 v = FloatUtil.ParseVector3String(TangentTextBox.Text);
+            if (selectedLight.Tangent != v)
+            {
+                selectedLight.Tangent = v;
+                UpdateLightParams();
+            }
+        }
+
+        private void NormalizeTangentButton_Click(object sender, EventArgs e)
+        {
+            Vector3 t = Vector3.Normalize(FloatUtil.ParseVector3String(TangentTextBox.Text));
+            TangentTextBox.Text = FloatUtil.GetVector3String(t);
+        }
+
+        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            uint.TryParse(FlagsTextBox.Text, out uint v);
+            if (selectedLight.Flags != v)
+            {
+                selectedLight.Flags = v;
+                UpdateLightParams();
+            }
+
+        }
+
+        private void FlashinessUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            var v = (byte)FlashinessUpDown.Value;
             if (selectedLight.Flashiness != v)
             {
-                selectedLight.Flashiness = (byte)v;
+                selectedLight.Flashiness = v;
                 UpdateLightParams();
             }
         }
 
-        private void BoneIDTextBox_TextChanged(object sender, EventArgs e)
+        private void BoneIDUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(BoneIDTextBox.Text);
+            var v = (ushort)BoneIDUpDown.Value;
             if (selectedLight.BoneId != v)
             {
-                selectedLight.BoneId = (ushort)v;
+                selectedLight.BoneId = v;
                 UpdateLightParams();
             }
         }
 
-        private void GroupIDTextBox_TextChanged(object sender, EventArgs e)
+        private void GroupIDUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(GroupIDTextBox.Text);
+            var v = (byte)GroupIDUpDown.Value;
             if (selectedLight.GroupId != v)
             {
-                selectedLight.GroupId = (byte)v;
+                selectedLight.GroupId = v;
                 UpdateLightParams();
             }
         }
@@ -597,26 +680,26 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void ShadowBlurTextBox_TextChanged(object sender, EventArgs e)
+        private void ShadowBlurUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(ShadowBlurTextBox.Text);
+            var v = (byte)ShadowBlurUpDown.Value;
             if (selectedLight.ShadowBlur != v)
             {
-                selectedLight.ShadowBlur = (byte)v;
+                selectedLight.ShadowBlur = v;
                 UpdateLightParams();
             }
         }
 
-        private void LightFadeDistanceTextBox_TextChanged(object sender, EventArgs e)
+        private void LightFadeDistanceUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(LightFadeDistanceTextBox.Text);
+            var v = (byte)LightFadeDistanceUpDown.Value;
             if (selectedLight.LightFadeDistance != v)
             {
-                selectedLight.LightFadeDistance = (byte)v;
+                selectedLight.LightFadeDistance = v;
                 UpdateLightParams();
             }
         }
@@ -669,38 +752,38 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void ShadowFadeDistanceTextBox_TextChanged(object sender, EventArgs e)
+        private void ShadowFadeDistanceUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(ShadowFadeDistanceTextBox.Text);
+            var v = (byte)ShadowFadeDistanceUpDown.Value;
             if (selectedLight.ShadowFadeDistance != v)
             {
-                selectedLight.ShadowFadeDistance = (byte)v;
+                selectedLight.ShadowFadeDistance = v;
                 UpdateLightParams();
             }
         }
 
-        private void SpecularFadeDistanceTextBox_TextChanged(object sender, EventArgs e)
+        private void SpecularFadeDistanceUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(SpecularFadeDistanceTextBox.Text);
+            var v = (byte)SpecularFadeDistanceUpDown.Value;
             if (selectedLight.SpecularFadeDistance != v)
             {
-                selectedLight.SpecularFadeDistance = (byte)v;
+                selectedLight.SpecularFadeDistance = v;
                 UpdateLightParams();
             }
         }
 
-        private void VolumetricFadeDistance_TextChanged(object sender, EventArgs e)
+        private void VolumetricFadeDistanceUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            float v = FloatUtil.Parse(VolumetricFadeDistanceTextBox.Text);
+            var v = (byte)VolumetricFadeDistanceUpDown.Value;
             if (selectedLight.VolumetricFadeDistance != v)
             {
-                selectedLight.VolumetricFadeDistance = (byte)v;
+                selectedLight.VolumetricFadeDistance = v;
                 UpdateLightParams();
             }
         }
@@ -790,11 +873,14 @@ namespace CodeWalker.Forms
             populatingui = false;
         }
 
-        private void HashTextBox_TextChanged(object sender, EventArgs e)
+        private void TextureHashTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            uint.TryParse(HashTextBox.Text, out uint v);
+            if (!uint.TryParse(TextureHashTextBox.Text, out uint v))
+            {
+                v = JenkHash.GenHash(TextureHashTextBox.Text);
+            }
             if (selectedLight.ProjectedTextureHash != v)
             {
                 selectedLight.ProjectedTextureHash = v;
@@ -824,54 +910,51 @@ namespace CodeWalker.Forms
             }
         }
 
-        private void lightToolStripMenuItem_Click(object sender, EventArgs e)
+        private void EditNewLightMenu_Click(object sender, EventArgs e)
         {
             CreateLight();
         }
         
-        private void deleteLightToolStripMenuItem_Click(object sender, EventArgs e)
+        private void EditDeleteLightMenu_Click(object sender, EventArgs e)
         {
             DeleteLight();
         }
 
-        private void showGizmosToolStripMenuItem_Click(object sender, EventArgs e)
+        private void OptionsShowOutlinesMenu_Click(object sender, EventArgs e)
         {
-            showGizmosToolStripMenuItem.Checked = !showGizmosToolStripMenuItem.Checked;
-            ModelForm.showLightGizmos = showGizmosToolStripMenuItem.Checked;
+            OptionsShowOutlinesMenu.Checked = !OptionsShowOutlinesMenu.Checked;
+            ModelForm.showLightGizmos = OptionsShowOutlinesMenu.Checked;
         }
 
-        private void moveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void MoveMenuItem_Click(object sender, EventArgs e)
         {
-            moveToolStripMenuItem.Checked = !moveToolStripMenuItem.Checked;
-            if (moveToolStripMenuItem.Checked)
-            {
-                moveToolStripMenuItem.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-                rotateToolStripMenuItem.Checked = false;
-                rotateToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
-                ModelForm.SetWidgetMode("Position");
-            }
-            else
-            {
-                moveToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
-                ModelForm.SetWidgetMode("Default");
-            }
+            var mode = MoveMenuItem.Checked ? WidgetMode.Default : WidgetMode.Position;
+            SetWidgetModeUI(mode);
+            ModelForm.SetWidgetMode(mode);
         }
 
-        private void rotateToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RotateMenuItem_Click(object sender, EventArgs e)
         {
-            rotateToolStripMenuItem.Checked = !rotateToolStripMenuItem.Checked;
-            if (rotateToolStripMenuItem.Checked)
-            {
-                rotateToolStripMenuItem.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
-                moveToolStripMenuItem.Checked = false;
-                moveToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
-                ModelForm.SetWidgetMode("Rotation");
-            }
-            else
-            {
-                rotateToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
-                ModelForm.SetWidgetMode("Default");
-            }
+            var mode = RotateMenuItem.Checked ? WidgetMode.Default : WidgetMode.Rotation;
+            SetWidgetModeUI(mode);
+            ModelForm.SetWidgetMode(mode);
+        }
+
+        private void ScaleMenuItem_Click(object sender, EventArgs e)
+        {
+            var mode = ScaleMenuItem.Checked ? WidgetMode.Default : WidgetMode.Scale;
+            SetWidgetModeUI(mode);
+            ModelForm.SetWidgetMode(mode);
+        }
+
+        private void NewLightButton_Click(object sender, EventArgs e)
+        {
+            CreateLight();
+        }
+
+        private void DeleteLightButton_Click(object sender, EventArgs e)
+        {
+            DeleteLight();
         }
     }
 }
