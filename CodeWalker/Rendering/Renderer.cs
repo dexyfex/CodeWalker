@@ -1025,6 +1025,40 @@ namespace CodeWalker.Rendering
             v.Position = c5; SelectionLineVerts.Add(v);
         }
 
+        public void RenderSelectionDrawableLight(LightAttributes dlight)
+        {
+            var colblu = (uint)(new Color(0, 0, 255, 255).ToRgba());
+            var colwht = (uint)(new Color(255, 255, 255, 255).ToRgba());
+
+            RenderableLight light = new RenderableLight();
+            light.Init(dlight);
+
+            var pos = light.Position;
+            var dir = light.Direction;
+            var tx = light.TangentX;
+            var ty = light.TangentY;
+            var extent = light.Falloff;
+            var innerAngle = light.ConeInnerAngle;
+            var outerAngle = light.ConeOuterAngle;
+            var type = light.Type;
+            switch (type)
+            {
+                case LightType.Point:
+                    RenderSelectionCircle(pos, Vector3.UnitX, Vector3.UnitZ, extent, colwht);
+                    RenderSelectionCircle(pos, Vector3.UnitX, Vector3.UnitY, extent, colwht);
+                    RenderSelectionCircle(pos, Vector3.UnitY, Vector3.UnitZ, extent, colwht);
+                    break;
+                case LightType.Spot:
+                    RenderSelectionCone(pos, tx, ty, dir, (float)Math.Sin(outerAngle) * extent, (float)Math.Cos(outerAngle) * extent, colblu);
+                    RenderSelectionCone(pos, tx, ty, dir, (float)Math.Sin(innerAngle) * extent, (float)Math.Cos(innerAngle) * extent, colwht);
+                    break;
+                case LightType.Capsule:
+                    outerAngle = light.ConeOuterAngle * 0.25f;
+                    RenderSelectionCapsule(pos, tx, ty, dir, extent, outerAngle, colwht);
+                    break;
+            }
+        }
+
         public void RenderSelectionLodLight(YmapLODLight lodlight)
         {
 
@@ -3266,7 +3300,6 @@ namespace CodeWalker.Rendering
                 RenderSkeleton(rndbl, entity);
             }
 
-
             if (renderlights && shaders.deferred && (rndbl.Lights != null))
             {
                 entity?.EnsureLights(rndbl.Key);
@@ -3274,9 +3307,18 @@ namespace CodeWalker.Rendering
                 var linst = new RenderableLightInst();
                 for (int i = 0; i < rndbl.Lights.Length; i++)
                 {
+                    var rndlight = rndbl.Lights[i];
+                    var light = rndlight.OwnerLight;
+
+                    if (light.HasChanged == true)
+                    {
+                        rndlight.Init(light);
+                        light.HasChanged = false;
+                    }
+
                     linst.EntityPosition = position;
                     linst.EntityRotation = orientation;
-                    linst.Light = rndbl.Lights[i];
+                    linst.Light = rndlight;
                     shaders.Enqueue(ref linst);
                 }
             }
