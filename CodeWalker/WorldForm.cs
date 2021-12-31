@@ -6346,6 +6346,10 @@ namespace CodeWalker
                     rendermaps = false;
                     renderworld = false;
                     ViewTabControl.SelectedTab = ViewModelTabPage;
+                    if (SelectionNameTextBox.Text != "" && SelectionNameTextBox.Text != "Nothing selected")
+                    {
+                        modelname = SelectionNameTextBox.Text;
+                    }
                     break;
             }
 
