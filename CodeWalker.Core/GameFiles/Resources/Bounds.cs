@@ -422,9 +422,7 @@ namespace CodeWalker.GameFiles
             YbnXml.ValueTag(sb, indent, "UnkType", Unknown_3Ch.ToString());
             if (Parent != null)
             {
-                YbnXml.SelfClosingTag(sb, indent, "CompositePosition " + FloatUtil.GetVector3XmlString(Position));
-                YbnXml.SelfClosingTag(sb, indent, "CompositeRotation " + FloatUtil.GetVector4XmlString(Orientation.ToVector4()));
-                YbnXml.SelfClosingTag(sb, indent, "CompositeScale " + FloatUtil.GetVector3XmlString(Scale));
+                YbnXml.WriteRawArray(sb, Transform.ToArray(), indent, "CompositeTransform", "", FloatUtil.ToString, 4);
                 if (!Parent.OwnerIsFragment)
                 {
                     YbnXml.StringTag(sb, indent, "CompositeFlags1", CompositeFlags1.Flags1.ToString());
@@ -452,9 +450,8 @@ namespace CodeWalker.GameFiles
             Unknown_3Ch = (byte)Xml.GetChildUIntAttribute(node, "UnkType", "value");
             if (Parent != null)
             {
-                Position = Xml.GetChildVector3Attributes(node, "CompositePosition");
-                Orientation = Xml.GetChildVector4Attributes(node, "CompositeRotation").ToQuaternion();
-                Scale = Xml.GetChildVector3Attributes(node, "CompositeScale");
+                Transform = new Matrix(Xml.GetChildRawFloatArray(node, "CompositeTransform"));
+                TransformInv = Matrix.Invert(Transform);
                 if (!Parent.OwnerIsFragment)
                 {
                     var f = new BoundCompositeChildrenFlags();
