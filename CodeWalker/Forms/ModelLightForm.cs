@@ -120,6 +120,7 @@ namespace CodeWalker.Forms
                 ColourGUpDown.Value = 0;
                 ColourBUpDown.Value = 0;
                 IntensityTextBox.Text = "";
+                FlagsTextBox.Text = "";
                 FlashinessUpDown.Value = 0;
                 BoneIDUpDown.Value = 0;
                 GroupIDUpDown.Value = 0;
@@ -163,6 +164,7 @@ namespace CodeWalker.Forms
                 ColourBUpDown.Value = light.ColorB;
                 ColourLabel.BackColor = System.Drawing.Color.FromArgb(light.ColorR, light.ColorG, light.ColorB);
                 IntensityTextBox.Text = FloatUtil.ToString(light.Intensity);
+                FlagsTextBox.Text = light.Flags.ToString();
                 FlashinessUpDown.Value = light.Flashiness;
                 BoneIDUpDown.Value = light.BoneId;
                 GroupIDUpDown.Value = light.GroupId;
