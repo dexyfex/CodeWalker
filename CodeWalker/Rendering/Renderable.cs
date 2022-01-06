@@ -1360,6 +1360,7 @@ namespace CodeWalker.Rendering
     {
         public LightAttributes OwnerLight;
         public Renderable Owner;
+        public Bone Bone;
         public Vector3 Position;
         public Vector3 Colour;
         public Vector3 Direction;
@@ -1384,13 +1385,7 @@ namespace CodeWalker.Rendering
             var dir = l.Direction;
             var tan = l.Tangent;
             var bones = Owner?.Skeleton?.BonesMap;
-            if ((bones != null) && (bones.TryGetValue(l.BoneId, out Bone bone)))
-            {
-                var xform = bone.AbsTransform;
-                pos = xform.Multiply(pos);
-                dir = xform.MultiplyRot(dir);
-                tan = xform.MultiplyRot(tan);
-            }
+            bones?.TryGetValue(l.BoneId, out Bone);
             Position = pos;
             Colour = new Vector3(l.ColorR, l.ColorG, l.ColorB) * (2.0f * l.Intensity  / 255.0f);
             Direction = dir;

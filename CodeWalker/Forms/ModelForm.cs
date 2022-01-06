@@ -109,6 +109,7 @@ namespace CodeWalker.Forms
         bool editingLights = false;
         public LightAttributes selectedLight = null;
         public bool showLightGizmos = true;
+        public Skeleton Skeleton = null;
 
         ExploreForm exploreForm = null;
         RpfFileEntry rpfFileEntry = null;
@@ -553,7 +554,9 @@ namespace CodeWalker.Forms
                 {
                     if (showLightGizmos)
                     {
-                        Renderer.RenderSelectionDrawableLight(selectedLight);
+                        Bone bone = null;
+                        Skeleton?.BonesMap?.TryGetValue(selectedLight.BoneId, out bone);
+                        Renderer.RenderSelectionDrawableLight(selectedLight, bone);
                     }
                 }
             }
@@ -594,6 +597,15 @@ namespace CodeWalker.Forms
             //called during UpdateWidgets()
             if (newpos == oldpos) return;
             if (selectedLight == null || lightForm == null || !editingLights) return;
+
+            Bone bone = null;
+            Skeleton?.BonesMap?.TryGetValue(selectedLight.BoneId, out bone);
+            if (bone != null)
+            {
+                var xforminv = Matrix.Invert(bone.AbsTransform);
+                newpos = xforminv.Multiply(newpos);
+            }
+
             selectedLight.Position = newpos;
             selectedLight.UpdateRenderable = true;
         }
@@ -718,6 +730,8 @@ namespace CodeWalker.Forms
             if (ydr.Drawable != null)
             {
                 MoveCameraToView(ydr.Drawable.BoundingCenter, ydr.Drawable.BoundingSphereRadius);
+
+                Skeleton = ydr.Drawable.Skeleton;
             }
 
             if(ydr.Drawable?.LightAttributes.data_items.Length > 0)
@@ -741,6 +755,11 @@ namespace CodeWalker.Forms
                 foreach (var d in Ydd.Drawables)
                 {
                     maxrad = Math.Max(maxrad, d.BoundingSphereRadius);
+
+                    if (d.Skeleton != null)
+                    {
+                        Skeleton = d.Skeleton;
+                    }
                 }
                 MoveCameraToView(Vector3.Zero, maxrad);
             }
@@ -781,6 +800,8 @@ namespace CodeWalker.Forms
             if (dr != null)
             {
                 MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
+
+                Skeleton = dr.Skeleton;
             }
 
             if (yft.Fragment?.LightAttributes.data_items.Length > 0)

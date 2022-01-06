@@ -233,7 +233,18 @@ namespace CodeWalker.Forms
                 selectedLight = light;
                 ModelForm.selectedLight = light;
                 UpdateUI();
-                ModelForm.SetWidgetTransform(light.Position, light.Orientation, new Vector3(light.Falloff));
+
+                var pos = light.Position;
+                Bone bone = null;
+                ModelForm.Skeleton?.BonesMap?.TryGetValue(light.BoneId, out bone);
+                if (bone != null)
+                {
+                    var xform = bone.AbsTransform;
+                    pos = xform.Multiply(pos);
+                    //TODO:? handle bone's rotation correctly for widget??
+                }
+
+                ModelForm.SetWidgetTransform(pos, light.Orientation, new Vector3(light.Falloff));
             }
         }
         private void SelectLightTreeNode(LightAttributes light)

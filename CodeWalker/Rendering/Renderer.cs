@@ -1025,21 +1025,25 @@ namespace CodeWalker.Rendering
             v.Position = c5; SelectionLineVerts.Add(v);
         }
 
-        public void RenderSelectionDrawableLight(LightAttributes dlight)
+        public void RenderSelectionDrawableLight(LightAttributes light, Bone bone)
         {
             var colblu = (uint)(new Color(0, 0, 255, 255).ToRgba());
             var colwht = (uint)(new Color(255, 255, 255, 255).ToRgba());
 
-            RenderableLight light = new RenderableLight();
-            light.Init(dlight);
-
             var pos = light.Position;
             var dir = light.Direction;
-            var tx = light.TangentX;
-            var ty = light.TangentY;
+            var tx = light.Tangent;
+            if (bone != null)
+            {
+                var xform = bone.AnimTransform;
+                pos = xform.Multiply(pos);
+                dir = xform.MultiplyRot(dir);
+                tx = xform.MultiplyRot(tx);
+            }
+            var ty = Vector3.Normalize(Vector3.Cross(dir, tx));
             var extent = light.Falloff;
-            var innerAngle = light.ConeInnerAngle;
-            var outerAngle = light.ConeOuterAngle;
+            var innerAngle = Math.Min(light.ConeInnerAngle, light.ConeOuterAngle) * 0.01745329f;
+            var outerAngle = Math.Max(light.ConeInnerAngle, light.ConeOuterAngle) * 0.01745329f; //pi/180
             var type = light.Type;
             switch (type)
             {
