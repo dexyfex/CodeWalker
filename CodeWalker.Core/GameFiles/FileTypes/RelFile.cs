@@ -572,7 +572,7 @@ namespace CodeWalker.GameFiles
         {
             switch ((Dat22RelType)d.TypeID)
             {
-                case Dat22RelType.Unk0: return new Dat22Unk0(d, br);
+                case Dat22RelType.Category: return new Dat22Category(d, br);
                 default:
                     break;
             }
@@ -716,7 +716,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.StemMix: return new Dat151StemMix(d, br);
                 case Dat151RelType.Unk69: return new Dat151Unk69(d, br);
                 case Dat151RelType.Unk70: return new Dat151Unk70(d, br);
-                case Dat151RelType.Unk71: return new Dat151Unk71(d, br);
+                case Dat151RelType.DependentAmbience: return new Dat151DependentAmbience(d, br);
                 case Dat151RelType.Unk72: return new Dat151Unk72(d, br);
                 case Dat151RelType.Unk74: return new Dat151Unk74(d, br);
                 case Dat151RelType.VehicleScannerColourList: return new Dat151VehicleScannerColourList(d, br);
@@ -744,6 +744,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.Unk118: return new Dat151Unk118(d, br);
                 case Dat151RelType.Unk119: return new Dat151Unk119(d, br);
                 case Dat151RelType.MacsModelsOverrides: return new Dat151MacsModelsOverrides(d, br);
+                case Dat151RelType.Unk124: return new Dat151Unk124(d, br);
                 default:
                     return new Dat151RelData(d, br); //shouldn't get here
             }
@@ -883,7 +884,7 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.StemMix: return new Dat151StemMix(this);
                         case Dat151RelType.Unk69: return new Dat151Unk69(this);
                         case Dat151RelType.Unk70: return new Dat151Unk70(this);
-                        case Dat151RelType.Unk71: return new Dat151Unk71(this);
+                        case Dat151RelType.DependentAmbience: return new Dat151DependentAmbience(this);
                         case Dat151RelType.Unk72: return new Dat151Unk72(this);
                         case Dat151RelType.Unk74: return new Dat151Unk74(this);
                         case Dat151RelType.VehicleScannerColourList: return new Dat151VehicleScannerColourList(this);
@@ -911,6 +912,7 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.Unk118: return new Dat151Unk118(this);
                         case Dat151RelType.Unk119: return new Dat151Unk119(this);
                         case Dat151RelType.MacsModelsOverrides: return new Dat151MacsModelsOverrides(this);
+                        case Dat151RelType.Unk124: return new Dat151Unk124(this);
                         default:
                             return new Dat151RelData(this, (Dat151RelType)dataType); //shouldn't get here
                     }
@@ -987,7 +989,7 @@ namespace CodeWalker.GameFiles
                 case RelDatFileType.Dat22Categories:
                     switch ((Dat22RelType)dataType)
                     {
-                        case Dat22RelType.Unk0: return new Dat22Unk0(this);
+                        case Dat22RelType.Category: return new Dat22Category(this);
                         default:
                             return new Dat22RelData(this);//shouldn't get here
                     }
@@ -4992,7 +4994,7 @@ namespace CodeWalker.GameFiles
         StopOneShotAction = 68,
         Unk69 = 69, //Beat? SetMoodBeat? suffixed _beat. 
         Unk70 = 70, //Bar? something about bars.
-        Unk71 = 71, //prefixed da_, connected to AmbientZone's external parameters (usually crickets/other animals, day/night?)
+        DependentAmbience = 71, //prefixed da_, connected to AmbientZone's external parameters (usually crickets/other animals, day/night?)
         Unk72 = 72,
         AnimalParams = 73,
         Unk74 = 74,
@@ -5041,6 +5043,7 @@ namespace CodeWalker.GameFiles
         Unk119 = 119, //Foilage? foilage, prop_bush_lrg_02
         RadioTrackList = 120,
         MacsModelsOverrides = 121, //or ModelList? relations to Mod. macs_models_overrides
+        Unk124 = 124, // radio override something?
     }
 
     [TC(typeof(EXP))] public class Dat151RelData : RelData
@@ -5217,7 +5220,7 @@ namespace CodeWalker.GameFiles
         public Vector4 UnkVec1 { get; set; }
         public Vector4 UnkVec2 { get; set; }
         public MetaHash UnkHash0 { get; set; }
-        public MetaHash UnkHash1 { get; set; }
+        public MetaHash Scene { get; set; }
         public Vector2 UnkVec3 { get; set; }
         public FlagsUint Flags2 { get; set; }
         public byte Unk14 { get; set; }
@@ -5230,31 +5233,31 @@ namespace CodeWalker.GameFiles
         public ExtParam[] ExtParams { get; set; }
         public struct ExtParam : IMetaXmlItem
         {
-            public MetaHash Hash { get; set; }
+            public MetaHash Name { get; set; }
             public float Value { get; set; }
             public ExtParam(BinaryReader br)
             {
-                Hash = br.ReadUInt32();
+                Name = br.ReadUInt32();
                 Value = br.ReadSingle();
             }
             public void Write(BinaryWriter bw)
             {
-                bw.Write(Hash);
+                bw.Write(Name);
                 bw.Write(Value);
             }
             public void WriteXml(StringBuilder sb, int indent)
             {
-                RelXml.StringTag(sb, indent, "Hash", RelXml.HashString(Hash));
+                RelXml.StringTag(sb, indent, "Name", RelXml.HashString(Name));
                 RelXml.ValueTag(sb, indent, "Value", FloatUtil.ToString(Value));
             }
             public void ReadXml(XmlNode node)
             {
-                Hash = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash"));
+                Name = XmlRel.GetHash(Xml.GetChildInnerText(node, "Name"));
                 Value = Xml.GetChildFloatAttribute(node, "Value", "value");
             }
             public override string ToString()
             {
-                return Hash.ToString() + ": " + FloatUtil.ToString(Value);
+                return Name.ToString() + ": " + FloatUtil.ToString(Value);
             }
         }
 
@@ -5289,7 +5292,7 @@ namespace CodeWalker.GameFiles
             UnkVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             UnkVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             UnkHash0 = br.ReadUInt32();
-            UnkHash1 = br.ReadUInt32();
+            Scene = br.ReadUInt32();
             UnkVec3 = new Vector2(br.ReadSingle(), br.ReadSingle());
 
             Flags2 = br.ReadUInt32();
@@ -5355,7 +5358,7 @@ namespace CodeWalker.GameFiles
 
             if (UnkHash0 != 0)
             { }
-            if (UnkHash1 != 0)
+            if (Scene != 0)
             { }
 
             #endregion
@@ -5418,7 +5421,7 @@ namespace CodeWalker.GameFiles
             bw.Write(UnkVec2.Z);
             bw.Write(UnkVec2.W);
             bw.Write(UnkHash0);
-            bw.Write(UnkHash1);
+            bw.Write(Scene);
             bw.Write(UnkVec3.X);
             bw.Write(UnkVec3.Y);
 
@@ -5463,7 +5466,7 @@ namespace CodeWalker.GameFiles
             RelXml.SelfClosingTag(sb, indent, "UnkVec1 " + FloatUtil.GetVector4XmlString(UnkVec1));
             RelXml.SelfClosingTag(sb, indent, "UnkVec2 " + FloatUtil.GetVector4XmlString(UnkVec2));
             RelXml.StringTag(sb, indent, "UnkHash0", RelXml.HashString(UnkHash0));
-            RelXml.StringTag(sb, indent, "UnkHash1", RelXml.HashString(UnkHash1));
+            RelXml.StringTag(sb, indent, "Scene", RelXml.HashString(Scene));
             RelXml.SelfClosingTag(sb, indent, "UnkVec3 " + FloatUtil.GetVector2XmlString(UnkVec3));
             RelXml.ValueTag(sb, indent, "Flags2", "0x" + Flags2.Hex);
             RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
@@ -5492,7 +5495,7 @@ namespace CodeWalker.GameFiles
             UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1");
             UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2");
             UnkHash0 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash0"));
-            UnkHash1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash1"));
+            Scene = XmlRel.GetHash(Xml.GetChildInnerText(node, "Scene"));
             UnkVec3 = Xml.GetChildVector2Attributes(node, "UnkVec3");
             Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
             Unk14 = (byte)Xml.GetChildUIntAttribute(node, "Unk14", "value");
@@ -5511,8 +5514,8 @@ namespace CodeWalker.GameFiles
         public FlagsUint Flags2 { get; set; }
         public Vector3 Position { get; set; }
         public FlagsUint Flags3 { get; set; }    //0
-        public MetaHash Hash1 { get; set; }
-        public MetaHash Hash2 { get; set; }
+        public MetaHash ChildSound { get; set; }
+        public MetaHash Category { get; set; }
         public FlagsUint Flags4 { get; set; }    //0
         public FlagsUint Flags5 { get; set; }    //0xFFFFFFFF
         public FlagsUint Flags6 { get; set; }    //0
@@ -5580,8 +5583,8 @@ namespace CodeWalker.GameFiles
             Flags2 = br.ReadUInt32();
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Flags3 = br.ReadUInt32();    //0
-            Hash1 = br.ReadUInt32();
-            Hash2 = br.ReadUInt32();
+            ChildSound = br.ReadUInt32();
+            Category = br.ReadUInt32();
             Flags4 = br.ReadUInt32();    //0
             Flags5 = br.ReadUInt32();    //0xFFFFFFFF
             Flags6 = br.ReadUInt32();    //0
@@ -5831,8 +5834,8 @@ namespace CodeWalker.GameFiles
             bw.Write(Position.Y);
             bw.Write(Position.Z);
             bw.Write(Flags3);
-            bw.Write(Hash1);
-            bw.Write(Hash2);
+            bw.Write(ChildSound);
+            bw.Write(Category);
             bw.Write(Flags4);
             bw.Write(Flags5);
             bw.Write(Flags6);
@@ -5869,8 +5872,8 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Flags2", "0x" + Flags2.Hex);
             RelXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
             RelXml.ValueTag(sb, indent, "Flags3", "0x" + Flags3.Hex);
-            RelXml.StringTag(sb, indent, "Hash1", RelXml.HashString(Hash1));
-            RelXml.StringTag(sb, indent, "Hash2", RelXml.HashString(Hash2));
+            RelXml.StringTag(sb, indent, "ChildSound", RelXml.HashString(ChildSound));
+            RelXml.StringTag(sb, indent, "Category", RelXml.HashString(Category));
             RelXml.ValueTag(sb, indent, "Flags4", "0x" + Flags4.Hex);
             RelXml.ValueTag(sb, indent, "Flags5", "0x" + Flags5.Hex);
             RelXml.ValueTag(sb, indent, "Flags6", "0x" + Flags6.Hex);
@@ -5896,8 +5899,8 @@ namespace CodeWalker.GameFiles
             Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
             Position = Xml.GetChildVector3Attributes(node, "Position");
             Flags3 = Xml.GetChildUIntAttribute(node, "Flags3", "value");
-            Hash1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash1"));
-            Hash2 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hash2"));
+            ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
+            Category = XmlRel.GetHash(Xml.GetChildInnerText(node, "Category"));
             Flags4 = Xml.GetChildUIntAttribute(node, "Flags4", "value");
             Flags5 = Xml.GetChildUIntAttribute(node, "Flags5", "value");
             Flags6 = Xml.GetChildUIntAttribute(node, "Flags6", "value");
@@ -16015,10 +16018,10 @@ namespace CodeWalker.GameFiles
             Unk02 = Xml.GetChildIntAttribute(node, "Unk02", "value");
         }
     }
-    [TC(typeof(EXP))] public class Dat151Unk71 : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151DependentAmbience : Dat151RelData
     {
         public FlagsUint Flags { get; set; }
-        public MetaHash Unk01 { get; set; }
+        public MetaHash ChildSound { get; set; }
         public MetaHash Unk02 { get; set; }//0
         public MetaHash Unk03 { get; set; }//0
         public MetaHash Unk04 { get; set; }//0
@@ -16037,15 +16040,15 @@ namespace CodeWalker.GameFiles
         public MetaHash Unk17 { get; set; }
         public float Unk18 { get; set; }
 
-        public Dat151Unk71(RelFile rel) : base(rel)
+        public Dat151DependentAmbience(RelFile rel) : base(rel)
         {
-            Type = Dat151RelType.Unk71;
+            Type = Dat151RelType.DependentAmbience;
             TypeID = (byte)Type;
         }
-        public Dat151Unk71(RelData d, BinaryReader br) : base(d, br)
+        public Dat151DependentAmbience(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
-            Unk01 = br.ReadUInt32();
+            ChildSound = br.ReadUInt32();
             Unk02 = br.ReadUInt32();//0
             Unk03 = br.ReadUInt32();//0
             Unk04 = br.ReadUInt32();//0
@@ -16080,7 +16083,7 @@ namespace CodeWalker.GameFiles
             WriteTypeAndOffset(bw);
 
             bw.Write(Flags);
-            bw.Write(Unk01);
+            bw.Write(ChildSound);
             bw.Write(Unk02);
             bw.Write(Unk03);
             bw.Write(Unk04);
@@ -16102,7 +16105,7 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "ChildSound", RelXml.HashString(ChildSound));
             RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
             RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
             RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
@@ -16124,7 +16127,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
             Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
             Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
             Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
@@ -19373,7 +19376,59 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    [TC(typeof(EXP))]
+    public class Dat151Unk124 : Dat151RelData
+    {
+        public FlagsUint Flags { get; set; }
+        public uint ItemCount { get; set; }
+        public MetaHash[] ItemHashes { get; set; }
 
+        public Dat151Unk124(RelFile rel) : base(rel)
+        {
+            Type = Dat151RelType.Unk124;
+            TypeID = (byte)Type;
+        }
+        public Dat151Unk124(RelData d, BinaryReader br) : base(d, br)
+        {
+            Flags = br.ReadUInt32();
+            ItemCount = br.ReadUInt32();
+            ItemHashes = new MetaHash[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
+            {
+                ItemHashes[i] = br.ReadUInt32();
+            }
+
+            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { } //no hits here
+
+
+        }
+        public override void Write(BinaryWriter bw)
+        {
+            //base.Write(bw);
+            WriteTypeAndOffset(bw);
+
+            bw.Write(Flags);
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
+            {
+                bw.Write(ItemHashes[i]);
+            }
+
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.WriteHashItemArray(sb, ItemHashes, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            ItemHashes = XmlRel.ReadHashItemArray(node, "Items");
+            ItemCount = (uint)(ItemHashes?.Length ?? 0);
+        }
+    }
 
 
 
@@ -21936,9 +21991,8 @@ namespace CodeWalker.GameFiles
         public short Volume { get; set; }
         public byte Unk03 { get; set; }
         public short LPFCutoff { get; set; }
-        public byte Unk06 { get; set; }
-        public short Unk07 { get; set; }
-        public byte Unk08 { get; set; }
+        public short HPFCutoff { get; set; }
+        public short Unk08 { get; set; }
         public float Unk09 { get; set; }
         public byte Unk10 { get; set; }
         public float Unk11 { get; set; }
@@ -21951,9 +22005,8 @@ namespace CodeWalker.GameFiles
             Volume = br.ReadInt16();
             Unk03 = br.ReadByte();
             LPFCutoff = br.ReadInt16();
-            Unk06 = br.ReadByte();
-            Unk07 = br.ReadInt16();
-            Unk08 = br.ReadByte();
+            HPFCutoff = br.ReadInt16();
+            Unk08 = br.ReadInt16();
             Unk09 = br.ReadSingle();
             Unk10 = br.ReadByte();
             Unk11 = br.ReadSingle();
@@ -21964,8 +22017,7 @@ namespace CodeWalker.GameFiles
             bw.Write(Volume);
             bw.Write(Unk03);
             bw.Write(LPFCutoff);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
+            bw.Write(HPFCutoff);
             bw.Write(Unk08);
             bw.Write(Unk09);
             bw.Write(Unk10);
@@ -21977,8 +22029,7 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Volume", Volume.ToString());
             RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
             RelXml.ValueTag(sb, indent, "LPFCutoff", LPFCutoff.ToString());
-            RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
-            RelXml.ValueTag(sb, indent, "Unk07", Unk07.ToString());
+            RelXml.ValueTag(sb, indent, "HPFCutoff", HPFCutoff.ToString());
             RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
             RelXml.ValueTag(sb, indent, "Unk09", FloatUtil.ToString(Unk09));
             RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
@@ -21989,12 +22040,11 @@ namespace CodeWalker.GameFiles
             Category = XmlRel.GetHash(Xml.GetChildInnerText(node, "Category"));
             Volume = (short)Xml.GetChildIntAttribute(node, "Volume", "value");
             Unk03 = (byte)Xml.GetChildUIntAttribute(node, "Unk03", "value");
-            LPFCutoff = (short)Xml.GetChildUIntAttribute(node, "LPFCutoff", "value");
-            Unk06 = (byte)Xml.GetChildUIntAttribute(node, "Unk06", "value");
-            Unk07 = (short)Xml.GetChildIntAttribute(node, "Unk07", "value");
-            Unk08 = (byte)Xml.GetChildUIntAttribute(node, "Unk08", "value");
+            LPFCutoff = (short)Xml.GetChildIntAttribute(node, "LPFCutoff", "value");
+            HPFCutoff = (short)Xml.GetChildIntAttribute(node, "HPFCutoff", "value");
+            Unk08 = (short)Xml.GetChildIntAttribute(node, "Unk08", "value");
             Unk09 = Xml.GetChildFloatAttribute(node, "Unk09", "value");
-            Unk10 = (byte)Xml.GetChildUIntAttribute(node, "Unk10", "value");
+            Unk10 = (byte)Xml.GetChildIntAttribute(node, "Unk10", "value");
             Unk11 = Xml.GetChildFloatAttribute(node, "Unk11", "value");
         }
         public override string ToString()
@@ -22003,8 +22053,7 @@ namespace CodeWalker.GameFiles
                 Volume.ToString() + ", " +
                 Unk03.ToString() + ", " +
                 LPFCutoff.ToString() + ", " +
-                Unk06.ToString() + ", " +
-                Unk07.ToString() + ", " +
+                HPFCutoff.ToString() + ", " +
                 Unk08.ToString() + ", " +
                 Unk09.ToString() + ", " +
                 Unk10.ToString() + ", " +
@@ -23320,7 +23369,7 @@ namespace CodeWalker.GameFiles
 
     public enum Dat22RelType : byte
     {
-        Unk0 = 0,
+        Category = 0,
     }
 
     [TC(typeof(EXP))] public class Dat22RelData : RelData
@@ -23358,15 +23407,15 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class Dat22Unk0 : Dat22RelData
+    [TC(typeof(EXP))] public class Dat22Category : Dat22RelData
     {
         public short Unk01 { get; set; }
-        public short Unk02 { get; set; }
+        public short Volume { get; set; }
         public short Unk03 { get; set; }
-        public short Unk04 { get; set; }
-        public MetaHash Unk05 { get; set; }//1757063444
-        public short Unk06 { get; set; }
-        public MetaHash Unk07 { get; set; }//741353067
+        public short LPFCutoff { get; set; }
+        public MetaHash LPFCutoffCurve { get; set; }//1757063444
+        public short HPFCutoff { get; set; }
+        public MetaHash HPFCutoffCurve { get; set; }//741353067
         public short Unk08 { get; set; }
         public short Unk09 { get; set; }
         public short Unk10 { get; set; }
@@ -23378,23 +23427,23 @@ namespace CodeWalker.GameFiles
         public short Unk16 { get; set; }
         public short Unk17 { get; set; }
         public byte Unk18 { get; set; }
-        public byte ItemCount { get; set; }
-        public MetaHash[] Items { get; set; }
+        public byte SubCategoryCount { get; set; }
+        public MetaHash[] SubCategories { get; set; }
 
-        public Dat22Unk0(RelFile rel) : base(rel)
+        public Dat22Category(RelFile rel) : base(rel)
         {
-            Type = Dat22RelType.Unk0;
+            Type = Dat22RelType.Category;
             TypeID = (byte)Type;
         }
-        public Dat22Unk0(RelData d, BinaryReader br) : base(d, br)
+        public Dat22Category(RelData d, BinaryReader br) : base(d, br)
         {
             Unk01 = br.ReadInt16();
-            Unk02 = br.ReadInt16();
+            Volume = br.ReadInt16();
             Unk03 = br.ReadInt16();
-            Unk04 = br.ReadInt16();
-            Unk05 = br.ReadUInt32();//1757063444
-            Unk06 = br.ReadInt16();
-            Unk07 = br.ReadUInt32();//741353067
+            LPFCutoff = br.ReadInt16();
+            LPFCutoffCurve = br.ReadUInt32();//1757063444
+            HPFCutoff = br.ReadInt16();
+            HPFCutoffCurve = br.ReadUInt32();//741353067
             Unk08 = br.ReadInt16();
             Unk09 = br.ReadInt16();
             Unk10 = br.ReadInt16();
@@ -23406,16 +23455,16 @@ namespace CodeWalker.GameFiles
             Unk16 = br.ReadInt16();
             Unk17 = br.ReadInt16();
             Unk18 = br.ReadByte();
-            ItemCount = br.ReadByte();
-            Items = new MetaHash[ItemCount];
-            for (int i = 0; i < ItemCount; i++)
+            SubCategoryCount = br.ReadByte();
+            SubCategories = new MetaHash[SubCategoryCount];
+            for (int i = 0; i < SubCategoryCount; i++)
             {
-                Items[i] = br.ReadUInt32();
+                SubCategories[i] = br.ReadUInt32();
             }
 
-            if (Unk05 != 1757063444)
+            if (LPFCutoffCurve != 1757063444)
             { }
-            if (Unk07 != 741353067)
+            if (HPFCutoffCurve != 741353067)
             { }
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
@@ -23427,12 +23476,12 @@ namespace CodeWalker.GameFiles
             WriteTypeAndOffsetAndFlags(bw);
 
             bw.Write(Unk01);
-            bw.Write(Unk02);
+            bw.Write(Volume);
             bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
+            bw.Write(LPFCutoff);
+            bw.Write(LPFCutoffCurve);
+            bw.Write(HPFCutoff);
+            bw.Write(HPFCutoffCurve);
             bw.Write(Unk08);
             bw.Write(Unk09);
             bw.Write(Unk10);
@@ -23444,10 +23493,10 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk16);
             bw.Write(Unk17);
             bw.Write(Unk18);
-            bw.Write(ItemCount);
-            for (int i = 0; i < ItemCount; i++)
+            bw.Write(SubCategoryCount);
+            for (int i = 0; i < SubCategoryCount; i++)
             {
-                bw.Write(Items[i]);
+                bw.Write(SubCategories[i]);
             }
 
         }
@@ -23455,12 +23504,12 @@ namespace CodeWalker.GameFiles
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
             RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
-            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.ValueTag(sb, indent, "Volume", Volume.ToString());
             RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
-            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
-            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
-            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
+            RelXml.ValueTag(sb, indent, "LPFCutoff", LPFCutoff.ToString());
+            RelXml.StringTag(sb, indent, "LPFCutoffCurve", RelXml.HashString(LPFCutoffCurve));
+            RelXml.ValueTag(sb, indent, "HPFCutoff", HPFCutoff.ToString());
+            RelXml.StringTag(sb, indent, "HPFCutoffCurve", RelXml.HashString(HPFCutoffCurve));
             RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
             RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
             RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
@@ -23472,18 +23521,18 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
             RelXml.ValueTag(sb, indent, "Unk17", Unk17.ToString());
             RelXml.ValueTag(sb, indent, "Unk18", Unk18.ToString());
-            RelXml.WriteHashItemArray(sb, Items, indent, "Items");
+            RelXml.WriteHashItemArray(sb, SubCategories, indent, "SubCategories");
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Unk01 = (short)Xml.GetChildIntAttribute(node, "Unk01", "value");
-            Unk02 = (short)Xml.GetChildIntAttribute(node, "Unk02", "value");
+            Volume = (short)Xml.GetChildIntAttribute(node, "Volume", "value");
             Unk03 = (short)Xml.GetChildIntAttribute(node, "Unk03", "value");
-            Unk04 = (short)Xml.GetChildIntAttribute(node, "Unk04", "value");
-            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
-            Unk06 = (short)Xml.GetChildIntAttribute(node, "Unk06", "value");
-            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
+            LPFCutoff = (short)Xml.GetChildIntAttribute(node, "LPFCutoff", "value");
+            LPFCutoffCurve = XmlRel.GetHash(Xml.GetChildInnerText(node, "LPFCutoffCurve"));
+            HPFCutoff = (short)Xml.GetChildIntAttribute(node, "HPFCutoff", "value");
+            HPFCutoffCurve = XmlRel.GetHash(Xml.GetChildInnerText(node, "HPFCutoffCurve"));
             Unk08 = (short)Xml.GetChildIntAttribute(node, "Unk08", "value");
             Unk09 = (short)Xml.GetChildIntAttribute(node, "Unk09", "value");
             Unk10 = (short)Xml.GetChildIntAttribute(node, "Unk10", "value");
@@ -23495,8 +23544,8 @@ namespace CodeWalker.GameFiles
             Unk16 = (short)Xml.GetChildIntAttribute(node, "Unk16", "value");
             Unk17 = (short)Xml.GetChildIntAttribute(node, "Unk17", "value");
             Unk18 = (byte)Xml.GetChildUIntAttribute(node, "Unk18", "value");
-            Items = XmlRel.ReadHashItemArray(node, "Items");
-            ItemCount = (byte)(Items?.Length ?? 0);
+            SubCategories = XmlRel.ReadHashItemArray(node, "SubCategories");
+            SubCategoryCount = (byte)(SubCategories?.Length ?? 0);
         }
     }
 

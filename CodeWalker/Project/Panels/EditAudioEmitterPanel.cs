@@ -53,8 +53,8 @@ namespace CodeWalker.Project.Panels
                 PositionTextBox.Text = string.Empty;
                 InnerRadTextBox.Text = string.Empty;
                 OuterRadTextBox.Text = string.Empty;
-                Hash1TextBox.Text = string.Empty;
-                Hash2TextBox.Text = string.Empty;
+                ChildSoundTextBox.Text = string.Empty;
+                CategoryTextBox.Text = string.Empty;
                 Unk01TextBox.Text = string.Empty;
                 StartTimeUpDown.Value = 0;
                 EndTimeUpDown.Value = 0;
@@ -86,8 +86,8 @@ namespace CodeWalker.Project.Panels
                 PositionTextBox.Text = FloatUtil.GetVector3String(e.Position);
                 InnerRadTextBox.Text = FloatUtil.ToString(e.InnerRad);
                 OuterRadTextBox.Text = FloatUtil.ToString(e.OuterRad);
-                Hash1TextBox.Text = e.Hash1.ToString();
-                Hash2TextBox.Text = e.Hash2.ToString();
+                ChildSoundTextBox.Text = e.ChildSound.ToString();
+                CategoryTextBox.Text = e.Category.ToString();
                 Unk01TextBox.Text = FloatUtil.ToString(e.Unk01);
                 StartTimeUpDown.Value = e.StartTime;
                 EndTimeUpDown.Value = e.EndTime;
@@ -217,13 +217,13 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Hash1TextBox_TextChanged(object sender, EventArgs e)
+        private void ChildSoundTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             uint hash = 0;
-            string name = Hash1TextBox.Text;
+            string name = ChildSoundTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(name);
@@ -231,21 +231,21 @@ namespace CodeWalker.Project.Panels
             }
             //HashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentEmitter.AudioEmitter.Hash1 != hash)
+            if (CurrentEmitter.AudioEmitter.ChildSound != hash)
             {
-                CurrentEmitter.AudioEmitter.Hash1 = hash;
+                CurrentEmitter.AudioEmitter.ChildSound = hash;
 
                 ProjectItemChanged();
             }
         }
 
-        private void Hash2TextBox_TextChanged(object sender, EventArgs e)
+        private void CategoryTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             uint hash = 0;
-            string name = Hash2TextBox.Text;
+            string name = CategoryTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(name);
@@ -253,9 +253,9 @@ namespace CodeWalker.Project.Panels
             }
             //HashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentEmitter.AudioEmitter.Hash2 != hash)
+            if (CurrentEmitter.AudioEmitter.Category != hash)
             {
-                CurrentEmitter.AudioEmitter.Hash2 = hash;
+                CurrentEmitter.AudioEmitter.Category = hash;
 
                 ProjectItemChanged();
             }
