@@ -284,6 +284,7 @@ namespace CodeWalker.Rendering
                 if (Form.ActiveForm == null)
                 {
                     Thread.Sleep(100); //reduce the FPS when the app isn't active (maybe this should be configurable?)
+                    if (context.IsDisposed) return; //if form closed while sleeping (eg from rightclick on taskbar)
                 }
 
                 Rendering = true;
