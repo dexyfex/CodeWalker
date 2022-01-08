@@ -1349,6 +1349,115 @@ namespace CodeWalker.Forms
         }
 
 
+
+        private void UpdateEmbeddedTextures(DrawableBase dwbl)
+        {
+            if (dwbl == null) return;
+
+            var sg = dwbl.ShaderGroup;
+            var td = sg?.TextureDictionary;
+            var sd = sg?.Shaders?.data_items;
+
+            if (td == null) return;
+            if (sd == null) return;
+
+            var updated = false;
+            foreach (var s in sd)
+            {
+                if (s?.ParametersList == null) continue;
+                foreach (var p in s.ParametersList.Parameters)
+                {
+                    if (p.Data is TextureBase tex)
+                    {
+                        var tex2 = td.Lookup(tex.NameHash);
+                        if ((tex2 != null) && (tex != tex2))
+                        {
+                            p.Data = tex2;//swap the parameter out for the new embedded texture
+                            updated = true;
+                        }
+                    }
+                }
+            }
+
+            if (!updated) return;
+
+            foreach (var model in dwbl.AllModels)
+            {
+                if (model?.Geometries == null) continue;
+                foreach (var geom in model.Geometries)
+                {
+                    geom.UpdateRenderableParameters = true;
+                }
+            }
+        }
+        public void UpdateEmbeddedTextures()
+        {
+            if (Ydr != null)
+            {
+                if (Ydr.Loaded)
+                {
+                    UpdateEmbeddedTextures(Ydr.Drawable);
+                }
+            }
+            else if (Ydd != null)
+            {
+                if (Ydd.Loaded)
+                {
+                    foreach (var kvp in Ydd.Dict)
+                    {
+                        UpdateEmbeddedTextures(kvp.Value);
+                    }
+                }
+            }
+            else if (Ypt != null)
+            {
+                if ((Ypt.Loaded) && (Ypt.DrawableDict != null))
+                {
+                    foreach (var kvp in Ypt.DrawableDict)
+                    {
+                        UpdateEmbeddedTextures(kvp.Value);
+                    }
+                }
+            }
+            else if (Yft != null)
+            {
+                if (Yft.Loaded)
+                {
+                    if (Yft.Fragment != null)
+                    {
+                        var f = Yft.Fragment;
+
+                        UpdateEmbeddedTextures(f.Drawable);
+                        UpdateEmbeddedTextures(f.DrawableCloth);
+
+                        if (f.DrawableArray?.data_items != null)
+                        {
+                            foreach (var d in f.DrawableArray.data_items)
+                            {
+                                UpdateEmbeddedTextures(d);
+                            }
+                        }
+
+                        var c = f.PhysicsLODGroup?.PhysicsLOD1?.Children?.data_items;
+                        if (c != null)
+                        {
+                            foreach (var child in c)
+                            {
+                                if (child != null)
+                                {
+                                    UpdateEmbeddedTextures(child.Drawable1);
+                                    UpdateEmbeddedTextures(child.Drawable2);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+
+
         public void OnLightFormClosed()
         {
             lightForm = null;
@@ -2077,10 +2186,9 @@ namespace CodeWalker.Forms
 
             if (td != null)
             {
-                YtdForm f = new YtdForm();
-                f.Show();
+                YtdForm f = new YtdForm(null, this);
+                f.Show(this);
                 f.LoadTexDict(td, fileName);
-                //f.LoadYtd(ytd);
             }
             else
             {

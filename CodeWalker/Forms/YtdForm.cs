@@ -250,6 +250,9 @@ namespace CodeWalker.Forms
 
             tex.Name = CurrentTexture.Name;
             tex.NameHash = CurrentTexture.NameHash;
+            tex.Usage = CurrentTexture.Usage;
+            tex.UsageFlags = CurrentTexture.UsageFlags;
+            tex.Unknown_32h = CurrentTexture.Unknown_32h;
 
             var textures = new List<Texture>();
             foreach (var t in TexDict.Textures.data_items)
@@ -337,7 +340,7 @@ namespace CodeWalker.Forms
         {
             if (ModelForm == null) return;
 
-            //TODO: live update of model form view when changes have been made...
+            ModelForm.UpdateEmbeddedTextures();
         }
 
         private void UpdateFormTitle()
