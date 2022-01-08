@@ -5560,7 +5560,10 @@ namespace CodeWalker.GameFiles
         {
             YdrXml.StringTag(sb, indent, "Name", YdrXml.XmlEscape(Name));
             base.WriteXml(sb, indent, ddsfolder);
-            Bounds.WriteXmlNode(Bound, sb, indent);
+            if (Bound != null)
+            {
+                Bounds.WriteXmlNode(Bound, sb, indent);
+            }
             if (LightAttributes?.data_items != null)
             {
                 YdrXml.WriteItemArray(sb, LightAttributes.data_items, indent, "Lights");

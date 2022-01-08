@@ -949,7 +949,10 @@ namespace CodeWalker.GameFiles
 
             base.WriteXml(sb, indent, ddsfolder);
 
-            Bounds.WriteXmlNode(Bound, sb, indent);
+            if (Bound != null)
+            {
+                Bounds.WriteXmlNode(Bound, sb, indent);
+            }
 
             Skeleton = skel;
             Bound = bnds;

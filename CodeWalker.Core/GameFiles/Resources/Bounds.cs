@@ -466,7 +466,7 @@ namespace CodeWalker.GameFiles
         {
             if (b == null)
             {
-                YbnXml.SelfClosingTag(sb, indent, "Item type=\"" + BoundsType.None.ToString() + "\"");
+                YbnXml.SelfClosingTag(sb, indent, name + " type=\"" + BoundsType.None.ToString() + "\"");
             }
             else
             {
