@@ -243,12 +243,8 @@ namespace CodeWalker
             this.ToolbarNewScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarOpenButton = new System.Windows.Forms.ToolStripSplitButton();
             this.ToolbarOpenProjectButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYmapButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYtypButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYbnButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYndButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenTrainsButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenFilesButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenFolderButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -260,6 +256,8 @@ namespace CodeWalker
             this.ToolbarSelectCarGeneratorButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectGrassButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectWaterQuadButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectCalmingQuadButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarSelectWaveQuadButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectCollisionButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectNavMeshButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSelectPathButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -312,8 +310,6 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
-            this.ToolbarSelectCalmingQuadButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectWaveQuadButton = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -2929,50 +2925,50 @@ namespace CodeWalker
             // ToolbarNewProjectButton
             // 
             this.ToolbarNewProjectButton.Name = "ToolbarNewProjectButton";
-            this.ToolbarNewProjectButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewProjectButton.Text = "New project";
+            this.ToolbarNewProjectButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewProjectButton.Text = "New Project";
             this.ToolbarNewProjectButton.Click += new System.EventHandler(this.ToolbarNewProjectButton_Click);
             // 
             // ToolbarNewYmapButton
             // 
             this.ToolbarNewYmapButton.Name = "ToolbarNewYmapButton";
-            this.ToolbarNewYmapButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewYmapButton.Text = "New ymap file";
+            this.ToolbarNewYmapButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYmapButton.Text = "New Ymap File";
             this.ToolbarNewYmapButton.Click += new System.EventHandler(this.ToolbarNewYmapButton_Click);
             // 
             // ToolbarNewYtypButton
             // 
             this.ToolbarNewYtypButton.Name = "ToolbarNewYtypButton";
-            this.ToolbarNewYtypButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewYtypButton.Text = "New ytyp file";
+            this.ToolbarNewYtypButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYtypButton.Text = "New Ytyp File";
             this.ToolbarNewYtypButton.Click += new System.EventHandler(this.ToolbarNewYtypButton_Click);
             // 
             // ToolbarNewYbnButton
             // 
             this.ToolbarNewYbnButton.Name = "ToolbarNewYbnButton";
-            this.ToolbarNewYbnButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewYbnButton.Text = "New ybn file";
+            this.ToolbarNewYbnButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYbnButton.Text = "New Ybn File";
             this.ToolbarNewYbnButton.Click += new System.EventHandler(this.ToolbarNewYbnButton_Click);
             // 
             // ToolbarNewYndButton
             // 
             this.ToolbarNewYndButton.Name = "ToolbarNewYndButton";
-            this.ToolbarNewYndButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewYndButton.Text = "New ynd file";
+            this.ToolbarNewYndButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYndButton.Text = "New Ynd File";
             this.ToolbarNewYndButton.Click += new System.EventHandler(this.ToolbarNewYndButton_Click);
             // 
             // ToolbarNewTrainsButton
             // 
             this.ToolbarNewTrainsButton.Name = "ToolbarNewTrainsButton";
-            this.ToolbarNewTrainsButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewTrainsButton.Text = "New trains file";
+            this.ToolbarNewTrainsButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewTrainsButton.Text = "New Trains File";
             this.ToolbarNewTrainsButton.Click += new System.EventHandler(this.ToolbarNewTrainsButton_Click);
             // 
             // ToolbarNewScenarioButton
             // 
             this.ToolbarNewScenarioButton.Name = "ToolbarNewScenarioButton";
-            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(164, 22);
-            this.ToolbarNewScenarioButton.Text = "New scenario file";
+            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewScenarioButton.Text = "New Scenario File";
             this.ToolbarNewScenarioButton.Click += new System.EventHandler(this.ToolbarNewScenarioButton_Click);
             // 
             // ToolbarOpenButton
@@ -2980,12 +2976,8 @@ namespace CodeWalker
             this.ToolbarOpenButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.ToolbarOpenButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolbarOpenProjectButton,
-            this.ToolbarOpenYmapButton,
-            this.ToolbarOpenYtypButton,
-            this.ToolbarOpenYbnButton,
-            this.ToolbarOpenYndButton,
-            this.ToolbarOpenTrainsButton,
-            this.ToolbarOpenScenarioButton});
+            this.ToolbarOpenFilesButton,
+            this.ToolbarOpenFolderButton});
             this.ToolbarOpenButton.Enabled = false;
             this.ToolbarOpenButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarOpenButton.Image")));
             this.ToolbarOpenButton.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -2998,51 +2990,23 @@ namespace CodeWalker
             // ToolbarOpenProjectButton
             // 
             this.ToolbarOpenProjectButton.Name = "ToolbarOpenProjectButton";
-            this.ToolbarOpenProjectButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenProjectButton.Text = "Open project...";
+            this.ToolbarOpenProjectButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenProjectButton.Text = "Open Project...";
             this.ToolbarOpenProjectButton.Click += new System.EventHandler(this.ToolbarOpenProjectButton_Click);
             // 
-            // ToolbarOpenYmapButton
+            // ToolbarOpenFilesButton
             // 
-            this.ToolbarOpenYmapButton.Name = "ToolbarOpenYmapButton";
-            this.ToolbarOpenYmapButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenYmapButton.Text = "Open ymap file...";
-            this.ToolbarOpenYmapButton.Click += new System.EventHandler(this.ToolbarOpenYmapButton_Click);
+            this.ToolbarOpenFilesButton.Name = "ToolbarOpenFilesButton";
+            this.ToolbarOpenFilesButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenFilesButton.Text = "Open Files...";
+            this.ToolbarOpenFilesButton.Click += new System.EventHandler(this.ToolbarOpenFilesButton_Click);
             // 
-            // ToolbarOpenYtypButton
+            // ToolbarOpenFolderButton
             // 
-            this.ToolbarOpenYtypButton.Name = "ToolbarOpenYtypButton";
-            this.ToolbarOpenYtypButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenYtypButton.Text = "Open ytyp file...";
-            this.ToolbarOpenYtypButton.Click += new System.EventHandler(this.ToolbarOpenYtypButton_Click);
-            // 
-            // ToolbarOpenYbnButton
-            // 
-            this.ToolbarOpenYbnButton.Name = "ToolbarOpenYbnButton";
-            this.ToolbarOpenYbnButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenYbnButton.Text = "Open ybn file...";
-            this.ToolbarOpenYbnButton.Click += new System.EventHandler(this.ToolbarOpenYbnButton_Click);
-            // 
-            // ToolbarOpenYndButton
-            // 
-            this.ToolbarOpenYndButton.Name = "ToolbarOpenYndButton";
-            this.ToolbarOpenYndButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenYndButton.Text = "Open ynd file...";
-            this.ToolbarOpenYndButton.Click += new System.EventHandler(this.ToolbarOpenYndButton_Click);
-            // 
-            // ToolbarOpenTrainsButton
-            // 
-            this.ToolbarOpenTrainsButton.Name = "ToolbarOpenTrainsButton";
-            this.ToolbarOpenTrainsButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenTrainsButton.Text = "Open trains file...";
-            this.ToolbarOpenTrainsButton.Click += new System.EventHandler(this.ToolbarOpenTrainsButton_Click);
-            // 
-            // ToolbarOpenScenarioButton
-            // 
-            this.ToolbarOpenScenarioButton.Name = "ToolbarOpenScenarioButton";
-            this.ToolbarOpenScenarioButton.Size = new System.Drawing.Size(178, 22);
-            this.ToolbarOpenScenarioButton.Text = "Open scenario file...";
-            this.ToolbarOpenScenarioButton.Click += new System.EventHandler(this.ToolbarOpenScenarioButton_Click);
+            this.ToolbarOpenFolderButton.Name = "ToolbarOpenFolderButton";
+            this.ToolbarOpenFolderButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenFolderButton.Text = "Open Folder...";
+            this.ToolbarOpenFolderButton.Click += new System.EventHandler(this.ToolbarOpenFolderButton_Click);
             // 
             // ToolbarSaveButton
             // 
@@ -3108,112 +3072,126 @@ namespace CodeWalker
             this.ToolbarSelectEntityButton.Checked = true;
             this.ToolbarSelectEntityButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ToolbarSelectEntityButton.Name = "ToolbarSelectEntityButton";
-            this.ToolbarSelectEntityButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectEntityButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectEntityButton.Text = "Entity";
             this.ToolbarSelectEntityButton.Click += new System.EventHandler(this.ToolbarSelectEntityButton_Click);
             // 
             // ToolbarSelectEntityExtensionButton
             // 
             this.ToolbarSelectEntityExtensionButton.Name = "ToolbarSelectEntityExtensionButton";
-            this.ToolbarSelectEntityExtensionButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectEntityExtensionButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectEntityExtensionButton.Text = "Entity Extension";
             this.ToolbarSelectEntityExtensionButton.Click += new System.EventHandler(this.ToolbarSelectEntityExtensionButton_Click);
             // 
             // ToolbarSelectArchetypeExtensionButton
             // 
             this.ToolbarSelectArchetypeExtensionButton.Name = "ToolbarSelectArchetypeExtensionButton";
-            this.ToolbarSelectArchetypeExtensionButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectArchetypeExtensionButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectArchetypeExtensionButton.Text = "Archetype Extension";
             this.ToolbarSelectArchetypeExtensionButton.Click += new System.EventHandler(this.ToolbarSelectArchetypeExtensionButton_Click);
             // 
             // ToolbarSelectTimeCycleModifierButton
             // 
             this.ToolbarSelectTimeCycleModifierButton.Name = "ToolbarSelectTimeCycleModifierButton";
-            this.ToolbarSelectTimeCycleModifierButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectTimeCycleModifierButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectTimeCycleModifierButton.Text = "Time Cycle Modifier";
             this.ToolbarSelectTimeCycleModifierButton.Click += new System.EventHandler(this.ToolbarSelectTimeCycleModifierButton_Click);
             // 
             // ToolbarSelectCarGeneratorButton
             // 
             this.ToolbarSelectCarGeneratorButton.Name = "ToolbarSelectCarGeneratorButton";
-            this.ToolbarSelectCarGeneratorButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectCarGeneratorButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectCarGeneratorButton.Text = "Car Generator";
             this.ToolbarSelectCarGeneratorButton.Click += new System.EventHandler(this.ToolbarSelectCarGeneratorButton_Click);
             // 
             // ToolbarSelectGrassButton
             // 
             this.ToolbarSelectGrassButton.Name = "ToolbarSelectGrassButton";
-            this.ToolbarSelectGrassButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectGrassButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectGrassButton.Text = "Grass";
             this.ToolbarSelectGrassButton.Click += new System.EventHandler(this.ToolbarSelectGrassButton_Click);
             // 
             // ToolbarSelectWaterQuadButton
             // 
             this.ToolbarSelectWaterQuadButton.Name = "ToolbarSelectWaterQuadButton";
-            this.ToolbarSelectWaterQuadButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectWaterQuadButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectWaterQuadButton.Text = "Water Quad";
             this.ToolbarSelectWaterQuadButton.Click += new System.EventHandler(this.ToolbarSelectWaterQuadButton_Click);
+            // 
+            // ToolbarSelectCalmingQuadButton
+            // 
+            this.ToolbarSelectCalmingQuadButton.Name = "ToolbarSelectCalmingQuadButton";
+            this.ToolbarSelectCalmingQuadButton.Size = new System.Drawing.Size(185, 22);
+            this.ToolbarSelectCalmingQuadButton.Text = "Water Calming Quad";
+            this.ToolbarSelectCalmingQuadButton.Click += new System.EventHandler(this.ToolbarSelectCalmingQuadButton_Click);
+            // 
+            // ToolbarSelectWaveQuadButton
+            // 
+            this.ToolbarSelectWaveQuadButton.Name = "ToolbarSelectWaveQuadButton";
+            this.ToolbarSelectWaveQuadButton.Size = new System.Drawing.Size(185, 22);
+            this.ToolbarSelectWaveQuadButton.Text = "Water Wave Quad";
+            this.ToolbarSelectWaveQuadButton.Click += new System.EventHandler(this.ToolbarSelectWaveQuadButton_Click);
             // 
             // ToolbarSelectCollisionButton
             // 
             this.ToolbarSelectCollisionButton.Name = "ToolbarSelectCollisionButton";
-            this.ToolbarSelectCollisionButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectCollisionButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectCollisionButton.Text = "Collision";
             this.ToolbarSelectCollisionButton.Click += new System.EventHandler(this.ToolbarSelectCollisionButton_Click);
             // 
             // ToolbarSelectNavMeshButton
             // 
             this.ToolbarSelectNavMeshButton.Name = "ToolbarSelectNavMeshButton";
-            this.ToolbarSelectNavMeshButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectNavMeshButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectNavMeshButton.Text = "Nav Mesh";
             this.ToolbarSelectNavMeshButton.Click += new System.EventHandler(this.ToolbarSelectNavMeshButton_Click);
             // 
             // ToolbarSelectPathButton
             // 
             this.ToolbarSelectPathButton.Name = "ToolbarSelectPathButton";
-            this.ToolbarSelectPathButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectPathButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectPathButton.Text = "Traffic Path";
             this.ToolbarSelectPathButton.Click += new System.EventHandler(this.ToolbarSelectPathButton_Click);
             // 
             // ToolbarSelectTrainTrackButton
             // 
             this.ToolbarSelectTrainTrackButton.Name = "ToolbarSelectTrainTrackButton";
-            this.ToolbarSelectTrainTrackButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectTrainTrackButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectTrainTrackButton.Text = "Train Track";
             this.ToolbarSelectTrainTrackButton.Click += new System.EventHandler(this.ToolbarSelectTrainTrackButton_Click);
             // 
             // ToolbarSelectLodLightsButton
             // 
             this.ToolbarSelectLodLightsButton.Name = "ToolbarSelectLodLightsButton";
-            this.ToolbarSelectLodLightsButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectLodLightsButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectLodLightsButton.Text = "Lod Lights";
             this.ToolbarSelectLodLightsButton.Click += new System.EventHandler(this.ToolbarSelectLodLightsButton_Click);
             // 
             // ToolbarSelectMloInstanceButton
             // 
             this.ToolbarSelectMloInstanceButton.Name = "ToolbarSelectMloInstanceButton";
-            this.ToolbarSelectMloInstanceButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectMloInstanceButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectMloInstanceButton.Text = "Interior Instance";
             this.ToolbarSelectMloInstanceButton.Click += new System.EventHandler(this.ToolbarSelectMloInstanceButton_Click);
             // 
             // ToolbarSelectScenarioButton
             // 
             this.ToolbarSelectScenarioButton.Name = "ToolbarSelectScenarioButton";
-            this.ToolbarSelectScenarioButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectScenarioButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectScenarioButton.Text = "Scenario";
             this.ToolbarSelectScenarioButton.Click += new System.EventHandler(this.ToolbarSelectScenarioButton_Click);
             // 
             // ToolbarSelectAudioButton
             // 
             this.ToolbarSelectAudioButton.Name = "ToolbarSelectAudioButton";
-            this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectAudioButton.Text = "Audio";
             this.ToolbarSelectAudioButton.Click += new System.EventHandler(this.ToolbarSelectAudioButton_Click);
             // 
             // ToolbarSelectOcclusionButton
             // 
             this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
-            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(182, 22);
+            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(185, 22);
             this.ToolbarSelectOcclusionButton.Text = "Occlusion";
             this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
             // 
@@ -3610,20 +3588,6 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
-            // ToolbarSelectCalmingQuadButton
-            // 
-            this.ToolbarSelectCalmingQuadButton.Name = "ToolbarSelectCalmingQuadButton";
-            this.ToolbarSelectCalmingQuadButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectCalmingQuadButton.Text = "Water Calming Quad";
-            this.ToolbarSelectCalmingQuadButton.Click += new System.EventHandler(this.ToolbarSelectCalmingQuadButton_Click);
-            // 
-            // ToolbarSelectWaveQuadButton
-            // 
-            this.ToolbarSelectWaveQuadButton.Name = "ToolbarSelectWaveQuadButton";
-            this.ToolbarSelectWaveQuadButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectWaveQuadButton.Text = "Water Wave Quad";
-            this.ToolbarSelectWaveQuadButton.Click += new System.EventHandler(this.ToolbarSelectWaveQuadButton_Click);
-            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3898,7 +3862,7 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewYmapButton;
         private System.Windows.Forms.ToolStripSplitButton ToolbarOpenButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenProjectButton;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYmapButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenFilesButton;
         private System.Windows.Forms.ToolStripButton ToolbarSaveButton;
         private System.Windows.Forms.ToolStripButton ToolbarSaveAllButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
@@ -3939,8 +3903,6 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox PathBoundsCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewYndButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewTrainsButton;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYndButton;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenTrainsButton;
         private System.Windows.Forms.CheckBox PathsDepthClipCheckBox;
         private System.Windows.Forms.CheckBox TrainPathsCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectNavMeshButton;
@@ -3955,7 +3917,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuWorldSearch;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuRPFExplorer;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewScenarioButton;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenScenarioButton;
         private System.Windows.Forms.CheckBox PopZonesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectAudioButton;
         private System.Windows.Forms.CheckBox AudioOuterBoundsCheckBox;
@@ -3979,9 +3940,8 @@ namespace CodeWalker
         private System.Windows.Forms.Timer SubtitleTimer;
         private System.Windows.Forms.CheckBox DeferredShadingCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewYbnButton;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYbnButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewYtypButton;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYtypButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenFolderButton;
         private System.Windows.Forms.NumericUpDown SnapAngleUpDown;
         private System.Windows.Forms.Label label33;
         private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnappingButton;

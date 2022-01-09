@@ -1435,43 +1435,163 @@ namespace CodeWalker.Project
             SetProjectHasChanged(false);
         }
 
-        public void Save()
+        public void OpenFolder()
+        {
+            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return;
+            var folder = FolderBrowserDialog.SelectedPath;
+
+            var files = Directory.GetFiles(folder, "*", SearchOption.AllDirectories);
+
+            if (files == null) return;
+            if (files.Length > 100)
+            {
+                if (MessageBox.Show("This folder contains many files, loading may take a long time!\nAre you sure you want to continue?", "Large folder warning", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            OpenFiles(files);
+        }
+        public void OpenFiles(string[] files = null)
+        {
+            if (files == null)
+            {
+                string[] filetypes = {
+                    "All supported|*.ymap;*.ytyp;*.ybn;*.ynd;*.ynv;*.dat;*.ymt;*.rel",
+                    "Ymap files|*.ymap",
+                    "Ytyp files|*.ytyp",
+                    "Ybn files|*.ybn",
+                    "Ynd files|*.ynd",
+                    "Ynv files|*.ynv",
+                    "Dat files|*.dat",
+                    "Ymt files|*.ymt",
+                    "Rel files|*.rel",
+                    "All files|*.*"
+                };
+
+                files = ShowOpenDialogMulti(string.Join("|", filetypes), string.Empty);
+            }
+            if (files == null) return;
+            if (files.Length == 0) return;
+
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+
+            var errorFiles = new List<string>();
+            foreach (var file in files)
+            {
+                try
+                {
+                    if (!File.Exists(file)) continue;
+                    var fl = file.ToLowerInvariant();
+                    var fn = Path.GetFileName(fl);
+                    var ext = Path.GetExtension(fl);
+                    switch (ext)
+                    {
+                        case ".ymap":
+                            var ymap = CurrentProjectFile.AddYmapFile(file);
+                            if (ymap != null) LoadYmapFromFile(ymap, file);
+                            break;
+                        case ".ytyp":
+                            var ytyp = CurrentProjectFile.AddYtypFile(file);
+                            if (ytyp != null) LoadYtypFromFile(ytyp, file);
+                            break;
+                        case ".ybn":
+                            var ybn = CurrentProjectFile.AddYbnFile(file);
+                            if (ybn != null) LoadYbnFromFile(ybn, file);
+                            break;
+                        case ".ynd":
+                            var ynd = CurrentProjectFile.AddYndFile(file);
+                            if (ynd != null) LoadYndFromFile(ynd, file);
+                            break;
+                        case ".ynv":
+                            var ynv = CurrentProjectFile.AddYnvFile(file);
+                            if (ynv != null) LoadYnvFromFile(ynv, file);
+                            break;
+                        case ".ymt":
+                            var ymtdata = File.ReadAllBytes(file);
+                            var ymt = new YmtFile();
+                            ymt.Load(ymtdata);
+                            ymt.RpfFileEntry.Name = Path.GetFileName(file);
+                            ymt.FilePath = file;
+                            ymt.Name = ymt.RpfFileEntry.Name;
+                            if (ymt.ContentType == YmtFileContentType.ScenarioPointRegion)
+                            {
+                                CurrentProjectFile.AddScenarioFile(ymt);
+                            }
+                            break;
+                        case ".dat":
+                            if (fn.StartsWith("trains"))
+                            {
+                                var track = CurrentProjectFile.AddTrainsFile(file);
+                                if (track != null) LoadTrainTrackFromFile(track, file);
+                            }
+                            break;
+                        case ".rel":
+                            if (fn.EndsWith(".dat151.rel"))
+                            {
+                                var dat151 = CurrentProjectFile.AddAudioRelFile(file);
+                                if (dat151 != null) LoadAudioRelFromFile(dat151, file);
+                            }
+                            break;
+                    }
+                }
+                catch
+                {
+                    errorFiles.Add(file);
+                }
+            }
+
+            SetProjectHasChanged(true);
+            LoadProjectTree();
+
+
+            if (errorFiles.Count > 0)
+            {
+                MessageBox.Show("Errors were encountered while loading file(s):\n" + String.Join("\n", errorFiles));
+            }
+        }
+
+        public void Save(bool saveas = false)
         {
             if (CurrentYmapFile != null)
             {
-                SaveYmap();
+                SaveYmap(saveas);
             }
             else if (CurrentYtypFile != null)
             {
-                SaveYtyp();
+                SaveYtyp(saveas);
             }
             else if (CurrentYbnFile != null)
             {
-                SaveYbn();
+                SaveYbn(saveas);
             }
             else if (CurrentYndFile != null)
             {
-                SaveYnd();
+                SaveYnd(saveas);
             }
             else if (CurrentYnvFile != null)
             {
-                SaveYnv();
+                SaveYnv(saveas);
             }
             else if (CurrentTrainTrack != null)
             {
-                SaveTrainTrack();
+                SaveTrainTrack(saveas);
             }
             else if (CurrentScenario != null)
             {
-                SaveScenario();
+                SaveScenario(saveas);
             }
             else if (CurrentAudioFile != null)
             {
-                SaveAudioFile();
+                SaveAudioFile(saveas);
             }
             else if (CurrentProjectFile != null)
             {
-                SaveProject();
+                SaveProject(saveas);
             }
         }
         public void SaveAll()
@@ -1578,42 +1698,6 @@ namespace CodeWalker.Project
                 SaveProject();
             }
         }
-        public void SaveCurrentItem(bool saveas = false)
-        {
-            if (CurrentYmapFile != null)
-            {
-                SaveYmap(saveas);
-            }
-            else if (CurrentYtypFile != null)
-            {
-                SaveYtyp(saveas);
-            }
-            else if (CurrentYbnFile != null)
-            {
-                SaveYbn(saveas);
-            }
-            else if (CurrentYndFile != null)
-            {
-                SaveYnd(saveas);
-            }
-            else if (CurrentYnvFile != null)
-            {
-                SaveYnv(saveas);
-            }
-            else if (CurrentTrainTrack != null)
-            {
-                SaveTrainTrack(saveas);
-            }
-            else if (CurrentScenario != null)
-            {
-                SaveScenario(saveas);
-            }
-            else if (CurrentAudioFile != null)
-            {
-                SaveAudioFile(saveas);
-            }
-        }
-
 
 
 
@@ -1732,40 +1816,6 @@ namespace CodeWalker.Project
             CurrentProjectFile.HasChanged = true;
 
             LoadProjectTree();
-        }
-        public void OpenYmap()
-        {
-            string[] files = ShowOpenDialogMulti("Ymap files|*.ymap", string.Empty);
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var ymap = CurrentProjectFile.AddYmapFile(file);
-
-                if (ymap != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadYmapFromFile(ymap, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
         }
         public void SaveYmap(bool saveas = false)
         {
@@ -3062,40 +3112,6 @@ namespace CodeWalker.Project
 
             LoadProjectTree();
         }
-        public void OpenYtyp()
-        {
-            string[] files = ShowOpenDialogMulti("Ytyp files|*.ytyp", string.Empty);
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var ytyp = CurrentProjectFile.AddYtypFile(file);
-
-                if (ytyp != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadYtypFromFile(ytyp, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
-        }
         public void SaveYtyp(bool saveas = false)
         {
             if (CurrentYtypFile == null) return;
@@ -3796,40 +3812,6 @@ namespace CodeWalker.Project
 
             LoadProjectTree();
         }
-        public void OpenYbn()
-        {
-            string[] files = ShowOpenDialogMulti("Ybn files|*.ybn", string.Empty);
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var ybn = CurrentProjectFile.AddYbnFile(file);
-
-                if (ybn != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadYbnFromFile(ybn, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
-        }
         public void SaveYbn(bool saveas = false)
         {
             if ((CurrentYbnFile == null) && (CurrentCollisionBounds != null)) CurrentYbnFile = CurrentCollisionBounds.GetRootYbn();
@@ -4459,40 +4441,6 @@ namespace CodeWalker.Project
 
             LoadProjectTree();
         }
-        public void OpenYnd()
-        {
-            string[] files = ShowOpenDialogMulti("Ynd files|*.ynd", string.Empty);
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var ynd = CurrentProjectFile.AddYndFile(file);
-
-                if (ynd != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadYndFromFile(ynd, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
-        }
         public void SaveYnd(bool saveas = false)
         {
             if ((CurrentYndFile == null) && (CurrentPathNode != null)) CurrentYndFile = CurrentPathNode.Ynd;
@@ -4769,40 +4717,6 @@ namespace CodeWalker.Project
 
             LoadProjectTree();
         }
-        public void OpenYnv()
-        {
-            string[] files = ShowOpenDialogMulti("Ynv files|*.ynv", string.Empty);
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var ynv = CurrentProjectFile.AddYnvFile(file);
-
-                if (ynv != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadYnvFromFile(ynv, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
-        }
         public void SaveYnv(bool saveas = false)
         {
             if ((CurrentYnvFile == null) && (CurrentNavPoly != null)) CurrentYnvFile = CurrentNavPoly.Ynv;
@@ -4983,40 +4897,6 @@ namespace CodeWalker.Project
             CurrentProjectFile.HasChanged = true;
 
             LoadProjectTree();
-        }
-        public void OpenTrainTrack()
-        {
-            string[] files = ShowOpenDialogMulti("Dat files|*.dat", string.Empty);
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var track = CurrentProjectFile.AddTrainsFile(file);
-
-                if (track != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadTrainTrackFromFile(track, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
         }
         public void SaveTrainTrack(bool saveas = false)
         {
@@ -5265,40 +5145,6 @@ namespace CodeWalker.Project
             CurrentProjectFile.HasChanged = true;
 
             LoadProjectTree();
-        }
-        public void OpenScenario()
-        {
-            string[] files = ShowOpenDialogMulti("Ymt files|*.ymt", string.Empty);
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var ymt = CurrentProjectFile.AddScenarioFile(file);
-
-                if (ymt != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadScenarioFromFile(ymt, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
         }
         public void SaveScenario(bool saveas = false)
         {
@@ -6270,40 +6116,6 @@ namespace CodeWalker.Project
             CurrentProjectFile.HasChanged = true;
 
             LoadProjectTree();
-        }
-        public void OpenAudioFile()
-        {
-            string[] files = ShowOpenDialogMulti("DatRel files|*.rel", string.Empty); //TODO: better filter?
-            if (files == null)
-            {
-                return;
-            }
-
-            if (CurrentProjectFile == null)
-            {
-                NewProject();
-            }
-
-            foreach (string file in files)
-            {
-                if (!File.Exists(file)) continue;
-
-                var rel = CurrentProjectFile.AddAudioRelFile(file);
-
-                if (rel != null)
-                {
-                    SetProjectHasChanged(true);
-
-                    LoadAudioRelFromFile(rel, file);
-
-                    LoadProjectTree();
-                }
-                else
-                {
-                    MessageBox.Show("Couldn't add\n" + file + "\n - the file already exists in the project.");
-                }
-
-            }
         }
         public void SaveAudioFile(bool saveas = false)
         {
@@ -9035,37 +8847,13 @@ namespace CodeWalker.Project
         {
             OpenProject();
         }
-        private void FileOpenYmapMenu_Click(object sender, EventArgs e)
+        private void FileOpenFilesMenu_Click(object sender, EventArgs e)
         {
-            OpenYmap();
+            OpenFiles();
         }
-        private void FileOpenYtypMenu_Click(object sender, EventArgs e)
+        private void FileOpenFolderMenu_Click(object sender, EventArgs e)
         {
-            OpenYtyp();
-        }
-        private void FileOpenYbnMenu_Click(object sender, EventArgs e)
-        {
-            OpenYbn();
-        }
-        private void FileOpenYndMenu_Click(object sender, EventArgs e)
-        {
-            OpenYnd();
-        }
-        private void FileOpenYnvMenu_Click(object sender, EventArgs e)
-        {
-            OpenYnv();
-        }
-        private void FileOpenTrainsMenu_Click(object sender, EventArgs e)
-        {
-            OpenTrainTrack();
-        }
-        private void FileOpenScenarioMenu_Click(object sender, EventArgs e)
-        {
-            OpenScenario();
-        }
-        private void FileOpenAudioDatMenu_Click(object sender, EventArgs e)
-        {
-            OpenAudioFile();
+            OpenFolder();
         }
         private void FileCloseProjectMenu_Click(object sender, EventArgs e)
         {
@@ -9081,11 +8869,11 @@ namespace CodeWalker.Project
         }
         private void FileSaveItemMenu_Click(object sender, EventArgs e)
         {
-            SaveCurrentItem();
+            Save();
         }
         private void FileSaveItemAsMenu_Click(object sender, EventArgs e)
         {
-            SaveCurrentItem(true);
+            Save(true);
         }
 
         private void ViewProjectExplorerMenu_Click(object sender, EventArgs e)
@@ -9441,40 +9229,20 @@ namespace CodeWalker.Project
             }
             else
             {
-                OpenYmap();
+                OpenFiles();
             }
         }
         private void ToolbarOpenProjectMenu_Click(object sender, EventArgs e)
         {
             OpenProject();
         }
-        private void ToolbarOpenYmapMenu_Click(object sender, EventArgs e)
+        private void ToolbarOpenFilesMenu_Click(object sender, EventArgs e)
         {
-            OpenYmap();
+            OpenFiles();
         }
-        private void ToolbarOpenYtypMenu_Click(object sender, EventArgs e)
+        private void ToolbarOpenFolderMenu_Click(object sender, EventArgs e)
         {
-            OpenYtyp();
-        }
-        private void ToolbarOpenYbnMenu_Click(object sender, EventArgs e)
-        {
-            OpenYbn();
-        }
-        private void ToolbarOpenYndMenu_Click(object sender, EventArgs e)
-        {
-            OpenYnd();
-        }
-        private void ToolbarOpenYnvMenu_Click(object sender, EventArgs e)
-        {
-            OpenYnv();
-        }
-        private void ToolbarOpenTrainsMenu_Click(object sender, EventArgs e)
-        {
-            OpenTrainTrack();
-        }
-        private void ToolbarOpenScenarioMenu_Click(object sender, EventArgs e)
-        {
-            OpenScenario();
+            OpenFolder();
         }
         private void ToolbarSaveButton_Click(object sender, EventArgs e)
         {
@@ -9484,5 +9252,6 @@ namespace CodeWalker.Project
         {
             SaveAll();
         }
+
     }
 }

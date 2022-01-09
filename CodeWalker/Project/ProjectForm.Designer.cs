@@ -43,17 +43,9 @@
             this.FileNewTrainsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.FileNewScenarioMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.FileNewAudioDatMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.FileOpenProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
-            this.FileOpenYmapMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenYtypMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenYbnMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenYndMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenYnvMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenTrainsMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenScenarioMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.FileOpenAudioDatMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.FileOpenFilesMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.FileOpenFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.FileCloseProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -90,6 +82,7 @@
             this.YtypNameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
             this.YtypNewArchetypeMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtypNewArchetypeFromYdrMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypMloToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypMloNewEntityToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.YtypMloNewRoomToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -196,18 +189,12 @@
             this.ToolbarNewScenarioMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarOpenButton = new CodeWalker.WinForms.ToolStripSplitButtonFix();
             this.ToolbarOpenProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarOpenYmapMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYtypMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYbnMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYndMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenYnvMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenTrainsMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenScenarioMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenFilesMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarOpenFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.YtypNewArchetypeFromYdrMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -238,7 +225,9 @@
             // 
             this.FileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FileNewMenu,
-            this.FileOpenMenu,
+            this.FileOpenProjectMenu,
+            this.FileOpenFilesMenu,
+            this.FileOpenFolderMenu,
             this.toolStripSeparator3,
             this.FileCloseProjectMenu,
             this.toolStripSeparator4,
@@ -264,7 +253,7 @@
             this.FileNewScenarioMenu,
             this.FileNewAudioDatMenu});
             this.FileNewMenu.Name = "FileNewMenu";
-            this.FileNewMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileNewMenu.Size = new System.Drawing.Size(180, 22);
             this.FileNewMenu.Text = "New";
             // 
             // FileNewProjectMenu
@@ -335,114 +324,50 @@
             this.FileNewAudioDatMenu.Text = "Audio Dat File";
             this.FileNewAudioDatMenu.Click += new System.EventHandler(this.FileNewAudioDatMenu_Click);
             // 
-            // FileOpenMenu
-            // 
-            this.FileOpenMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.FileOpenProjectMenu,
-            this.toolStripSeparator9,
-            this.FileOpenYmapMenu,
-            this.FileOpenYtypMenu,
-            this.FileOpenYbnMenu,
-            this.FileOpenYndMenu,
-            this.FileOpenYnvMenu,
-            this.FileOpenTrainsMenu,
-            this.FileOpenScenarioMenu,
-            this.FileOpenAudioDatMenu});
-            this.FileOpenMenu.Name = "FileOpenMenu";
-            this.FileOpenMenu.Size = new System.Drawing.Size(163, 22);
-            this.FileOpenMenu.Text = "Open";
-            // 
             // FileOpenProjectMenu
             // 
             this.FileOpenProjectMenu.Name = "FileOpenProjectMenu";
-            this.FileOpenProjectMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenProjectMenu.Text = "Project...";
+            this.FileOpenProjectMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileOpenProjectMenu.Text = "Open Project...";
             this.FileOpenProjectMenu.Click += new System.EventHandler(this.FileOpenProjectMenu_Click);
             // 
-            // toolStripSeparator9
+            // FileOpenFilesMenu
             // 
-            this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(154, 6);
+            this.FileOpenFilesMenu.Name = "FileOpenFilesMenu";
+            this.FileOpenFilesMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileOpenFilesMenu.Text = "Open Files...";
+            this.FileOpenFilesMenu.Click += new System.EventHandler(this.FileOpenFilesMenu_Click);
             // 
-            // FileOpenYmapMenu
+            // FileOpenFolderMenu
             // 
-            this.FileOpenYmapMenu.Name = "FileOpenYmapMenu";
-            this.FileOpenYmapMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenYmapMenu.Text = "Ymap File...";
-            this.FileOpenYmapMenu.Click += new System.EventHandler(this.FileOpenYmapMenu_Click);
-            // 
-            // FileOpenYtypMenu
-            // 
-            this.FileOpenYtypMenu.Name = "FileOpenYtypMenu";
-            this.FileOpenYtypMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenYtypMenu.Text = "Ytyp File...";
-            this.FileOpenYtypMenu.Click += new System.EventHandler(this.FileOpenYtypMenu_Click);
-            // 
-            // FileOpenYbnMenu
-            // 
-            this.FileOpenYbnMenu.Name = "FileOpenYbnMenu";
-            this.FileOpenYbnMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenYbnMenu.Text = "Ybn File...";
-            this.FileOpenYbnMenu.Click += new System.EventHandler(this.FileOpenYbnMenu_Click);
-            // 
-            // FileOpenYndMenu
-            // 
-            this.FileOpenYndMenu.Name = "FileOpenYndMenu";
-            this.FileOpenYndMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenYndMenu.Text = "Ynd File...";
-            this.FileOpenYndMenu.Click += new System.EventHandler(this.FileOpenYndMenu_Click);
-            // 
-            // FileOpenYnvMenu
-            // 
-            this.FileOpenYnvMenu.Name = "FileOpenYnvMenu";
-            this.FileOpenYnvMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenYnvMenu.Text = "Ynv File...";
-            this.FileOpenYnvMenu.Click += new System.EventHandler(this.FileOpenYnvMenu_Click);
-            // 
-            // FileOpenTrainsMenu
-            // 
-            this.FileOpenTrainsMenu.Name = "FileOpenTrainsMenu";
-            this.FileOpenTrainsMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenTrainsMenu.Text = "Trains File...";
-            this.FileOpenTrainsMenu.Click += new System.EventHandler(this.FileOpenTrainsMenu_Click);
-            // 
-            // FileOpenScenarioMenu
-            // 
-            this.FileOpenScenarioMenu.Name = "FileOpenScenarioMenu";
-            this.FileOpenScenarioMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenScenarioMenu.Text = "Scenario File...";
-            this.FileOpenScenarioMenu.Click += new System.EventHandler(this.FileOpenScenarioMenu_Click);
-            // 
-            // FileOpenAudioDatMenu
-            // 
-            this.FileOpenAudioDatMenu.Name = "FileOpenAudioDatMenu";
-            this.FileOpenAudioDatMenu.Size = new System.Drawing.Size(157, 22);
-            this.FileOpenAudioDatMenu.Text = "Audio Dat File...";
-            this.FileOpenAudioDatMenu.Click += new System.EventHandler(this.FileOpenAudioDatMenu_Click);
+            this.FileOpenFolderMenu.Name = "FileOpenFolderMenu";
+            this.FileOpenFolderMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileOpenFolderMenu.Text = "Open Folder...";
+            this.FileOpenFolderMenu.Click += new System.EventHandler(this.FileOpenFolderMenu_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(160, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
             // 
             // FileCloseProjectMenu
             // 
             this.FileCloseProjectMenu.Enabled = false;
             this.FileCloseProjectMenu.Name = "FileCloseProjectMenu";
-            this.FileCloseProjectMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileCloseProjectMenu.Size = new System.Drawing.Size(180, 22);
             this.FileCloseProjectMenu.Text = "Close Project";
             this.FileCloseProjectMenu.Click += new System.EventHandler(this.FileCloseProjectMenu_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(160, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
             // 
             // FileSaveProjectMenu
             // 
             this.FileSaveProjectMenu.Enabled = false;
             this.FileSaveProjectMenu.Name = "FileSaveProjectMenu";
-            this.FileSaveProjectMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveProjectMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveProjectMenu.Text = "Save Project";
             this.FileSaveProjectMenu.Click += new System.EventHandler(this.FileSaveProjectMenu_Click);
             // 
@@ -450,7 +375,7 @@
             // 
             this.FileSaveProjectAsMenu.Enabled = false;
             this.FileSaveProjectAsMenu.Name = "FileSaveProjectAsMenu";
-            this.FileSaveProjectAsMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveProjectAsMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveProjectAsMenu.Text = "Save Project As...";
             this.FileSaveProjectAsMenu.Click += new System.EventHandler(this.FileSaveProjectAsMenu_Click);
             // 
@@ -458,7 +383,7 @@
             // 
             this.FileSaveItemMenu.Enabled = false;
             this.FileSaveItemMenu.Name = "FileSaveItemMenu";
-            this.FileSaveItemMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveItemMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveItemMenu.Text = "Save Item";
             this.FileSaveItemMenu.Visible = false;
             this.FileSaveItemMenu.Click += new System.EventHandler(this.FileSaveItemMenu_Click);
@@ -467,7 +392,7 @@
             // 
             this.FileSaveItemAsMenu.Enabled = false;
             this.FileSaveItemAsMenu.Name = "FileSaveItemAsMenu";
-            this.FileSaveItemAsMenu.Size = new System.Drawing.Size(163, 22);
+            this.FileSaveItemAsMenu.Size = new System.Drawing.Size(180, 22);
             this.FileSaveItemAsMenu.Text = "Save Item As...";
             this.FileSaveItemAsMenu.Visible = false;
             this.FileSaveItemAsMenu.Click += new System.EventHandler(this.FileSaveItemAsMenu_Click);
@@ -710,6 +635,14 @@
             this.YtypNewArchetypeMenu.Size = new System.Drawing.Size(218, 22);
             this.YtypNewArchetypeMenu.Text = "New Archetype";
             this.YtypNewArchetypeMenu.Click += new System.EventHandler(this.YtypNewArchetypeMenu_Click);
+            // 
+            // YtypNewArchetypeFromYdrMenu
+            // 
+            this.YtypNewArchetypeFromYdrMenu.Enabled = false;
+            this.YtypNewArchetypeFromYdrMenu.Name = "YtypNewArchetypeFromYdrMenu";
+            this.YtypNewArchetypeFromYdrMenu.Size = new System.Drawing.Size(218, 22);
+            this.YtypNewArchetypeFromYdrMenu.Text = "New Archetype from YDR...";
+            this.YtypNewArchetypeFromYdrMenu.Click += new System.EventHandler(this.YtypNewArchetypeFromYdrMenu_Click);
             // 
             // YtypMloToolStripMenuItem
             // 
@@ -1549,14 +1482,8 @@
             this.ToolbarOpenButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.ToolbarOpenButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolbarOpenProjectMenu,
-            this.toolStripSeparator6,
-            this.ToolbarOpenYmapMenu,
-            this.ToolbarOpenYtypMenu,
-            this.ToolbarOpenYbnMenu,
-            this.ToolbarOpenYndMenu,
-            this.ToolbarOpenYnvMenu,
-            this.ToolbarOpenTrainsMenu,
-            this.ToolbarOpenScenarioMenu});
+            this.ToolbarOpenFilesMenu,
+            this.ToolbarOpenFolderMenu});
             this.ToolbarOpenButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarOpenButton.Image")));
             this.ToolbarOpenButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolbarOpenButton.Name = "ToolbarOpenButton";
@@ -1567,63 +1494,23 @@
             // ToolbarOpenProjectMenu
             // 
             this.ToolbarOpenProjectMenu.Name = "ToolbarOpenProjectMenu";
-            this.ToolbarOpenProjectMenu.Size = new System.Drawing.Size(181, 22);
+            this.ToolbarOpenProjectMenu.Size = new System.Drawing.Size(152, 22);
             this.ToolbarOpenProjectMenu.Text = "Open Project...";
             this.ToolbarOpenProjectMenu.Click += new System.EventHandler(this.ToolbarOpenProjectMenu_Click);
             // 
-            // toolStripSeparator6
+            // ToolbarOpenFilesMenu
             // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(178, 6);
+            this.ToolbarOpenFilesMenu.Name = "ToolbarOpenFilesMenu";
+            this.ToolbarOpenFilesMenu.Size = new System.Drawing.Size(152, 22);
+            this.ToolbarOpenFilesMenu.Text = "Open Files...";
+            this.ToolbarOpenFilesMenu.Click += new System.EventHandler(this.ToolbarOpenFilesMenu_Click);
             // 
-            // ToolbarOpenYmapMenu
+            // ToolbarOpenFolderMenu
             // 
-            this.ToolbarOpenYmapMenu.Name = "ToolbarOpenYmapMenu";
-            this.ToolbarOpenYmapMenu.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarOpenYmapMenu.Text = "Open Ymap File...";
-            this.ToolbarOpenYmapMenu.Click += new System.EventHandler(this.ToolbarOpenYmapMenu_Click);
-            // 
-            // ToolbarOpenYtypMenu
-            // 
-            this.ToolbarOpenYtypMenu.Name = "ToolbarOpenYtypMenu";
-            this.ToolbarOpenYtypMenu.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarOpenYtypMenu.Text = "Open Ytyp File...";
-            this.ToolbarOpenYtypMenu.Click += new System.EventHandler(this.ToolbarOpenYtypMenu_Click);
-            // 
-            // ToolbarOpenYbnMenu
-            // 
-            this.ToolbarOpenYbnMenu.Name = "ToolbarOpenYbnMenu";
-            this.ToolbarOpenYbnMenu.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarOpenYbnMenu.Text = "Open Ybn File...";
-            this.ToolbarOpenYbnMenu.Click += new System.EventHandler(this.ToolbarOpenYbnMenu_Click);
-            // 
-            // ToolbarOpenYndMenu
-            // 
-            this.ToolbarOpenYndMenu.Name = "ToolbarOpenYndMenu";
-            this.ToolbarOpenYndMenu.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarOpenYndMenu.Text = "Open Ynd File...";
-            this.ToolbarOpenYndMenu.Click += new System.EventHandler(this.ToolbarOpenYndMenu_Click);
-            // 
-            // ToolbarOpenYnvMenu
-            // 
-            this.ToolbarOpenYnvMenu.Name = "ToolbarOpenYnvMenu";
-            this.ToolbarOpenYnvMenu.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarOpenYnvMenu.Text = "Open Ynv File...";
-            this.ToolbarOpenYnvMenu.Click += new System.EventHandler(this.ToolbarOpenYnvMenu_Click);
-            // 
-            // ToolbarOpenTrainsMenu
-            // 
-            this.ToolbarOpenTrainsMenu.Name = "ToolbarOpenTrainsMenu";
-            this.ToolbarOpenTrainsMenu.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarOpenTrainsMenu.Text = "Open Trains File...";
-            this.ToolbarOpenTrainsMenu.Click += new System.EventHandler(this.ToolbarOpenTrainsMenu_Click);
-            // 
-            // ToolbarOpenScenarioMenu
-            // 
-            this.ToolbarOpenScenarioMenu.Name = "ToolbarOpenScenarioMenu";
-            this.ToolbarOpenScenarioMenu.Size = new System.Drawing.Size(181, 22);
-            this.ToolbarOpenScenarioMenu.Text = "Open Scenario File...";
-            this.ToolbarOpenScenarioMenu.Click += new System.EventHandler(this.ToolbarOpenScenarioMenu_Click);
+            this.ToolbarOpenFolderMenu.Name = "ToolbarOpenFolderMenu";
+            this.ToolbarOpenFolderMenu.Size = new System.Drawing.Size(152, 22);
+            this.ToolbarOpenFolderMenu.Text = "Open Folder...";
+            this.ToolbarOpenFolderMenu.Click += new System.EventHandler(this.ToolbarOpenFolderMenu_Click);
             // 
             // ToolbarSaveButton
             // 
@@ -1650,14 +1537,6 @@
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
-            // 
-            // YtypNewArchetypeFromYdrMenu
-            // 
-            this.YtypNewArchetypeFromYdrMenu.Enabled = false;
-            this.YtypNewArchetypeFromYdrMenu.Name = "YtypNewArchetypeFromYdrMenu";
-            this.YtypNewArchetypeFromYdrMenu.Size = new System.Drawing.Size(218, 22);
-            this.YtypNewArchetypeFromYdrMenu.Text = "New Archetype from YDR...";
-            this.YtypNewArchetypeFromYdrMenu.Click += new System.EventHandler(this.YtypNewArchetypeFromYdrMenu_Click);
             // 
             // ProjectForm
             // 
@@ -1706,7 +1585,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem FileNewMenu;
         private System.Windows.Forms.ToolStripMenuItem FileNewProjectMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenMenu;
         private System.Windows.Forms.ToolStripMenuItem FileOpenProjectMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem FileCloseProjectMenu;
@@ -1720,13 +1598,7 @@
         private System.Windows.Forms.ToolStripMenuItem FileNewYnvMenu;
         private System.Windows.Forms.ToolStripMenuItem FileNewTrainsMenu;
         private System.Windows.Forms.ToolStripMenuItem FileNewScenarioMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenYmapMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenYndMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenYnvMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenTrainsMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenScenarioMenu;
         private System.Windows.Forms.ToolStripMenuItem FileNewYtypMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenYtypMenu;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
         private System.Windows.Forms.ToolStrip MainToolbar;
@@ -1744,15 +1616,7 @@
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewTrainsMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewScenarioMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenProjectMenu;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYmapMenu;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYtypMenu;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYndMenu;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYnvMenu;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenTrainsMenu;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenScenarioMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.ToolStripMenuItem EditUndoMenu;
         private System.Windows.Forms.ToolStripMenuItem EditRedoMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
@@ -1824,7 +1688,6 @@
         private System.Windows.Forms.ToolStripMenuItem AudioAddToProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioRemoveFromProjectMenu;
         private System.Windows.Forms.ToolStripMenuItem FileNewAudioDatMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenAudioDatMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNewInteriorMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNewInteriorRoomMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsLODLightsGeneratorMenu;
@@ -1854,14 +1717,17 @@
         private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonBoxMenu;
         private System.Windows.Forms.ToolStripMenuItem YbnNewPolygonCylinderMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewYbnMenu;
-        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenYbnMenu;
         private System.Windows.Forms.ToolStripMenuItem FileNewYbnMenu;
-        private System.Windows.Forms.ToolStripMenuItem FileOpenYbnMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
         private System.Windows.Forms.ToolStripMenuItem OptionsAutoCalcYmapFlagsMenu;
         private System.Windows.Forms.ToolStripMenuItem OptionsAutoCalcYmapExtentsMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator28;
         private System.Windows.Forms.ToolStripMenuItem OptionsDisplayEntityIndexesMenu;
         private System.Windows.Forms.ToolStripMenuItem YtypNewArchetypeFromYdrMenu;
+        private System.Windows.Forms.ToolStripMenuItem FileOpenFilesMenu;
+        private System.Windows.Forms.ToolStripMenuItem FileOpenFolderMenu;
+        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenFilesMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolbarOpenFolderMenu;
     }
 }
