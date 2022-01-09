@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(YtdForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.FileMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -72,6 +73,9 @@
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.OpenDDSFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.SaveYTDFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.AddImgMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.pNGsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dDsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.MainToolbar.SuspendLayout();
@@ -85,6 +89,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.SelTexturePictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SelTextureMipTrackBar)).BeginInit();
             this.DetailsTabPage.SuspendLayout();
+            this.AddImgMenu.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -115,21 +120,21 @@
             this.FileSaveMenu.Image = ((System.Drawing.Image)(resources.GetObject("FileSaveMenu.Image")));
             this.FileSaveMenu.Name = "FileSaveMenu";
             this.FileSaveMenu.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.FileSaveMenu.Size = new System.Drawing.Size(242, 22);
+            this.FileSaveMenu.Size = new System.Drawing.Size(256, 22);
             this.FileSaveMenu.Text = "Save YTD";
             this.FileSaveMenu.Click += new System.EventHandler(this.FileSaveMenu_Click);
             // 
             // FileSaveAsMenu
             // 
             this.FileSaveAsMenu.Name = "FileSaveAsMenu";
-            this.FileSaveAsMenu.Size = new System.Drawing.Size(242, 22);
+            this.FileSaveAsMenu.Size = new System.Drawing.Size(256, 22);
             this.FileSaveAsMenu.Text = "Save YTD As...";
             this.FileSaveAsMenu.Click += new System.EventHandler(this.FileSaveAsMenu_Click);
             // 
             // FileSaveTextureAsMenu
             // 
             this.FileSaveTextureAsMenu.Name = "FileSaveTextureAsMenu";
-            this.FileSaveTextureAsMenu.Size = new System.Drawing.Size(242, 22);
+            this.FileSaveTextureAsMenu.Size = new System.Drawing.Size(256, 22);
             this.FileSaveTextureAsMenu.Text = "Save Texture As...";
             this.FileSaveTextureAsMenu.Click += new System.EventHandler(this.FileSaveTextureAsMenu_Click);
             // 
@@ -139,7 +144,7 @@
             this.FileSaveAllTexturesMenu.Name = "FileSaveAllTexturesMenu";
             this.FileSaveAllTexturesMenu.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.S)));
-            this.FileSaveAllTexturesMenu.Size = new System.Drawing.Size(242, 22);
+            this.FileSaveAllTexturesMenu.Size = new System.Drawing.Size(256, 22);
             this.FileSaveAllTexturesMenu.Text = "Save All Textures...";
             this.FileSaveAllTexturesMenu.Click += new System.EventHandler(this.FileSaveAllTexturesMenu_Click);
             // 
@@ -515,6 +520,28 @@
             // 
             this.SaveYTDFileDialog.Filter = "YTD files|*.ytd|All files|*.*";
             // 
+            // AddImgMenu
+            // 
+            this.AddImgMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.pNGsToolStripMenuItem,
+            this.dDsToolStripMenuItem});
+            this.AddImgMenu.Name = "AddImgMenu";
+            this.AddImgMenu.Size = new System.Drawing.Size(181, 70);
+            // 
+            // pNGsToolStripMenuItem
+            // 
+            this.pNGsToolStripMenuItem.Name = "pNGsToolStripMenuItem";
+            this.pNGsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pNGsToolStripMenuItem.Text = "PNG";
+            this.pNGsToolStripMenuItem.Click += new System.EventHandler(this.pNGsToolStripMenuItem_Click);
+            // 
+            // dDsToolStripMenuItem
+            // 
+            this.dDsToolStripMenuItem.Name = "dDsToolStripMenuItem";
+            this.dDsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.dDsToolStripMenuItem.Text = "DDS";
+            this.dDsToolStripMenuItem.Click += new System.EventHandler(this.dDsToolStripMenuItem_Click);
+            // 
             // YtdForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -547,6 +574,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.SelTexturePictureBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SelTextureMipTrackBar)).EndInit();
             this.DetailsTabPage.ResumeLayout(false);
+            this.AddImgMenu.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -597,5 +625,8 @@
         private System.Windows.Forms.ToolStripMenuItem ToolbarSaveAsMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSaveTextureAsMenu;
         private System.Windows.Forms.SaveFileDialog SaveYTDFileDialog;
+        private System.Windows.Forms.ContextMenuStrip AddImgMenu;
+        private System.Windows.Forms.ToolStripMenuItem pNGsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dDsToolStripMenuItem;
     }
 }

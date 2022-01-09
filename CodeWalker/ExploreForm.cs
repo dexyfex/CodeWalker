@@ -4365,16 +4365,6 @@ namespace CodeWalker
             OptionsStartInFolderValueMenu.Text = string.IsNullOrEmpty(CurrentFolder.Path) ? "(Default)" : CurrentFolder.Path;
         }
 
-        private void yTDFilesFromFoldersToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-            FolderBrowserDialog fbd = new FolderBrowserDialog();
-
-            if (fbd.ShowDialogNew() == DialogResult.OK)
-            {
-                NewYtdFiles(Directory.GetDirectories(fbd.SelectedPath).ToList());
-            }
-        }
 
         private void NewYtdFiles(List<string> DirectoriesWithDDS)
         {
@@ -4422,6 +4412,16 @@ namespace CodeWalker
 
             RefreshMainListView();
 
+        }
+
+        private void dDSFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+
+            if (fbd.ShowDialogNew() == DialogResult.OK)
+            {
+                NewYtdFiles(Directory.GetDirectories(fbd.SelectedPath).ToList());
+            }
         }
     }
 

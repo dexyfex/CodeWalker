@@ -158,6 +158,8 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
+            this.dDSFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pNGFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -1105,10 +1107,12 @@
             // 
             // yTDFilesFromFoldersToolStripMenuItem
             // 
+            this.yTDFilesFromFoldersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.dDSFilesToolStripMenuItem,
+            this.pNGFilesToolStripMenuItem});
             this.yTDFilesFromFoldersToolStripMenuItem.Name = "yTDFilesFromFoldersToolStripMenuItem";
             this.yTDFilesFromFoldersToolStripMenuItem.Size = new System.Drawing.Size(277, 22);
             this.yTDFilesFromFoldersToolStripMenuItem.Text = "YTD Files from folders within a folder...";
-            this.yTDFilesFromFoldersToolStripMenuItem.Click += new System.EventHandler(this.yTDFilesFromFoldersToolStripMenuItem_Click);
             // 
             // ListContextImportFbxMenu
             // 
@@ -1308,6 +1312,19 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
+            // dDSFilesToolStripMenuItem
+            // 
+            this.dDSFilesToolStripMenuItem.Name = "dDSFilesToolStripMenuItem";
+            this.dDSFilesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.dDSFilesToolStripMenuItem.Text = "DDS Files";
+            this.dDSFilesToolStripMenuItem.Click += new System.EventHandler(this.dDSFilesToolStripMenuItem_Click);
+            // 
+            // pNGFilesToolStripMenuItem
+            // 
+            this.pNGFilesToolStripMenuItem.Name = "pNGFilesToolStripMenuItem";
+            this.pNGFilesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pNGFilesToolStripMenuItem.Text = "PNG Files";
+            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1476,5 +1493,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
         private System.Windows.Forms.ToolStripMenuItem ListContextNewYtdFileMenu;
         private System.Windows.Forms.ToolStripMenuItem yTDFilesFromFoldersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dDSFilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pNGFilesToolStripMenuItem;
     }
 }

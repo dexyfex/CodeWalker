@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -365,7 +367,7 @@ namespace CodeWalker.Forms
             List<Texture> TextureList = new List<Texture>();
             OpenFileDialog ofd = new OpenFileDialog
             {
-                Filter = "DDS Files (*.dds)|*dds",
+                Filter = "DDS Files (*.dds)|*.dds",
                 Multiselect = true
             };
 
@@ -400,7 +402,85 @@ namespace CodeWalker.Forms
 
         }
 
+        public bool IsTransparent(Bitmap image)
+        {
+            for (int y = 0; y < image.Height; ++y)
+            {
+                for (int x = 0; x < image.Width; ++x)
+                {
+                    if (image.GetPixel(x, y).A < 255)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        private List<Texture> OpenPNGFiles()
+        {
+            List<Texture> TextureList = new List<Texture>();
+            OpenFileDialog ofd = new OpenFileDialog
+            {
+                Filter = "PNG Files (*.png)|*.png",
+                Multiselect = true
+            };
 
+            if (ofd.ShowDialog() != DialogResult.OK) return null;
+            string[] pngfiles = ofd.FileNames;
+
+            Process p = new Process();
+            p.StartInfo.FileName = "texconv.exe";
+            p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+
+            foreach (var pngfile in pngfiles)
+            {
+                string DXTformat = string.Empty;
+                Bitmap bp = new Bitmap(pngfile);
+                if (IsTransparent(bp))
+                {
+                    DXTformat = "DXT5";
+                }
+                else
+                {
+                    DXTformat = "DXT1";
+
+                }
+
+                p.StartInfo.Arguments = $"\"{pngfile}\" -o \"{Path.GetDirectoryName(pngfile)}\" -pow2 -nologo -f {DXTformat} -y -m 0";
+                p.Start();
+                p.WaitForExit();
+
+            }
+
+
+            List<string> ConvertedDDS = (pngfiles.Where(pngfile => File.Exists(pngfile.Replace(".png", ".dds"))).Select(pngfile => pngfile.Replace(".png", ".dds"))).ToList();
+
+            foreach (string ddsfile in ConvertedDDS)
+            {
+                var fn = ddsfile;
+
+                if (!File.Exists(fn)) return null;
+
+                try
+                {
+
+                    var dds = File.ReadAllBytes(fn);
+                    var tex = DDSIO.GetTexture(dds);
+                    tex.Name = Path.GetFileNameWithoutExtension(fn);
+                    tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
+                    JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
+                    TextureList.Add(tex);
+                }
+                catch
+                {
+                    MessageBox.Show("Unable to load " + fn + ".\nAre you sure it's a valid .dds file?");
+                }
+            }
+
+            return TextureList;
+
+        }
         private void UpdateModelFormTextures()
         {
             if (ModelForm == null) return;
@@ -697,7 +777,9 @@ namespace CodeWalker.Forms
 
         private void AddTextureButton_Click(object sender, EventArgs e)
         {
-            AddTextures(OpenDDSFiles());
+
+            AddImgMenu.Show(Cursor.Position);
+
         }
 
         private void RemoveTextureButton_Click(object sender, EventArgs e)
@@ -752,6 +834,17 @@ namespace CodeWalker.Forms
 
             return TextureList;
 
+        }
+
+        private void dDsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddTextures(OpenDDSFiles());
+
+        }
+
+        private void pNGsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddTextures(OpenPNGFiles());
         }
     }
 }
