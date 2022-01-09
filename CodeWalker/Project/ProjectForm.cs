@@ -84,6 +84,13 @@ namespace CodeWalker.Project
         private BoundPolygon CurrentCollisionPoly;
         private BoundVertex CurrentCollisionVertex;
 
+        private YdrFile CurrentYdrFile;
+        private YddFile CurrentYddFile;
+        private YftFile CurrentYftFile;
+        private YtdFile CurrentYtdFile;
+
+
+
         private bool renderitems = true;
         private bool hidegtavmap = false;
         private bool autoymapflags = true;
@@ -101,7 +108,6 @@ namespace CodeWalker.Project
         private Dictionary<uint, YmapEntityDef> visiblemloentities = new Dictionary<uint, YmapEntityDef>();
         private Dictionary<uint, RelFile> visibleaudiofiles = new Dictionary<uint, RelFile>();
 
-        private Dictionary<uint, Archetype> projectarchetypes = new Dictionary<uint, Archetype>();//used to override archetypes in world view
         private Dictionary<uint, YbnFile> projectybns = new Dictionary<uint, YbnFile>();//used for handling interior ybns
 
         private List<YmapEntityDef> interiorslist = new List<YmapEntityDef>(); //used for handling interiors ybns
@@ -127,7 +133,8 @@ namespace CodeWalker.Project
             else
             {
                 GameFileCache = GameFileCacheFactory.Create();
-                new Thread(new ThreadStart(() => {
+                new Thread(new ThreadStart(() =>
+                {
                     GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                     GameFileCache.Init(UpdateStatus, UpdateError);
                     RpfMan = GameFileCache.RpfMan;
@@ -302,7 +309,7 @@ namespace CodeWalker.Project
                 PreviewPanel = panel;
             }
         }
-        public void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T,bool> findFunc) where T : ProjectPanel
+        public void ShowPanel<T>(bool promote, Func<T> createFunc, Action<T> updateAction, Func<T, bool> findFunc) where T : ProjectPanel
         {
             T found = FindPanel(findFunc);
             if ((found != null) && (found != PreviewPanel))
@@ -850,6 +857,10 @@ namespace CodeWalker.Project
             CurrentMloRoom = item as MCMloRoomDef;
             CurrentMloPortal = item as MCMloPortalDef;
             CurrentMloEntitySet = item as MCMloEntitySet;
+            CurrentYdrFile = item as YdrFile;
+            CurrentYddFile = item as YddFile;
+            CurrentYftFile = item as YftFile;
+            CurrentYtdFile = item as YtdFile;
 
             if (CurrentAudioZone?.AudioZone == null) CurrentAudioZone = null;
             if (CurrentAudioEmitter?.AudioEmitter == null) CurrentAudioEmitter = null;
@@ -1010,7 +1021,7 @@ namespace CodeWalker.Project
             }
         }
 
-        private void ClosePanel<T>(Func<T,bool> findFunc) where T : ProjectPanel
+        private void ClosePanel<T>(Func<T, bool> findFunc) where T : ProjectPanel
         {
             var panel = FindPanel(findFunc);
             if (PreviewPanel == panel)
@@ -1270,6 +1281,74 @@ namespace CodeWalker.Project
                 }
             }
 
+            foreach (var ydr in CurrentProjectFile.YdrFiles)
+            {
+                string filename = ydr.FilePath;
+                if (!File.Exists(filename))
+                {
+                    filename = cpath + "\\" + filename;
+                }
+                if (File.Exists(filename))
+                {
+                    LoadYdrFromFile(ydr, filename);
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't find file: " + filename);
+                }
+            }
+
+            foreach (var ydd in CurrentProjectFile.YddFiles)
+            {
+                string filename = ydd.FilePath;
+                if (!File.Exists(filename))
+                {
+                    filename = cpath + "\\" + filename;
+                }
+                if (File.Exists(filename))
+                {
+                    LoadYddFromFile(ydd, filename);
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't find file: " + filename);
+                }
+            }
+
+            foreach (var yft in CurrentProjectFile.YftFiles)
+            {
+                string filename = yft.FilePath;
+                if (!File.Exists(filename))
+                {
+                    filename = cpath + "\\" + filename;
+                }
+                if (File.Exists(filename))
+                {
+                    LoadYftFromFile(yft, filename);
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't find file: " + filename);
+                }
+            }
+
+            foreach (var ytd in CurrentProjectFile.YtdFiles)
+            {
+                string filename = ytd.FilePath;
+                if (!File.Exists(filename))
+                {
+                    filename = cpath + "\\" + filename;
+                }
+                if (File.Exists(filename))
+                {
+                    LoadYtdFromFile(ytd, filename);
+                }
+                else
+                {
+                    MessageBox.Show("Couldn't find file: " + filename);
+                }
+            }
+
 
             LoadProjectUI();
         }
@@ -1404,6 +1483,10 @@ namespace CodeWalker.Project
                 CurrentYnvFile = null;
                 CurrentTrainTrack = null;
                 CurrentScenario = null;
+                CurrentYdrFile = null;
+                CurrentYddFile = null;
+                CurrentYftFile = null;
+                CurrentYtdFile = null;
 
                 LoadProjectUI();
 
@@ -1414,6 +1497,13 @@ namespace CodeWalker.Project
             {
                 WorldForm.SelectItem(null);//make sure current selected item isn't still selected...
             }
+
+            if (GameFileCache != null)
+            {
+                GameFileCache.ClearProjectFiles();
+                GameFileCache.ClearProjectArchetypes();
+            }
+
         }
         public void SaveProject(bool saveas = false)
         {
@@ -1458,10 +1548,14 @@ namespace CodeWalker.Project
             if (files == null)
             {
                 string[] filetypes = {
-                    "All supported|*.ymap;*.ytyp;*.ybn;*.ynd;*.ynv;*.dat;*.ymt;*.rel",
+                    "All supported|*.ymap;*.ytyp;*.ybn;*.ydr;*.ydd;*.yft;*.ytd;*.ynd;*.ynv;*.dat;*.ymt;*.rel",
                     "Ymap files|*.ymap",
                     "Ytyp files|*.ytyp",
                     "Ybn files|*.ybn",
+                    "Ydr files|*.ydr",
+                    "Ydd files|*.ydd",
+                    "Yft files|*.yft",
+                    "Ytd files|*.ytd",
                     "Ynd files|*.ynd",
                     "Ynv files|*.ynv",
                     "Dat files|*.dat",
@@ -1502,6 +1596,22 @@ namespace CodeWalker.Project
                         case ".ybn":
                             var ybn = CurrentProjectFile.AddYbnFile(file);
                             if (ybn != null) LoadYbnFromFile(ybn, file);
+                            break;
+                        case ".ydr":
+                            var ydr = CurrentProjectFile.AddYdrFile(file);
+                            if (ydr != null) LoadYdrFromFile(ydr, file);
+                            break;
+                        case ".ydd":
+                            var ydd = CurrentProjectFile.AddYddFile(file);
+                            if (ydd != null) LoadYddFromFile(ydd, file);
+                            break;
+                        case ".yft":
+                            var yft = CurrentProjectFile.AddYftFile(file);
+                            if (yft != null) LoadYftFromFile(yft, file);
+                            break;
+                        case ".ytd":
+                            var ytd = CurrentProjectFile.AddYtdFile(file);
+                            if (ytd != null) LoadYtdFromFile(ytd, file);
                             break;
                         case ".ynd":
                             var ynd = CurrentProjectFile.AddYndFile(file);
@@ -2180,7 +2290,7 @@ namespace CodeWalker.Project
             batch.Position = (batch.AABBMin + batch.AABBMax) * 0.5f;
             batch.Radius = (batch.AABBMax - batch.AABBMin).Length() * 0.5f;
             batch.Ymap = CurrentYmapFile;
-            
+
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
@@ -2636,7 +2746,7 @@ namespace CodeWalker.Project
             //}
 
             var delbox = CurrentBoxOccluder;
-            
+
             bool res = false;
             if (WorldForm != null)
             {
@@ -3028,7 +3138,7 @@ namespace CodeWalker.Project
                     cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                     cent.ambientOcclusionMultiplier = 255;
                     cent.artificialAmbientOcclusion = 255;
-                    if(uint.TryParse(placement.ObjectProperties.FirstOrDefault(p => p.Name == "TextureVariation")?.Value, out uint tint))
+                    if (uint.TryParse(placement.ObjectProperties.FirstOrDefault(p => p.Name == "TextureVariation")?.Value, out uint tint))
                     {
                         cent.tintValue = tint;
                     }
@@ -3311,7 +3421,7 @@ namespace CodeWalker.Project
                 }
                 else
                 {
-                    if ((mloArch.rooms?.Length??0) <= 0)
+                    if ((mloArch.rooms?.Length ?? 0) <= 0)
                     {
                         MessageBox.Show($@"Mlo {mloArch.Name} has no rooms! Cannot create entity.");
                         return null;
@@ -3401,7 +3511,7 @@ namespace CodeWalker.Project
                     outEnt.SetArchetype(GameFileCache.GetArchetype(cent.archetypeName));
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 MessageBox.Show(this, e.Message, "Create MLO Entity Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return null;
@@ -3746,10 +3856,9 @@ namespace CodeWalker.Project
         }
         private void AddProjectArchetype(Archetype arch)
         {
-            if ((arch?.Hash ?? 0) == 0) return;
             lock (projectsyncroot)
             {
-                projectarchetypes[arch.Hash] = arch;
+                GameFileCache.AddProjectArchetype(arch);
             }
         }
         private void RemoveProjectArchetypes(YtypFile ytyp)
@@ -3762,15 +3871,9 @@ namespace CodeWalker.Project
         }
         private void RemoveProjectArchetype(Archetype arch)
         {
-            if ((arch?.Hash ?? 0) == 0) return;
-            Archetype tarch = null;
             lock (projectsyncroot)
             {
-                projectarchetypes.TryGetValue(arch.Hash, out tarch);
-                if (tarch == arch)
-                {
-                    projectarchetypes.Remove(arch.Hash);
-                }
+                GameFileCache.RemoveProjectArchetype(arch);
             }
         }
 
@@ -4447,10 +4550,10 @@ namespace CodeWalker.Project
             if (CurrentYndFile == null) return;
 
             // Check that vehicle nodes and ped nodes add up to total nodes
-            if(CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
+            if (CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
             {
                 var result = MessageBox.Show($"YND Area {CurrentYndFile.AreaID}: The total number of nodes ({CurrentYndFile.NodeDictionary.NodesCount}) does not match the total number of ped ({CurrentYndFile.NodeDictionary.NodesCountPed}) and vehicle ({CurrentYndFile.NodeDictionary.NodesCountVehicle}) nodes. You should manually adjust the number of nodes on the YND screen.\n\nDo you want to continue saving the YND file? Some of your nodes may not work in game.", $"Node count mismatch in Area {CurrentYndFile.AreaID}", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
-                if(result == DialogResult.Cancel)
+                if (result == DialogResult.Cancel)
                 {
                     return;
                 }
@@ -6257,7 +6360,7 @@ namespace CodeWalker.Project
             zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
             zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
             zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
-            zone.RulesCount = cp ? copy.AudioZone.RulesCount: (byte)0;
+            zone.RulesCount = cp ? copy.AudioZone.RulesCount : (byte)0;
             zone.Rules = cp ? copy.AudioZone.Rules : null;
             zone.ExtParamsCount = cp ? copy.AudioZone.ExtParamsCount : 0;
             zone.ExtParams = cp ? copy.AudioZone.ExtParams : null;
@@ -6282,7 +6385,7 @@ namespace CodeWalker.Project
 
                 ProjectExplorer?.TrySelectAudioZoneTreeNode(ap);
                 CurrentAudioZone = ap;
-            
+
                 ShowEditAudioZonePanel(false);
             }
 
@@ -6428,7 +6531,7 @@ namespace CodeWalker.Project
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
                     res = CurrentAudioFile.RemoveRelData(CurrentAudioEmitter.AudioEmitter);
-                    
+
                     WorldForm.UpdateAudioPlacementGraphics(CurrentAudioFile);
                 }
             }
@@ -6742,6 +6845,154 @@ namespace CodeWalker.Project
 
 
 
+        public void AddYdrToProject(YdrFile ydr)
+        {
+            if (ydr == null) return;
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (YdrExistsInProject(ydr)) return;
+            if (CurrentProjectFile.AddYdrFile(ydr))
+            {
+                //ydr.HasChanged = true;
+                CurrentProjectFile.HasChanged = true;
+                LoadProjectTree();
+            }
+            CurrentYdrFile = ydr;
+            RefreshUI();
+            GameFileCache?.AddProjectFile(ydr);
+        }
+        public void RemoveYdrFromProject()
+        {
+            if (CurrentYdrFile == null) return;
+            if (CurrentProjectFile == null) return;
+            GameFileCache?.RemoveProjectFile(CurrentYdrFile);
+            CurrentProjectFile.RemoveYdrFile(CurrentYdrFile);
+            CurrentYdrFile = null;
+            LoadProjectTree();
+            RefreshUI();
+        }
+        public bool YdrExistsInProject(YdrFile ydr)
+        {
+            if (ydr == null) return false;
+            if (CurrentProjectFile == null) return false;
+            return CurrentProjectFile.ContainsYdr(ydr);
+        }
+
+
+        public void AddYddToProject(YddFile ydd)
+        {
+            if (ydd == null) return;
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (YddExistsInProject(ydd)) return;
+            if (CurrentProjectFile.AddYddFile(ydd))
+            {
+                //ydd.HasChanged = true;
+                CurrentProjectFile.HasChanged = true;
+                LoadProjectTree();
+            }
+            CurrentYddFile = ydd;
+            RefreshUI();
+            GameFileCache?.AddProjectFile(ydd);
+        }
+        public void RemoveYddFromProject()
+        {
+            if (CurrentYddFile == null) return;
+            if (CurrentProjectFile == null) return;
+            GameFileCache?.RemoveProjectFile(CurrentYddFile);
+            CurrentProjectFile.RemoveYddFile(CurrentYddFile);
+            CurrentYddFile = null;
+            LoadProjectTree();
+            RefreshUI();
+        }
+        public bool YddExistsInProject(YddFile ydd)
+        {
+            if (ydd == null) return false;
+            if (CurrentProjectFile == null) return false;
+            return CurrentProjectFile.ContainsYdd(ydd);
+        }
+
+
+        public void AddYftToProject(YftFile yft)
+        {
+            if (yft == null) return;
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (YftExistsInProject(yft)) return;
+            if (CurrentProjectFile.AddYftFile(yft))
+            {
+                //yft.HasChanged = true;
+                CurrentProjectFile.HasChanged = true;
+                LoadProjectTree();
+            }
+            CurrentYftFile = yft;
+            RefreshUI();
+            GameFileCache?.AddProjectFile(yft);
+        }
+        public void RemoveYftFromProject()
+        {
+            if (CurrentYftFile == null) return;
+            if (CurrentProjectFile == null) return;
+            GameFileCache?.RemoveProjectFile(CurrentYftFile);
+            CurrentProjectFile.RemoveYftFile(CurrentYftFile);
+            CurrentYftFile = null;
+            LoadProjectTree();
+            RefreshUI();
+        }
+        public bool YftExistsInProject(YftFile yft)
+        {
+            if (yft == null) return false;
+            if (CurrentProjectFile == null) return false;
+            return CurrentProjectFile.ContainsYft(yft);
+        }
+
+
+        public void AddYtdToProject(YtdFile ytd)
+        {
+            if (ytd == null) return;
+            if (CurrentProjectFile == null)
+            {
+                NewProject();
+            }
+            if (YtdExistsInProject(ytd)) return;
+            if (CurrentProjectFile.AddYtdFile(ytd))
+            {
+                //ytd.HasChanged = true;
+                CurrentProjectFile.HasChanged = true;
+                LoadProjectTree();
+            }
+            CurrentYtdFile = ytd;
+            RefreshUI();
+            GameFileCache?.AddProjectFile(ytd);
+        }
+        public void RemoveYtdFromProject()
+        {
+            if (CurrentYtdFile == null) return;
+            if (CurrentProjectFile == null) return;
+            GameFileCache?.RemoveProjectFile(CurrentYtdFile);
+            CurrentProjectFile.RemoveYtdFile(CurrentYtdFile);
+            CurrentYtdFile = null;
+            LoadProjectTree();
+            RefreshUI();
+        }
+        public bool YtdExistsInProject(YtdFile ytd)
+        {
+            if (ytd == null) return false;
+            if (CurrentProjectFile == null) return false;
+            return CurrentProjectFile.ContainsYtd(ytd);
+        }
+
+
+
+
+
+
 
 
 
@@ -6782,13 +7033,10 @@ namespace CodeWalker.Project
                         {
                             foreach (var ent in ymap.AllEntities)
                             {
-                                if (ent.Archetype == null) continue;
-
-                                Archetype parch = null;
-                                projectarchetypes.TryGetValue(ent.Archetype.Hash, out parch);
-                                if ((parch != null) && (ent.Archetype != parch))
+                                Archetype arch = GameFileCache.GetArchetype(ent._CEntityDef.archetypeName);
+                                if ((arch != null) && (ent.Archetype != arch))
                                 {
-                                    ent.SetArchetype(parch); //swap archetype to project one...
+                                    ent.SetArchetype(arch); //swap archetype to project one...
                                     if (ent.IsMlo)
                                     {
                                         ent.MloInstance.InitYmapEntityArchetypes(GameFileCache);
@@ -7354,6 +7602,10 @@ namespace CodeWalker.Project
                     CurrentAudioEmitter = (audiopl?.AudioEmitter != null) ? audiopl : null;
                     CurrentAudioZoneList = null;
                     CurrentAudioEmitterList = null;
+                    CurrentYdrFile = null;
+                    CurrentYddFile = null;
+                    CurrentYftFile = null;
+                    CurrentYtdFile = null;
                     RefreshUI();
                     if (showcurrent)
                     {
@@ -8330,6 +8582,50 @@ namespace CodeWalker.Project
 
             rel.Load(data, rel?.RpfFileEntry);
         }
+        private void LoadYdrFromFile(YdrFile ydr, string filename)
+        {
+            byte[] data = File.ReadAllBytes(filename);
+
+            ydr.Load(data);
+
+            if (GameFileCache != null)
+            {
+                GameFileCache.AddProjectFile(ydr);
+            }
+        }
+        private void LoadYddFromFile(YddFile ydd, string filename)
+        {
+            byte[] data = File.ReadAllBytes(filename);
+
+            ydd.Load(data);
+
+            if (GameFileCache != null)
+            {
+                GameFileCache.AddProjectFile(ydd);
+            }
+        }
+        private void LoadYftFromFile(YftFile yft, string filename)
+        {
+            byte[] data = File.ReadAllBytes(filename);
+
+            yft.Load(data);
+
+            if (GameFileCache != null)
+            {
+                GameFileCache.AddProjectFile(yft);
+            }
+        }
+        private void LoadYtdFromFile(YtdFile ytd, string filename)
+        {
+            byte[] data = File.ReadAllBytes(filename);
+
+            ytd.Load(data);
+
+            if (GameFileCache != null)
+            {
+                GameFileCache.AddProjectFile(ytd);
+            }
+        }
 
 
 
@@ -8377,6 +8673,10 @@ namespace CodeWalker.Project
             RefreshTrainTrackUI();
             RefreshScenarioUI();
             RefreshAudioUI();
+            RefreshYdrUI();
+            RefreshYddUI();
+            RefreshYftUI();
+            RefreshYtdUI();
             SetCurrentSaveItem();
             //ShowEditYmapPanel(false);
             //ShowEditYmapEntityPanel(false);
@@ -8632,6 +8932,78 @@ namespace CodeWalker.Project
             {
                 WorldForm.EnableAudioUI(enable, CurrentAudioFile?.Name ?? "");
             }
+        }
+        private void RefreshYdrUI()
+        {
+            bool enable = (CurrentYdrFile != null);
+            bool inproj = YdrExistsInProject(CurrentYdrFile);
+
+            if (CurrentYdrFile != null)
+            {
+                YdrNameMenu.Text = "(" + CurrentYdrFile.Name + ")";
+            }
+            else
+            {
+                YdrNameMenu.Text = "(No .ydr file selected)";
+            }
+
+            //YdrAddToProjectMenu.Enabled = enable && !inproj;
+            YdrRemoveFromProjectMenu.Enabled = inproj;
+            YdrMenu.Visible = enable;
+        }
+        private void RefreshYddUI()
+        {
+            bool enable = (CurrentYddFile != null);
+            bool inproj = YddExistsInProject(CurrentYddFile);
+
+            if (CurrentYddFile != null)
+            {
+                YddNameMenu.Text = "(" + CurrentYddFile.Name + ")";
+            }
+            else
+            {
+                YddNameMenu.Text = "(No .ydd file selected)";
+            }
+
+            //YddAddToProjectMenu.Enabled = enable && !inproj;
+            YddRemoveFromProjectMenu.Enabled = inproj;
+            YddMenu.Visible = enable;
+        }
+        private void RefreshYftUI()
+        {
+            bool enable = (CurrentYftFile != null);
+            bool inproj = YftExistsInProject(CurrentYftFile);
+
+            if (CurrentYftFile != null)
+            {
+                YftNameMenu.Text = "(" + CurrentYftFile.Name + ")";
+            }
+            else
+            {
+                YftNameMenu.Text = "(No .yft file selected)";
+            }
+
+            //YftAddToProjectMenu.Enabled = enable && !inproj;
+            YftRemoveFromProjectMenu.Enabled = inproj;
+            YftMenu.Visible = enable;
+        }
+        private void RefreshYtdUI()
+        {
+            bool enable = (CurrentYtdFile != null);
+            bool inproj = YtdExistsInProject(CurrentYtdFile);
+
+            if (CurrentYtdFile != null)
+            {
+                YtdNameMenu.Text = "(" + CurrentYtdFile.Name + ")";
+            }
+            else
+            {
+                YtdNameMenu.Text = "(No .ytd file selected)";
+            }
+
+            //YtdAddToProjectMenu.Enabled = enable && !inproj;
+            YtdRemoveFromProjectMenu.Enabled = inproj;
+            YtdMenu.Visible = enable;
         }
 
 
@@ -9010,6 +9382,23 @@ namespace CodeWalker.Project
         private void YbnRemoveFromProjectMenu_Click(object sender, EventArgs e)
         {
             RemoveYbnFromProject();
+        }
+        
+        private void YdrRemoveFromProjectMenu_Click(object sender, EventArgs e)
+        {
+            RemoveYdrFromProject();
+        }
+        private void YddRemoveFromProjectMenu_Click(object sender, EventArgs e)
+        {
+            RemoveYddFromProject();
+        }
+        private void YftRemoveFromProjectMenu_Click(object sender, EventArgs e)
+        {
+            RemoveYftFromProject();
+        }
+        private void YtdRemoveFromProjectMenu_Click(object sender, EventArgs e)
+        {
+            RemoveYtdFromProject();
         }
 
         private void YndNewNodeMenu_Click(object sender, EventArgs e)

@@ -195,6 +195,22 @@
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.YdrMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YddMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YftMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtdMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YdrNameMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.YddNameMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.YftNameMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtdNameMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator29 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator30 = new System.Windows.Forms.ToolStripSeparator();
+            this.YdrRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YddRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YftRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.YtdRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -208,6 +224,10 @@
             this.YmapMenu,
             this.YtypMenu,
             this.YbnMenu,
+            this.YdrMenu,
+            this.YddMenu,
+            this.YftMenu,
+            this.YtdMenu,
             this.YndMenu,
             this.YnvMenu,
             this.TrainsMenu,
@@ -253,7 +273,7 @@
             this.FileNewScenarioMenu,
             this.FileNewAudioDatMenu});
             this.FileNewMenu.Name = "FileNewMenu";
-            this.FileNewMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileNewMenu.Size = new System.Drawing.Size(163, 22);
             this.FileNewMenu.Text = "New";
             // 
             // FileNewProjectMenu
@@ -327,47 +347,47 @@
             // FileOpenProjectMenu
             // 
             this.FileOpenProjectMenu.Name = "FileOpenProjectMenu";
-            this.FileOpenProjectMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileOpenProjectMenu.Size = new System.Drawing.Size(163, 22);
             this.FileOpenProjectMenu.Text = "Open Project...";
             this.FileOpenProjectMenu.Click += new System.EventHandler(this.FileOpenProjectMenu_Click);
             // 
             // FileOpenFilesMenu
             // 
             this.FileOpenFilesMenu.Name = "FileOpenFilesMenu";
-            this.FileOpenFilesMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileOpenFilesMenu.Size = new System.Drawing.Size(163, 22);
             this.FileOpenFilesMenu.Text = "Open Files...";
             this.FileOpenFilesMenu.Click += new System.EventHandler(this.FileOpenFilesMenu_Click);
             // 
             // FileOpenFolderMenu
             // 
             this.FileOpenFolderMenu.Name = "FileOpenFolderMenu";
-            this.FileOpenFolderMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileOpenFolderMenu.Size = new System.Drawing.Size(163, 22);
             this.FileOpenFolderMenu.Text = "Open Folder...";
             this.FileOpenFolderMenu.Click += new System.EventHandler(this.FileOpenFolderMenu_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(160, 6);
             // 
             // FileCloseProjectMenu
             // 
             this.FileCloseProjectMenu.Enabled = false;
             this.FileCloseProjectMenu.Name = "FileCloseProjectMenu";
-            this.FileCloseProjectMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileCloseProjectMenu.Size = new System.Drawing.Size(163, 22);
             this.FileCloseProjectMenu.Text = "Close Project";
             this.FileCloseProjectMenu.Click += new System.EventHandler(this.FileCloseProjectMenu_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(160, 6);
             // 
             // FileSaveProjectMenu
             // 
             this.FileSaveProjectMenu.Enabled = false;
             this.FileSaveProjectMenu.Name = "FileSaveProjectMenu";
-            this.FileSaveProjectMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileSaveProjectMenu.Size = new System.Drawing.Size(163, 22);
             this.FileSaveProjectMenu.Text = "Save Project";
             this.FileSaveProjectMenu.Click += new System.EventHandler(this.FileSaveProjectMenu_Click);
             // 
@@ -375,7 +395,7 @@
             // 
             this.FileSaveProjectAsMenu.Enabled = false;
             this.FileSaveProjectAsMenu.Name = "FileSaveProjectAsMenu";
-            this.FileSaveProjectAsMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileSaveProjectAsMenu.Size = new System.Drawing.Size(163, 22);
             this.FileSaveProjectAsMenu.Text = "Save Project As...";
             this.FileSaveProjectAsMenu.Click += new System.EventHandler(this.FileSaveProjectAsMenu_Click);
             // 
@@ -383,7 +403,7 @@
             // 
             this.FileSaveItemMenu.Enabled = false;
             this.FileSaveItemMenu.Name = "FileSaveItemMenu";
-            this.FileSaveItemMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileSaveItemMenu.Size = new System.Drawing.Size(163, 22);
             this.FileSaveItemMenu.Text = "Save Item";
             this.FileSaveItemMenu.Visible = false;
             this.FileSaveItemMenu.Click += new System.EventHandler(this.FileSaveItemMenu_Click);
@@ -392,7 +412,7 @@
             // 
             this.FileSaveItemAsMenu.Enabled = false;
             this.FileSaveItemAsMenu.Name = "FileSaveItemAsMenu";
-            this.FileSaveItemAsMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileSaveItemAsMenu.Size = new System.Drawing.Size(163, 22);
             this.FileSaveItemAsMenu.Text = "Save Item As...";
             this.FileSaveItemAsMenu.Visible = false;
             this.FileSaveItemAsMenu.Click += new System.EventHandler(this.FileSaveItemAsMenu_Click);
@@ -1538,6 +1558,130 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
+            // YdrMenu
+            // 
+            this.YdrMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YdrNameMenu,
+            this.toolStripSeparator6,
+            this.YdrRemoveFromProjectMenu});
+            this.YdrMenu.Name = "YdrMenu";
+            this.YdrMenu.Size = new System.Drawing.Size(36, 20);
+            this.YdrMenu.Text = "Ydr";
+            this.YdrMenu.Visible = false;
+            // 
+            // YddMenu
+            // 
+            this.YddMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YddNameMenu,
+            this.toolStripSeparator9,
+            this.YddRemoveFromProjectMenu});
+            this.YddMenu.Name = "YddMenu";
+            this.YddMenu.Size = new System.Drawing.Size(39, 20);
+            this.YddMenu.Text = "Ydd";
+            this.YddMenu.Visible = false;
+            // 
+            // YftMenu
+            // 
+            this.YftMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YftNameMenu,
+            this.toolStripSeparator30,
+            this.YftRemoveFromProjectMenu});
+            this.YftMenu.Name = "YftMenu";
+            this.YftMenu.Size = new System.Drawing.Size(34, 20);
+            this.YftMenu.Text = "Yft";
+            this.YftMenu.Visible = false;
+            // 
+            // YtdMenu
+            // 
+            this.YtdMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.YtdNameMenu,
+            this.toolStripSeparator29,
+            this.YtdRemoveFromProjectMenu});
+            this.YtdMenu.Name = "YtdMenu";
+            this.YtdMenu.Size = new System.Drawing.Size(37, 20);
+            this.YtdMenu.Text = "Ytd";
+            this.YtdMenu.Visible = false;
+            // 
+            // YdrNameMenu
+            // 
+            this.YdrNameMenu.Enabled = false;
+            this.YdrNameMenu.Name = "YdrNameMenu";
+            this.YdrNameMenu.Size = new System.Drawing.Size(186, 22);
+            this.YdrNameMenu.Text = "(No .ydr file selected)";
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(183, 6);
+            // 
+            // YddNameMenu
+            // 
+            this.YddNameMenu.Enabled = false;
+            this.YddNameMenu.Name = "YddNameMenu";
+            this.YddNameMenu.Size = new System.Drawing.Size(189, 22);
+            this.YddNameMenu.Text = "(No .ydd file selected)";
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(186, 6);
+            // 
+            // YftNameMenu
+            // 
+            this.YftNameMenu.Enabled = false;
+            this.YftNameMenu.Name = "YftNameMenu";
+            this.YftNameMenu.Size = new System.Drawing.Size(186, 22);
+            this.YftNameMenu.Text = "(No .yft file selected)";
+            // 
+            // YtdNameMenu
+            // 
+            this.YtdNameMenu.Enabled = false;
+            this.YtdNameMenu.Name = "YtdNameMenu";
+            this.YtdNameMenu.Size = new System.Drawing.Size(186, 22);
+            this.YtdNameMenu.Text = "(No .ytd file selected)";
+            // 
+            // toolStripSeparator29
+            // 
+            this.toolStripSeparator29.Name = "toolStripSeparator29";
+            this.toolStripSeparator29.Size = new System.Drawing.Size(183, 6);
+            // 
+            // toolStripSeparator30
+            // 
+            this.toolStripSeparator30.Name = "toolStripSeparator30";
+            this.toolStripSeparator30.Size = new System.Drawing.Size(183, 6);
+            // 
+            // YdrRemoveFromProjectMenu
+            // 
+            this.YdrRemoveFromProjectMenu.Enabled = false;
+            this.YdrRemoveFromProjectMenu.Name = "YdrRemoveFromProjectMenu";
+            this.YdrRemoveFromProjectMenu.Size = new System.Drawing.Size(186, 22);
+            this.YdrRemoveFromProjectMenu.Text = "Remove from Project";
+            this.YdrRemoveFromProjectMenu.Click += new System.EventHandler(this.YdrRemoveFromProjectMenu_Click);
+            // 
+            // YddRemoveFromProjectMenu
+            // 
+            this.YddRemoveFromProjectMenu.Enabled = false;
+            this.YddRemoveFromProjectMenu.Name = "YddRemoveFromProjectMenu";
+            this.YddRemoveFromProjectMenu.Size = new System.Drawing.Size(189, 22);
+            this.YddRemoveFromProjectMenu.Text = "Remove from Project";
+            this.YddRemoveFromProjectMenu.Click += new System.EventHandler(this.YddRemoveFromProjectMenu_Click);
+            // 
+            // YftRemoveFromProjectMenu
+            // 
+            this.YftRemoveFromProjectMenu.Enabled = false;
+            this.YftRemoveFromProjectMenu.Name = "YftRemoveFromProjectMenu";
+            this.YftRemoveFromProjectMenu.Size = new System.Drawing.Size(186, 22);
+            this.YftRemoveFromProjectMenu.Text = "Remove from Project";
+            this.YftRemoveFromProjectMenu.Click += new System.EventHandler(this.YftRemoveFromProjectMenu_Click);
+            // 
+            // YtdRemoveFromProjectMenu
+            // 
+            this.YtdRemoveFromProjectMenu.Enabled = false;
+            this.YtdRemoveFromProjectMenu.Name = "YtdRemoveFromProjectMenu";
+            this.YtdRemoveFromProjectMenu.Size = new System.Drawing.Size(186, 22);
+            this.YtdRemoveFromProjectMenu.Text = "Remove from Project";
+            this.YtdRemoveFromProjectMenu.Click += new System.EventHandler(this.YtdRemoveFromProjectMenu_Click);
+            // 
             // ProjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1729,5 +1873,21 @@
         private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenFilesMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenFolderMenu;
+        private System.Windows.Forms.ToolStripMenuItem YdrMenu;
+        private System.Windows.Forms.ToolStripMenuItem YdrNameMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem YdrRemoveFromProjectMenu;
+        private System.Windows.Forms.ToolStripMenuItem YddMenu;
+        private System.Windows.Forms.ToolStripMenuItem YddNameMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem YddRemoveFromProjectMenu;
+        private System.Windows.Forms.ToolStripMenuItem YftMenu;
+        private System.Windows.Forms.ToolStripMenuItem YftNameMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator30;
+        private System.Windows.Forms.ToolStripMenuItem YftRemoveFromProjectMenu;
+        private System.Windows.Forms.ToolStripMenuItem YtdMenu;
+        private System.Windows.Forms.ToolStripMenuItem YtdNameMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator29;
+        private System.Windows.Forms.ToolStripMenuItem YtdRemoveFromProjectMenu;
     }
 }

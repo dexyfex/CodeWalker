@@ -35,6 +35,8 @@ namespace CodeWalker.GameFiles
         private object textureSyncRoot = new object(); //for the texture lookup.
 
 
+        private Dictionary<GameFileCacheKey, GameFile> projectFiles = new Dictionary<GameFileCacheKey, GameFile>(); //for cache files loaded in project window: ydr,ydd,ytd,yft
+        private Dictionary<uint, Archetype> projectArchetypes = new Dictionary<uint, Archetype>(); //used to override archetypes in world view with project ones
 
 
 
@@ -1890,6 +1892,69 @@ namespace CodeWalker.GameFiles
 
 
 
+
+        public void AddProjectFile(GameFile f)
+        {
+            if (f == null) return;
+            if (f.RpfFileEntry == null) return;
+            if (f.RpfFileEntry.ShortNameHash == 0)
+            {
+                f.RpfFileEntry.ShortNameHash = JenkHash.GenHash(f.RpfFileEntry.GetShortNameLower());
+            }
+            var key = new GameFileCacheKey(f.RpfFileEntry.ShortNameHash, f.Type);
+            lock (requestSyncRoot)
+            {
+                projectFiles[key] = f;
+            }
+        }
+        public void RemoveProjectFile(GameFile f)
+        {
+            if (f == null) return;
+            if (f.RpfFileEntry == null) return;
+            if (f.RpfFileEntry.ShortNameHash == 0) return;
+            var key = new GameFileCacheKey(f.RpfFileEntry.ShortNameHash, f.Type);
+            lock (requestSyncRoot)
+            {
+                projectFiles.Remove(key);
+            }
+        }
+        public void ClearProjectFiles()
+        {
+            lock (requestSyncRoot)
+            {
+                projectFiles.Clear();
+            }
+        }
+
+        public void AddProjectArchetype(Archetype a)
+        {
+            if ((a?.Hash ?? 0) == 0) return;
+            lock (requestSyncRoot)
+            {
+                projectArchetypes[a.Hash] = a;
+            }
+        }
+        public void RemoveProjectArchetype(Archetype a)
+        {
+            if ((a?.Hash ?? 0) == 0) return;
+            Archetype tarch = null;
+            lock (requestSyncRoot)
+            {
+                projectArchetypes.TryGetValue(a.Hash, out tarch);
+                if (tarch == a)
+                {
+                    projectArchetypes.Remove(a.Hash);
+                }
+            }
+        }
+        public void ClearProjectArchetypes()
+        {
+            lock (requestSyncRoot)
+            {
+                projectArchetypes.Clear();
+            }
+        }
+
         public void TryLoadEnqueue(GameFile gf)
         {
             if (((!gf.Loaded)) && (requestQueue.Count < 10))// && (!gf.LoadQueued)
@@ -1904,6 +1969,8 @@ namespace CodeWalker.GameFiles
         {
             if (!archetypesLoaded) return null;
             Archetype arch = null;
+            projectArchetypes.TryGetValue(hash, out arch);
+            if (arch != null) return arch;
             archetypeDict.TryGetValue(hash, out arch);
             return arch;
         }
@@ -1921,6 +1988,10 @@ namespace CodeWalker.GameFiles
             lock (requestSyncRoot)
             {
                 var key = new GameFileCacheKey(hash, GameFileType.Ydr);
+                if (projectFiles.TryGetValue(key, out GameFile pgf))
+                {
+                    return pgf as YdrFile;
+                }
                 YdrFile ydr = mainCache.TryGet(key) as YdrFile;
                 if (ydr == null)
                 {
@@ -1956,6 +2027,10 @@ namespace CodeWalker.GameFiles
             lock (requestSyncRoot)
             {
                 var key = new GameFileCacheKey(hash, GameFileType.Ydd);
+                if (projectFiles.TryGetValue(key, out GameFile pgf))
+                {
+                    return pgf as YddFile;
+                }
                 YddFile ydd = mainCache.TryGet(key) as YddFile;
                 if (ydd == null)
                 {
@@ -1991,6 +2066,10 @@ namespace CodeWalker.GameFiles
             lock (requestSyncRoot)
             {
                 var key = new GameFileCacheKey(hash, GameFileType.Ytd);
+                if (projectFiles.TryGetValue(key, out GameFile pgf))
+                {
+                    return pgf as YtdFile;
+                }
                 YtdFile ytd = mainCache.TryGet(key) as YtdFile;
                 if (ytd == null)
                 {
@@ -2062,6 +2141,10 @@ namespace CodeWalker.GameFiles
             {
                 var key = new GameFileCacheKey(hash, GameFileType.Yft);
                 YftFile yft = mainCache.TryGet(key) as YftFile;
+                if (projectFiles.TryGetValue(key, out GameFile pgf))
+                {
+                    return pgf as YftFile;
+                }
                 if (yft == null)
                 {
                     var e = GetYftEntry(hash);
