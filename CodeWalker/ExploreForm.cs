@@ -4385,30 +4385,39 @@ namespace CodeWalker
             foreach (var directory in DirectoriesWithDDS)
             {
                 string[] ddsfileinfolder = Directory.GetFiles(directory, "*.dds");
-                string fname = Path.GetFileName(directory);
 
-                var ytd = new YtdFile();
-                ytd.TextureDict = new TextureDictionary();
-
-
-                ytd.TextureDict.Textures = new ResourcePointerList64<Texture>();
-                ytd.TextureDict.TextureNameHashes = new ResourceSimpleList64_uint();
-                var data = ytd.Save();
-
-                ytd = yf.TexturesToYTD(yf.TextureListFromDDSFiles(ddsfileinfolder), ytd);
-
-                data = ytd.Save();
-
-                if (CurrentFolder.RpfFolder != null) //create in RPF archive
+                if (ddsfileinfolder.Length != 0)
                 {
-                    RpfFile.CreateFile(CurrentFolder.RpfFolder, $"{fname}.ytd", data);
+                    string fname = Path.GetFileName(directory);
+
+                    var ytd = new YtdFile();
+                    ytd.TextureDict = new TextureDictionary();
+
+
+                    ytd.TextureDict.Textures = new ResourcePointerList64<Texture>();
+                    ytd.TextureDict.TextureNameHashes = new ResourceSimpleList64_uint();
+                    var data = ytd.Save();
+
+                    ytd = yf.TexturesToYTD(yf.TextureListFromDDSFiles(ddsfileinfolder), ytd);
+
+                    data = ytd.Save();
+
+                    if (CurrentFolder.RpfFolder != null) //create in RPF archive
+                    {
+                        RpfFile.CreateFile(CurrentFolder.RpfFolder, $"{fname}.ytd", data);
+                    }
+                    else //create in filesystem
+                    {
+                        var outfpath = Path.Combine(CurrentFolder.FullPath, $"{fname}.ytd");
+                        File.WriteAllBytes(outfpath, data);
+                        CurrentFolder.EnsureFile(outfpath);
+                    }
                 }
-                else //create in filesystem
+                else
                 {
-                    var outfpath = Path.Combine(CurrentFolder.FullPath, $"{fname}.ytd");
-                    File.WriteAllBytes(outfpath, data);
-                    CurrentFolder.EnsureFile(outfpath);
+                    MessageBox.Show($"{Path.GetFileName(directory)} has no textures, skipping...", "Notice", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
+                
             }
 
             RefreshMainListView();
