@@ -215,6 +215,31 @@ namespace CodeWalker.Forms
             UpdateModelFormTextures();
         }
 
+        private void AddTextures(List<Texture> TexturesList)
+        {
+            if (TexDict.Textures?.data_items == null) return;
+
+            if (TexturesList != null)
+            {
+                foreach (var textu in TexturesList)
+                {
+                    var tex = textu;
+                    if (tex == null) return;
+
+                    var textures = new List<Texture>();
+                    textures.AddRange(TexDict.Textures.data_items);
+                    textures.Add(tex);
+
+                    TexDict.BuildFromTextureList(textures);
+
+                    Modified = true;
+
+                    LoadTexDict(TexDict, FileName);
+
+                }
+
+            }
+        }
         private void RemoveTexture()
         {
             if (TexDict?.Textures?.data_items == null) return;
@@ -333,6 +358,46 @@ namespace CodeWalker.Forms
             }
 
             return null;
+        }
+
+        private List<Texture> OpenDDSFiles()
+        {
+            List<Texture> TextureList = new List<Texture>();
+            OpenFileDialog ofd = new OpenFileDialog
+            {
+                Filter = "DDS Files (*.dds)|*dds",
+                Multiselect = true
+            };
+
+            if (ofd.ShowDialog() != DialogResult.OK) return null;
+
+            string[] ddsfiles = ofd.FileNames;
+
+            foreach (string ddsfile in ddsfiles)
+            {
+                var fn = ddsfile;
+
+                if (!File.Exists(fn)) return null;
+
+                try
+                {
+                    
+                    var dds = File.ReadAllBytes(fn);
+                    var tex = DDSIO.GetTexture(dds);
+                    tex.Name = Path.GetFileNameWithoutExtension(fn);
+                    tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
+                    JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
+                    TextureList.Add(tex);
+                }
+                catch
+                {
+                    MessageBox.Show("Unable to load " + fn + ".\nAre you sure it's a valid .dds file?");
+                }
+            }
+
+            return TextureList;
+
+
         }
 
 
@@ -632,7 +697,7 @@ namespace CodeWalker.Forms
 
         private void AddTextureButton_Click(object sender, EventArgs e)
         {
-            AddTexture();
+            AddTextures(OpenDDSFiles());
         }
 
         private void RemoveTextureButton_Click(object sender, EventArgs e)
