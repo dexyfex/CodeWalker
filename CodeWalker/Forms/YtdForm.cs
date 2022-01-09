@@ -714,5 +714,44 @@ namespace CodeWalker.Forms
         {
             RenameTexture(SelTextureNameTextBox.Text);
         }
+
+        public YtdFile TexturesToYTD(List<Texture> TexturesList, YtdFile ytdFile)
+        {
+            var textureDictionary = ytdFile.TextureDict;
+
+            textureDictionary.BuildFromTextureList(TexturesList);
+
+            return ytdFile;
+        }
+
+        public List<Texture> TextureListFromDDSFiles(string[] DdsFiles)
+        {
+            List<Texture> TextureList = new List<Texture>();
+
+            foreach (var DdsFile in DdsFiles)
+            {
+                var fn = DdsFile;
+
+                if (!File.Exists(fn)) return null; //couldn't find file?
+
+                try
+                {
+                    var dds = File.ReadAllBytes(fn);
+                    var tex = DDSIO.GetTexture(dds);
+                    tex.Name = Path.GetFileNameWithoutExtension(fn);
+                    tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
+                    JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
+                    TextureList.Add(tex);
+
+                }
+                catch
+                {
+                    MessageBox.Show("Unable to load " + fn + ".\nAre you sure it's a valid .dds file?");
+                }
+            }
+
+            return TextureList;
+
+        }
     }
 }

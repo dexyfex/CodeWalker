@@ -4364,6 +4364,56 @@ namespace CodeWalker
             Settings.Default.RPFExplorerStartFolder = CurrentFolder.Path;
             OptionsStartInFolderValueMenu.Text = string.IsNullOrEmpty(CurrentFolder.Path) ? "(Default)" : CurrentFolder.Path;
         }
+
+        private void yTDFilesFromFoldersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+
+            if (fbd.ShowDialogNew() == DialogResult.OK)
+            {
+                NewYtdFiles(Directory.GetDirectories(fbd.SelectedPath).ToList());
+            }
+        }
+
+        private void NewYtdFiles(List<string> DirectoriesWithDDS)
+        {
+            YtdForm yf = new YtdForm(null, null);
+            if (CurrentFolder == null) return;//shouldn't happen
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+            foreach (var directory in DirectoriesWithDDS)
+            {
+                string[] ddsfileinfolder = Directory.GetFiles(directory, "*.dds");
+                string fname = Path.GetFileName(directory);
+
+                var ytd = new YtdFile();
+                ytd.TextureDict = new TextureDictionary();
+
+
+                ytd.TextureDict.Textures = new ResourcePointerList64<Texture>();
+                ytd.TextureDict.TextureNameHashes = new ResourceSimpleList64_uint();
+                var data = ytd.Save();
+
+                ytd = yf.TexturesToYTD(yf.TextureListFromDDSFiles(ddsfileinfolder), ytd);
+
+                data = ytd.Save();
+
+                if (CurrentFolder.RpfFolder != null) //create in RPF archive
+                {
+                    RpfFile.CreateFile(CurrentFolder.RpfFolder, $"{fname}.ytd", data);
+                }
+                else //create in filesystem
+                {
+                    var outfpath = Path.Combine(CurrentFolder.FullPath, $"{fname}.ytd");
+                    File.WriteAllBytes(outfpath, data);
+                    CurrentFolder.EnsureFile(outfpath);
+                }
+            }
+
+            RefreshMainListView();
+
+        }
     }
 
 
