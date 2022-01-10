@@ -83,7 +83,7 @@
             this.label24 = new System.Windows.Forms.Label();
             this.Hash0TextBox = new System.Windows.Forms.TextBox();
             this.label25 = new System.Windows.Forms.Label();
-            this.Hash1TextBox = new System.Windows.Forms.TextBox();
+            this.SceneTextBox = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
@@ -103,7 +103,7 @@
             // tabPage1
             // 
             this.tabPage1.Controls.Add(this.label25);
-            this.tabPage1.Controls.Add(this.Hash1TextBox);
+            this.tabPage1.Controls.Add(this.SceneTextBox);
             this.tabPage1.Controls.Add(this.label24);
             this.tabPage1.Controls.Add(this.Hash0TextBox);
             this.tabPage1.Controls.Add(this.label22);
@@ -671,14 +671,14 @@
             this.label25.TabIndex = 74;
             this.label25.Text = "Hash 1:";
             // 
-            // Hash1TextBox
+            // SceneTextBox
             // 
-            this.Hash1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Hash1TextBox.Location = new System.Drawing.Point(390, 151);
-            this.Hash1TextBox.Name = "Hash1TextBox";
-            this.Hash1TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Hash1TextBox.TabIndex = 75;
-            this.Hash1TextBox.TextChanged += new System.EventHandler(this.Hash1TextBox_TextChanged);
+            this.SceneTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SceneTextBox.Location = new System.Drawing.Point(390, 151);
+            this.SceneTextBox.Name = "SceneTextBox";
+            this.SceneTextBox.Size = new System.Drawing.Size(155, 20);
+            this.SceneTextBox.TabIndex = 75;
+            this.SceneTextBox.TextChanged += new System.EventHandler(this.SceneTextBox_TextChanged);
             // 
             // EditAudioZonePanel
             // 
@@ -750,7 +750,7 @@
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.TextBox UnkBytesTextBox;
         private System.Windows.Forms.Label label25;
-        private System.Windows.Forms.TextBox Hash1TextBox;
+        private System.Windows.Forms.TextBox SceneTextBox;
         private System.Windows.Forms.Label label24;
         private System.Windows.Forms.TextBox Hash0TextBox;
     }

@@ -73,7 +73,7 @@ namespace CodeWalker.Project.Panels
                 Flags1TextBox.Text = string.Empty;
                 Flags2TextBox.Text = string.Empty;
                 Hash0TextBox.Text = string.Empty;
-                Hash1TextBox.Text = string.Empty;
+                SceneTextBox.Text = string.Empty;
                 HashesTextBox.Text = string.Empty;
                 ExtParamsTextBox.Text = string.Empty;
                 populatingui = false;
@@ -107,7 +107,7 @@ namespace CodeWalker.Project.Panels
                 Flags1TextBox.Text = z.Flags1.Hex;
                 Flags2TextBox.Text = z.Flags2.Hex;
                 Hash0TextBox.Text = z.UnkHash0.ToString();
-                Hash1TextBox.Text = z.UnkHash1.ToString();
+                SceneTextBox.Text = z.Scene.ToString();
 
                 StringBuilder sb = new StringBuilder();
                 if (z.Rules != null)
@@ -124,7 +124,7 @@ namespace CodeWalker.Project.Panels
                 {
                     foreach (var extparam in z.ExtParams)
                     {
-                        sb.Append(extparam.Hash.ToString());
+                        sb.Append(extparam.Name.ToString());
                         sb.Append(", ");
                         sb.Append(FloatUtil.ToString(extparam.Value));
                         sb.AppendLine();
@@ -514,12 +514,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Hash1TextBox_TextChanged(object sender, EventArgs e)
+        private void SceneTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var hashstr = Hash1TextBox.Text;
+            var hashstr = SceneTextBox.Text;
             uint hash = 0;
             if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
             {
@@ -527,9 +527,9 @@ namespace CodeWalker.Project.Panels
                 JenkIndex.Ensure(hashstr);
             }
 
-            if (CurrentZone.AudioZone.UnkHash1 != hash)
+            if (CurrentZone.AudioZone.Scene != hash)
             {
-                CurrentZone.AudioZone.UnkHash1 = hash;
+                CurrentZone.AudioZone.Scene = hash;
 
                 ProjectItemChanged();
             }
@@ -585,7 +585,7 @@ namespace CodeWalker.Project.Panels
                             hash = JenkHash.GenHash(hashstr);
                             JenkIndex.Ensure(hashstr);
                         }
-                        param.Hash = hash;
+                        param.Name = hash;
                         param.Value = FloatUtil.Parse(valstr);
                         paramlist.Add(param);
                     }
