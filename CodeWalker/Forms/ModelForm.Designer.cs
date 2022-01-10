@@ -51,6 +51,9 @@
             this.SaveButton = new System.Windows.Forms.ToolStripSplitButton();
             this.SaveMenuButton = new System.Windows.Forms.ToolStripMenuItem();
             this.SaveAsMenuButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.SaveAllTexturesMenuButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.SaveSharedTexturesMenuButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsTabControl = new System.Windows.Forms.TabControl();
             this.ToolsModelsTabPage = new System.Windows.Forms.TabPage();
             this.EnableRootMotionCheckBox = new System.Windows.Forms.CheckBox();
@@ -60,9 +63,9 @@
             this.ClipDictComboBox = new System.Windows.Forms.ComboBox();
             this.ModelsTreeView = new CodeWalker.WinForms.TreeViewFix();
             this.ToolsMaterialsTabPage = new System.Windows.Forms.TabPage();
-            this.TextureEditorButton = new System.Windows.Forms.Button();
+            this.SaveSharedTexturesButton = new System.Windows.Forms.Button();
             this.TexturesTreeView = new CodeWalker.WinForms.TreeViewFix();
-            this.MaterialEditorButton = new System.Windows.Forms.Button();
+            this.SaveAllTexturesButton = new System.Windows.Forms.Button();
             this.ToolsDetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
             this.ToolsOptionsTabPage = new System.Windows.Forms.TabPage();
@@ -89,7 +92,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.OptionsLightingTabPage = new System.Windows.Forms.TabPage();
             this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
-            this.LightEditorButton = new System.Windows.Forms.Button();
             this.HDLightsCheckBox = new System.Windows.Forms.CheckBox();
             this.label19 = new System.Windows.Forms.Label();
             this.HDRRenderingCheckBox = new System.Windows.Forms.CheckBox();
@@ -102,6 +104,7 @@
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.StatusStrip.SuspendLayout();
             this.ConsolePanel.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
@@ -195,7 +198,7 @@
             this.ToolsPanel.Controls.Add(this.ToolsDragPanel);
             this.ToolsPanel.Location = new System.Drawing.Point(12, 12);
             this.ToolsPanel.Name = "ToolsPanel";
-            this.ToolsPanel.Size = new System.Drawing.Size(230, 559);
+            this.ToolsPanel.Size = new System.Drawing.Size(254, 559);
             this.ToolsPanel.TabIndex = 2;
             this.ToolsPanel.Visible = false;
             // 
@@ -207,7 +210,7 @@
             this.MainToolbarPanel.Controls.Add(this.MainToolbar);
             this.MainToolbarPanel.Location = new System.Drawing.Point(39, 2);
             this.MainToolbarPanel.Name = "MainToolbarPanel";
-            this.MainToolbarPanel.Size = new System.Drawing.Size(188, 24);
+            this.MainToolbarPanel.Size = new System.Drawing.Size(212, 24);
             this.MainToolbarPanel.TabIndex = 4;
             // 
             // MainToolbar
@@ -225,7 +228,7 @@
             this.SaveButton});
             this.MainToolbar.Location = new System.Drawing.Point(0, 0);
             this.MainToolbar.Name = "MainToolbar";
-            this.MainToolbar.Size = new System.Drawing.Size(188, 25);
+            this.MainToolbar.Size = new System.Drawing.Size(212, 25);
             this.MainToolbar.TabIndex = 7;
             this.MainToolbar.Text = "Main Toolbar";
             // 
@@ -308,11 +311,14 @@
             this.SaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
             this.SaveButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.SaveMenuButton,
-            this.SaveAsMenuButton});
+            this.SaveAsMenuButton,
+            this.toolStripSeparator3,
+            this.SaveAllTexturesMenuButton,
+            this.SaveSharedTexturesMenuButton});
             this.SaveButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveButton.Image")));
             this.SaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SaveButton.Name = "SaveButton";
-            this.SaveButton.Size = new System.Drawing.Size(32, 20);
+            this.SaveButton.Size = new System.Drawing.Size(32, 22);
             this.SaveButton.Text = "Save";
             this.SaveButton.ButtonClick += new System.EventHandler(this.SaveButton_ButtonClick);
             // 
@@ -321,16 +327,36 @@
             this.SaveMenuButton.Image = ((System.Drawing.Image)(resources.GetObject("SaveMenuButton.Image")));
             this.SaveMenuButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SaveMenuButton.Name = "SaveMenuButton";
-            this.SaveMenuButton.Size = new System.Drawing.Size(123, 22);
+            this.SaveMenuButton.Size = new System.Drawing.Size(192, 22);
             this.SaveMenuButton.Text = "Save";
             this.SaveMenuButton.Click += new System.EventHandler(this.SaveMenuButton_Click);
             // 
             // SaveAsMenuButton
             // 
             this.SaveAsMenuButton.Name = "SaveAsMenuButton";
-            this.SaveAsMenuButton.Size = new System.Drawing.Size(123, 22);
+            this.SaveAsMenuButton.Size = new System.Drawing.Size(192, 22);
             this.SaveAsMenuButton.Text = "Save As...";
             this.SaveAsMenuButton.Click += new System.EventHandler(this.SaveAsMenuButton_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(189, 6);
+            // 
+            // SaveAllTexturesMenuButton
+            // 
+            this.SaveAllTexturesMenuButton.Name = "SaveAllTexturesMenuButton";
+            this.SaveAllTexturesMenuButton.Size = new System.Drawing.Size(192, 22);
+            this.SaveAllTexturesMenuButton.Text = "Save All Textures...";
+            this.SaveAllTexturesMenuButton.Click += new System.EventHandler(this.SaveAllTexturesMenuButton_Click);
+            // 
+            // SaveSharedTexturesMenuButton
+            // 
+            this.SaveSharedTexturesMenuButton.Name = "SaveSharedTexturesMenuButton";
+            this.SaveSharedTexturesMenuButton.Size = new System.Drawing.Size(192, 22);
+            this.SaveSharedTexturesMenuButton.Text = "Save Shared Textures...";
+            this.SaveSharedTexturesMenuButton.ToolTipText = "Save only the shared textures for this model (non-embedded)";
+            this.SaveSharedTexturesMenuButton.Click += new System.EventHandler(this.SaveSharedTexturesMenuButton_Click);
             // 
             // ToolsTabControl
             // 
@@ -344,7 +370,7 @@
             this.ToolsTabControl.Location = new System.Drawing.Point(2, 30);
             this.ToolsTabControl.Name = "ToolsTabControl";
             this.ToolsTabControl.SelectedIndex = 0;
-            this.ToolsTabControl.Size = new System.Drawing.Size(225, 526);
+            this.ToolsTabControl.Size = new System.Drawing.Size(249, 526);
             this.ToolsTabControl.TabIndex = 1;
             // 
             // ToolsModelsTabPage
@@ -358,7 +384,7 @@
             this.ToolsModelsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsModelsTabPage.Name = "ToolsModelsTabPage";
             this.ToolsModelsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ToolsModelsTabPage.Size = new System.Drawing.Size(217, 500);
+            this.ToolsModelsTabPage.Size = new System.Drawing.Size(241, 500);
             this.ToolsModelsTabPage.TabIndex = 0;
             this.ToolsModelsTabPage.Text = "Models";
             this.ToolsModelsTabPage.UseVisualStyleBackColor = true;
@@ -438,26 +464,26 @@
             // 
             // ToolsMaterialsTabPage
             // 
-            this.ToolsMaterialsTabPage.Controls.Add(this.TextureEditorButton);
+            this.ToolsMaterialsTabPage.Controls.Add(this.SaveSharedTexturesButton);
             this.ToolsMaterialsTabPage.Controls.Add(this.TexturesTreeView);
-            this.ToolsMaterialsTabPage.Controls.Add(this.MaterialEditorButton);
+            this.ToolsMaterialsTabPage.Controls.Add(this.SaveAllTexturesButton);
             this.ToolsMaterialsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsMaterialsTabPage.Name = "ToolsMaterialsTabPage";
             this.ToolsMaterialsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ToolsMaterialsTabPage.Size = new System.Drawing.Size(217, 500);
+            this.ToolsMaterialsTabPage.Size = new System.Drawing.Size(241, 500);
             this.ToolsMaterialsTabPage.TabIndex = 1;
             this.ToolsMaterialsTabPage.Text = "Materials";
             this.ToolsMaterialsTabPage.UseVisualStyleBackColor = true;
             // 
-            // TextureEditorButton
+            // SaveSharedTexturesButton
             // 
-            this.TextureEditorButton.Location = new System.Drawing.Point(111, 3);
-            this.TextureEditorButton.Name = "TextureEditorButton";
-            this.TextureEditorButton.Size = new System.Drawing.Size(100, 23);
-            this.TextureEditorButton.TabIndex = 2;
-            this.TextureEditorButton.Text = "Texture editor...";
-            this.TextureEditorButton.UseVisualStyleBackColor = true;
-            this.TextureEditorButton.Click += new System.EventHandler(this.TextureEditorButton_Click);
+            this.SaveSharedTexturesButton.Location = new System.Drawing.Point(109, 3);
+            this.SaveSharedTexturesButton.Name = "SaveSharedTexturesButton";
+            this.SaveSharedTexturesButton.Size = new System.Drawing.Size(132, 23);
+            this.SaveSharedTexturesButton.TabIndex = 2;
+            this.SaveSharedTexturesButton.Text = "Save shared textures...";
+            this.SaveSharedTexturesButton.UseVisualStyleBackColor = true;
+            this.SaveSharedTexturesButton.Click += new System.EventHandler(this.SaveSharedTexturesButton_Click);
             // 
             // TexturesTreeView
             // 
@@ -467,25 +493,25 @@
             this.TexturesTreeView.Location = new System.Drawing.Point(0, 32);
             this.TexturesTreeView.Name = "TexturesTreeView";
             this.TexturesTreeView.ShowRootLines = false;
-            this.TexturesTreeView.Size = new System.Drawing.Size(217, 468);
+            this.TexturesTreeView.Size = new System.Drawing.Size(241, 468);
             this.TexturesTreeView.TabIndex = 1;
             // 
-            // MaterialEditorButton
+            // SaveAllTexturesButton
             // 
-            this.MaterialEditorButton.Location = new System.Drawing.Point(6, 3);
-            this.MaterialEditorButton.Name = "MaterialEditorButton";
-            this.MaterialEditorButton.Size = new System.Drawing.Size(100, 23);
-            this.MaterialEditorButton.TabIndex = 3;
-            this.MaterialEditorButton.Text = "Material editor...";
-            this.MaterialEditorButton.UseVisualStyleBackColor = true;
-            this.MaterialEditorButton.Click += new System.EventHandler(this.MaterialEditorButton_Click);
+            this.SaveAllTexturesButton.Location = new System.Drawing.Point(0, 3);
+            this.SaveAllTexturesButton.Name = "SaveAllTexturesButton";
+            this.SaveAllTexturesButton.Size = new System.Drawing.Size(108, 23);
+            this.SaveAllTexturesButton.TabIndex = 3;
+            this.SaveAllTexturesButton.Text = "Save all textures...";
+            this.SaveAllTexturesButton.UseVisualStyleBackColor = true;
+            this.SaveAllTexturesButton.Click += new System.EventHandler(this.SaveAllTexturesButton_Click);
             // 
             // ToolsDetailsTabPage
             // 
             this.ToolsDetailsTabPage.Controls.Add(this.DetailsPropertyGrid);
             this.ToolsDetailsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsDetailsTabPage.Name = "ToolsDetailsTabPage";
-            this.ToolsDetailsTabPage.Size = new System.Drawing.Size(217, 500);
+            this.ToolsDetailsTabPage.Size = new System.Drawing.Size(241, 500);
             this.ToolsDetailsTabPage.TabIndex = 2;
             this.ToolsDetailsTabPage.Text = "Details";
             this.ToolsDetailsTabPage.UseVisualStyleBackColor = true;
@@ -509,7 +535,7 @@
             this.ToolsOptionsTabPage.Controls.Add(this.OptionsTabControl);
             this.ToolsOptionsTabPage.Location = new System.Drawing.Point(4, 22);
             this.ToolsOptionsTabPage.Name = "ToolsOptionsTabPage";
-            this.ToolsOptionsTabPage.Size = new System.Drawing.Size(217, 500);
+            this.ToolsOptionsTabPage.Size = new System.Drawing.Size(241, 500);
             this.ToolsOptionsTabPage.TabIndex = 3;
             this.ToolsOptionsTabPage.Text = "Options";
             this.ToolsOptionsTabPage.UseVisualStyleBackColor = true;
@@ -522,7 +548,7 @@
             this.OptionsTabControl.Location = new System.Drawing.Point(0, 0);
             this.OptionsTabControl.Name = "OptionsTabControl";
             this.OptionsTabControl.SelectedIndex = 0;
-            this.OptionsTabControl.Size = new System.Drawing.Size(217, 500);
+            this.OptionsTabControl.Size = new System.Drawing.Size(241, 500);
             this.OptionsTabControl.TabIndex = 26;
             // 
             // OptionsRenderTabPage
@@ -549,7 +575,7 @@
             this.OptionsRenderTabPage.Location = new System.Drawing.Point(4, 22);
             this.OptionsRenderTabPage.Name = "OptionsRenderTabPage";
             this.OptionsRenderTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.OptionsRenderTabPage.Size = new System.Drawing.Size(209, 474);
+            this.OptionsRenderTabPage.Size = new System.Drawing.Size(233, 474);
             this.OptionsRenderTabPage.TabIndex = 0;
             this.OptionsRenderTabPage.Text = "Render";
             this.OptionsRenderTabPage.UseVisualStyleBackColor = true;
@@ -783,7 +809,6 @@
             // OptionsLightingTabPage
             // 
             this.OptionsLightingTabPage.Controls.Add(this.DeferredShadingCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.LightEditorButton);
             this.OptionsLightingTabPage.Controls.Add(this.HDLightsCheckBox);
             this.OptionsLightingTabPage.Controls.Add(this.label19);
             this.OptionsLightingTabPage.Controls.Add(this.HDRRenderingCheckBox);
@@ -810,16 +835,6 @@
             this.DeferredShadingCheckBox.Text = "Deferred shading";
             this.DeferredShadingCheckBox.UseVisualStyleBackColor = true;
             this.DeferredShadingCheckBox.CheckedChanged += new System.EventHandler(this.DeferredShadingCheckBox_CheckedChanged);
-            // 
-            // LightEditorButton
-            // 
-            this.LightEditorButton.Location = new System.Drawing.Point(7, 214);
-            this.LightEditorButton.Name = "LightEditorButton";
-            this.LightEditorButton.Size = new System.Drawing.Size(90, 23);
-            this.LightEditorButton.TabIndex = 37;
-            this.LightEditorButton.Text = "Light editor...";
-            this.LightEditorButton.UseVisualStyleBackColor = true;
-            this.LightEditorButton.Click += new System.EventHandler(this.LightEditorButton_Click);
             // 
             // HDLightsCheckBox
             // 
@@ -932,7 +947,7 @@
             this.ToolsDragPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ToolsDragPanel.Cursor = System.Windows.Forms.Cursors.VSplit;
-            this.ToolsDragPanel.Location = new System.Drawing.Point(227, 0);
+            this.ToolsDragPanel.Location = new System.Drawing.Point(251, 0);
             this.ToolsDragPanel.Name = "ToolsDragPanel";
             this.ToolsDragPanel.Size = new System.Drawing.Size(4, 559);
             this.ToolsDragPanel.TabIndex = 17;
@@ -1046,9 +1061,9 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TrackBar TimeOfDayTrackBar;
         private System.Windows.Forms.CheckBox SkeletonsCheckBox;
-        private System.Windows.Forms.Button TextureEditorButton;
+        private System.Windows.Forms.Button SaveSharedTexturesButton;
         private System.Windows.Forms.CheckBox HDTexturesCheckBox;
-        private System.Windows.Forms.Button MaterialEditorButton;
+        private System.Windows.Forms.Button SaveAllTexturesButton;
         private System.Windows.Forms.Panel MainToolbarPanel;
         private System.Windows.Forms.ToolStrip MainToolbar;
         private System.Windows.Forms.ToolStripSplitButton SaveButton;
@@ -1066,7 +1081,6 @@
         private System.Windows.Forms.TabPage OptionsLightingTabPage;
         private System.Windows.Forms.CheckBox HDLightsCheckBox;
         private System.Windows.Forms.CheckBox DeferredShadingCheckBox;
-        private System.Windows.Forms.Button LightEditorButton;
         private System.Windows.Forms.ToolStripButton ToolbarMaterialEditorButton;
         private System.Windows.Forms.ToolStripButton ToolbarTextureEditorButton;
         private System.Windows.Forms.ToolStripButton ToolbarLightEditorButton;
@@ -1075,5 +1089,9 @@
         private System.Windows.Forms.ToolStripButton ToolbarRotateButton;
         private System.Windows.Forms.ToolStripButton ToolbarScaleButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem SaveAllTexturesMenuButton;
+        private System.Windows.Forms.ToolStripMenuItem SaveSharedTexturesMenuButton;
+        private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.Rendering;
+using CodeWalker.Utils;
 using CodeWalker.World;
 using SharpDX;
 using SharpDX.Direct3D11;
@@ -1458,6 +1459,145 @@ namespace CodeWalker.Forms
 
 
 
+
+        private void ShowMaterialEditor()
+        {
+            DrawableBase drawable = null;
+            Dictionary<uint, Drawable> dict = null;
+
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                drawable = Ydr.Drawable;
+            }
+            else if ((Ydd != null) && (Ydd.Loaded))
+            {
+                dict = Ydd.Dict;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                drawable = Yft.Fragment?.Drawable;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                //dict = Ypt.DrawableDict;
+            }
+            else
+            {
+                MessageBox.Show("Material editor not supported for the current file.");
+                return;
+            }
+
+            if (materialForm == null)
+            {
+                materialForm = new ModelMatForm(this);
+
+                if (drawable != null)
+                {
+                    materialForm.LoadModel(drawable);
+                }
+                else if (dict != null)
+                {
+                    materialForm.LoadModels(dict);
+                }
+
+                materialForm.Show(this);
+            }
+            else
+            {
+                if (materialForm.WindowState == FormWindowState.Minimized)
+                {
+                    materialForm.WindowState = FormWindowState.Normal;
+                }
+                materialForm.Focus();
+            }
+        }
+
+        private void ShowTextureEditor()
+        {
+            TextureDictionary td = null;
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                td = Ydr.Drawable?.ShaderGroup?.TextureDictionary;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                td = Yft.Fragment?.Drawable?.ShaderGroup?.TextureDictionary;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                td = Ypt?.PtfxList?.TextureDictionary;
+            }
+
+            if (td != null)
+            {
+                YtdForm f = new YtdForm(null, this);
+                f.Show(this);
+                f.LoadTexDict(td, fileName);
+            }
+            else
+            {
+                MessageBox.Show("Couldn't find embedded texture dict.");
+            }
+        }
+
+        private void ShowLightEditor()
+        {
+            DrawableBase drawable = null;
+            Dictionary<uint, Drawable> dict = null;
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                drawable = Ydr.Drawable;
+            }
+            else if ((Ydd != null) && (Ydd.Loaded))
+            {
+                dict = Ydd.Dict;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                drawable = Yft.Fragment?.Drawable;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                //dict = Ypt.DrawableDict;
+            }
+            else
+            {
+                MessageBox.Show("Light editor not supported for the current file.");
+            }
+
+            if (lightForm == null)
+            {
+                lightForm = new ModelLightForm(this);
+
+                if (drawable != null)
+                {
+                    lightForm.LoadModel(drawable);
+                }
+                else if (dict != null)
+                {
+                    lightForm.LoadModels(dict);
+                }
+
+                editingLights = true;
+                Widget.Visible = true;
+                lightForm.Show(this);
+            }
+            else
+            {
+                if (lightForm.WindowState == FormWindowState.Minimized)
+                {
+                    lightForm.WindowState = FormWindowState.Normal;
+                }
+                lightForm.Focus();
+            }
+            DeferredShadingCheckBox.Checked = true; //make sure we can see the lights we're editing (maybe this is bad for potatoes but meh)
+        }
+
+
+
         public void OnLightFormClosed()
         {
             lightForm = null;
@@ -1629,6 +1769,236 @@ namespace CodeWalker.Forms
             UpdateFormTitle();
 
         }
+
+
+
+
+
+        private void SaveAllTextures(bool includeEmbedded)
+        {
+            if (gameFileCache == null)
+            {
+                MessageBox.Show("This operation requires GameFileCache to continue. This shouldn't happen!");
+                return;
+            }
+
+            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return;
+            string folderpath = FolderBrowserDialog.SelectedPath;
+            if (!folderpath.EndsWith("\\")) folderpath += "\\";
+
+
+            var tryGetTextureFromYtd = new Func<uint, YtdFile, Texture>((texHash, ytd) => 
+            {
+                if (ytd == null) return null;
+                int tries = 0;
+                while (!ytd.Loaded && (tries < 500)) //wait upto ~5 sec
+                {
+                    Thread.Sleep(10);
+                    tries++;
+                }
+                if (ytd.Loaded)
+                {
+                    return ytd.TextureDict?.Lookup(texHash);
+                }
+                return null;
+            });
+            var tryGetTexture = new Func<uint, uint, Texture>((texHash, txdHash) =>
+            {
+                if (txdHash != 0)
+                {
+                    var ytd = gameFileCache.GetYtd(txdHash);
+                    var tex = tryGetTextureFromYtd(texHash, ytd);
+                    return tex;
+                }
+                return null;
+            });
+
+            var textures = new HashSet<Texture>();
+            var texturesMissing = new HashSet<string>();
+            var collectTextures = new Action<DrawableBase>((d) => 
+            {
+                if (includeEmbedded)
+                {
+                    if (d?.ShaderGroup?.TextureDictionary?.Textures?.data_items != null)
+                    {
+                        foreach (var tex in d.ShaderGroup.TextureDictionary.Textures.data_items)
+                        {
+                            textures.Add(tex);
+                        }
+                    }
+                    if ((d?.Owner is YptFile ypt) && (ypt.PtfxList?.TextureDictionary?.Textures?.data_items != null))
+                    {
+                        foreach (var tex in ypt.PtfxList.TextureDictionary.Textures.data_items)
+                        {
+                            textures.Add(tex);
+                        }
+                        return; //ypt's apparently only use embedded textures...
+                    }
+                }
+
+                if (d?.ShaderGroup?.Shaders?.data_items == null) return;
+
+                var archhash = 0u;
+                if (d is Drawable dwbl)
+                {
+                    var dname = dwbl.Name.ToLowerInvariant();
+                    dname = dname.Replace(".#dr", "").Replace(".#dd", "");
+                    archhash = JenkHash.GenHash(dname);
+                }
+                else if (d is FragDrawable fdbl)
+                {
+                    var yft = fdbl.Owner as YftFile;
+                    var fraghash = (MetaHash)(yft?.RpfFileEntry?.ShortNameHash ?? 0);
+                    archhash = fraghash;
+                }
+                var arch = gameFileCache.GetArchetype(archhash);
+                if (arch == null)
+                {
+                    arch = currentArchetype;
+                }
+
+                var txdHash = (arch != null) ? arch.TextureDict.Hash : archhash;
+                if ((txdHash == 0) && (archhash == 0))
+                { }
+
+                foreach (var s in d.ShaderGroup.Shaders.data_items)
+                {
+                    if (s?.ParametersList?.Parameters == null) continue;
+                    foreach (var p in s.ParametersList.Parameters)
+                    {
+                        var t = p.Data as TextureBase;
+                        if (t == null) continue;
+                        var tex = t as Texture;
+                        if (tex != null)
+                        {
+                            if (includeEmbedded)
+                            {
+                                textures.Add(tex);//probably redundant
+                            }
+                        }
+                        else
+                        {
+                            var texhash = t.NameHash;
+                            tex = tryGetTexture(texhash, txdHash);
+                            if (tex == null)
+                            {
+                                var ptxdhash = gameFileCache.TryGetParentYtdHash(txdHash);
+                                while ((ptxdhash != 0) && (tex == null))
+                                {
+                                    tex = tryGetTexture(texhash, ptxdhash);
+                                    if (tex == null)
+                                    {
+                                        ptxdhash = gameFileCache.TryGetParentYtdHash(ptxdhash);
+                                    }
+                                }
+                                if (tex == null)
+                                {
+                                    var ytd = gameFileCache.TryGetTextureDictForTexture(texhash);
+                                    tex = tryGetTextureFromYtd(texhash, ytd);
+                                }
+                                if (tex == null)
+                                {
+                                    texturesMissing.Add(t.Name);
+                                }
+                            }
+                            if (tex != null)
+                            {
+                                textures.Add(tex);
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (Ydr != null)
+            {
+                collectTextures(Ydr.Drawable);
+            }
+            if (Ydd?.Drawables != null)
+            {
+                foreach (var d in Ydd.Drawables)
+                {
+                    collectTextures(d);
+                }
+            }
+            if (Yft?.Fragment != null)
+            {
+                var f = Yft.Fragment;
+                collectTextures(f.Drawable);
+                collectTextures(f.DrawableCloth);
+                if (f.DrawableArray?.data_items != null)
+                {
+                    foreach (var d in f.DrawableArray.data_items)
+                    {
+                        collectTextures(d);
+                    }
+                }
+                if (f.Cloths?.data_items != null)
+                {
+                    foreach (var c in f.Cloths.data_items)
+                    {
+                        collectTextures(c.Drawable);
+                    }
+                }
+                var fc = f.PhysicsLODGroup?.PhysicsLOD1?.Children?.data_items;
+                if (fc != null)
+                {
+                    foreach (var fcc in fc)
+                    {
+                        collectTextures(fcc.Drawable1);
+                        collectTextures(fcc.Drawable2);
+                    }
+                }
+            }
+            if (Ypt?.DrawableDict != null)
+            {
+                foreach (var d in Ypt.DrawableDict.Values)
+                {
+                    collectTextures(d);
+                }
+            }
+
+            var errordds = new List<string>();
+            var successcount = 0;
+            foreach (var tex in textures)
+            {
+                try
+                {
+                    string fpath = folderpath + tex.Name + ".dds";
+                    byte[] dds = DDSIO.GetDDSFile(tex);
+                    File.WriteAllBytes(fpath, dds);
+                    successcount++;
+                }
+                catch
+                {
+                    errordds.Add(tex.Name ?? "???");
+                }
+            }
+
+            var sb = new StringBuilder();
+            if (successcount > 0)
+            {
+                sb.AppendLine(successcount.ToString() + " textures successfully exported.");
+            }
+            if (texturesMissing.Count > 0)
+            {
+                sb.AppendLine(texturesMissing.Count.ToString() + " textures weren't found!");
+            }
+            if (errordds.Count > 0)
+            {
+                sb.AppendLine(errordds.Count.ToString() + " textures couldn't be converted to .dds!");
+            }
+            if (sb.Length > 0)
+            {
+                MessageBox.Show(sb.ToString());
+            }
+            else
+            {
+                MessageBox.Show("No textures were found to export.");
+            }
+
+        }
+
 
 
 
@@ -2167,142 +2537,14 @@ namespace CodeWalker.Forms
             StatusStrip.Visible = StatusBarCheckBox.Checked;
         }
 
-        private void TextureEditorButton_Click(object sender, EventArgs e)
+        private void SaveAllTexturesButton_Click(object sender, EventArgs e)
         {
-            TextureDictionary td = null;
-
-            if ((Ydr != null) && (Ydr.Loaded))
-            {
-                td = Ydr.Drawable?.ShaderGroup?.TextureDictionary;
-            }
-            else if ((Yft != null) && (Yft.Loaded))
-            {
-                td = Yft.Fragment?.Drawable?.ShaderGroup?.TextureDictionary;
-            }
-            else if ((Ypt != null) && (Ypt.Loaded))
-            {
-                td = Ypt?.PtfxList?.TextureDictionary;
-            }
-
-            if (td != null)
-            {
-                YtdForm f = new YtdForm(null, this);
-                f.Show(this);
-                f.LoadTexDict(td, fileName);
-            }
-            else
-            {
-                MessageBox.Show("Couldn't find embedded texture dict.");
-            }
+            SaveAllTextures(true);
         }
 
-        private void MaterialEditorButton_Click(object sender, EventArgs e)
+        private void SaveSharedTexturesButton_Click(object sender, EventArgs e)
         {
-            DrawableBase drawable = null;
-            Dictionary<uint, Drawable> dict = null;
-
-
-            if ((Ydr != null) && (Ydr.Loaded))
-            {
-                drawable = Ydr.Drawable;
-            }
-            else if ((Ydd != null) && (Ydd.Loaded))
-            {
-                dict = Ydd.Dict;
-            }
-            else if ((Yft != null) && (Yft.Loaded))
-            {
-                drawable = Yft.Fragment?.Drawable;
-            }
-            else if ((Ypt != null) && (Ypt.Loaded))
-            {
-                //dict = Ypt.DrawableDict;
-            }
-            else
-            {
-                MessageBox.Show("Material editor not supported for the current file.");
-                return;
-            }
-
-            if (materialForm == null)
-            {
-                materialForm = new ModelMatForm(this);
-
-                if (drawable != null)
-                {
-                    materialForm.LoadModel(drawable);
-                }
-                else if (dict != null)
-                {
-                    materialForm.LoadModels(dict);
-                }
-
-                materialForm.Show(this);
-            }
-            else
-            {
-                if (materialForm.WindowState == FormWindowState.Minimized)
-                {
-                    materialForm.WindowState = FormWindowState.Normal;
-                }
-                materialForm.Focus();
-            }
-
-
-        }
-
-        private void LightEditorButton_Click(object sender, EventArgs e)
-        {
-            DrawableBase drawable = null;
-            Dictionary<uint, Drawable> dict = null;
-
-            if ((Ydr != null) && (Ydr.Loaded))
-            {
-                drawable = Ydr.Drawable;
-            }
-            else if ((Ydd != null) && (Ydd.Loaded))
-            {
-                dict = Ydd.Dict;
-            }
-            else if ((Yft != null) && (Yft.Loaded))
-            {
-                drawable = Yft.Fragment?.Drawable;
-            }
-            else if ((Ypt != null) && (Ypt.Loaded))
-            {
-                //dict = Ypt.DrawableDict;
-            }
-            else
-            {
-                MessageBox.Show("Light editor not supported for the current file.");
-            }
-
-            if (lightForm == null)
-            {
-                lightForm = new ModelLightForm(this);
-
-                if (drawable != null)
-                {
-                    lightForm.LoadModel(drawable);
-                }
-                else if (dict != null)
-                {
-                    lightForm.LoadModels(dict);
-                }
-
-                editingLights = true;
-                Widget.Visible = true;
-                lightForm.Show(this);
-            }
-            else
-            {
-                if (lightForm.WindowState == FormWindowState.Minimized)
-                {
-                    lightForm.WindowState = FormWindowState.Normal;
-                }
-                lightForm.Focus();
-            }
-            DeferredShadingCheckBox.Checked = true; //make sure we can see the lights we're editing (maybe this is bad for potatoes but meh)
+            SaveAllTextures(false);
         }
 
         private void SaveButton_ButtonClick(object sender, EventArgs e)
@@ -2318,6 +2560,16 @@ namespace CodeWalker.Forms
         private void SaveAsMenuButton_Click(object sender, EventArgs e)
         {
             Save(true);
+        }
+
+        private void SaveAllTexturesMenuButton_Click(object sender, EventArgs e)
+        {
+            SaveAllTextures(true);
+        }
+
+        private void SaveSharedTexturesMenuButton_Click(object sender, EventArgs e)
+        {
+            SaveAllTextures(false);
         }
 
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
@@ -2347,17 +2599,17 @@ namespace CodeWalker.Forms
 
         private void ToolbarMaterialEditorButton_Click(object sender, EventArgs e)
         {
-            MaterialEditorButton_Click(sender, e);
+            ShowMaterialEditor();
         }
 
         private void ToolbarTextureEditorButton_Click(object sender, EventArgs e)
         {
-            TextureEditorButton_Click(sender, e);
+            ShowTextureEditor();
         }
 
         private void ToolbarLightEditorButton_Click(object sender, EventArgs e)
         {
-            LightEditorButton_Click(sender, e);
+            ShowLightEditor();
         }
 
         private void ToolbarMoveButton_Click(object sender, EventArgs e)
