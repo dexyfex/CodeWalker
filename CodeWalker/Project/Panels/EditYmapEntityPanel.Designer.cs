@@ -213,7 +213,7 @@
             "8388608 - Only cast shadows",
             "16777216 - Disable reflections",
             "33554432 - Interior proxy",
-            "67108864 - Unk27",
+            "67108864 - Disable water reflections",
             "134217728 - Reflection proxy",
             "268435456 - Unk29",
             "536870912 - Mirror proxy",
