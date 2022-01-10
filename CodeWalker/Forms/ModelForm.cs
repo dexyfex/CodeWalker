@@ -730,7 +730,15 @@ namespace CodeWalker.Forms
 
             if (ydr.Drawable != null)
             {
-                MoveCameraToView(ydr.Drawable.BoundingCenter, ydr.Drawable.BoundingSphereRadius);
+                var cen = ydr.Drawable.BoundingCenter;
+                var rad = ydr.Drawable.BoundingSphereRadius;
+                if (ModelArchetype != null)
+                {
+                    cen = ModelArchetype.BSCenter;
+                    rad = ModelArchetype.BSRadius;
+                }
+
+                MoveCameraToView(cen, rad);
 
                 Skeleton = ydr.Drawable.Skeleton;
             }
@@ -800,7 +808,15 @@ namespace CodeWalker.Forms
             var dr = yft.Fragment?.Drawable;
             if (dr != null)
             {
-                MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
+                var cen = dr.BoundingCenter;
+                var rad = dr.BoundingSphereRadius;
+                if (ModelArchetype != null)
+                {
+                    cen = ModelArchetype.BSCenter;
+                    rad = ModelArchetype.BSRadius;
+                }
+
+                MoveCameraToView(cen, rad);
 
                 Skeleton = dr.Skeleton;
             }

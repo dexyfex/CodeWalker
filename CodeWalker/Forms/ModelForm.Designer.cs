@@ -420,7 +420,7 @@
             this.ClipComboBox.FormattingEnabled = true;
             this.ClipComboBox.Location = new System.Drawing.Point(50, 458);
             this.ClipComboBox.Name = "ClipComboBox";
-            this.ClipComboBox.Size = new System.Drawing.Size(167, 21);
+            this.ClipComboBox.Size = new System.Drawing.Size(191, 21);
             this.ClipComboBox.TabIndex = 35;
             this.ClipComboBox.TextChanged += new System.EventHandler(this.ClipComboBox_TextChanged);
             // 
@@ -443,7 +443,7 @@
             this.ClipDictComboBox.FormattingEnabled = true;
             this.ClipDictComboBox.Location = new System.Drawing.Point(50, 431);
             this.ClipDictComboBox.Name = "ClipDictComboBox";
-            this.ClipDictComboBox.Size = new System.Drawing.Size(167, 21);
+            this.ClipDictComboBox.Size = new System.Drawing.Size(191, 21);
             this.ClipDictComboBox.TabIndex = 33;
             this.ClipDictComboBox.TextChanged += new System.EventHandler(this.ClipDictComboBox_TextChanged);
             // 
@@ -456,7 +456,7 @@
             this.ModelsTreeView.Location = new System.Drawing.Point(0, 3);
             this.ModelsTreeView.Name = "ModelsTreeView";
             this.ModelsTreeView.ShowRootLines = false;
-            this.ModelsTreeView.Size = new System.Drawing.Size(217, 422);
+            this.ModelsTreeView.Size = new System.Drawing.Size(241, 422);
             this.ModelsTreeView.TabIndex = 1;
             this.ModelsTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.ModelsTreeView_AfterCheck);
             this.ModelsTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.ModelsTreeView_NodeMouseDoubleClick);
@@ -526,7 +526,7 @@
             this.DetailsPropertyGrid.Name = "DetailsPropertyGrid";
             this.DetailsPropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
             this.DetailsPropertyGrid.ReadOnly = true;
-            this.DetailsPropertyGrid.Size = new System.Drawing.Size(217, 497);
+            this.DetailsPropertyGrid.Size = new System.Drawing.Size(241, 497);
             this.DetailsPropertyGrid.TabIndex = 1;
             this.DetailsPropertyGrid.ToolbarVisible = false;
             // 
@@ -596,7 +596,7 @@
             "Texture coord 3"});
             this.RenderModeComboBox.Location = new System.Drawing.Point(86, 15);
             this.RenderModeComboBox.Name = "RenderModeComboBox";
-            this.RenderModeComboBox.Size = new System.Drawing.Size(114, 21);
+            this.RenderModeComboBox.Size = new System.Drawing.Size(132, 21);
             this.RenderModeComboBox.TabIndex = 12;
             this.RenderModeComboBox.SelectedIndexChanged += new System.EventHandler(this.RenderModeComboBox_SelectedIndexChanged);
             // 
@@ -677,7 +677,7 @@
             "Texture coord 3"});
             this.TextureCoordsComboBox.Location = new System.Drawing.Point(86, 69);
             this.TextureCoordsComboBox.Name = "TextureCoordsComboBox";
-            this.TextureCoordsComboBox.Size = new System.Drawing.Size(114, 21);
+            this.TextureCoordsComboBox.Size = new System.Drawing.Size(132, 21);
             this.TextureCoordsComboBox.TabIndex = 16;
             this.TextureCoordsComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureCoordsComboBox_SelectedIndexChanged);
             // 
@@ -688,7 +688,7 @@
             this.TextureSamplerComboBox.FormattingEnabled = true;
             this.TextureSamplerComboBox.Location = new System.Drawing.Point(86, 42);
             this.TextureSamplerComboBox.Name = "TextureSamplerComboBox";
-            this.TextureSamplerComboBox.Size = new System.Drawing.Size(114, 21);
+            this.TextureSamplerComboBox.Size = new System.Drawing.Size(132, 21);
             this.TextureSamplerComboBox.TabIndex = 14;
             this.TextureSamplerComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureSamplerComboBox_SelectedIndexChanged);
             // 
@@ -745,7 +745,7 @@
             "100"});
             this.GridCountComboBox.Location = new System.Drawing.Point(86, 308);
             this.GridCountComboBox.Name = "GridCountComboBox";
-            this.GridCountComboBox.Size = new System.Drawing.Size(114, 21);
+            this.GridCountComboBox.Size = new System.Drawing.Size(132, 21);
             this.GridCountComboBox.TabIndex = 21;
             this.GridCountComboBox.SelectedIndexChanged += new System.EventHandler(this.GridCountComboBox_SelectedIndexChanged);
             // 
@@ -780,7 +780,7 @@
             "100"});
             this.GridSizeComboBox.Location = new System.Drawing.Point(86, 281);
             this.GridSizeComboBox.Name = "GridSizeComboBox";
-            this.GridSizeComboBox.Size = new System.Drawing.Size(114, 21);
+            this.GridSizeComboBox.Size = new System.Drawing.Size(132, 21);
             this.GridSizeComboBox.TabIndex = 19;
             this.GridSizeComboBox.SelectedIndexChanged += new System.EventHandler(this.GridSizeComboBox_SelectedIndexChanged);
             // 
@@ -820,7 +820,7 @@
             this.OptionsLightingTabPage.Location = new System.Drawing.Point(4, 22);
             this.OptionsLightingTabPage.Name = "OptionsLightingTabPage";
             this.OptionsLightingTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.OptionsLightingTabPage.Size = new System.Drawing.Size(209, 474);
+            this.OptionsLightingTabPage.Size = new System.Drawing.Size(233, 474);
             this.OptionsLightingTabPage.TabIndex = 1;
             this.OptionsLightingTabPage.Text = "Lighting";
             this.OptionsLightingTabPage.UseVisualStyleBackColor = true;
@@ -880,7 +880,7 @@
             this.TimeOfDayTrackBar.Location = new System.Drawing.Point(3, 163);
             this.TimeOfDayTrackBar.Maximum = 1440;
             this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
-            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(205, 45);
+            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(229, 45);
             this.TimeOfDayTrackBar.TabIndex = 6;
             this.TimeOfDayTrackBar.TickFrequency = 60;
             this.TimeOfDayTrackBar.Value = 720;
