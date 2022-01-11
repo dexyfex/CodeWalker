@@ -2753,6 +2753,7 @@ namespace CodeWalker.GameFiles
 
             bool savetest = true;
             bool xmltest = true;
+            bool asmtest = true;
 
             foreach (RpfFile rpf in RpfMan.AllRpfs)
             {
@@ -2814,7 +2815,7 @@ namespace CodeWalker.GameFiles
                                 if (rel3.RelDatasSorted?.Length != rel.RelDatasSorted?.Length)
                                 { } //check nothing went missing...
 
-
+                                
                                 data = rel3.Save(); //full roundtrip!
                                 if (data != null)
                                 {
@@ -2847,6 +2848,19 @@ namespace CodeWalker.GameFiles
 
                         }
 
+                        if (asmtest)
+                        {
+                            if (rel.RelType == RelDatFileType.Dat10ModularSynth)
+                            {
+                                foreach (var d in rel.RelDatasSorted)
+                                {
+                                    if (d is Dat10Synth synth)
+                                    {
+                                        synth.TestDisassembly();
+                                    }
+                                }
+                            }
+                        }
 
                     }
 

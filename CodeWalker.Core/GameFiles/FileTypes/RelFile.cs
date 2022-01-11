@@ -6647,7 +6647,6 @@ namespace CodeWalker.GameFiles
             TrackCount = (uint)(Tracks?.Length ?? 0);
         }
     }
-
     [TC(typeof(EXP))] public class Dat151WeaponAudioItem : Dat151RelData
     {
         public MetaHash FallBackWeapon { get; set; }
@@ -6707,8 +6706,7 @@ namespace CodeWalker.GameFiles
             return offsets.ToArray();
         }
     }
-    [TC(typeof(EXP))]
-    public struct Dat151WeaponAudioItemItem : IMetaXmlItem
+    [TC(typeof(EXP))] public struct Dat151WeaponAudioItemItem : IMetaXmlItem
     {
         public MetaHash Category { get; set; }
         public MetaHash Weapon { get; set; }
@@ -6738,7 +6736,6 @@ namespace CodeWalker.GameFiles
             return Category.ToString() + ": " + Weapon.ToString();
         }
     }
-
     [TC(typeof(EXP))] public class Dat151StartTrackAction : Dat151RelData
     {
         public FlagsUint Unk0 { get; set; }
@@ -6859,9 +6856,7 @@ namespace CodeWalker.GameFiles
             return new uint[] { 12, 16, 28 };
         }
     }
-
-    [TC(typeof(EXP))]
-    public struct Dat151StartTrackActionItem : IMetaXmlItem
+    [TC(typeof(EXP))] public struct Dat151StartTrackActionItem : IMetaXmlItem
     {
         public MetaHash Track { get; set; }
         public FlagsUint Flags { get; set; }
@@ -6891,7 +6886,6 @@ namespace CodeWalker.GameFiles
             return Track.ToString() + ": " + Flags.ToString();
         }
     }
-
     [TC(typeof(EXP))] public class Dat151StopTrackAction : Dat151RelData
     {
         public FlagsUint Unk0 { get; set; }
@@ -9237,7 +9231,6 @@ namespace CodeWalker.GameFiles
             return offsets.ToArray();
         }
     }
-
     [TC(typeof(EXP))] public class Dat151ShoreLinePool : Dat151RelData
     {
         public FlagsUint Unk01 { get; set; }
@@ -9678,7 +9671,6 @@ namespace CodeWalker.GameFiles
             ShoreLineCount = (uint)(ShoreLines?.Length ?? 0);
         }
     }
-
     [TC(typeof(EXP))] public class Dat151RadioTrackEvents : Dat151RelData
     {
         public uint EventCount { get; set; }
@@ -11800,7 +11792,6 @@ namespace CodeWalker.GameFiles
             Unk07 = (byte)Xml.GetChildUIntAttribute(node, "Unk07", "value");
         }
     }
-
     [TC(typeof(EXP))] public class Dat151EntityEmitter : Dat151RelData
     {
         public FlagsUint Flags { get; set; }
@@ -13525,7 +13516,6 @@ namespace CodeWalker.GameFiles
             Unk12 = Xml.GetChildFloatAttribute(node, "Unk12", "value");
         }
     }
-
     [TC(typeof(EXP))] public class Dat151Train : Dat151RelData
     {
         public MetaHash Unk01 { get; set; }
@@ -14012,7 +14002,6 @@ namespace CodeWalker.GameFiles
             Unk07 = Xml.GetChildIntAttribute(node, "Unk07", "value");
         }
     }
-
     [TC(typeof(EXP))] public class Dat151MeleeCombat : Dat151RelData
     {
         public MetaHash Unk01 { get; set; }
@@ -19375,9 +19364,7 @@ namespace CodeWalker.GameFiles
             ItemCount = (Items?.Length ?? 0);
         }
     }
-
-    [TC(typeof(EXP))]
-    public class Dat151Unk124 : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151Unk124 : Dat151RelData
     {
         public FlagsUint Flags { get; set; }
         public uint ItemCount { get; set; }
@@ -20515,68 +20502,191 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.ValueTag(sb, indent, "BuffersCount", BuffersCount.ToString());
-            RelXml.ValueTag(sb, indent, "RegistersCount", RegistersCount.ToString());
-            RelXml.ValueTag(sb, indent, "OutputsCount", OutputsCount.ToString());
-            RelXml.WriteRawArray(sb, OutputsIndices, indent, "OutputsIndices", "", arrRowSize: 4);
-            RelXml.ValueTag(sb, indent, "StateBlocksCount", StateBlocksCount.ToString());
-            RelXml.ValueTag(sb, indent, "RuntimeCost", RuntimeCost.ToString());
-
-            //string disassembly = Disassemble(Bytecode, Constants, true);
-
-            //RelXml.OpenTag(sb, indent, "Assembly");
-            //var reader = new StringReader(disassembly);
-            //string line;
-            //while ((line = reader.ReadLine()) != null)
-            //{
-            //    RelXml.Indent(sb, indent + 1);
-            //    sb.AppendLine(line);
-            //}
-            //RelXml.CloseTag(sb, indent, "Assembly");
-
-            RelXml.WriteRawArray(sb, Bytecode, indent, "Bytecode", "", RelXml.FormatHexByte, 16);
-            RelXml.WriteRawArray(sb, Constants, indent, "Constants", "", FloatUtil.ToString, 1);
             RelXml.WriteItemArray(sb, Variables, indent, "Variables");
+
+            var disasm = Disassemble(Bytecode, Constants, Variables, false);
+            var reasm = Assemble(disasm.Disassembly, Variables);//TODO: adjust disassembly code to make this not necessary
+            RelXml.OpenTag(sb, indent, "Assembly");
+            var reader = new StringReader(disasm.Disassembly);
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                RelXml.Indent(sb, indent + 1);
+                sb.AppendLine(line);
+            }
+            RelXml.CloseTag(sb, indent, "Assembly");
+
+            var outputs = new List<byte>();
+            for (int i = 0; i < OutputsCount; i++)
+            {
+                if (i >= OutputsIndices.Length) break;
+                outputs.Add(OutputsIndices[i]);
+            }
+            RelXml.WriteRawArray(sb, outputs.ToArray(), indent, "OutputBuffers", "", arrRowSize: 4);
+
+            var extraConstants = new List<float>();
+            for (int i = reasm.Constants.Count; i < ConstantsCount; i++)
+            {
+                extraConstants.Add(Constants[i]);
+            }
+            if (extraConstants.Count > 0)
+            {
+                RelXml.WriteRawArray(sb, extraConstants.ToArray(), indent, "ExtraConstants", "", FloatUtil.ToString, 1);
+            }
+
+            var extraRegisters = RegistersCount - reasm.RegistersCount;
+            if (extraRegisters > 0)
+            {
+                RelXml.ValueTag(sb, indent, "ExtraRegisters", extraRegisters.ToString());
+            }
+
+            RelXml.ValueTag(sb, indent, "RuntimeCost", RuntimeCost.ToString());//TODO: calculate this during reassembly
+
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            BuffersCount = Xml.GetChildIntAttribute(node, "BuffersCount", "value");
-            RegistersCount = Xml.GetChildIntAttribute(node, "RegistersCount", "value");
-            OutputsCount = Xml.GetChildIntAttribute(node, "OutputsCount", "value");
-            OutputsIndices = Xml.GetChildRawByteArray(node, "OutputsIndices", fromBase: 10);
-            StateBlocksCount = Xml.GetChildIntAttribute(node, "StateBlocksCount", "value");
-            RuntimeCost = Xml.GetChildIntAttribute(node, "RuntimeCost", "value");
-
-            //var assembly = Xml.GetChildInnerText(node, "Assembly");
-            //var assembled = Assemble(assembly);
-            //Bytecode = assembled.Bytecode;
-            //Constants = assembled.Constants.ToArray();
-
-            Bytecode = Xml.GetChildRawByteArray(node, "Bytecode");
-            BytecodeLength = (Bytecode?.Length ?? 0);
-            Constants = Xml.GetChildRawFloatArray(node, "Constants");
-            ConstantsCount = (Constants?.Length ?? 0);
             Variables = XmlRel.ReadItemArray<Dat10SynthVariable>(node, "Variables");
             VariablesCount = (Variables?.Length ?? 0);
+
+            var assembly = Xml.GetChildInnerText(node, "Assembly");
+            var assembled = Assemble(assembly, Variables);
+            Bytecode = assembled.Bytecode;
+            BytecodeLength = (Bytecode?.Length ?? 0);
+            BuffersCount = assembled.BuffersCount;
+            StateBlocksCount = assembled.StateBlocksCount;
+
+            var outputs = Xml.GetChildRawByteArray(node, "OutputBuffers", fromBase: 10).ToList();
+            OutputsCount = outputs.Count;
+            for (int i = OutputsCount; i < 4; i++)
+            {
+                outputs.Add(0);
+            }
+            OutputsIndices = outputs.ToArray();
+
+
+            var extraConstants = Xml.GetChildRawFloatArray(node, "ExtraConstants");
+            foreach (var extraConstant in extraConstants)
+            {
+                assembled.Constants.Add(extraConstant);
+            }
+            Constants = assembled.Constants.ToArray();
+            ConstantsCount = (Constants?.Length ?? 0);
+
+            var extraRegisters = Xml.GetChildIntAttribute(node, "ExtraRegisters", "value");
+            RegistersCount = assembled.RegistersCount + extraRegisters;
+
+            RuntimeCost = Xml.GetChildIntAttribute(node, "RuntimeCost", "value");
+
         }
 
-        public static string Disassemble(byte[] bytecode, float[] constants, bool includeBytecode)
+
+        public void TestDisassembly()
         {
+            var errors = new List<string>();
+            var disasm = Disassemble(this.Bytecode, this.Constants, this.Variables, true);
+            var reasm = Assemble(disasm.Disassembly, this.Variables, (s,i) => errors.Add(s));
+            var disasm2 = Disassemble(reasm.Bytecode, reasm.Constants.ToArray(), this.Variables, true);
+
+            if (errors.Count > 0)
+            { }//no hit
+            if (disasm.Disassembly != disasm2.Disassembly)
+            { } //no hit!
+            if (reasm.Bytecode.Length != Bytecode.Length)
+            { }//no hit
+            else
+            {
+                for (int i = 0; i < reasm.Bytecode.Length; i++)
+                {
+                    if (reasm.Bytecode[i] != Bytecode[i])
+                    { break; }//no hit!
+                }
+            }
+            if (reasm.BuffersCount != this.BuffersCount)
+            { }//no hit
+            if (reasm.StateBlocksCount != this.StateBlocksCount)
+            { }//no hit
+            if (reasm.Constants.Count <= Constants.Length)
+            {
+                for (int i = 0; i < reasm.Constants.Count; i++)
+                {
+                    if (reasm.Constants[i] != Constants[i])
+                    { break; }//no hit
+                }
+            }
+            if (reasm.Constants.Count != Constants.Length)
+            {
+                if (reasm.Constants.Count != Constants.Length - 1)
+                { }//no hit
+                else
+                {
+                    var lastc = Constants[Constants.Length - 1];
+                    switch (lastc) //what is this?
+                    {
+                        case 0.0015f:
+                        case 0.3595f:
+                        case 0.323215f:
+                        case 0.4435f:
+                        case 0.5095f:
+                        case 12000f:
+                        case 3.590499f:
+                        case 0.829645f:
+                        case 0.5745f:
+                        case -1f:
+                        case 0.01f:
+                        case 0.561f:
+                        case 1.0754323f:
+                        case 0.1845f:
+                        case 0.508f:
+                        case 0.006f:
+                            break;
+                        default:
+                            break;//no hit
+                    }
+                }
+            }
+            if (reasm.VariablesCount != this.VariablesCount)
+            { }//lots of hits.......
+            if (reasm.RegistersCount != this.RegistersCount)
+            {//quite a few hits
+                var extregs = this.RegistersCount - reasm.RegistersCount;
+                switch (extregs)
+                {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                        break;
+                    default:
+                        break;//no hits
+                }
+            }
+
+        }
+
+
+        public class DisassembleResult
+        {
+            public string Disassembly { get; set; }
+            public List<Instruction> Instructions { get; set; } = new List<Instruction>();
+        }
+
+        public static DisassembleResult Disassemble(byte[] bytecode, float[] constants, Dat10SynthVariable[] variables, bool includeBytecode)
+        {
+            // TODO(alexguirre): THE NEW bytecodeReader DOESN'T LOOK QUITE RIGHT YET
+            var bytecodeReader = new BinaryReader(new MemoryStream(bytecode));
             var sb = new StringBuilder();
+            var dr = new DisassembleResult();
             for (int i = 0; i < bytecode.Length;)
             {
-                var inputsOutputs = bytecode[i + 0];
-                var outputs = inputsOutputs & 0xF;
-                var inputs = inputsOutputs >> 4;
                 var opcode = bytecode[i + 1];
 
                 if (Enum.IsDefined(typeof(Opcode), (Opcode)opcode))
                 {
-                    var size = SizeOf((Opcode)opcode, inputs, outputs);
-                    var inst = Decode(new BinaryReader(new MemoryStream(bytecode, i, size)));
+                    var inst = Decode(bytecodeReader);
+                    var size = inst.Size;
 
-                    sb.Append(inst.ToString(constants));
+                    sb.Append(inst.ToString(constants, variables));
                     if (includeBytecode)
                     {
                         sb.Append("    ; ");
@@ -20588,6 +20698,8 @@ namespace CodeWalker.GameFiles
                     }
                     sb.AppendLine();
                     i += size;
+
+                    dr.Instructions.Add(inst);
                 }
                 else
                 {
@@ -20607,7 +20719,38 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            return sb.ToString();
+            dr.Disassembly = sb.ToString();
+
+            return dr;
+        }
+
+        public static Instruction[] DisassembleGetInstructions(byte[] bytecode, float[] constants, Dat10SynthVariable[] variables)
+        {
+            // TODO(alexguirre): THE NEW bytecodeReader DOESN'T LOOK QUITE RIGHT YET
+            var bytecodeReader = new BinaryReader(new MemoryStream(bytecode));
+            var instructions = new List<Instruction>(128);
+            for (int i = 0; i < bytecode.Length;)
+            {
+                var opcode = bytecode[i + 1];
+
+                if (Enum.IsDefined(typeof(Opcode), (Opcode)opcode))
+                {
+                    var inst = Decode(bytecodeReader);
+                    instructions.Add(inst);
+                    i += inst.Size;
+                }
+                else
+                {
+                    throw new Exception($"Unknown opcode {opcode:X2}");
+                }
+
+                if ((Opcode)opcode == Opcode.FINISH)
+                {
+                    break;
+                }
+            }
+
+            return instructions.ToArray();
         }
 
         public static int SizeOf(Opcode opcode, int inputs, int outputs)
@@ -20753,10 +20896,10 @@ namespace CodeWalker.GameFiles
                 case Opcode.AWProcess: return 10;
                 case Opcode.LERP_BUFFER_BUFFER: return 8;
 
-                case Opcode.BiquadCoefficients_HighSelf_1:
-                case Opcode.BiquadCoefficients_HighSelf_2:
-                case Opcode.BiquadCoefficients_LowSelf_1:
-                case Opcode.BiquadCoefficients_LowSelf_2:
+                case Opcode.BiquadCoefficients_HighShelf_1:
+                case Opcode.BiquadCoefficients_HighShelf_2:
+                case Opcode.BiquadCoefficients_LowShelf_1:
+                case Opcode.BiquadCoefficients_LowShelf_2:
                     return 18;
 
                 case Opcode.SWITCH_NORM_BUFFER:
@@ -20790,7 +20933,7 @@ namespace CodeWalker.GameFiles
             public List<float> Constants { get; set; } = new List<float>();
         }
 
-        public static AssembleResult Assemble(string assembly, Action<string> onError = null)
+        public static AssembleResult Assemble(string assembly, Dat10SynthVariable[] variables, Action<string, int> onError = null)
         {
             var result = new AssembleResult();
 
@@ -20799,10 +20942,12 @@ namespace CodeWalker.GameFiles
             using (var bw = new BinaryWriter(mem))
             {
                 string line;
+                int lineNumber = 1;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    var inst = Parse(line, result, onError ?? (_ => {}));
+                    var inst = Parse(line, result, variables, msg => onError?.Invoke(msg, lineNumber));
                     inst?.Encode(bw);
+                    lineNumber++;
                 }
 
                 const int Align = 4;
@@ -20814,7 +20959,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        private static Instruction? Parse(string line, AssembleResult result, Action<string> onError)
+        private static Instruction? Parse(string line, AssembleResult result, Dat10SynthVariable[] variables, Action<string> onError)
         {
             var commentStart = line.IndexOf(';');
             if (commentStart != -1)
@@ -20830,7 +20975,7 @@ namespace CodeWalker.GameFiles
             }
 
             var opcodeName = line.Substring(0, line.TakeWhile(c => !char.IsWhiteSpace(c)).Count());
-            
+
             if (!Enum.TryParse<Opcode>(opcodeName, out var opcode))
             {
                 onError($"Unknown opcode '{opcodeName}'");
@@ -20855,25 +21000,25 @@ namespace CodeWalker.GameFiles
 
             var stateBlockEnd = parts[1].LastIndexOf(']');
             var stateBlockStart = parts[1].IndexOf('[');
-            string stateBlockStr = null;
-            var hasStateBlock = stateBlockStart != -1;
-            var stateBlockUsed = false;
 
-            if ((stateBlockStart == -1) != (stateBlockEnd == -1))
+            if (stateBlockStart > stateBlockEnd)
             {
-                onError("Mismatched brackets");
+                onError("Mismatched state block brackets");
                 return null;
             }
-            else
+
+            if (stateBlockEnd != -1 && stateBlockEnd != parts[1].Length - 1)
             {
-                stateBlockStr = hasStateBlock ? parts[1].Substring(stateBlockStart + 1, stateBlockEnd - stateBlockStart - 1) : null;
+                onError($"Stuff after state block... '{parts[1].Substring(stateBlockEnd + 1)}'");
+                return null;
             }
 
+            var stateBlockUsed = false;
+            var hasStateBlock = stateBlockStart != -1;
+            var stateBlockStr = hasStateBlock ? parts[1].Substring(stateBlockStart + 1, stateBlockEnd - stateBlockStart - 1) : null;
+
             var outputs = parts[1].Substring(0, hasStateBlock ? stateBlockStart : parts[1].Length)
-                                  .Split(',')
-                                  .Select(s => s.Trim())
-                                  .Where(s => !string.IsNullOrWhiteSpace(s))
-                                  .ToArray();
+                                  .Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
 
             var currInputIndex = 0;
             var currOutputIndex = 0;
@@ -20881,55 +21026,74 @@ namespace CodeWalker.GameFiles
 
             void Param(ParameterType type)
             {
-                var currInput = Parameter.IsInputType(type) ? inputs[currInputIndex] : null;
-                var currOutput = Parameter.IsOutputType(type) ? outputs[currOutputIndex] : null;
+                var currInput = Parameter.IsInputType(type) && currInputIndex < inputs.Length ? inputs[currInputIndex] : null;
+                var currOutput = Parameter.IsOutputType(type) && currOutputIndex < outputs.Length ? outputs[currOutputIndex] : null;
                 ushort paramValue = 0xFFFF;
 
-                switch (type)
+                bool parseParameter = true;
+                if (Parameter.IsInputType(type) && currInput == null)
                 {
-                    case ParameterType.InputBuffer: paramValue = ParseBuffer(currInput, result, onError); break;
-                    case ParameterType.InputRegister: paramValue = ParseRegister(currInput, result, onError); break;
-                    case ParameterType.InputScalar:
-                        paramValue = currInput[0] == 'R' ?
-                                        ParseRegister(currInput, result, onError) :
-                                        ParseConstant(currInput, result, onError);
-                        break;
-                    case ParameterType.InputVariable: paramValue = ParseVariable(currInput, result, onError); break;
-                    case ParameterType.OutputBuffer: paramValue = ParseBuffer(currOutput, result, onError); break;
-                    case ParameterType.OutputRegister: paramValue = ParseRegister(currOutput, result, onError); break;
-                    case ParameterType.InputOutputBuffer:
-                        if (currInput != currOutput)
-                        {
-                            onError($"Expected same input/output buffer: input = '{currInput}', output = '{currOutput}'");
-                        }
+                    onError($"Missing input parameter #{currInputIndex}, expected {Parameter.TypeToStringReadable(type)}");
+                    parseParameter = false;
+                }
 
-                        paramValue = ParseBuffer(currInput, result, onError);
-                        break;
-                    case ParameterType.StateBlock:
-                        if (!hasStateBlock)
-                        {
-                            onError($"Opcode '{opcodeName}' requires a state block");
-                        }
+                if (Parameter.IsOutputType(type) && currOutput == null)
+                {
+                    onError($"Missing output parameter #{currOutputIndex}, expected {Parameter.TypeToStringReadable(type)}");
+                    parseParameter = false;
+                }
 
-                        if (!byte.TryParse(stateBlockStr, out var stateBlockIndex))
-                        {
-                            onError($"Invalid state block: '{stateBlockStr}' cannot be parsed as an integer");
-                        }
+                if (parseParameter)
+                {
+                    switch (type)
+                    {
+                        case ParameterType.InputBuffer: paramValue = ParseBuffer(currInput, result, onError); break;
+                        case ParameterType.InputRegister: paramValue = ParseRegister(currInput, result, onError); break;
+                        case ParameterType.InputScalar:
+                            paramValue = currInput[0] == 'R' ?
+                                            ParseRegister(currInput, result, onError) :
+                                            ParseConstant(currInput, result, onError);
+                            break;
+                        case ParameterType.InputVariable: paramValue = ParseVariable(currInput, variables, result, onError); break;
+                        case ParameterType.OutputBuffer: paramValue = ParseBuffer(currOutput, result, onError); break;
+                        case ParameterType.OutputRegister: paramValue = ParseRegister(currOutput, result, onError); break;
+                        case ParameterType.InputOutputBuffer:
+                            if (currInput != currOutput)
+                            {
+                                onError($"Expected same input/output buffer: input = '{currInput}', output = '{currOutput}'");
+                            }
 
-                        if (stateBlockIndex >= MaxStateBlocks)
-                        {
-                            onError($"Invalid state block: {stateBlockIndex} is out of bounds (max: {MaxStateBlocks})");
-                        }
+                            paramValue = ParseBuffer(currInput, result, onError);
+                            break;
+                        case ParameterType.StateBlock:
+                            byte stateBlockIndex = 0;
+                            if (!hasStateBlock)
+                            {
+                                onError($"Opcode '{opcodeName}' requires a state block");
+                            }
+                            else
+                            {
+                                if (!byte.TryParse(stateBlockStr, out stateBlockIndex))
+                                {
+                                    onError($"Invalid state block: '{stateBlockStr}' cannot be parsed as an 8-bit integer");
+                                }
 
-                        result.StateBlocksCount = Math.Max(stateBlockIndex + 1, result.StateBlocksCount);
-                        paramValue = stateBlockIndex;
-                        stateBlockUsed = true;
-                        break;
-                    case ParameterType.Ignored:
-                        // the game doesn't use this value, but existing synths use the same value as the first param
-                        paramValue = parameters[0].Value;
-                        break;
-                    default: throw new NotImplementedException();
+                                if (stateBlockIndex >= MaxStateBlocks)
+                                {
+                                    onError($"Invalid state block: {stateBlockIndex} is out of bounds (valid range: 0 to {MaxStateBlocks - 1})");
+                                }
+                            }
+
+                            result.StateBlocksCount = Math.Max(stateBlockIndex + 1, result.StateBlocksCount);
+                            paramValue = stateBlockIndex;
+                            stateBlockUsed = true;
+                            break;
+                        case ParameterType.Ignored:
+                            // the game doesn't use this value, but existing synths use the same value as the first param
+                            paramValue = parameters[0].Value;
+                            break;
+                        default: throw new NotImplementedException();
+                    }
                 }
 
                 if (Parameter.IsInputType(type))
@@ -20945,7 +21109,7 @@ namespace CodeWalker.GameFiles
                 parameters.Add(new Parameter(type, paramValue));
             }
 
-            bool IsInputScalar() => inputs[currInputIndex][0] != 'B';
+            bool IsInputScalar() => currInputIndex < inputs.Length && inputs[currInputIndex][0] != 'B';
 
             var numInputs = inputs.Length;
             var numOutputs = outputs.Length;
@@ -20981,22 +21145,51 @@ namespace CodeWalker.GameFiles
             };
         }
 
-        private static ushort ParseVariable(string str, AssembleResult result, Action<string> onError)
+        private static ushort ParseVariable(string str, Dat10SynthVariable[] variables, AssembleResult result, Action<string> onError)
         {
-            if (str[0] != 'V')
+            bool foundByName = false;
+            byte varIndex = 0xFF;
+            if (variables != null && variables.Length > 0)
             {
-                onError($"Expected a variable, found '{str}'");
-                return 0;
+                try
+                {
+                    var nameHash = XmlMeta.GetHash(str);
+
+                    for (int i = 0; i < variables.Length; i++)
+                    {
+                        if (variables[i].Name == nameHash)
+                        {
+                            foundByName = true;
+                            varIndex = (byte)i;
+                            break;
+                        }
+                    }
+                }
+                catch (Exception e) // XmlMeta.GetHash throws an exception if the hash is not a valid hex number
+                {
+                    onError($"Invalid variable name '{str}': {e.Message}");
+                    return 0;
+                }
             }
 
-            var indexStr = str.Substring(1);
-            if (!byte.TryParse(indexStr, out var index))
+            if (!foundByName)
             {
-                onError($"Invalid variable: '{indexStr}' cannot be parsed as an integer");
+                if (str[0] != 'V')
+                {
+                    onError($"Unknown variable '{str}'");
+                    return 0;
+                }
+
+                var indexStr = str.Substring(1);
+                if (!byte.TryParse(indexStr, out varIndex))
+                {
+                    onError($"Invalid variable: '{indexStr}' cannot be parsed as an 8-bit integer");
+                    return 0;
+                }
             }
 
-            result.VariablesCount = Math.Max(index + 1, result.VariablesCount);
-            return (ushort)(0x300 | index);
+            result.VariablesCount = Math.Max(varIndex + 1, result.VariablesCount);
+            return (ushort)(0x300 | varIndex);
         }
 
         private static ushort ParseConstant(string str, AssembleResult result, Action<string> onError)
@@ -21004,6 +21197,7 @@ namespace CodeWalker.GameFiles
             if (!FloatUtil.TryParse(str, out var constantValue))
             {
                 onError($"Invalid constant: '{str}' cannot be parsed as a float");
+                return 0;
             }
 
             byte constantId;
@@ -21054,7 +21248,8 @@ namespace CodeWalker.GameFiles
             var indexStr = str.Substring(1);
             if (!byte.TryParse(indexStr, out var index))
             {
-                onError($"Invalid register: '{indexStr}' cannot be parsed as an integer");
+                onError($"Invalid register: '{indexStr}' cannot be parsed as an 8-bit integer");
+                return 0;
             }
 
             if (index >= MaxRegisters)
@@ -21080,12 +21275,13 @@ namespace CodeWalker.GameFiles
             var indexStr = str.Substring(1);
             if (!byte.TryParse(indexStr, out var index))
             {
-                onError($"Invalid buffer: '{indexStr}' cannot be parsed as an integer");
+                onError($"Invalid buffer: '{indexStr}' cannot be parsed as an 8-bit integer");
+                return 0;
             }
 
             if (index >= MaxBuffers)
             {
-                onError($"Invalid buffer: {index} is out of bounds (max: {MaxBuffers})");
+                onError($"Invalid buffer: B{index} is out of bounds (valid range: B0 to B{MaxBuffers - 1})");
             }
 
             result.BuffersCount = Math.Max(index + 1, result.BuffersCount);
@@ -21109,10 +21305,8 @@ namespace CodeWalker.GameFiles
                 return (inputVal & 0xFF00) != 0;
             }
 
-            HandleOpcode(result.Opcode, inputs, outputs, Param, IsInputScalar);
+            HandleOpcode(result.Opcode, result.NumberOfInputs, result.NumberOfOutputs, Param, IsInputScalar);
 
-            if (bytecode.BaseStream.Position != bytecode.BaseStream.Length)
-            { }
             result.Parameters = parameters.ToArray();
             return result;
         }
@@ -21333,40 +21527,40 @@ namespace CodeWalker.GameFiles
                     cb(ParameterType.StateBlock);
                     break;
 
-                case Opcode.BiquadCoefficients_LowPass_1:
-                case Opcode.BiquadCoefficients_HighPass_1:
+                case Opcode.BiquadCoefficients_LowPass_1:  // bool = false
+                case Opcode.BiquadCoefficients_HighPass_1: // bool = false
                 case Opcode.BiquadCoefficients_BandPass:
                 case Opcode.BiquadCoefficients_BandStop:
-                case Opcode.BiquadCoefficients_LowPass_2:
-                case Opcode.BiquadCoefficients_HighPass_2:
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
+                case Opcode.BiquadCoefficients_LowPass_2:  // bool = true
+                case Opcode.BiquadCoefficients_HighPass_2: // bool = true
+                    cb(ParameterType.OutputRegister); // b0
+                    cb(ParameterType.OutputRegister); // b1
+                    cb(ParameterType.OutputRegister); // b2
+                    cb(ParameterType.OutputRegister); // a1
+                    cb(ParameterType.OutputRegister); // a2
                     cb(ParameterType.InputScalar);
                     cb(ParameterType.InputScalar);
                     break;
 
                 case Opcode.BiquadCoefficients_PeakingEQ:
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.OutputRegister);
-                    cb(ParameterType.InputScalar);
-                    cb(ParameterType.InputScalar);
-                    cb(ParameterType.InputScalar);
+                    cb(ParameterType.OutputRegister); // b0
+                    cb(ParameterType.OutputRegister); // b1
+                    cb(ParameterType.OutputRegister); // b2
+                    cb(ParameterType.OutputRegister); // a1
+                    cb(ParameterType.OutputRegister); // a2
+                    cb(ParameterType.InputScalar);    // centerFrequency
+                    cb(ParameterType.InputScalar);    // unkFrequency
+                    cb(ParameterType.InputScalar);    // gain
                     break;
 
                 case Opcode.BiquadProcess_2Pole:
                 case Opcode.BiquadProcess_4Pole:
                     cb(ParameterType.InputOutputBuffer);
-                    cb(ParameterType.InputScalar);
-                    cb(ParameterType.InputScalar);
-                    cb(ParameterType.InputScalar);
-                    cb(ParameterType.InputScalar);
-                    cb(ParameterType.InputScalar);
+                    cb(ParameterType.InputScalar); // b0
+                    cb(ParameterType.InputScalar); // b1
+                    cb(ParameterType.InputScalar); // b2
+                    cb(ParameterType.InputScalar); // a1
+                    cb(ParameterType.InputScalar); // a2
                     cb(ParameterType.StateBlock);
                     break;
 
@@ -21399,7 +21593,7 @@ namespace CodeWalker.GameFiles
 
                 case Opcode.OSC_RAMP_BUFFER_SCALAR:
                     cb(ParameterType.OutputBuffer);
-                    cb(ParameterType.InputScalar);
+                    cb(ParameterType.InputScalar); // frequency
                     cb(ParameterType.StateBlock);
                     break;
 
@@ -21564,7 +21758,7 @@ namespace CodeWalker.GameFiles
                     {
                         // the game ignores this value and in the files it is always 0x200,
                         // but keep it to generate the exact same bytecode when reassembling
-                        cb(ParameterType.InputScalar); 
+                        cb(ParameterType.InputScalar);
                     }
                     cb(ParameterType.StateBlock);
                     break;
@@ -21609,10 +21803,10 @@ namespace CodeWalker.GameFiles
                     cb(ParameterType.InputBuffer); // max
                     break;
 
-                case Opcode.BiquadCoefficients_HighSelf_1:
-                case Opcode.BiquadCoefficients_HighSelf_2:
-                case Opcode.BiquadCoefficients_LowSelf_1:
-                case Opcode.BiquadCoefficients_LowSelf_2:
+                case Opcode.BiquadCoefficients_HighShelf_1:
+                case Opcode.BiquadCoefficients_HighShelf_2:
+                case Opcode.BiquadCoefficients_LowShelf_1:
+                case Opcode.BiquadCoefficients_LowShelf_2:
                     cb(ParameterType.OutputRegister);
                     cb(ParameterType.OutputRegister);
                     cb(ParameterType.OutputRegister);
@@ -21670,6 +21864,10 @@ namespace CodeWalker.GameFiles
             public Opcode Opcode { get; set; }
             public Parameter[] Parameters { get; set; }
 
+            public int NumberOfInputs => InputsOutputs >> 4;
+            public int NumberOfOutputs => InputsOutputs & 0xF;
+            public int Size => SizeOf(Opcode, NumberOfInputs, NumberOfOutputs);
+
             public void Encode(BinaryWriter bw)
             {
                 bw.Write(InputsOutputs);
@@ -21682,16 +21880,16 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return ToString(null);
+                return ToString(null, null);
             }
 
-            public string ToString(float[] constants)
+            public string ToString(float[] constants, Dat10SynthVariable[] variables)
             {
                 var stateBlock = Parameters.Cast<Parameter?>().SingleOrDefault(p => p.Value.IsStateBlock);
-                var inputsStr = string.Join(", ", Parameters.Where(p => p.IsInput).Select(p => p.ToString(constants)));
-                var outputsStr = string.Join(", ", Parameters.Where(p => p.IsOutput).Select(p => p.ToString(constants))) +
-                                    (stateBlock.HasValue ? " " + stateBlock.Value.ToString(constants) : "");
-                return $"{Opcode,-34} {inputsStr,-16} => {outputsStr,-16}";
+                var inputsStr = string.Join(", ", Parameters.Where(p => p.IsInput).Select(p => p.ToString(constants, variables)));
+                var outputsStr = string.Join(", ", Parameters.Where(p => p.IsOutput).Select(p => p.ToString(constants, variables))) +
+                                    (stateBlock.HasValue ? " " + stateBlock.Value.ToString(constants, variables) : "");
+                return $"{Opcode,-34} {inputsStr,-16} => {outputsStr}";
             }
         }
 
@@ -21712,10 +21910,10 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return ToString(null);
+                return ToString(null, null);
             }
 
-            public string ToString(float[] constants)
+            public string ToString(float[] constants, Dat10SynthVariable[] variables)
             {
                 switch (Type)
                 {
@@ -21737,7 +21935,7 @@ namespace CodeWalker.GameFiles
                                 case 1: return "1";
                                 default:
                                     var index = v - 2;
-                                    return constants == null ?
+                                    return constants == null || index >= constants.Length ?
                                             $"C{index}" :
                                             FloatUtil.ToString(constants[index]);
                             }
@@ -21746,7 +21944,10 @@ namespace CodeWalker.GameFiles
                     case ParameterType.OutputRegister:
                         return $"R{Value & 0xFF}";
                     case ParameterType.InputVariable:
-                        return $"V{Value & 0xFF}";
+                        int varIndex = Value & 0xFF;
+                        return variables == null || varIndex >= variables.Length ?
+                                $"V{varIndex}" :
+                                RelXml.HashString(variables[varIndex].Name);
                     case ParameterType.StateBlock:
                         return $"[{Value}]";
                     case ParameterType.Ignored:
@@ -21756,17 +21957,35 @@ namespace CodeWalker.GameFiles
                 throw new NotImplementedException();
             }
 
-            public static bool IsInputType(ParameterType Type)
-                => Type == ParameterType.InputBuffer ||
-                   Type == ParameterType.InputRegister ||
-                   Type == ParameterType.InputScalar ||
-                   Type == ParameterType.InputVariable ||
-                   Type == ParameterType.InputOutputBuffer;
-            
-            public static bool IsOutputType(ParameterType Type)
-                => Type == ParameterType.OutputBuffer ||
-                   Type == ParameterType.OutputRegister ||
-                   Type == ParameterType.InputOutputBuffer;
+            public static bool IsInputType(ParameterType type)
+                => type == ParameterType.InputBuffer ||
+                   type == ParameterType.InputRegister ||
+                   type == ParameterType.InputScalar ||
+                   type == ParameterType.InputVariable ||
+                   type == ParameterType.InputOutputBuffer;
+
+            public static bool IsOutputType(ParameterType type)
+                => type == ParameterType.OutputBuffer ||
+                   type == ParameterType.OutputRegister ||
+                   type == ParameterType.InputOutputBuffer;
+
+            // Returns a readable string representing the ParameterType, used in error messages
+            public static string TypeToStringReadable(ParameterType type)
+            {
+                switch (type)
+                {
+                    case ParameterType.InputBuffer: return "input buffer";
+                    case ParameterType.InputRegister: return "input register";
+                    case ParameterType.InputScalar: return "input scalar";
+                    case ParameterType.InputVariable: return "input variable";
+                    case ParameterType.OutputBuffer: return "output buffer";
+                    case ParameterType.OutputRegister: return "output register";
+                    case ParameterType.InputOutputBuffer: return "input/output buffer";
+                    case ParameterType.StateBlock: return "state block";
+                    case ParameterType.Ignored: return "ignored";
+                    default: return "unknown parameter type";
+                }
+            }
         }
 
         public enum ParameterType
@@ -21908,10 +22127,10 @@ namespace CodeWalker.GameFiles
             FILL_BUFFER = 0x77,
             AWProcess = 0x78,
             LERP_BUFFER_BUFFER = 0x79,
-            BiquadCoefficients_HighSelf_1 = 0x7A,
-            BiquadCoefficients_HighSelf_2 = 0x7B,
-            BiquadCoefficients_LowSelf_1 = 0x7C,
-            BiquadCoefficients_LowSelf_2 = 0x7D,
+            BiquadCoefficients_HighShelf_1 = 0x7A,
+            BiquadCoefficients_HighShelf_2 = 0x7B,
+            BiquadCoefficients_LowShelf_1 = 0x7C,
+            BiquadCoefficients_LowShelf_2 = 0x7D,
             SWITCH_NORM_BUFFER = 0x7E,
             SWITCH_INDEX_BUFFER = 0x7F,
             SWITCH_LERP_BUFFER = 0x80,
