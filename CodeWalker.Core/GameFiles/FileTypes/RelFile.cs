@@ -1697,11 +1697,36 @@ namespace CodeWalker.GameFiles
             return null;
         }
 
+        public virtual MetaHash[] GetSynthHashes()
+        {
+            return null;
+        }
+        public virtual MetaHash[] GetMixerHashes()
+        {
+            return null;
+        }
+        public virtual MetaHash[] GetCurveHashes()
+        {
+            return null;
+        }
+        public virtual MetaHash[] GetCategoryHashes()
+        {
+            return null;
+        }
+        public virtual MetaHash[] GetSoundHashes()
+        {
+            return null;
+        }
+        public virtual MetaHash[] GetGameHashes()
+        {
+            return null;
+        }
+
+
         public virtual void Write(BinaryWriter bw)
         {
             bw.Write(Data); //fallback for default byte array data writing...
         }
-
 
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
@@ -2176,6 +2201,20 @@ namespace CodeWalker.GameFiles
             return offsets.ToArray();
         }
 
+        public override MetaHash[] GetSoundHashes()
+        {
+            return AudioTrackHashes;
+        }
+        public override MetaHash[] GetCurveHashes()
+        {
+            if ((Header != null) && (Header.RolloffCurve != 0)) return new[] { Header.RolloffCurve };
+            return null;
+        }
+        public override MetaHash[] GetCategoryHashes()
+        {
+            if ((Header != null) && (Header.CategoryHash != 0)) return new[] { Header.CategoryHash };
+            return null;
+        }
     }
 
 
@@ -2443,6 +2482,10 @@ namespace CodeWalker.GameFiles
         {
             return new uint[] { 56 };
         }
+        public override MetaHash[] GetCurveHashes()
+        {
+            return new[] { AttackCurve, DecayCurve, ReleaseCurve };
+        }
     }
     [TC(typeof(EXP))] public class Dat54TwinLoopSound : Dat54Sound
     {
@@ -2518,6 +2561,10 @@ namespace CodeWalker.GameFiles
         public override uint[] GetHashTableOffsets()
         {
             return GetAudioTracksHashTableOffsets(28);
+        }
+        public override MetaHash[] GetCurveHashes()
+        {
+            return new[] { CrossfadeCurve };
         }
     }
     [TC(typeof(EXP))] public class Dat54SpeechSound : Dat54Sound
@@ -2924,6 +2971,10 @@ namespace CodeWalker.GameFiles
         {
             return new uint[] { 0, 4 };
         }
+        public override MetaHash[] GetCurveHashes()
+        {
+            return new[] { UnkCurvesHash };
+        }
     }
     [TC(typeof(EXP))] public class Dat54CollapsingStereoSound : Dat54Sound
     {
@@ -3292,20 +3343,20 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat54ModularSynthSound : Dat54Sound
     {
-        public MetaHash OptAmpSynthSound { get; set; } //0x0-0x4
-        public MetaHash UnkHash { get; set; } //0x4-0x8
+        public MetaHash SynthSound { get; set; } //0x0-0x4
+        public MetaHash SynthPreset { get; set; } //0x4-0x8
         public float UnkFloat { get; set; } //0x8-0xC
         public int UnkInt { get; set; } //0xC-0x10
         public int TrackCount { get; set; }
-        public int UnkItemCount { get; set; }
-        public Dat54ModularSynthSoundData[] UnkItems { get; set; } //0x28-..
+        public int VariableCount { get; set; }
+        public Dat54ModularSynthSoundVariable[] Variables { get; set; } //0x28-..
 
         public Dat54ModularSynthSound(RelFile rel) : base(rel, Dat54SoundType.ModularSynthSound)
         { }
         public Dat54ModularSynthSound(RelData d, BinaryReader br) : base(d, br)
         {
-            OptAmpSynthSound = br.ReadUInt32(); //0x0-0x4
-            UnkHash = br.ReadUInt32(); //0x4-0x8
+            SynthSound = br.ReadUInt32(); //0x0-0x4
+            SynthPreset = br.ReadUInt32(); //0x4-0x8
             UnkFloat = br.ReadSingle(); //0x8-0xC
             UnkInt = br.ReadInt32(); //0xC-0x10
             TrackCount = br.ReadInt32(); //0x10-0x14
@@ -3314,41 +3365,41 @@ namespace CodeWalker.GameFiles
             {
                 AudioTrackHashes[i] = br.ReadUInt32();
             }
-            UnkItemCount = br.ReadInt32();
-            UnkItems = new Dat54ModularSynthSoundData[UnkItemCount];
-            for (int i = 0; i < UnkItemCount; i++)
+            VariableCount = br.ReadInt32();
+            Variables = new Dat54ModularSynthSoundVariable[VariableCount];
+            for (int i = 0; i < VariableCount; i++)
             {
-                UnkItems[i] = new Dat54ModularSynthSoundData(br);
+                Variables[i] = new Dat54ModularSynthSoundVariable(br);
             }
         }
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            OptAmpSynthSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "OptAmpSynthSound"));
-            UnkHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash"));
+            SynthSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SynthSound"));
+            SynthPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "SynthPreset"));
             UnkFloat = Xml.GetChildFloatAttribute(node, "UnkFloat", "value");
             UnkInt = Xml.GetChildIntAttribute(node, "UnkInt", "value");
             TrackCount = Xml.GetChildIntAttribute(node, "TrackCount", "value");
             ReadAudioTracksXml(node);
-            UnkItems = XmlRel.ReadItemArray<Dat54ModularSynthSoundData>(node, "UnkItems");
-            UnkItemCount = (UnkItems?.Length ?? 0);
+            Variables = XmlRel.ReadItemArray<Dat54ModularSynthSoundVariable>(node, "Variables");
+            VariableCount = (Variables?.Length ?? 0);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            RelXml.StringTag(sb, indent, "OptAmpSynthSound", RelXml.HashString(OptAmpSynthSound));
-            RelXml.StringTag(sb, indent, "UnkHash", RelXml.HashString(UnkHash));
+            RelXml.StringTag(sb, indent, "SynthSound", RelXml.HashString(SynthSound));
+            RelXml.StringTag(sb, indent, "SynthPreset", RelXml.HashString(SynthPreset));
             RelXml.ValueTag(sb, indent, "UnkFloat", FloatUtil.ToString(UnkFloat));
             RelXml.ValueTag(sb, indent, "UnkInt", UnkInt.ToString());
             RelXml.ValueTag(sb, indent, "TrackCount", TrackCount.ToString());
             WriteAudioTracksXml(sb, indent);
-            RelXml.WriteItemArray(sb, UnkItems, indent, "UnkItems");
+            RelXml.WriteItemArray(sb, Variables, indent, "Variables");
         }
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
-            bw.Write(OptAmpSynthSound); //0x0-0x4
-            bw.Write(UnkHash); //0x4-0x8
+            bw.Write(SynthSound); //0x0-0x4
+            bw.Write(SynthPreset); //0x4-0x8
             bw.Write(UnkFloat); //0x8-0xC
             bw.Write(UnkInt); //0xC-0x10
             bw.Write(TrackCount); //0x10-0x14
@@ -3356,10 +3407,10 @@ namespace CodeWalker.GameFiles
             {
                 bw.Write(AudioTrackHashes[i]);
             }
-            bw.Write(UnkItemCount);
-            for (int i = 0; i < UnkItemCount; i++)
+            bw.Write(VariableCount);
+            for (int i = 0; i < VariableCount; i++)
             {
-                UnkItems[i].Write(bw);
+                Variables[i].Write(bw);
             }
         }
         public override uint[] GetHashTableOffsets()
@@ -3371,42 +3422,46 @@ namespace CodeWalker.GameFiles
             }
             return offsets.ToArray();
         }
+        public override MetaHash[] GetSynthHashes()
+        {
+            return new[] { SynthSound, SynthPreset };
+        }
     }
-    [TC(typeof(EXP))] public class Dat54ModularSynthSoundData : IMetaXmlItem
+    [TC(typeof(EXP))] public class Dat54ModularSynthSoundVariable : IMetaXmlItem
     {
-        public MetaHash UnkHash { get; set; }
-        public MetaHash ParameterHash { get; set; }
+        public MetaHash VariableName { get; set; }
+        public MetaHash ParameterName { get; set; }
         public float Value { get; set; }
 
-        public Dat54ModularSynthSoundData()
+        public Dat54ModularSynthSoundVariable()
         { }
-        public Dat54ModularSynthSoundData(BinaryReader br)
+        public Dat54ModularSynthSoundVariable(BinaryReader br)
         {
-            UnkHash = br.ReadUInt32();
-            ParameterHash = br.ReadUInt32();
+            VariableName = br.ReadUInt32();
+            ParameterName = br.ReadUInt32();
             Value = br.ReadSingle();
         }
         public void ReadXml(XmlNode node)
         {
-            UnkHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash"));
-            ParameterHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "ParameterHash"));
+            VariableName = XmlRel.GetHash(Xml.GetChildInnerText(node, "VariableName"));
+            ParameterName = XmlRel.GetHash(Xml.GetChildInnerText(node, "ParameterName"));
             Value = Xml.GetChildFloatAttribute(node, "Value", "value");
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.StringTag(sb, indent, "UnkHash", RelXml.HashString(UnkHash));
-            RelXml.StringTag(sb, indent, "ParameterHash", RelXml.HashString(ParameterHash));
+            RelXml.StringTag(sb, indent, "VariableName", RelXml.HashString(VariableName));
+            RelXml.StringTag(sb, indent, "ParameterName", RelXml.HashString(ParameterName));
             RelXml.ValueTag(sb, indent, "Value", FloatUtil.ToString(Value));
         }
         public void Write(BinaryWriter bw)
         {
-            bw.Write(UnkHash);
-            bw.Write(ParameterHash);
+            bw.Write(VariableName);
+            bw.Write(ParameterName);
             bw.Write(Value);
         }
         public override string ToString()
         {
-            return UnkHash.ToString() + ": " + ParameterHash.ToString() + ": " + FloatUtil.ToString(Value);
+            return VariableName.ToString() + ": " + ParameterName.ToString() + ": " + FloatUtil.ToString(Value);
         }
     }
     [TC(typeof(EXP))] public class Dat54GranularSound : Dat54Sound
@@ -3859,6 +3914,10 @@ namespace CodeWalker.GameFiles
         public override uint[] GetHashTableOffsets()
         {
             return new uint[] { 0 };
+        }
+        public override MetaHash[] GetCurveHashes()
+        {
+            return new[] { UnkCurvesHash };
         }
     }
     [TC(typeof(EXP))] public class Dat54VariablePrintValueSound : Dat54Sound
@@ -4876,6 +4935,10 @@ namespace CodeWalker.GameFiles
             }
             return offsets.ToArray();
         }
+        public override MetaHash[] GetSoundHashes()
+        {
+            return Items;
+        }
     }
     [TC(typeof(EXP))] public class Dat54SoundList : Dat54Sound
     {
@@ -4919,6 +4982,10 @@ namespace CodeWalker.GameFiles
             {
                 bw.Write(Items[i]);
             }
+        }
+        public override MetaHash[] GetSoundHashes()
+        {
+            return Items;
         }
     }
 
@@ -23796,7 +23863,6 @@ namespace CodeWalker.GameFiles
                 int indent = 0;
                 int cindent = 1;
                 var iindent = 2;
-                var icindent = 3;
                 var name = "Dat" + ((uint)rel.RelType).ToString();
 
                 OpenTag(sb, indent, name);
@@ -23824,84 +23890,7 @@ namespace CodeWalker.GameFiles
 
                 foreach (var item in rel.RelDatasSorted)
                 {
-                    var typeid = item.TypeID.ToString();
-                    switch (rel.RelType)
-                    {
-                        case RelDatFileType.Dat54DataEntries:
-                            typeid = ((Dat54SoundType)item.TypeID).ToString();
-                            break;
-                        case RelDatFileType.Dat149:
-                        case RelDatFileType.Dat150:
-                        case RelDatFileType.Dat151:
-                            typeid = ((Dat151RelType)item.TypeID).ToString();
-                            break;
-                        case RelDatFileType.Dat4:
-                            if (rel.IsAudioConfig) typeid = ((Dat4ConfigType)item.TypeID).ToString();
-                            else typeid = ((Dat4SpeechType)item.TypeID).ToString();
-                            break;
-                        case RelDatFileType.Dat10ModularSynth:
-                            typeid = ((Dat10RelType)item.TypeID).ToString();
-                            break;
-                        case RelDatFileType.Dat15DynamicMixer:
-                            typeid = ((Dat15RelType)item.TypeID).ToString();
-                            break;
-                        case RelDatFileType.Dat16Curves:
-                            typeid = ((Dat16RelType)item.TypeID).ToString();
-                            break;
-                        case RelDatFileType.Dat22Categories:
-                            typeid = ((Dat22RelType)item.TypeID).ToString();
-                            break;
-                        default:
-                            break;
-                    }
-
-                    var ntoffset = "";
-                    var dat151item = item as Dat151RelData;
-                    if (dat151item != null)
-                    {
-                        ntoffset = " ntOffset=\"" + dat151item.NameTableOffset.ToString() + "\"";
-                    }
-                    var dat4config = item as Dat4ConfigData;
-                    if (dat4config != null)
-                    {
-                        ntoffset = " ntOffset=\"" + dat4config.NameTableOffset.ToString() + "\"";
-                    }
-                    var dat4Speech = item as Dat4SpeechData;
-                    if (dat4Speech != null)
-                    {
-                        if (dat4Speech.Type == Dat4SpeechType.Container)
-                        {
-                            ntoffset = " ntOffset=\"" + dat4Speech.NameTableOffset.ToString() + "\"";
-                        }
-                    }
-                    var dat10item = item as Dat10RelData;
-                    if (dat10item != null)
-                    {
-                        ntoffset = " ntOffset=\"" + dat10item.NameTableOffset.ToString() + "\"";
-                    }
-                    var dat15item = item as Dat15RelData;
-                    if (dat15item != null)
-                    {
-                        ntoffset = " ntOffset=\"" + dat15item.NameTableOffset.ToString() + "\"";
-                    }
-                    var dat16item = item as Dat16RelData;
-                    if (dat16item != null)
-                    {
-                        ntoffset = " ntOffset=\"" + dat16item.NameTableOffset.ToString() + "\"";
-                    }
-                    var dat22item = item as Dat22RelData;
-                    if (dat22item != null)
-                    {
-                        ntoffset = " ntOffset=\"" + dat22item.NameTableOffset.ToString() + "\"";
-                    }
-
-                    OpenTag(sb, iindent, "Item type=\"" + typeid + "\"" + ntoffset);
-
-                    StringTag(sb, icindent, "Name", item.Name ?? RelXml.HashString(item.NameHash));
-
-                    item.WriteXml(sb, icindent);
-
-                    CloseTag(sb, iindent, "Item");
+                    GetXml(item, sb, iindent);
                 }
 
                 CloseTag(sb, cindent, "Items");
@@ -23910,6 +23899,97 @@ namespace CodeWalker.GameFiles
 
             }
 
+            return sb.ToString();
+        }
+
+        public static void GetXml(RelData item, StringBuilder sb, int iindent)
+        {
+            var icindent = iindent + 1;
+            var rel = item.Rel;
+            var typeid = item.TypeID.ToString();
+            switch (rel.RelType)
+            {
+                case RelDatFileType.Dat54DataEntries:
+                    typeid = ((Dat54SoundType)item.TypeID).ToString();
+                    break;
+                case RelDatFileType.Dat149:
+                case RelDatFileType.Dat150:
+                case RelDatFileType.Dat151:
+                    typeid = ((Dat151RelType)item.TypeID).ToString();
+                    break;
+                case RelDatFileType.Dat4:
+                    if (rel.IsAudioConfig) typeid = ((Dat4ConfigType)item.TypeID).ToString();
+                    else typeid = ((Dat4SpeechType)item.TypeID).ToString();
+                    break;
+                case RelDatFileType.Dat10ModularSynth:
+                    typeid = ((Dat10RelType)item.TypeID).ToString();
+                    break;
+                case RelDatFileType.Dat15DynamicMixer:
+                    typeid = ((Dat15RelType)item.TypeID).ToString();
+                    break;
+                case RelDatFileType.Dat16Curves:
+                    typeid = ((Dat16RelType)item.TypeID).ToString();
+                    break;
+                case RelDatFileType.Dat22Categories:
+                    typeid = ((Dat22RelType)item.TypeID).ToString();
+                    break;
+                default:
+                    break;
+            }
+
+            var ntoffset = "";
+            var dat151item = item as Dat151RelData;
+            if (dat151item != null)
+            {
+                ntoffset = " ntOffset=\"" + dat151item.NameTableOffset.ToString() + "\"";
+            }
+            var dat4config = item as Dat4ConfigData;
+            if (dat4config != null)
+            {
+                ntoffset = " ntOffset=\"" + dat4config.NameTableOffset.ToString() + "\"";
+            }
+            var dat4Speech = item as Dat4SpeechData;
+            if (dat4Speech != null)
+            {
+                if (dat4Speech.Type == Dat4SpeechType.Container)
+                {
+                    ntoffset = " ntOffset=\"" + dat4Speech.NameTableOffset.ToString() + "\"";
+                }
+            }
+            var dat10item = item as Dat10RelData;
+            if (dat10item != null)
+            {
+                ntoffset = " ntOffset=\"" + dat10item.NameTableOffset.ToString() + "\"";
+            }
+            var dat15item = item as Dat15RelData;
+            if (dat15item != null)
+            {
+                ntoffset = " ntOffset=\"" + dat15item.NameTableOffset.ToString() + "\"";
+            }
+            var dat16item = item as Dat16RelData;
+            if (dat16item != null)
+            {
+                ntoffset = " ntOffset=\"" + dat16item.NameTableOffset.ToString() + "\"";
+            }
+            var dat22item = item as Dat22RelData;
+            if (dat22item != null)
+            {
+                ntoffset = " ntOffset=\"" + dat22item.NameTableOffset.ToString() + "\"";
+            }
+
+            OpenTag(sb, iindent, "Item type=\"" + typeid + "\"" + ntoffset);
+
+            StringTag(sb, icindent, "Name", item.Name ?? RelXml.HashString(item.NameHash));
+
+            item.WriteXml(sb, icindent);
+
+            CloseTag(sb, iindent, "Item");
+
+        }
+        public static string GetXml(RelData item, int indent = 0)
+        {
+            var sb = new StringBuilder();
+            GetXml(item, sb, indent);
             return sb.ToString();
         }
 

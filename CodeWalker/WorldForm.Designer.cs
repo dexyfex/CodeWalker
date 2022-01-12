@@ -310,6 +310,7 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
+            this.ToolsMenuAudioExplorer = new System.Windows.Forms.ToolStripMenuItem();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -2750,6 +2751,7 @@ namespace CodeWalker
             this.ToolsMenuSelectionInfo,
             this.ToolsMenuProjectWindow,
             this.ToolsMenuCutsceneViewer,
+            this.ToolsMenuAudioExplorer,
             this.ToolsMenuWorldSearch,
             this.ToolsMenuBinarySearch,
             this.ToolsMenuJenkGen,
@@ -2760,12 +2762,12 @@ namespace CodeWalker
             this.ToolsMenuExtractShaders,
             this.ToolsMenuOptions});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(170, 312);
+            this.ToolsMenu.Size = new System.Drawing.Size(181, 356);
             // 
             // ToolsMenuRPFBrowser
             // 
             this.ToolsMenuRPFBrowser.Name = "ToolsMenuRPFBrowser";
-            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuRPFBrowser.Text = "RPF Browser...";
             this.ToolsMenuRPFBrowser.Visible = false;
             this.ToolsMenuRPFBrowser.Click += new System.EventHandler(this.ToolsMenuRPFBrowser_Click);
@@ -2773,14 +2775,14 @@ namespace CodeWalker
             // ToolsMenuRPFExplorer
             // 
             this.ToolsMenuRPFExplorer.Name = "ToolsMenuRPFExplorer";
-            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuRPFExplorer.Text = "RPF Explorer...";
             this.ToolsMenuRPFExplorer.Click += new System.EventHandler(this.ToolsMenuRPFExplorer_Click);
             // 
             // ToolsMenuSelectionInfo
             // 
             this.ToolsMenuSelectionInfo.Name = "ToolsMenuSelectionInfo";
-            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuSelectionInfo.Text = "Selection info...";
             this.ToolsMenuSelectionInfo.Click += new System.EventHandler(this.ToolsMenuSelectionInfo_Click);
             // 
@@ -2788,7 +2790,7 @@ namespace CodeWalker
             // 
             this.ToolsMenuProjectWindow.Enabled = false;
             this.ToolsMenuProjectWindow.Name = "ToolsMenuProjectWindow";
-            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuProjectWindow.Text = "Project window...";
             this.ToolsMenuProjectWindow.Click += new System.EventHandler(this.ToolsMenuProjectWindow_Click);
             // 
@@ -2796,14 +2798,14 @@ namespace CodeWalker
             // 
             this.ToolsMenuCutsceneViewer.Enabled = false;
             this.ToolsMenuCutsceneViewer.Name = "ToolsMenuCutsceneViewer";
-            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuCutsceneViewer.Text = "Cutscene viewer...";
             this.ToolsMenuCutsceneViewer.Click += new System.EventHandler(this.ToolsMenuCutsceneViewer_Click);
             // 
             // ToolsMenuWorldSearch
             // 
             this.ToolsMenuWorldSearch.Name = "ToolsMenuWorldSearch";
-            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuWorldSearch.Text = "World search...";
             this.ToolsMenuWorldSearch.Click += new System.EventHandler(this.ToolsMenuWorldSearch_Click);
             // 
@@ -2811,14 +2813,14 @@ namespace CodeWalker
             // 
             this.ToolsMenuBinarySearch.Enabled = false;
             this.ToolsMenuBinarySearch.Name = "ToolsMenuBinarySearch";
-            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuBinarySearch.Text = "Binary search...";
             this.ToolsMenuBinarySearch.Click += new System.EventHandler(this.ToolsMenuBinarySearch_Click);
             // 
             // ToolsMenuJenkGen
             // 
             this.ToolsMenuJenkGen.Name = "ToolsMenuJenkGen";
-            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuJenkGen.Text = "JenkGen...";
             this.ToolsMenuJenkGen.Click += new System.EventHandler(this.ToolsMenuJenkGen_Click);
             // 
@@ -2826,42 +2828,42 @@ namespace CodeWalker
             // 
             this.ToolsMenuJenkInd.Enabled = false;
             this.ToolsMenuJenkInd.Name = "ToolsMenuJenkInd";
-            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuJenkInd.Text = "JenkInd...";
             this.ToolsMenuJenkInd.Click += new System.EventHandler(this.ToolsMenuJenkInd_Click);
             // 
             // ToolsMenuExtractScripts
             // 
             this.ToolsMenuExtractScripts.Name = "ToolsMenuExtractScripts";
-            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractScripts.Text = "Extract scripts...";
             this.ToolsMenuExtractScripts.Click += new System.EventHandler(this.ToolsMenuExtractScripts_Click);
             // 
             // ToolsMenuExtractTextures
             // 
             this.ToolsMenuExtractTextures.Name = "ToolsMenuExtractTextures";
-            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractTextures.Text = "Extract textures...";
             this.ToolsMenuExtractTextures.Click += new System.EventHandler(this.ToolsMenuExtractTextures_Click);
             // 
             // ToolsMenuExtractRawFiles
             // 
             this.ToolsMenuExtractRawFiles.Name = "ToolsMenuExtractRawFiles";
-            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractRawFiles.Text = "Extract raw files...";
             this.ToolsMenuExtractRawFiles.Click += new System.EventHandler(this.ToolsMenuExtractRawFiles_Click);
             // 
             // ToolsMenuExtractShaders
             // 
             this.ToolsMenuExtractShaders.Name = "ToolsMenuExtractShaders";
-            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuExtractShaders.Text = "Extract shaders...";
             this.ToolsMenuExtractShaders.Click += new System.EventHandler(this.ToolsMenuExtractShaders_Click);
             // 
             // ToolsMenuOptions
             // 
             this.ToolsMenuOptions.Name = "ToolsMenuOptions";
-            this.ToolsMenuOptions.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuOptions.Size = new System.Drawing.Size(180, 22);
             this.ToolsMenuOptions.Text = "Options...";
             this.ToolsMenuOptions.Click += new System.EventHandler(this.ToolsMenuOptions_Click);
             // 
@@ -2925,49 +2927,49 @@ namespace CodeWalker
             // ToolbarNewProjectButton
             // 
             this.ToolbarNewProjectButton.Name = "ToolbarNewProjectButton";
-            this.ToolbarNewProjectButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewProjectButton.Size = new System.Drawing.Size(167, 22);
             this.ToolbarNewProjectButton.Text = "New Project";
             this.ToolbarNewProjectButton.Click += new System.EventHandler(this.ToolbarNewProjectButton_Click);
             // 
             // ToolbarNewYmapButton
             // 
             this.ToolbarNewYmapButton.Name = "ToolbarNewYmapButton";
-            this.ToolbarNewYmapButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYmapButton.Size = new System.Drawing.Size(167, 22);
             this.ToolbarNewYmapButton.Text = "New Ymap File";
             this.ToolbarNewYmapButton.Click += new System.EventHandler(this.ToolbarNewYmapButton_Click);
             // 
             // ToolbarNewYtypButton
             // 
             this.ToolbarNewYtypButton.Name = "ToolbarNewYtypButton";
-            this.ToolbarNewYtypButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYtypButton.Size = new System.Drawing.Size(167, 22);
             this.ToolbarNewYtypButton.Text = "New Ytyp File";
             this.ToolbarNewYtypButton.Click += new System.EventHandler(this.ToolbarNewYtypButton_Click);
             // 
             // ToolbarNewYbnButton
             // 
             this.ToolbarNewYbnButton.Name = "ToolbarNewYbnButton";
-            this.ToolbarNewYbnButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYbnButton.Size = new System.Drawing.Size(167, 22);
             this.ToolbarNewYbnButton.Text = "New Ybn File";
             this.ToolbarNewYbnButton.Click += new System.EventHandler(this.ToolbarNewYbnButton_Click);
             // 
             // ToolbarNewYndButton
             // 
             this.ToolbarNewYndButton.Name = "ToolbarNewYndButton";
-            this.ToolbarNewYndButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewYndButton.Size = new System.Drawing.Size(167, 22);
             this.ToolbarNewYndButton.Text = "New Ynd File";
             this.ToolbarNewYndButton.Click += new System.EventHandler(this.ToolbarNewYndButton_Click);
             // 
             // ToolbarNewTrainsButton
             // 
             this.ToolbarNewTrainsButton.Name = "ToolbarNewTrainsButton";
-            this.ToolbarNewTrainsButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewTrainsButton.Size = new System.Drawing.Size(167, 22);
             this.ToolbarNewTrainsButton.Text = "New Trains File";
             this.ToolbarNewTrainsButton.Click += new System.EventHandler(this.ToolbarNewTrainsButton_Click);
             // 
             // ToolbarNewScenarioButton
             // 
             this.ToolbarNewScenarioButton.Name = "ToolbarNewScenarioButton";
-            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(167, 22);
             this.ToolbarNewScenarioButton.Text = "New Scenario File";
             this.ToolbarNewScenarioButton.Click += new System.EventHandler(this.ToolbarNewScenarioButton_Click);
             // 
@@ -2990,21 +2992,21 @@ namespace CodeWalker
             // ToolbarOpenProjectButton
             // 
             this.ToolbarOpenProjectButton.Name = "ToolbarOpenProjectButton";
-            this.ToolbarOpenProjectButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenProjectButton.Size = new System.Drawing.Size(152, 22);
             this.ToolbarOpenProjectButton.Text = "Open Project...";
             this.ToolbarOpenProjectButton.Click += new System.EventHandler(this.ToolbarOpenProjectButton_Click);
             // 
             // ToolbarOpenFilesButton
             // 
             this.ToolbarOpenFilesButton.Name = "ToolbarOpenFilesButton";
-            this.ToolbarOpenFilesButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenFilesButton.Size = new System.Drawing.Size(152, 22);
             this.ToolbarOpenFilesButton.Text = "Open Files...";
             this.ToolbarOpenFilesButton.Click += new System.EventHandler(this.ToolbarOpenFilesButton_Click);
             // 
             // ToolbarOpenFolderButton
             // 
             this.ToolbarOpenFolderButton.Name = "ToolbarOpenFolderButton";
-            this.ToolbarOpenFolderButton.Size = new System.Drawing.Size(180, 22);
+            this.ToolbarOpenFolderButton.Size = new System.Drawing.Size(152, 22);
             this.ToolbarOpenFolderButton.Text = "Open Folder...";
             this.ToolbarOpenFolderButton.Click += new System.EventHandler(this.ToolbarOpenFolderButton_Click);
             // 
@@ -3588,6 +3590,14 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
+            // ToolsMenuAudioExplorer
+            // 
+            this.ToolsMenuAudioExplorer.Enabled = false;
+            this.ToolsMenuAudioExplorer.Name = "ToolsMenuAudioExplorer";
+            this.ToolsMenuAudioExplorer.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuAudioExplorer.Text = "Audio explorer...";
+            this.ToolsMenuAudioExplorer.Click += new System.EventHandler(this.ToolsMenuAudioExplorer_Click);
+            // 
             // WorldForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3957,5 +3967,6 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox HDLightsCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectCalmingQuadButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectWaveQuadButton;
+        private System.Windows.Forms.ToolStripMenuItem ToolsMenuAudioExplorer;
     }
 }

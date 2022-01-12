@@ -8,30 +8,15 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.World
 {
-    public class AudioZones // : BasePathData
+    public class AudioZones
     {
         public volatile bool Inited = false;
         public GameFileCache GameFileCache;
-
-        //public Vector4[] GetNodePositions()
-        //{
-        //    return null;
-        //}
-        //public EditorVertex[] GetPathVertices()
-        //{
-        //    return null;
-        //}
-        //public EditorVertex[] GetTriangleVertices()
-        //{
-        //    return TriangleVerts;
-        //}
-        //public EditorVertex[] TriangleVerts;
 
         public List<AudioPlacement> Zones = new List<AudioPlacement>();
         public List<AudioPlacement> Emitters = new List<AudioPlacement>();
         public List<AudioPlacement> AllItems = new List<AudioPlacement>();
 
-        public List<RelFile> AllFiles = new List<RelFile>();
         public Dictionary<RelFile, AudioPlacement[]> PlacementsDict = new Dictionary<RelFile, AudioPlacement[]>();
 
 
@@ -41,49 +26,22 @@ namespace CodeWalker.World
 
             GameFileCache = gameFileCache;
 
-            var rpfman = gameFileCache.RpfMan;
-
-
             Zones.Clear();
             Emitters.Clear();
             AllItems.Clear();
 
 
-            Dictionary<uint, RpfFileEntry> datrelentries = new Dictionary<uint, RpfFileEntry>();
-            var audrpf = rpfman.FindRpfFile("x64\\audio\\audio_rel.rpf");
-            if (audrpf != null)
-            {
-                AddRpfDatRels(audrpf, datrelentries);
-            }
-
-            if (gameFileCache.EnableDlc)
-            {
-                var updrpf = rpfman.FindRpfFile("update\\update.rpf");
-                if (updrpf != null)
-                {
-                    AddRpfDatRels(updrpf, datrelentries);
-                }
-                foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load from current dlc rpfs
-                {
-                    AddRpfDatRels(dlcrpf, datrelentries);
-                }
-            }
-
             List<AudioPlacement> placements = new List<AudioPlacement>();
 
-            foreach (var dat151entry in datrelentries.Values)
+            foreach (var relfile in GameFileCache.AudioDatRelFiles)
             {
-                var relfile = rpfman.GetFile<RelFile>(dat151entry);
-                if (relfile != null)
-                {
-                    AllFiles.Add(relfile);
+                if (relfile == null) continue;
 
-                    placements.Clear();
+                placements.Clear();
 
-                    CreatePlacements(relfile, placements, true);
+                CreatePlacements(relfile, placements, true);
 
-                    PlacementsDict[relfile] = placements.ToArray();
-                }
+                PlacementsDict[relfile] = placements.ToArray();
             }
 
             AllItems.AddRange(Zones);
@@ -92,31 +50,6 @@ namespace CodeWalker.World
             Inited = true;
         }
 
-
-
-        private void AddRpfDatRels(RpfFile rpffile, Dictionary<uint, RpfFileEntry> datrelentries)
-        {
-            if (rpffile.AllEntries == null) return;
-            foreach (var entry in rpffile.AllEntries)
-            {
-                if (entry is RpfFileEntry)
-                {
-                    RpfFileEntry fentry = entry as RpfFileEntry;
-                    //if (entry.NameLower.EndsWith(".rel"))
-                    //{
-                    //    datrelentries[entry.NameHash] = fentry;
-                    //}
-                    if (entry.NameLower.EndsWith(".dat54.rel"))
-                    {
-                        datrelentries[entry.NameHash] = fentry;
-                    }
-                    if (entry.NameLower.EndsWith(".dat151.rel"))
-                    {
-                        datrelentries[entry.NameHash] = fentry;
-                    }
-                }
-            }
-        }
 
         private void CreatePlacements(RelFile relfile, List<AudioPlacement> placements, bool addtoLists = false)
         {

@@ -948,7 +948,7 @@ namespace CodeWalker
             if (!audiozones.Inited) return;
 
             renderaudfilelist.Clear();
-            renderaudfilelist.AddRange(audiozones.AllFiles);
+            renderaudfilelist.AddRange(GameFileCache.AudioDatRelFiles);
 
             if (ProjectForm != null)
             {
@@ -958,12 +958,6 @@ namespace CodeWalker
             renderaudplacementslist.Clear();
             audiozones.GetPlacements(renderaudfilelist, renderaudplacementslist);
 
-
-            //RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(audiozones);
-            //if ((rnd != null) && (rnd.IsLoaded))
-            //{
-            //    shaders.Enqueue(rnd);
-            //}
 
 
             BoundingBox bbox = new BoundingBox();
@@ -4847,6 +4841,7 @@ namespace CodeWalker
                     ToolbarProjectWindowButton.Enabled = true;
                     ToolsMenuProjectWindow.Enabled = true;
                     ToolsMenuCutsceneViewer.Enabled = true;
+                    ToolsMenuAudioExplorer.Enabled = true;
                     ToolsMenuBinarySearch.Enabled = true;
                     ToolsMenuJenkInd.Enabled = true;
                 }
@@ -6738,6 +6733,12 @@ namespace CodeWalker
         private void ToolsMenuCutsceneViewer_Click(object sender, EventArgs e)
         {
             ShowCutsceneForm();
+        }
+
+        private void ToolsMenuAudioExplorer_Click(object sender, EventArgs e)
+        {
+            AudioExplorerForm f = new AudioExplorerForm(gameFileCache);
+            f.Show(this);
         }
 
         private void ToolsMenuWorldSearch_Click(object sender, EventArgs e)
