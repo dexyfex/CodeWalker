@@ -52,7 +52,7 @@ namespace CodeWalker.Tools
                 foreach (var kvp in GameFileCache.AudioGameDict) addItem(kvp.Value);
             }
             NameComboBox.AutoCompleteCustomSource.AddRange(namelist.ToArray());
-            NameComboBox.Text = "";
+            NameComboBox.Text = "(Start typing to search...)";
 
 
 
@@ -103,10 +103,15 @@ namespace CodeWalker.Tools
             return str + " : " + typeid;
         }
 
+        private IEnumerable<MetaHash> GetUniqueHashes(MetaHash[] hashes, RelData item)
+        {
+            return hashes?.Distinct()?.Where(h => h != item.NameHash); //try avoid infinite loops...
+        }
+
 
         private void LoadItemHierarchy(RelData item, TreeNode parentNode = null)
         {
-            TreeNode node = null;
+            TreeNode node;
             if (parentNode == null)
             {
                 HierarchyTreeView.Nodes.Clear();
@@ -121,18 +126,17 @@ namespace CodeWalker.Tools
 
             node.Tag = item;
 
-            var synths = item.GetSynthHashes();
-            var mixers = item.GetMixerHashes();
-            var curves = item.GetCurveHashes();
-            var categs = item.GetCategoryHashes();
-            var sounds = item.GetSoundHashes();
-            var games = item.GetGameHashes();
+            var synths = GetUniqueHashes(item.GetSynthHashes(), item);
+            var mixers = GetUniqueHashes(item.GetMixerHashes(), item);
+            var curves = GetUniqueHashes(item.GetCurveHashes(), item);
+            var categs = GetUniqueHashes(item.GetCategoryHashes(), item);
+            var sounds = GetUniqueHashes(item.GetSoundHashes(), item);
+            var games = GetUniqueHashes(item.GetGameHashes(), item);
 
 
             if (synths != null)
             {
                 foreach (var h in synths)
-
                 {
                     if (GameFileCache.AudioSynthsDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
                 }

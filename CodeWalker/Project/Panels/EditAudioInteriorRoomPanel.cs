@@ -49,12 +49,12 @@ namespace CodeWalker.Project.Panels
                 populatingui = true;
                 NameTextBox.Text = string.Empty;
                 MloRoomTextBox.Text = string.Empty;
-                Hash1TextBox.Text = string.Empty;
+                ZoneTextBox.Text = string.Empty;
                 Unk02TextBox.Text = string.Empty;
                 Unk03TextBox.Text = string.Empty;
                 ReverbTextBox.Text = string.Empty;
                 EchoTextBox.Text = string.Empty;
-                Unk06TextBox.Text = string.Empty;
+                SoundTextBox.Text = string.Empty;
                 Unk07TextBox.Text = string.Empty;
                 Unk08TextBox.Text = string.Empty;
                 Unk09TextBox.Text = string.Empty;
@@ -62,7 +62,7 @@ namespace CodeWalker.Project.Panels
                 Unk11TextBox.Text = string.Empty;
                 Unk12TextBox.Text = string.Empty;
                 Unk13TextBox.Text = string.Empty;
-                Unk14TextBox.Text = string.Empty;
+                SoundSetTextBox.Text = string.Empty;
                 Flags0TextBox.Text = string.Empty;
                 populatingui = false;
             }
@@ -76,12 +76,12 @@ namespace CodeWalker.Project.Panels
 
                 NameTextBox.Text = cr.NameHash.ToString();
                 MloRoomTextBox.Text = cr.MloRoom.ToString();
-                Hash1TextBox.Text = cr.Hash1.ToString();
+                ZoneTextBox.Text = cr.Zone.ToString();
                 Unk02TextBox.Text = cr.Unk02.ToString();
                 Unk03TextBox.Text = FloatUtil.ToString(cr.Unk03);
                 ReverbTextBox.Text = FloatUtil.ToString(cr.Reverb);
                 EchoTextBox.Text = FloatUtil.ToString(cr.Echo);
-                Unk06TextBox.Text = cr.Unk06.ToString();
+                SoundTextBox.Text = cr.Sound.ToString();
                 Unk07TextBox.Text = FloatUtil.ToString(cr.Unk07);
                 Unk08TextBox.Text = FloatUtil.ToString(cr.Unk08);
                 Unk09TextBox.Text = FloatUtil.ToString(cr.Unk09);
@@ -89,7 +89,7 @@ namespace CodeWalker.Project.Panels
                 Unk11TextBox.Text = FloatUtil.ToString(cr.Unk11);
                 Unk12TextBox.Text = FloatUtil.ToString(cr.Unk12);
                 Unk13TextBox.Text = cr.Unk13.ToString();
-                Unk14TextBox.Text = cr.Unk14.ToString();
+                SoundSetTextBox.Text = cr.SoundSet.ToString();
                 Flags0TextBox.Text = cr.Flags0.Hex;
                 populatingui = false;
 
@@ -158,7 +158,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentRoom == null) return;
 
             uint hash = 0;
-            string name = Hash1TextBox.Text;
+            string name = ZoneTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(name);
@@ -166,9 +166,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Hash1 != hash)
+            if (CurrentRoom.Zone != hash)
             {
-                CurrentRoom.Hash1 = hash;
+                CurrentRoom.Zone = hash;
 
                 ProjectItemChanged();
             }
@@ -248,7 +248,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentRoom == null) return;
 
             uint hash = 0;
-            string name = Unk06TextBox.Text;
+            string name = SoundTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(name);
@@ -256,9 +256,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Unk06 != hash)
+            if (CurrentRoom.Sound != hash)
             {
-                CurrentRoom.Unk06 = hash;
+                CurrentRoom.Sound = hash;
 
                 ProjectItemChanged();
             }
@@ -394,7 +394,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentRoom == null) return;
 
             uint hash = 0;
-            string name = Unk14TextBox.Text;
+            string name = SoundSetTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(name);
@@ -402,9 +402,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Unk14 != hash)
+            if (CurrentRoom.SoundSet != hash)
             {
-                CurrentRoom.Unk14 = hash;
+                CurrentRoom.SoundSet = hash;
 
                 ProjectItemChanged();
             }

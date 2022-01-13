@@ -37,7 +37,7 @@
             this.label16 = new System.Windows.Forms.Label();
             this.MloRoomTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.Hash1TextBox = new System.Windows.Forms.TextBox();
+            this.ZoneTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.Unk02TextBox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -47,7 +47,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.EchoTextBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
-            this.Unk06TextBox = new System.Windows.Forms.TextBox();
+            this.SoundTextBox = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.Unk07TextBox = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
@@ -63,7 +63,7 @@
             this.label15 = new System.Windows.Forms.Label();
             this.Unk13TextBox = new System.Windows.Forms.TextBox();
             this.label17 = new System.Windows.Forms.Label();
-            this.Unk14TextBox = new System.Windows.Forms.TextBox();
+            this.SoundSetTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label12
@@ -139,19 +139,19 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(9, 63);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(64, 13);
+            this.label1.Size = new System.Drawing.Size(35, 13);
             this.label1.TabIndex = 66;
-            this.label1.Text = "Ref Hash 1:";
+            this.label1.Text = "Zone:";
             // 
-            // Hash1TextBox
+            // ZoneTextBox
             // 
-            this.Hash1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ZoneTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Hash1TextBox.Location = new System.Drawing.Point(86, 60);
-            this.Hash1TextBox.Name = "Hash1TextBox";
-            this.Hash1TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Hash1TextBox.TabIndex = 67;
-            this.Hash1TextBox.TextChanged += new System.EventHandler(this.Hash1TextBox_TextChanged);
+            this.ZoneTextBox.Location = new System.Drawing.Point(86, 60);
+            this.ZoneTextBox.Name = "ZoneTextBox";
+            this.ZoneTextBox.Size = new System.Drawing.Size(237, 20);
+            this.ZoneTextBox.TabIndex = 67;
+            this.ZoneTextBox.TextChanged += new System.EventHandler(this.Hash1TextBox_TextChanged);
             // 
             // label2
             // 
@@ -196,11 +196,11 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(9, 135);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(42, 13);
+            this.label4.Size = new System.Drawing.Size(45, 13);
             this.label4.TabIndex = 72;
             this.label4.Text = "Reverb:";
             // 
-            // Unk04TextBox
+            // ReverbTextBox
             // 
             this.ReverbTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -215,11 +215,11 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(9, 159);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(42, 13);
+            this.label5.Size = new System.Drawing.Size(35, 13);
             this.label5.TabIndex = 74;
             this.label5.Text = "Echo:";
             // 
-            // Unk05TextBox
+            // EchoTextBox
             // 
             this.EchoTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -234,19 +234,19 @@
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(9, 183);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(68, 13);
+            this.label6.Size = new System.Drawing.Size(41, 13);
             this.label6.TabIndex = 76;
-            this.label6.Text = "Unk06 hash:";
+            this.label6.Text = "Sound:";
             // 
-            // Unk06TextBox
+            // SoundTextBox
             // 
-            this.Unk06TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.SoundTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Unk06TextBox.Location = new System.Drawing.Point(86, 180);
-            this.Unk06TextBox.Name = "Unk06TextBox";
-            this.Unk06TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Unk06TextBox.TabIndex = 77;
-            this.Unk06TextBox.TextChanged += new System.EventHandler(this.Unk06TextBox_TextChanged);
+            this.SoundTextBox.Location = new System.Drawing.Point(86, 180);
+            this.SoundTextBox.Name = "SoundTextBox";
+            this.SoundTextBox.Size = new System.Drawing.Size(237, 20);
+            this.SoundTextBox.TabIndex = 77;
+            this.SoundTextBox.TextChanged += new System.EventHandler(this.Unk06TextBox_TextChanged);
             // 
             // label7
             // 
@@ -386,19 +386,19 @@
             this.label17.AutoSize = true;
             this.label17.Location = new System.Drawing.Point(9, 375);
             this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(68, 13);
+            this.label17.Size = new System.Drawing.Size(58, 13);
             this.label17.TabIndex = 92;
-            this.label17.Text = "Unk14 hash:";
+            this.label17.Text = "Sound set:";
             // 
-            // Unk14TextBox
+            // SoundSetTextBox
             // 
-            this.Unk14TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.SoundSetTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Unk14TextBox.Location = new System.Drawing.Point(86, 372);
-            this.Unk14TextBox.Name = "Unk14TextBox";
-            this.Unk14TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Unk14TextBox.TabIndex = 93;
-            this.Unk14TextBox.TextChanged += new System.EventHandler(this.Unk14TextBox_TextChanged);
+            this.SoundSetTextBox.Location = new System.Drawing.Point(86, 372);
+            this.SoundSetTextBox.Name = "SoundSetTextBox";
+            this.SoundSetTextBox.Size = new System.Drawing.Size(237, 20);
+            this.SoundSetTextBox.TabIndex = 93;
+            this.SoundSetTextBox.TextChanged += new System.EventHandler(this.Unk14TextBox_TextChanged);
             // 
             // EditAudioInteriorRoomPanel
             // 
@@ -406,7 +406,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(562, 450);
             this.Controls.Add(this.label17);
-            this.Controls.Add(this.Unk14TextBox);
+            this.Controls.Add(this.SoundSetTextBox);
             this.Controls.Add(this.label15);
             this.Controls.Add(this.Unk13TextBox);
             this.Controls.Add(this.label14);
@@ -422,7 +422,7 @@
             this.Controls.Add(this.label7);
             this.Controls.Add(this.Unk07TextBox);
             this.Controls.Add(this.label6);
-            this.Controls.Add(this.Unk06TextBox);
+            this.Controls.Add(this.SoundTextBox);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.EchoTextBox);
             this.Controls.Add(this.label4);
@@ -432,7 +432,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.Unk02TextBox);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.Hash1TextBox);
+            this.Controls.Add(this.ZoneTextBox);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.MloRoomTextBox);
             this.Controls.Add(this.label13);
@@ -458,7 +458,7 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox MloRoomTextBox;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox Hash1TextBox;
+        private System.Windows.Forms.TextBox ZoneTextBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox Unk02TextBox;
         private System.Windows.Forms.Label label3;
@@ -468,7 +468,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TextBox EchoTextBox;
         private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox Unk06TextBox;
+        private System.Windows.Forms.TextBox SoundTextBox;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.TextBox Unk07TextBox;
         private System.Windows.Forms.Label label8;
@@ -484,6 +484,6 @@
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.TextBox Unk13TextBox;
         private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.TextBox Unk14TextBox;
+        private System.Windows.Forms.TextBox SoundSetTextBox;
     }
 }

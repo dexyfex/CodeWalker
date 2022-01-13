@@ -241,10 +241,6 @@ namespace CodeWalker
                         Scenarios.EnsureScenarioTypes(FileCache);
 
                         UpdateStatus("File cache loaded.");
-
-                        Invoke(new Action(() => {
-                            ToolsAudioExplorerMenu.Enabled = true;
-                        }));
                     }
                 }
             });
@@ -4334,13 +4330,13 @@ namespace CodeWalker
 
         private void ToolsBinSearchMenu_Click(object sender, EventArgs e)
         {
-            BinarySearchForm f = new BinarySearchForm(FileCache);
+            BinarySearchForm f = new BinarySearchForm(GetFileCache());
             f.Show(this);
         }
 
         private void ToolsAudioExplorerMenu_Click(object sender, EventArgs e)
         {
-            AudioExplorerForm f = new AudioExplorerForm(FileCache);
+            AudioExplorerForm f = new AudioExplorerForm(GetFileCache());
             f.Show(this);
         }
 
@@ -4352,7 +4348,7 @@ namespace CodeWalker
 
         private void ToolsJenkIndMenu_Click(object sender, EventArgs e)
         {
-            JenkIndForm f = new JenkIndForm(FileCache);
+            JenkIndForm f = new JenkIndForm(GetFileCache());
             f.Show(this);
         }
 

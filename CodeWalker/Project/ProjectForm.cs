@@ -6779,8 +6779,8 @@ namespace CodeWalker.Project
             room.NameHash = JenkHash.GenHash(room.Name);
 
             room.Flags0 = 0xAAAAAAAA;
-            room.Unk06 = (uint)MetaName.null_sound;
-            room.Unk14 = 3565506855;//?
+            room.Sound = (uint)MetaName.null_sound;
+            room.SoundSet = 3565506855;//?
 
 
             CurrentAudioFile.AddRelData(room);

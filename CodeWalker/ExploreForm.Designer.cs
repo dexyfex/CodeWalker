@@ -512,7 +512,6 @@
             // 
             // ToolsAudioExplorerMenu
             // 
-            this.ToolsAudioExplorerMenu.Enabled = false;
             this.ToolsAudioExplorerMenu.Name = "ToolsAudioExplorerMenu";
             this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsAudioExplorerMenu.Text = "Audio Explorer";
