@@ -39,6 +39,7 @@ namespace CodeWalker.Tools
             this.XmlTabPage = new System.Windows.Forms.TabPage();
             this.XmlTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.NameComboBox = new System.Windows.Forms.ComboBox();
+            this.TypeComboBox = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
@@ -82,8 +83,8 @@ namespace CodeWalker.Tools
             // 
             // PropertiesTabControl
             // 
-            this.PropertiesTabControl.Controls.Add(this.DetailsTabPage);
             this.PropertiesTabControl.Controls.Add(this.XmlTabPage);
+            this.PropertiesTabControl.Controls.Add(this.DetailsTabPage);
             this.PropertiesTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.PropertiesTabControl.Location = new System.Drawing.Point(0, 0);
             this.PropertiesTabControl.Name = "PropertiesTabControl";
@@ -117,7 +118,7 @@ namespace CodeWalker.Tools
             this.XmlTabPage.Controls.Add(this.XmlTextBox);
             this.XmlTabPage.Location = new System.Drawing.Point(4, 22);
             this.XmlTabPage.Name = "XmlTabPage";
-            this.XmlTabPage.Size = new System.Drawing.Size(537, 501);
+            this.XmlTabPage.Size = new System.Drawing.Size(445, 501);
             this.XmlTabPage.TabIndex = 1;
             this.XmlTabPage.Text = "XML";
             this.XmlTabPage.UseVisualStyleBackColor = true;
@@ -138,7 +139,7 @@ namespace CodeWalker.Tools
             this.XmlTextBox.AutoIndentChars = false;
             this.XmlTextBox.AutoIndentCharsPatterns = "";
             this.XmlTextBox.AutoIndentExistingLines = false;
-            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(2, 14);
+            this.XmlTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
             this.XmlTextBox.BackBrush = null;
             this.XmlTextBox.CharHeight = 14;
             this.XmlTextBox.CharWidth = 8;
@@ -147,7 +148,6 @@ namespace CodeWalker.Tools
             this.XmlTextBox.DelayedEventsInterval = 1;
             this.XmlTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.XmlTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.XmlTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.XmlTextBox.IsReplaceMode = false;
             this.XmlTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.XmlTextBox.LeftBracket = '<';
@@ -159,7 +159,7 @@ namespace CodeWalker.Tools
             this.XmlTextBox.RightBracket2 = ')';
             this.XmlTextBox.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
             this.XmlTextBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("XmlTextBox.ServiceColors")));
-            this.XmlTextBox.Size = new System.Drawing.Size(537, 501);
+            this.XmlTextBox.Size = new System.Drawing.Size(445, 501);
             this.XmlTextBox.TabIndex = 1;
             this.XmlTextBox.Zoom = 100;
             // 
@@ -172,15 +172,28 @@ namespace CodeWalker.Tools
             this.NameComboBox.FormattingEnabled = true;
             this.NameComboBox.Location = new System.Drawing.Point(12, 8);
             this.NameComboBox.Name = "NameComboBox";
-            this.NameComboBox.Size = new System.Drawing.Size(453, 21);
+            this.NameComboBox.Size = new System.Drawing.Size(416, 21);
             this.NameComboBox.TabIndex = 1;
             this.NameComboBox.TextChanged += new System.EventHandler(this.NameComboBox_TextChanged);
+            // 
+            // TypeComboBox
+            // 
+            this.TypeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.TypeComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.TypeComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.TypeComboBox.FormattingEnabled = true;
+            this.TypeComboBox.Location = new System.Drawing.Point(448, 8);
+            this.TypeComboBox.Name = "TypeComboBox";
+            this.TypeComboBox.Size = new System.Drawing.Size(205, 21);
+            this.TypeComboBox.TabIndex = 2;
+            this.TypeComboBox.TextChanged += new System.EventHandler(this.TypeComboBox_TextChanged);
             // 
             // AudioExplorerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(823, 564);
+            this.Controls.Add(this.TypeComboBox);
             this.Controls.Add(this.NameComboBox);
             this.Controls.Add(this.MainSplitContainer);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -208,5 +221,6 @@ namespace CodeWalker.Tools
         private WinForms.PropertyGridFix DetailsPropertyGrid;
         private System.Windows.Forms.TabPage XmlTabPage;
         private FastColoredTextBoxNS.FastColoredTextBox XmlTextBox;
+        private System.Windows.Forms.ComboBox TypeComboBox;
     }
 }

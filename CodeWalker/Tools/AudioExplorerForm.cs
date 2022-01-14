@@ -15,7 +15,9 @@ namespace CodeWalker.Tools
     {
         private GameFileCache GameFileCache { get; set; }
 
+        private List<string> NameComboItems = new List<string>();
         private Dictionary<string, RelData> NameComboLookup = new Dictionary<string, RelData>();
+
 
         public AudioExplorerForm(GameFileCache gfc)
         {
@@ -32,28 +34,93 @@ namespace CodeWalker.Tools
             NameComboLookup.Clear();
             NameComboBox.Items.Clear();
             NameComboBox.AutoCompleteCustomSource.Clear();
-            List<string> namelist = new List<string>();
-            void addItem(RelData item)
+            NameComboItems = new List<string>();
+            void addNameItem(RelData item, bool addToCombo = true)
             {
                 if (item == null) return;
                 var str = GetRelDataTitleString(item);
-                namelist.Add(str);
                 NameComboLookup.Add(str, item);
+                if (addToCombo) NameComboItems.Add(str);
             }
             if (GameFileCache.AudioSoundsDict != null)
             {
-                //foreach (var kvp in GameFileCache.AudioConfigDict) addItem(kvp.Value);
-                //foreach (var kvp in GameFileCache.AudioSpeechDict) addItem(kvp.Value);
-                foreach (var kvp in GameFileCache.AudioSynthsDict) addItem(kvp.Value);
-                foreach (var kvp in GameFileCache.AudioMixersDict) addItem(kvp.Value);
-                foreach (var kvp in GameFileCache.AudioCurvesDict) addItem(kvp.Value);
-                foreach (var kvp in GameFileCache.AudioCategsDict) addItem(kvp.Value);
-                foreach (var kvp in GameFileCache.AudioSoundsDict) addItem(kvp.Value);
-                foreach (var kvp in GameFileCache.AudioGameDict) addItem(kvp.Value);
+                foreach (var kvp in GameFileCache.AudioConfigDict) addNameItem(kvp.Value, false);
+                foreach (var kvp in GameFileCache.AudioSpeechDict) addNameItem(kvp.Value, false);
+                foreach (var kvp in GameFileCache.AudioSynthsDict) addNameItem(kvp.Value);
+                foreach (var kvp in GameFileCache.AudioMixersDict) addNameItem(kvp.Value);
+                foreach (var kvp in GameFileCache.AudioCurvesDict) addNameItem(kvp.Value);
+                foreach (var kvp in GameFileCache.AudioCategsDict) addNameItem(kvp.Value);
+                foreach (var kvp in GameFileCache.AudioSoundsDict) addNameItem(kvp.Value);
+                foreach (var kvp in GameFileCache.AudioGameDict) addNameItem(kvp.Value);
             }
-            NameComboBox.AutoCompleteCustomSource.AddRange(namelist.ToArray());
-            NameComboBox.Text = "(Start typing to search...)";
+            NameComboBox.AutoCompleteCustomSource.AddRange(NameComboItems.ToArray());
 
+
+
+            TypeComboBox.Items.Clear();
+            TypeComboBox.Items.Add("(All types)");
+            void addTypeItem(string filetype, object item)
+            {
+                var str = filetype + " : " + item.ToString();
+                TypeComboBox.Items.Add(str);
+            }
+            foreach (var e in Enum.GetValues(typeof(Dat4ConfigType))) addTypeItem("Config", e);
+            foreach (var e in Enum.GetValues(typeof(Dat4SpeechType))) addTypeItem("Speech", e);
+            foreach (var e in Enum.GetValues(typeof(Dat10RelType))) addTypeItem("Synths", e);
+            foreach (var e in Enum.GetValues(typeof(Dat15RelType))) addTypeItem("Mixers", e);
+            foreach (var e in Enum.GetValues(typeof(Dat16RelType))) addTypeItem("Curves", e);
+            foreach (var e in Enum.GetValues(typeof(Dat22RelType))) addTypeItem("Categories", e);
+            foreach (var e in Enum.GetValues(typeof(Dat54SoundType))) addTypeItem("Sounds", e);
+            foreach (var e in Enum.GetValues(typeof(Dat151RelType))) addTypeItem("Game", e);
+            TypeComboBox.SelectedIndex = 0;
+
+
+        }
+
+        private void SelectType()
+        {
+            var typestr = TypeComboBox.Text;
+            var typespl = typestr.Split(new[] { " : " }, StringSplitOptions.RemoveEmptyEntries);
+            Dictionary<MetaHash, RelData> dict = null;
+            byte typeid = 255;
+            if (typespl.Length == 2)
+            {
+                switch (typespl[0])
+                {
+                    case "Config": { dict = GameFileCache.AudioConfigDict; if (Enum.TryParse(typespl[1], out Dat4ConfigType t)) typeid = (byte)t; break; }
+                    case "Speech": { dict = GameFileCache.AudioSpeechDict; if (Enum.TryParse(typespl[1], out Dat4SpeechType t)) typeid = (byte)t; break; }
+                    case "Synths": { dict = GameFileCache.AudioSynthsDict; if (Enum.TryParse(typespl[1], out Dat10RelType t)) typeid = (byte)t; break; }
+                    case "Mixers": { dict = GameFileCache.AudioMixersDict; if (Enum.TryParse(typespl[1], out Dat15RelType t)) typeid = (byte)t; break; }
+                    case "Curves": { dict = GameFileCache.AudioCurvesDict; if (Enum.TryParse(typespl[1], out Dat16RelType t)) typeid = (byte)t; break; }
+                    case "Categories": { dict = GameFileCache.AudioCategsDict; if (Enum.TryParse(typespl[1], out Dat22RelType t)) typeid = (byte)t; break; }
+                    case "Sounds": { dict = GameFileCache.AudioSoundsDict; if (Enum.TryParse(typespl[1], out Dat54SoundType t)) typeid = (byte)t; break; }
+                    case "Game": { dict = GameFileCache.AudioGameDict; if (Enum.TryParse(typespl[1], out Dat151RelType t)) typeid = (byte)t; break; }
+                }
+            }
+            if ((dict != null) && (typeid != 255))
+            {
+                NameComboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
+                NameComboBox.Text = "(Select item...)";
+                NameComboBox.Items.Clear();
+                var list = new List<string>();
+                foreach (var kvp in dict)
+                {
+                    var item = kvp.Value;
+                    if (item.TypeID == typeid)
+                    {
+                        var str = GetRelDataTitleString(item);
+                        list.Add(str);
+                    }
+                }
+                list.Sort();
+                NameComboBox.Items.AddRange(list.ToArray());
+            }
+            else
+            {
+                NameComboBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                NameComboBox.Text = "(Start typing to search...)";
+                NameComboBox.Items.Clear();
+            }
 
 
         }
@@ -126,6 +193,7 @@ namespace CodeWalker.Tools
 
             node.Tag = item;
 
+            var speech = GetUniqueHashes(item.GetSpeechHashes(), item);
             var synths = GetUniqueHashes(item.GetSynthHashes(), item);
             var mixers = GetUniqueHashes(item.GetMixerHashes(), item);
             var curves = GetUniqueHashes(item.GetCurveHashes(), item);
@@ -134,6 +202,13 @@ namespace CodeWalker.Tools
             var games = GetUniqueHashes(item.GetGameHashes(), item);
 
 
+            if (speech != null)
+            {
+                foreach (var h in speech)
+                {
+                    if (GameFileCache.AudioSpeechDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
+                }
+            }
             if (synths != null)
             {
                 foreach (var h in synths)
@@ -203,6 +278,11 @@ namespace CodeWalker.Tools
             {
                 LoadItemHierarchy(item);
             }
+        }
+
+        private void TypeComboBox_TextChanged(object sender, EventArgs e)
+        {
+            SelectType();
         }
 
         private void HierarchyTreeView_AfterSelect(object sender, TreeViewEventArgs e)
