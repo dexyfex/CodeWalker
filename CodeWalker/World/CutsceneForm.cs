@@ -1433,7 +1433,7 @@ namespace CodeWalker.World
                 var streaminfs = new List<Dat54SimpleSound>();
                 var streamlist = new List<AwcStream>();
 
-                foreach (var chan in strsnd.AudioTracks)
+                foreach (var chan in strsnd.ChildSounds)
                 {
                     if (chan is Dat54SimpleSound chansnd)
                     {

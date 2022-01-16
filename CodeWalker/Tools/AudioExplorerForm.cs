@@ -193,6 +193,13 @@ namespace CodeWalker.Tools
 
             node.Tag = item;
 
+
+            if ((item is Dat22Category) && (parentNode != null) && (!(parentNode.Tag is Dat22Category))) //don't bother expanding out categories, too spammy!
+            {
+                return;
+            }
+
+
             var speech = GetUniqueHashes(item.GetSpeechHashes(), item);
             var synths = GetUniqueHashes(item.GetSynthHashes(), item);
             var mixers = GetUniqueHashes(item.GetMixerHashes(), item);
@@ -255,7 +262,22 @@ namespace CodeWalker.Tools
 
             if (parentNode == null)
             {
-                node.ExpandAll();
+                var totnodes = node.GetNodeCount(true);
+                if (totnodes > 100)
+                {
+                    node.Expand();
+                    foreach (TreeNode cnode in node.Nodes)
+                    {
+                        foreach (TreeNode ccnode in cnode.Nodes)
+                        {
+                            ccnode.ExpandAll();
+                        }
+                    }
+                }
+                else
+                {
+                    node.ExpandAll();
+                }
                 HierarchyTreeView.SelectedNode = node;
             }
 
