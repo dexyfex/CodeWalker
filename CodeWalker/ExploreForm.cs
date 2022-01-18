@@ -2383,46 +2383,79 @@ namespace CodeWalker
             {
                 return;//no name was provided.
             }
-            if (!IsFilenameOk(fname)) return; //new name contains invalid char(s). don't do anything
 
-
-            string cpath = (string.IsNullOrEmpty(CurrentFolder.Path) ? "" : CurrentFolder.Path + "\\");
-            string relpath = cpath + fname.ToLowerInvariant();
-            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
-            string fullpath = rootpath + relpath;
+            var fnames = fname.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
             RpfDirectoryEntry newdir = null;
             MainTreeFolder node = null;
+            MainTreeFolder cnode = null;
+            string cpath = (string.IsNullOrEmpty(CurrentFolder.Path) ? "" : CurrentFolder.Path + "\\");
+            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
+            var csubpath = "";
 
-            try
+            foreach (var name in fnames)
             {
-                if (CurrentFolder.RpfFolder != null)
+                if (!IsFilenameOk(name)) break; //new name contains invalid char(s). don't continue
+
+                csubpath += name;
+
+                string relpath = cpath + csubpath.ToLowerInvariant();
+                string fullpath = rootpath + relpath;
+
+                try
                 {
-                    if (!EnsureRpfValidEncryption()) return;
-
-                    //create new directory entry in the RPF.
-
-                    newdir = RpfFile.CreateDirectory(CurrentFolder.RpfFolder, fname);
-
-                    node = CreateRpfDirTreeFolder(newdir, relpath, fullpath);
-                }
-                else
-                {
-                    //create a folder in the filesystem.
-                    if (Directory.Exists(fullpath))
+                    if (CurrentFolder.RpfFolder != null)
                     {
-                        throw new Exception("Folder " + fullpath + " already exists!");
-                    }
-                    Directory.CreateDirectory(fullpath);
+                        if (!EnsureRpfValidEncryption()) return;
 
-                    node = CreateRootDirTreeFolder(fname, relpath, fullpath);
+                        //create new directory entry in the RPF.
+
+                        newdir = RpfFile.CreateDirectory(newdir ?? CurrentFolder.RpfFolder, name);
+
+                        var newnode = CreateRpfDirTreeFolder(newdir, relpath, fullpath);
+
+                        if (node == null)
+                        {
+                            node = newnode;
+                            cnode = newnode;
+                        }
+                        else
+                        {
+                            cnode.AddChild(newnode);
+                            cnode = newnode;
+                        }
+                    }
+                    else
+                    {
+                        //create a folder in the filesystem.
+                        if (Directory.Exists(fullpath))
+                        {
+                            throw new Exception("Folder " + fullpath + " already exists!");
+                        }
+                        Directory.CreateDirectory(fullpath);
+
+                        var newnode = CreateRootDirTreeFolder(name, relpath, fullpath);
+                        if (node == null)
+                        {
+                            node = newnode;
+                            cnode = newnode;
+                        }
+                        else
+                        {
+                            cnode.AddChild(newnode);
+                            cnode = newnode;
+                        }
+                    }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error creating new folder: " + ex.Message, "Unable to create new folder");
+                    return;
+                }
+
+                csubpath += "\\";
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error creating new folder: " + ex.Message, "Unable to create new folder");
-                return;
-            }
+
 
             if (node != null)
             {
