@@ -4432,6 +4432,21 @@ namespace CodeWalker.GameFiles
                             UpdateStatus(string.Format(entry.Path));
                             MrfFile mrffile = RpfMan.GetFile<MrfFile>(entry);
                             if (mrffile != null)
+                            { 
+                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                var ndata = mrffile.Save();
+                                if (ndata.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < ndata.Length; i++)
+                                    {
+                                        if (ndata[i] != odata[i])
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+                            }
+                            else
                             { }
                         }
                     }

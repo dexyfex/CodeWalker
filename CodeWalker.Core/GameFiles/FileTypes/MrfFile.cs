@@ -8,7 +8,7 @@ namespace CodeWalker.GameFiles
 {
     // Unused node indexes by GTAV: 11, 12, 14, 16
     // Exist in GTAV but not used in MRFs: 4, 8, 10, 17, 21, 22, 28, 29, 31, 32
-    public enum MrfNodeInfoType : ushort
+    public enum MrfNodeType : ushort
     {
         None = 0,
         StateMachineClass = 1,
@@ -42,48 +42,143 @@ namespace CodeWalker.GameFiles
     }
 
     #region mrf node abstractions
-    [TC(typeof(EXP))]
-    public abstract class MrfNodeInfoBase
+    
+    [TC(typeof(EXP))] public abstract class MrfNode
     {
-        public abstract void Read(DataReader r);
+        public MrfNodeType NodeType { get; set; }
+        public ushort NodeIndex { get; set; } //index in the parent node
 
-        public abstract long CalculateSize(DataReader r);
+        public int FileIndex { get; set; } //index in the file
+        public int FileOffset { get; set; } //offset in the file
+        public int FileDataSize { get; set; } //number of bytes read from the file (this node only)
 
-        public abstract void Write(DataWriter w);
+        public virtual void Read(DataReader r)
+        {
+            NodeType = (MrfNodeType)r.ReadUInt16();
+            NodeIndex = r.ReadUInt16();
+        }
 
-        public abstract MrfNodeInfoType GetInfoType();
+        public virtual void Write(DataWriter w)
+        {
+            w.Write((ushort)NodeType);
+            w.Write(NodeIndex);
+        }
+
+        public override string ToString()
+        {
+            return /* FileIndex.ToString() + ":" + FileOffset.ToString() + "+" + FileDataSize.ToString() + ": " +  */
+                NodeType.ToString() + " - " + NodeIndex.ToString();
+        }
     }
 
-    // Not real classes, just abstractions for sharing some parsers.
-
-    [TC(typeof(EXP))]
-    public abstract class MrfNodeEightBytesBase : MrfNodeInfoBase
+    [TC(typeof(EXP))] public abstract class MrfNodeNameFlagsBase : MrfNode
     {
-        public MrfHeaderNodeInfo Header { get; set; }
-        public uint Value { get; set; }
+        public MetaHash NameHash { get; set; }
+        public uint Flags { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNodeInfo(r);
-            Value = r.ReadUInt32();
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            return 8;
+            base.Read(r);
+            NameHash = new MetaHash(r.ReadUInt32());
+            Flags = r.ReadUInt32();
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+            w.Write(NameHash);
+            w.Write(Flags);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + NameHash.ToString() + " - " + Flags.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public abstract class MrfNodeStateBase : MrfNode
+    {
+        public MetaHash NameHash { get; set; } // Used as an identifier for transitions
+        public uint StateByteCount { get; set; }
+        public uint StateUnk3 { get; set; }
+        public byte StateUnk4 { get; set; }
+        public byte StateUnk5 { get; set; }
+        public byte StateChildCount { get; set; }
+        public byte StateSectionCount { get; set; }
+        public uint StateUnk8 { get; set; }
+        public uint StateUnk9 { get; set; }
+        public uint StateFlags { get; set; }
+
+        public MrfNode[] ChildNodes { get; set; }
+        public MrfNode TailNode { get; set; }
+
+
+        public override void Read(DataReader r)
+        {
+            base.Read(r);
+            NameHash = new MetaHash(r.ReadUInt32());
+            StateByteCount = r.ReadUInt32();
+            StateUnk3 = r.ReadUInt32();
+            StateUnk4 = r.ReadByte();
+            StateUnk5 = r.ReadByte();
+            StateChildCount = r.ReadByte();
+            StateSectionCount = r.ReadByte();
+            StateUnk8 = r.ReadUInt32();
+            StateUnk9 = r.ReadUInt32();
+            StateFlags = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(NameHash);
+            w.Write(StateByteCount);
+            w.Write(StateUnk3);
+            w.Write(StateUnk4);
+            w.Write(StateUnk5);
+            w.Write(StateChildCount);
+            w.Write(StateSectionCount);
+            w.Write(StateUnk8);
+            w.Write(StateUnk9);
+            w.Write(StateFlags);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + NameHash.ToString()
+                + " - BC:" + StateByteCount.ToString()
+                + " - CC:" + StateChildCount.ToString()
+                + " - SC:" + StateSectionCount.ToString()
+                + " - " + StateUnk3.ToString()
+                + " - " + StateUnk4.ToString()
+                + " - " + StateUnk5.ToString()
+                + " - " + StateUnk8.ToString()
+                + " - " + StateUnk9.ToString()
+                + " - F:" + StateFlags.ToString();
+        }
+    }
+
+
+
+    [TC(typeof(EXP))] public abstract class MrfNodeValueBase : MrfNode
+    {
+        public MetaHash Value { get; set; }//maybe not an actual hash
+
+        public override void Read(DataReader r)
+        {
+            base.Read(r);
+            Value = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
             w.Write(Value);
         }
     }
 
-    [TC(typeof(EXP))]
-    public abstract class MrfNodeBlendAddSubtractBase : MrfNodeInfoBase
+    [TC(typeof(EXP))] public abstract class MrfNodeBlendAddSubtractBase : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
         public int Unk1 { get; set; }
         public int Unk2 { get; set; }
         public uint Unk3 { get; set; }
@@ -93,17 +188,18 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
+
             Unk1 = r.ReadInt32();
             Unk2 = r.ReadInt32();
 
-            if ((Header.Flags & 0x180000) == 0x80000)
+            if ((Flags & 0x180000) == 0x80000)
                 Unk3 = r.ReadUInt32();
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 Unk4 = new MetaHash(r.ReadUInt32());
 
-            switch ((Header.Flags >> 2) & 3)
+            switch ((Flags >> 2) & 3)
             {
                 case 1:
                     Unk5 = new MetaHash(r.ReadUInt32());
@@ -115,44 +211,20 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 20;
-
-            r.Position += 8;
-            var headerFlag = r.ReadUInt32();
-            r.Position = startPos;
-
-            var unkTypeFlag = (headerFlag >> 2) & 3;
-
-            if ((headerFlag & 0x180000) == 0x80000)
-                result = 24;
-
-            if ((headerFlag & 3) != 0)
-                result += 4;
-
-            if (unkTypeFlag == 1)
-                result += 8;
-            else if (unkTypeFlag == 2)
-                result += 4;
-
-            return result;
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk1);
             w.Write(Unk2);
 
-            if ((Header.Flags & 0x180000) == 0x80000)
+            if ((Flags & 0x180000) == 0x80000)
                 w.Write(Unk3);
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 w.Write(Unk4);
 
-            switch ((Header.Flags >> 2) & 3)
+            switch ((Flags >> 2) & 3)
             {
                 case 1:
                     w.Write(Unk5);
@@ -165,20 +237,19 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))]
-    public abstract class MrfNodeFilterUnkBase : MrfNodeInfoBase
+    [TC(typeof(EXP))] public abstract class MrfNodeFilterUnkBase : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
         public uint Unk1 { get; set; }
         public MetaHash Unk2 { get; set; }
         public MetaHash Unk3 { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
+
             Unk1 = r.ReadUInt32();
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     Unk2 = new MetaHash(r.ReadUInt32()); // Filter Frame dict hash
@@ -190,31 +261,13 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-
-            r.Position += 8;
-            var headerFlag = r.ReadUInt32();
-            r.Position = startPos;
-
-            var unkTypeFlag = headerFlag & 3;
-
-            if (unkTypeFlag == 2)
-                return 20;
-
-            if (unkTypeFlag == 1)
-                return 24;
-
-            return 16;
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk1);
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     w.Write(Unk2);
@@ -227,31 +280,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))]
-    public abstract class MrfNodeHeaderOnlyBase : MrfNodeInfoBase
+    [TC(typeof(EXP))] public abstract class MrfNodeNegativeBase : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
-
-        public override void Read(DataReader r)
-        {
-            Header = new MrfHeaderNameFlag(r);
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            return 12;
-        }
-
-        public override void Write(DataWriter w)
-        {
-            Header.Write(w);
-        }
-    }
-
-    [TC(typeof(EXP))]
-    public abstract class MrfNodeNegativeBase : MrfNodeInfoBase
-    {
-        public MrfHeaderNameFlag Header { get; set; }
         public uint Unk1 { get; set; }
         public byte[] Unk2 { get; set; }
         public uint Unk3 { get; set; }
@@ -259,18 +289,18 @@ namespace CodeWalker.GameFiles
         public uint Unk5 { get; set; }
         public uint Unk6 { get; set; }
         public int[] Unk7 { get; set; }
-        public MrfStructNegativeInfoDataUnk7[] Unk7_Items { get; set; }
+        public MrfStructNegativeDataUnk7[] Unk7_Items { get; set; }
         public uint[] Unk8 { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
 
-            var unkTypeFlag1 = Header.Flags & 3;
-            var unkTypeFlag2 = (Header.Flags >> 2) & 3;
-            var unk7Count = Header.Flags >> 26;
+            var unkTypeFlag1 = Flags & 3;
+            var unkTypeFlag2 = (Flags >> 2) & 3;
+            var unk7Count = Flags >> 26;
 
-            if ((Header.Flags & 0x180000) == 0x80000)
+            if ((Flags & 0x180000) == 0x80000)
                 Unk1 = r.ReadUInt32();
 
             if (unkTypeFlag1 == 1)
@@ -307,7 +337,7 @@ namespace CodeWalker.GameFiles
             if (unk7Count == 0)
                 return;
 
-            Unk7_Items = new MrfStructNegativeInfoDataUnk7[unk7Count];
+            Unk7_Items = new MrfStructNegativeDataUnk7[unk7Count];
             int iteration = 0;
 
             for (int i = 0; i < unk7Count; i++)
@@ -316,7 +346,7 @@ namespace CodeWalker.GameFiles
                 var unk7Flag = unk8Value >> (4 * (iteration & 7));
                 var unkTypeFlag3 = (unk7Flag >> 4) & 3;
 
-                var item = new MrfStructNegativeInfoDataUnk7();
+                var item = new MrfStructNegativeDataUnk7();
 
                 if ((unk7Flag & 3) != 0)
                     item.Unk1 = r.ReadUInt32();
@@ -335,72 +365,15 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            var baseSize = 12;
-
-            r.Position += 8;
-            var flags = r.ReadUInt32();
-            r.Position = startPos;
-
-            var unkTypeFlag = (flags >> 2) & 3;
-            var unkCount = flags >> 26;
-
-            if ((flags & 0x180000) == 0x80000)
-                baseSize += 4;
-
-            if ((flags & 3) == 2)
-                baseSize = 4;
-
-            if (unkTypeFlag == 2)
-                baseSize += 4;
-            else if (unkTypeFlag == 1)
-                baseSize += 8;
-
-            long result = baseSize + 4 * unkCount + 4 * ((((2 * unkCount) | 7) + 1) >> 3);
-
-            if (unkCount == 0)
-                return result;
-
-            var iteration = 0;
-            var lastPos = r.Position + (baseSize + 4 * unkCount);
-
-            for (int i = 0; i < unkCount; i++)
-            {
-                var readPos = lastPos + 4 * (iteration >> 3);
-                r.Position = readPos;
-                var unkInt = r.ReadUInt32();
-                r.Position = startPos;
-
-                var v9 = unkInt >> (4 * (iteration & 7));
-                var v10 = (v9 >> 4) & 3;
-
-                if ((v9 & 3) != 0)
-                    result += 4;
-
-                if (v10 == 2)
-                    result += 4;
-                else if (v10 == 1)
-                    result += 8;
-
-                iteration += 2;
-            }
-
-            r.Position = startPos;
-
-            return result;
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
-            var unkTypeFlag1 = Header.Flags & 3;
-            var unkTypeFlag2 = (Header.Flags >> 2) & 3;
-            var unk7Count = Header.Flags >> 26;
+            var unkTypeFlag1 = Flags & 3;
+            var unkTypeFlag2 = (Flags >> 2) & 3;
+            var unk7Count = Flags >> 26;
 
-            if ((Header.Flags & 0x180000) == 0x80000)
+            if ((Flags & 0x180000) == 0x80000)
                 w.Write(Unk1);
 
             if (unkTypeFlag1 == 1)
@@ -456,16 +429,19 @@ namespace CodeWalker.GameFiles
             }
         }
     }
+    
+
+
     #endregion
 
     #region mrf node structs
-    public abstract class MrfStructBase
+
+    public abstract class MrfStruct
     {
         public abstract void Write(DataWriter w);
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructHeaderUnk1 : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructHeaderUnk1 : MrfStruct
     {
         public uint Size { get; set; }
         public byte[] Bytes { get; set; }
@@ -481,10 +457,14 @@ namespace CodeWalker.GameFiles
             w.Write(Size);
             w.Write(Bytes);
         }
+
+        public override string ToString()
+        {
+            return Size.ToString() + " bytes";
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructHeaderUnk2 : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructHeaderUnk2 : MrfStruct
     {
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
@@ -500,10 +480,14 @@ namespace CodeWalker.GameFiles
             w.Write(Unk1);
             w.Write(Unk2);
         }
+
+        public override string ToString()
+        {
+            return Unk1.ToString() + " - " + Unk2.ToString();
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructHeaderUnk3 : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructHeaderUnk3 : MrfStruct
     {
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
@@ -519,11 +503,17 @@ namespace CodeWalker.GameFiles
             w.Write(Unk1);
             w.Write(Unk2);
         }
+
+        public override string ToString()
+        {
+            return Unk1.ToString() + " - " + Unk2.ToString();
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateMainSection : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateMainSection : MrfStruct
     {
+        //maybe Transition ..?
+
         public uint Unk1 { get; set; }
         public int Unk2 { get; set; }
         public float Unk3 { get; set; }
@@ -532,7 +522,7 @@ namespace CodeWalker.GameFiles
         public uint Unk6 { get; set; }
         public uint Unk7 { get; set; }
         public uint Unk8 { get; set; }
-        public MrfStructStateLoopSection[] Items { get; set; }
+        public MrfStructStateCondition[] Conditions { get; set; }
 
         public MrfStructStateMainSection(DataReader r)
         {
@@ -544,17 +534,15 @@ namespace CodeWalker.GameFiles
             Unk6 = r.ReadUInt32();
 
             uint flags = Unk1 & 0xFFFBFFFF;
-            var iterations = (flags >> 20) & 0xF;
+            var numconds = (flags >> 20) & 0xF;
 
-            Items = new MrfStructStateLoopSection[iterations];
-
-            // FIXME: for-loop?
-            while (iterations != 0)
+            if (numconds > 0)
             {
-                Items[iterations - 1] = new MrfStructStateLoopSection(r);
-
-                if (--iterations == 0)
-                    break;
+                Conditions = new MrfStructStateCondition[numconds];
+                for (int i = 0; i < numconds; i++)
+                {
+                    Conditions[i] = new MrfStructStateCondition(r);
+                }
             }
 
             if ((flags & 0x40000000) != 0)
@@ -578,9 +566,10 @@ namespace CodeWalker.GameFiles
             w.Write(Unk5);
             w.Write(Unk6);
 
-            // FIXME: might be broken if changed without flags, see "iterations"
-            for (int i = Items.Length - 1; i >= 0; i--)
-                Items[i].Write(w);
+            // FIXME: might be broken if changed without flags, see "numconds"
+            if (Conditions != null)
+                for (int i = 0; i < Conditions.Length; i++)
+                    Conditions[i].Write(w);
 
             // FIXME: might be broken if changed without flags
             uint flags = Unk1 & 0xFFFBFFFF;
@@ -591,10 +580,20 @@ namespace CodeWalker.GameFiles
                 w.Write(Unk8);
             }
         }
+
+        public override string ToString()
+        {
+            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + FloatUtil.ToString(Unk3)
+                + " - " + Unk4.ToString()
+                + " - " + Unk5.ToString()
+                + " - " + Unk6.ToString()
+                + " - " + Unk7.ToString()
+                + " - " + Unk8.ToString()
+                + " - " + (Conditions?.Length ?? 0).ToString() + " conditions";
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateLoopSection : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateCondition : MrfStruct
     {
         public short UnkType { get; }
         public short UnkIndex { get; }
@@ -605,7 +604,7 @@ namespace CodeWalker.GameFiles
         public uint Unk3_1 { get; }
         public uint Unk3_2 { get; }
 
-        public MrfStructStateLoopSection(DataReader r)
+        public MrfStructStateCondition(DataReader r)
         {
             Unk1_1 = 0;
             Unk1_2 = 0;
@@ -688,37 +687,27 @@ namespace CodeWalker.GameFiles
                     }
             }
         }
-    }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateSection : MrfStructBase
-    {
-        public MrfStructStateMainSection[] Sections { get; set; }
-
-        public MrfStructStateSection(DataReader r, uint count)
+        public override string ToString()
         {
-            Sections = new MrfStructStateMainSection[(int)count];
-
-            for (int i = (int)count - 1; i >= 0; i--)
-                Sections[i] = new MrfStructStateMainSection(r);
-        }
-
-        public override void Write(DataWriter w)
-        {
-            for (int i = Sections.Length - 1; i >= 0; i--)
-                Sections[i].Write(w);
+            return UnkType.ToString() + " - " + UnkIndex.ToString()
+                + " - " + Unk1_1.ToString()
+                + " - " + Unk1_2.ToString()
+                + " - " + Unk1_3.ToString()
+                + " - " + Unk2_1.ToString()
+                + " - " + Unk3_1.ToString()
+                + " - " + Unk3_2.ToString();
         }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateInfoVariable : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateVariable : MrfStruct
     {
         public MetaHash VariableName { get; }
         public ushort Unk2 { get; }
         public ushort Unk3 { get; }
         public uint Unk4 { get; }
 
-        public MrfStructStateInfoVariable(DataReader r)
+        public MrfStructStateVariable(DataReader r)
         {
             VariableName = new MetaHash(r.ReadUInt32());
             Unk2 = r.ReadUInt16();
@@ -733,16 +722,20 @@ namespace CodeWalker.GameFiles
             w.Write(Unk3);
             w.Write(Unk4);
         }
+
+        public override string ToString()
+        {
+            return VariableName.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString();
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateInfoEvent : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateEvent : MrfStruct
     {
         public ushort Unk1 { get; }
         public ushort Unk2 { get; }
         public MetaHash NameHash { get; }
 
-        public MrfStructStateInfoEvent(DataReader r)
+        public MrfStructStateEvent(DataReader r)
         {
             Unk1 = r.ReadUInt16();
             Unk2 = r.ReadUInt16();
@@ -755,17 +748,21 @@ namespace CodeWalker.GameFiles
             w.Write(Unk2);
             w.Write(NameHash);
         }
+
+        public override string ToString()
+        {
+            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + NameHash.ToString();
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateInfoUnk6 : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateUnk6 : MrfStruct
     {
         public MetaHash Unk1 { get; }
         public ushort Unk2 { get; }
         public ushort Unk3 { get; }
         public uint Unk4 { get; }
 
-        public MrfStructStateInfoUnk6(DataReader r)
+        public MrfStructStateUnk6(DataReader r)
         {
             Unk1 = new MetaHash(r.ReadUInt32());
             Unk2 = r.ReadUInt16();
@@ -780,16 +777,20 @@ namespace CodeWalker.GameFiles
             w.Write(Unk3);
             w.Write(Unk4);
         }
+
+        public override string ToString()
+        {
+            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString();
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateInfoSignalDataUnk3 : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateSignalDataUnk3 : MrfStruct
     {
         public uint UnkValue { get; }
         public uint UnkDefault { get; }
         public ulong UnkRange { get; }
 
-        public MrfStructStateInfoSignalDataUnk3(DataReader r)
+        public MrfStructStateSignalDataUnk3(DataReader r)
         {
             UnkValue = r.ReadUInt32();
             UnkDefault = r.ReadUInt32();
@@ -802,10 +803,14 @@ namespace CodeWalker.GameFiles
             w.Write(UnkDefault);
             w.Write(UnkRange);
         }
+
+        public override string ToString()
+        {
+            return UnkValue.ToString() + " - " + UnkDefault.ToString() + " - " + UnkRange.ToString();
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateMachineState : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateMachineState : MrfStruct
     {
         public MetaHash StateName { get; }
         public uint UnkValue { get; }
@@ -821,12 +826,17 @@ namespace CodeWalker.GameFiles
             w.Write(StateName);
             w.Write(UnkValue);
         }
+
+        public override string ToString()
+        {
+            return StateName.ToString() + " - " + UnkValue.ToString();
+        }
     }
 
+    
     // FIXME: most likely broken
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateInfoSignalData : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateSignalData : MrfStruct
     {
         public uint UnkType { get; }
         public uint NameHash { get; }
@@ -835,9 +845,9 @@ namespace CodeWalker.GameFiles
         public uint Unk3_Count { get; }
         public uint Unk4 { get; }
 
-        public MrfStructStateInfoSignalDataUnk3[] Unk3_Items { get; }
+        public MrfStructStateSignalDataUnk3[] Unk3_Items { get; }
 
-        public MrfStructStateInfoSignalData(DataReader r)
+        public MrfStructStateSignalData(DataReader r)
         {
             UnkType = r.ReadUInt32();
             NameHash = r.ReadUInt32();
@@ -850,10 +860,10 @@ namespace CodeWalker.GameFiles
             Unk3_Count = r.ReadUInt32();
             Unk4 = r.ReadUInt32();
 
-            Unk3_Items = new MrfStructStateInfoSignalDataUnk3[Unk3_Count];
+            Unk3_Items = new MrfStructStateSignalDataUnk3[Unk3_Count];
 
             for (int i = 0; i < Unk3_Count; i++)
-                Unk3_Items[i] = new MrfStructStateInfoSignalDataUnk3(r);
+                Unk3_Items[i] = new MrfStructStateSignalDataUnk3(r);
         }
 
         public override void Write(DataWriter w)
@@ -873,18 +883,23 @@ namespace CodeWalker.GameFiles
             foreach (var item in Unk3_Items)
                 item.Write(w);
         }
+
+        public override string ToString()
+        {
+            return UnkType.ToString() + " - " + NameHash.ToString() + " - " + 
+                Unk1.ToString() + " - " + Unk2.ToString() + " - C:" + Unk3_Count.ToString() + " - " + Unk4.ToString();
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructStateInfoSignal : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructStateSignal : MrfStruct
     {
         public ushort Unk1 { get; }
         public ushort Unk2 { get; }
         public ushort Unk3 { get; }
         public ushort Unk4 { get; }
-        public MrfStructStateInfoSignalData[] Items { get; }
+        public MrfStructStateSignalData[] Items { get; }
 
-        public MrfStructStateInfoSignal(DataReader r)
+        public MrfStructStateSignal(DataReader r)
         {
             Unk1 = r.ReadUInt16();
             Unk2 = r.ReadUInt16();
@@ -892,14 +907,14 @@ namespace CodeWalker.GameFiles
             Unk4 = r.ReadUInt16();
 
             uint shouldContinue;
-            var itemsList = new List<MrfStructStateInfoSignalData>();
+            var itemsList = new List<MrfStructStateSignalData>();
 
             // FIXME: those loops looks weird
             do
             {
                 while (true)
                 {
-                    var data = new MrfStructStateInfoSignalData(r);
+                    var data = new MrfStructStateSignalData(r);
                     itemsList.Add(data);
 
                     shouldContinue = data.UnkType;
@@ -923,23 +938,20 @@ namespace CodeWalker.GameFiles
             foreach (var item in Items)
                 item.Write(w);
         }
+
+        public override string ToString()
+        {
+            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString() + " - " +
+                (Items?.Length ?? 0).ToString() + " items";
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class MrfStructNegativeInfoDataUnk7 : MrfStructBase
+    [TC(typeof(EXP))] public class MrfStructNegativeDataUnk7 : MrfStruct
     {
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
         public uint Unk4 { get; set; }
-
-        public MrfStructNegativeInfoDataUnk7()
-        {
-            Unk1 = 0;
-            Unk2 = 0;
-            Unk3 = 0;
-            Unk4 = 0;
-        }
 
         public override void Write(DataWriter w)
         {
@@ -948,233 +960,107 @@ namespace CodeWalker.GameFiles
             w.Write(Unk3);
             w.Write(Unk4);
         }
-    }
-    #endregion
 
-    #region mrf node headers
-    [TC(typeof(EXP))]
-    public class MrfHeaderNodeInfo
-    {
-        public MrfNodeInfoType NodeInfoType { get; set; }
-
-        public ushort NodeInfoUnk { get; set; }
-
-        public static long Length { get; set; }
-
-        public MrfHeaderNodeInfo(DataReader r)
+        public override string ToString()
         {
-            Length = 2 + 2;
-            NodeInfoType = (MrfNodeInfoType)r.ReadUInt16();
-            NodeInfoUnk = r.ReadUInt16();
-        }
-
-        public virtual void Write(DataWriter w)
-        {
-            w.Write((ushort)NodeInfoType);
-            w.Write(NodeInfoUnk);
+            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString();
         }
     }
-
-    [TC(typeof(EXP))]
-    public class MrfHeaderNameFlag : MrfHeaderNodeInfo
-    {
-        public MetaHash NameHash { get; set; }
-        public uint Flags { get; set; }
-
-        public MrfHeaderNameFlag(DataReader r) : base(r)
-        {
-            Length = 4 + 4 + 4;
-            NameHash = new MetaHash(r.ReadUInt32());
-            Flags = r.ReadUInt32();
-        }
-
-        public override void Write(DataWriter w)
-        {
-            base.Write(w);
-            w.Write(NameHash);
-            w.Write(Flags);
-        }
-    }
-
-    [TC(typeof(EXP))]
-    public class MrfHeaderStateBase : MrfHeaderNodeInfo
-    {
-        public MetaHash NameHash { get; set; } // Used as an identifier for transitions
-        public uint Unk2 { get; set; }
-        public uint Unk3 { get; set; }
-        public byte Unk4 { get; set; }
-        public byte Unk5 { get; set; }
-        public byte StateCount { get; set; }
-        public byte Unk7 { get; set; }
-        public uint Unk8 { get; set; }
-        public uint Unk9 { get; set; }
-        public uint Unk10 { get; set; }
-
-        public MrfHeaderStateBase(DataReader r) : base(r)
-        {
-            NameHash = new MetaHash(r.ReadUInt32());
-            Unk2 = r.ReadUInt32();
-            Unk3 = r.ReadUInt32();
-            Unk4 = r.ReadByte();
-            Unk5 = r.ReadByte();
-            StateCount = r.ReadByte();
-            Unk7 = r.ReadByte();
-            Unk8 = r.ReadUInt32();
-            Unk9 = r.ReadUInt32();
-            Unk10 = r.ReadUInt32();
-        }
-
-        public override void Write(DataWriter w)
-        {
-            base.Write(w);
-            w.Write(NameHash);
-            w.Write(Unk2);
-            w.Write(Unk3);
-            w.Write(Unk4);
-            w.Write(Unk5);
-            w.Write(StateCount);
-            w.Write(Unk7);
-            w.Write(Unk8);
-            w.Write(Unk9);
-            w.Write(Unk10);
-        }
-    }
+    
     #endregion
 
     #region mrf node classes
-    // rage__mvNodeStateMachineClass (1)
-    [TC(typeof(EXP))]
-    public class MrfNodeStateMachineClassInfo : MrfNodeInfoBase
+    
+    [TC(typeof(EXP))] public class MrfNodeStateMachineClass : MrfNodeStateBase
     {
-        public MrfHeaderStateBase Header { get; set; }
+        // rage__mvNodeStateMachineClass (1)
+
         public MrfStructStateMachineState[] States { get; set; }
-        public MrfStructStateSection Header_Unk7_Data { get; set; }
+        public MrfStructStateMainSection[] Sections { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderStateBase(r);
-            States = new MrfStructStateMachineState[Header.StateCount];
+            base.Read(r);
 
-            for (int i = 0; i < Header.StateCount; i++)
-                States[i] = new MrfStructStateMachineState(r);
 
-            if (Header.Unk7 != 0)
-                Header_Unk7_Data = new MrfStructStateSection(r, Header.Unk7);
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 0;
-
+            if (StateChildCount > 0)
             {
-                r.Position += 18;
-                var unk1 = r.ReadByte();
-                r.Position = startPos;
-
-                result += 8 * unk1 + 32;
+                States = new MrfStructStateMachineState[StateChildCount];
+                for (int i = 0; i < StateChildCount; i++)
+                    States[i] = new MrfStructStateMachineState(r);
             }
 
+            if (StateSectionCount > 0)
             {
-                r.Position += 19;
-                var optimizedCount = r.ReadByte();
-                r.Position = startPos;
-
-                if (optimizedCount != 0)
-                {
-                    r.Position += 28;
-                    var nextSectionOff = r.Position + r.ReadUInt32();
-
-                    for (int i = 0; i < optimizedCount; i++)
-                    {
-                        r.Position = nextSectionOff;
-                        var sectionSize = (r.ReadUInt32() >> 4) & 0x3FFF;
-                        nextSectionOff += sectionSize;
-                        result += sectionSize;
-                    }
-
-                }
-
-                r.Position = startPos;
+                Sections = new MrfStructStateMainSection[StateSectionCount];
+                for (int i = 0; i < StateSectionCount; i++)
+                    Sections[i] = new MrfStructStateMainSection(r);
             }
-
-            return result;
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
-            foreach (var state in States)
-                state.Write(w);
+            if (States != null)
+                foreach (var state in States)
+                    state.Write(w);
 
-            if (Header.Unk7 != 0)
-                Header_Unk7_Data.Write(w);
+            if (Sections != null)
+                foreach(var section in Sections)
+                    section.Write(w);
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.StateMachineClass;
-        }
     }
 
-    // rage__mvNodeTail (2)
-    [TC(typeof(EXP))]
-    public class MrfNodeTailInfo : MrfNodeEightBytesBase
+    [TC(typeof(EXP))] public class MrfNodeTail : MrfNodeValueBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Tail;
+        // rage__mvNodeTail (2)
+
     }
 
-    // rage__mvNodeInlinedStateMachine (3)
-    [TC(typeof(EXP))]
-    public class MrfNodeInlinedStateMachineInfo : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeInlinedStateMachine : MrfNodeStateBase
     {
-        public MrfHeaderStateBase Header { get; set; }
-        public uint Unk { get; set; }
-        public MrfStructStateMachineState[] Items { get; set; }
+        // rage__mvNodeInlinedStateMachine (3)
+
+        public int Unk { get; set; } //usually(always?) negative, seems to be a byte offset maybe to parent node
+        public MrfStructStateMachineState[] States { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderStateBase(r);
-            Items = new MrfStructStateMachineState[Header.StateCount];
+            base.Read(r);
 
-            Unk = r.ReadUInt32();
+            Unk = r.ReadInt32();
 
-            for (int i = 0; i < Header.StateCount; i++)
-                Items[i] = new MrfStructStateMachineState(r);
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-
-            r.Position += 18;
-            var length = r.ReadByte();
-            r.Position = startPos;
-
-            return 8 * length + 36;
+            if (StateChildCount > 0)
+            {
+                States = new MrfStructStateMachineState[StateChildCount];
+                for (int i = 0; i < StateChildCount; i++)
+                    States[i] = new MrfStructStateMachineState(r);
+            }
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk);
 
-            foreach (var item in Items)
-                item.Write(w);
+            if (States != null)
+                foreach (var item in States)
+                    item.Write(w);
         }
 
-        public override MrfNodeInfoType GetInfoType()
+        public override string ToString()
         {
-            return MrfNodeInfoType.InlinedStateMachine;
+            return base.ToString() + " - " + Unk.ToString();
         }
     }
 
-    // rage__mvNode* (4) not used in final game
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk4Info : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeUnk4 : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNode* (4) not used in final game
+
         public uint Unk1 { get; set; }
         public uint Unk2_Count { get; set; }
         public byte[] Unk2_Bytes { get; set; }
@@ -1186,9 +1072,9 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     {
@@ -1201,70 +1087,27 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 Unk3 = r.ReadUInt32();
 
-            if (((Header.Flags >> 4) & 3) != 0)
+            if (((Flags >> 4) & 3) != 0)
                 Unk4 = r.ReadUInt32();
 
-            if (((Header.Flags >> 6) & 3) != 0)
+            if (((Flags >> 6) & 3) != 0)
                 Unk5 = r.ReadUInt32();
 
-            if (((Header.Flags >> 8) & 3) != 0)
+            if (((Flags >> 8) & 3) != 0)
                 Unk6 = r.ReadUInt32();
 
-            if (((Header.Flags >> 10) & 3) != 0)
+            if (((Flags >> 10) & 3) != 0)
                 Unk7 = r.ReadUInt32();
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 12;
-
-            r.Position += 8;
-            var headerFlags = r.ReadUInt32();
-            r.Position = startPos;
-
-            switch (headerFlags & 3)
-            {
-                case 1:
-                    {
-                        r.Position += 12;
-                        var length = r.ReadUInt32();
-                        r.Position = startPos;
-
-                        result = length + 16;
-                        break;
-                    }
-                case 2:
-                    result = 16;
-                    break;
-            }
-
-            if (((headerFlags >> 2) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 4) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 6) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 8) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 10) & 3) != 0)
-                result += 4;
-
-            return result;
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     {
@@ -1277,61 +1120,52 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 w.Write(Unk3);
 
-            if (((Header.Flags >> 4) & 3) != 0)
+            if (((Flags >> 4) & 3) != 0)
                 w.Write(Unk4);
 
-            if (((Header.Flags >> 6) & 3) != 0)
+            if (((Flags >> 6) & 3) != 0)
                 w.Write(Unk5);
 
-            if (((Header.Flags >> 8) & 3) != 0)
+            if (((Flags >> 8) & 3) != 0)
                 w.Write(Unk6);
 
-            if (((Header.Flags >> 10) & 3) != 0)
+            if (((Flags >> 10) & 3) != 0)
                 w.Write(Unk7);
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Unk4;
-        }
     }
 
-    // rage__mvNodeBlend (5)
-    [TC(typeof(EXP))]
-    public class MrfNodeBlendInfo : MrfNodeBlendAddSubtractBase
+    [TC(typeof(EXP))] public class MrfNodeBlend : MrfNodeBlendAddSubtractBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Blend;
+        // rage__mvNodeBlend (5)
+
     }
 
-    // rage__mvNodeAddSubtract (6)
-    [TC(typeof(EXP))]
-    public class MrfNodeAddSubstractInfo : MrfNodeBlendAddSubtractBase
+    [TC(typeof(EXP))] public class MrfNodeAddSubstract : MrfNodeBlendAddSubtractBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.AddSubtract;
+        // rage__mvNodeAddSubtract (6)
+
     }
 
-    // rage__mvNodeFilter (7)
-    [TC(typeof(EXP))]
-    public class MrfNodeFilterInfo : MrfNodeFilterUnkBase
+    [TC(typeof(EXP))] public class MrfNodeFilter : MrfNodeFilterUnkBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Filter;
+        // rage__mvNodeFilter (7)
+
     }
 
-    // rage__mvNode* (8)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk8Info : MrfNodeFilterUnkBase
+    [TC(typeof(EXP))] public class MrfNodeUnk8 : MrfNodeFilterUnkBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Unk8;
+        // rage__mvNode* (8)
+
     }
 
-    // rage__mvNodeFrame (9)
-    [TC(typeof(EXP))]
-    public class MrfNodeFrameInfo : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeFrame : MrfNode
     {
-        public MrfHeaderNodeInfo Header { get; set; }
+        // rage__mvNodeFrame (9)
+
         public uint Unk1 { get; set; }
         public uint Flags { get; set; }
         public uint Unk2 { get; set; }
@@ -1339,7 +1173,7 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNodeInfo(r);
+            base.Read(r);
 
             Unk1 = r.ReadUInt32();
             Flags = r.ReadUInt32();
@@ -1351,27 +1185,9 @@ namespace CodeWalker.GameFiles
                 Unk3 = r.ReadUInt32();
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 12;
-
-            r.Position += 8;
-            var flags = r.ReadUInt32();
-            r.Position = startPos;
-
-            if ((flags & 3) != 0)
-                result = 16;
-
-            if ((flags & 0x30) != 0)
-                result += 4;
-
-            return result;
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
             w.Write(Unk1);
             w.Write(Flags);
@@ -1383,31 +1199,32 @@ namespace CodeWalker.GameFiles
                 w.Write(Unk3);
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Frame;
-        }
     }
 
-    // rage__mvNode* (10)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk10Info : MrfNodeEightBytesBase
+    [TC(typeof(EXP))] public class MrfNodeUnk10 : MrfNodeValueBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Tail;
+        // rage__mvNode* (10)
+
     }
 
-    // rage__mvNodeBlendN (13)
-    [TC(typeof(EXP))]
-    public class MrfNodeBlendNInfo : MrfNodeNegativeBase
+    [TC(typeof(EXP))] public class MrfNodeBlendN : MrfNodeNegativeBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.BlendN;
+        // rage__mvNodeBlendN (13)
+
     }
 
-    // rage__mvNodeClip (15)
-    [TC(typeof(EXP))]
-    public class MrfNodeClipInfo : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeClip : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNodeClip (15)
+
+        //eg "Clip_XXX" (lowercase hash, XXX number eg 012)
+        //?- delta supplement
+        //?- delta
+        //?- looped
+        //?- phase
+        //?- rate
+
+
         public MetaHash VariableName { get; set; }
         public uint Unk2 { get; set; }
         public MetaHash DictName { get; set; }
@@ -1419,9 +1236,9 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     {
@@ -1438,64 +1255,24 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 Unk5 = new MetaHash(r.ReadUInt32());
 
-            if (((Header.Flags >> 4) & 3) != 0)
+            if (((Flags >> 4) & 3) != 0)
                 Unk6 = new MetaHash(r.ReadUInt32());
 
-            if (((Header.Flags >> 6) & 3) != 0)
+            if (((Flags >> 6) & 3) != 0)
                 Unk7 = r.ReadUInt32();
 
-            if (((Header.Flags >> 6) & 3) != 0)
+            if (((Flags >> 6) & 3) != 0)
                 Unk8 = r.ReadUInt32();
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 4;
-
-            r.Position += 8;
-            var headerFlags = r.ReadUInt32();
-            r.Position = startPos;
-
-            switch (headerFlags & 3)
-            {
-                case 1:
-                    {
-                        r.Position += 12;
-                        var unk4 = r.ReadUInt32();
-                        r.Position = startPos;
-
-                        result = (unk4 != 3) ? 24 : 20;
-                        break;
-                    }
-                case 2:
-                    result = 16;
-                    break;
-            }
-
-            if (((headerFlags >> 2) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 4) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 6) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 8) & 3) != 0)
-                result += 4;
-
-            return result;
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     {
@@ -1512,30 +1289,25 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 w.Write(Unk5);
 
-            if (((Header.Flags >> 4) & 3) != 0)
+            if (((Flags >> 4) & 3) != 0)
                 w.Write(Unk6);
 
-            if (((Header.Flags >> 6) & 3) != 0)
+            if (((Flags >> 6) & 3) != 0)
                 w.Write(Unk7);
 
-            if (((Header.Flags >> 6) & 3) != 0)
+            if (((Flags >> 6) & 3) != 0)
                 w.Write(Unk8);
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Clip;
-        }
     }
 
-    // rage__mvNode* (17)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk17Info : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeUnk17 : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNode* (17)
+
         public uint Unk1_Count { get; set; }
         public byte[] Unk1_Bytes { get; set; }
         public uint Unk2 { get; set; }
@@ -1546,27 +1318,27 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
 
-            if ((Header.Flags & 3) == 1)
+            if ((Flags & 3) == 1)
             {
                 Unk1_Count = r.ReadUInt32();
                 Unk1_Bytes = r.ReadBytes((int)Unk1_Count);
             }
-            else if ((Header.Flags & 3) == 2)
+            else if ((Flags & 3) == 2)
                 Unk2 = r.ReadUInt32();
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 Unk3 = r.ReadUInt32();
 
-            if (((Header.Flags >> 4) & 3) != 0)
+            if (((Flags >> 4) & 3) != 0)
                 Unk4 = r.ReadUInt32();
 
-            if ((Header.Flags >> 6) != 0)
+            if ((Flags >> 6) != 0)
                 Unk5 = r.ReadUInt32();
 
-            var flags = Header.Flags >> 19;
-            var unk6Count = (Header.Flags >> 10) & 0xF;
+            var flags = Flags >> 19;
+            var unk6Count = (Flags >> 10) & 0xF;
 
             Unk6 = new uint[unk6Count];
 
@@ -1579,75 +1351,28 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 12;
-
-            r.Position += 8;
-            var headerFlags = r.ReadUInt32();
-            r.Position = startPos;
-
-            if ((headerFlags & 3) == 1)
-            {
-                r.Position += 12;
-                var length = r.ReadUInt32();
-                r.Position = startPos;
-
-                result = length + 16;
-            }
-            else if ((headerFlags & 3) == 2)
-                result = 16;
-
-            if (((headerFlags >> 2) & 3) != 0)
-                result += 4;
-
-            if (((headerFlags >> 4) & 3) != 0)
-                result += 4;
-
-            if ((headerFlags >> 6) != 0)
-                result += 4;
-
-            var unk6Count = (headerFlags >> 10) & 0xF;
-
-            if (unk6Count == 0)
-                return result;
-
-            var flags = headerFlags >> 19;
-
-            for (int i = 0; i < unk6Count; i++)
-            {
-                if ((flags & 3) != 0)
-                    result += 4;
-
-                flags >>= 2;
-            }
-
-            return result;
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
-            if ((Header.Flags & 3) == 1)
+            if ((Flags & 3) == 1)
             {
                 w.Write(Unk1_Count);
                 w.Write(Unk1_Bytes);
             }
-            else if ((Header.Flags & 3) == 2)
+            else if ((Flags & 3) == 2)
                 w.Write(Unk2);
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 w.Write(Unk3);
 
-            if (((Header.Flags >> 4) & 3) != 0)
+            if (((Flags >> 4) & 3) != 0)
                 w.Write(Unk4);
 
-            if ((Header.Flags >> 6) != 0)
+            if ((Flags >> 6) != 0)
                 w.Write(Unk5);
 
-            var unk6Count = (Header.Flags >> 10) & 0xF;
+            var unk6Count = (Flags >> 10) & 0xF;
 
             if (unk6Count > 0)
             {
@@ -1656,60 +1381,41 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Unk17;
-        }
     }
 
-    // rage__mvNode* (18)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk18Info : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeUnk18 : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNode* (18)
+
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
+
             Unk1 = r.ReadUInt32();
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 Unk2 = r.ReadUInt32();
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-
-            r.Position += 8;
-            var headerFlags = r.ReadUInt32();
-            r.Position = startPos;
-
-            return ((headerFlags & 3) != 0) ? 20 : 16;
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk1);
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 w.Write(Unk2);
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Unk18;
-        }
     }
 
-    // rage__mvNodeExpression (19)
-    [TC(typeof(EXP))]
-    public class MrfNodeExpressionInfo : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeExpression : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNodeExpression (19)
+
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
         public MetaHash ExpressionDict { get; set; }
@@ -1720,10 +1426,11 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
+
             Unk1 = r.ReadUInt32();
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     ExpressionDict = new MetaHash(r.ReadUInt32());
@@ -1734,15 +1441,15 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 Unk6 = r.ReadUInt32();
 
-            var unk7Count = (Header.Flags >> 28);
+            var unk7Count = (Flags >> 28);
 
             if (unk7Count == 0)
                 return;
 
-            var unkHeaderFlag = (Header.Flags >> 4) & 0xFFFFFF;
+            var unkHeaderFlag = (Flags >> 4) & 0xFFFFFF;
             var offset = 0;
 
             Unk7 = new uint[unk7Count][];
@@ -1763,56 +1470,13 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 16;
-
-            r.Position += 8;
-            var headerFlag = r.ReadUInt32();
-            r.Position = startPos;
-
-            switch (headerFlag & 3)
-            {
-                case 1:
-                    result = 24;
-                    break;
-                case 2:
-                    result = 20;
-                    break;
-            }
-
-            if (((headerFlag >> 2) & 3) != 0)
-                result += 4;
-
-            var unk7Count = (headerFlag >> 28);
-
-            if (unk7Count == 0)
-                return result;
-
-            var unkOffset = (headerFlag >> 4) & 0xFFFFFF;
-            var offset = 0;
-
-            for (int i = 0; i < unk7Count; i++)
-            {
-                result += 4;
-                var unkFlag = (unkOffset >> offset) & 3;
-
-                if (unkFlag == 2 || unkFlag == 1)
-                    result += 4;
-
-                offset += 2;
-            }
-
-            return result;
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk1);
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     w.Write(ExpressionDict);
@@ -1823,15 +1487,15 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            if (((Header.Flags >> 2) & 3) != 0)
+            if (((Flags >> 2) & 3) != 0)
                 w.Write(Unk6);
 
-            var unk7Count = (Header.Flags >> 28);
+            var unk7Count = (Flags >> 28);
 
             if (unk7Count == 0)
                 return;
 
-            var unkHeaderFlag = (Header.Flags >> 4) & 0xFFFFFF;
+            var unkHeaderFlag = (Flags >> 4) & 0xFFFFFF;
             var offset = 0;
 
             foreach (var item in Unk7)
@@ -1847,95 +1511,67 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Expression;
-        }
     }
 
-    // rage__mvNode* (20)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk20Info : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeUnk20 : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNode* (20)
+
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
+
             Unk1 = r.ReadUInt32();
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 Unk2 = r.ReadUInt32();
    
-            if ((Header.Flags & 0x30) != 0)
+            if ((Flags & 0x30) != 0)
                 Unk3 = r.ReadUInt32();
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 16;
-
-            r.Position += 8;
-            var flags = r.ReadUInt32();
-            r.Position = startPos;
-
-            if ((flags & 3) != 0)
-                result = 20;
-
-            if (((flags & 3) & 0x30) != 0)
-                result += 4;
-
-            return result;
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk1);
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 w.Write(Unk2);
 
-            if ((Header.Flags & 0x30) != 0)
+            if ((Flags & 0x30) != 0)
                 w.Write(Unk3);
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Unk20;
-        }
     }
 
-    // rage__mvNodeProxy (21)
-    [TC(typeof(EXP))]
-    public class MrfNodeProxyInfo : MrfNodeHeaderOnlyBase
+    [TC(typeof(EXP))] public class MrfNodeProxy : MrfNodeNameFlagsBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Proxy;
+        // rage__mvNodeProxy (21)
+
+        //?- node
     }
 
-    // rage__mvNodeAddN (22)
-    [TC(typeof(EXP))]
-    public class MrfNodeAddNInfo : MrfNodeNegativeBase
+    [TC(typeof(EXP))] public class MrfNodeAddN : MrfNodeNegativeBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.AddN;
+        // rage__mvNodeAddN (22)
+
     }
 
-    // rage__mvNodeIdentity (23)
-    [TC(typeof(EXP))]
-    public class MrfNodeIdentityInfo : MrfNodeEightBytesBase
+    [TC(typeof(EXP))] public class MrfNodeIdentity : MrfNodeValueBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Identity;
+        // rage__mvNodeIdentity (23)
+
     }
 
-    // rage__mvNode* (24)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk24Info : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeUnk24 : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNode* (24)
+
         public uint Unk1 { get; set; }
         public uint Unk2 { get; set; }
         public uint Unk3 { get; set; }
@@ -1944,14 +1580,15 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
+
             Unk1 = r.ReadUInt32();
             Unk2 = r.ReadUInt32();
 
-            if ((Header.Flags & 0x180000) == 0x80000)
+            if ((Flags & 0x180000) == 0x80000)
                 Unk3 = r.ReadUInt32();
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     Unk4 = new MetaHash(r.ReadUInt32());
@@ -1963,41 +1600,17 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 20;
-
-            r.Position += 8;
-            var headerFlags = r.ReadUInt32();
-            r.Position = startPos;
-
-            if ((headerFlags & 0x180000) == 0x80000)
-                result = 24;
-
-            switch (headerFlags & 3)
-            {
-                case 1:
-                    result += 8;
-                    break;
-                case 2:
-                    result += 4;
-                    break;
-            }
-
-            return result;
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk1);
             w.Write(Unk2);
 
-            if ((Header.Flags & 0x180000) == 0x80000)
+            if ((Flags & 0x180000) == 0x80000)
                 w.Write(Unk3);
 
-            switch (Header.Flags & 3)
+            switch (Flags & 3)
             {
                 case 1:
                     w.Write(Unk4);
@@ -2009,276 +1622,172 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Unk24;
-        }
     }
 
-    // rage__mvNode* (25)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk25Info : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeUnk25 : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNode* (25)
+
         public uint Unk1 { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 Unk1 = r.ReadUInt32();
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-
-            r.Position += 8;
-            var headerFlag = r.ReadUInt32();
-            r.Position = startPos;
-
-            return ((headerFlag & 3) != 0) ? 16 : 12;
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
-            if ((Header.Flags & 3) != 0)
+            if ((Flags & 3) != 0)
                 w.Write(Unk1);
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Unk25;
-        }
     }
 
-    // rage__mvNodeMergeN (26)
-    [TC(typeof(EXP))]
-    public class MrfNodeMergeNInfo : MrfNodeNegativeBase
+    [TC(typeof(EXP))] public class MrfNodeMergeN : MrfNodeNegativeBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.MergeN;
+        // rage__mvNodeMergeN (26)
+
+        //?- filter
+        //?- input filter
+        //?- weight
     }
 
-    // rage__mvNodeState (27)
-    [TC(typeof(EXP))]
-    public class MrfNodeStateInfo : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeState : MrfNodeStateBase
     {
-        public MrfHeaderStateBase Header { get; set; }
+        // rage__mvNodeState (27)
+
         public uint Unk1 { get; set; }
         public uint VariablesCount { get; set; }
         public uint Unk3 { get; set; }
         public uint EventsCount { get; set; }
         public uint Unk5 { get; set; }
-        public uint Unk6_Count { get; set; }
+        public uint Unk6Count { get; set; }
         public uint Unk7 { get; set; }
         public uint SignalsCount { get; set; }
 
-        public MrfStructStateSection Header_Unk7_Data { get; set; }
-        public MrfStructStateInfoVariable[] Variables { get; set; }
-        public MrfStructStateInfoEvent[] Events { get; set; }
-        public MrfStructStateInfoUnk6[] Unk6_Items { get; set; }
-        public MrfStructStateInfoSignal[] Signals { get; set; }
+        public MrfStructStateMainSection[] Sections { get; set; }
+        public MrfStructStateVariable[] Variables { get; set; }
+        public MrfStructStateEvent[] Events { get; set; }
+        public MrfStructStateUnk6[] Unk6Items { get; set; }
+        public MrfStructStateSignal[] Signals { get; set; }
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderStateBase(r);
+            base.Read(r);
 
             Unk1 = r.ReadUInt32();
             VariablesCount = r.ReadUInt32();
             Unk3 = r.ReadUInt32();
             EventsCount = r.ReadUInt32();
             Unk5 = r.ReadUInt32();
-            Unk6_Count = r.ReadUInt32();
+            Unk6Count = r.ReadUInt32();
             Unk7 = r.ReadUInt32();
             SignalsCount = r.ReadUInt32();
 
-            Variables = new MrfStructStateInfoVariable[VariablesCount];
-            Events = new MrfStructStateInfoEvent[EventsCount];
-            Unk6_Items = new MrfStructStateInfoUnk6[Unk6_Count];
-            Signals = new MrfStructStateInfoSignal[SignalsCount];
 
-            if (Header.Unk7 != 0)
-                Header_Unk7_Data = new MrfStructStateSection(r, Header.Unk7);
-
-            for (int i = 0; i < VariablesCount; i++)
-                Variables[i] = new MrfStructStateInfoVariable(r);
-
-            for (int i = 0; i < EventsCount; i++)
-                Events[i] = new MrfStructStateInfoEvent(r);
-
-            for (int i = 0; i < Unk6_Count; i++)
-                Unk6_Items[i] = new MrfStructStateInfoUnk6(r);
-
-            for (int i = 0; i < SignalsCount; i++)
-                Signals[i] = new MrfStructStateInfoSignal(r);
-        }
-
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-            long result = 64;
-
+            if (StateSectionCount > 0)
             {
-                r.Position += 19;
-                var optimizedCount = r.ReadByte();
-                r.Position = startPos;
-
-                if (optimizedCount != 0)
-                {
-                    r.Position += 28;
-                    var nextSectionOff = r.Position + r.ReadUInt32();
-
-                    for (int i = 0; i < optimizedCount; i++)
-                    {
-                        r.Position = nextSectionOff;
-                        var sectionSize = (r.ReadUInt32() >> 4) & 0x3FFF;
-                        nextSectionOff += sectionSize;
-                        result += sectionSize;
-                    }
-                }
-
-                r.Position = startPos;
+                Sections = new MrfStructStateMainSection[StateSectionCount];
+                for (int i = 0; i < StateSectionCount; i++)
+                    Sections[i] = new MrfStructStateMainSection(r);
             }
 
+            if (VariablesCount > 0)
             {
-                r.Position += 36;
-                var unk12 = r.ReadUInt32();
-                r.Position = startPos;
-
-                r.Position += 52;
-                var unk14 = r.ReadUInt32();
-                r.Position = startPos;
-
-                r.Position += 44;
-                var unk16 = r.ReadUInt32();
-                r.Position = startPos;
-
-                result += 12 * (unk12 + unk14) + 8 * unk16;
+                Variables = new MrfStructStateVariable[VariablesCount];
+                for (int i = 0; i < VariablesCount; i++)
+                    Variables[i] = new MrfStructStateVariable(r);
             }
 
+            if (EventsCount > 0)
             {
-                r.Position += 60;
-                var iterations = r.ReadUInt32();
-                r.Position = startPos;
-
-                if (iterations != 0)
-                {
-                    r.Position += 56;
-                    var offsetPtr = r.Position + r.ReadUInt32();
-                    r.Position = startPos;
-
-                    for (int i = 0; i < iterations; i++)
-                    {
-                        result += 8;
-                        offsetPtr += 8;
-
-                        uint shouldContinue;
-
-                        // FIXME: those loops can be simplified
-                        do
-                        {
-                            while (true)
-                            {
-                                r.Position = offsetPtr;
-                                shouldContinue = r.ReadUInt32();
-                                r.Position = offsetPtr;
-
-                                if (shouldContinue != 5)
-                                    break;
-
-                                r.Position = offsetPtr + 4;
-                                var unkCount = r.ReadUInt32();
-                                r.Position = offsetPtr;
-
-                                long targetOffset = (offsetPtr + 4 + unkCount);
-
-                                r.Position = targetOffset + 8;
-                                var length1 = r.ReadUInt32();
-                                r.Position = targetOffset + 12;
-                                var length2 = r.ReadInt32();
-                                r.Position = targetOffset;
-
-                                result += 16 * length1 + 24;
-                                offsetPtr = (targetOffset + 16 * length1 + 12 + length2);
-                            }
-
-                            result += 8;
-                            offsetPtr += 8;
-                        }
-                        while (shouldContinue != 0);
-                    }
-                }
+                Events = new MrfStructStateEvent[EventsCount];
+                for (int i = 0; i < EventsCount; i++)
+                    Events[i] = new MrfStructStateEvent(r);
             }
 
-            r.Position = startPos;
+            if (Unk6Count > 0)
+            {
+                Unk6Items = new MrfStructStateUnk6[Unk6Count];
+                for (int i = 0; i < Unk6Count; i++)
+                    Unk6Items[i] = new MrfStructStateUnk6(r);
+            }
 
-            return result;
+            if (SignalsCount > 0)
+            {
+                Signals = new MrfStructStateSignal[SignalsCount];
+                for (int i = 0; i < SignalsCount; i++)
+                    Signals[i] = new MrfStructStateSignal(r);
+            }
         }
 
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
 
             w.Write(Unk1);
             w.Write(VariablesCount);
             w.Write(Unk3);
             w.Write(EventsCount);
             w.Write(Unk5);
-            w.Write(Unk6_Count);
+            w.Write(Unk6Count);
             w.Write(Unk7);
             w.Write(SignalsCount);
 
-            if (Header.Unk7 != 0)
-                Header_Unk7_Data.Write(w);
+            if (Sections != null)
+                foreach (var section in Sections)
+                    section.Write(w);
 
-            foreach (var item in Variables)
-                item.Write(w);
+            if (Variables != null)
+                foreach (var item in Variables)
+                    item.Write(w);
 
-            foreach (var item in Events)
-                item.Write(w);
+            if (Events != null)
+                foreach (var item in Events)
+                    item.Write(w);
 
-            foreach (var item in Unk6_Items)
-                item.Write(w);
+            if (Unk6Items != null)
+                foreach (var item in Unk6Items)
+                    item.Write(w);
 
-            foreach (var item in Signals)
-                item.Write(w);
+            if (Signals != null)
+                foreach (var item in Signals)
+                    item.Write(w);
         }
 
-        public override MrfNodeInfoType GetInfoType()
+        public override string ToString()
         {
-            return MrfNodeInfoType.State;
+            return base.ToString() + " --- " + Unk1.ToString() + " - " + Unk3.ToString() + " - " + Unk5.ToString() + " - " + Unk7.ToString();
         }
     }
 
-    // rage__mvNodeInvalid (28)
-    [TC(typeof(EXP))]
-    public class MrfNodeInvalidInfo : MrfNodeEightBytesBase
+    [TC(typeof(EXP))] public class MrfNodeInvalid : MrfNodeValueBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Invalid;
+        // rage__mvNodeInvalid (28)
+
     }
 
-    // rage__mvNode* (29)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk29Info : MrfNodeFilterUnkBase
+    [TC(typeof(EXP))] public class MrfNodeUnk29 : MrfNodeFilterUnkBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.Unk29;
+        // rage__mvNode* (29)
+
     }
 
-    // rage__mvNodeSubNetworkClass (30)
-    [TC(typeof(EXP))]
-    public class MrfNodeSubNetworkClassInfo : MrfNodeHeaderOnlyBase
+    [TC(typeof(EXP))] public class MrfNodeSubNetworkClass : MrfNodeNameFlagsBase
     {
-        public override MrfNodeInfoType GetInfoType() => MrfNodeInfoType.SubNetworkClass;
+        // rage__mvNodeSubNetworkClass (30)
+
     }
 
-    // rage__mvNode* (31)
-    [TC(typeof(EXP))]
-    public class MrfNodeUnk31Info : MrfNodeInfoBase
+    [TC(typeof(EXP))] public class MrfNodeUnk31 : MrfNodeNameFlagsBase
     {
-        public MrfHeaderNameFlag Header { get; set; }
+        // rage__mvNode* (31)
+
         public uint Unk1 { get; set; }
         public uint Unk2_Count { get; set; }
         public uint[][] Unk2_Items { get; set; }
@@ -2291,7 +1800,8 @@ namespace CodeWalker.GameFiles
 
         public override void Read(DataReader r)
         {
-            Header = new MrfHeaderNameFlag(r);
+            base.Read(r);
+
             Unk1 = r.ReadUInt32();
             Unk2_Count = r.ReadUInt32();
             Unk3_Count = r.ReadUInt32();
@@ -2348,23 +1858,10 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override long CalculateSize(DataReader r)
-        {
-            var startPos = r.Position;
-
-            r.Position += 16;
-            var count1 = r.ReadUInt32();
-            var count2 = r.ReadUInt32();
-            var count3 = r.ReadUInt32();
-            var count4 = r.ReadUInt32();
-            r.Position = startPos;
-
-            return 12 * count1 + 8 * (count2 + count3 + count4 + 4);
-        }
-
         public override void Write(DataWriter w)
         {
-            Header.Write(w);
+            base.Write(w);
+
             w.Write(Unk1);
             w.Write(Unk2_Count);
             w.Write(Unk3_Count);
@@ -2409,15 +1906,11 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override MrfNodeInfoType GetInfoType()
-        {
-            return MrfNodeInfoType.Unk31;
-        }
     }
+    
     #endregion
 
-    [TC(typeof(EXP))]
-    public class MrfFile : GameFile, PackedFile
+    [TC(typeof(EXP))] public class MrfFile : GameFile, PackedFile
     {
         public byte[] RawFileData { get; set; }
         public uint Magic { get; set; } = 0x45566F4D; // 'MoVE'
@@ -2436,7 +1929,8 @@ namespace CodeWalker.GameFiles
         public MrfStructHeaderUnk3[] Unk3_Items { get; set; }
         public byte[] FlagsItems { get; set; }
 
-        public MrfNodeInfoBase[] Nodes { get; set; }
+        public MrfNode[] AllNodes { get; set; }
+        public MrfNode RootNode { get; set; }
 
         public MrfFile() : base(null, GameFileType.Mrf)
         {
@@ -2524,9 +2018,9 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            if (Nodes != null)
+            if (AllNodes != null)
             {
-                foreach (var node in Nodes)
+                foreach (var node in AllNodes)
                     node.Write(w);
             }
 
@@ -2575,40 +2069,25 @@ namespace CodeWalker.GameFiles
                     Unk3_Items[i] = new MrfStructHeaderUnk3(r);
             }
 
-            var nodeInfos = new List<MrfNodeInfoBase>();
+            var nodes = new List<MrfNode>();
 
             while (true)
             {
-                // TODO: probably not safe enough as there might be a "lucky" case of bytes that will fit node type index.
-                var nodeType = GetNextMrfNodeTypeIndex(r);
+                var index = nodes.Count;
+                var offset = (int)r.Position;
 
-                if (nodeType == MrfNodeInfoType.None)
-                    break;
+                var node = ReadNode(r);
+                
+                if (node == null) break;
 
-                var nodeHandler = GetNextMrfNodeHandler(nodeType);
-                var expectedSize = nodeHandler.CalculateSize(r);
-                var expectedPos = r.Position + expectedSize;
+                node.FileIndex = index;
+                node.FileOffset = offset;
+                node.FileDataSize = ((int)r.Position) - offset;
 
-                if (expectedPos > r.Length)
-                    throw new Exception($"Calculated mrf node ({nodeType}) expected size is invalid ({expectedSize})");
-
-                if (nodeType != nodeHandler.GetInfoType())
-                    throw new Exception($"Parsed mrf node type ({nodeHandler.GetInfoType()}) is not equals expected type ({nodeType})");
-
-                // Finally we can parse it.
-                nodeHandler.Read(r);
-
-                if (expectedPos != r.Position)
-                    throw new Exception($"Position of reader ({r.Position}) is not equals expected position ({expectedPos})");
-
-                nodeInfos.Add(nodeHandler);
+                nodes.Add(node);
             }
 
-            Nodes = new MrfNodeInfoBase[nodeInfos.Count];
-
-            // Hacky remapping...
-            for (int i = 0; i < nodeInfos.Count; i++)
-                Nodes[i] = nodeInfos[i];
+            AllNodes = nodes.ToArray();
 
             if (FlagsCount != 0)
             {
@@ -2618,83 +2097,207 @@ namespace CodeWalker.GameFiles
                     FlagsItems[i] = r.ReadByte();
             }
 
+
+            BuildNodeHierarchy();
+
+
             if (r.Position != r.Length)
                 throw new Exception($"Failed to read MRF ({r.Position} / {r.Length})");
         }
 
-        private MrfNodeInfoType GetNextMrfNodeTypeIndex(DataReader r)
+        private MrfNode ReadNode(DataReader r)
         {
             var startPos = r.Position;
-            var nodeInfoType = (MrfNodeInfoType)r.ReadUInt16();
+            var nodeType = (MrfNodeType)r.ReadUInt16();
             r.Position = startPos;
 
-            if (nodeInfoType <= MrfNodeInfoType.None || nodeInfoType >= MrfNodeInfoType.Max)
-                return MrfNodeInfoType.None;
+            if (nodeType <= MrfNodeType.None || nodeType >= MrfNodeType.Max)
+            {
+                if (r.Position != r.Length)//should only be at EOF
+                { }
+                return null;
+            }
 
-            return nodeInfoType;
+            var node = CreateNode(nodeType);
+
+            node.Read(r);
+
+            return node;
         }
 
-        private MrfNodeInfoBase GetNextMrfNodeHandler(MrfNodeInfoType infoType)
+        private MrfNode CreateNode(MrfNodeType infoType)
         {
             switch (infoType)
             {
-                case MrfNodeInfoType.StateMachineClass:
-                    return new MrfNodeStateMachineClassInfo();
-                case MrfNodeInfoType.Tail:
-                    return new MrfNodeTailInfo();
-                case MrfNodeInfoType.InlinedStateMachine:
-                    return new MrfNodeInlinedStateMachineInfo();
-                case MrfNodeInfoType.Unk4:
-                    return new MrfNodeUnk4Info();
-                case MrfNodeInfoType.Blend:
-                    return new MrfNodeBlendInfo();
-                case MrfNodeInfoType.AddSubtract:
-                    return new MrfNodeAddSubstractInfo();
-                case MrfNodeInfoType.Filter:
-                    return new MrfNodeFilterInfo();
-                case MrfNodeInfoType.Unk8:
-                    return new MrfNodeUnk8Info();
-                case MrfNodeInfoType.Frame:
-                    return new MrfNodeFrameInfo();
-                case MrfNodeInfoType.Unk10:
-                    return new MrfNodeUnk10Info();
-                case MrfNodeInfoType.BlendN:
-                    return new MrfNodeBlendNInfo();
-                case MrfNodeInfoType.Clip:
-                    return new MrfNodeClipInfo();
-                case MrfNodeInfoType.Unk17:
-                    return new MrfNodeUnk17Info();
-                case MrfNodeInfoType.Unk18:
-                    return new MrfNodeUnk18Info();
-                case MrfNodeInfoType.Expression:
-                    return new MrfNodeExpressionInfo();
-                case MrfNodeInfoType.Unk20:
-                    return new MrfNodeUnk20Info();
-                case MrfNodeInfoType.Proxy:
-                    return new MrfNodeProxyInfo();
-                case MrfNodeInfoType.AddN:
-                    return new MrfNodeAddNInfo();
-                case MrfNodeInfoType.Identity:
-                    return new MrfNodeIdentityInfo();
-                case MrfNodeInfoType.Unk24:
-                    return new MrfNodeUnk24Info();
-                case MrfNodeInfoType.Unk25:
-                    return new MrfNodeUnk25Info();
-                case MrfNodeInfoType.MergeN:
-                    return new MrfNodeMergeNInfo();
-                case MrfNodeInfoType.State:
-                    return new MrfNodeStateInfo();
-                case MrfNodeInfoType.Invalid:
-                    return new MrfNodeInvalidInfo();
-                case MrfNodeInfoType.Unk29:
-                    return new MrfNodeUnk29Info();
-                case MrfNodeInfoType.SubNetworkClass:
-                    return new MrfNodeSubNetworkClassInfo();
-                case MrfNodeInfoType.Unk31:
-                    return new MrfNodeUnk31Info();
+                case MrfNodeType.StateMachineClass:
+                    return new MrfNodeStateMachineClass();
+                case MrfNodeType.Tail:
+                    return new MrfNodeTail();
+                case MrfNodeType.InlinedStateMachine:
+                    return new MrfNodeInlinedStateMachine();
+                case MrfNodeType.Unk4:
+                    return new MrfNodeUnk4();
+                case MrfNodeType.Blend:
+                    return new MrfNodeBlend();
+                case MrfNodeType.AddSubtract:
+                    return new MrfNodeAddSubstract();
+                case MrfNodeType.Filter:
+                    return new MrfNodeFilter();
+                case MrfNodeType.Unk8:
+                    return new MrfNodeUnk8();
+                case MrfNodeType.Frame:
+                    return new MrfNodeFrame();
+                case MrfNodeType.Unk10:
+                    return new MrfNodeUnk10();
+                case MrfNodeType.BlendN:
+                    return new MrfNodeBlendN();
+                case MrfNodeType.Clip:
+                    return new MrfNodeClip();
+                case MrfNodeType.Unk17:
+                    return new MrfNodeUnk17();
+                case MrfNodeType.Unk18:
+                    return new MrfNodeUnk18();
+                case MrfNodeType.Expression:
+                    return new MrfNodeExpression();
+                case MrfNodeType.Unk20:
+                    return new MrfNodeUnk20();
+                case MrfNodeType.Proxy:
+                    return new MrfNodeProxy();
+                case MrfNodeType.AddN:
+                    return new MrfNodeAddN();
+                case MrfNodeType.Identity:
+                    return new MrfNodeIdentity();
+                case MrfNodeType.Unk24:
+                    return new MrfNodeUnk24();
+                case MrfNodeType.Unk25:
+                    return new MrfNodeUnk25();
+                case MrfNodeType.MergeN:
+                    return new MrfNodeMergeN();
+                case MrfNodeType.State:
+                    return new MrfNodeState();
+                case MrfNodeType.Invalid:
+                    return new MrfNodeInvalid();
+                case MrfNodeType.Unk29:
+                    return new MrfNodeUnk29();
+                case MrfNodeType.SubNetworkClass:
+                    return new MrfNodeSubNetworkClass();
+                case MrfNodeType.Unk31:
+                    return new MrfNodeUnk31();
             }
 
             throw new Exception($"A handler for ({infoType}) mrf node type is not valid");
         }
+
+
+        private int BuildNodeHierarchy(MrfNode node = null, int index = 0)
+        {
+            if (AllNodes == null) return 0;
+            if (AllNodes.Length <= index) return 0;
+
+            if (node == null)
+            {
+                var rlist = new List<MrfNode>();
+                for (int i = 0; i < AllNodes.Length; i++)
+                {
+                    var rnode = AllNodes[i];
+                    rlist.Add(rnode);
+                    i += BuildNodeHierarchy(rnode, i);
+                }
+
+                var smlist = new List<MrfNodeStateMachineClass>();
+                var imlist = new List<MrfNodeInlinedStateMachine>();
+                var snlist = new List<MrfNodeState>();
+                foreach (var n in AllNodes)
+                {
+                    if (n is MrfNodeStateMachineClass sm) 
+                    { 
+                        smlist.Add(sm);
+                        if (sm.ChildNodes != null) for (int i = 0; i < sm.ChildNodes.Length; i++) if (sm.ChildNodes[i].NodeIndex != i)
+                                { }//sanity check - don't get here
+                    }
+                    if (n is MrfNodeInlinedStateMachine im)
+                    {
+                        imlist.Add(im);
+                        if (im.ChildNodes != null) for (int i = 0; i < im.ChildNodes.Length; i++) if (im.ChildNodes[i].NodeIndex != i)
+                                { }//sanity check - don't get here
+                    }
+                    if (n is MrfNodeState sn)
+                    {
+                        snlist.Add(sn);
+                        if (sn.ChildNodes != null) for (int i = 0; i < sn.ChildNodes.Length; i++) if (sn.ChildNodes[i].NodeIndex != i)
+                                { }//sanity check - don't get here
+                    }
+                }
+
+                if (rlist.Count > 0)
+                {
+                    RootNode = rlist[0];
+                }
+                if (rlist.Count != 1)
+                { }//sanity check - don't get here
+                if (AllNodes.Length > 1000)
+                { }
+                return 0;
+            }
+
+            if (node is MrfNodeStateBase snode)
+            {
+                var c = 0;
+                var clist = new List<MrfNode>();
+                int ccount = snode.StateChildCount;
+                if (ccount == 0)
+                {
+                    return 0;
+                }
+                for (int i = 0; i <= ccount; i++)
+                {
+                    if ((i == ccount) && (node is MrfNodeState))
+                    { break; }
+                    var cind = index + c + i + 1;
+                    if (cind >= AllNodes.Length)
+                    {
+                        if (i != ccount)
+                        { }//don't get here (tried to continue past the end of the array!)
+                        break; 
+                    }
+                    var cnode = AllNodes[cind];
+                    if (cnode is MrfNodeTail)
+                    {
+                        i--;
+                        c++;
+                        if (clist.Count > 0)
+                        {
+                            var prevnode = clist[clist.Count - 1];
+                            if (prevnode is MrfNodeStateBase sprevnode)
+                            {
+                                if (sprevnode.TailNode != null)
+                                { }//don't get here (tail node was already assigned?!?)
+                                sprevnode.TailNode = cnode;
+                                if (clist.Count == ccount)
+                                { break; }//list is full, don't continue
+                            }
+                            else
+                            { }//don't get here (previous node isn't a state??)
+                        }
+                        else
+                        { }//don't get here (can't have tail without a previous node!)
+                        continue;
+                    }
+                    else if (clist.Count == ccount)
+                    { break; }//this node isn't a tail, but the list is already full, so it must belong to another node
+                    if (cnode.NodeIndex != i)
+                    { break; }//don't get here (node index mismatch!)
+                    clist.Add(cnode);
+                    c += BuildNodeHierarchy(cnode, cind);//recurse...
+                }
+                if (clist.Count != ccount)
+                { }//don't get here (sanity check)
+                snode.ChildNodes = clist.ToArray();
+                return c + clist.Count;
+            }
+
+            return 0;
+        }
+    
     }
 }
