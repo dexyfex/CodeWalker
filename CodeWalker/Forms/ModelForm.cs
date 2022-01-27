@@ -1,6 +1,7 @@
 ﻿using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.Rendering;
+using CodeWalker.Utils;
 using CodeWalker.World;
 using SharpDX;
 using SharpDX.Direct3D11;
@@ -103,6 +104,14 @@ namespace CodeWalker.Forms
         ModelMatForm materialForm = null;
         bool modelModified = false;
 
+        TransformWidget Widget = new TransformWidget();
+        TransformWidget GrabbedWidget = null;
+        ModelLightForm lightForm = null;
+        bool editingLights = false;
+        public LightAttributes selectedLight = null;
+        public bool showLightGizmos = true;
+        public Skeleton Skeleton = null;
+
         ExploreForm exploreForm = null;
         RpfFileEntry rpfFileEntry = null;
 
@@ -165,6 +174,15 @@ namespace CodeWalker.Forms
                 Close();
                 return;
             }
+
+            Widget.Position = new Vector3(0f, 0f, 0f);
+            Widget.Rotation = Quaternion.Identity;
+            Widget.Scale = Vector3.One;
+            Widget.SnapAngleDegrees = 0;
+            Widget.Visible = false;
+            Widget.OnPositionChange += Widget_OnPositionChange;
+            Widget.OnRotationChange += Widget_OnRotationChange;
+            Widget.OnScaleChange += Widget_OnScaleChange;
 
             ShaderParamNames[] texsamplers = RenderableGeometry.GetTextureSamplerList();
             foreach (var texsampler in texsamplers)
@@ -259,6 +277,7 @@ namespace CodeWalker.Forms
 
             Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
+            UpdateWidgets();
 
             Renderer.BeginRender(context);
 
@@ -270,6 +289,7 @@ namespace CodeWalker.Forms
 
             RenderGrid(context);
 
+            RenderLightSelection();
 
             Renderer.RenderQueued();
 
@@ -277,6 +297,7 @@ namespace CodeWalker.Forms
 
             Renderer.RenderFinalPass();
 
+            RenderWidgets();
 
             Renderer.EndRender();
 
@@ -520,10 +541,91 @@ namespace CodeWalker.Forms
             }
         }
 
+        public void SetCameraPosition(Vector3 p, float distance = 2.0f)
+        {
+            Renderer.camera.FollowEntity.Position = p;
+            camera.TargetDistance = distance;
+        }
 
+        private void RenderLightSelection()
+        {
+            if (editingLights)
+            {
+                if (selectedLight != null)
+                {
+                    if (showLightGizmos)
+                    {
+                        Bone bone = null;
+                        Skeleton?.BonesMap?.TryGetValue(selectedLight.BoneId, out bone);
+                        Renderer.RenderSelectionDrawableLight(selectedLight, bone);
+                    }
+                }
+            }
+        }
 
+        private void RenderWidgets()
+        {
+            if (Widget.Visible)
+            {
+                Renderer.RenderTransformWidget(Widget);
+            }
+        }
+        private void UpdateWidgets()
+        {
+            Widget.Update(camera);
+        }
+        public void SetWidgetTransform(Vector3 p, Quaternion q, Vector3 s)
+        {
+            Widget.Position = p;
+            Widget.Rotation = q;
+            Widget.Scale = s;
+        }
+        public void SetWidgetMode(WidgetMode mode)
+        {
+            lock (Renderer.RenderSyncRoot)
+            {
+                Widget.Mode = mode;
+            }
 
+            ToolbarMoveButton.Checked = (mode == WidgetMode.Position);
+            ToolbarRotateButton.Checked = (mode == WidgetMode.Rotation);
+            ToolbarScaleButton.Checked = (mode == WidgetMode.Scale);
 
+            lightForm?.SetWidgetModeUI(mode);
+        }
+        private void Widget_OnPositionChange(Vector3 newpos, Vector3 oldpos)
+        {
+            //called during UpdateWidgets()
+            if (newpos == oldpos) return;
+            if (selectedLight == null || lightForm == null || !editingLights) return;
+
+            Bone bone = null;
+            Skeleton?.BonesMap?.TryGetValue(selectedLight.BoneId, out bone);
+            if (bone != null)
+            {
+                var xforminv = Matrix.Invert(bone.AbsTransform);
+                newpos = xforminv.Multiply(newpos);
+            }
+
+            selectedLight.Position = newpos;
+            selectedLight.UpdateRenderable = true;
+        }
+        private void Widget_OnRotationChange(Quaternion newrot, Quaternion oldrot)
+        {
+            //called during UpdateWidgets()
+            if (newrot == oldrot) return;
+            if (selectedLight == null || lightForm == null || !editingLights) return;
+            selectedLight.Orientation = newrot;
+            selectedLight.UpdateRenderable = true;
+        }
+        private void Widget_OnScaleChange(Vector3 newscale, Vector3 oldscale)
+        {
+            //called during UpdateWidgets()
+            if (newscale == oldscale) return;
+            if (selectedLight == null || lightForm == null || !editingLights) return;
+            selectedLight.Falloff = newscale.Z;
+            selectedLight.UpdateRenderable = true;
+        }
 
 
         private void RenderSingleItem()
@@ -628,7 +730,22 @@ namespace CodeWalker.Forms
 
             if (ydr.Drawable != null)
             {
-                MoveCameraToView(ydr.Drawable.BoundingCenter, ydr.Drawable.BoundingSphereRadius);
+                var cen = ydr.Drawable.BoundingCenter;
+                var rad = ydr.Drawable.BoundingSphereRadius;
+                if (ModelArchetype != null)
+                {
+                    cen = ModelArchetype.BSCenter;
+                    rad = ModelArchetype.BSRadius;
+                }
+
+                MoveCameraToView(cen, rad);
+
+                Skeleton = ydr.Drawable.Skeleton;
+            }
+
+            if(ydr.Drawable?.LightAttributes.data_items.Length > 0)
+            {
+                DeferredShadingCheckBox.Checked = true;
             }
 
             UpdateModelsUI(ydr.Drawable);
@@ -647,8 +764,22 @@ namespace CodeWalker.Forms
                 foreach (var d in Ydd.Drawables)
                 {
                     maxrad = Math.Max(maxrad, d.BoundingSphereRadius);
+
+                    if (d.Skeleton != null)
+                    {
+                        Skeleton = d.Skeleton;
+                    }
                 }
                 MoveCameraToView(Vector3.Zero, maxrad);
+            }
+
+            foreach(var draw in ydd.Drawables)
+            {
+                if (draw?.LightAttributes.data_items.Length > 0)
+                {
+                    DeferredShadingCheckBox.Checked = true;
+                    break;
+                }
             }
 
             UpdateModelsUI(ydd.Dict);
@@ -677,7 +808,22 @@ namespace CodeWalker.Forms
             var dr = yft.Fragment?.Drawable;
             if (dr != null)
             {
-                MoveCameraToView(dr.BoundingCenter, dr.BoundingSphereRadius);
+                var cen = dr.BoundingCenter;
+                var rad = dr.BoundingSphereRadius;
+                if (ModelArchetype != null)
+                {
+                    cen = ModelArchetype.BSCenter;
+                    rad = ModelArchetype.BSRadius;
+                }
+
+                MoveCameraToView(cen, rad);
+
+                Skeleton = dr.Skeleton;
+            }
+
+            if (yft.Fragment?.LightAttributes.data_items.Length > 0)
+            {
+                DeferredShadingCheckBox.Checked = true;
             }
 
             UpdateModelsUI(yft.Fragment?.Drawable, yft.Fragment);
@@ -1221,6 +1367,260 @@ namespace CodeWalker.Forms
 
 
 
+        private void UpdateEmbeddedTextures(DrawableBase dwbl)
+        {
+            if (dwbl == null) return;
+
+            var sg = dwbl.ShaderGroup;
+            var td = sg?.TextureDictionary;
+            var sd = sg?.Shaders?.data_items;
+
+            if (td == null) return;
+            if (sd == null) return;
+
+            var updated = false;
+            foreach (var s in sd)
+            {
+                if (s?.ParametersList == null) continue;
+                foreach (var p in s.ParametersList.Parameters)
+                {
+                    if (p.Data is TextureBase tex)
+                    {
+                        var tex2 = td.Lookup(tex.NameHash);
+                        if ((tex2 != null) && (tex != tex2))
+                        {
+                            p.Data = tex2;//swap the parameter out for the new embedded texture
+                            updated = true;
+                        }
+                    }
+                }
+            }
+
+            if (!updated) return;
+
+            foreach (var model in dwbl.AllModels)
+            {
+                if (model?.Geometries == null) continue;
+                foreach (var geom in model.Geometries)
+                {
+                    geom.UpdateRenderableParameters = true;
+                }
+            }
+        }
+        public void UpdateEmbeddedTextures()
+        {
+            if (Ydr != null)
+            {
+                if (Ydr.Loaded)
+                {
+                    UpdateEmbeddedTextures(Ydr.Drawable);
+                }
+            }
+            else if (Ydd != null)
+            {
+                if (Ydd.Loaded)
+                {
+                    foreach (var kvp in Ydd.Dict)
+                    {
+                        UpdateEmbeddedTextures(kvp.Value);
+                    }
+                }
+            }
+            else if (Ypt != null)
+            {
+                if ((Ypt.Loaded) && (Ypt.DrawableDict != null))
+                {
+                    foreach (var kvp in Ypt.DrawableDict)
+                    {
+                        UpdateEmbeddedTextures(kvp.Value);
+                    }
+                }
+            }
+            else if (Yft != null)
+            {
+                if (Yft.Loaded)
+                {
+                    if (Yft.Fragment != null)
+                    {
+                        var f = Yft.Fragment;
+
+                        UpdateEmbeddedTextures(f.Drawable);
+                        UpdateEmbeddedTextures(f.DrawableCloth);
+
+                        if (f.DrawableArray?.data_items != null)
+                        {
+                            foreach (var d in f.DrawableArray.data_items)
+                            {
+                                UpdateEmbeddedTextures(d);
+                            }
+                        }
+
+                        var c = f.PhysicsLODGroup?.PhysicsLOD1?.Children?.data_items;
+                        if (c != null)
+                        {
+                            foreach (var child in c)
+                            {
+                                if (child != null)
+                                {
+                                    UpdateEmbeddedTextures(child.Drawable1);
+                                    UpdateEmbeddedTextures(child.Drawable2);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+
+
+
+        private void ShowMaterialEditor()
+        {
+            DrawableBase drawable = null;
+            Dictionary<uint, Drawable> dict = null;
+
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                drawable = Ydr.Drawable;
+            }
+            else if ((Ydd != null) && (Ydd.Loaded))
+            {
+                dict = Ydd.Dict;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                drawable = Yft.Fragment?.Drawable;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                //dict = Ypt.DrawableDict;
+            }
+            else
+            {
+                MessageBox.Show("Material editor not supported for the current file.");
+                return;
+            }
+
+            if (materialForm == null)
+            {
+                materialForm = new ModelMatForm(this);
+
+                if (drawable != null)
+                {
+                    materialForm.LoadModel(drawable);
+                }
+                else if (dict != null)
+                {
+                    materialForm.LoadModels(dict);
+                }
+
+                materialForm.Show(this);
+            }
+            else
+            {
+                if (materialForm.WindowState == FormWindowState.Minimized)
+                {
+                    materialForm.WindowState = FormWindowState.Normal;
+                }
+                materialForm.Focus();
+            }
+        }
+
+        private void ShowTextureEditor()
+        {
+            TextureDictionary td = null;
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                td = Ydr.Drawable?.ShaderGroup?.TextureDictionary;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                td = Yft.Fragment?.Drawable?.ShaderGroup?.TextureDictionary;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                td = Ypt?.PtfxList?.TextureDictionary;
+            }
+
+            if (td != null)
+            {
+                YtdForm f = new YtdForm(null, this);
+                f.Show(this);
+                f.LoadTexDict(td, fileName);
+            }
+            else
+            {
+                MessageBox.Show("Couldn't find embedded texture dict.");
+            }
+        }
+
+        private void ShowLightEditor()
+        {
+            DrawableBase drawable = null;
+            Dictionary<uint, Drawable> dict = null;
+
+            if ((Ydr != null) && (Ydr.Loaded))
+            {
+                drawable = Ydr.Drawable;
+            }
+            else if ((Ydd != null) && (Ydd.Loaded))
+            {
+                dict = Ydd.Dict;
+            }
+            else if ((Yft != null) && (Yft.Loaded))
+            {
+                drawable = Yft.Fragment?.Drawable;
+            }
+            else if ((Ypt != null) && (Ypt.Loaded))
+            {
+                //dict = Ypt.DrawableDict;
+            }
+            else
+            {
+                MessageBox.Show("Light editor not supported for the current file.");
+            }
+
+            if (lightForm == null)
+            {
+                lightForm = new ModelLightForm(this);
+
+                if (drawable != null)
+                {
+                    lightForm.LoadModel(drawable);
+                }
+                else if (dict != null)
+                {
+                    lightForm.LoadModels(dict);
+                }
+
+                editingLights = true;
+                Widget.Visible = true;
+                lightForm.Show(this);
+            }
+            else
+            {
+                if (lightForm.WindowState == FormWindowState.Minimized)
+                {
+                    lightForm.WindowState = FormWindowState.Normal;
+                }
+                lightForm.Focus();
+            }
+            DeferredShadingCheckBox.Checked = true; //make sure we can see the lights we're editing (maybe this is bad for potatoes but meh)
+        }
+
+
+
+        public void OnLightFormClosed()
+        {
+            lightForm = null;
+            editingLights = false;
+            selectedLight = null;
+            Widget.Visible = false;
+        }
 
         public void OnMaterialFormClosed()
         {
@@ -1390,6 +1790,236 @@ namespace CodeWalker.Forms
 
 
 
+        private void SaveAllTextures(bool includeEmbedded)
+        {
+            if (gameFileCache == null)
+            {
+                MessageBox.Show("This operation requires GameFileCache to continue. This shouldn't happen!");
+                return;
+            }
+
+            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return;
+            string folderpath = FolderBrowserDialog.SelectedPath;
+            if (!folderpath.EndsWith("\\")) folderpath += "\\";
+
+
+            var tryGetTextureFromYtd = new Func<uint, YtdFile, Texture>((texHash, ytd) => 
+            {
+                if (ytd == null) return null;
+                int tries = 0;
+                while (!ytd.Loaded && (tries < 500)) //wait upto ~5 sec
+                {
+                    Thread.Sleep(10);
+                    tries++;
+                }
+                if (ytd.Loaded)
+                {
+                    return ytd.TextureDict?.Lookup(texHash);
+                }
+                return null;
+            });
+            var tryGetTexture = new Func<uint, uint, Texture>((texHash, txdHash) =>
+            {
+                if (txdHash != 0)
+                {
+                    var ytd = gameFileCache.GetYtd(txdHash);
+                    var tex = tryGetTextureFromYtd(texHash, ytd);
+                    return tex;
+                }
+                return null;
+            });
+
+            var textures = new HashSet<Texture>();
+            var texturesMissing = new HashSet<string>();
+            var collectTextures = new Action<DrawableBase>((d) => 
+            {
+                if (includeEmbedded)
+                {
+                    if (d?.ShaderGroup?.TextureDictionary?.Textures?.data_items != null)
+                    {
+                        foreach (var tex in d.ShaderGroup.TextureDictionary.Textures.data_items)
+                        {
+                            textures.Add(tex);
+                        }
+                    }
+                    if ((d?.Owner is YptFile ypt) && (ypt.PtfxList?.TextureDictionary?.Textures?.data_items != null))
+                    {
+                        foreach (var tex in ypt.PtfxList.TextureDictionary.Textures.data_items)
+                        {
+                            textures.Add(tex);
+                        }
+                        return; //ypt's apparently only use embedded textures...
+                    }
+                }
+
+                if (d?.ShaderGroup?.Shaders?.data_items == null) return;
+
+                var archhash = 0u;
+                if (d is Drawable dwbl)
+                {
+                    var dname = dwbl.Name.ToLowerInvariant();
+                    dname = dname.Replace(".#dr", "").Replace(".#dd", "");
+                    archhash = JenkHash.GenHash(dname);
+                }
+                else if (d is FragDrawable fdbl)
+                {
+                    var yft = fdbl.Owner as YftFile;
+                    var fraghash = (MetaHash)(yft?.RpfFileEntry?.ShortNameHash ?? 0);
+                    archhash = fraghash;
+                }
+                var arch = gameFileCache.GetArchetype(archhash);
+                if (arch == null)
+                {
+                    arch = currentArchetype;
+                }
+
+                var txdHash = (arch != null) ? arch.TextureDict.Hash : archhash;
+                if ((txdHash == 0) && (archhash == 0))
+                { }
+
+                foreach (var s in d.ShaderGroup.Shaders.data_items)
+                {
+                    if (s?.ParametersList?.Parameters == null) continue;
+                    foreach (var p in s.ParametersList.Parameters)
+                    {
+                        var t = p.Data as TextureBase;
+                        if (t == null) continue;
+                        var tex = t as Texture;
+                        if (tex != null)
+                        {
+                            if (includeEmbedded)
+                            {
+                                textures.Add(tex);//probably redundant
+                            }
+                        }
+                        else
+                        {
+                            var texhash = t.NameHash;
+                            tex = tryGetTexture(texhash, txdHash);
+                            if (tex == null)
+                            {
+                                var ptxdhash = gameFileCache.TryGetParentYtdHash(txdHash);
+                                while ((ptxdhash != 0) && (tex == null))
+                                {
+                                    tex = tryGetTexture(texhash, ptxdhash);
+                                    if (tex == null)
+                                    {
+                                        ptxdhash = gameFileCache.TryGetParentYtdHash(ptxdhash);
+                                    }
+                                }
+                                if (tex == null)
+                                {
+                                    var ytd = gameFileCache.TryGetTextureDictForTexture(texhash);
+                                    tex = tryGetTextureFromYtd(texhash, ytd);
+                                }
+                                if (tex == null)
+                                {
+                                    texturesMissing.Add(t.Name);
+                                }
+                            }
+                            if (tex != null)
+                            {
+                                textures.Add(tex);
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (Ydr != null)
+            {
+                collectTextures(Ydr.Drawable);
+            }
+            if (Ydd?.Drawables != null)
+            {
+                foreach (var d in Ydd.Drawables)
+                {
+                    collectTextures(d);
+                }
+            }
+            if (Yft?.Fragment != null)
+            {
+                var f = Yft.Fragment;
+                collectTextures(f.Drawable);
+                collectTextures(f.DrawableCloth);
+                if (f.DrawableArray?.data_items != null)
+                {
+                    foreach (var d in f.DrawableArray.data_items)
+                    {
+                        collectTextures(d);
+                    }
+                }
+                if (f.Cloths?.data_items != null)
+                {
+                    foreach (var c in f.Cloths.data_items)
+                    {
+                        collectTextures(c.Drawable);
+                    }
+                }
+                var fc = f.PhysicsLODGroup?.PhysicsLOD1?.Children?.data_items;
+                if (fc != null)
+                {
+                    foreach (var fcc in fc)
+                    {
+                        collectTextures(fcc.Drawable1);
+                        collectTextures(fcc.Drawable2);
+                    }
+                }
+            }
+            if (Ypt?.DrawableDict != null)
+            {
+                foreach (var d in Ypt.DrawableDict.Values)
+                {
+                    collectTextures(d);
+                }
+            }
+
+            var errordds = new List<string>();
+            var successcount = 0;
+            foreach (var tex in textures)
+            {
+                try
+                {
+                    string fpath = folderpath + tex.Name + ".dds";
+                    byte[] dds = DDSIO.GetDDSFile(tex);
+                    File.WriteAllBytes(fpath, dds);
+                    successcount++;
+                }
+                catch
+                {
+                    errordds.Add(tex.Name ?? "???");
+                }
+            }
+
+            var sb = new StringBuilder();
+            if (successcount > 0)
+            {
+                sb.AppendLine(successcount.ToString() + " textures successfully exported.");
+            }
+            if (texturesMissing.Count > 0)
+            {
+                sb.AppendLine(texturesMissing.Count.ToString() + " textures weren't found!");
+            }
+            if (errordds.Count > 0)
+            {
+                sb.AppendLine(errordds.Count.ToString() + " textures couldn't be converted to .dds!");
+            }
+            if (sb.Length > 0)
+            {
+                MessageBox.Show(sb.ToString());
+            }
+            else
+            {
+                MessageBox.Show("No textures were found to export.");
+            }
+
+        }
+
+
+
+
+
+
 
 
 
@@ -1409,6 +2039,23 @@ namespace CodeWalker.Forms
             MouseDownPoint = e.Location;
             MouseLastPoint = MouseDownPoint;
 
+            if (MouseLButtonDown)
+            {
+                if (Widget.IsUnderMouse && !Input.kbmoving)
+                {
+                    GrabbedWidget = Widget;
+                    GrabbedWidget.IsDragging = true;
+                }
+            }
+            else
+            {
+                if (GrabbedWidget != null)
+                {
+                    GrabbedWidget.IsDragging = false;
+                    GrabbedWidget = null;
+                }
+            }
+
 
             if (MouseRButtonDown)
             {
@@ -1427,11 +2074,20 @@ namespace CodeWalker.Forms
                 case MouseButtons.Right: MouseRButtonDown = false; break;
             }
 
+            if (e.Button == MouseButtons.Left)
+            {
+                if (GrabbedWidget != null)
+                {
+                    GrabbedWidget.IsDragging = false;
+                    //GrabbedWidget.Position = SelectedItem.WidgetPosition;//in case of any snapping, make sure widget is in correct position at the end
+                    GrabbedWidget = null;
+                    lightForm.UpdateUI(); //do this so position and direction textboxes are updated after a drag
+                }
+            }
             //lock (MouseControlSyncRoot)
             //{
             //    MouseControlButtons &= ~e.Button;
             //}
-
         }
 
         private void ModelForm_MouseMove(object sender, MouseEventArgs e)
@@ -1446,7 +2102,10 @@ namespace CodeWalker.Forms
 
             if (MouseLButtonDown)
             {
-                camera.MouseRotate(dx, dy);
+                if (GrabbedWidget == null)
+                {
+                        camera.MouseRotate(dx, dy);
+                }
             }
             if (MouseRButtonDown)
             {
@@ -1894,89 +2553,14 @@ namespace CodeWalker.Forms
             StatusStrip.Visible = StatusBarCheckBox.Checked;
         }
 
-        private void TextureViewerButton_Click(object sender, EventArgs e)
+        private void SaveAllTexturesButton_Click(object sender, EventArgs e)
         {
-            TextureDictionary td = null;
-
-            if ((Ydr != null) && (Ydr.Loaded))
-            {
-                td = Ydr.Drawable?.ShaderGroup?.TextureDictionary;
-            }
-            else if ((Yft != null) && (Yft.Loaded))
-            {
-                td = Yft.Fragment?.Drawable?.ShaderGroup?.TextureDictionary;
-            }
-            else if ((Ypt != null) && (Ypt.Loaded))
-            {
-                td = Ypt?.PtfxList?.TextureDictionary;
-            }
-
-            if (td != null)
-            {
-                YtdForm f = new YtdForm();
-                f.Show();
-                f.LoadTexDict(td, fileName);
-                //f.LoadYtd(ytd);
-            }
-            else
-            {
-                MessageBox.Show("Couldn't find embedded texture dict.");
-            }
+            SaveAllTextures(true);
         }
 
-        private void MaterialEditorButton_Click(object sender, EventArgs e)
+        private void SaveSharedTexturesButton_Click(object sender, EventArgs e)
         {
-            DrawableBase drawable = null;
-            Dictionary<uint, Drawable> dict = null;
-
-
-            if ((Ydr != null) && (Ydr.Loaded))
-            {
-                drawable = Ydr.Drawable;
-            }
-            else if ((Ydd != null) && (Ydd.Loaded))
-            {
-                dict = Ydd.Dict;
-            }
-            else if ((Yft != null) && (Yft.Loaded))
-            {
-                drawable = Yft.Fragment?.Drawable;
-            }
-            else if ((Ypt != null) && (Ypt.Loaded))
-            {
-                //dict = Ypt.DrawableDict;
-            }
-            else
-            {
-                MessageBox.Show("Material editor not supported for the current file.");
-                return;
-            }
-
-            if (materialForm == null)
-            {
-                materialForm = new ModelMatForm(this);
-
-                if (drawable != null)
-                {
-                    materialForm.LoadModel(drawable);
-                }
-                else if (dict != null)
-                {
-                    materialForm.LoadModels(dict);
-                }
-
-                materialForm.Show(this);
-            }
-            else
-            {
-                if (materialForm.WindowState == FormWindowState.Minimized)
-                {
-                    materialForm.WindowState = FormWindowState.Normal;
-                }
-                materialForm.Focus();
-            }
-
-
+            SaveAllTextures(false);
         }
 
         private void SaveButton_ButtonClick(object sender, EventArgs e)
@@ -1994,6 +2578,16 @@ namespace CodeWalker.Forms
             Save(true);
         }
 
+        private void SaveAllTexturesMenuButton_Click(object sender, EventArgs e)
+        {
+            SaveAllTextures(true);
+        }
+
+        private void SaveSharedTexturesMenuButton_Click(object sender, EventArgs e)
+        {
+            SaveAllTextures(false);
+        }
+
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
         {
             LoadClipDict(ClipDictComboBox.Text);
@@ -2007,6 +2601,46 @@ namespace CodeWalker.Forms
         private void EnableRootMotionCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             EnableRootMotion = EnableRootMotionCheckBox.Checked;
+        }
+
+        private void DeferredShadingCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.shaders.deferred = DeferredShadingCheckBox.Checked;
+        }
+
+        private void HDLightsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Renderer.renderlights = HDLightsCheckBox.Checked;
+        }
+
+        private void ToolbarMaterialEditorButton_Click(object sender, EventArgs e)
+        {
+            ShowMaterialEditor();
+        }
+
+        private void ToolbarTextureEditorButton_Click(object sender, EventArgs e)
+        {
+            ShowTextureEditor();
+        }
+
+        private void ToolbarLightEditorButton_Click(object sender, EventArgs e)
+        {
+            ShowLightEditor();
+        }
+
+        private void ToolbarMoveButton_Click(object sender, EventArgs e)
+        {
+            SetWidgetMode(ToolbarMoveButton.Checked ? WidgetMode.Default : WidgetMode.Position);
+        }
+
+        private void ToolbarRotateButton_Click(object sender, EventArgs e)
+        {
+            SetWidgetMode(ToolbarRotateButton.Checked ? WidgetMode.Default : WidgetMode.Rotation);
+        }
+
+        private void ToolbarScaleButton_Click(object sender, EventArgs e)
+        {
+            SetWidgetMode(ToolbarScaleButton.Checked ? WidgetMode.Default : WidgetMode.Scale);
         }
     }
 }

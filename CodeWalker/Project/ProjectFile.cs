@@ -23,6 +23,10 @@ namespace CodeWalker.Project
         public List<string> TrainsFilenames { get; set; } = new List<string>();
         public List<string> ScenarioFilenames { get; set; } = new List<string>();
         public List<string> AudioRelFilenames { get; set; } = new List<string>();
+        public List<string> YdrFilenames { get; set; } = new List<string>();
+        public List<string> YddFilenames { get; set; } = new List<string>();
+        public List<string> YftFilenames { get; set; } = new List<string>();
+        public List<string> YtdFilenames { get; set; } = new List<string>();
 
         //fields not stored
         public string Filename { get; set; } //filename without path
@@ -37,6 +41,10 @@ namespace CodeWalker.Project
         public List<TrainTrack> TrainsFiles { get; set; } = new List<TrainTrack>();
         public List<YmtFile> ScenarioFiles { get; set; } = new List<YmtFile>();
         public List<RelFile> AudioRelFiles { get; set; } = new List<RelFile>();
+        public List<YdrFile> YdrFiles { get; set; } = new List<YdrFile>();
+        public List<YddFile> YddFiles { get; set; } = new List<YddFile>();
+        public List<YftFile> YftFiles { get; set; } = new List<YftFile>();
+        public List<YtdFile> YtdFiles { get; set; } = new List<YtdFile>();
 
 
 
@@ -95,6 +103,30 @@ namespace CodeWalker.Project
             foreach (string audiorelfilename in AudioRelFilenames)
             {
                 Xml.AddChildWithInnerText(doc, audiorelselem, "Item", audiorelfilename);
+            }
+
+            var ydrselem = Xml.AddChild(doc, projelem, "YdrFilenames");
+            foreach (string ydrfilename in YdrFilenames)
+            {
+                Xml.AddChildWithInnerText(doc, ydrselem, "Item", ydrfilename);
+            }
+
+            var yddselem = Xml.AddChild(doc, projelem, "YddFilenames");
+            foreach (string yddfilename in YddFilenames)
+            {
+                Xml.AddChildWithInnerText(doc, yddselem, "Item", yddfilename);
+            }
+
+            var yftselem = Xml.AddChild(doc, projelem, "YftFilenames");
+            foreach (string yftfilename in YftFilenames)
+            {
+                Xml.AddChildWithInnerText(doc, yftselem, "Item", yftfilename);
+            }
+
+            var ytdselem = Xml.AddChild(doc, projelem, "YtdFilenames");
+            foreach (string ytdfilename in YtdFilenames)
+            {
+                Xml.AddChildWithInnerText(doc, ytdselem, "Item", ytdfilename);
             }
 
             doc.Save(Filepath);
@@ -244,6 +276,70 @@ namespace CodeWalker.Project
                 }
             }
 
+
+            YdrFilenames.Clear();
+            YdrFiles.Clear();
+            var ydrselem = Xml.GetChild(projelem, "YdrFilenames");
+            if (ydrselem != null)
+            {
+                foreach (var node in ydrselem.SelectNodes("Item"))
+                {
+                    XmlElement ydrel = node as XmlElement;
+                    if (ydrel != null)
+                    {
+                        AddYdrFile(ydrel.InnerText);
+                    }
+                }
+            }
+
+
+            YddFilenames.Clear();
+            YddFiles.Clear();
+            var yddselem = Xml.GetChild(projelem, "YddFilenames");
+            if (yddselem != null)
+            {
+                foreach (var node in yddselem.SelectNodes("Item"))
+                {
+                    XmlElement yddel = node as XmlElement;
+                    if (yddel != null)
+                    {
+                        AddYddFile(yddel.InnerText);
+                    }
+                }
+            }
+
+
+            YftFilenames.Clear();
+            YftFiles.Clear();
+            var yftselem = Xml.GetChild(projelem, "YftFilenames");
+            if (yftselem != null)
+            {
+                foreach (var node in yftselem.SelectNodes("Item"))
+                {
+                    XmlElement yftel = node as XmlElement;
+                    if (yftel != null)
+                    {
+                        AddYftFile(yftel.InnerText);
+                    }
+                }
+            }
+
+
+            YtdFilenames.Clear();
+            YtdFiles.Clear();
+            var ytdselem = Xml.GetChild(projelem, "YtdFilenames");
+            if (ytdselem != null)
+            {
+                foreach (var node in ytdselem.SelectNodes("Item"))
+                {
+                    XmlElement ytdel = node as XmlElement;
+                    if (ytdel != null)
+                    {
+                        AddYtdFile(ytdel.InnerText);
+                    }
+                }
+            }
+
         }
 
 
@@ -280,6 +376,22 @@ namespace CodeWalker.Project
             for (int i = 0; i < AudioRelFilenames.Count; i++)
             {
                 AudioRelFilenames[i] = GetUpdatedFilePath(AudioRelFilenames[i], oldprojpath);
+            }
+            for (int i = 0; i < YdrFilenames.Count; i++)
+            {
+                YdrFilenames[i] = GetUpdatedFilePath(YdrFilenames[i], oldprojpath);
+            }
+            for (int i = 0; i < YddFilenames.Count; i++)
+            {
+                YddFilenames[i] = GetUpdatedFilePath(YddFilenames[i], oldprojpath);
+            }
+            for (int i = 0; i < YftFilenames.Count; i++)
+            {
+                YftFilenames[i] = GetUpdatedFilePath(YftFilenames[i], oldprojpath);
+            }
+            for (int i = 0; i < YtdFilenames.Count; i++)
+            {
+                YtdFilenames[i] = GetUpdatedFilePath(YtdFilenames[i], oldprojpath);
             }
         }
 
@@ -887,6 +999,273 @@ namespace CodeWalker.Project
             return false;
         }
 
+
+        public YdrFile AddYdrFile(string filename)
+        {
+            YdrFile ydr = new YdrFile();
+            ydr.RpfFileEntry = new RpfResourceFileEntry();
+            ydr.RpfFileEntry.Name = Path.GetFileName(filename);
+            ydr.FilePath = GetFullFilePath(filename);
+            ydr.Name = ydr.RpfFileEntry.Name;
+            if (!AddYdrFile(ydr)) return null;
+            return ydr;
+        }
+        public bool AddYdrFile(YdrFile ydr)
+        {
+            string relpath = GetRelativePath(ydr.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ydr.Name;
+            if (YdrFilenames.Contains(relpath)) return false;
+            YdrFilenames.Add(relpath);
+            YdrFiles.Add(ydr);
+            return true;
+        }
+        public void RemoveYdrFile(YdrFile ydr)
+        {
+            if (ydr == null) return;
+            var relpath = GetRelativePath(ydr.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ydr.Name;
+            YdrFiles.Remove(ydr);
+            YdrFilenames.Remove(relpath);
+            HasChanged = true;
+        }
+        public bool ContainsYdr(string filename)
+        {
+            bool found = false;
+            filename = filename.ToLowerInvariant();
+            foreach (var ydrfn in YdrFilenames)
+            {
+                if (ydrfn == filename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+        public bool ContainsYdr(YdrFile ydr)
+        {
+            foreach (var f in YdrFiles)
+            {
+                if (f == ydr) return true;
+            }
+            return false;
+        }
+        public bool RenameYdr(string oldfilename, string newfilename)
+        {
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
+            for (int i = 0; i < YdrFilenames.Count; i++)
+            {
+                if (YdrFilenames[i]?.ToLowerInvariant() == oldfilename)
+                {
+                    YdrFilenames[i] = newfilename;
+                    HasChanged = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        public YddFile AddYddFile(string filename)
+        {
+            YddFile ydd = new YddFile();
+            ydd.RpfFileEntry = new RpfResourceFileEntry();
+            ydd.RpfFileEntry.Name = Path.GetFileName(filename);
+            ydd.FilePath = GetFullFilePath(filename);
+            ydd.Name = ydd.RpfFileEntry.Name;
+            if (!AddYddFile(ydd)) return null;
+            return ydd;
+        }
+        public bool AddYddFile(YddFile ydd)
+        {
+            string relpath = GetRelativePath(ydd.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ydd.Name;
+            if (YddFilenames.Contains(relpath)) return false;
+            YddFilenames.Add(relpath);
+            YddFiles.Add(ydd);
+            return true;
+        }
+        public void RemoveYddFile(YddFile ydd)
+        {
+            if (ydd == null) return;
+            var relpath = GetRelativePath(ydd.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ydd.Name;
+            YddFiles.Remove(ydd);
+            YddFilenames.Remove(relpath);
+            HasChanged = true;
+        }
+        public bool ContainsYdd(string filename)
+        {
+            bool found = false;
+            filename = filename.ToLowerInvariant();
+            foreach (var yddfn in YddFilenames)
+            {
+                if (yddfn == filename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+        public bool ContainsYdd(YddFile ydd)
+        {
+            foreach (var f in YddFiles)
+            {
+                if (f == ydd) return true;
+            }
+            return false;
+        }
+        public bool RenameYdd(string oldfilename, string newfilename)
+        {
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
+            for (int i = 0; i < YddFilenames.Count; i++)
+            {
+                if (YddFilenames[i]?.ToLowerInvariant() == oldfilename)
+                {
+                    YddFilenames[i] = newfilename;
+                    HasChanged = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        public YftFile AddYftFile(string filename)
+        {
+            YftFile yft = new YftFile();
+            yft.RpfFileEntry = new RpfResourceFileEntry();
+            yft.RpfFileEntry.Name = Path.GetFileName(filename);
+            yft.FilePath = GetFullFilePath(filename);
+            yft.Name = yft.RpfFileEntry.Name;
+            if (!AddYftFile(yft)) return null;
+            return yft;
+        }
+        public bool AddYftFile(YftFile yft)
+        {
+            string relpath = GetRelativePath(yft.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = yft.Name;
+            if (YftFilenames.Contains(relpath)) return false;
+            YftFilenames.Add(relpath);
+            YftFiles.Add(yft);
+            return true;
+        }
+        public void RemoveYftFile(YftFile yft)
+        {
+            if (yft == null) return;
+            var relpath = GetRelativePath(yft.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = yft.Name;
+            YftFiles.Remove(yft);
+            YftFilenames.Remove(relpath);
+            HasChanged = true;
+        }
+        public bool ContainsYft(string filename)
+        {
+            bool found = false;
+            filename = filename.ToLowerInvariant();
+            foreach (var yftfn in YftFilenames)
+            {
+                if (yftfn == filename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+        public bool ContainsYft(YftFile yft)
+        {
+            foreach (var f in YftFiles)
+            {
+                if (f == yft) return true;
+            }
+            return false;
+        }
+        public bool RenameYft(string oldfilename, string newfilename)
+        {
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
+            for (int i = 0; i < YftFilenames.Count; i++)
+            {
+                if (YftFilenames[i]?.ToLowerInvariant() == oldfilename)
+                {
+                    YftFilenames[i] = newfilename;
+                    HasChanged = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        public YtdFile AddYtdFile(string filename)
+        {
+            YtdFile ytd = new YtdFile();
+            ytd.RpfFileEntry = new RpfResourceFileEntry();
+            ytd.RpfFileEntry.Name = Path.GetFileName(filename);
+            ytd.FilePath = GetFullFilePath(filename);
+            ytd.Name = ytd.RpfFileEntry.Name;
+            if (!AddYtdFile(ytd)) return null;
+            return ytd;
+        }
+        public bool AddYtdFile(YtdFile ytd)
+        {
+            string relpath = GetRelativePath(ytd.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ytd.Name;
+            if (YtdFilenames.Contains(relpath)) return false;
+            YtdFilenames.Add(relpath);
+            YtdFiles.Add(ytd);
+            return true;
+        }
+        public void RemoveYtdFile(YtdFile ytd)
+        {
+            if (ytd == null) return;
+            var relpath = GetRelativePath(ytd.FilePath);
+            if (string.IsNullOrEmpty(relpath)) relpath = ytd.Name;
+            YtdFiles.Remove(ytd);
+            YtdFilenames.Remove(relpath);
+            HasChanged = true;
+        }
+        public bool ContainsYtd(string filename)
+        {
+            bool found = false;
+            filename = filename.ToLowerInvariant();
+            foreach (var ytdfn in YtdFilenames)
+            {
+                if (ytdfn == filename)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            return found;
+        }
+        public bool ContainsYtd(YtdFile ytd)
+        {
+            foreach (var f in YtdFiles)
+            {
+                if (f == ytd) return true;
+            }
+            return false;
+        }
+        public bool RenameYtd(string oldfilename, string newfilename)
+        {
+            oldfilename = oldfilename.ToLowerInvariant();
+            newfilename = newfilename.ToLowerInvariant();
+            for (int i = 0; i < YtdFilenames.Count; i++)
+            {
+                if (YtdFilenames[i]?.ToLowerInvariant() == oldfilename)
+                {
+                    YtdFilenames[i] = newfilename;
+                    HasChanged = true;
+                    return true;
+                }
+            }
+            return false;
+        }
 
     }
 }

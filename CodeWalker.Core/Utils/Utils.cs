@@ -123,7 +123,7 @@ namespace CodeWalker
         public static string ToString(float f)
         {
             var c = CultureInfo.InvariantCulture;
-            return f.ToString(c);
+            return f.ToString("G9", c);
         }
 
 

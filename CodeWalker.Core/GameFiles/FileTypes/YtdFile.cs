@@ -23,9 +23,18 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void Load(byte[] data)
+        {
+            //direct load from a raw, compressed ytd file
+
+            RpfFile.LoadResourceFile(this, data, 13);
+
+            Loaded = true;
+        }
         public void Load(byte[] data, RpfFileEntry entry)
         {
             Name = entry.Name;
+            RpfFileEntry = entry;
 
 
             RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;

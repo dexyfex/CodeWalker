@@ -325,20 +325,25 @@ namespace CodeWalker.Rendering
             }
             if (lights != null)
             {
-                var rlights = new RenderableLight[lights.Length];
-                for (int i = 0; i < lights.Length; i++)
-                {
-                    var rlight = new RenderableLight();
-                    rlight.Owner = this;
-                    rlight.Init(ref lights[i]);
-                    rlights[i] = rlight;
-                }
-                Lights = rlights;
+                InitLights(lights);
             }
 
 
             UpdateBoneTransforms();
 
+        }
+
+        public void InitLights(LightAttributes[] lights)
+        {
+            var rlights = new RenderableLight[lights.Length];
+            for (int i = 0; i < lights.Length; i++)
+            {
+                var rlight = new RenderableLight();
+                rlight.Owner = this;
+                rlight.Init(lights[i]);
+                rlights[i] = rlight;
+            }
+            Lights = rlights;
         }
 
         private RenderableModel InitModel(DrawableModel dm)
@@ -1353,7 +1358,9 @@ namespace CodeWalker.Rendering
 
     public class RenderableLight
     {
+        public LightAttributes OwnerLight;
         public Renderable Owner;
+        public Bone Bone;
         public Vector3 Position;
         public Vector3 Colour;
         public Vector3 Direction;
@@ -1371,19 +1378,14 @@ namespace CodeWalker.Rendering
         public uint TimeFlags;
         public MetaHash TextureHash;
 
-        public void Init(ref LightAttributes_s l)
+        public void Init(LightAttributes l)
         {
+            OwnerLight = l;
             var pos = l.Position;
             var dir = l.Direction;
             var tan = l.Tangent;
             var bones = Owner?.Skeleton?.BonesMap;
-            if ((bones != null) && (bones.TryGetValue(l.BoneId, out Bone bone)))
-            {
-                var xform = bone.AbsTransform;
-                pos = xform.Multiply(pos);
-                dir = xform.MultiplyRot(dir);
-                tan = xform.MultiplyRot(tan);
-            }
+            bones?.TryGetValue(l.BoneId, out Bone);
             Position = pos;
             Colour = new Vector3(l.ColorR, l.ColorG, l.ColorB) * (2.0f * l.Intensity  / 255.0f);
             Direction = dir;

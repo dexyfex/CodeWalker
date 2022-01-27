@@ -194,7 +194,7 @@ namespace CodeWalker
 
             d.BuildRenderMasks();
 
-            d.LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
+            d.LightAttributes = new ResourceSimpleList64<LightAttributes>();
             //todo: light attributes?
 
 

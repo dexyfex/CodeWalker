@@ -86,7 +86,7 @@ namespace CodeWalker.GameFiles
         public ulong DrawableClothPointer { get; set; }
         public ulong Unknown_100h; // 0x0000000000000000
         public ulong Unknown_108h; // 0x0000000000000000
-        public ResourceSimpleList64_s<LightAttributes_s> LightAttributes { get; set; }
+        public ResourceSimpleList64<LightAttributes> LightAttributes { get; set; }
         public ulong VehicleGlassWindowsPointer { get; set; }
         public ulong Unknown_128h; // 0x0000000000000000
 
@@ -155,7 +155,7 @@ namespace CodeWalker.GameFiles
             this.DrawableClothPointer = reader.ReadUInt64();
             this.Unknown_100h = reader.ReadUInt64();
             this.Unknown_108h = reader.ReadUInt64();
-            this.LightAttributes = reader.ReadBlock<ResourceSimpleList64_s<LightAttributes_s>>();
+            this.LightAttributes = reader.ReadBlock<ResourceSimpleList64<LightAttributes>>();
             this.VehicleGlassWindowsPointer = reader.ReadUInt64();
             this.Unknown_128h = reader.ReadUInt64();
 
@@ -510,8 +510,8 @@ namespace CodeWalker.GameFiles
                 GlassWindows = new ResourcePointerArray64<FragGlassWindow>();
                 GlassWindows.data_items = gwinds;
             }
-            LightAttributes = new ResourceSimpleList64_s<LightAttributes_s>();
-            LightAttributes.data_items = XmlMeta.ReadItemArray<LightAttributes_s>(node, "Lights");
+            LightAttributes = new ResourceSimpleList64<LightAttributes>();
+            LightAttributes.data_items = XmlMeta.ReadItemArray<LightAttributes>(node, "Lights");
             Cloths = new ResourcePointerList64<EnvironmentCloth>();
             var cnode = node.SelectSingleNode("Cloths");
             if (cnode != null)
@@ -949,7 +949,10 @@ namespace CodeWalker.GameFiles
 
             base.WriteXml(sb, indent, ddsfolder);
 
-            Bounds.WriteXmlNode(Bound, sb, indent);
+            if (Bound != null)
+            {
+                Bounds.WriteXmlNode(Bound, sb, indent);
+            }
 
             Skeleton = skel;
             Bound = bnds;

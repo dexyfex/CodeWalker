@@ -319,32 +319,35 @@ namespace CodeWalker.World
                         {
                             chainedges.Clear();
 
-                            foreach (var edgeId in chain.EdgeIds)
+                            if (chain.EdgeIds != null)
                             {
-                                if (edgeId >= rpe.Length)
-                                { continue; }
-                                var edge = rpe[edgeId];
+                                foreach (var edgeId in chain.EdgeIds)
+                                {
+                                    if (edgeId >= rpe.Length)
+                                    { continue; }
+                                    var edge = rpe[edgeId];
 
-                                if (edge.NodeIndexFrom >= rpn.Length)
-                                { continue; }
-                                if (edge.NodeIndexTo >= rpn.Length)
-                                { continue; }
+                                    if (edge.NodeIndexFrom >= rpn.Length)
+                                    { continue; }
+                                    if (edge.NodeIndexTo >= rpn.Length)
+                                    { continue; }
 
-                                edge.NodeFrom = rpn[edge.NodeIndexFrom];
-                                edge.NodeTo = rpn[edge.NodeIndexTo];
+                                    edge.NodeFrom = rpn[edge.NodeIndexFrom];
+                                    edge.NodeTo = rpn[edge.NodeIndexTo];
 
-                                var nfc = edge.NodeFrom?.Chain;
-                                var ntc = edge.NodeTo?.Chain;
+                                    var nfc = edge.NodeFrom?.Chain;
+                                    var ntc = edge.NodeTo?.Chain;
 
-                                if ((nfc != null) && (nfc != chain))
-                                { }
-                                if ((ntc != null) && (ntc != chain))
-                                { }
+                                    if ((nfc != null) && (nfc != chain))
+                                    { }
+                                    if ((ntc != null) && (ntc != chain))
+                                    { }
 
-                                if (edge.NodeFrom != null) edge.NodeFrom.Chain = chain;
-                                if (edge.NodeTo != null) edge.NodeTo.Chain = chain;
+                                    if (edge.NodeFrom != null) edge.NodeFrom.Chain = chain;
+                                    if (edge.NodeTo != null) edge.NodeTo.Chain = chain;
 
-                                chainedges.Add(edge);
+                                    chainedges.Add(edge);
+                                }
                             }
 
                             chain.Edges = chainedges.ToArray();

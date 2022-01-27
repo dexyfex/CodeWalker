@@ -69,8 +69,10 @@
             this.ViewThemeDarkMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsBinSearchMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsAudioExplorerMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsRpfBrowserMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsJenkGenMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsJenkIndMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsStartInEditModeMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsStartInFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -124,6 +126,8 @@
             this.ListContextNewMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextNewFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextNewRpfArchiveMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.ListContextNewYtdFileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportFbxMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportRawMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -154,7 +158,6 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
-            this.ToolsJenkIndMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -492,6 +495,7 @@
             // 
             this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ToolsBinSearchMenu,
+            this.ToolsAudioExplorerMenu,
             this.ToolsRpfBrowserMenu,
             this.ToolsJenkGenMenu,
             this.ToolsJenkIndMenu});
@@ -506,6 +510,13 @@
             this.ToolsBinSearchMenu.Text = "Binary Search...";
             this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
             // 
+            // ToolsAudioExplorerMenu
+            // 
+            this.ToolsAudioExplorerMenu.Name = "ToolsAudioExplorerMenu";
+            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsAudioExplorerMenu.Text = "Audio Explorer";
+            this.ToolsAudioExplorerMenu.Click += new System.EventHandler(this.ToolsAudioExplorerMenu_Click);
+            // 
             // ToolsRpfBrowserMenu
             // 
             this.ToolsRpfBrowserMenu.Name = "ToolsRpfBrowserMenu";
@@ -519,6 +530,13 @@
             this.ToolsJenkGenMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsJenkGenMenu.Text = "JenkGen";
             this.ToolsJenkGenMenu.Click += new System.EventHandler(this.ToolsJenkGenMenu_Click);
+            // 
+            // ToolsJenkIndMenu
+            // 
+            this.ToolsJenkIndMenu.Name = "ToolsJenkIndMenu";
+            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsJenkIndMenu.Text = "JenkInd";
+            this.ToolsJenkIndMenu.Click += new System.EventHandler(this.ToolsJenkIndMenu_Click);
             // 
             // OptionsMenu
             // 
@@ -1059,7 +1077,9 @@
             // 
             this.ListContextNewMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ListContextNewFolderMenu,
-            this.ListContextNewRpfArchiveMenu});
+            this.ListContextNewRpfArchiveMenu,
+            this.toolStripSeparator13,
+            this.ListContextNewYtdFileMenu});
             this.ListContextNewMenu.Name = "ListContextNewMenu";
             this.ListContextNewMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextNewMenu.Text = "New";
@@ -1077,6 +1097,18 @@
             this.ListContextNewRpfArchiveMenu.Size = new System.Drawing.Size(146, 22);
             this.ListContextNewRpfArchiveMenu.Text = "RPF Archive...";
             this.ListContextNewRpfArchiveMenu.Click += new System.EventHandler(this.ListContextNewRpfArchiveMenu_Click);
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(143, 6);
+            // 
+            // ListContextNewYtdFileMenu
+            // 
+            this.ListContextNewYtdFileMenu.Name = "ListContextNewYtdFileMenu";
+            this.ListContextNewYtdFileMenu.Size = new System.Drawing.Size(146, 22);
+            this.ListContextNewYtdFileMenu.Text = "YTD File...";
+            this.ListContextNewYtdFileMenu.Click += new System.EventHandler(this.ListContextNewYtdFileMenu_Click);
             // 
             // ListContextImportFbxMenu
             // 
@@ -1276,13 +1308,6 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
-            // ToolsJenkIndMenu
-            // 
-            this.ToolsJenkIndMenu.Name = "ToolsJenkIndMenu";
-            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(180, 22);
-            this.ToolsJenkIndMenu.Text = "JenkInd";
-            this.ToolsJenkIndMenu.Click += new System.EventHandler(this.ToolsJenkIndMenu_Click);
-            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1448,5 +1473,8 @@
         private System.Windows.Forms.ToolStripMenuItem EditPasteMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsJenkGenMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsJenkIndMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripMenuItem ListContextNewYtdFileMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolsAudioExplorerMenu;
     }
 }

@@ -268,6 +268,7 @@ namespace CodeWalker
             InitFileType(".ini", "Config Text", 5, FileTypeAction.ViewText);
             InitFileType(".vdf", "Steam Script File", 5, FileTypeAction.ViewText);
             InitFileType(".sps", "Shader Preset", 5, FileTypeAction.ViewText);
+            InitFileType(".ugc", "User-Generated Content", 5, FileTypeAction.ViewText);
             InitFileType(".xml", "XML File", 6, FileTypeAction.ViewXml);
             InitFileType(".meta", "Metadata (XML)", 6, FileTypeAction.ViewXml);
             InitFileType(".ymt", "Metadata (Binary)", 6, FileTypeAction.ViewYmt, true);
@@ -1608,7 +1609,7 @@ namespace CodeWalker
         private void ViewYtd(string name, string path, byte[] data, RpfFileEntry e)
         {
             var ytd = RpfFile.GetFile<YtdFile>(e, data);
-            YtdForm f = new YtdForm();
+            YtdForm f = new YtdForm(this);
             f.Show();
             f.LoadYtd(ytd);
         }
@@ -2382,46 +2383,79 @@ namespace CodeWalker
             {
                 return;//no name was provided.
             }
-            if (!IsFilenameOk(fname)) return; //new name contains invalid char(s). don't do anything
 
-
-            string cpath = (string.IsNullOrEmpty(CurrentFolder.Path) ? "" : CurrentFolder.Path + "\\");
-            string relpath = cpath + fname.ToLowerInvariant();
-            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
-            string fullpath = rootpath + relpath;
+            var fnames = fname.Split(new[] { '/', '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
             RpfDirectoryEntry newdir = null;
             MainTreeFolder node = null;
+            MainTreeFolder cnode = null;
+            string cpath = (string.IsNullOrEmpty(CurrentFolder.Path) ? "" : CurrentFolder.Path + "\\");
+            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
+            var csubpath = "";
 
-            try
+            foreach (var name in fnames)
             {
-                if (CurrentFolder.RpfFolder != null)
+                if (!IsFilenameOk(name)) break; //new name contains invalid char(s). don't continue
+
+                csubpath += name;
+
+                string relpath = cpath + csubpath.ToLowerInvariant();
+                string fullpath = rootpath + relpath;
+
+                try
                 {
-                    if (!EnsureRpfValidEncryption()) return;
-
-                    //create new directory entry in the RPF.
-
-                    newdir = RpfFile.CreateDirectory(CurrentFolder.RpfFolder, fname);
-
-                    node = CreateRpfDirTreeFolder(newdir, relpath, fullpath);
-                }
-                else
-                {
-                    //create a folder in the filesystem.
-                    if (Directory.Exists(fullpath))
+                    if (CurrentFolder.RpfFolder != null)
                     {
-                        throw new Exception("Folder " + fullpath + " already exists!");
-                    }
-                    Directory.CreateDirectory(fullpath);
+                        if (!EnsureRpfValidEncryption()) return;
 
-                    node = CreateRootDirTreeFolder(fname, relpath, fullpath);
+                        //create new directory entry in the RPF.
+
+                        newdir = RpfFile.CreateDirectory(newdir ?? CurrentFolder.RpfFolder, name);
+
+                        var newnode = CreateRpfDirTreeFolder(newdir, relpath, fullpath);
+
+                        if (node == null)
+                        {
+                            node = newnode;
+                            cnode = newnode;
+                        }
+                        else
+                        {
+                            cnode.AddChild(newnode);
+                            cnode = newnode;
+                        }
+                    }
+                    else
+                    {
+                        //create a folder in the filesystem.
+                        if (Directory.Exists(fullpath))
+                        {
+                            throw new Exception("Folder " + fullpath + " already exists!");
+                        }
+                        Directory.CreateDirectory(fullpath);
+
+                        var newnode = CreateRootDirTreeFolder(name, relpath, fullpath);
+                        if (node == null)
+                        {
+                            node = newnode;
+                            cnode = newnode;
+                        }
+                        else
+                        {
+                            cnode.AddChild(newnode);
+                            cnode = newnode;
+                        }
+                    }
                 }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error creating new folder: " + ex.Message, "Unable to create new folder");
+                    return;
+                }
+
+                csubpath += "\\";
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error creating new folder: " + ex.Message, "Unable to create new folder");
-                return;
-            }
+
 
             if (node != null)
             {
@@ -2482,6 +2516,42 @@ namespace CodeWalker
                 AddNewFolderTreeNode(node);
             }
 
+        }
+        private void NewYtdFile()
+        {
+            if (CurrentFolder == null) return;//shouldn't happen
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+            string fname = Prompt.ShowDialog(this, "Enter a name for the new YTD file:", "Create YTD (Texture Dictionary)", "new");
+            if (string.IsNullOrEmpty(fname))
+            {
+                return;//no name was provided.
+            }
+            if (!IsFilenameOk(fname)) return; //new name contains invalid char(s). don't do anything
+
+            if (!fname.ToLowerInvariant().EndsWith(".ytd"))
+            {
+                fname = fname + ".ytd";//make sure it ends with .ytd
+            }
+
+            var ytd = new YtdFile();
+            ytd.TextureDict = new TextureDictionary();
+            ytd.TextureDict.Textures = new ResourcePointerList64<Texture>();
+            ytd.TextureDict.TextureNameHashes = new ResourceSimpleList64_uint();
+            var data = ytd.Save();
+
+            if (CurrentFolder.RpfFolder != null) //create in RPF archive
+            {
+                RpfFile.CreateFile(CurrentFolder.RpfFolder, fname, data);
+            }
+            else //create in filesystem
+            {
+                var outfpath = Path.Combine(CurrentFolder.FullPath, fname);
+                File.WriteAllBytes(outfpath, data);
+                CurrentFolder.EnsureFile(outfpath);
+            }
+
+            RefreshMainListView();
         }
         private void ImportFbx()
         {
@@ -4095,6 +4165,11 @@ namespace CodeWalker
             NewRpfArchive();
         }
 
+        private void ListContextNewYtdFileMenu_Click(object sender, EventArgs e)
+        {
+            NewYtdFile();
+        }
+
         private void ListContextImportFbxMenu_Click(object sender, EventArgs e)
         {
             ImportFbx();
@@ -4288,7 +4363,13 @@ namespace CodeWalker
 
         private void ToolsBinSearchMenu_Click(object sender, EventArgs e)
         {
-            BinarySearchForm f = new BinarySearchForm(FileCache);
+            BinarySearchForm f = new BinarySearchForm(GetFileCache());
+            f.Show(this);
+        }
+
+        private void ToolsAudioExplorerMenu_Click(object sender, EventArgs e)
+        {
+            AudioExplorerForm f = new AudioExplorerForm(GetFileCache());
             f.Show(this);
         }
 
@@ -4300,7 +4381,7 @@ namespace CodeWalker
 
         private void ToolsJenkIndMenu_Click(object sender, EventArgs e)
         {
-            JenkIndForm f = new JenkIndForm(FileCache);
+            JenkIndForm f = new JenkIndForm(GetFileCache());
             f.Show(this);
         }
 

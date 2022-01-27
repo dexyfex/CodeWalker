@@ -315,7 +315,7 @@ namespace CodeWalker.GameFiles
                     YmapEntityDef d = alldefs[i];
                     int pind = d._CEntityDef.parentIndex;
                     bool isroot = false;
-                    if ((pind < 0) || (pind >= alldefs.Count) || (pind >= i)) //index check? might be a problem
+                    if ((pind < 0) || d.LodInParentYmap)
                     {
                         isroot = true;
                     }
@@ -912,7 +912,7 @@ namespace CodeWalker.GameFiles
                                     }
                                     //pind = 0;
                                 }
-                                if ((pind >= 0) && (pind < AllEntities.Length))
+                                if ((pind >= 0) && (pind < AllEntities.Length) && rcent.LodInParentYmap)
                                 {
                                     var pentity = AllEntities[pind];
                                     pentity.AddChild(rcent);
@@ -1718,6 +1718,8 @@ namespace CodeWalker.GameFiles
         public LightInstance[] Lights { get; set; }
         //public uint[] LightHashTest { get; set; }
 
+        public bool LodInParentYmap { get { return ((_CEntityDef.flags >> 3) & 1) > 0; } }
+
 
         public string Name
         {
@@ -2118,7 +2120,7 @@ namespace CodeWalker.GameFiles
             var dd = db as Drawable;
             var fd = db as FragDrawable;
             var skel = db.Skeleton;
-            LightAttributes_s[] lightAttrs = null;
+            LightAttributes[] lightAttrs = null;
             Bounds b = null;
             if (dd != null)
             {
@@ -2246,7 +2248,7 @@ namespace CodeWalker.GameFiles
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public class LightInstance
         {
-            public LightAttributes_s Attributes { get; set; } //just for display purposes!
+            public LightAttributes Attributes { get; set; } //just for display purposes!
             public uint Hash { get; set; }
             public Vector3 Position { get; set; }
             public Vector3 Direction { get; set; }

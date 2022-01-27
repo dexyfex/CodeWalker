@@ -70,9 +70,9 @@
             this.label4 = new System.Windows.Forms.Label();
             this.Unk01TextBox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.Hash2TextBox = new System.Windows.Forms.TextBox();
+            this.CategoryTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.Hash1TextBox = new System.Windows.Forms.TextBox();
+            this.ChildSoundTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.InnerRadTextBox = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
@@ -160,9 +160,9 @@
             this.tabPage1.Controls.Add(this.label4);
             this.tabPage1.Controls.Add(this.Unk01TextBox);
             this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.Hash2TextBox);
+            this.tabPage1.Controls.Add(this.CategoryTextBox);
             this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.Hash1TextBox);
+            this.tabPage1.Controls.Add(this.ChildSoundTextBox);
             this.tabPage1.Controls.Add(this.label1);
             this.tabPage1.Controls.Add(this.InnerRadTextBox);
             this.tabPage1.Controls.Add(this.label16);
@@ -574,15 +574,15 @@
             this.label3.TabIndex = 39;
             this.label3.Text = "Hash 2:";
             // 
-            // Hash2TextBox
+            // CategoryTextBox
             // 
-            this.Hash2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.CategoryTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Hash2TextBox.Location = new System.Drawing.Point(84, 127);
-            this.Hash2TextBox.Name = "Hash2TextBox";
-            this.Hash2TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Hash2TextBox.TabIndex = 40;
-            this.Hash2TextBox.TextChanged += new System.EventHandler(this.Hash2TextBox_TextChanged);
+            this.CategoryTextBox.Location = new System.Drawing.Point(84, 127);
+            this.CategoryTextBox.Name = "CategoryTextBox";
+            this.CategoryTextBox.Size = new System.Drawing.Size(237, 20);
+            this.CategoryTextBox.TabIndex = 40;
+            this.CategoryTextBox.TextChanged += new System.EventHandler(this.CategoryTextBox_TextChanged);
             // 
             // label2
             // 
@@ -593,15 +593,15 @@
             this.label2.TabIndex = 37;
             this.label2.Text = "Hash 1:";
             // 
-            // Hash1TextBox
+            // ChildSoundTextBox
             // 
-            this.Hash1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ChildSoundTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Hash1TextBox.Location = new System.Drawing.Point(84, 103);
-            this.Hash1TextBox.Name = "Hash1TextBox";
-            this.Hash1TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Hash1TextBox.TabIndex = 38;
-            this.Hash1TextBox.TextChanged += new System.EventHandler(this.Hash1TextBox_TextChanged);
+            this.ChildSoundTextBox.Location = new System.Drawing.Point(84, 103);
+            this.ChildSoundTextBox.Name = "ChildSoundTextBox";
+            this.ChildSoundTextBox.Size = new System.Drawing.Size(237, 20);
+            this.ChildSoundTextBox.TabIndex = 38;
+            this.ChildSoundTextBox.TextChanged += new System.EventHandler(this.ChildSoundTextBox_TextChanged);
             // 
             // label1
             // 
@@ -722,9 +722,9 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox Unk01TextBox;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox Hash2TextBox;
+        private System.Windows.Forms.TextBox CategoryTextBox;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox Hash1TextBox;
+        private System.Windows.Forms.TextBox ChildSoundTextBox;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox InnerRadTextBox;
         private System.Windows.Forms.Label label16;

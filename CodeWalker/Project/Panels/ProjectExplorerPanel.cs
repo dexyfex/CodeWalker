@@ -216,6 +216,90 @@ namespace CodeWalker.Project.Panels
                 audiorelsnode.Expand();
             }
 
+            if (CurrentProjectFile.YdrFiles.Count > 0)
+            {
+                var ydrsnode = projnode.Nodes.Add("Ydr Files");
+                ydrsnode.Name = "Ydr";
+
+                foreach (var ydrfile in CurrentProjectFile.YdrFiles)
+                {
+                    var ycstr = "";// ydrfile.HasChanged ? "*" : "";
+                    string name = ydrfile.Name;
+                    if (ydrfile.RpfFileEntry != null)
+                    {
+                        name = ydrfile.RpfFileEntry.Name;
+                    }
+                    var ydrnode = ydrsnode.Nodes.Add(ycstr + name);
+                    ydrnode.Tag = ydrfile;
+
+                    //LoadYdrTreeNodes(ydrfile, ydrnode);
+                }
+                ydrsnode.Expand();
+            }
+
+            if (CurrentProjectFile.YddFiles.Count > 0)
+            {
+                var yddsnode = projnode.Nodes.Add("Ydd Files");
+                yddsnode.Name = "Ydd";
+
+                foreach (var yddfile in CurrentProjectFile.YddFiles)
+                {
+                    var ycstr = "";// yddfile.HasChanged ? "*" : "";
+                    string name = yddfile.Name;
+                    if (yddfile.RpfFileEntry != null)
+                    {
+                        name = yddfile.RpfFileEntry.Name;
+                    }
+                    var yddnode = yddsnode.Nodes.Add(ycstr + name);
+                    yddnode.Tag = yddfile;
+
+                    //LoadYddTreeNodes(yddfile, yddnode);
+                }
+                yddsnode.Expand();
+            }
+
+            if (CurrentProjectFile.YftFiles.Count > 0)
+            {
+                var yftsnode = projnode.Nodes.Add("Yft Files");
+                yftsnode.Name = "Yft";
+
+                foreach (var yftfile in CurrentProjectFile.YftFiles)
+                {
+                    var ycstr = "";// yftfile.HasChanged ? "*" : "";
+                    string name = yftfile.Name;
+                    if (yftfile.RpfFileEntry != null)
+                    {
+                        name = yftfile.RpfFileEntry.Name;
+                    }
+                    var yftnode = yftsnode.Nodes.Add(ycstr + name);
+                    yftnode.Tag = yftfile;
+
+                    //LoadYftTreeNodes(yftfile, yftnode);
+                }
+                yftsnode.Expand();
+            }
+
+            if (CurrentProjectFile.YtdFiles.Count > 0)
+            {
+                var ytdsnode = projnode.Nodes.Add("Ytd Files");
+                ytdsnode.Name = "Ytd";
+
+                foreach (var ytdfile in CurrentProjectFile.YtdFiles)
+                {
+                    var ycstr = "";// ytdfile.HasChanged ? "*" : "";
+                    string name = ytdfile.Name;
+                    if (ytdfile.RpfFileEntry != null)
+                    {
+                        name = ytdfile.RpfFileEntry.Name;
+                    }
+                    var ytdnode = ytdsnode.Nodes.Add(ycstr + name);
+                    ytdnode.Tag = ytdfile;
+
+                    //LoadYtdTreeNodes(ytdfile, ytdnode);
+                }
+                ytdsnode.Expand();
+            }
+
             projnode.Expand();
 
         }

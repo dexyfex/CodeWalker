@@ -121,15 +121,14 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="FileSaveAsMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="FileSaveMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABUSURBVDhPY/j//z9FGEx8+/btPwn4PRAbMAABigFOTk5w
-        /OH9RzhGFgPRbW1tcEPIMgCEYYaQbQAIg/QQZQAyRlZDWwOIwaMGDEoDyMFwA8jH/xkAuAOq5KQIy40A
-        AAAASUVORK5CYII=
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        xAAADsQBlSsOGwAAAFRJREFUOE9j+P//P0UYTHz79u0/Cfg9EBswAAGKAU5OTnD84f1HOEYWA9FtbW1w
+        Q8gyAIRhhpBtAAiD9BBlADJGVkNbA4jBowYMSgPIwXADyMf/GQC4A6rkpAjLjQAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="FileSaveAllMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="FileSaveAllTexturesMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
         wwAADsMBx2+oZAAAAHZJREFUOE/tkLENwCAMBBkpMzCcF2IwgmTRJnpiSyhgQ5EyLx128VzhYKXWejlk
@@ -161,15 +160,14 @@
         K0QAIeQTi/cp4B9tCZE2c6oRhQAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="ToolbarSaveAsMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="ToolbarSaveMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABUSURBVDhPY/j//z9FGEx8+/btPwn4PRAbMAABigFOTk5w
-        /OH9RzhGFgPRbW1tcEPIMgCEYYaQbQAIg/QQZQAyRlZDWwOIwaMGDEoDyMFwA8jH/xkAuAOq5KQIy40A
-        AAAASUVORK5CYII=
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
+        xAAADsQBlSsOGwAAAFRJREFUOE9j+P//P0UYTHz79u0/Cfg9EBswAAGKAU5OTnD84f1HOEYWA9FtbW1w
+        Q8gyAIRhhpBtAAiD9BBlADJGVkNbA4jBowYMSgPIwXADyMf/GQC4A6rkpAjLjQAAAABJRU5ErkJggg==
 </value>
   </data>
-  <data name="ToolbarSaveAllMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+  <data name="ToolbarSaveAllTexturesMenu.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
         wwAADsMBx2+oZAAAAHZJREFUOE/tkLENwCAMBBkpMzCcF2IwgmTRJnpiSyhgQ5EyLx128VzhYKXWejlk
@@ -212,11 +210,17 @@
         +6sAAAAASUVORK5CYII=
 </value>
   </data>
-  <metadata name="SaveFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+  <metadata name="SaveDDSFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>358, 17</value>
   </metadata>
   <metadata name="FolderBrowserDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>489, 17</value>
+  </metadata>
+  <metadata name="OpenDDSFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>654, 17</value>
+  </metadata>
+  <metadata name="SaveYTDFileDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>813, 17</value>
   </metadata>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

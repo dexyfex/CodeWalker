@@ -948,7 +948,7 @@ namespace CodeWalker
             if (!audiozones.Inited) return;
 
             renderaudfilelist.Clear();
-            renderaudfilelist.AddRange(audiozones.AllFiles);
+            renderaudfilelist.AddRange(GameFileCache.AudioDatRelFiles);
 
             if (ProjectForm != null)
             {
@@ -958,12 +958,6 @@ namespace CodeWalker
             renderaudplacementslist.Clear();
             audiozones.GetPlacements(renderaudfilelist, renderaudplacementslist);
 
-
-            //RenderablePathBatch rnd = renderableCache.GetRenderablePathBatch(audiozones);
-            //if ((rnd != null) && (rnd.IsLoaded))
-            //{
-            //    shaders.Enqueue(rnd);
-            //}
 
 
             BoundingBox bbox = new BoundingBox();
@@ -4847,6 +4841,7 @@ namespace CodeWalker
                     ToolbarProjectWindowButton.Enabled = true;
                     ToolsMenuProjectWindow.Enabled = true;
                     ToolsMenuCutsceneViewer.Enabled = true;
+                    ToolsMenuAudioExplorer.Enabled = true;
                     ToolsMenuBinarySearch.Enabled = true;
                     ToolsMenuJenkInd.Enabled = true;
                 }
@@ -4999,11 +4994,6 @@ namespace CodeWalker
             ShowProjectForm();
             ProjectForm.NewYnd();
         }
-        private void NewYnv()
-        {
-            ShowProjectForm();
-            ProjectForm.NewYnv();
-        }
         private void NewTrainTrack()
         {
             ShowProjectForm();
@@ -5014,18 +5004,13 @@ namespace CodeWalker
             ShowProjectForm();
             ProjectForm.NewScenario();
         }
-        private void NewAudioRel()
-        {
-            ShowProjectForm();
-            ProjectForm.NewAudioFile();
-        }
         private void Open()
         {
             ShowProjectForm();
 
             if (ProjectForm.IsProjectLoaded)
             {
-                ProjectForm.OpenYmap();
+                ProjectForm.OpenFiles();
             }
             else
             {
@@ -5037,45 +5022,15 @@ namespace CodeWalker
             ShowProjectForm();
             ProjectForm.OpenProject();
         }
-        private void OpenYmap()
+        private void OpenFiles()
         {
             ShowProjectForm();
-            ProjectForm.OpenYmap();
+            ProjectForm.OpenFiles();
         }
-        private void OpenYtyp()
+        private void OpenFolder()
         {
             ShowProjectForm();
-            ProjectForm.OpenYtyp();
-        }
-        private void OpenYbn()
-        {
-            ShowProjectForm();
-            ProjectForm.OpenYbn();
-        }
-        private void OpenYnd()
-        {
-            ShowProjectForm();
-            ProjectForm.OpenYnd();
-        }
-        private void OpenYnv()
-        {
-            ShowProjectForm();
-            ProjectForm.OpenYnv();
-        }
-        private void OpenTrainTrack()
-        {
-            ShowProjectForm();
-            ProjectForm.OpenTrainTrack();
-        }
-        private void OpenScenario()
-        {
-            ShowProjectForm();
-            ProjectForm.OpenScenario();
-        }
-        private void OpenAudioRel()
-        {
-            ShowProjectForm();
-            ProjectForm.OpenAudioFile();
+            ProjectForm.OpenFolder();
         }
         private void Save()
         {
@@ -6346,6 +6301,10 @@ namespace CodeWalker
                     rendermaps = false;
                     renderworld = false;
                     ViewTabControl.SelectedTab = ViewModelTabPage;
+                    if (SelectionNameTextBox.Text != "" && SelectionNameTextBox.Text != "Nothing selected")
+                    {
+                        modelname = SelectionNameTextBox.Text;
+                    }
                     break;
             }
 
@@ -6774,6 +6733,12 @@ namespace CodeWalker
         private void ToolsMenuCutsceneViewer_Click(object sender, EventArgs e)
         {
             ShowCutsceneForm();
+        }
+
+        private void ToolsMenuAudioExplorer_Click(object sender, EventArgs e)
+        {
+            AudioExplorerForm f = new AudioExplorerForm(gameFileCache);
+            f.Show(this);
         }
 
         private void ToolsMenuWorldSearch_Click(object sender, EventArgs e)
@@ -7276,34 +7241,14 @@ namespace CodeWalker
             OpenProject();
         }
 
-        private void ToolbarOpenYmapButton_Click(object sender, EventArgs e)
+        private void ToolbarOpenFilesButton_Click(object sender, EventArgs e)
         {
-            OpenYmap();
+            OpenFiles();
         }
 
-        private void ToolbarOpenYtypButton_Click(object sender, EventArgs e)
+        private void ToolbarOpenFolderButton_Click(object sender, EventArgs e)
         {
-            OpenYtyp();
-        }
-
-        private void ToolbarOpenYbnButton_Click(object sender, EventArgs e)
-        {
-            OpenYbn();
-        }
-
-        private void ToolbarOpenYndButton_Click(object sender, EventArgs e)
-        {
-            OpenYnd();
-        }
-
-        private void ToolbarOpenTrainsButton_Click(object sender, EventArgs e)
-        {
-            OpenTrainTrack();
-        }
-
-        private void ToolbarOpenScenarioButton_Click(object sender, EventArgs e)
-        {
-            OpenScenario();
+            OpenFolder();
         }
 
         private void ToolbarSaveButton_Click(object sender, EventArgs e)
