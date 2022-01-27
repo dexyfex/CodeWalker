@@ -922,7 +922,7 @@ namespace CodeWalker.GameFiles
             var aseq = seq.Sequences[boneIndex];
             var q0 = aseq.EvaluateQuaternion(f0);
             var q1 = aseq.EvaluateQuaternion(f1);
-            var q = interpolate ? Quaternion.Slerp(q0, q1, frame.Alpha1) : q0;
+            var q = interpolate ? QuaternionExtension.FastLerp(q0, q1, frame.Alpha1) : q0;
             return q;
         }
 

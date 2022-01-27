@@ -2233,19 +2233,27 @@ namespace CodeWalker.GameFiles
 
         public void UpdateAnimTransform()
         {
-            //AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);//(local transform)
-            var pos = AnimTranslation;
-            var ori = AnimRotation;
-            var sca = AnimScale;
-            var pbone = Parent;
-            while (pbone != null)
+            AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);
+            AnimTransform.ScaleVector *= AnimScale;
+            if (Parent != null)
             {
-                pos = pbone.AnimRotation.Multiply(pos /** pbone.AnimScale*/) + pbone.AnimTranslation;
-                ori = pbone.AnimRotation * ori;
-                pbone = pbone.Parent;
+                AnimTransform = AnimTransform * Parent.AnimTransform;
             }
-            AnimTransform = Matrix.AffineTransformation(1.0f, ori, pos);//(global transform)
-            AnimTransform.ScaleVector *= sca;
+
+            ////AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);//(local transform)
+            
+            //var pos = AnimTranslation;
+            //var ori = AnimRotation;
+            //var sca = AnimScale;
+            //var pbone = Parent;
+            //while (pbone != null)
+            //{
+            //    pos = pbone.AnimRotation.Multiply(pos /** pbone.AnimScale*/) + pbone.AnimTranslation;
+            //    ori = pbone.AnimRotation * ori;
+            //    pbone = pbone.Parent;
+            //}
+            //AnimTransform = Matrix.AffineTransformation(1.0f, ori, pos);//(global transform)
+            //AnimTransform.ScaleVector *= sca;
         }
         public void UpdateSkinTransform()
         {
