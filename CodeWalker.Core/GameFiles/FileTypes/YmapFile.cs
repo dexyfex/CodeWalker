@@ -315,7 +315,7 @@ namespace CodeWalker.GameFiles
                     YmapEntityDef d = alldefs[i];
                     int pind = d._CEntityDef.parentIndex;
                     bool isroot = false;
-                    if ((pind < 0) || d.LodInParentYmap)
+                    if ((pind < 0) || (pind >= alldefs.Count) || d.LodInParentYmap)
                     {
                         isroot = true;
                     }
@@ -912,7 +912,7 @@ namespace CodeWalker.GameFiles
                                     }
                                     //pind = 0;
                                 }
-                                if ((pind >= 0) && (pind < AllEntities.Length) && rcent.LodInParentYmap)
+                                if ((pind >= 0) && (pind < AllEntities.Length) && !rcent.LodInParentYmap)
                                 {
                                     var pentity = AllEntities[pind];
                                     pentity.AddChild(rcent);
