@@ -8584,6 +8584,8 @@ namespace CodeWalker.Project
         }
         private void LoadYdrFromFile(YdrFile ydr, string filename)
         {
+            AddFilenameToJenkIndex(filename);
+
             byte[] data = File.ReadAllBytes(filename);
 
             ydr.Load(data);
@@ -8595,6 +8597,8 @@ namespace CodeWalker.Project
         }
         private void LoadYddFromFile(YddFile ydd, string filename)
         {
+            AddFilenameToJenkIndex(filename);
+
             byte[] data = File.ReadAllBytes(filename);
 
             ydd.Load(data);
@@ -8606,6 +8610,8 @@ namespace CodeWalker.Project
         }
         private void LoadYftFromFile(YftFile yft, string filename)
         {
+            AddFilenameToJenkIndex(filename);
+
             byte[] data = File.ReadAllBytes(filename);
 
             yft.Load(data);
@@ -8617,6 +8623,8 @@ namespace CodeWalker.Project
         }
         private void LoadYtdFromFile(YtdFile ytd, string filename)
         {
+            AddFilenameToJenkIndex(filename);
+
             byte[] data = File.ReadAllBytes(filename);
 
             ytd.Load(data);
@@ -8625,6 +8633,13 @@ namespace CodeWalker.Project
             {
                 GameFileCache.AddProjectFile(ytd);
             }
+        }
+
+
+        private void AddFilenameToJenkIndex(string filename)
+        {
+            var n = Path.GetFileNameWithoutExtension(filename).ToLowerInvariant();
+            JenkIndex.Ensure(n);
         }
 
 
