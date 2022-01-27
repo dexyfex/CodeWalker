@@ -1,4 +1,6 @@
 ﻿using CodeWalker.GameFiles;
+using CodeWalker.Utils;
+
 using FastColoredTextBoxNS;
 using System;
 using System.Collections.Generic;
@@ -10,8 +12,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using System.Xml;
 using Range = FastColoredTextBoxNS.Range;
+using TextStyle = FastColoredTextBoxNS.TextStyle;
 
 namespace CodeWalker.Forms
 {
@@ -173,6 +177,25 @@ namespace CodeWalker.Forms
             }
             MainTextBox.Text = sb.ToString();
 
+
+            SynthsComboBox.Items.Clear();
+            SynthTextBox.Language = Language.Custom;
+            SynthTextBox.Text = "";
+            SynthTextBox.ClearUndo();
+            if (rel.RelType == RelDatFileType.Dat10ModularSynth)
+            {
+                foreach (var relData in rel.RelDatasSorted)
+                {
+                    if ((Dat10RelType)relData.TypeID == Dat10RelType.Synth)
+                    {
+                        SynthsComboBox.Items.Add(relData);
+                    }
+                }
+            }
+            else
+            {
+                MainTabControl.TabPages.Remove(SynthsTabPage);
+            }
         }
 
 
@@ -296,6 +319,8 @@ namespace CodeWalker.Forms
             Xml = "";
             RelPropertyGrid.SelectedObject = null;
             MainTextBox.Text = "";
+            SynthsComboBox.Items.Clear();
+            SynthTextBox.Text = "";
             modified = false;
             rpfFileEntry = null;
 
@@ -380,14 +405,73 @@ namespace CodeWalker.Forms
             metaFormat = MetaFormat.XML;
         }
 
+        private byte[] ParseSynthOutputs()
+        {
+            var outputs = SynthOutputsTextBox.Text.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var outputsIndices = new byte[4];
+            for (int i = 0; i < outputsIndices.Length; i++)
+            {
+                if (outputs.Length <= i)
+                    break;
 
+                outputsIndices[i] = byte.Parse(outputs[i].Substring(1));
+            }
 
+            return outputsIndices;
+        }
+
+        private Dat10SynthVariable[] ParseSynthVariables()
+        {
+            var variablesLines = SynthVariablesTextBox.Text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var variables = new Dat10SynthVariable[variablesLines.Length];
+            for (int i = 0; i < variablesLines.Length; i++)
+            {
+                var parts = variablesLines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                variables[i] = new Dat10SynthVariable
+                {
+                    Name = XmlMeta.GetHash(parts[0]),
+                    Value = FloatUtil.Parse(parts[1]),
+                };
+            }
+
+            return variables;
+        }
+
+        private Dat10Synth AssembleSynth()
+        {
+            var outputs = ParseSynthOutputs();
+            var variables = ParseSynthVariables();
+
+            bool error = false;
+            var result = Dat10Synth.Assemble(SynthTextBox.Text, variables, (errorMsg, lineNumber) => error = true);
+
+            if (error)
+                return null;
+
+            return new Dat10Synth(CurrentFile)
+            {
+                BuffersCount = result.BuffersCount,
+                RegistersCount = result.RegistersCount,
+                StateBlocksCount = result.StateBlocksCount,
+                ConstantsCount = result.Constants.Count,
+                Constants = result.Constants.ToArray(),
+                Bytecode = result.Bytecode,
+                OutputsCount = outputs.Length,
+                OutputsIndices = outputs,
+                VariablesCount = variables.Length,
+                Variables = variables,
+                RuntimeCost = 123
+            };
+        }
 
 
 
         Style BlueStyle = new TextStyle(Brushes.Blue, null, FontStyle.Regular);
         Style RedStyle = new TextStyle(Brushes.Red, null, FontStyle.Regular);
         Style MaroonStyle = new TextStyle(Brushes.Maroon, null, FontStyle.Regular);
+        Style OrangeRedStyle = new TextStyle(Brushes.OrangeRed, null, FontStyle.Regular);
+        Style GreenStyle = new TextStyle(Brushes.Green, null, FontStyle.Regular);
+        Style ErrorStyle = new TextStyle(Brushes.Red, null, FontStyle.Underline);
 
         private void HTMLSyntaxHighlight(Range range)
         {
@@ -439,7 +523,7 @@ namespace CodeWalker.Forms
             {
                 if (textsearch)
                 {
-                    if (((rd.Name?.ToLowerInvariant().Contains(textl))??false) || (rd.NameHash == hash) || (rd.NameHash == hashl) ||
+                    if (((rd.Name?.ToLowerInvariant().Contains(textl)) ?? false) || (rd.NameHash == hash) || (rd.NameHash == hashl) ||
                         (rd.NameHash.ToString().ToLowerInvariant().Contains(textl)))
                     {
                         results.Add(rd);
@@ -447,7 +531,7 @@ namespace CodeWalker.Forms
                 }
                 else
                 {
-                    if ((rd.NameHash == hash)||(rd.NameHash == hashl))
+                    if ((rd.NameHash == hash) || (rd.NameHash == hashl))
                     {
                         SearchResultsGrid.SelectedObject = rd;
                         return;
@@ -539,6 +623,149 @@ namespace CodeWalker.Forms
             {
                 HTMLSyntaxHighlight(XmlTextBox.VisibleRange);
             }
+        }
+
+        private void SynthAssemblySyntaxHighlight(Range range)
+        {
+            //clear style of changed range
+            range.ClearStyle(GreenStyle, OrangeRedStyle, BlueStyle, MaroonStyle);
+
+            // comments
+            range.SetStyle(GreenStyle, @";.*");
+            // registers/variables/buffers
+            range.SetStyle(MaroonStyle, @"(?<![a-zA-Z_0-9])[RVB][0-9]+");
+            // numbers
+            range.SetStyle(BlueStyle, @"(?<![a-zA-Z_0-9])[0-9]+(.[0-9]+)*");
+            // inputs/outputs separator
+            range.SetStyle(OrangeRedStyle, @"=>");
+        }
+
+        private void SynthsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Dat10Synth synth = (Dat10Synth)SynthsComboBox.SelectedItem;
+            if (synth == null)
+            {
+                return;
+            }
+
+            SynthTextBox.Text = Dat10Synth.Disassemble(synth.Bytecode, synth.Constants, synth.Variables, false).Disassembly;
+            SynthTextBox.ClearUndo();
+            SynthAssemblySyntaxHighlight(SynthTextBox.Range);
+
+            SynthVariablesTextBox.Clear();
+            SynthVariablesTextBox.Text = string.Join(Environment.NewLine, synth.Variables.Select(v => $"{RelXml.HashString(v.Name)} {FloatUtil.ToString(v.Value)}"));
+
+            SynthOutputsTextBox.Clear();
+            SynthOutputsTextBox.Text = string.Join(" ", synth.OutputsIndices.Take(synth.OutputsCount).Select(bufferIdx => $"B{bufferIdx}"));
+        }
+
+        private void SynthTextBox_TextChangedDelayed(object sender, TextChangedEventArgs e)
+        {
+            string errors = "";
+            SynthTextBox.Range.ClearStyle(ErrorStyle);
+            SynthAssemblySyntaxHighlight(SynthTextBox.Range);
+            var variables = ParseSynthVariables();
+            Dat10Synth.Assemble(SynthTextBox.Text, variables, (errorMsg, lineNumber) =>
+            {
+                errors += $"Line {lineNumber}: {errorMsg}" + Environment.NewLine;
+                var line = SynthTextBox.GetLine(lineNumber - 1);
+                line.ClearStyle(GreenStyle, OrangeRedStyle, BlueStyle, MaroonStyle, RedStyle);
+                line.SetStyle(ErrorStyle);
+            });
+            StatusLabel.Text = errors;
+        }
+
+        private void SynthCopyXMLButton_Click(object sender, EventArgs e)
+        {
+            var newSynth = AssembleSynth();
+            if (newSynth == null)
+            {
+                StatusLabel.Text = "Failed to assemble synth";
+            }
+            else
+            {
+                var sb = new StringBuilder();
+                newSynth.WriteXml(sb, 0);
+                Clipboard.SetText(sb.ToString());
+            }
+        }
+
+        private Synthesizer synthesizer = null; // TODO(alexguirre): dispose synthesizer
+
+        private void SynthPlayButton_Click(object sender, EventArgs e)
+        {
+            var newSynth = AssembleSynth();
+            if (newSynth == null)
+            {
+                StatusLabel.Text = "Failed to assemble synth";
+            }
+            else
+            {
+//#if !DEBUG
+                try
+                {
+//#endif
+                    if (synthesizer == null)
+                    {
+                        synthesizer = new Synthesizer();
+                        synthesizer.Stopped += (t, _) =>
+                        {
+                            BeginInvoke((Action)(() =>
+                            {
+                                SynthPlayButton.Enabled = true;
+                                SynthStopButton.Enabled = false;
+                            }));
+                        };
+                        synthesizer.FrameSynthesized += (t, _) =>
+                        {
+                            float[][] buffersCopy = new float[synthesizer.Buffers.Length][];
+                            for (int i = 0; i < buffersCopy.Length; i++)
+                            {
+                                buffersCopy[i] = new float[synthesizer.Buffers[i].Length];
+                                Array.Copy(synthesizer.Buffers[i], buffersCopy[i], synthesizer.Buffers[i].Length);
+                            }
+
+                            BeginInvoke((Action)(() =>
+                            {
+                                //for (int i = 0; i < buffersCopy.Length; i++)
+                                int i = synthesizer.Synth.OutputsIndices[0];
+                                {
+                                    var series = SynthBufferChart.Series[$"B{i}"];
+                                    series.Points.Clear();
+                                    foreach (var v in buffersCopy[i])
+                                        series.Points.AddY(v);
+                                }
+                            }));
+                        };
+                    }
+
+                    SynthBufferChart.Series.Clear();
+                    for (int i = 0; i < newSynth.BuffersCount; i++)
+                    {
+                        var series = SynthBufferChart.Series.Add($"B{i}");
+                        series.IsXValueIndexed = true;
+                        series.ChartType = SeriesChartType.FastLine;
+                    }
+
+                    SynthPlayButton.Enabled = false;
+                    SynthStopButton.Enabled = true;
+                    synthesizer.Play(newSynth);
+//#if !DEBUG
+                }
+                catch (Exception ex)
+                {
+                    SynthPlayButton.Enabled = true;
+                    SynthStopButton.Enabled = false;
+                    StatusLabel.Text = $"Synthesizer error: {ex}";
+                }
+//#endif
+            }
+        }
+
+        private void SynthStopButton_Click(object sender, EventArgs e)
+        {
+            if (synthesizer != null)
+                synthesizer.Stop();
         }
     }
 }

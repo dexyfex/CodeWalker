@@ -29,6 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RelForm));
             this.RelPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.MainTabControl = new System.Windows.Forms.TabControl();
@@ -44,6 +47,17 @@
             this.SearchTextBox = new System.Windows.Forms.TextBox();
             this.SearchButton = new System.Windows.Forms.Button();
             this.SearchResultsGrid = new CodeWalker.WinForms.PropertyGridFix();
+            this.SynthsTabPage = new System.Windows.Forms.TabPage();
+            this.label3 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.SynthVariablesTextBox = new System.Windows.Forms.TextBox();
+            this.SynthOutputsTextBox = new System.Windows.Forms.TextBox();
+            this.SynthBufferChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.SynthPlayButton = new System.Windows.Forms.Button();
+            this.SynthCopyXMLButton = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.SynthsComboBox = new System.Windows.Forms.ComboBox();
+            this.SynthTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.MainToolbar = new System.Windows.Forms.ToolStrip();
             this.NewButton = new System.Windows.Forms.ToolStripSplitButton();
             this.OpenButton = new System.Windows.Forms.ToolStripSplitButton();
@@ -64,12 +78,16 @@
             this.wIPToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
+            this.SynthStopButton = new System.Windows.Forms.Button();
             this.MainTabControl.SuspendLayout();
             this.XmlTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.XmlTextBox)).BeginInit();
             this.DetailsTabPage.SuspendLayout();
             this.NameTableTabPage.SuspendLayout();
             this.SearchTabPage.SuspendLayout();
+            this.SynthsTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SynthBufferChart)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SynthTextBox)).BeginInit();
             this.MainToolbar.SuspendLayout();
             this.MainStatusStrip.SuspendLayout();
             this.MainMenu.SuspendLayout();
@@ -92,6 +110,7 @@
             this.MainTabControl.Controls.Add(this.DetailsTabPage);
             this.MainTabControl.Controls.Add(this.NameTableTabPage);
             this.MainTabControl.Controls.Add(this.SearchTabPage);
+            this.MainTabControl.Controls.Add(this.SynthsTabPage);
             this.MainTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MainTabControl.Location = new System.Drawing.Point(0, 49);
             this.MainTabControl.Margin = new System.Windows.Forms.Padding(0);
@@ -136,6 +155,7 @@
             this.XmlTextBox.DelayedEventsInterval = 1;
             this.XmlTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.XmlTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.XmlTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.XmlTextBox.IsReplaceMode = false;
             this.XmlTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.XmlTextBox.LeftBracket = '<';
@@ -269,6 +289,166 @@
             this.SearchResultsGrid.Name = "SearchResultsGrid";
             this.SearchResultsGrid.Size = new System.Drawing.Size(822, 423);
             this.SearchResultsGrid.TabIndex = 1;
+            // 
+            // SynthsTabPage
+            // 
+            this.SynthsTabPage.Controls.Add(this.SynthStopButton);
+            this.SynthsTabPage.Controls.Add(this.label3);
+            this.SynthsTabPage.Controls.Add(this.label2);
+            this.SynthsTabPage.Controls.Add(this.SynthVariablesTextBox);
+            this.SynthsTabPage.Controls.Add(this.SynthOutputsTextBox);
+            this.SynthsTabPage.Controls.Add(this.SynthBufferChart);
+            this.SynthsTabPage.Controls.Add(this.SynthPlayButton);
+            this.SynthsTabPage.Controls.Add(this.SynthCopyXMLButton);
+            this.SynthsTabPage.Controls.Add(this.label1);
+            this.SynthsTabPage.Controls.Add(this.SynthsComboBox);
+            this.SynthsTabPage.Controls.Add(this.SynthTextBox);
+            this.SynthsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.SynthsTabPage.Name = "SynthsTabPage";
+            this.SynthsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.SynthsTabPage.Size = new System.Drawing.Size(831, 460);
+            this.SynthsTabPage.TabIndex = 4;
+            this.SynthsTabPage.Text = "Synths";
+            this.SynthsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(8, 59);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 13);
+            this.label3.TabIndex = 42;
+            this.label3.Text = "Variables:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(8, 33);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(47, 13);
+            this.label2.TabIndex = 41;
+            this.label2.Text = "Outputs:";
+            // 
+            // SynthVariablesTextBox
+            // 
+            this.SynthVariablesTextBox.Location = new System.Drawing.Point(64, 56);
+            this.SynthVariablesTextBox.Multiline = true;
+            this.SynthVariablesTextBox.Name = "SynthVariablesTextBox";
+            this.SynthVariablesTextBox.Size = new System.Drawing.Size(293, 87);
+            this.SynthVariablesTextBox.TabIndex = 40;
+            // 
+            // SynthOutputsTextBox
+            // 
+            this.SynthOutputsTextBox.Location = new System.Drawing.Point(64, 30);
+            this.SynthOutputsTextBox.Name = "SynthOutputsTextBox";
+            this.SynthOutputsTextBox.Size = new System.Drawing.Size(293, 20);
+            this.SynthOutputsTextBox.TabIndex = 39;
+            // 
+            // SynthBufferChart
+            // 
+            this.SynthBufferChart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            chartArea2.Name = "ChartArea1";
+            this.SynthBufferChart.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.SynthBufferChart.Legends.Add(legend2);
+            this.SynthBufferChart.Location = new System.Drawing.Point(363, 31);
+            this.SynthBufferChart.Name = "SynthBufferChart";
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series2.IsXValueIndexed = true;
+            series2.Legend = "Legend1";
+            series2.Name = "Buffer";
+            this.SynthBufferChart.Series.Add(series2);
+            this.SynthBufferChart.Size = new System.Drawing.Size(460, 112);
+            this.SynthBufferChart.TabIndex = 38;
+            this.SynthBufferChart.Text = "chart1";
+            // 
+            // SynthPlayButton
+            // 
+            this.SynthPlayButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SynthPlayButton.Location = new System.Drawing.Point(615, 2);
+            this.SynthPlayButton.Name = "SynthPlayButton";
+            this.SynthPlayButton.Size = new System.Drawing.Size(104, 23);
+            this.SynthPlayButton.TabIndex = 37;
+            this.SynthPlayButton.Text = "Play";
+            this.SynthPlayButton.UseVisualStyleBackColor = true;
+            this.SynthPlayButton.Click += new System.EventHandler(this.SynthPlayButton_Click);
+            // 
+            // SynthCopyXMLButton
+            // 
+            this.SynthCopyXMLButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SynthCopyXMLButton.Location = new System.Drawing.Point(463, 2);
+            this.SynthCopyXMLButton.Name = "SynthCopyXMLButton";
+            this.SynthCopyXMLButton.Size = new System.Drawing.Size(146, 23);
+            this.SynthCopyXMLButton.TabIndex = 35;
+            this.SynthCopyXMLButton.Text = "Copy XML to clipboard";
+            this.SynthCopyXMLButton.UseVisualStyleBackColor = true;
+            this.SynthCopyXMLButton.Click += new System.EventHandler(this.SynthCopyXMLButton_Click);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(8, 6);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(37, 13);
+            this.label1.TabIndex = 33;
+            this.label1.Text = "Synth:";
+            // 
+            // SynthsComboBox
+            // 
+            this.SynthsComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SynthsComboBox.FormattingEnabled = true;
+            this.SynthsComboBox.Location = new System.Drawing.Point(64, 3);
+            this.SynthsComboBox.Name = "SynthsComboBox";
+            this.SynthsComboBox.Size = new System.Drawing.Size(393, 21);
+            this.SynthsComboBox.TabIndex = 4;
+            this.SynthsComboBox.SelectedIndexChanged += new System.EventHandler(this.SynthsComboBox_SelectedIndexChanged);
+            // 
+            // SynthTextBox
+            // 
+            this.SynthTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SynthTextBox.AutoCompleteBracketsList = new char[] {
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        '\"',
+        '\"',
+        '\'',
+        '\''};
+            this.SynthTextBox.AutoIndentChars = false;
+            this.SynthTextBox.AutoIndentCharsPatterns = "";
+            this.SynthTextBox.AutoIndentExistingLines = false;
+            this.SynthTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.SynthTextBox.BackBrush = null;
+            this.SynthTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.SynthTextBox.CharHeight = 14;
+            this.SynthTextBox.CharWidth = 8;
+            this.SynthTextBox.CommentPrefix = null;
+            this.SynthTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
+            this.SynthTextBox.DelayedEventsInterval = 1;
+            this.SynthTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.SynthTextBox.IsReplaceMode = false;
+            this.SynthTextBox.Language = FastColoredTextBoxNS.Language.XML;
+            this.SynthTextBox.LeftBracket = '<';
+            this.SynthTextBox.LeftBracket2 = '(';
+            this.SynthTextBox.Location = new System.Drawing.Point(3, 149);
+            this.SynthTextBox.Name = "SynthTextBox";
+            this.SynthTextBox.Paddings = new System.Windows.Forms.Padding(0);
+            this.SynthTextBox.RightBracket = '>';
+            this.SynthTextBox.RightBracket2 = ')';
+            this.SynthTextBox.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
+            this.SynthTextBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("SynthTextBox.ServiceColors")));
+            this.SynthTextBox.Size = new System.Drawing.Size(825, 308);
+            this.SynthTextBox.TabIndex = 3;
+            this.SynthTextBox.Zoom = 100;
+            this.SynthTextBox.TextChangedDelayed += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.SynthTextBox_TextChangedDelayed);
             // 
             // MainToolbar
             // 
@@ -433,6 +613,18 @@
             // 
             this.SaveFileDialog.Filter = "XML files|*.xml|All files|*.*";
             // 
+            // SynthStopButton
+            // 
+            this.SynthStopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SynthStopButton.Enabled = false;
+            this.SynthStopButton.Location = new System.Drawing.Point(724, 2);
+            this.SynthStopButton.Name = "SynthStopButton";
+            this.SynthStopButton.Size = new System.Drawing.Size(104, 23);
+            this.SynthStopButton.TabIndex = 43;
+            this.SynthStopButton.Text = "Stop";
+            this.SynthStopButton.UseVisualStyleBackColor = true;
+            this.SynthStopButton.Click += new System.EventHandler(this.SynthStopButton_Click);
+            // 
             // RelForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -453,6 +645,10 @@
             this.NameTableTabPage.PerformLayout();
             this.SearchTabPage.ResumeLayout(false);
             this.SearchTabPage.PerformLayout();
+            this.SynthsTabPage.ResumeLayout(false);
+            this.SynthsTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SynthBufferChart)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SynthTextBox)).EndInit();
             this.MainToolbar.ResumeLayout(false);
             this.MainToolbar.PerformLayout();
             this.MainStatusStrip.ResumeLayout(false);
@@ -500,5 +696,17 @@
         private System.Windows.Forms.ToolStripMenuItem wIPToolStripMenuItem1;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
+        private System.Windows.Forms.TabPage SynthsTabPage;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox SynthsComboBox;
+        private FastColoredTextBoxNS.FastColoredTextBox SynthTextBox;
+        private System.Windows.Forms.Button SynthCopyXMLButton;
+        private System.Windows.Forms.Button SynthPlayButton;
+        private System.Windows.Forms.DataVisualization.Charting.Chart SynthBufferChart;
+        private System.Windows.Forms.TextBox SynthOutputsTextBox;
+        private System.Windows.Forms.TextBox SynthVariablesTextBox;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button SynthStopButton;
     }
 }
