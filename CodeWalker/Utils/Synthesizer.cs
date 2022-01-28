@@ -91,7 +91,11 @@ namespace CodeWalker.Utils
             }
 
             SynthesizeFrame();
-            var audioDataStream = DataStream.Create(Buffers[Synth.OutputsIndices[0]], true, false);
+
+            var bufferIndex = Synth.OutputsIndices[0];
+            if ((bufferIndex < 0) || (bufferIndex >= Buffers.Length)) bufferIndex = 0;
+
+            var audioDataStream = DataStream.Create(Buffers[bufferIndex], true, false);
             var audioBuffer = new AudioBuffer
             {
                 Stream = audioDataStream,
@@ -694,7 +698,10 @@ namespace CodeWalker.Utils
                         }
                         break;
                     case Dat10Synth.Opcode.READ_VARIABLE:
-                        SetRegister(param[0], Synth.Variables[param[1].Value & 0xFF].Value);
+                        if ((param[1].Value & 0xFF) < Synth.Variables.Length)
+                        {
+                            SetRegister(param[0], Synth.Variables[param[1].Value & 0xFF]?.Value ?? 0);
+                        }
                         break;
                     case Dat10Synth.Opcode.STOP:
                         stop = GetScalar(param[0]) >= 1.0f;
