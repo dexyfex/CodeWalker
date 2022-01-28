@@ -748,13 +748,17 @@ namespace CodeWalker.Forms
                             {
                                 //for (int i = 0; i < buffersCopy.Length; i++)
                                 int i = synthesizer.Synth.OutputsIndices[0];
-                                if (i < SynthBufferChart.Series.Count)
+                                try
                                 {
-                                    var series = SynthBufferChart.Series[$"B{i}"];
-                                    series.Points.Clear();
-                                    foreach (var v in buffersCopy[i])
-                                        series.Points.AddY(v);
+                                    var series = SynthBufferChart.Series.FindByName($"B{i}");
+                                    if (series != null)
+                                    {
+                                        series.Points.Clear();
+                                        foreach (var v in buffersCopy[i])
+                                            series.Points.AddY(Math.Max(Math.Min(v, 2.0f), -2.0f));//make sure crazy accidental values don't crash it later
+                                    }
                                 }
+                                catch { }
                             }));
                         };
                     }

@@ -21,7 +21,7 @@ namespace CodeWalker.Utils
         public Dat10Synth Synth { get; private set; }
         public float[] Registers { get; private set; }
         public float[][] Buffers { get; private set; }
-        public Vector4[] StateBlocks { get; private set; }
+        public StateBlock[] StateBlocks { get; private set; }
         
         private Dat10Synth.Instruction[] instructions;
         private bool stop;
@@ -63,7 +63,7 @@ namespace CodeWalker.Utils
             instructions = Dat10Synth.DisassembleGetInstructions(synth.Bytecode, synth.Constants, synth.Variables);
             Registers = new float[synth.RegistersCount];
             Buffers = new float[synth.BuffersCount][];
-            StateBlocks = new Vector4[synth.StateBlocksCount];
+            StateBlocks = new StateBlock[synth.StateBlocksCount];
             stop = false;
 
             for (int i = 0; i < synth.BuffersCount; i++)
@@ -115,8 +115,9 @@ namespace CodeWalker.Utils
                     Buffers[i][k] = 0.0f;
 
             bool frameFinished = false;
-            foreach (var inst in instructions)
+            for (int insti = 0; insti < instructions.Length; insti++)
             {
+                var inst = instructions[insti];
                 if (frameFinished)
                     break;
 
@@ -772,14 +773,18 @@ namespace CodeWalker.Utils
                     case Dat10Synth.Opcode.GATE_SCALAR_SCALAR:
                         SetRegister(param[0], Gate(GetScalar(param[1]), GetScalar(param[2])));
                         break;
-                    //case Dat10Synth.Opcode.SMALL_DELAY_FRAC:
-                    //    break;
-                    //case Dat10Synth.Opcode.SMALL_DELAY_NON_INTERP:
-                    //    break;
-                    //case Dat10Synth.Opcode.SMALL_DELAY_FRAC_FEEDBACK:
-                    //    break;
-                    //case Dat10Synth.Opcode.SMALL_DELAY_NON_INTERP_FEEDBACK:
-                    //    break;
+                    case Dat10Synth.Opcode.SMALL_DELAY_FRAC:
+                        SmallDelay(GetBuffer(param[0]), GetScalar(param[1]), 0.0f, ref StateBlocks[param[inst.NumberOfInputs].Value], true);
+                        break;
+                    case Dat10Synth.Opcode.SMALL_DELAY_NON_INTERP:
+                        SmallDelay(GetBuffer(param[0]), GetScalar(param[1]), 0.0f, ref StateBlocks[param[inst.NumberOfInputs].Value], false);
+                        break;
+                    case Dat10Synth.Opcode.SMALL_DELAY_FRAC_FEEDBACK:
+                        SmallDelay(GetBuffer(param[0]), GetScalar(param[1]), GetScalar(param[2]), ref StateBlocks[param[3].Value], true);
+                        break;
+                    case Dat10Synth.Opcode.SMALL_DELAY_NON_INTERP_FEEDBACK:
+                        SmallDelay(GetBuffer(param[0]), GetScalar(param[1]), GetScalar(param[2]), ref StateBlocks[param[3].Value], false);
+                        break;
                     case Dat10Synth.Opcode.TRIGGER_DIFF:
                         SetRegister(param[0], TriggerDiff(GetScalar(param[1]), GetScalar(param[2]), ref StateBlocks[param[3].Value]));
                         break;
@@ -913,7 +918,7 @@ namespace CodeWalker.Utils
                         frameFinished = true;
                         break;
                     default:
-                        throw new NotImplementedException(inst.Opcode.ToString());
+                        throw new NotImplementedException(inst.Opcode.ToString() + " (line " + (insti + 1).ToString() + ")");
                 }
             }
 
@@ -1049,7 +1054,7 @@ FINISH                                              =>
             return (float)Math.Pow(2.0f, (note + 36.376301f) / 12.0f);
         }
 
-        private void Decimate(float[] buffer, float scalar1, float deltaPerSample, ref Vector4 stateBlock)
+        private void Decimate(float[] buffer, float scalar1, float deltaPerSample, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> t: samples counter, each sample adds deltaPerSample, once it reaches 1.0 the lastSample value is updated
@@ -1082,7 +1087,7 @@ FINISH                                              =>
             stateBlock.Y = lastSample;
         }
 
-        private float Counter(bool returnCounter, float setToZeroTrigger, float incrementTrigger, float decrementTrigger, float maxCounter, ref Vector4 stateBlock)
+        private float Counter(bool returnCounter, float setToZeroTrigger, float incrementTrigger, float decrementTrigger, float maxCounter, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> counter value
@@ -1128,7 +1133,7 @@ FINISH                                              =>
             return valuePercent * threshold * Math.Sign(value);
         }
 
-        private void Compress(float[] buffer, float scalar1_threshold, float scalar2_ratio, float scalar3_time1, float scalar4_time2, ref Vector4 stateBlock)
+        private void Compress(float[] buffer, float scalar1_threshold, float scalar2_ratio, float scalar3_time1, float scalar4_time2, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> ...
@@ -1331,7 +1336,7 @@ FINISH                                              =>
             a1 /= a0; a2 /= a0;
         }
 
-        private void BiquadFilter2Pole(float[] buffer, float b0, float b1, float b2, float a1, float a2, ref Vector4 stateBlock)
+        private void BiquadFilter2Pole(float[] buffer, float b0, float b1, float b2, float a1, float a2, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> ...
@@ -1352,7 +1357,7 @@ FINISH                                              =>
             stateBlock.Y = stateY;
         }
 
-        private void BiquadFilter4Pole(float[] buffer, float b0, float b1, float b2, float a1, float a2, ref Vector4 stateBlock)
+        private void BiquadFilter4Pole(float[] buffer, float b0, float b1, float b2, float a1, float a2, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> ...
@@ -1382,7 +1387,7 @@ FINISH                                              =>
             stateBlock.W = stateW;
         }
 
-        private void EnvelopeFollower(float[] buffer, float a2, float a3, ref Vector4 stateBlock)
+        private void EnvelopeFollower(float[] buffer, float a2, float a3, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> previous follower value
@@ -1411,7 +1416,7 @@ FINISH                                              =>
             stateBlock.X = prevFollower;
         }
 
-        private float EnvelopeFollower(float scalar, float a2, float a3, ref Vector4 stateBlock)
+        private float EnvelopeFollower(float scalar, float a2, float a3, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> previous follower value
@@ -1434,12 +1439,12 @@ FINISH                                              =>
             return follower;
         }
 
-        private float TriggerLatch(float value, float triggerLimit, ref Vector4 stateBlock)
+        private float TriggerLatch(float value, float triggerLimit, ref StateBlock stateBlock)
         {
             return TriggerLatch(value >= (triggerLimit - 0.000001f), ref stateBlock);
         }
 
-        private float TriggerLatch(float[] buffer, float triggerLimit, ref Vector4 stateBlock)
+        private float TriggerLatch(float[] buffer, float triggerLimit, ref StateBlock stateBlock)
         {
             bool triggered = false;
             for (int i = 0; !triggered && i < BufferSize; i++)
@@ -1449,7 +1454,7 @@ FINISH                                              =>
             return TriggerLatch(triggered, ref stateBlock);
         }
 
-        private float TriggerLatch(float[] buffer, float[] triggerLimitBuffer, ref Vector4 stateBlock)
+        private float TriggerLatch(float[] buffer, float[] triggerLimitBuffer, ref StateBlock stateBlock)
         {
             bool triggered = false;
             for (int i = 0; !triggered && i < BufferSize; i++)
@@ -1459,7 +1464,7 @@ FINISH                                              =>
             return TriggerLatch(triggered, ref stateBlock);
         }
 
-        private float TriggerLatch(bool triggered, ref Vector4 stateBlock)
+        private float TriggerLatch(bool triggered, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> latch SET
@@ -1477,7 +1482,7 @@ FINISH                                              =>
             return latch;
         }
 
-        private float TriggerDiff(float value, float triggerLimit, ref Vector4 stateBlock)
+        private float TriggerDiff(float value, float triggerLimit, ref StateBlock stateBlock)
         {
             // State block:
             //  X -> previous value
@@ -1488,7 +1493,7 @@ FINISH                                              =>
             return triggered ? 1.0f : 0.0f;
         }
 
-        private void OscillatorRamp(float[] buffer, ref Vector4 stateBlock)
+        private void OscillatorRamp(float[] buffer, ref StateBlock stateBlock)
         {
             // TODO(alexguirre): better names in OSC_RAMP_BUFFER_BUFFER
             var stateX = stateBlock.X;
@@ -1503,7 +1508,7 @@ FINISH                                              =>
             stateBlock.X = stateX;
         }
 
-        private void OscillatorRamp(float[] buffer, float frequency, ref Vector4 stateBlock)
+        private void OscillatorRamp(float[] buffer, float frequency, ref StateBlock stateBlock)
         {
             // TODO(alexguirre): better names in OSC_RAMP_BUFFER_SCALAR
             var v1 = frequency / SampleRate;
@@ -1518,7 +1523,7 @@ FINISH                                              =>
             stateBlock.X = v3;
         }
 
-        private float OscillatorRamp(float frequency, ref Vector4 stateBlock)
+        private float OscillatorRamp(float frequency, ref StateBlock stateBlock)
         {
             // TODO(alexguirre): better names in OSC_RAMP_SCALAR
             var v2 = Math.Max(1.0f, frequency / 187.5f);
@@ -1535,7 +1540,7 @@ FINISH                                              =>
         private enum EnvelopeReleaseType { Linear, Exponential }
         private enum EnvelopeTriggerMode { OneShot, Retrigger, Interruptible }
 
-        private float EnvelopeGen(Dat10Synth.Opcode envelopeGenOpcode, float[] buffer, ref Vector4 stateBlock, float predelay, float attack, float decay, float sustain, float hold, float release, float trigger)
+        private float EnvelopeGen(Dat10Synth.Opcode envelopeGenOpcode, float[] buffer, ref StateBlock stateBlock, float predelay, float attack, float decay, float sustain, float hold, float release, float trigger)
         {
             EnvelopeReleaseType releaseType;
             switch (envelopeGenOpcode)
@@ -1576,7 +1581,7 @@ FINISH                                              =>
             return EnvelopeGen(releaseType, triggerMode, buffer, ref stateBlock, predelay, attack, decay, sustain, hold, release, trigger);
         }
 
-        private float EnvelopeGen(EnvelopeReleaseType releaseType, EnvelopeTriggerMode triggerMode, float[] buffer, ref Vector4 stateBlock, float predelay, float attack, float decay, float sustain, float hold, float release, float trigger)
+        private float EnvelopeGen(EnvelopeReleaseType releaseType, EnvelopeTriggerMode triggerMode, float[] buffer, ref StateBlock stateBlock, float predelay, float attack, float decay, float sustain, float hold, float release, float trigger)
         {
             // State block:
             //  X -> envelope state : 8 bits | envelope state remaining samples : 24 bits
@@ -1783,7 +1788,7 @@ FINISH                                              =>
             public float ReleaseActive;
         }
 
-        private TimedTriggerResult TimedTrigger(Dat10Synth.Opcode envelopeGenOpcode, ref Vector4 stateBlock, float trigger, float predelay, float attack, float decay, float hold, float release)
+        private TimedTriggerResult TimedTrigger(Dat10Synth.Opcode envelopeGenOpcode, ref StateBlock stateBlock, float trigger, float predelay, float attack, float decay, float hold, float release)
         {
             EnvelopeTriggerMode triggerMode;
             switch (envelopeGenOpcode)
@@ -1821,7 +1826,7 @@ FILL_BUFFER R1 => B1   ; timed trigger finished
 FILL_BUFFER 0 => B7
 FINISH =>
          */
-        private TimedTriggerResult TimedTrigger(EnvelopeTriggerMode triggerMode, ref Vector4 stateBlock, float trigger, float predelay, float attack, float decay, float hold, float release)
+        private TimedTriggerResult TimedTrigger(EnvelopeTriggerMode triggerMode, ref StateBlock stateBlock, float trigger, float predelay, float attack, float decay, float hold, float release)
         {
             // State block:
             //  X -> envelope state : 8 bits | envelope state remaining samples : 24 bits
@@ -2036,6 +2041,89 @@ FINISH =>
             for (int i = 0; i < BufferSize; i++)
             {
                 outputBuffer[i] = cos * a[i] + sin * b[i];
+            }
+        }
+
+        private void SmallDelay(float[] buffer, float delaySamples, float feedback, ref StateBlock stateBlock, bool interpolate)
+        {
+            feedback = Math.Max(Math.Min(feedback, 1.0f), -1.0f);//just to stop things getting accidentally out of control...
+            delaySamples = Math.Abs(delaySamples);//should this be clamped to max 8..?
+            int delaySamplesInt = (int)delaySamples;
+            float frac = delaySamples - (float)Math.Floor(delaySamples);
+            for (int i = 0; i < BufferSize; i++)
+            {
+                float currSample = buffer[i];
+                float delayedSample;
+                int delayed = i + delaySamplesInt;
+                float s0 = stateBlock[delayed & 7];
+                if (interpolate)
+                {
+                    float s1 = stateBlock[(delayed + 1) & 7];
+                    delayedSample = (s1 - s0) * frac + s0;
+                }
+                else
+                {
+                    delayedSample = s0;
+                }
+                buffer[i] = delayedSample;
+                stateBlock[i & 7] = delayedSample * feedback + currSample;
+            }
+        }
+
+
+
+
+        public struct StateBlock
+        {
+            public float X { get; set; }
+            public float Y { get; set; }
+            public float Z { get; set; }
+            public float W { get; set; }
+            public float A { get; set; }
+            public float B { get; set; }
+            public float C { get; set; }
+            public float D { get; set; }
+
+            public float this[int index]
+            {
+                get 
+                {
+                    switch (index)
+                    {
+                        default:
+                        case 0: return X;
+                        case 1: return Y;
+                        case 2: return Z;
+                        case 3: return W;
+                        case 4: return A;
+                        case 5: return B;
+                        case 6: return C;
+                        case 7: return D;
+                    }
+                }
+                set
+                {
+                    switch (index)
+                    {
+                        default:
+                        case 0: X = value; break;
+                        case 1: Y = value; break;
+                        case 2: Z = value; break;
+                        case 3: W = value; break;
+                        case 4: A = value; break;
+                        case 5: B = value; break;
+                        case 6: C = value; break;
+                        case 7: D = value; break;
+                    }
+                }
+            }
+
+            public float[] Values
+            {
+                get
+                {
+                    return new[] { X, Y, Z, W, A, B, C, D };
+                }
             }
         }
     }
