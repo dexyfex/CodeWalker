@@ -3551,6 +3551,7 @@ namespace CodeWalker.Rendering
                                 dskel.BonesMap[srcbone.Tag] = srcbone;
                             }
                         }
+                        dskel.BonesSorted = skel.BonesSorted;//this is pretty hacky. TODO: try and fix all this! animate only the frag skeleton!
                     }
                 }
             }

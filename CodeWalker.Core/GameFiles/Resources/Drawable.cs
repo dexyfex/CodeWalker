@@ -916,6 +916,7 @@ namespace CodeWalker.GameFiles
 
 
         public Dictionary<ushort, Bone> BonesMap { get; set; }//for convienience finding bones by tag
+        public Bone[] BonesSorted { get; set; } //sometimes bones aren't in parent>child order in the files! (eg player chars)
 
 
         public Matrix3_s[] BoneTransforms; //for rendering
@@ -1116,10 +1117,12 @@ namespace CodeWalker.GameFiles
             BonesMap = new Dictionary<ushort, Bone>();
             if (Bones?.Items != null)
             {
+                var bonesSorted = new List<Bone>();
                 for (int i = 0; i < Bones.Items.Length; i++)
                 {
                     var bone = Bones.Items[i];
                     BonesMap[bone.Tag] = bone;
+                    bonesSorted.Add(bone);
 
                     bone.UpdateAnimTransform();
                     bone.AbsTransform = bone.AnimTransform;
@@ -1128,6 +1131,8 @@ namespace CodeWalker.GameFiles
                     bone.UpdateSkinTransform();
                     bone.TransformUnk = (i < (Transformations?.Length ?? 0)) ? Transformations[i].Column4 : Vector4.Zero;//still dont know what this is
                 }
+                bonesSorted.Sort((a, b) => a.Index.CompareTo(b.Index));
+                BonesSorted = bonesSorted.ToArray();
             }
         }
 
@@ -2241,7 +2246,7 @@ namespace CodeWalker.GameFiles
             }
 
             ////AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);//(local transform)
-            
+
             //var pos = AnimTranslation;
             //var ori = AnimRotation;
             //var sca = AnimScale;
