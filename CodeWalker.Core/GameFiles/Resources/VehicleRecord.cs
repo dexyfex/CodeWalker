@@ -1,8 +1,10 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -11,7 +13,7 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength => 0x20;
 
-        public ResourceSimpleList64<VehicleRecordEntry> Entries;
+        public ResourceSimpleList64<VehicleRecordEntry> Entries { get; set; }
 
         public VehicleRecordList()
         {
@@ -24,13 +26,68 @@ namespace CodeWalker.GameFiles
 
             this.Entries = reader.ReadBlock<ResourceSimpleList64<VehicleRecordEntry>>();
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
 
             writer.WriteBlock(this.Entries);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+
+            if (Entries?.data_items != null)
+            {
+                foreach (var e in Entries.data_items)
+                {
+                    YvrXml.OpenTag(sb, indent, "Item");
+                    e.WriteXml(sb, indent + 1);
+                    YvrXml.CloseTag(sb, indent, "Item");
+                }
+            }
+
+        }
+        public void ReadXml(XmlNode node)
+        {
+            var entries = new List<VehicleRecordEntry>();
+
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var e = new VehicleRecordEntry();
+                    e.ReadXml(inode);
+                    entries.Add(e);
+                }
+            }
+
+            Entries = new ResourceSimpleList64<VehicleRecordEntry>();
+            Entries.data_items = entries.ToArray();
+
+        }
+        public static void WriteXmlNode(VehicleRecordList l, StringBuilder sb, int indent, string name = "VehicleRecordList")
+        {
+            if (l == null) return;
+            if ((l.Entries?.data_items == null) || (l.Entries.data_items.Length == 0))
+            {
+                YvrXml.SelfClosingTag(sb, indent, name);
+            }
+            else
+            {
+                YvrXml.OpenTag(sb, indent, name);
+                l.WriteXml(sb, indent + 1);
+                YvrXml.CloseTag(sb, indent, name);
+            }
+        }
+        public static VehicleRecordList ReadXmlNode(XmlNode node)
+        {
+            if (node == null) return null;
+            var l = new VehicleRecordList();
+            l.ReadXml(node);
+            return l;
+        }
+
+
 
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
@@ -63,9 +120,7 @@ namespace CodeWalker.GameFiles
         public byte GasPedalPower;
         public byte BrakePedalPower;
         public byte HandbrakeUsed;
-        public float PositionX;
-        public float PositionY;
-        public float PositionZ;
+        public Vector3 Position;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -84,11 +139,8 @@ namespace CodeWalker.GameFiles
             this.GasPedalPower = reader.ReadByte();
             this.BrakePedalPower = reader.ReadByte();
             this.HandbrakeUsed = reader.ReadByte();
-            this.PositionX = reader.ReadSingle();
-            this.PositionY = reader.ReadSingle();
-            this.PositionZ = reader.ReadSingle();
+            this.Position = reader.ReadVector3();
         }
-
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
@@ -96,20 +148,49 @@ namespace CodeWalker.GameFiles
             writer.Write(this.VelocityX);
             writer.Write(this.VelocityY);
             writer.Write(this.VelocityZ);
-            writer.Write(this.RightX);
-            writer.Write(this.RightY);
-            writer.Write(this.RightZ);
-            writer.Write(this.TopX);
-            writer.Write(this.TopY);
-            writer.Write(this.TopZ);
+            writer.Write((byte)this.RightX);
+            writer.Write((byte)this.RightY);
+            writer.Write((byte)this.RightZ);
+            writer.Write((byte)this.TopX);
+            writer.Write((byte)this.TopY);
+            writer.Write((byte)this.TopZ);
             writer.Write(this.SteeringAngle);
             writer.Write(this.GasPedalPower);
             writer.Write(this.BrakePedalPower);
             writer.Write(this.HandbrakeUsed);
-            writer.Write(this.PositionX);
-            writer.Write(this.PositionY);
-            writer.Write(this.PositionZ);
+            writer.Write(this.Position);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YvrXml.ValueTag(sb, indent, "Time", Time.ToString());
+            YvrXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
+            YvrXml.SelfClosingTag(sb, indent, "Velocity " + string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", VelocityX.ToString(), VelocityY.ToString(), VelocityZ.ToString()));
+            YvrXml.SelfClosingTag(sb, indent, "Right " + string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", RightX.ToString(), RightY.ToString(), RightZ.ToString()));
+            YvrXml.SelfClosingTag(sb, indent, "Top " + string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", TopX.ToString(), TopY.ToString(), TopZ.ToString()));
+            YvrXml.ValueTag(sb, indent, "SteeringAngle", SteeringAngle.ToString());
+            YvrXml.ValueTag(sb, indent, "GasPedalPower", GasPedalPower.ToString());
+            YvrXml.ValueTag(sb, indent, "BrakePedalPower", BrakePedalPower.ToString());
+            YvrXml.ValueTag(sb, indent, "HandbrakeUsed", HandbrakeUsed.ToString());
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Time = Xml.GetChildUIntAttribute(node, "Time", "value");
+            Position = Xml.GetChildVector3Attributes(node, "Position");
+            VelocityX = (short)Xml.GetChildIntAttribute(node, "Velocity", "x");
+            VelocityY = (short)Xml.GetChildIntAttribute(node, "Velocity", "y");
+            VelocityZ = (short)Xml.GetChildIntAttribute(node, "Velocity", "z");
+            RightX = (sbyte)Xml.GetChildIntAttribute(node, "Right", "x");
+            RightY = (sbyte)Xml.GetChildIntAttribute(node, "Right", "y");
+            RightZ = (sbyte)Xml.GetChildIntAttribute(node, "Right", "z");
+            TopX = (sbyte)Xml.GetChildIntAttribute(node, "Top", "x");
+            TopY = (sbyte)Xml.GetChildIntAttribute(node, "Top", "y");
+            TopZ = (sbyte)Xml.GetChildIntAttribute(node, "Top", "z");
+            SteeringAngle = (byte)Xml.GetChildUIntAttribute(node, "SteeringAngle", "value");
+            GasPedalPower = (byte)Xml.GetChildUIntAttribute(node, "GasPedalPower", "value");
+            BrakePedalPower = (byte)Xml.GetChildUIntAttribute(node, "BrakePedalPower", "value");
+            HandbrakeUsed = (byte)Xml.GetChildUIntAttribute(node, "HandbrakeUsed", "value");
+        }
+
     }
 
 

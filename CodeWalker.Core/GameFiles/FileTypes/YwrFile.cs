@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -58,4 +60,52 @@ namespace CodeWalker.GameFiles
 
 
     }
+
+
+    public class YwrXml : MetaXmlBase
+    {
+
+        public static string GetXml(YwrFile ywr)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            if (ywr?.Waypoints != null)
+            {
+                WaypointRecordList.WriteXmlNode(ywr.Waypoints, sb, 0);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+    public class XmlYwr
+    {
+
+        public static YwrFile GetYwr(string xml, string inputFolder = "")
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYwr(doc, inputFolder);
+        }
+
+        public static YwrFile GetYwr(XmlDocument doc, string inputFolder = "")
+        {
+            YwrFile r = new YwrFile();
+
+            var node = doc.DocumentElement;
+            if (node != null)
+            {
+                r.Waypoints = WaypointRecordList.ReadXmlNode(node);
+            }
+
+            r.Name = Path.GetFileName(inputFolder);
+
+            return r;
+        }
+
+    }
+
+
 }

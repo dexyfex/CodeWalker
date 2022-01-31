@@ -276,8 +276,8 @@ namespace CodeWalker
             InitFileType(".gfx", "Scaleform Flash", 7);
             InitFileType(".ynd", "Path Nodes", 8, FileTypeAction.ViewYnd, true);
             InitFileType(".ynv", "Nav Mesh", 9, FileTypeAction.ViewModel, true);
-            InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr);
-            InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
+            InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr, true);
+            InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr, true);
             InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc);
             InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed, true);
             InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld, true);
@@ -2745,6 +2745,14 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Yed;
                     }
+                    if (fnamel.EndsWith(".ywr.xml"))
+                    {
+                        mformat = MetaFormat.Ywr;
+                    }
+                    if (fnamel.EndsWith(".yvr.xml"))
+                    {
+                        mformat = MetaFormat.Yvr;
+                    }
                     if (fnamel.EndsWith(".awc.xml"))
                     {
                         mformat = MetaFormat.Awc;
@@ -2937,6 +2945,28 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = yed.Save();
+                                break;
+                            }
+                        case MetaFormat.Ywr:
+                            {
+                                var ywr = XmlYwr.GetYwr(doc, fpathin);
+                                if (ywr.Waypoints == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YWR XML");
+                                    continue;
+                                }
+                                data = ywr.Save();
+                                break;
+                            }
+                        case MetaFormat.Yvr:
+                            {
+                                var yvr = XmlYvr.GetYvr(doc, fpathin);
+                                if (yvr.Records == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YVR XML");
+                                    continue;
+                                }
+                                data = yvr.Save();
                                 break;
                             }
                         case MetaFormat.Awc:

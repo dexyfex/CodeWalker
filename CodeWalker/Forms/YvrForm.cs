@@ -69,11 +69,11 @@ namespace CodeWalker.Forms
             sb.AppendLine("PositionX, PositionY, PositionZ, Time, VelocityX, VelocityY, VelocityZ, RightX, RightY, RightZ, TopX, TopY, TopZ, SteeringAngle, GasPedalPower, BrakePedalPower, HandbrakeUsed");
             foreach (var entry in yvr.Records.Entries.data_items)
             {
-                sb.Append(FloatUtil.ToString(entry.PositionX));
+                sb.Append(FloatUtil.ToString(entry.Position.X));
                 sb.Append(", ");
-                sb.Append(FloatUtil.ToString(entry.PositionY));
+                sb.Append(FloatUtil.ToString(entry.Position.Y));
                 sb.Append(", ");
-                sb.Append(FloatUtil.ToString(entry.PositionZ));
+                sb.Append(FloatUtil.ToString(entry.Position.Z));
                 sb.Append(", ");
                 sb.Append(entry.Time.ToString());
                 sb.Append(", ");
@@ -114,9 +114,9 @@ namespace CodeWalker.Forms
             {
                 string[] row =
                 {
-                    FloatUtil.ToString(entry.PositionX),
-                    FloatUtil.ToString(entry.PositionY),
-                    FloatUtil.ToString(entry.PositionZ),
+                    FloatUtil.ToString(entry.Position.X),
+                    FloatUtil.ToString(entry.Position.Y),
+                    FloatUtil.ToString(entry.Position.Z),
                     entry.Time.ToString(),
                     entry.VelocityX.ToString(),
                     entry.VelocityY.ToString(),

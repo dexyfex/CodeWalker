@@ -212,6 +212,8 @@ namespace CodeWalker.GameFiles
                 //TestYfts();
                 //TestYpts();
                 //TestYnvs();
+                //TestYvrs();
+                //TestYwrs();
                 //TestYmaps();
                 //TestMrfs();
                 //TestPlacements();
@@ -3518,7 +3520,6 @@ namespace CodeWalker.GameFiles
                             YedFile yed = new YedFile(rfe);
                             RpfMan.LoadFile(yed, rfe);
 
-                            var data1 = entry.File.ExtractFile(rfe);
                             var xml = YedXml.GetXml(yed);
                             var yed2 = XmlYed.GetYed(xml);
                             var data2 = yed2.Save();
@@ -4404,6 +4405,100 @@ namespace CodeWalker.GameFiles
                 }
             }
             if (errorfiles.Count > 0)
+            { }
+        }
+        public void TestYvrs()
+        {
+
+            var exceptions = new List<Exception>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+#if !DEBUG
+                    try
+#endif
+                    {
+                        var rfe = entry as RpfFileEntry;
+                        if (rfe == null) continue;
+
+                        if (rfe.NameLower.EndsWith(".yvr"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+
+                            YvrFile yvr = new YvrFile(rfe);
+                            RpfMan.LoadFile(yvr, rfe);
+
+                            var xml = YvrXml.GetXml(yvr);
+                            var yvr2 = XmlYvr.GetYvr(xml);
+                            var data2 = yvr2.Save();
+                            var yvr3 = new YvrFile();
+                            RpfFile.LoadResourceFile(yvr3, data2, 1);//full roundtrip
+                            var xml2 = YvrXml.GetXml(yvr3);
+                            if (xml != xml2)
+                            { }
+
+                        }
+                    }
+#if !DEBUG
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+#endif
+                }
+            }
+
+            if (exceptions.Count > 0)
+            { }
+        }
+        public void TestYwrs()
+        {
+
+            var exceptions = new List<Exception>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+#if !DEBUG
+                    try
+#endif
+                    {
+                        var rfe = entry as RpfFileEntry;
+                        if (rfe == null) continue;
+
+                        if (rfe.NameLower.EndsWith(".ywr"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+
+                            YwrFile ywr = new YwrFile(rfe);
+                            RpfMan.LoadFile(ywr, rfe);
+
+                            var xml = YwrXml.GetXml(ywr);
+                            var ywr2 = XmlYwr.GetYwr(xml);
+                            var data2 = ywr2.Save();
+                            var ywr3 = new YwrFile();
+                            RpfFile.LoadResourceFile(ywr3, data2, 1);//full roundtrip
+                            var xml2 = YwrXml.GetXml(ywr3);
+                            if (xml != xml2)
+                            { }
+
+                        }
+                    }
+#if !DEBUG
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+#endif
+                }
+            }
+
+            if (exceptions.Count > 0)
             { }
         }
         public void TestYmaps()
