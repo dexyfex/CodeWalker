@@ -279,7 +279,7 @@ namespace CodeWalker
             InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr);
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr);
             InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc);
-            InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed);
+            InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed, true);
             InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld, true);
             InitFileType(".yfd", "Frame Filter Dictionary", 9, FileTypeAction.ViewYfd);
             InitFileType(".asi", "ASI Plugin", 9);
@@ -1748,16 +1748,16 @@ namespace CodeWalker
         private void ViewYed(string name, string path, byte[] data, RpfFileEntry e)
         {
             var yed = RpfFile.GetFile<YedFile>(e, data);
-            GenericForm f = new GenericForm(this);
+            MetaForm f = new MetaForm(this);
             f.Show();
-            f.LoadFile(yed, yed.RpfFileEntry);
+            f.LoadMeta(yed);
         }
         private void ViewYld(string name, string path, byte[] data, RpfFileEntry e)
         {
             var yld = RpfFile.GetFile<YldFile>(e, data);
-            GenericForm f = new GenericForm(this);
+            MetaForm f = new MetaForm(this);
             f.Show();
-            f.LoadFile(yld, yld.RpfFileEntry);
+            f.LoadMeta(yld);
         }
         private void ViewYfd(string name, string path, byte[] data, RpfFileEntry e)
         {
@@ -2741,6 +2741,10 @@ namespace CodeWalker
                     {
                         mformat = MetaFormat.Yld;
                     }
+                    if (fnamel.EndsWith(".yed.xml"))
+                    {
+                        mformat = MetaFormat.Yed;
+                    }
                     if (fnamel.EndsWith(".awc.xml"))
                     {
                         mformat = MetaFormat.Awc;
@@ -2922,6 +2926,17 @@ namespace CodeWalker
                                     continue;
                                 }
                                 data = yld.Save();
+                                break;
+                            }
+                        case MetaFormat.Yed:
+                            {
+                                var yed = XmlYed.GetYed(doc, fpathin);
+                                if (yed.ExpressionDictionary == null)
+                                {
+                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YED XML");
+                                    continue;
+                                }
+                                data = yed.Save();
                                 break;
                             }
                         case MetaFormat.Awc:

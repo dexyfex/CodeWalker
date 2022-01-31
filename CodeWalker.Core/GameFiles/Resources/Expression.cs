@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TC = System.ComponentModel.TypeConverterAttribute;
+using EXP = System.ComponentModel.ExpandableObjectConverter;
+using System.Xml;
 
 /*
     Copyright(c) 2017 Neodymium
@@ -33,17 +36,17 @@ using System.Threading.Tasks;
 namespace CodeWalker.GameFiles
 {
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionDictionary : ResourceFileBase
+    [TC(typeof(EXP))] public class ExpressionDictionary : ResourceFileBase
     {
         // pgDictionaryBase
         // pgDictionary<crExpressions>
         public override long BlockLength => 0x40;
 
         // structure data
-        public uint Unknown_10h { get; set; }
-        public uint Unknown_14h { get; set; }
-        public uint Unknown_18h { get; set; }
-        public uint Unknown_1Ch { get; set; }
+        public uint Unknown_10h { get; set; } = 0;
+        public uint Unknown_14h { get; set; } = 0;
+        public uint Unknown_18h { get; set; } = 1;
+        public uint Unknown_1Ch { get; set; } = 0;
         public ResourceSimpleList64_s<MetaHash> ExpressionNameHashes { get; set; }
         public ResourcePointerList64<Expression> Expressions { get; set; }
 
@@ -64,6 +67,7 @@ namespace CodeWalker.GameFiles
             this.Expressions = reader.ReadBlock<ResourcePointerList64<Expression>>();
 
             BuildMap();
+
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -77,6 +81,66 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.ExpressionNameHashes);
             writer.WriteBlock(this.Expressions);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+
+            if (Expressions?.data_items != null)
+            {
+                foreach (var e in Expressions.data_items)
+                {
+                    YedXml.OpenTag(sb, indent, "Item");
+                    e.WriteXml(sb, indent + 1);
+                    YedXml.CloseTag(sb, indent, "Item");
+                }
+            }
+
+        }
+        public void ReadXml(XmlNode node)
+        {
+            var expressions = new List<Expression>();
+            var expressionhashes = new List<MetaHash>();
+
+            var inodes = node.SelectNodes("Item");
+            if (inodes != null)
+            {
+                foreach (XmlNode inode in inodes)
+                {
+                    var e = new Expression();
+                    e.ReadXml(inode);
+                    expressions.Add(e);
+                    expressionhashes.Add(e.NameHash);
+                }
+            }
+
+            ExpressionNameHashes = new ResourceSimpleList64_s<MetaHash>();
+            ExpressionNameHashes.data_items = expressionhashes.ToArray();
+            Expressions = new ResourcePointerList64<Expression>();
+            Expressions.data_items = expressions.ToArray();
+            
+            BuildMap();
+        }
+        public static void WriteXmlNode(ExpressionDictionary d, StringBuilder sb, int indent, string name = "ExpressionDictionary")
+        {
+            if (d == null) return;
+            if ((d.Expressions?.data_items == null) || (d.Expressions.data_items.Length == 0))
+            {
+                YedXml.SelfClosingTag(sb, indent, name);
+            }
+            else
+            {
+                YedXml.OpenTag(sb, indent, name);
+                d.WriteXml(sb, indent + 1);
+                YedXml.CloseTag(sb, indent, name);
+            }
+        }
+        public static ExpressionDictionary ReadXmlNode(XmlNode node)
+        {
+            if (node == null) return null;
+            var ed = new ExpressionDictionary();
+            ed.ReadXml(node);
+            return ed;
+        }
+
 
         public override IResourceBlock[] GetReferences()
         {
@@ -104,7 +168,8 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < exprs.Length; i++)
                 {
                     var expr = exprs[i];
-                    var name = (i < names.Length) ? names[i] : (MetaHash)JenkHash.GenHash(expr?.Name?.ToString()?.ToLowerInvariant() ?? "");
+                    var name = (i < names.Length) ? names[i] : (MetaHash)JenkHash.GenHash(expr?.GetShortName() ?? "");
+                    expr.NameHash = name;
                     ExprMap[name] = expr;
                 }
             }
@@ -115,7 +180,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Expression : ResourceSystemBlock
+    [TC(typeof(EXP))] public class Expression : ResourceSystemBlock
     {
         // pgBase
         // crExpressions
@@ -130,18 +195,17 @@ namespace CodeWalker.GameFiles
         public uint Unknown_14h { get; set; } // 0x00000000
         public uint Unknown_18h { get; set; } // 0x00000000
         public uint Unknown_1Ch { get; set; } // 0x00000000
-        public ResourcePointerList64<ExpressionUnk1> Unknown_20h { get; set; }
-        public ResourceSimpleList64_s<ExpressionBoneTrack> BoneTracks { get; set; } // bone tags / animation tracks..??
-        public ResourceSimpleList64<ExpressionUnk2> Unknown_40h { get; set; }
-        public ResourceSimpleList64_s<MetaHash> Unknown_50h { get; set; }  // only for: faceinit.expr, independent_mover.expr
+        public ResourcePointerList64<ExpressionStream> Streams { get; set; }
+        public ResourceSimpleList64_s<ExpressionBoneTrack> BoneTracks { get; set; } // bone tags / animation tracks
+        public ResourceSimpleList64<ExpressionJiggleBlock> JiggleData { get; set; } //compiled list of jiggles data from all jiggle Stream nodes
+        public ResourceSimpleList64_s<MetaHash> ItemHashes { get; set; }  // maybe variables?  only for: faceinit.expr, independent_mover.expr
         public ulong NamePointer { get; set; }
         public ushort NameLength { get; set; } // name len
         public ushort NameCapacity { get; set; } // name len+1
         public uint Unknown_6Ch { get; set; } // 0x00000000
         public uint Unknown_70h { get; set; } = 1;
         public MetaHash Unknown_74h { get; set; } // seems to be a hash?
-        public ushort Unk1ItemLength { get; set; } // max length of any Unk1 item in Unknown_20h
-        public ushort Unknown_7Ah { get; set; } // 0x0000
+        public uint MaxStreamSize { get; set; } // max length of any item in Streams
         public uint Unknown_7Ch { get; set; } // 3 or 2
         public uint Unknown_80h { get; set; } // 0x00000000
         public uint Unknown_84h { get; set; } // 0x00000000
@@ -149,8 +213,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_8Ch { get; set; } // 0x00000000
 
         // reference data
-        public string_r Name;
-
+        public string_r Name { get; set; }
+        public MetaHash NameHash { get; set; }
 
         public Dictionary<ExpressionBoneTrack, ExpressionBoneTrack> BoneTracksDict { get; set; }
 
@@ -166,18 +230,17 @@ namespace CodeWalker.GameFiles
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt32();
             this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadBlock<ResourcePointerList64<ExpressionUnk1>>();
+            this.Streams = reader.ReadBlock<ResourcePointerList64<ExpressionStream>>();
             this.BoneTracks = reader.ReadBlock<ResourceSimpleList64_s<ExpressionBoneTrack>>();
-            this.Unknown_40h = reader.ReadBlock<ResourceSimpleList64<ExpressionUnk2>>();
-            this.Unknown_50h = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            this.JiggleData = reader.ReadBlock<ResourceSimpleList64<ExpressionJiggleBlock>>();
+            this.ItemHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
             this.NamePointer = reader.ReadUInt64();
             this.NameLength = reader.ReadUInt16();
             this.NameCapacity = reader.ReadUInt16();
             this.Unknown_6Ch = reader.ReadUInt32();
             this.Unknown_70h = reader.ReadUInt32();
             this.Unknown_74h = reader.ReadUInt32();
-            this.Unk1ItemLength = reader.ReadUInt16();
-            this.Unknown_7Ah = reader.ReadUInt16();
+            this.MaxStreamSize = reader.ReadUInt32();
             this.Unknown_7Ch = reader.ReadUInt32();
             this.Unknown_80h = reader.ReadUInt32();
             this.Unknown_84h = reader.ReadUInt32();
@@ -189,15 +252,47 @@ namespace CodeWalker.GameFiles
                 this.NamePointer // offset
             );
 
-            //if (Unknown_50h?.data_items?.Length > 0)
-            //{ } // faceinit.expr, independent_mover.expr
+            JenkIndex.Ensure(GetShortName());
+
 
             BuildBoneTracksDict();
 
+
+
             #region testing
+
+            //if (Streams?.data_items != null)
+            //{ }
+
+            ////if ((this.JiggleData?.data_items?.Length ?? 0) > 0)
+            //{
+            //    var cnt1 = JiggleData?.data_items?.Length ?? 0;
+            //    var cnt2 = 0;
+            //    foreach (var stream in Streams.data_items)
+            //    {
+            //        foreach (var node in stream.Items)
+            //        {
+            //            if (node is ExpressionNodeJiggle jnode)
+            //            {
+            //                var trackrot = BoneTracks.data_items[jnode.BoneTrackRot];
+            //                var trackpos = BoneTracks.data_items[jnode.BoneTrackPos];
+            //                var jd1 = jnode.JiggleData;
+            //                var jd2 = JiggleData.data_items[cnt2].JiggleData;
+            //                if (!jd1.Compare(jd2))
+            //                { }//no hit
+            //                if (jd2.BoneTag != trackrot.BoneTag)
+            //                { }//no hit
+            //                cnt2++;
+            //            }
+            //        }
+            //    }
+            //    if (cnt1 != cnt2)
+            //    { }//no hit
+            //}
+
             //long tlen = 0;
-            //if (Unknown_20h?.data_items != null) foreach (var item in Unknown_20h.data_items) tlen = Math.Max(tlen, item.BlockLength);
-            //if (Unk1ItemLength != tlen)
+            //if (Streams?.data_items != null) foreach (var item in Streams.data_items) tlen = Math.Max(tlen, item.BlockLength);
+            //if (MaxStreamSize != tlen)
             //{ }//no hit
 
             //if (Unknown_4h != 1)
@@ -227,8 +322,6 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;
             //}
-            //if (Unknown_7Ah != 0)
-            //{ }//no hit
             //switch (Unknown_7Ch)
             //{
             //    case 3:
@@ -261,23 +354,60 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
-            writer.WriteBlock(this.Unknown_20h);
+            writer.WriteBlock(this.Streams);
             writer.WriteBlock(this.BoneTracks);
-            writer.WriteBlock(this.Unknown_40h);
-            writer.WriteBlock(this.Unknown_50h);
+            writer.WriteBlock(this.JiggleData);
+            writer.WriteBlock(this.ItemHashes);
             writer.Write(this.NamePointer);
             writer.Write(this.NameLength);
             writer.Write(this.NameCapacity);
             writer.Write(this.Unknown_6Ch);
             writer.Write(this.Unknown_70h);
             writer.Write(this.Unknown_74h);
-            writer.Write(this.Unk1ItemLength);
-            writer.Write(this.Unknown_7Ah);
+            writer.Write(this.MaxStreamSize);
             writer.Write(this.Unknown_7Ch);
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_84h);
             writer.Write(this.Unknown_88h);
             writer.Write(this.Unknown_8Ch);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.StringTag(sb, indent, "Name", Name?.Value ?? "");
+            YedXml.StringTag(sb, indent, "Unk74", YedXml.HashString(Unknown_74h));
+            YedXml.ValueTag(sb, indent, "Unk7C", Unknown_7Ch.ToString());
+
+            if ((BoneTracks?.data_items?.Length ?? 0) > 0)
+            {
+                YedXml.WriteItemArray(sb, BoneTracks.data_items, indent, "BoneTracks");
+            }
+
+            if ((Streams?.data_items?.Length ?? 0) > 0)
+            {
+                YedXml.WriteItemArray(sb, Streams.data_items, indent, "Streams");
+            }
+
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Name = new string_r();
+            Name.Value = Xml.GetChildInnerText(node, "Name");
+            NameLength = (ushort)Name.Value.Length;
+            NameCapacity = (ushort)(NameLength + 1);
+            NameHash = JenkHash.GenHash(GetShortName());
+            Unknown_74h = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Unk74"));
+            Unknown_7Ch = Xml.GetChildUIntAttribute(node, "Unk7C", "value");
+
+            BoneTracks = new ResourceSimpleList64_s<ExpressionBoneTrack>();
+            BoneTracks.data_items = XmlMeta.ReadItemArray<ExpressionBoneTrack>(node, "BoneTracks");
+
+            Streams = new ResourcePointerList64<ExpressionStream>();
+            Streams.data_items = XmlMeta.ReadItemArray<ExpressionStream>(node, "Streams");
+
+            BuildBoneTracksDict();
+            BuildJiggleData();
+            UpdateItemHashes();
+            UpdateStreamBuffers();
         }
 
         public override IResourceBlock[] GetReferences()
@@ -289,10 +419,10 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, Unknown_20h),
+                new Tuple<long, IResourceBlock>(0x20, Streams),
                 new Tuple<long, IResourceBlock>(0x30, BoneTracks),
-                new Tuple<long, IResourceBlock>(0x40, Unknown_40h),
-                new Tuple<long, IResourceBlock>(0x50, Unknown_50h)
+                new Tuple<long, IResourceBlock>(0x40, JiggleData),
+                new Tuple<long, IResourceBlock>(0x50, ItemHashes)
             };
         }
 
@@ -320,6 +450,90 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public void BuildJiggleData()
+        {
+            var jiggles = new List<ExpressionJiggleBlock>();
+            if (Streams?.data_items != null)
+            {
+                foreach (var stream in Streams.data_items)
+                {
+                    foreach (var node in stream.Items)
+                    {
+                        if (node is ExpressionNodeJiggle jnode)
+                        {
+                            var jiggle = new ExpressionJiggleBlock();
+                            jiggle.JiggleData = jnode.JiggleData.Clone();
+                            jiggles.Add(jiggle);
+                        }
+                    }
+                }
+            }
+            JiggleData = new ResourceSimpleList64<ExpressionJiggleBlock>();
+            JiggleData.data_items = jiggles.ToArray();
+        }
+
+        public void UpdateItemHashes()
+        {
+            var dict = new Dictionary<MetaHash, int>();
+            if (Streams?.data_items != null)
+            {
+                foreach (var stream in Streams.data_items)
+                {
+                    foreach (var item in stream.Items)
+                    {
+                        if (item is ExpressionNodeS3 s3)
+                        {
+                            dict[s3.Hash] = 0;
+                        }
+                    }
+                }
+            }
+            var list = dict.Keys.ToList();
+            list.Sort((a, b) => a.Hash.CompareTo(b.Hash));
+            for (int i = 0; i < list.Count; i++)
+            {
+                dict[list[i]] = i;
+            }
+            if (Streams?.data_items != null)
+            {
+                foreach (var stream in Streams.data_items)
+                {
+                    foreach (var item in stream.Items)
+                    {
+                        if (item is ExpressionNodeS3 s3)
+                        {
+                            var index = dict[s3.Hash];
+                            s3.HashIndex = (byte)index;
+                        }
+                    }
+                }
+            }
+
+            ItemHashes = new ResourceSimpleList64_s<MetaHash>();
+            ItemHashes.data_items = list.ToArray();
+
+        }
+
+        public void UpdateStreamBuffers()
+        {
+            MaxStreamSize = 0;
+            if (Streams?.data_items != null)
+            {
+                foreach (var item in Streams.data_items)
+                {
+                    //item.FlattenHierarchy();
+                    item.WriteItems(); //makes sure the data buffers are updated to the correct length!
+                    MaxStreamSize = Math.Max(MaxStreamSize, (uint)item.BlockLength);
+                }
+            }
+        }
+
+
+        public string GetShortName()
+        {
+            return Path.GetFileNameWithoutExtension(Name?.Value ?? "").ToLowerInvariant();
+        }
+
 
         public override string ToString()
         {
@@ -329,137 +543,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    public class ExpressionTreeReader
-    {
-        public byte[] Data1 { get; set; }
-        public byte[] Data2 { get; set; }
-        public byte[] Data3 { get; set; }
-
-        public ExpressionUnk1_Base[] Items { get; set; }
-
-        public ExpressionTreeReader(byte[] d1, byte[] d2, byte[] d3)
-        {
-            Data1 = d1;
-            Data2 = d2;
-            Data3 = d3;
-        }
-
-        public ExpressionUnk1_Base[] ReadItems()
-        {
-
-            var ms1 = new MemoryStream(Data1);
-            var ms2 = new MemoryStream(Data2);
-            var ms3 = new MemoryStream(Data3);
-            var dr1 = new DataReader(ms1);
-            var dr2 = new DataReader(ms2);
-            var dr3 = new DataReader(ms3);
-
-            var items = new List<ExpressionUnk1_Base>();
-            while (ms3.Position < ms3.Length)
-            {
-                var type = dr3.ReadByte();
-                if (type == 0)
-                {
-                    if (ms3.Position != ms3.Length)
-                    { }
-                    break;
-                }
-                var item = ExpressionUnk1.CreateItem(type);
-                item.Type = type;
-                item.Read(dr1, dr2, dr3);
-                items.Add(item);
-            }
-            Items = items.ToArray();
-
-            if ((dr1.Length - dr1.Position) != 0)
-            { }
-            if ((dr2.Length - dr2.Position) != 0)
-            { }
-            if ((dr3.Length - dr3.Position) != 0)
-            { }
-
-            return Items;
-        }
-
-        public ExpressionUnk1_Base[] ReadTree()
-        {
-
-            if (Items == null) return null;
-
-            var stack = new Stack<ExpressionUnk1_Base>();
-
-            for (int i = 0; i < Items.Length; i++)
-            {
-                var item = Items[i];
-
-                switch (item.Type)
-                {
-                    case 0x01: break;
-                    case 0x03: break;
-                    case 0x04: break;
-                    case 0x05: break;
-                    case 0x06: item.Children = new[] { stack.Pop() }; break;
-                    case 0x07: break;
-                    case 0x09: break;
-                    case 0x0A: break;
-                    case 0x0B: break;
-                    case 0x0E: break;
-                    case 0x10: item.Children = new[] { stack.Pop() }; break; //####### maybe not
-                    case 0x11: item.Children = new[] { stack.Pop() }; break;
-                    case 0x1B: item.Children = new[] { stack.Pop() }; break;
-                    case 0x1D: item.Children = new[] { stack.Pop() }; break;
-                    case 0x1E: item.Children = new[] { stack.Pop() }; break;
-                    case 0x1F: item.Children = new[] { stack.Pop() }; break;
-                    case 0x20: break;//first in list
-                    case 0x21: item.Children = new[] { stack.Pop() }; break;
-                    case 0x22: item.Children = new[] { stack.Pop() }; break;
-                    case 0x23: item.Children = new[] { stack.Pop() }; break;
-                    case 0x26: item.Children = new[] { stack.Pop() }; break;
-                    case 0x27: item.Children = new[] { stack.Pop() }; break;
-                    case 0x28: item.Children = new[] { stack.Pop() }; break;
-                    case 0x2A: item.Children = new[] { stack.Pop() }; break;
-                    case 0x2B: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x2C: item.Children = new[] { stack.Pop() }; break;
-                    case 0x2D: item.Children = new[] { stack.Pop(), stack.Pop() }; break;//4 maybe?
-                    case 0x2E: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x2F: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x30: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x31: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x32: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x33: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x35: item.Children = new[] { stack.Pop(), stack.Pop() }; break;//can't be more than 2
-                    case 0x36: item.Children = new[] { stack.Pop(), stack.Pop() }; break; //can't be more than 2
-                    case 0x37: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x38: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x39: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x3A: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x3B: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break; //####### maybe not                       
-                    case 0x3C: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x3D: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x3E: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x3F: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    case 0x40: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
-                    case 0x42: break;//first in list
-                    case 0x43: item.Children = new[] { stack.Pop() }; break;
-                    case 0x44: break;
-                    case 0x45: break;
-                    case 0x46: item.Children = new[] { stack.Pop() }; break;
-                    case 0x49: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
-                    default: break;//no hit
-                }
-
-                stack.Push(item);
-            }
-
-            var roots = stack.Reverse().ToArray();
-
-            return roots;
-        }
-
-
-    }
-
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1 : ResourceSystemBlock
+    [TC(typeof(EXP))] public class ExpressionStream : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength
         {
@@ -467,40 +551,44 @@ namespace CodeWalker.GameFiles
         }
 
         // structure data
-        public MetaHash Unknown_0h { get; set; }
+        public MetaHash NameHash { get; set; }//presumably name hash
         public uint Data1Length { get; set; }
         public uint Data2Length { get; set; }
         public ushort Data3Length { get; set; }
-        public ushort Unknown_Eh { get; set; }
+        public ushort Unk0E { get; set; }//what is this? possibly max hierarchy depth
         public byte[] Data1 { get; set; }
         public byte[] Data2 { get; set; }
         public byte[] Data3 { get; set; }
 
 
-        public ExpressionUnk1_Base[] Items { get; set; }
-        public ExpressionUnk1_Base[] Roots { get; set; }
+        public ExpressionNodeBase[] Items { get; set; }
+        public ExpressionNodeBase[] Roots { get; set; }
 
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadUInt32();
+            this.NameHash = reader.ReadUInt32();
             this.Data1Length = reader.ReadUInt32();
             this.Data2Length = reader.ReadUInt32();
             this.Data3Length = reader.ReadUInt16();
-            this.Unknown_Eh = reader.ReadUInt16();
+            this.Unk0E = reader.ReadUInt16();
             this.Data1 = reader.ReadBytes((int)Data1Length);
             this.Data2 = reader.ReadBytes((int)Data2Length);
             this.Data3 = reader.ReadBytes((int)Data3Length);
 
 
-            var treereader = new ExpressionTreeReader(Data1, Data2, Data3);
-            Items = treereader.ReadItems();
-            Roots = treereader.ReadTree();
+            ReadItems();
+            BuildHierarchy();
+
+
+
 
             #region testing
-            //switch (Unknown_Eh)
+            //FlattenHierarchy();
+            //WriteItems();
+            //switch (Unk1)
             //{
             //    case 2:
             //    case 8:
@@ -550,128 +638,448 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
+
+            //FlattenHierarchy();
+            //WriteItems();//should already be done by Expression.UpdateStreamBuffers
+
             // write structure data
-            writer.Write(this.Unknown_0h);
+            writer.Write(this.NameHash);
             writer.Write(this.Data1Length);
             writer.Write(this.Data2Length);
             writer.Write(this.Data3Length);
-            writer.Write(this.Unknown_Eh);
+            writer.Write(this.Unk0E);
             writer.Write(this.Data1);
             writer.Write(this.Data2);
             writer.Write(this.Data3);
         }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.StringTag(sb, indent, "Name", YedXml.HashString(NameHash));
+            YedXml.ValueTag(sb, indent, "Unk0E", Unk0E.ToString());
+
+            //TODO: use hierarchy!
+            YedXml.OpenTag(sb, indent, "Instructions");
+            var cind = indent + 1;
+            var cind2 = cind + 1;
+            foreach (var item in Items)
+            {
+                if (item is ExpressionNodeEmpty)
+                {
+                    YedXml.SelfClosingTag(sb, cind, "Item type=\"" + item.Type.ToString() + "\"");
+                }
+                else
+                {
+                    YedXml.OpenTag(sb, cind, "Item type=\"" + item.Type.ToString() + "\"");
+                    item.WriteXml(sb, cind2);
+                    YedXml.CloseTag(sb, cind, "Item");
+                }
+            }
+            YedXml.CloseTag(sb, indent, "Instructions");
+
+
+        }
+        public void ReadXml(XmlNode node)
+        {
+            NameHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
+            Unk0E = (ushort)Xml.GetChildUIntAttribute(node, "Unk0E", "value");
+
+            var items = new List<ExpressionNodeBase>();
+            var instnode = node.SelectSingleNode("Instructions");
+            if (instnode != null)
+            {
+                var inodes = instnode.SelectNodes("Item");
+                if (inodes?.Count > 0)
+                {
+                    foreach (XmlNode inode in inodes)
+                    {
+                        if (Enum.TryParse<ExpressionNodeType>(Xml.GetStringAttribute(inode, "type"), out var type)) ;
+                        {
+                            var item = CreateItem(type);
+                            item.Type = type;
+                            item.ReadXml(inode);
+                            items.Add(item);
+                        }
+                    }
+                }
+            }
+            Items = items.ToArray();
+            BuildHierarchy();
+
+        }
 
 
 
-        public static ExpressionUnk1_Base CreateItem(byte type)
+
+        public void ReadItems()
+        {
+            var s1 = new MemoryStream(Data1);
+            var s2 = new MemoryStream(Data2);
+            var s3 = new MemoryStream(Data3);
+            var r1 = new DataReader(s1);
+            var r2 = new DataReader(s2);
+            var r3 = new DataReader(s3);
+
+            var items = new List<ExpressionNodeBase>();
+            while (s3.Position < s3.Length)
+            {
+                var type = (ExpressionNodeType)r3.ReadByte();
+                if (type == ExpressionNodeType.None)
+                {
+                    if (s3.Position != s3.Length)
+                    { }//no hit
+                    break;
+                }
+                var item = CreateItem(type);
+                item.Type = type;
+                item.Read(r1, r2);
+                items.Add(item);
+            }
+
+            if ((r1.Length - r1.Position) != 0)
+            { }//no hit
+            if ((r2.Length - r2.Position) != 0)
+            { }//no hit
+            if ((r3.Length - r3.Position) != 0)
+            { }//no hit
+
+            Items = items.ToArray();
+        }
+
+        public void BuildHierarchy()
+        {
+            if (Items == null) return;
+
+            var stack = new Stack<ExpressionNodeBase>();
+
+            for (int i = 0; i < Items.Length; i++)
+            {
+                var item = Items[i];
+
+                switch (item.Type)
+                {
+                    case ExpressionNodeType.Unk01: break;
+                    case ExpressionNodeType.Unk03: break;
+                    case ExpressionNodeType.Unk04: break;
+                    case ExpressionNodeType.Unk05: break;
+                    case ExpressionNodeType.Unk06: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk07: break;
+                    case ExpressionNodeType.Unk09: break;
+                    case ExpressionNodeType.Unk0A: break;
+                    case ExpressionNodeType.Unk0B: break;
+                    case ExpressionNodeType.Jiggle: break;
+                    case ExpressionNodeType.Unk10: item.Children = new[] { stack.Pop() }; break; //####### maybe not
+                    case ExpressionNodeType.Unk11: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk1B: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk1D: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk1E: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk1F: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk20: break;//first in list
+                    case ExpressionNodeType.Unk21: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk22: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk23: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk26: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk27: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk28: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk2A: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk2B: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk2C: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk2D: item.Children = new[] { stack.Pop(), stack.Pop() }; break;//4 maybe?
+                    case ExpressionNodeType.Unk2E: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk2F: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk30: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk31: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk32: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk33: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk35: item.Children = new[] { stack.Pop(), stack.Pop() }; break;//can't be more than 2
+                    case ExpressionNodeType.Unk36: item.Children = new[] { stack.Pop(), stack.Pop() }; break; //can't be more than 2
+                    case ExpressionNodeType.Unk37: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk38: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk39: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk3A: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk3B: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break; //####### maybe not                       
+                    case ExpressionNodeType.Unk3C: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk3D: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk3E: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk3F: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk40: item.Children = new[] { stack.Pop(), stack.Pop() }; break;
+                    case ExpressionNodeType.Unk42: break;//first in list
+                    case ExpressionNodeType.Unk43: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk44: break;
+                    case ExpressionNodeType.Unk45: break;
+                    case ExpressionNodeType.Unk46: item.Children = new[] { stack.Pop() }; break;
+                    case ExpressionNodeType.Unk49: item.Children = new[] { stack.Pop(), stack.Pop(), stack.Pop() }; break;
+                    default: break;//no hit
+                }
+
+                stack.Push(item);
+            }
+
+
+            Roots = stack.Reverse().ToArray();
+
+
+            foreach (var item in Items) //probably using the stack caused child arrays to be reversed, so reverse them back again
+            {
+                if ((item.Children?.Length ?? 0) > 1)
+                {
+                    Array.Reverse(item.Children);
+                }
+            }
+
+
+        }
+
+        public void FlattenHierarchy(ExpressionNodeBase node = null, List<ExpressionNodeBase> list = null)
+        {
+            if (node == null)
+            {
+                if (Roots == null) return;
+
+                list = new List<ExpressionNodeBase>();
+
+                foreach (var root in Roots)
+                {
+                    FlattenHierarchy(root, list);
+                }
+
+                Items = list.ToArray();
+            }
+            else
+            {
+                if (node.Children != null)
+                {
+                    foreach (var child in node.Children)
+                    {
+                        FlattenHierarchy(child, list);
+                    }
+                }
+                list.Add(node);
+            }
+        }
+
+        public void WriteItems()
+        {
+            var s1 = new MemoryStream();
+            var s2 = new MemoryStream();
+            var s3 = new MemoryStream();
+            var w1 = new DataWriter(s1);
+            var w2 = new DataWriter(s2);
+            var w3 = new DataWriter(s3);
+
+            foreach (var item in Items)
+            {
+                w3.Write((byte)item.Type);
+                item.Write(w1, w2);
+            }
+            w3.Write((byte)0);
+
+            var b1 = new byte[s1.Length];
+            var b2 = new byte[s2.Length];
+            var b3 = new byte[s3.Length];
+            s1.Position = 0;
+            s2.Position = 0;
+            s3.Position = 0;
+            s1.Read(b1, 0, b1.Length);
+            s2.Read(b2, 0, b2.Length);
+            s3.Read(b3, 0, b3.Length);
+
+            Data1 = b1;
+            Data2 = b2;
+            Data3 = b3;
+            Data1Length = (uint)Data1.Length;
+            Data2Length = (uint)Data2.Length;
+            Data3Length = (ushort)Data3.Length;
+        }
+
+
+
+
+        public static ExpressionNodeBase CreateItem(ExpressionNodeType type)
         {
             switch (type)
             {
-                //case 0:
-                case 0x21:
-                case 0x30:
-                case 0x3D:
-                case 0x03:
-                case 0x01:
-                case 0x33:
-                case 0x2E:
-                case 0x31:
-                case 0x32:
-                case 0x2F:
-                case 0x04:
-                case 0x10:
-                case 0x3B:
-                case 0x36:
-                case 0x35:
-                case 0x39:
-                case 0x38:
-                case 0x37:
-                case 0x1D:
-                case 0x1E:
-                case 0x46:
-                case 0x1F:
-                case 0x3A:
-                case 0x22:
-                case 0x49:
-                case 0x3F:
-                case 0x1B:
-                case 0x40:
-                case 0x3C:
-                case 0x11:
-                    return new ExpressionUnk1_Base();
+                case ExpressionNodeType.Unk01:
+                case ExpressionNodeType.Unk03:
+                case ExpressionNodeType.Unk04:
+                case ExpressionNodeType.Unk10:
+                case ExpressionNodeType.Unk11:
+                case ExpressionNodeType.Unk1B:
+                case ExpressionNodeType.Unk1D:
+                case ExpressionNodeType.Unk1E:
+                case ExpressionNodeType.Unk1F:
+                case ExpressionNodeType.Unk21:
+                case ExpressionNodeType.Unk22:
+                case ExpressionNodeType.Unk2E:
+                case ExpressionNodeType.Unk2F:
+                case ExpressionNodeType.Unk30:
+                case ExpressionNodeType.Unk31:
+                case ExpressionNodeType.Unk32:
+                case ExpressionNodeType.Unk33:
+                case ExpressionNodeType.Unk35:
+                case ExpressionNodeType.Unk36:
+                case ExpressionNodeType.Unk37:
+                case ExpressionNodeType.Unk38:
+                case ExpressionNodeType.Unk39:
+                case ExpressionNodeType.Unk3A:
+                case ExpressionNodeType.Unk3B:
+                case ExpressionNodeType.Unk3C:
+                case ExpressionNodeType.Unk3D:
+                case ExpressionNodeType.Unk3F:
+                case ExpressionNodeType.Unk40:
+                case ExpressionNodeType.Unk46:
+                case ExpressionNodeType.Unk49:
+                    return new ExpressionNodeEmpty();
 
-                case 0x45:
-                case 0x44:
-                    return new ExpressionUnk1_S1();
+                case ExpressionNodeType.Unk44:
+                case ExpressionNodeType.Unk45:
+                    return new ExpressionNodeS1();
 
-                case 0x07:
-                case 0x09:
-                case 0x0A:
-                case 0x23:
-                case 0x26:
-                case 0x27: 
-                case 0x28:
-                case 0x20:
-                case 0x42:
-                case 0x43:
-                case 0x2A:
-                case 0x06:
-                    return new ExpressionUnk1_S2();
+                case ExpressionNodeType.Unk06:
+                case ExpressionNodeType.Unk07:
+                case ExpressionNodeType.Unk09:
+                case ExpressionNodeType.Unk0A:
+                case ExpressionNodeType.Unk20:
+                case ExpressionNodeType.Unk23:
+                case ExpressionNodeType.Unk26:
+                case ExpressionNodeType.Unk27: 
+                case ExpressionNodeType.Unk28:
+                case ExpressionNodeType.Unk2A:
+                    return new ExpressionNodeS2();
 
-                case 0x2B:
-                case 0x2C:
-                case 0x2D:
-                    return new ExpressionUnk1_2B2C2D();
+                case ExpressionNodeType.Unk42:
+                case ExpressionNodeType.Unk43:
+                    return new ExpressionNodeS3();
+
+                case ExpressionNodeType.Unk2B:
+                case ExpressionNodeType.Unk2C:
+                case ExpressionNodeType.Unk2D:
+                    return new ExpressionNode2B();
 
 
-                case 0x0B: return new ExpressionUnk1_0B();
-                case 0x05: return new ExpressionUnk1_05();
-                case 0x3E: return new ExpressionUnk1_3E();
-                case 0x0E: return new ExpressionUnk1_0E();
+                case ExpressionNodeType.Unk05: return new ExpressionNode05();
+                case ExpressionNodeType.Unk0B: return new ExpressionNode0B();
+                case ExpressionNodeType.Jiggle: return new ExpressionNodeJiggle();
+                case ExpressionNodeType.Unk3E: return new ExpressionNode3E();
 
             }
-            return new ExpressionUnk1_Base();
+            return new ExpressionNodeBase();
         }
 
 
         public override string ToString()
         {
-            return Unknown_0h.ToString();
+            return NameHash.ToString() + " (" + (Items?.Length??0).ToString() + " items, " + (Roots?.Length??0).ToString() + " roots)";
         }
+
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_Base
+
+    public enum ExpressionNodeType : byte
     {
-        public byte Type { get; set; }
-        public string TypeStr { get => Type.ToString("X").PadLeft(2, '0'); }
+        None = 0,
+        Unk01 = 0x01,
+        Unk03 = 0x03,
+        Unk04 = 0x04,
+        Unk05 = 0x05,
+        Unk06 = 0x06,
+        Unk07 = 0x07,
+        Unk09 = 0x09,
+        Unk0A = 0x0A,
+        Unk0B = 0x0B,
+        Jiggle = 0x0E,
+        Unk10 = 0x10,
+        Unk11 = 0x11,
+        Unk1B = 0x1B,
+        Unk1D = 0x1D,
+        Unk1E = 0x1E,
+        Unk1F = 0x1F,
+        Unk20 = 0x20,
+        Unk21 = 0x21,
+        Unk22 = 0x22,
+        Unk23 = 0x23,
+        Unk26 = 0x26,
+        Unk27 = 0x27,
+        Unk28 = 0x28,
+        Unk2A = 0x2A,
+        Unk2B = 0x2B,
+        Unk2C = 0x2C,
+        Unk2D = 0x2D,
+        Unk2E = 0x2E,
+        Unk2F = 0x2F,
+        Unk30 = 0x30,
+        Unk31 = 0x31,
+        Unk32 = 0x32,
+        Unk33 = 0x33,
+        Unk35 = 0x35,
+        Unk36 = 0x36,
+        Unk37 = 0x37,
+        Unk38 = 0x38,
+        Unk39 = 0x39,
+        Unk3A = 0x3A,
+        Unk3B = 0x3B,
+        Unk3C = 0x3C,
+        Unk3D = 0x3D,
+        Unk3E = 0x3E,
+        Unk3F = 0x3F,
+        Unk40 = 0x40,
+        Unk42 = 0x42,
+        Unk43 = 0x43,
+        Unk44 = 0x44,
+        Unk45 = 0x45,
+        Unk46 = 0x46,
+        Unk49 = 0x49,
+    }
 
-        public ExpressionUnk1_Base[] Children { get; set; }
 
-        public virtual void Read(DataReader r1, DataReader r2, DataReader r3)
+    [TC(typeof(EXP))] public class ExpressionNodeBase
+    {
+    
+        /*
+    possible type names:
+crExprInstrBone
+crExprInstrRBFs
+crExprInstrSpring
+crExprInstrConstraint
+crExprInstrLinear
+crExprInstrSpringChain
+crExprInstrCurve
+crExprInstrFrame
+crExprInstrLookAt
+crExprInstrVariable
+        */
+
+
+        public ExpressionNodeType Type { get; set; }
+
+        public ExpressionNodeBase[] Children { get; set; }
+
+        public virtual void Read(DataReader r1, DataReader r2)
         { }
-        
+        public virtual void Write(DataWriter w1, DataWriter w2)
+        { }
+        public virtual void WriteXml(StringBuilder sb, int indent)
+        { }
+        public virtual void ReadXml(XmlNode node)
+        { }
+
         public override string ToString()
         {
-            return TypeStr;
+            return Type.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_S1 : ExpressionUnk1_Base
+    [TC(typeof(EXP))] public class ExpressionNodeEmpty : ExpressionNodeBase
+    { }
+    [TC(typeof(EXP))] public class ExpressionNodeS1 : ExpressionNodeBase
     {
-        public uint Length { get; set; }
-        public uint ItemCount { get; set; }
-        public uint ItemType { get; set; }
-        public uint Unk1 { get; set; } // 0x00000000
-
-        [TypeConverter(typeof(ExpandableObjectConverter))] public class Struct1
+        [TC(typeof(EXP))] public class ItemStruct : IMetaXmlItem
         {
-            public ushort Unk1 { get; set; }//bone index?
+            public ushort BoneTrack { get; set; }
             public ushort Unk2 { get; set; }
-
             public float[] Values { get; set; }
 
             public void Read(DataReader r)
             {
-                Unk1 = r.ReadUInt16();
+                BoneTrack = r.ReadUInt16();
                 Unk2 = r.ReadUInt16();
 
                 switch (Unk2)
@@ -684,9 +1092,27 @@ namespace CodeWalker.GameFiles
                         break;//no hit
                 }
             }
+            public void Write(DataWriter w)
+            {
+                w.Write(BoneTrack);
+                w.Write(Unk2);
+            }
+            public void WriteXml(StringBuilder sb, int indent)
+            {
+                YedXml.ValueTag(sb, indent, "BoneTrack", BoneTrack.ToString());
+                YedXml.ValueTag(sb, indent, "Unk2", Unk2.ToString());
+                YedXml.WriteRawArray(sb, Values, indent, "Values", "", FloatUtil.ToString, Values.Length);
+            }
+            public void ReadXml(XmlNode node)
+            {
+                BoneTrack = (ushort)Xml.GetChildUIntAttribute(node, "BoneTrack", "value");
+                Unk2 = (ushort)Xml.GetChildUIntAttribute(node, "Unk2", "value");
+                Values = Xml.GetChildRawFloatArray(node, "Values");
+            }
+
             public override string ToString()
             {
-                var str = Unk1.ToString() + ", " + Unk2.ToString();
+                var str = BoneTrack.ToString() + ", " + Unk2.ToString();
                 if (Values != null)
                 {
                     str += "   -   ";
@@ -699,28 +1125,32 @@ namespace CodeWalker.GameFiles
                 return str;
             }
         }
-        public Struct1[] Items { get; set; }
 
+        public uint Length { get; set; }//updated automatically
+        public uint ItemCount { get; set; }//updated automatically
+        public uint ItemType { get; set; }
+        public uint Unk1 { get; set; } // 0x00000000
+        public ItemStruct[] Items { get; set; }
 
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
+        public override void Read(DataReader r1, DataReader r2)
         {
             Length = r1.ReadUInt32();
             ItemCount = r1.ReadUInt32();
             ItemType = r1.ReadUInt32();
             Unk1 = r1.ReadUInt32();
 
-            var valcnt = ((int)ItemType - 1) * 9 + 6;
-            var hlen = (int)ItemCount * 4 + 16;
-            var dlen = (int)Length - hlen;
-            var tlen = (int)ItemCount * valcnt * 4;
+            var valcnt = (ItemType - 1) * 9 + 6;
+            var hlen = ItemCount * 4 + 16;
+            var dlen = Length - hlen;
+            var tlen = ItemCount * valcnt * 4;
             if (tlen != dlen)
             { }//no hitting
 
 
-            Items = new Struct1[ItemCount];
+            Items = new ItemStruct[ItemCount];
             for (int i = 0; i < ItemCount; i++)
             {
-                var item1 = new Struct1();
+                var item1 = new ItemStruct();
                 item1.Read(r1);
                 Items[i] = item1;
                 Items[i].Values = new float[valcnt];
@@ -770,52 +1200,164 @@ namespace CodeWalker.GameFiles
             if (Unk1 != 0)
             { }//no hit
         }
+        public override void Write(DataWriter w1, DataWriter w2)
+        {
+            ItemCount = (uint)(Items?.Length ?? 0);
+            ItemType = Math.Max(ItemType, 1);
+            var valcnt = (ItemType - 1) * 9 + 6;
+            var hlen = ItemCount * 4 + 16;
+            var tlen = ItemCount * valcnt * 4;
+            Length = hlen + tlen;
+
+            w1.Write(Length);
+            w1.Write(ItemCount);
+            w1.Write(ItemType);
+            w1.Write(Unk1);
+
+            for (int i = 0; i < ItemCount; i++)
+            {
+                Items[i].Write(w1);
+            }
+            for (int n = 0; n < valcnt; n++)
+            {
+                for (int i = 0; i < ItemCount; i++)
+                {
+                    var vals = Items[i].Values;
+                    w1.Write((n < (vals?.Length ?? 0)) ? vals[n] : 0.0f);
+                }
+            }
+
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.ValueTag(sb, indent, "ItemType", ItemType.ToString());
+            YedXml.WriteItemArray(sb, Items, indent, "Items");
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            ItemType = Xml.GetChildUIntAttribute(node, "ItemType", "value");
+            Items = XmlMeta.ReadItemArray<ItemStruct>(node, "Items");
+        }
+
         public override string ToString()
         {
-            var str = TypeStr + ", 1:   -   " + Length.ToString() + ", " + ItemCount.ToString() + ", " + ItemType.ToString();
+            var str = base.ToString() + "   -   " + Length.ToString() + ", " + ItemCount.ToString() + ", " + ItemType.ToString();
             if (Items != null)
             {
-                str += "   -   " + Items.Length.ToString() + " items";
+                str += " (S1)   -   " + Items.Length.ToString() + " items";
             }
             return str;
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_S2 : ExpressionUnk1_Base
+    [TC(typeof(EXP))] public class ExpressionNodeS2 : ExpressionNodeBase
     {
-        public ushort Unk00 { get; set; }
-        public ushort Unk02 { get; set; }
+        public ushort BoneTrack { get; set; } //index of the BoneTag in the Expression.BoneTracks array
+        public ushort BoneTag { get; set; }
+        public byte Unk01 { get; set; }
+        public byte Unk02 { get; set; }
+        public byte Unk03 { get; set; }
         public byte Unk04 { get; set; }
-        public byte Unk05 { get; set; }
-        public byte Unk06 { get; set; }
-        public byte Unk07 { get; set; }
 
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
+        public override void Read(DataReader r1, DataReader r2)
         {
-            Unk00 = r2.ReadUInt16();
-            Unk02 = r2.ReadUInt16();
+            BoneTrack = r2.ReadUInt16();
+            BoneTag = r2.ReadUInt16();
+            Unk01 = r2.ReadByte();
+            Unk02 = r2.ReadByte();
+            Unk03 = r2.ReadByte();
             Unk04 = r2.ReadByte();
-            Unk05 = r2.ReadByte();
-            Unk06 = r2.ReadByte();
-            Unk07 = r2.ReadByte();
         }
+        public override void Write(DataWriter w1, DataWriter w2)
+        {
+            w2.Write(BoneTrack);
+            w2.Write(BoneTag);
+            w2.Write(Unk01);
+            w2.Write(Unk02);
+            w2.Write(Unk03);
+            w2.Write(Unk04);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.ValueTag(sb, indent, "BoneTrack", BoneTrack.ToString());
+            YedXml.ValueTag(sb, indent, "BoneTag", BoneTag.ToString());
+            YedXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            YedXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            YedXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            YedXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            BoneTrack = (ushort)Xml.GetChildUIntAttribute(node, "BoneTrack", "value");
+            BoneTag = (ushort)Xml.GetChildUIntAttribute(node, "BoneTag", "value");
+            Unk01 = (byte)Xml.GetChildUIntAttribute(node, "Unk01", "value");
+            Unk02 = (byte)Xml.GetChildUIntAttribute(node, "Unk02", "value");
+            Unk03 = (byte)Xml.GetChildUIntAttribute(node, "Unk03", "value");
+            Unk04 = (byte)Xml.GetChildUIntAttribute(node, "Unk04", "value");
+        }
+
         public override string ToString()
         {
-            return TypeStr + ", 2:   -   " + Unk00.ToString() + ", " + Unk02.ToString() + ", " + Unk04.ToString() + ", " + Unk05.ToString() + ", " + Unk06.ToString() + ", " + Unk07.ToString();
+            return base.ToString() + " (S2)   -   Track:" + BoneTrack.ToString() + ", Tag:" + BoneTag.ToString() + ", " + Unk01.ToString() + ", " + Unk02.ToString() + ", " + Unk03.ToString() + ", " + Unk04.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_2B2C2D : ExpressionUnk1_Base
+    [TC(typeof(EXP))] public class ExpressionNodeS3 : ExpressionNodeBase
     {
-        public uint UnkUint1 { get; set; }
-        public uint UnkUint2 { get; set; }
-        public uint UnkUint3 { get; set; }
+        public MetaHash Hash { get; set; }
+        public byte HashIndex { get; set; } //index of the hash in the Expression.ItemHashes array (autoupdated - don't need in XML)
+        public byte Unk03 { get; set; }//0
+        public byte Unk04 { get; set; }//0
+        public byte Unk05 { get; set; }//0
 
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
+        public override void Read(DataReader r1, DataReader r2)
         {
-            UnkUint1 = r2.ReadUInt32();
-            UnkUint2 = r2.ReadUInt32();
-            UnkUint3 = r2.ReadUInt32();
+            Hash = r2.ReadUInt32();
+            HashIndex = r2.ReadByte();
+            Unk03 = r2.ReadByte();
+            Unk04 = r2.ReadByte();
+            Unk05 = r2.ReadByte();
 
-            switch (UnkUint1)//flags?
+            if (Unk03 != 0)
+            { }
+            if (Unk04 != 0)
+            { }
+            if (Unk05 != 0)
+            { }
+        }
+        public override void Write(DataWriter w1, DataWriter w2)
+        {
+            w2.Write(Hash);
+            w2.Write(HashIndex);
+            w2.Write(Unk03);
+            w2.Write(Unk04);
+            w2.Write(Unk05);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.StringTag(sb, indent, "Hash", YedXml.HashString(Hash));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Hash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Hash"));
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " (S3)   -   Hash:" + Hash.ToString() + ", " + HashIndex.ToString() + ", " + Unk03.ToString() + ", " + Unk04.ToString() + ", " + Unk05.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class ExpressionNode2B : ExpressionNodeBase
+    {
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public uint Unk03 { get; set; }
+
+        public override void Read(DataReader r1, DataReader r2)
+        {
+            Unk01 = r2.ReadUInt32();
+            Unk02 = r2.ReadUInt32();
+            Unk03 = r2.ReadUInt32();
+
+            switch (Unk01)//flags?
             {
                 case 0:
                 case 128:
@@ -827,7 +1369,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//no hit
             }
-            switch (UnkUint2)//some index?
+            switch (Unk02)//some index?
             {
                 case 24:
                 case 12:
@@ -863,7 +1405,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//no hit
             }
-            switch (UnkUint3)//some index?
+            switch (Unk03)//some index?
             {
                 case 5:
                 case 4:
@@ -896,57 +1438,146 @@ namespace CodeWalker.GameFiles
             }
 
         }
+        public override void Write(DataWriter w1, DataWriter w2)
+        {
+            w2.Write(Unk01);
+            w2.Write(Unk02);
+            w2.Write(Unk03);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            YedXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            YedXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildUIntAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildUIntAttribute(node, "Unk03", "value");
+        }
+
         public override string ToString()
         {
-            return TypeStr + ", 2:   -   " + UnkUint1.ToString() + ", " + UnkUint2.ToString() + ", " + UnkUint3.ToString();
+            return base.ToString() + " (S2B)   -   " + Unk01.ToString() + ", " + Unk02.ToString() + ", " + Unk03.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_0B : ExpressionUnk1_Base
+    [TC(typeof(EXP))] public class ExpressionNode05 : ExpressionNodeBase
     {
-        public Vector4 UnkVec1 { get; set; }
+        public float Unk01 { get; set; }
 
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
+        public override void Read(DataReader r1, DataReader r2)
         {
-            UnkVec1 = r1.ReadVector4();
+            Unk01 = r2.ReadSingle();
+        }
+        public override void Write(DataWriter w1, DataWriter w2)
+        {
+            w2.Write(Unk01);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
         }
 
         public override string ToString()
         {
-            var str = TypeStr + ", 1:   -   " + UnkVec1.ToString();
+            return base.ToString() + " (S05)   -   " + Unk01.ToString();
+        }
+    }
+    [TC(typeof(EXP))] public class ExpressionNode0B : ExpressionNodeBase
+    {
+        public Vector4 Unk01 { get; set; }
+
+        public override void Read(DataReader r1, DataReader r2)
+        {
+            Unk01 = r1.ReadVector4();
+        }
+        public override void Write(DataWriter w1, DataWriter w2)
+        {
+            w1.Write(Unk01);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.SelfClosingTag(sb, indent, "Unk01 " + FloatUtil.GetVector4XmlString(Unk01));
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildVector4Attributes(node, "Unk01");
+        }
+
+        public override string ToString()
+        {
+            var str = base.ToString() + " (S0B)   -   " + Unk01.ToString();
             return str;
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_05 : ExpressionUnk1_Base
+    [TC(typeof(EXP))] public class ExpressionNodeJiggle : ExpressionNodeBase
     {
-        public float UnkFloat { get; set; }
+        public ExpressionJiggleData JiggleData { get; set; }
+        public uint BoneTrackRot { get; set; }
+        public uint BoneTrackPos { get; set; }
+        public uint UnkUint13 { get; set; }//0
+        public uint UnkUint14 { get; set; }//0
 
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
+        public override void Read(DataReader r1, DataReader r2)
         {
-            UnkFloat = r2.ReadSingle();
+            JiggleData = new ExpressionJiggleData();
+            JiggleData.Read(r1);
+            BoneTrackRot = r1.ReadUInt32();
+            BoneTrackPos = r1.ReadUInt32();
+            UnkUint13 = r1.ReadUInt32();
+            UnkUint14 = r1.ReadUInt32();
+        }
+        public override void Write(DataWriter w1, DataWriter w2)
+        {
+            if (JiggleData == null) JiggleData = new ExpressionJiggleData();
+            JiggleData.Write(w1);
+            w1.Write(BoneTrackRot);
+            w1.Write(BoneTrackPos);
+            w1.Write(UnkUint13);
+            w1.Write(UnkUint14);
+        }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            if (JiggleData == null) JiggleData = new ExpressionJiggleData();
+            JiggleData.WriteXml(sb, indent);
+            YedXml.ValueTag(sb, indent, "BoneTrackRot", BoneTrackRot.ToString());
+            YedXml.ValueTag(sb, indent, "BoneTrackPos", BoneTrackPos.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            JiggleData = new ExpressionJiggleData();
+            JiggleData.ReadXml(node);
+            BoneTrackRot = Xml.GetChildUIntAttribute(node, "BoneTrackRot", "value");
+            BoneTrackPos = Xml.GetChildUIntAttribute(node, "BoneTrackPos", "value");
         }
 
         public override string ToString()
         {
-            return TypeStr + ", 2:   -   " + UnkFloat.ToString();
+            return base.ToString() + "   -   " + BoneTrackRot.ToString() + ", " + BoneTrackPos.ToString();
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_3E : ExpressionUnk1_Base
+    [TC(typeof(EXP))] public class ExpressionNode3E : ExpressionNodeBase
     {
-        public Vector4 UnkVec1 { get; set; }
-        public uint UnkUint1 { get; set; } // 0, 1, 2
-        public uint UnkUint2 { get; set; } // 0, 2
-        public uint UnkUint3 { get; set; } // 0, 2
-        public uint UnkUint4 { get; set; } // 0x00000000
+        public Vector4 Unk01 { get; set; }
+        public uint Unk02 { get; set; } // 0, 1, 2
+        public uint Unk03 { get; set; } // 0, 2
+        public uint Unk04 { get; set; } // 0, 2
+        public uint Unk05 { get; set; } // 0x00000000
 
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
+        public override void Read(DataReader r1, DataReader r2)
         {
-            UnkVec1 = r1.ReadVector4();
-            UnkUint1 = r1.ReadUInt32();
-            UnkUint2 = r1.ReadUInt32();
-            UnkUint3 = r1.ReadUInt32();
-            UnkUint4 = r1.ReadUInt32();
+            Unk01 = r1.ReadVector4();
+            Unk02 = r1.ReadUInt32();
+            Unk03 = r1.ReadUInt32();
+            Unk04 = r1.ReadUInt32();
+            Unk05 = r1.ReadUInt32();
 
-            switch (UnkUint1)
+            switch (Unk02)
             {
                 case 0:
                 case 2:
@@ -955,7 +1586,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//no hit
             }
-            switch (UnkUint2)
+            switch (Unk03)
             {
                 case 2:
                 case 0:
@@ -963,7 +1594,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//no hit
             }
-            switch (UnkUint3)
+            switch (Unk04)
             {
                 case 2:
                 case 0:
@@ -971,7 +1602,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//no hit
             }
-            switch (UnkUint4)
+            switch (Unk05)
             {
                 case 0:
                     break;
@@ -979,216 +1610,325 @@ namespace CodeWalker.GameFiles
                     break;//no hit
             }
         }
-        public override string ToString()
+        public override void Write(DataWriter w1, DataWriter w2)
         {
-            return TypeStr + ", 1:   -   " + UnkVec1.ToString() + "   -   " + UnkUint1.ToString() + ", " + UnkUint2.ToString() + ", " + UnkUint3.ToString() + ", " + UnkUint4.ToString();
+            w1.Write(Unk01);
+            w1.Write(Unk02);
+            w1.Write(Unk03);
+            w1.Write(Unk04);
+            w1.Write(Unk05);
         }
-    }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk1_0E : ExpressionUnk1_Base
-    {
-        public Vector3 UnkVec1 { get; set; }
-        public MetaHash UnkUint1 { get; set; }
-        public Vector3 UnkVec2 { get; set; }
-        public MetaHash UnkUint2 { get; set; }
-        public Vector3 UnkVec3 { get; set; }
-        public MetaHash UnkUint3 { get; set; }
-        public Vector3 UnkVec4 { get; set; }
-        public MetaHash UnkUint4 { get; set; }
-        public Vector3 UnkVec5 { get; set; }
-        public MetaHash UnkUint5 { get; set; }
-        public Vector3 UnkVec6 { get; set; }
-        public MetaHash UnkUint6 { get; set; }
-        public Vector3 UnkVec7 { get; set; }
-        public MetaHash UnkUint7 { get; set; }
-        public Vector3 UnkVec8 { get; set; }
-        public MetaHash UnkUint8 { get; set; }
-        public Vector3 UnkVec9 { get; set; }
-        public MetaHash UnkUint9 { get; set; }
-        public Vector3 UnkVec10 { get; set; }
-        public MetaHash UnkUint10 { get; set; }
-        public MetaHash UnkUint11 { get; set; }
-        public MetaHash UnkUint12 { get; set; }
-        public MetaHash UnkUint13 { get; set; }
-        public MetaHash UnkUint14 { get; set; }
+        public override void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.SelfClosingTag(sb, indent, "Unk01 " + FloatUtil.GetVector4XmlString(Unk01));
+            YedXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            YedXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
+            YedXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
+        }
+        public override void ReadXml(XmlNode node)
+        {
+            Unk01 = Xml.GetChildVector4Attributes(node, "Unk01");
+            Unk02 = Xml.GetChildUIntAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildUIntAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildUIntAttribute(node, "Unk04", "value");
+        }
 
-        public override void Read(DataReader r1, DataReader r2, DataReader r3)
-        {
-            UnkVec1 = r1.ReadVector3();
-            UnkUint1 = r1.ReadUInt32();//2x short
-            UnkVec2 = r1.ReadVector3();
-            UnkUint2 = r1.ReadUInt32();//2x short
-            UnkVec3 = r1.ReadVector3();
-            UnkUint3 = r1.ReadUInt32();//2x short
-            UnkVec4 = r1.ReadVector3();
-            UnkUint4 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
-            UnkVec5 = r1.ReadVector3();//0
-            UnkUint5 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
-            UnkVec6 = r1.ReadVector3();//0
-            UnkUint6 = r1.ReadUInt32();//0
-            UnkVec7 = r1.ReadVector3();//0
-            UnkUint7 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
-            UnkVec8 = r1.ReadVector3();//0
-            UnkUint8 = r1.ReadUInt32();//1x short (0), 2 bytes
-            UnkVec9 = r1.ReadVector3();//down vector (0,0,-1)
-            UnkUint9 = r1.ReadUInt32();//1x short, 2 bytes (first 0)
-            UnkVec10 = r1.ReadVector3();//gravity vector? (0, 0, -9.8)
-            UnkUint10 = r1.ReadUInt32();//2x short (2nd 0)
-            UnkUint11 = r1.ReadUInt32();
-            UnkUint12 = r1.ReadUInt32();
-            UnkUint13 = r1.ReadUInt32();
-            UnkUint14 = r1.ReadUInt32();
-        }
         public override string ToString()
         {
-            return TypeStr + ", 1:   -   " + UnkVec1.ToString() + ",   " + UnkVec2.ToString() + ",   " + UnkVec3.ToString() + ",   " + UnkVec4.ToString() + "   ...";
+            return base.ToString() + " (S3E)   -   " + Unk01.ToString() + "   -   " + Unk02.ToString() + ", " + Unk03.ToString() + ", " + Unk04.ToString() + ", " + Unk05.ToString();
         }
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ExpressionUnk2 : ResourceSystemBlock
+
+
+    [TC(typeof(EXP))] public class ExpressionJiggleBlock : ResourceSystemBlock
     {
         public override long BlockLength => 0xA0;
 
-        // structure data
-        public float Unknown_00h { get; set; }
-        public float Unknown_04h { get; set; }
-        public float Unknown_08h { get; set; }
-        public MetaHash Unknown_0Ch { get; set; }
-        public float Unknown_10h { get; set; }
-        public float Unknown_14h { get; set; }
-        public float Unknown_18h { get; set; }
-        public MetaHash Unknown_1Ch { get; set; }
-        public float Unknown_20h { get; set; }
-        public float Unknown_24h { get; set; }
-        public float Unknown_28h { get; set; }
-        public MetaHash Unknown_2Ch { get; set; }
-        public float Unknown_30h { get; set; }
-        public float Unknown_34h { get; set; }
-        public float Unknown_38h { get; set; }
-        public MetaHash Unknown_3Ch { get; set; }
-        public float Unknown_40h { get; set; }
-        public float Unknown_44h { get; set; }
-        public float Unknown_48h { get; set; }
-        public MetaHash Unknown_4Ch { get; set; }
-        public float Unknown_50h { get; set; }
-        public float Unknown_54h { get; set; }
-        public float Unknown_58h { get; set; }
-        public MetaHash Unknown_5Ch { get; set; }
-        public float Unknown_60h { get; set; }
-        public float Unknown_64h { get; set; }
-        public float Unknown_68h { get; set; }
-        public MetaHash Unknown_6Ch { get; set; }
-        public float Unknown_70h { get; set; }
-        public float Unknown_74h { get; set; }
-        public float Unknown_78h { get; set; }
-        public MetaHash Unknown_7Ch { get; set; }
-        public float Unknown_80h { get; set; }
-        public float Unknown_84h { get; set; }
-        public float Unknown_88h { get; set; }
-        public MetaHash Unknown_8Ch { get; set; }
-        public float Unknown_90h { get; set; }
-        public float Unknown_94h { get; set; }
-        public float Unknown_98h { get; set; }
-        public MetaHash Unknown_9Ch { get; set; }
+        public ExpressionJiggleData JiggleData { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            // read structure data
-            this.Unknown_00h = reader.ReadSingle();
-            this.Unknown_04h = reader.ReadSingle();
-            this.Unknown_08h = reader.ReadSingle();
-            this.Unknown_0Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadSingle();
-            this.Unknown_14h = reader.ReadSingle();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadSingle();
-            this.Unknown_24h = reader.ReadSingle();
-            this.Unknown_28h = reader.ReadSingle();
-            this.Unknown_2Ch = reader.ReadUInt32();
-            this.Unknown_30h = reader.ReadSingle();
-            this.Unknown_34h = reader.ReadSingle();
-            this.Unknown_38h = reader.ReadSingle();
-            this.Unknown_3Ch = reader.ReadUInt32();
-            this.Unknown_40h = reader.ReadSingle();
-            this.Unknown_44h = reader.ReadSingle();
-            this.Unknown_48h = reader.ReadSingle();
-            this.Unknown_4Ch = reader.ReadUInt32();
-            this.Unknown_50h = reader.ReadSingle();
-            this.Unknown_54h = reader.ReadSingle();
-            this.Unknown_58h = reader.ReadSingle();
-            this.Unknown_5Ch = reader.ReadUInt32();
-            this.Unknown_60h = reader.ReadSingle();
-            this.Unknown_64h = reader.ReadSingle();
-            this.Unknown_68h = reader.ReadSingle();
-            this.Unknown_6Ch = reader.ReadUInt32();
-            this.Unknown_70h = reader.ReadSingle();
-            this.Unknown_74h = reader.ReadSingle();
-            this.Unknown_78h = reader.ReadSingle();
-            this.Unknown_7Ch = reader.ReadUInt32();
-            this.Unknown_80h = reader.ReadSingle();
-            this.Unknown_84h = reader.ReadSingle();
-            this.Unknown_88h = reader.ReadSingle();
-            this.Unknown_8Ch = reader.ReadUInt32();
-            this.Unknown_90h = reader.ReadSingle();
-            this.Unknown_94h = reader.ReadSingle();
-            this.Unknown_98h = reader.ReadSingle();
-            this.Unknown_9Ch = reader.ReadUInt32();
+            JiggleData = new ExpressionJiggleData();
+            JiggleData.Read(reader);
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // write structure data
-            writer.Write(this.Unknown_00h);
-            writer.Write(this.Unknown_04h);
-            writer.Write(this.Unknown_08h);
-            writer.Write(this.Unknown_0Ch);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_4Ch);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_5Ch);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_64h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_6Ch);
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Unknown_74h);
-            writer.Write(this.Unknown_78h);
-            writer.Write(this.Unknown_7Ch);
-            writer.Write(this.Unknown_80h);
-            writer.Write(this.Unknown_84h);
-            writer.Write(this.Unknown_88h);
-            writer.Write(this.Unknown_8Ch);
-            writer.Write(this.Unknown_90h);
-            writer.Write(this.Unknown_94h);
-            writer.Write(this.Unknown_98h);
-            writer.Write(this.Unknown_9Ch);
+            if (JiggleData == null) JiggleData = new ExpressionJiggleData();
+            JiggleData.Write(writer);
+        }
+
+        public override string ToString()
+        {
+            return JiggleData?.ToString() ?? base.ToString();
         }
     }
 
 
 
+    [TC(typeof(EXP))] public class ExpressionJiggleData
+    {
+        public Vector3 Vector01 { get; set; }
+        public ushort Ushort01a { get; set; }
+        public ushort Ushort01b { get; set; }
+        public Vector3 Vector02 { get; set; }
+        public ushort Ushort02a { get; set; }
+        public ushort Ushort02b { get; set; }
+        public Vector3 Vector03 { get; set; }
+        public ushort Ushort03a { get; set; }
+        public ushort Ushort03b { get; set; }
+        public Vector3 Vector04 { get; set; }
+        public ushort Ushort04a { get; set; }
+        public ushort Ushort04b { get; set; }
+        public Vector3 Vector05 { get; set; }
+        public ushort Ushort05a { get; set; }
+        public ushort Ushort05b { get; set; }
+        public Vector3 Vector06 { get; set; }
+        public ushort Ushort06a { get; set; }
+        public ushort Ushort06b { get; set; }
+        public Vector3 Vector07 { get; set; }
+        public ushort Ushort07a { get; set; }
+        public ushort Ushort07b { get; set; }
+        public Vector3 Vector08 { get; set; }
+        public ushort Ushort08a { get; set; }
+        public ushort Ushort08b { get; set; }
+        public Vector3 Vector09 { get; set; }
+        public ushort Ushort09a { get; set; }
+        public ushort Ushort09b { get; set; }
+        public Vector3 Gravity { get; set; }
+        public ushort BoneTag { get; set; }
+        public ushort Ushort10b { get; set; }//0
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct ExpressionBoneTrack
+        public void Read(DataReader r)
+        {
+            Vector01 = r.ReadVector3();
+            Ushort01a = r.ReadUInt16();
+            Ushort01b = r.ReadUInt16();
+            Vector02 = r.ReadVector3();
+            Ushort02a = r.ReadUInt16();
+            Ushort02b = r.ReadUInt16();
+            Vector03 = r.ReadVector3();
+            Ushort03a = r.ReadUInt16();
+            Ushort03b = r.ReadUInt16();
+            Vector04 = r.ReadVector3();
+            Ushort04a = r.ReadUInt16();
+            Ushort04b = r.ReadUInt16();
+            Vector05 = r.ReadVector3();
+            Ushort05a = r.ReadUInt16();
+            Ushort05b = r.ReadUInt16();
+            Vector06 = r.ReadVector3();
+            Ushort06a = r.ReadUInt16();
+            Ushort06b = r.ReadUInt16();
+            Vector07 = r.ReadVector3();
+            Ushort07a = r.ReadUInt16();
+            Ushort07b = r.ReadUInt16();
+            Vector08 = r.ReadVector3();
+            Ushort08a = r.ReadUInt16();
+            Ushort08b = r.ReadUInt16();
+            Vector09 = r.ReadVector3();
+            Ushort09a = r.ReadUInt16();
+            Ushort09b = r.ReadUInt16();
+            Gravity = r.ReadVector3();
+            BoneTag = r.ReadUInt16();
+            Ushort10b = r.ReadUInt16();
+
+            //if (Ushort10b != 0)
+            //{ }//no hit
+        }
+        public void Write(DataWriter w)
+        {
+            w.Write(Vector01);
+            w.Write(Ushort01a);
+            w.Write(Ushort01b);
+            w.Write(Vector02);
+            w.Write(Ushort02a);
+            w.Write(Ushort02b);
+            w.Write(Vector03);
+            w.Write(Ushort03a);
+            w.Write(Ushort03b);
+            w.Write(Vector04);
+            w.Write(Ushort04a);
+            w.Write(Ushort04b);
+            w.Write(Vector05);
+            w.Write(Ushort05a);
+            w.Write(Ushort05b);
+            w.Write(Vector06);
+            w.Write(Ushort06a);
+            w.Write(Ushort06b);
+            w.Write(Vector07);
+            w.Write(Ushort07a);
+            w.Write(Ushort07b);
+            w.Write(Vector08);
+            w.Write(Ushort08a);
+            w.Write(Ushort08b);
+            w.Write(Vector09);
+            w.Write(Ushort09a);
+            w.Write(Ushort09b);
+            w.Write(Gravity);
+            w.Write(BoneTag);
+            w.Write(Ushort10b);
+        }
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.SelfClosingTag(sb, indent, "Vector01 " + FloatUtil.GetVector3XmlString(Vector01));
+            YedXml.SelfClosingTag(sb, indent, "Vector02 " + FloatUtil.GetVector3XmlString(Vector02));
+            YedXml.SelfClosingTag(sb, indent, "Vector03 " + FloatUtil.GetVector3XmlString(Vector03));
+            YedXml.SelfClosingTag(sb, indent, "Vector04 " + FloatUtil.GetVector3XmlString(Vector04));
+            YedXml.SelfClosingTag(sb, indent, "Vector05 " + FloatUtil.GetVector3XmlString(Vector05));
+            YedXml.SelfClosingTag(sb, indent, "Vector06 " + FloatUtil.GetVector3XmlString(Vector06));
+            YedXml.SelfClosingTag(sb, indent, "Vector07 " + FloatUtil.GetVector3XmlString(Vector07));
+            YedXml.SelfClosingTag(sb, indent, "Vector08 " + FloatUtil.GetVector3XmlString(Vector08));
+            YedXml.SelfClosingTag(sb, indent, "Vector09 " + FloatUtil.GetVector3XmlString(Vector09));
+            YedXml.SelfClosingTag(sb, indent, "Gravity " + FloatUtil.GetVector3XmlString(Gravity));
+            YedXml.ValueTag(sb, indent, "Ushort01a", Ushort01a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort01b", Ushort01b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort02a", Ushort02a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort02b", Ushort02b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort03a", Ushort03a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort03b", Ushort03b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort04a", Ushort04a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort04b", Ushort04b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort05a", Ushort05a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort05b", Ushort05b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort06a", Ushort06a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort06b", Ushort06b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort07a", Ushort07a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort07b", Ushort07b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort08a", Ushort08a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort08b", Ushort08b.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort09a", Ushort09a.ToString());
+            YedXml.ValueTag(sb, indent, "Ushort09b", Ushort09b.ToString());
+            YedXml.ValueTag(sb, indent, "BoneTag", BoneTag.ToString());
+        }
+        public void ReadXml(XmlNode node)
+        {
+            Vector01 = Xml.GetChildVector3Attributes(node, "Vector01");
+            Vector02 = Xml.GetChildVector3Attributes(node, "Vector02");
+            Vector03 = Xml.GetChildVector3Attributes(node, "Vector03");
+            Vector04 = Xml.GetChildVector3Attributes(node, "Vector04");
+            Vector05 = Xml.GetChildVector3Attributes(node, "Vector05");
+            Vector06 = Xml.GetChildVector3Attributes(node, "Vector06");
+            Vector07 = Xml.GetChildVector3Attributes(node, "Vector07");
+            Vector08 = Xml.GetChildVector3Attributes(node, "Vector08");
+            Vector09 = Xml.GetChildVector3Attributes(node, "Vector09");
+            Gravity = Xml.GetChildVector3Attributes(node, "Gravity");
+            Ushort01a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort01a", "value");
+            Ushort01b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort01b", "value");
+            Ushort02a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort02a", "value");
+            Ushort02b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort02b", "value");
+            Ushort03a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort03a", "value");
+            Ushort03b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort03b", "value");
+            Ushort04a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort04a", "value");
+            Ushort04b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort04b", "value");
+            Ushort05a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort05a", "value");
+            Ushort05b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort05b", "value");
+            Ushort06a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort06a", "value");
+            Ushort06b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort06b", "value");
+            Ushort07a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort07a", "value");
+            Ushort07b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort07b", "value");
+            Ushort08a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort08a", "value");
+            Ushort08b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort08b", "value");
+            Ushort09a = (ushort)Xml.GetChildUIntAttribute(node, "Ushort09a", "value");
+            Ushort09b = (ushort)Xml.GetChildUIntAttribute(node, "Ushort09b", "value");
+            BoneTag = (ushort)Xml.GetChildUIntAttribute(node, "BoneTag", "value");
+        }
+
+        public bool Compare(ExpressionJiggleData o)
+        {
+            if (o.Vector01 !=  Vector01) return false;
+            if (o.Ushort01a != Ushort01a) return false;
+            if (o.Ushort01b != Ushort01b) return false;
+            if (o.Vector02 !=  Vector02) return false;
+            if (o.Ushort02a != Ushort02a) return false;
+            if (o.Ushort02b != Ushort02b) return false;
+            if (o.Vector03 !=  Vector03) return false;
+            if (o.Ushort03a != Ushort03a) return false;
+            if (o.Ushort03b != Ushort03b) return false;
+            if (o.Vector04 !=  Vector04) return false;
+            if (o.Ushort04a != Ushort04a) return false;
+            if (o.Ushort04b != Ushort04b) return false;
+            if (o.Vector05 !=  Vector05) return false;
+            if (o.Ushort05a != Ushort05a) return false;
+            if (o.Ushort05b != Ushort05b) return false;
+            if (o.Vector06 !=  Vector06) return false;
+            if (o.Ushort06a != Ushort06a) return false;
+            if (o.Ushort06b != Ushort06b) return false;
+            if (o.Vector07 !=  Vector07) return false;
+            if (o.Ushort07a != Ushort07a) return false;
+            if (o.Ushort07b != Ushort07b) return false;
+            if (o.Vector08 !=  Vector08) return false;
+            if (o.Ushort08a != Ushort08a) return false;
+            if (o.Ushort08b != Ushort08b) return false;
+            if (o.Vector09 !=  Vector09) return false;
+            if (o.Ushort09a != Ushort09a) return false;
+            if (o.Ushort09b != Ushort09b) return false;
+            if (o.Gravity != Gravity) return false;
+            if (o.BoneTag != BoneTag) return false;
+            if (o.Ushort10b != Ushort10b) return false;
+            return true;
+        }
+        public ExpressionJiggleData Clone()
+        {
+            var n = new ExpressionJiggleData();
+            n.Vector01 =  Vector01;
+            n.Ushort01a = Ushort01a;
+            n.Ushort01b = Ushort01b;
+            n.Vector02 =  Vector02;
+            n.Ushort02a = Ushort02a;
+            n.Ushort02b = Ushort02b;
+            n.Vector03 =  Vector03;
+            n.Ushort03a = Ushort03a;
+            n.Ushort03b = Ushort03b;
+            n.Vector04 =  Vector04;
+            n.Ushort04a = Ushort04a;
+            n.Ushort04b = Ushort04b;
+            n.Vector05 =  Vector05;
+            n.Ushort05a = Ushort05a;
+            n.Ushort05b = Ushort05b;
+            n.Vector06 =  Vector06;
+            n.Ushort06a = Ushort06a;
+            n.Ushort06b = Ushort06b;
+            n.Vector07 =  Vector07;
+            n.Ushort07a = Ushort07a;
+            n.Ushort07b = Ushort07b;
+            n.Vector08 =  Vector08;
+            n.Ushort08a = Ushort08a;
+            n.Ushort08b = Ushort08b;
+            n.Vector09 =  Vector09;
+            n.Ushort09a = Ushort09a;
+            n.Ushort09b = Ushort09b;
+            n.Gravity =  Gravity;
+            n.BoneTag = BoneTag;
+            n.Ushort10b = Ushort10b;
+            return n;
+        }
+
+        public override string ToString()
+        {
+            return BoneTag.ToString();
+        }
+    }
+
+
+    [TC(typeof(EXP))] public struct ExpressionBoneTrack : IMetaXmlItem
     {
         public ushort BoneTag { get; set; }
         public byte Track { get; set; }
         public byte Flags { get; set; }
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YedXml.ValueTag(sb, indent, "BoneTag", BoneTag.ToString());
+            YedXml.ValueTag(sb, indent, "Track", Track.ToString());
+            YedXml.ValueTag(sb, indent, "Flags", Flags.ToString());
+        }
+        public void ReadXml(XmlNode node)
+        {
+            BoneTag = (ushort)Xml.GetChildUIntAttribute(node, "BoneTag", "value");
+            Track = (byte)Xml.GetChildUIntAttribute(node, "Track", "value");
+            Flags = (byte)Xml.GetChildUIntAttribute(node, "Flags", "value");
+        }
 
         public override string ToString()
         {
