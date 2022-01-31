@@ -692,7 +692,7 @@ namespace CodeWalker.GameFiles
                 {
                     foreach (XmlNode inode in inodes)
                     {
-                        if (Enum.TryParse<ExpressionNodeType>(Xml.GetStringAttribute(inode, "type"), out var type)) ;
+                        if (Enum.TryParse<ExpressionNodeType>(Xml.GetStringAttribute(inode, "type"), out var type))
                         {
                             var item = CreateItem(type);
                             item.Type = type;
