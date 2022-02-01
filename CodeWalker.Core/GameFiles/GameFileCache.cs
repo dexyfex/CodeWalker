@@ -4425,6 +4425,8 @@ namespace CodeWalker.GameFiles
 
                         if (rfe.NameLower.EndsWith(".yvr"))
                         {
+                            if (rfe.NameLower == "agencyprep001.yvr") continue; //this file seems corrupted
+
                             UpdateStatus(string.Format(entry.Path));
 
                             YvrFile yvr = new YvrFile(rfe);

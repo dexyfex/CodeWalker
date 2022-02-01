@@ -107,20 +107,104 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint Time;
-        public short VelocityX;
+        public short VelocityX; //factor to convert to m/s is 273.0583 .. or 1/0.0036622214, or 32767/120
         public short VelocityY;
         public short VelocityZ;
         public sbyte RightX;
         public sbyte RightY;
         public sbyte RightZ;
-        public sbyte TopX;
-        public sbyte TopY;
-        public sbyte TopZ;
-        public byte SteeringAngle;
-        public byte GasPedalPower;
-        public byte BrakePedalPower;
-        public byte HandbrakeUsed;
+        public sbyte ForwardX;
+        public sbyte ForwardY;
+        public sbyte ForwardZ;
+        public sbyte SteeringAngle; // factor to convert to game angle is 20  (ie radians)
+        public sbyte GasPedalPower; //-100 to +100, negative = reverse
+        public sbyte BrakePedalPower;//0 to 100
+        public byte HandbrakeUsed;//0 or 1
         public Vector3 Position;
+
+        public Vector3 Velocity
+        {
+            get
+            {
+                return new Vector3(VelocityX / 273.0583f, VelocityY / 273.0583f, VelocityZ / 273.0583f);
+            }
+            set
+            {
+                VelocityX = (short)Math.Round(value.X * 273.0583f);
+                VelocityY = (short)Math.Round(value.Y * 273.0583f);
+                VelocityZ = (short)Math.Round(value.Z * 273.0583f);
+            }
+        }
+        public Vector3 Forward
+        {
+            get
+            {
+                return new Vector3(ForwardX / 127.0f, ForwardY / 127.0f, ForwardZ / 127.0f);
+            }
+            set
+            {
+                ForwardX = (sbyte)Math.Round(value.X * 127.0f);
+                ForwardY = (sbyte)Math.Round(value.Y * 127.0f);
+                ForwardZ = (sbyte)Math.Round(value.Z * 127.0f);
+            }
+        }
+        public Vector3 Right
+        {
+            get
+            {
+                return new Vector3(RightX / 127.0f, RightY / 127.0f, RightZ / 127.0f);
+            }
+            set
+            {
+                RightX = (sbyte)Math.Round(value.X * 127.0f);
+                RightY = (sbyte)Math.Round(value.Y * 127.0f);
+                RightZ = (sbyte)Math.Round(value.Z * 127.0f);
+            }
+        }
+        public float Steering
+        {
+            get
+            {
+                return SteeringAngle / 20.0f;
+            }
+            set
+            {
+                SteeringAngle = (sbyte)Math.Round(value * 20.0f);
+            }
+        }
+        public float GasPedal
+        {
+            get
+            {
+                return GasPedalPower / 100.0f;
+            }
+            set
+            {
+                GasPedalPower = (sbyte)Math.Round(value * 100.0f);
+            }
+        }
+        public float BrakePedal
+        {
+            get
+            {
+                return BrakePedalPower / 100.0f;
+            }
+            set
+            {
+                BrakePedalPower = (sbyte)Math.Round(value * 100.0f);
+            }
+        }
+        public bool Handbrake
+        {
+            get
+            {
+                return HandbrakeUsed == 1;
+            }
+            set
+            {
+                HandbrakeUsed = value ? (byte)1 : (byte)0;
+            }
+        }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -132,12 +216,12 @@ namespace CodeWalker.GameFiles
             this.RightX = (sbyte)reader.ReadByte();
             this.RightY = (sbyte)reader.ReadByte();
             this.RightZ = (sbyte)reader.ReadByte();
-            this.TopX = (sbyte)reader.ReadByte();
-            this.TopY = (sbyte)reader.ReadByte();
-            this.TopZ = (sbyte)reader.ReadByte();
-            this.SteeringAngle = reader.ReadByte();
-            this.GasPedalPower = reader.ReadByte();
-            this.BrakePedalPower = reader.ReadByte();
+            this.ForwardX = (sbyte)reader.ReadByte();
+            this.ForwardY = (sbyte)reader.ReadByte();
+            this.ForwardZ = (sbyte)reader.ReadByte();
+            this.SteeringAngle = (sbyte)reader.ReadByte();
+            this.GasPedalPower = (sbyte)reader.ReadByte();
+            this.BrakePedalPower = (sbyte)reader.ReadByte();
             this.HandbrakeUsed = reader.ReadByte();
             this.Position = reader.ReadVector3();
         }
@@ -151,12 +235,12 @@ namespace CodeWalker.GameFiles
             writer.Write((byte)this.RightX);
             writer.Write((byte)this.RightY);
             writer.Write((byte)this.RightZ);
-            writer.Write((byte)this.TopX);
-            writer.Write((byte)this.TopY);
-            writer.Write((byte)this.TopZ);
-            writer.Write(this.SteeringAngle);
-            writer.Write(this.GasPedalPower);
-            writer.Write(this.BrakePedalPower);
+            writer.Write((byte)this.ForwardX);
+            writer.Write((byte)this.ForwardY);
+            writer.Write((byte)this.ForwardZ);
+            writer.Write((byte)this.SteeringAngle);
+            writer.Write((byte)this.GasPedalPower);
+            writer.Write((byte)this.BrakePedalPower);
             writer.Write(this.HandbrakeUsed);
             writer.Write(this.Position);
         }
@@ -164,31 +248,25 @@ namespace CodeWalker.GameFiles
         {
             YvrXml.ValueTag(sb, indent, "Time", Time.ToString());
             YvrXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
-            YvrXml.SelfClosingTag(sb, indent, "Velocity " + string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", VelocityX.ToString(), VelocityY.ToString(), VelocityZ.ToString()));
-            YvrXml.SelfClosingTag(sb, indent, "Right " + string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", RightX.ToString(), RightY.ToString(), RightZ.ToString()));
-            YvrXml.SelfClosingTag(sb, indent, "Top " + string.Format("x=\"{0}\" y=\"{1}\" z=\"{2}\"", TopX.ToString(), TopY.ToString(), TopZ.ToString()));
-            YvrXml.ValueTag(sb, indent, "SteeringAngle", SteeringAngle.ToString());
-            YvrXml.ValueTag(sb, indent, "GasPedalPower", GasPedalPower.ToString());
-            YvrXml.ValueTag(sb, indent, "BrakePedalPower", BrakePedalPower.ToString());
-            YvrXml.ValueTag(sb, indent, "HandbrakeUsed", HandbrakeUsed.ToString());
+            YvrXml.SelfClosingTag(sb, indent, "Velocity " + FloatUtil.GetVector3XmlString(Velocity));
+            YvrXml.SelfClosingTag(sb, indent, "Forward " + FloatUtil.GetVector3XmlString(Forward));
+            YvrXml.SelfClosingTag(sb, indent, "Right " + FloatUtil.GetVector3XmlString(Right));
+            YvrXml.ValueTag(sb, indent, "Steering", FloatUtil.ToString(Steering));
+            YvrXml.ValueTag(sb, indent, "GasPedal", FloatUtil.ToString(GasPedal));
+            YvrXml.ValueTag(sb, indent, "BrakePedal", FloatUtil.ToString(BrakePedal));
+            YvrXml.ValueTag(sb, indent, "Handbrake", Handbrake.ToString());
         }
         public void ReadXml(XmlNode node)
         {
             Time = Xml.GetChildUIntAttribute(node, "Time", "value");
             Position = Xml.GetChildVector3Attributes(node, "Position");
-            VelocityX = (short)Xml.GetChildIntAttribute(node, "Velocity", "x");
-            VelocityY = (short)Xml.GetChildIntAttribute(node, "Velocity", "y");
-            VelocityZ = (short)Xml.GetChildIntAttribute(node, "Velocity", "z");
-            RightX = (sbyte)Xml.GetChildIntAttribute(node, "Right", "x");
-            RightY = (sbyte)Xml.GetChildIntAttribute(node, "Right", "y");
-            RightZ = (sbyte)Xml.GetChildIntAttribute(node, "Right", "z");
-            TopX = (sbyte)Xml.GetChildIntAttribute(node, "Top", "x");
-            TopY = (sbyte)Xml.GetChildIntAttribute(node, "Top", "y");
-            TopZ = (sbyte)Xml.GetChildIntAttribute(node, "Top", "z");
-            SteeringAngle = (byte)Xml.GetChildUIntAttribute(node, "SteeringAngle", "value");
-            GasPedalPower = (byte)Xml.GetChildUIntAttribute(node, "GasPedalPower", "value");
-            BrakePedalPower = (byte)Xml.GetChildUIntAttribute(node, "BrakePedalPower", "value");
-            HandbrakeUsed = (byte)Xml.GetChildUIntAttribute(node, "HandbrakeUsed", "value");
+            Velocity = Xml.GetChildVector3Attributes(node, "Velocity");
+            Forward = Xml.GetChildVector3Attributes(node, "Forward");
+            Right = Xml.GetChildVector3Attributes(node, "Right");
+            Steering = Xml.GetChildFloatAttribute(node, "Steering", "value");
+            GasPedal = Xml.GetChildFloatAttribute(node, "GasPedal", "value");
+            BrakePedal = Xml.GetChildFloatAttribute(node, "BrakePedal", "value");
+            Handbrake = Xml.GetChildBoolAttribute(node, "Handbrake", "value");
         }
 
     }
