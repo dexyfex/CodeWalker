@@ -313,6 +313,8 @@ namespace CodeWalker
             InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat, true);
             InitSubFileType(".dat", "heightmap.dat", "Heightmap", 6, FileTypeAction.ViewHeightmap, true);
             InitSubFileType(".dat", "heightmapheistisland.dat", "Heightmap", 6, FileTypeAction.ViewHeightmap, true);
+            InitSubFileType(".dat", "distantlights.dat", "Distant Lights", 6, FileTypeAction.ViewDistantLights);
+            InitSubFileType(".dat", "distantlights_hd.dat", "Distant Lights", 6, FileTypeAction.ViewDistantLights);
         }
         private void InitFileType(string ext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex, bool xmlConvertible = false)
         {
@@ -1404,6 +1406,7 @@ namespace CodeWalker
                 case FileTypeAction.ViewYfd:
                 case FileTypeAction.ViewHeightmap:
                 case FileTypeAction.ViewMrf:
+                case FileTypeAction.ViewDistantLights:
                     return true;
                 case FileTypeAction.ViewHex:
                 default:
@@ -1538,6 +1541,9 @@ namespace CodeWalker
                         break;
                     case FileTypeAction.ViewNametable:
                         ViewNametable(name, path, data, fe);
+                        break;
+                    case FileTypeAction.ViewDistantLights:
+                        ViewDistantLights(name, path, data, fe);
                         break;
                     case FileTypeAction.ViewHex:
                     default:
@@ -1792,6 +1798,13 @@ namespace CodeWalker
             TextForm f = new TextForm(this);
             f.Show();
             f.LoadNametable(name, path, data, e);
+        }
+        private void ViewDistantLights(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var dlf = RpfFile.GetFile<DistantLightsFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(dlf, dlf.RpfFileEntry);
         }
 
         private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
@@ -4864,6 +4877,7 @@ namespace CodeWalker
         ViewHeightmap = 23,
         ViewMrf = 24,
         ViewNametable = 25,
+        ViewDistantLights = 26,
     }
 
 
