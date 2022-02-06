@@ -1662,7 +1662,7 @@ namespace CodeWalker.GameFiles
             if (((Flags >> 6) & 3) != 0)
                 Unk7 = r.ReadUInt32();
 
-            if (((Flags >> 6) & 3) != 0)
+            if (((Flags >> 8) & 3) != 0)
                 Unk8 = r.ReadUInt32();
         }
 
@@ -1696,7 +1696,7 @@ namespace CodeWalker.GameFiles
             if (((Flags >> 6) & 3) != 0)
                 w.Write(Unk7);
 
-            if (((Flags >> 6) & 3) != 0)
+            if (((Flags >> 8) & 3) != 0)
                 w.Write(Unk8);
         }
 
