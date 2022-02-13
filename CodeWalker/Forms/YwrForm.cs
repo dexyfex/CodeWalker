@@ -72,11 +72,11 @@ namespace CodeWalker.Forms
             sb.AppendLine("PositionX, PositionY, PositionZ, Unk0, Unk1, Unk2, Unk3");
             foreach (var entry in ywr.Waypoints.Entries)
             {
-                sb.Append(FloatUtil.ToString(entry.PositionX));
+                sb.Append(FloatUtil.ToString(entry.Position.X));
                 sb.Append(", ");
-                sb.Append(FloatUtil.ToString(entry.PositionY));
+                sb.Append(FloatUtil.ToString(entry.Position.Y));
                 sb.Append(", ");
-                sb.Append(FloatUtil.ToString(entry.PositionZ));
+                sb.Append(FloatUtil.ToString(entry.Position.Z));
                 sb.Append(", ");
                 sb.Append(entry.Unk0.ToString());
                 sb.Append(", ");
@@ -97,9 +97,9 @@ namespace CodeWalker.Forms
             {
                 string[] row =
                 {
-                    FloatUtil.ToString(entry.PositionX),
-                    FloatUtil.ToString(entry.PositionY),
-                    FloatUtil.ToString(entry.PositionZ),
+                    FloatUtil.ToString(entry.Position.X),
+                    FloatUtil.ToString(entry.Position.Y),
+                    FloatUtil.ToString(entry.Position.Z),
                     entry.Unk0.ToString(),
                     entry.Unk1.ToString(),
                     entry.Unk2.ToString(),

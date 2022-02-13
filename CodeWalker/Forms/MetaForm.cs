@@ -318,6 +318,34 @@ namespace CodeWalker.Forms
                 metaFormat = MetaFormat.Ynd;
             }
         }
+        public void LoadMeta(YldFile yld)
+        {
+            var fn = ((yld?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(yld, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = yld;
+            rpfFileEntry = yld?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (yld?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Yld;
+            }
+        }
+        public void LoadMeta(YedFile yed)
+        {
+            var fn = ((yed?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(yed, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = yed;
+            rpfFileEntry = yed?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (yed?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Yed;
+            }
+        }
         public void LoadMeta(CacheDatFile cachedat)
         {
             var fn = ((cachedat?.FileEntry?.Name) ?? "") + ".xml";
@@ -403,6 +431,24 @@ namespace CodeWalker.Forms
                             return false;
                         }
                         data = ynd.Save();
+                        break;
+                    case MetaFormat.Yld:
+                        var yld = XmlYld.GetYld(doc);
+                        if (yld.ClothDictionary == null)
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import YLD XML");
+                            return false;
+                        }
+                        data = yld.Save();
+                        break;
+                    case MetaFormat.Yed:
+                        var yed = XmlYed.GetYed(doc);
+                        if (yed.ExpressionDictionary == null)
+                        {
+                            MessageBox.Show("Schema not supported.", "Cannot import YED XML");
+                            return false;
+                        }
+                        data = yed.Save();
                         break;
                     case MetaFormat.CacheFile:
                         MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
