@@ -215,6 +215,7 @@ namespace CodeWalker.GameFiles
                 //TestYvrs();
                 //TestYwrs();
                 //TestYmaps();
+                //TestYpdbs();
                 //TestMrfs();
                 //TestPlacements();
                 //TestDrawables();
@@ -4523,6 +4524,48 @@ namespace CodeWalker.GameFiles
                     {
                         UpdateStatus("Error! " + ex.ToString());
                     }
+                }
+            }
+        }
+        public void TestYpdbs()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    var rfe = entry as RpfFileEntry;
+                    if (rfe == null) continue;
+
+                    try
+                    {
+                        if (rfe.NameLower.EndsWith(".ypdb"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YpdbFile ypdb = RpfMan.GetFile<YpdbFile>(entry);
+                            if (ypdb != null)
+                            {
+                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                var ndata = ypdb.Save();
+                                if (ndata.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < ndata.Length; i++)
+                                    {
+                                        if (ndata[i] != odata[i])
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+
                 }
             }
         }
