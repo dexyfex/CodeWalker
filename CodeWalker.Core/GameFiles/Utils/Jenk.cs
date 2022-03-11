@@ -58,7 +58,7 @@ namespace CodeWalker.GameFiles
         public static uint GenHash(string text)
         {
             uint h = 0;
-            for (int i = 0; i < text.Length; i++)
+            for (int i = 0; i < (text?.Length ?? 0); i++)
             {
                 h += (byte)text[i];
                 h += (h << 10);

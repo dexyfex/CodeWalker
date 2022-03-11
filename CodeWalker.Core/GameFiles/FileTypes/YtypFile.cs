@@ -290,7 +290,7 @@ namespace CodeWalker.GameFiles
             NameHash = _CMapTypes.name;
             if (NameHash == 0)
             {
-                int ind = entry.NameLower.LastIndexOf('.');
+                int ind = entry.NameLower?.LastIndexOf('.') ?? 0;
                 if (ind > 0)
                 {
                     NameHash = JenkHash.GenHash(entry.NameLower.Substring(0, ind));
