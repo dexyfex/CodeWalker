@@ -159,14 +159,14 @@
             // 
             this.MainSplitContainer.Panel2.Controls.Add(this.LightPropertiesPanel);
             this.MainSplitContainer.Panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.MainSplitContainer_Panel2_Paint);
-            this.MainSplitContainer.Size = new System.Drawing.Size(733, 561);
+            this.MainSplitContainer.Size = new System.Drawing.Size(733, 519);
             this.MainSplitContainer.SplitterDistance = 184;
             this.MainSplitContainer.TabIndex = 0;
             // 
             // DuplicateLightButton
             // 
             this.DuplicateLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.DuplicateLightButton.Location = new System.Drawing.Point(7, 526);
+            this.DuplicateLightButton.Location = new System.Drawing.Point(7, 489);
             this.DuplicateLightButton.Name = "DuplicateLightButton";
             this.DuplicateLightButton.Size = new System.Drawing.Size(169, 23);
             this.DuplicateLightButton.TabIndex = 8;
@@ -178,7 +178,7 @@
             // 
             this.DeleteLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.DeleteLightButton.Enabled = false;
-            this.DeleteLightButton.Location = new System.Drawing.Point(96, 494);
+            this.DeleteLightButton.Location = new System.Drawing.Point(96, 457);
             this.DeleteLightButton.Name = "DeleteLightButton";
             this.DeleteLightButton.Size = new System.Drawing.Size(80, 23);
             this.DeleteLightButton.TabIndex = 7;
@@ -189,7 +189,7 @@
             // NewLightButton
             // 
             this.NewLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.NewLightButton.Location = new System.Drawing.Point(7, 494);
+            this.NewLightButton.Location = new System.Drawing.Point(7, 457);
             this.NewLightButton.Name = "NewLightButton";
             this.NewLightButton.Size = new System.Drawing.Size(80, 23);
             this.NewLightButton.TabIndex = 6;
@@ -207,7 +207,7 @@
             this.LightsTreeView.Location = new System.Drawing.Point(3, 3);
             this.LightsTreeView.Name = "LightsTreeView";
             this.LightsTreeView.ShowRootLines = false;
-            this.LightsTreeView.Size = new System.Drawing.Size(178, 485);
+            this.LightsTreeView.Size = new System.Drawing.Size(178, 448);
             this.LightsTreeView.TabIndex = 5;
             this.LightsTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.LightsTreeView_AfterSelect);
             // 
@@ -294,7 +294,7 @@
             this.LightPropertiesPanel.Controls.Add(this.label31);
             this.LightPropertiesPanel.Location = new System.Drawing.Point(4, 3);
             this.LightPropertiesPanel.Name = "LightPropertiesPanel";
-            this.LightPropertiesPanel.Size = new System.Drawing.Size(529, 517);
+            this.LightPropertiesPanel.Size = new System.Drawing.Size(529, 513);
             this.LightPropertiesPanel.TabIndex = 1;
             // 
             // VolumetricFadeDistanceUpDown
@@ -1217,7 +1217,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(733, 585);
+            this.ClientSize = new System.Drawing.Size(733, 543);
             this.Controls.Add(this.MainSplitContainer);
             this.Controls.Add(this.MainMenu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
