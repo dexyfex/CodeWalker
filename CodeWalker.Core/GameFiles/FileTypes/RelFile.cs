@@ -2673,11 +2673,12 @@ namespace CodeWalker.GameFiles
             MinRepeatTime = br.ReadInt16();
             VariableCount = br.ReadByte();
             VariableNames = new MetaHash[VariableCount];
+            VariableValues = new byte[VariableCount];
             for (int i = 0; i < VariableCount; i++)
             {
                 VariableNames[i] = br.ReadUInt32();
+                VariableValues[i] = br.ReadByte();
             }
-            VariableValues = br.ReadBytes(VariableCount);
 
             ChildSoundsHashes = new[] { ChildSound, FallBackSound };
         }
@@ -2743,13 +2744,8 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < VariableCount; i++)
             {
                 bw.Write(VariableNames[i]);
+                bw.Write(VariableValues[i]);
             }
-            if (VariableValues != null)
-            {
-                bw.Write(VariableValues);
-            }
-            else
-            { }
         }
         public override uint[] GetHashTableOffsets()
         {

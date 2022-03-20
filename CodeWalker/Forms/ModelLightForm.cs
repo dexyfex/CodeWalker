@@ -111,6 +111,7 @@ namespace CodeWalker.Forms
             {
                 DeleteLightButton.Enabled = false;
                 EditDeleteLightMenu.Enabled = false;
+                EditDuplicateLightMenu.Enabled = false;
                 populatingui = true;
                 PositionTextBox.Text = "";
                 DirectionTextBox.Text = "";
@@ -154,6 +155,7 @@ namespace CodeWalker.Forms
             {
                 DeleteLightButton.Enabled = true;
                 EditDeleteLightMenu.Enabled = true;
+                EditDuplicateLightMenu.Enabled = true;
                 populatingui = true;
                 PositionTextBox.Text = FloatUtil.GetVector3String(light.Position);
                 DirectionTextBox.Text = FloatUtil.GetVector3String(light.Direction);
@@ -222,6 +224,57 @@ namespace CodeWalker.Forms
             light.TimeFlags = 14680191;
             return light;
         }
+        private LightAttributes DuplicateLightAttribute()
+        {
+            LightAttributes light = new LightAttributes();
+            light.Unknown_0h = selectedLight.Unknown_0h;
+            light.Unknown_4h = selectedLight.Unknown_4h;
+            light.Position = selectedLight.Position;
+            light.Unknown_14h = selectedLight.Unknown_14h;
+            light.ColorR = selectedLight.ColorR;
+            light.ColorG = selectedLight.ColorG;
+            light.ColorB = selectedLight.ColorB;
+            light.Flashiness = selectedLight.Flashiness;
+            light.Intensity = selectedLight.Intensity;
+            light.Flags = selectedLight.Flags;
+            light.BoneId = selectedLight.BoneId;
+            light.Type = selectedLight.Type;
+            light.GroupId = selectedLight.GroupId;
+            light.TimeFlags = selectedLight.TimeFlags;
+            light.Falloff = selectedLight.Falloff;
+            light.FalloffExponent = selectedLight.FalloffExponent;
+            light.CullingPlaneNormal = selectedLight.CullingPlaneNormal;
+            light.CullingPlaneOffset = selectedLight.CullingPlaneOffset;
+            light.ShadowBlur = selectedLight.ShadowBlur;
+            light.Unknown_45h = selectedLight.Unknown_45h;
+            light.Unknown_46h = selectedLight.Unknown_46h;
+            light.VolumeIntensity = selectedLight.VolumeIntensity;
+            light.VolumeSizeScale = selectedLight.VolumeSizeScale;
+            light.VolumeOuterColorR = selectedLight.VolumeOuterColorR;
+            light.VolumeOuterColorG = selectedLight.VolumeOuterColorG;
+            light.VolumeOuterColorB = selectedLight.VolumeOuterColorB;
+            light.LightHash = selectedLight.LightHash;
+            light.VolumeOuterIntensity = selectedLight.VolumeOuterIntensity;
+            light.CoronaSize = selectedLight.CoronaSize;
+            light.VolumeOuterExponent = selectedLight.VolumeOuterExponent;
+            light.LightFadeDistance = selectedLight.LightFadeDistance;
+            light.ShadowFadeDistance = selectedLight.ShadowFadeDistance;
+            light.SpecularFadeDistance = selectedLight.SpecularFadeDistance;
+            light.VolumetricFadeDistance = selectedLight.VolumetricFadeDistance;
+            light.ShadowNearClip = selectedLight.ShadowNearClip;
+            light.CoronaIntensity = selectedLight.CoronaIntensity;
+            light.CoronaZBias = selectedLight.CoronaZBias;
+            light.Direction = selectedLight.Direction;
+            light.Tangent = selectedLight.Tangent;
+            light.ConeInnerAngle = selectedLight.ConeInnerAngle;
+            light.ConeOuterAngle = selectedLight.ConeOuterAngle;
+            light.Extent = selectedLight.Extent;
+            light.ProjectedTextureHash = selectedLight.ProjectedTextureHash;
+            light.Unknown_A4h = selectedLight.Unknown_A4h;
+           
+            return light;
+        }
+
         private void SelectLight(LightAttributes light)
         {
             if (light == null)
@@ -318,7 +371,7 @@ namespace CodeWalker.Forms
         private void DeleteLight()
         {
             if (selectedLight == null) return;
-            if(Drawable != null)
+            if (Drawable != null)
             {
                 List<LightAttributes> lights = Drawable.LightAttributes.data_items.ToList();
                 lights.Remove(selectedLight);
@@ -346,6 +399,50 @@ namespace CodeWalker.Forms
                     LoadModels(DrawableDict);
                 }
             }
+
+        }
+
+        private void DuplicateLight()
+        {
+            if (selectedLight == null) return;
+            selectedLight = DuplicateLightAttribute();
+            if (Drawable != null)
+            {
+                if (Drawable.LightAttributes == null) Drawable.LightAttributes = new ResourceSimpleList64<LightAttributes>();
+                List<LightAttributes> lights = Drawable.LightAttributes.data_items?.ToList() ?? new List<LightAttributes>();
+                lights.Add(selectedLight);
+                Drawable.LightAttributes.data_items = lights.ToArray();
+                UpdateLightParams();
+                LoadModel(Drawable);
+            }
+            else if (FragDrawable != null)
+            {
+                if (FragDrawable.OwnerFragment.LightAttributes == null) FragDrawable.OwnerFragment.LightAttributes = new ResourceSimpleList64<LightAttributes>();
+                List<LightAttributes> lights = FragDrawable.OwnerFragment.LightAttributes.data_items?.ToList() ?? new List<LightAttributes>();
+                lights.Add(selectedLight);
+                FragDrawable.OwnerFragment.LightAttributes.data_items = lights.ToArray();
+                UpdateLightParams();
+                LoadModel(FragDrawable);
+            }
+            else
+            {
+                var n = LightsTreeView.SelectedNode;
+                if (n != null)
+                {
+                    var dr = n.Tag as Drawable;
+                    if (dr == null) { dr = n.Parent.Tag as Drawable; } //try parent node tag also
+                    if (dr != null)
+                    {
+                        if (dr.LightAttributes == null) dr.LightAttributes = new ResourceSimpleList64<LightAttributes>();
+                        List<LightAttributes> lights = dr.LightAttributes.data_items?.ToList() ?? new List<LightAttributes>();
+                        lights.Add(selectedLight);
+                        dr.LightAttributes.data_items = lights.ToArray();
+                        UpdateLightParams();
+                        LoadModels(DrawableDict);
+                    }
+                }
+            }
+            SelectLightTreeNode(selectedLight);
         }
 
         private void UpdateFlagsCheckBoxes()
@@ -933,6 +1030,11 @@ namespace CodeWalker.Forms
             DeleteLight();
         }
 
+        private void EditDuplicateLightMenu_Click(object sender, EventArgs e)
+        {
+            DuplicateLight();
+        }
+
         private void OptionsShowOutlinesMenu_Click(object sender, EventArgs e)
         {
             OptionsShowOutlinesMenu.Checked = !OptionsShowOutlinesMenu.Checked;
@@ -968,6 +1070,16 @@ namespace CodeWalker.Forms
         private void DeleteLightButton_Click(object sender, EventArgs e)
         {
             DeleteLight();
+        }
+
+        private void DuplicateLightButton_Click(object sender, EventArgs e)
+        {
+            DuplicateLight();
+        }
+
+        private void MainSplitContainer_Panel2_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
