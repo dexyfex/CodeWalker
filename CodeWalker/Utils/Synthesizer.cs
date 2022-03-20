@@ -432,8 +432,25 @@ namespace CodeWalker.Utils
                                 a[i] = Lerp(a[i], min, max);
                         }
                         break;
-                    //case Dat10Synth.Opcode.LERP_BUFFER_2:
-                    //    break;
+                    case Dat10Synth.Opcode.LERP_BUFFER_2: // TODO: some better name for LERP_BUFFER_2
+                        {
+                            var t = GetScalar(param[1]);
+                            float[] min, max;
+                            if ((param[0].Value & 0xFF) == (param[2].Value & 0xFF))
+                            {
+                                min = GetBuffer(param[2]);
+                                max = GetBuffer(param[3]);
+                            }
+                            else
+                            {
+                                min = GetBuffer(param[3]);
+                                max = GetBuffer(param[2]);
+                            }
+
+                            for (int i = 0; i < BufferSize; i++)
+                                min[i] = Lerp(t, min[i], max[i]);
+                        }
+                        break;
                     case Dat10Synth.Opcode.LERP_SCALAR:
                         {
                             var t = GetScalar(param[1]);
@@ -567,18 +584,24 @@ namespace CodeWalker.Utils
                             GetScalar(param[5]),
                             ref StateBlocks[param[6].Value]);
                         break;
-                    //case Dat10Synth.Opcode.OnePole_LPF_BUFFER_BUFFER:
-                    //    break;
-                    //case Dat10Synth.Opcode.OnePole_LPF_BUFFER_SCALAR:
-                    //    break;
-                    //case Dat10Synth.Opcode.OnePole_LPF_SCALAR_SCALAR:
-                    //    break;
-                    //case Dat10Synth.Opcode.OnePole_HPF_BUFFER_BUFFER:
-                    //    break;
-                    //case Dat10Synth.Opcode.OnePole_HPF_BUFFER_SCALAR:
-                    //    break;
-                    //case Dat10Synth.Opcode.OnePole_HPF_SCALAR_SCALAR:
-                    //    break;
+                    case Dat10Synth.Opcode.OnePole_LPF_BUFFER_BUFFER:
+                        OnePoleLPF(GetBuffer(param[0]), GetBuffer(param[1]), ref StateBlocks[param[2].Value]);
+                        break;
+                    case Dat10Synth.Opcode.OnePole_LPF_BUFFER_SCALAR:
+                        OnePoleLPF(GetBuffer(param[0]), GetScalar(param[1]), ref StateBlocks[param[2].Value]);
+                        break;
+                    case Dat10Synth.Opcode.OnePole_LPF_SCALAR_SCALAR:
+                        SetRegister(param[0], OnePoleLPF(GetScalar(param[1]), GetScalar(param[2]), ref StateBlocks[param[3].Value]));
+                        break;
+                    case Dat10Synth.Opcode.OnePole_HPF_BUFFER_BUFFER:
+                        OnePoleHPF(GetBuffer(param[0]), GetBuffer(param[1]), ref StateBlocks[param[2].Value]);
+                        break;
+                    case Dat10Synth.Opcode.OnePole_HPF_BUFFER_SCALAR:
+                        OnePoleHPF(GetBuffer(param[0]), GetScalar(param[1]), ref StateBlocks[param[2].Value]);
+                        break;
+                    case Dat10Synth.Opcode.OnePole_HPF_SCALAR_SCALAR:
+                        SetRegister(param[0], OnePoleHPF(GetScalar(param[1]), GetScalar(param[2]), ref StateBlocks[param[3].Value]));
+                        break;
                     case Dat10Synth.Opcode.OSC_RAMP_BUFFER_BUFFER:
                         OscillatorRamp(GetBuffer(param[0]), ref StateBlocks[param[1].Value]);
                         break;
@@ -816,8 +839,9 @@ namespace CodeWalker.Utils
                         for (int i = 0; i < BufferSize; i++)
                             a[i] = scalar;
                         break;
-                    //case Dat10Synth.Opcode.AWProcess:
-                    //    break;
+                    case Dat10Synth.Opcode.AWProcess:
+                        AWFilter(GetBuffer(param[0]), GetBuffer(param[1]), GetBuffer(param[2]), ref StateBlocks[param[3].Value]);
+                        break;
                     case Dat10Synth.Opcode.LERP_BUFFER_BUFFER:
                         {
                             var t = GetBuffer(param[0]);
@@ -910,10 +934,12 @@ namespace CodeWalker.Utils
                             SetRegister(param[0], result);
                         }
                         break;
-                    //case Dat10Synth.Opcode.AllpassProcess_BUFFER_SCALAR:
-                    //    break;
-                    //case Dat10Synth.Opcode.AllpassProcess_BUFFER_BUFFER:
-                    //    break;
+                    case Dat10Synth.Opcode.AllpassProcess_BUFFER_SCALAR:
+                        AllpassFilter(GetBuffer(param[0]), GetScalar(param[1]), ref StateBlocks[param[2].Value]);
+                        break;
+                    case Dat10Synth.Opcode.AllpassProcess_BUFFER_BUFFER:
+                        AllpassFilter(GetBuffer(param[0]), GetBuffer(param[1]), ref StateBlocks[param[2].Value]);
+                        break;
                     case Dat10Synth.Opcode.FINISH:
                         frameFinished = true;
                         break;
@@ -1007,32 +1033,19 @@ namespace CodeWalker.Utils
             return (max - min) * t + min;
         }
 
-        private float HardKnee(float y, float threshold)
+        private float HardKnee(float sample, float threshold)
         {
-            /*
-ENVELOPE_GEN__R_LINEAR_T_ONE_SHOT 0, 0.025, 0, 1, 0, 0, 1 => B0 [0]
-COPY_BUFFER B0 => B1
-HARD_KNEE_BUFFER B1, 0.25 => B1
-COPY_BUFFER B0 => B2
-HARD_KNEE_BUFFER B2, 0.85 => B2
-COPY_BUFFER B0 => B4
-HARD_KNEE_BUFFER B4, 0.75 => B4
-
-FILL_BUFFER 0 => B3
-FINISH                                              => 
-             */
-            // TODO(alexguirre): better names for HardKnee and maybe some comments
             float result;
 
-            if (y < 0.0f)
+            if (sample < 0.0f)
                 result = 0.0f;
             else
-                result = (y / threshold) * 0.5f;
+                result = (sample / threshold) * 0.5f;
 
-            if ((y - threshold) >= 0.0f)
-                result = (((y - threshold) / (1.0f - threshold)) + 1.0f) * 0.5f;
+            if (sample >= threshold)
+                result = (((sample - threshold) / (1.0f - threshold)) + 1.0f) * 0.5f;
 
-            if (y >= 1.0f)
+            if (sample >= 1.0f)
                 result = 1.0f;
 
             return result;
@@ -1048,10 +1061,11 @@ FINISH                                              =>
             return (float)Math.Pow(Math.Max(0, a), b);
         }
 
-        private float NoteToFrequency(float note)
+        // https://newt.phys.unsw.edu.au/jw/notes.html
+        private float NoteToFrequency(float midiNote)
         {
-            // TODO(alexguirre): figure out the meaning of this formula and constants in NoteToFrequency
-            return (float)Math.Pow(2.0f, (note + 36.376301f) / 12.0f);
+            // A4 (note #69) = 440Hz
+            return 440.0f * (float)Math.Pow(2.0f, (midiNote - 69) / 12.0f);
         }
 
         private void Decimate(float[] buffer, float scalar1, float deltaPerSample, ref StateBlock stateBlock)
@@ -1220,7 +1234,7 @@ FINISH                                              =>
 
             float w = (float)(2.0 * Math.PI * centerFrequency / SampleRate);
             float cosW = (float)Math.Cos(w);
-            float v14 = 1.0f / (float)Math.Tan((freq2 * 0.000020833333f) * Math.PI);
+            float v14 = 1.0f / (float)Math.Tan(Math.PI * freq2 / SampleRate);
 
             b0 = 1.0f;
             b1 = 0.0f;
@@ -1243,7 +1257,7 @@ FINISH                                              =>
 
             float w = (float)(2.0f * Math.PI * centerFrequency / SampleRate);
             float cosW = (float)Math.Cos(w);
-            float v15 = (float)Math.Tan((freq2 * 0.000020833333f) * Math.PI);
+            float v15 = (float)Math.Tan(Math.PI * freq2 / SampleRate);
 
             b0 = 1.0f;
             b1 = -2.0f * cosW;
@@ -1268,7 +1282,7 @@ FINISH                                              =>
             float q = centerFrequency / freq2;
             float alpha = (float)Math.Sin(w) / (2.0f * q);
             float cosW = (float)Math.Cos(w);
-            float A = Math.Max(0.000001f, gain * 1.4141999f); // TODO(alexguirre): this should be amp = 10.0 ** (gain_db/40.0), where does 1.41 come from? maybe gain not in dB?
+            float A = Math.Max(0.000001f, gain * (float)Math.Sqrt(2)); // TODO(alexguirre): this should be amp = 10.0 ** (gain_db/40.0), where does sqrt(2) come from? maybe gain not in dB?
 
             b0 = 1.0f + alpha * A;
             b1 = -2.0f * cosW;
@@ -1338,53 +1352,96 @@ FINISH                                              =>
 
         private void BiquadFilter2Pole(float[] buffer, float b0, float b1, float b2, float a1, float a2, ref StateBlock stateBlock)
         {
-            // State block:
-            //  X -> ...
-            //  Y -> ...
-
-            float stateX = stateBlock.X;
-            float stateY = stateBlock.Y;
+            float pole1 = stateBlock.X;
+            float pole2 = stateBlock.Y;
 
             for (int i = 0; i < BufferSize; i++)
             {
-                float x = (buffer[i] * b0) + stateX;
-                stateX  = (buffer[i] * b1) - (x * a1) + stateY;
-                stateY  = (buffer[i] * b2) - (x * a2);
+                float s = buffer[i];
+                float x = (s * b0) + pole1;
+                pole1 = (s * b1) - (x * a1) + pole2;
+                pole2 = (s * b2) - (x * a2);
                 buffer[i] = x;
             }
 
-            stateBlock.X = stateX;
-            stateBlock.Y = stateY;
+            stateBlock.X = pole1;
+            stateBlock.Y = pole2;
         }
 
         private void BiquadFilter4Pole(float[] buffer, float b0, float b1, float b2, float a1, float a2, ref StateBlock stateBlock)
         {
-            // State block:
-            //  X -> ...
-            //  Y -> ...
-            //  Z -> ...
-            //  W -> ...
-
-            float stateX = stateBlock.X;
-            float stateY = stateBlock.Y;
-            float stateZ = stateBlock.Z;
-            float stateW = stateBlock.W;
+            float pole1 = stateBlock.X;
+            float pole2 = stateBlock.Y;
+            float pole3 = stateBlock.Z;
+            float pole4 = stateBlock.W;
 
             for (int i = 0; i < BufferSize; i++)
             {
-                float x = (buffer[i] * b0) + stateX;
-                float y = (x * b0) + stateZ;
-                stateX = (buffer[i] * b1) - (x * a1) + stateY;
-                stateY = (buffer[i] * b2) - (x * a2);
-                stateZ = (x * b1) - (y * a1) + stateW;
-                stateW = (x * b2) - (y * a2);
+                float s = buffer[i];
+                float x = (s * b0) + pole1;
+                pole1 = (s * b1) - (x * a1) + pole2;
+                pole2 = (s * b2) - (x * a2);
+                float y = (x * b0) + pole3;
+                pole3 = (x * b1) - (y * a1) + pole4;
+                pole4 = (x * b2) - (y * a2);
                 buffer[i] = y;
             }
 
-            stateBlock.X = stateX;
-            stateBlock.Y = stateY;
-            stateBlock.Z = stateZ;
-            stateBlock.W = stateW;
+            stateBlock.X = pole1;
+            stateBlock.Y = pole2;
+            stateBlock.Z = pole3;
+            stateBlock.W = pole4;
+        }
+
+        // https://www.earlevel.com/main/2012/12/15/a-one-pole-filter/
+        // TODO: verify OnePoleLPF/HPF results
+        private void OnePoleLPF(float[] buffer, float[] frequencies, ref StateBlock stateBlock)
+        {
+            for (int i = 0; i < BufferSize; i++)
+            {
+                buffer[i] = OnePoleLPF(buffer[i], frequencies[i], ref stateBlock);
+            }
+        }
+
+        private void OnePoleLPF(float[] buffer, float frequency, ref StateBlock stateBlock)
+        {
+            for (int i = 0; i < BufferSize; i++)
+            {
+                buffer[i] = OnePoleLPF(buffer[i], frequency, ref stateBlock);
+            }
+        }
+
+        private float OnePoleLPF(float sample, float frequency, ref StateBlock stateBlock)
+        {
+            float previousSample = stateBlock.X;
+
+            float b1 = (float)Math.Exp(-2.0f * Math.PI * frequency * 256.0f / SampleRate);
+            float a0 = 1.0f - b1;
+
+            float s = a0 * sample + (b1 * previousSample);
+            stateBlock.X = s;
+            return s;
+        }
+
+        private void OnePoleHPF(float[] buffer, float[] frequencies, ref StateBlock stateBlock)
+        {
+            for (int i = 0; i < BufferSize; i++)
+            {
+                buffer[i] = OnePoleHPF(buffer[i], frequencies[i], ref stateBlock);
+            }
+        }
+
+        private void OnePoleHPF(float[] buffer, float frequency, ref StateBlock stateBlock)
+        {
+            for (int i = 0; i < BufferSize; i++)
+            {
+                buffer[i] = OnePoleHPF(buffer[i], frequency, ref stateBlock);
+            }
+        }
+
+        private float OnePoleHPF(float sample, float frequency, ref StateBlock stateBlock)
+        {
+            return sample - OnePoleLPF(sample, frequency, ref stateBlock);
         }
 
         private void EnvelopeFollower(float[] buffer, float a2, float a3, ref StateBlock stateBlock)
@@ -1469,13 +1526,12 @@ FINISH                                              =>
             // State block:
             //  X -> latch SET
 
-            // TODO(alexguirre): understand logic of TriggerLatch
-            float stateSet = stateBlock.X;
+            bool set = stateBlock.X != 0.0f;
             float latch = 0.0f;
-            if (triggered && stateSet == 0.0f)
+            if (triggered && !set)
                 latch = 1.0f;
 
-            if (triggered != (stateSet != 0.0f))
+            if (triggered != set)
             {
                 stateBlock.X = triggered ? 1.0f : 0.0f;
             }
@@ -1811,21 +1867,6 @@ FINISH                                              =>
 
         // TODO(alexguirre): TimedTrigger may not be equivalent, game code has like 10 states, here I'm using the same states as the envelope gen
         // TODO(alexguirre): verify how TimedTrigger works in-game
-        /*
-ENVELOPE_GEN__R_LINEAR_T_ONE_SHOT 0.1, 0.2, 0.3, 0.5, 0.4, 0.35, 1 => B6, R0 [1]
-TIMED_TRIGGER__T_ONE_SHOT 1, 0.1, 0.2, 0.3, 0.4, 0.35 => R1, R2, R3, R4, R5  [2]
-
-;FILL_BUFFER R0 => B0   ; envelope finished
-FILL_BUFFER R1 => B1   ; timed trigger finished
-;FILL_BUFFER R2 => B2   ; attack
-;FILL_BUFFER R3 => B3   ; decay 
-;FILL_BUFFER R4 => B4   ; hold
-;FILL_BUFFER R5 => B5   ; release
-
-
-FILL_BUFFER 0 => B7
-FINISH =>
-         */
         private TimedTriggerResult TimedTrigger(EnvelopeTriggerMode triggerMode, ref StateBlock stateBlock, float trigger, float predelay, float attack, float decay, float hold, float release)
         {
             // State block:
@@ -2070,6 +2111,65 @@ FINISH =>
             }
         }
 
+        private void AWFilter(float[] buffer, float[] buffer2, float[] buffer3, ref StateBlock stateBlock)
+        {
+            var s = stateBlock.X;
+            for (int i = 0; i < BufferSize; i++)
+            {
+                var v10 = buffer3[i] * 64.0f;
+                var v12 = (float)rnd.NextDouble() * v10 + buffer2[i] * 127.0f + 1.0f;
+                var v13 = 1.0f / v12;
+                var v14 = (1.0f - (v13 * v12)) * v13 + v13;
+                s = s - ((s - buffer[i]) * v14);
+                buffer[i] = s;
+            }
+            stateBlock.X = s;
+        }
+
+        // https://thewolfsound.com/allpass-filter/#first-order-iir-allpass
+        private void AllpassFilter(float[] buffer, float breakFrequency, ref StateBlock stateBlock)
+        {
+            float previousUnfilteredSample = stateBlock.X;
+            float previousSample = stateBlock.Y;
+
+            float a1 = (float)Math.Tan(Math.PI * breakFrequency / SampleRate);
+            a1 = (a1 - 1.0f) / (a1 + 1.0f);
+
+            for (int i = 0; i < BufferSize; i++)
+            {
+                float sample = a1 * buffer[i] + previousUnfilteredSample - a1 * previousSample;
+                sample = Math.Max(Math.Min(sample, 1.0f), -1.0f);
+
+                previousUnfilteredSample = buffer[i];
+                previousSample = sample;
+                buffer[i] = sample;
+            }
+
+            stateBlock.X = previousUnfilteredSample;
+            stateBlock.Y = previousSample;
+        }
+
+        private void AllpassFilter(float[] buffer, float[] breakFrequencies, ref StateBlock stateBlock)
+        {
+            float previousUnfilteredSample = stateBlock.X;
+            float previousSample = stateBlock.Y;
+
+            for (int i = 0; i < BufferSize; i++)
+            {
+                float a1 = (float)Math.Tan(Math.PI * breakFrequencies[i] / SampleRate);
+                a1 = (a1 - 1.0f) / (a1 + 1.0f);
+
+                float sample = a1 * buffer[i] + previousUnfilteredSample - a1 * previousSample;
+                sample = Math.Max(Math.Min(sample, 1.0f), -1.0f);
+
+                previousUnfilteredSample = buffer[i];
+                previousSample = sample;
+                buffer[i] = sample;
+            }
+
+            stateBlock.X = previousUnfilteredSample;
+            stateBlock.Y = previousSample;
+        }
 
 
 
