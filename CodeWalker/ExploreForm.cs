@@ -309,6 +309,7 @@ namespace CodeWalker
             InitFileType(".awc", "Audio Wave Container", 22, FileTypeAction.ViewAwc, true);
             InitFileType(".rel", "Audio Data (REL)", 23, FileTypeAction.ViewRel, true);
             InitFileType(".nametable", "Name Table", 5, FileTypeAction.ViewNametable);
+            InitFileType(".ypdb", "Pose Matcher Database", 9, FileTypeAction.ViewYpdb);
 
             InitSubFileType(".dat", "cache_y.dat", "Cache File", 6, FileTypeAction.ViewCacheDat, true);
             InitSubFileType(".dat", "heightmap.dat", "Heightmap", 6, FileTypeAction.ViewHeightmap, true);
@@ -1545,6 +1546,9 @@ namespace CodeWalker
                     case FileTypeAction.ViewDistantLights:
                         ViewDistantLights(name, path, data, fe);
                         break;
+                    case FileTypeAction.ViewYpdb:
+                        ViewYpdb(name, path, data, fe);
+                        break;
                     case FileTypeAction.ViewHex:
                     default:
                         ViewHex(name, path, data);
@@ -1805,6 +1809,13 @@ namespace CodeWalker
             GenericForm f = new GenericForm(this);
             f.Show();
             f.LoadFile(dlf, dlf.RpfFileEntry);
+        }
+        private void ViewYpdb(string name, string path, byte[] data, RpfFileEntry e)
+        {
+            var ypdb = RpfFile.GetFile<YpdbFile>(e, data);
+            GenericForm f = new GenericForm(this);
+            f.Show();
+            f.LoadFile(ypdb, ypdb.RpfFileEntry);
         }
 
         private RpfFileEntry CreateFileEntry(string name, string path, ref byte[] data)
@@ -4878,6 +4889,7 @@ namespace CodeWalker
         ViewMrf = 24,
         ViewNametable = 25,
         ViewDistantLights = 26,
+        ViewYpdb = 27,
     }
 
 
