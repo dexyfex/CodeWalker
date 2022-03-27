@@ -2703,92 +2703,15 @@ namespace CodeWalker
                     var fname = fi.Name;
                     var fnamel = fname.ToLowerInvariant();
                     var fpathin = fpath;
-                    var mformat = MetaFormat.RSC;
-                    var trimlength = 4;
 
                     if (!fnamel.EndsWith(".xml"))
                     {
                         MessageBox.Show(fname + ": Not an XML file!", "Cannot import XML");
                         continue;
                     }
-                    if (fnamel.EndsWith(".pso.xml"))
-                    {
-                        mformat = MetaFormat.PSO;
-                        trimlength = 8;
-                    }
-                    if (fnamel.EndsWith(".rbf.xml"))
-                    {
-                        mformat = MetaFormat.RBF;
-                        trimlength = 8;
-                    }
-                    if (fnamel.EndsWith(".rel.xml"))
-                    {
-                        mformat = MetaFormat.AudioRel;
-                    }
-                    if (fnamel.EndsWith(".ynd.xml"))
-                    {
-                        mformat = MetaFormat.Ynd;
-                    }
-                    if (fnamel.EndsWith(".ynv.xml"))
-                    {
-                        mformat = MetaFormat.Ynv;
-                    }
-                    if (fnamel.EndsWith(".ycd.xml"))
-                    {
-                        mformat = MetaFormat.Ycd;
-                    }
-                    if (fnamel.EndsWith(".ybn.xml"))
-                    {
-                        mformat = MetaFormat.Ybn;
-                    }
-                    if (fnamel.EndsWith(".ytd.xml"))
-                    {
-                        mformat = MetaFormat.Ytd;
-                    }
-                    if (fnamel.EndsWith(".ydr.xml"))
-                    {
-                        mformat = MetaFormat.Ydr;
-                    }
-                    if (fnamel.EndsWith(".ydd.xml"))
-                    {
-                        mformat = MetaFormat.Ydd;
-                    }
-                    if (fnamel.EndsWith(".yft.xml"))
-                    {
-                        mformat = MetaFormat.Yft;
-                    }
-                    if (fnamel.EndsWith(".ypt.xml"))
-                    {
-                        mformat = MetaFormat.Ypt;
-                    }
-                    if (fnamel.EndsWith(".yld.xml"))
-                    {
-                        mformat = MetaFormat.Yld;
-                    }
-                    if (fnamel.EndsWith(".yed.xml"))
-                    {
-                        mformat = MetaFormat.Yed;
-                    }
-                    if (fnamel.EndsWith(".ywr.xml"))
-                    {
-                        mformat = MetaFormat.Ywr;
-                    }
-                    if (fnamel.EndsWith(".yvr.xml"))
-                    {
-                        mformat = MetaFormat.Yvr;
-                    }
-                    if (fnamel.EndsWith(".awc.xml"))
-                    {
-                        mformat = MetaFormat.Awc;
-                    }
-                    if (fnamel.EndsWith("cache_y.dat.xml"))
-                    {
-                        mformat = MetaFormat.CacheFile;
-                    }
-                    if (fnamel.EndsWith(".dat.xml") && fnamel.StartsWith("heightmap"))
-                    {
-                        mformat = MetaFormat.Heightmap;
-                    }
+
+                    var trimlength = 4;
+                    var mformat = XmlMeta.GetXMLFormat(fnamel, out trimlength);
 
                     fname = fname.Substring(0, fname.Length - trimlength);
                     fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
@@ -2802,228 +2725,7 @@ namespace CodeWalker
                         doc.LoadXml(text);
                     }
 
-                    byte[] data = null;
-
-                    switch (mformat)
-                    {
-                        case MetaFormat.RSC:
-                            {
-                                var meta = XmlMeta.GetMeta(doc);
-                                if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import Meta XML");
-                                    continue;
-                                }
-                                data = ResourceBuilder.Build(meta, 2); //meta is RSC V:2
-                                break;
-                            }
-                        case MetaFormat.PSO:
-                            {
-                                var pso = XmlPso.GetPso(doc);
-                                if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null))
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import PSO XML");
-                                    continue;
-                                }
-                                data = pso.Save();
-                                break;
-                            }
-                        case MetaFormat.RBF:
-                            {
-                                var rbf = XmlRbf.GetRbf(doc);
-                                if (rbf.current == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import RBF XML");
-                                    continue;
-                                }
-                                data = rbf.Save();
-                                break;
-                            }
-                        case MetaFormat.AudioRel:
-                            {
-                                var rel = XmlRel.GetRel(doc);
-                                if ((rel.RelDatasSorted == null) || (rel.RelDatas == null))
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import REL XML");
-                                    continue;
-                                }
-                                data = rel.Save();
-                                break;
-                            }
-                        case MetaFormat.Ynd:
-                            {
-                                var ynd = XmlYnd.GetYnd(doc);
-                                if (ynd.NodeDictionary == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YND XML");
-                                    continue;
-                                }
-                                data = ynd.Save();
-                                break;
-                            }
-                        case MetaFormat.Ynv:
-                            {
-                                var ynv = XmlYnv.GetYnv(doc);
-                                if (ynv.Nav == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YNV XML");
-                                    continue;
-                                }
-                                data = ynv.Save();
-                                break;
-                            }
-                        case MetaFormat.Ycd:
-                            {
-                                var ycd = XmlYcd.GetYcd(doc);
-                                if (ycd.ClipDictionary == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YCD XML");
-                                    continue;
-                                }
-                                data = ycd.Save();
-                                break;
-                            }
-                        case MetaFormat.Ybn:
-                            {
-                                var ybn = XmlYbn.GetYbn(doc);
-                                if (ybn.Bounds == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YBN XML");
-                                    continue;
-                                }
-                                data = ybn.Save();
-                                break;
-                            }
-                        case MetaFormat.Ytd:
-                            {
-                                var ytd = XmlYtd.GetYtd(doc, fpathin);
-                                if (ytd.TextureDict == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YTD XML");
-                                    continue;
-                                }
-                                data = ytd.Save();
-                                break;
-                            }
-                        case MetaFormat.Ydr:
-                            {
-                                var ydr = XmlYdr.GetYdr(doc, fpathin);
-                                if (ydr.Drawable == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YDR XML");
-                                    continue;
-                                }
-                                data = ydr.Save();
-                                break;
-                            }
-                        case MetaFormat.Ydd:
-                            {
-                                var ydd = XmlYdd.GetYdd(doc, fpathin);
-                                if (ydd.DrawableDict == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YDD XML");
-                                    continue;
-                                }
-                                data = ydd.Save();
-                                break;
-                            }
-                        case MetaFormat.Yft:
-                            {
-                                var yft = XmlYft.GetYft(doc, fpathin);
-                                if (yft.Fragment == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YFT XML");
-                                    continue;
-                                }
-                                data = yft.Save();
-                                break;
-                            }
-                        case MetaFormat.Ypt:
-                            {
-                                var ypt = XmlYpt.GetYpt(doc, fpathin);
-                                if (ypt.PtfxList == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YPT XML");
-                                    continue;
-                                }
-                                data = ypt.Save();
-                                break;
-                            }
-                        case MetaFormat.Yld:
-                            {
-                                var yld = XmlYld.GetYld(doc, fpathin);
-                                if (yld.ClothDictionary == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YLD XML");
-                                    continue;
-                                }
-                                data = yld.Save();
-                                break;
-                            }
-                        case MetaFormat.Yed:
-                            {
-                                var yed = XmlYed.GetYed(doc, fpathin);
-                                if (yed.ExpressionDictionary == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YED XML");
-                                    continue;
-                                }
-                                data = yed.Save();
-                                break;
-                            }
-                        case MetaFormat.Ywr:
-                            {
-                                var ywr = XmlYwr.GetYwr(doc, fpathin);
-                                if (ywr.Waypoints == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YWR XML");
-                                    continue;
-                                }
-                                data = ywr.Save();
-                                break;
-                            }
-                        case MetaFormat.Yvr:
-                            {
-                                var yvr = XmlYvr.GetYvr(doc, fpathin);
-                                if (yvr.Records == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import YVR XML");
-                                    continue;
-                                }
-                                data = yvr.Save();
-                                break;
-                            }
-                        case MetaFormat.Awc:
-                            {
-                                var awc = XmlAwc.GetAwc(doc, fpathin);
-                                if (awc.Streams == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import AWC XML");
-                                    continue;
-                                }
-                                data = awc.Save();
-                                break;
-                            }
-                        case MetaFormat.CacheFile:
-                            {
-                                var cdf = new CacheDatFile();
-                                //cdf.LoadXml() //TODO!!!
-                                MessageBox.Show(fname + ": CacheFile XML import still TODO!!!", "Cannot import CacheFile XML");
-                                break;
-                            }
-                        case MetaFormat.Heightmap:
-                            {
-                                var hmf = XmlHmap.GetHeightmap(doc);
-                                if (hmf.MaxHeights == null)
-                                {
-                                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import Heightmap XML");
-                                    continue;
-                                }
-                                data = hmf.Save();
-                                break;
-                            }
-                    }
-
+                    byte[] data = XmlMeta.GetData(doc, mformat, fpathin);
 
                     if (data != null)
                     {
@@ -3038,7 +2740,10 @@ namespace CodeWalker
                             CurrentFolder.EnsureFile(outfpath);
                         }
                     }
-
+                    else
+                    {
+                        MessageBox.Show(fname + ": Schema not supported.", "Cannot import " + XmlMeta.GetXMLFormatName(mformat));
+                    }
 
                 }
 #if !DEBUG
