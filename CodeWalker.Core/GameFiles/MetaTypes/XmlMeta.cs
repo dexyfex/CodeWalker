@@ -168,7 +168,9 @@ namespace CodeWalker.GameFiles
         }
         public static byte[] GetCacheFileData(XmlDocument doc)
         {
-            return null; //TODO!!!
+            var cdf = XmlCacheDat.GetCacheDat(doc);
+            if (cdf == null) return null;
+            return cdf.Save();
         }
         public static byte[] GetHeightmapData(XmlDocument doc)
         {

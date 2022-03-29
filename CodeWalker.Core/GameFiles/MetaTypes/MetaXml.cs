@@ -284,7 +284,7 @@ namespace CodeWalker.GameFiles
         {
             var fn = (cdf?.FileEntry?.Name) ?? "";
             filename = fn + ".xml";
-            return cdf.GetXml();
+            return CacheDatXml.GetXml(cdf);
         }
         public static string GetXml(HeightmapFile hmf, out string filename, string outputfolder)
         {

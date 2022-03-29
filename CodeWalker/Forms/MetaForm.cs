@@ -349,7 +349,7 @@ namespace CodeWalker.Forms
         public void LoadMeta(CacheDatFile cachedat)
         {
             var fn = ((cachedat?.FileEntry?.Name) ?? "") + ".xml";
-            Xml = cachedat.GetXml();
+            Xml = MetaXml.GetXml(cachedat, out fn, "");
             FileName = fn;
             RawPropertyGrid.SelectedObject = cachedat;
             rpfFileEntry = cachedat?.FileEntry;

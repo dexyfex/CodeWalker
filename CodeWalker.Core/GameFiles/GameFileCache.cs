@@ -219,6 +219,7 @@ namespace CodeWalker.GameFiles
                 //TestMrfs();
                 //TestPlacements();
                 //TestDrawables();
+                //TestCacheFiles();
                 //TestHeightmaps();
                 //TestWatermaps();
                 //GetShadersXml();
@@ -4953,6 +4954,49 @@ namespace CodeWalker.GameFiles
 
             UpdateStatus((DateTime.Now - starttime).ToString() + " elapsed, " + drawablecount.ToString() + " drawables, " + errs.Count.ToString() + " errors.");
 
+        }
+        public void TestCacheFiles()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        if (entry.NameLower.EndsWith("cache_y.dat"))// || entry.NameLower.EndsWith("cache_y_bank.dat"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            var cdfile = RpfMan.GetFile<CacheDatFile>(entry);
+                            if (cdfile != null)
+                            {
+                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                //var ndata = cdfile.Save();
+
+                                var xml = CacheDatXml.GetXml(cdfile);
+                                var cdf2 = XmlCacheDat.GetCacheDat(xml);
+                                var ndata = cdf2.Save();
+
+                                if (ndata.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < ndata.Length; i++)
+                                    {
+                                        if (ndata[i] != odata[i])
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
         }
         public void TestHeightmaps()
         {
