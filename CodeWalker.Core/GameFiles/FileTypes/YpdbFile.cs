@@ -2,6 +2,8 @@
 using System.IO;
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using System.Text;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -137,25 +139,66 @@ namespace CodeWalker.GameFiles
 
             w.Write(Signature);
         }
+
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            //YpdbXml.ValueTag(sb, indent, "SerializerVersion", SerializerVersion.ToString());
+            //YpdbXml.ValueTag(sb, indent, "PoseMatcherVersion", PoseMatcherVersion.ToString());
+            YpdbXml.ValueTag(sb, indent, "Signature", Signature.ToString());
+            //YpdbXml.ValueTag(sb, indent, "Unk7", FloatUtil.ToString(Unk7));
+            //YpdbXml.ValueTag(sb, indent, "Unk8", Unk8.ToString());
+            YpdbXml.WriteRawArray(sb, BoneTags, indent, "BoneTags", "");
+            WeightSet?.WriteXml(sb, indent);
+            YpdbXml.WriteItemArray(sb, Samples, indent, "Samples");
+        }
+        public void ReadXml(XmlNode node)
+        {
+            SerializerVersion = 2;// Xml.GetChildIntAttribute(node, "SerializerVersion");
+            PoseMatcherVersion = 0;// Xml.GetChildIntAttribute(node, "PoseMatcherVersion");
+            Signature = Xml.GetChildUIntAttribute(node, "Signature");
+            Unk7 = 0.033333f;// Xml.GetChildFloatAttribute(node, "Unk7");
+            Unk8 = 1;// Xml.GetChildIntAttribute(node, "Unk8");
+            BoneTags = Xml.GetChildRawUshortArray(node, "BoneTags");
+            BoneTagsCount = (BoneTags?.Length ?? 0);
+            WeightSet = new PoseMatcherWeightSet(node);
+            Samples = XmlMeta.ReadItemArray<PoseMatcherMatchSample>(node, "Samples");
+            SamplesCount = (Samples?.Length ?? 0);
+        }
     }
 
-    [TC(typeof(EXP))]
-    public class PoseMatcherMatchSample
+    [TC(typeof(EXP))] public class PoseMatcherMatchSample : IMetaXmlItem
     {
         // rage::crPoseMatcherData::MatchSample
         public MetaHash ClipSet { get; set; } // from clip_sets.ymt/xml
         public MetaHash Clip { get; set; }
-        public float Unk3 { get; set; }
+        public float Offset { get; set; }//probably time offset, allows for multiple samples per clip
         public PoseMatcherPointCloud PointCloud { get; set; }
 
+        public PoseMatcherMatchSample()
+        { }
         public PoseMatcherMatchSample(DataReader r)
         {
             ClipSet = r.ReadUInt32();
             Clip = r.ReadUInt32();
 
-            Unk3 = r.ReadSingle();
+            Offset = r.ReadSingle();
 
             PointCloud = new PoseMatcherPointCloud(r);
+
+            switch (Offset)
+            {
+                case 0:
+                case 0.266f:
+                case 0.576f:
+                case 0.366933f:
+                case 0.599466f:
+                case 0.506333f:
+                case 1.09f:
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void Write(DataWriter w)
@@ -163,9 +206,24 @@ namespace CodeWalker.GameFiles
             w.Write(ClipSet);
             w.Write(Clip);
 
-            w.Write(Unk3);
+            w.Write(Offset);
 
             PointCloud.Write(w);
+        }
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YpdbXml.StringTag(sb, indent, "ClipSet", YpdbXml.HashString(ClipSet));
+            YpdbXml.StringTag(sb, indent, "Clip", YpdbXml.HashString(Clip));
+            YpdbXml.ValueTag(sb, indent, "Offset", FloatUtil.ToString(Offset));
+            PointCloud?.WriteXml(sb, indent);
+        }
+        public void ReadXml(XmlNode node)
+        {
+            ClipSet = XmlMeta.GetHash(Xml.GetChildInnerText(node, "ClipSet"));
+            Clip = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Clip"));
+            Offset = Xml.GetChildFloatAttribute(node, "Offset");
+            PointCloud = new PoseMatcherPointCloud(node);
         }
 
         public override string ToString()
@@ -174,18 +232,30 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))]
-    public class PoseMatcherPointCloud
+    [TC(typeof(EXP))] public class PoseMatcherPointCloud
     {
         // rage::crpmPointCloud
         public int PointsCount { get; set; }
         public Vector3[] Points { get; set; }
-        public int Unk2_Count { get; set; } // == PointsCount
-        public float[] Unk2_Items { get; set; }
+        public int WeightsCount { get; set; } // == PointsCount
+        public float[] Weights { get; set; }
         public Vector3 BoundsMin { get; set; }
         public Vector3 BoundsMax { get; set; }
-        public float Unk5 { get; set; }
+        public float WeightsSum { get; set; }
 
+        public PoseMatcherPointCloud(XmlNode n)
+        {
+            BoundsMin = Xml.GetChildVector3Attributes(n, "BoundsMin");
+            BoundsMax = Xml.GetChildVector3Attributes(n, "BoundsMax");
+            Points = Xml.GetChildRawVector3Array(n, "Points");
+            PointsCount = (Points?.Length ?? 0);
+            Weights = Xml.GetChildRawFloatArray(n, "Weights");
+            WeightsCount = (Weights?.Length ?? 0);
+
+            var sum = 0.0f;
+            if (Weights != null) foreach (var v in Weights) sum += v;
+            WeightsSum = sum;
+        }
         public PoseMatcherPointCloud(DataReader r)
         {
             PointsCount = r.ReadInt32();
@@ -197,22 +267,27 @@ namespace CodeWalker.GameFiles
                     Points[i] = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
             }
 
-            Unk2_Count = r.ReadInt32();
-            if (Unk2_Count > 0)
+            WeightsCount = r.ReadInt32();
+            if (WeightsCount > 0)
             {
-                Unk2_Items = new float[Unk2_Count];
+                Weights = new float[WeightsCount];
 
-                for (int i = 0; i < Unk2_Count; i++)
-                    Unk2_Items[i] = r.ReadSingle();
+                for (int i = 0; i < WeightsCount; i++)
+                    Weights[i] = r.ReadSingle();
             }
 
             BoundsMin = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
             BoundsMax = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
 
-            Unk5 = r.ReadSingle();
+            WeightsSum = r.ReadSingle();
 
-            if (PointsCount != Unk2_Count)
+            if (PointsCount != WeightsCount)
             { } // no hit
+
+            //var sum = 0.0f;
+            //if (Weights != null) foreach (var v in Weights) sum += v;
+            //if (WeightsSum != sum)
+            //{ } //no hit
         }
 
         public void Write(DataWriter w)
@@ -224,22 +299,29 @@ namespace CodeWalker.GameFiles
                     w.Write(point);
             }
 
-            w.Write(Unk2_Count);
-            if (Unk2_Count > 0)
+            w.Write(WeightsCount);
+            if (WeightsCount > 0)
             {
-                foreach (var entry in Unk2_Items)
+                foreach (var entry in Weights)
                     w.Write(entry);
             }
 
             w.Write(BoundsMin);
             w.Write(BoundsMax);
 
-            w.Write(Unk5);
+            w.Write(WeightsSum);
+        }
+
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YpdbXml.SelfClosingTag(sb, indent, "BoundsMin " + FloatUtil.GetVector3XmlString(BoundsMin));
+            YpdbXml.SelfClosingTag(sb, indent, "BoundsMax " + FloatUtil.GetVector3XmlString(BoundsMax));
+            YpdbXml.WriteRawArray(sb, Points, indent, "Points", "", YpdbXml.FormatVector3, 1);
+            YpdbXml.WriteRawArray(sb, Weights, indent, "Weights", "", FloatUtil.ToString);
         }
     }
 
-    [TC(typeof(EXP))]
-    public class PoseMatcherWeightSet
+    [TC(typeof(EXP))] public class PoseMatcherWeightSet
     {
         // rage::crWeightSet
         public int WeightsCount { get; set; }
@@ -256,6 +338,11 @@ namespace CodeWalker.GameFiles
                     Weights[i] = r.ReadSingle();
             }
         }
+        public PoseMatcherWeightSet(XmlNode n)
+        {
+            Weights = Xml.GetChildRawFloatArray(n, "Weights");
+            WeightsCount = (Weights?.Length ?? 0);
+        }
 
         public void Write(DataWriter w)
         {
@@ -266,5 +353,59 @@ namespace CodeWalker.GameFiles
                     w.Write(weight);
             }
         }
+        
+        public void WriteXml(StringBuilder sb, int indent)
+        {
+            YpdbXml.WriteRawArray(sb, Weights, indent, "Weights", "", FloatUtil.ToString);
+        }
     }
+
+
+
+
+
+    public class YpdbXml : MetaXmlBase
+    {
+
+        public static string GetXml(YpdbFile ypdb)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            if ((ypdb != null) && (ypdb.WeightSet != null))
+            {
+                var name = "PoseMatcher";
+
+                OpenTag(sb, 0, name);
+
+                ypdb.WriteXml(sb, 1);
+
+                CloseTag(sb, 0, name);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+    public class XmlYpdb
+    {
+
+        public static YpdbFile GetYpdb(string xml)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYpdb(doc);
+        }
+
+        public static YpdbFile GetYpdb(XmlDocument doc)
+        {
+            YpdbFile ypdb = new YpdbFile();
+            ypdb.ReadXml(doc.DocumentElement);
+            return ypdb;
+        }
+
+    }
+
+
 }

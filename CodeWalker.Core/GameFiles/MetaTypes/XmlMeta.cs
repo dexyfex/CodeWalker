@@ -55,6 +55,8 @@ namespace CodeWalker.GameFiles
                     return GetCacheFileData(doc);
                 case MetaFormat.Heightmap:
                     return GetHeightmapData(doc);
+                case MetaFormat.Ypdb:
+                    return GetYpdbData(doc);
             }
             return null;
         }
@@ -178,6 +180,12 @@ namespace CodeWalker.GameFiles
             if (hmf.MaxHeights == null) return null;
             return hmf.Save();
         }
+        public static byte[] GetYpdbData(XmlDocument doc)
+        {
+            var ypdb = XmlYpdb.GetYpdb(doc);
+            if (ypdb.WeightSet == null) return null;
+            return ypdb.Save();
+        }
 
 
         public static string GetXMLFormatName(MetaFormat mformat)
@@ -204,6 +212,7 @@ namespace CodeWalker.GameFiles
                 case MetaFormat.Awc: return "AWC XML";
                 case MetaFormat.CacheFile: return "CacheFile XML";
                 case MetaFormat.Heightmap: return "Heightmap XML";
+                case MetaFormat.Ypdb: return "YPDB XML";
                 default: return "XML";
             }
         }
@@ -293,6 +302,10 @@ namespace CodeWalker.GameFiles
             if (fnamel.EndsWith(".dat.xml") && fnamel.StartsWith("heightmap"))
             {
                 mformat = MetaFormat.Heightmap;
+            }
+            if (fnamel.EndsWith(".ypdb.xml"))
+            {
+                mformat = MetaFormat.Ypdb;
             }
             return mformat;
         }

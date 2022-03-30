@@ -4546,7 +4546,12 @@ namespace CodeWalker.GameFiles
                             if (ypdb != null)
                             {
                                 var odata = entry.File.ExtractFile(entry as RpfFileEntry);
-                                var ndata = ypdb.Save();
+                                //var ndata = ypdb.Save();
+
+                                var xml = YpdbXml.GetXml(ypdb);
+                                var ypdb2 = XmlYpdb.GetYpdb(xml);
+                                var ndata = ypdb2.Save();
+
                                 if (ndata.Length == odata.Length)
                                 {
                                     for (int i = 0; i < ndata.Length; i++)

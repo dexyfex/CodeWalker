@@ -374,6 +374,20 @@ namespace CodeWalker.Forms
                 metaFormat = MetaFormat.Heightmap;
             }
         }
+        public void LoadMeta(YpdbFile ypdb)
+        {
+            var fn = ((ypdb?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(ypdb, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = ypdb;
+            rpfFileEntry = ypdb?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (ypdb?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Ypdb;
+            }
+        }
 
 
 
