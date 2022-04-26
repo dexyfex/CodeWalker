@@ -1199,50 +1199,16 @@ namespace CodeWalker.GameFiles
             AllCacheFiles = new List<CacheDatFile>();
             YmapHierarchyDict = new Dictionary<uint, MapDataStoreNode>();
 
-            string cachefilepath = "common.rpf\\data\\gta5_cache_y.dat";
-            if (EnableDlc)
-            {
-                cachefilepath = "update\\update.rpf\\common\\data\\gta5_cache_y.dat";
-            }
 
-            try
+            CacheDatFile loadCacheFile(string path, bool finalAttempt)
             {
-                var maincache = RpfMan.GetFile<CacheDatFile>(cachefilepath);
-                if (maincache != null)
+                try
                 {
-                    AllCacheFiles.Add(maincache);
-                    foreach (var node in maincache.AllMapNodes)
+                    var cache = RpfMan.GetFile<CacheDatFile>(path);
+                    if (cache != null)
                     {
-                        if (YmapDict.ContainsKey(node.Name))
-                        {
-                            YmapHierarchyDict[node.Name] = node;
-                        }
-                        else
-                        { } //ymap not found...
-                    }
-                }
-                else
-                {
-                    ErrorLog(cachefilepath + ": cache not loaded! Possibly an unsupported GTAV installation version.");
-                }
-            }
-            catch (Exception ex)
-            {
-                ErrorLog(cachefilepath + ": " + ex.ToString());
-            }
-
-
-            if (EnableDlc)
-            {
-                foreach (string dlccachefile in DlcCacheFileList)
-                {
-                    try
-                    {
-                        var dat = RpfMan.GetFile<CacheDatFile>(dlccachefile);
-                        if (dat == null)
-                        { continue; } //update\\x64\\dlcpacks\\mpspecialraces\\dlc.rpf\\x64\\data\\cacheloaderdata_dlc\\mpspecialraces_3336915258_cache_y.dat (hash of: mpspecialraces_interior_additions)
-                        AllCacheFiles.Add(dat);
-                        foreach (var node in dat.AllMapNodes)
+                        AllCacheFiles.Add(cache);
+                        foreach (var node in cache.AllMapNodes)
                         {
                             if (YmapDict.ContainsKey(node.Name))
                             {
@@ -1252,78 +1218,49 @@ namespace CodeWalker.GameFiles
                             { } //ymap not found...
                         }
                     }
-                    catch (Exception ex)
+                    else if (finalAttempt)
                     {
-                        string errstr = dlccachefile + "\n" + ex.ToString();
-                        ErrorLog(errstr);
+                        ErrorLog(path + ": main cachefile not loaded! Possibly an unsupported GTAV installation version.");
                     }
-
+                    else //update\x64\dlcpacks\mpspecialraces\dlc.rpf\x64\data\cacheloaderdata_dlc\mpspecialraces_3336915258_cache_y.dat (hash of: mpspecialraces_interior_additions)
+                    { }
+                    return cache;
                 }
+                catch (Exception ex)
+                {
+                    ErrorLog(path + ": " + ex.ToString());
+                }
+                return null;
+            }
 
-                //foreach (var dlcfile in DlcActiveRpfs)
-                //{
-                //    foreach (RpfEntry entry in dlcfile.AllEntries)
-                //    {
-                //        try
-                //        {
-                //            if (entry.NameLower.EndsWith("_cache_y.dat"))
-                //            {
-                //                var dat = RpfMan.GetFile<CacheDatFile>(entry);
-                //                AllCacheFiles.Add(dat);
-                //                foreach (var node in dat.AllMapNodes)
-                //                {
-                //                    if (YmapDict.ContainsKey(node.Name))
-                //                    {
-                //                        YmapHierarchyDict[node.Name] = node;
-                //                    }
-                //                    else
-                //                    { } //ymap not found...
-                //                }
-                //            }
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            string errstr = entry.Path + "\n" + ex.ToString();
-                //            ErrorLog(errstr);
-                //        }
-                //    }
-                //}
+
+            CacheDatFile maincache = null;
+            if (EnableDlc)
+            {
+                maincache = loadCacheFile("update\\update.rpf\\common\\data\\gta5_cache_y.dat", false);
+                if (maincache == null)
+                {
+                    maincache = loadCacheFile("update\\update2.rpf\\common\\data\\gta5_cache_y.dat", true);
+                }
+            }
+            else
+            {
+                maincache = loadCacheFile("common.rpf\\data\\gta5_cache_y.dat", true);
             }
 
 
 
 
 
-            //foreach (RpfFile file in RpfMan.BaseRpfs)
-            //{
-            //    if (file.AllEntries == null) continue;
-            //    foreach (RpfEntry entry in file.AllEntries)
-            //    {
-            //        try
-            //        {
-            //            //if (entry.Name.EndsWith("_manifest.ymf"))
-            //            //{
-            //            //    var ymf = GetFile<YmfFile>(entry);
-            //            //}
-            //            //else 
-            //            if (entry.NameLower.EndsWith("_cache_y.dat"))
-            //            {
-            //                //parse the cache dat files.
-            //                var dat = RpfMan.GetFile<CacheDatFile>(entry);
-            //                AllCacheFiles.Add(dat);
-            //                foreach (var node in dat.AllMapNodes)
-            //                {
-            //                    YmapHierarchyDict[node.Name] = node;
-            //                }
-            //            }
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            string errstr = entry.Path + "\n" + ex.ToString();
-            //            ErrorLog(errstr);
-            //        }
-            //    }
-            //}
+            if (EnableDlc)
+            {
+                foreach (string dlccachefile in DlcCacheFileList)
+                {
+                    loadCacheFile(dlccachefile, false);
+                }
+            }
+
+
         }
 
         private void InitArchetypeDicts()
