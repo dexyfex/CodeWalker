@@ -516,7 +516,7 @@ namespace CodeWalker.Rendering
 
             var dwbl = this.Key;
             var skel = Skeleton;
-            var bones = skel?.Bones?.Items;
+            var bones = skel?.BonesSorted;//.Bones?.Items;//
             if (bones == null)
             { return; }
 

@@ -30,6 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelLightForm));
             this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
+            this.DuplicateLightButton = new System.Windows.Forms.Button();
             this.DeleteLightButton = new System.Windows.Forms.Button();
             this.NewLightButton = new System.Windows.Forms.Button();
             this.LightsTreeView = new CodeWalker.WinForms.TreeViewFix();
@@ -113,6 +114,7 @@
             this.EditMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditNewLightMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditDeleteLightMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.EditDuplicateLightMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsShowOutlinesMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MoveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -148,6 +150,7 @@
             // 
             // MainSplitContainer.Panel1
             // 
+            this.MainSplitContainer.Panel1.Controls.Add(this.DuplicateLightButton);
             this.MainSplitContainer.Panel1.Controls.Add(this.DeleteLightButton);
             this.MainSplitContainer.Panel1.Controls.Add(this.NewLightButton);
             this.MainSplitContainer.Panel1.Controls.Add(this.LightsTreeView);
@@ -155,15 +158,27 @@
             // MainSplitContainer.Panel2
             // 
             this.MainSplitContainer.Panel2.Controls.Add(this.LightPropertiesPanel);
-            this.MainSplitContainer.Size = new System.Drawing.Size(733, 523);
+            this.MainSplitContainer.Panel2.Paint += new System.Windows.Forms.PaintEventHandler(this.MainSplitContainer_Panel2_Paint);
+            this.MainSplitContainer.Size = new System.Drawing.Size(733, 519);
             this.MainSplitContainer.SplitterDistance = 184;
             this.MainSplitContainer.TabIndex = 0;
+            // 
+            // DuplicateLightButton
+            // 
+            this.DuplicateLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.DuplicateLightButton.Location = new System.Drawing.Point(7, 489);
+            this.DuplicateLightButton.Name = "DuplicateLightButton";
+            this.DuplicateLightButton.Size = new System.Drawing.Size(169, 23);
+            this.DuplicateLightButton.TabIndex = 8;
+            this.DuplicateLightButton.Text = "Duplicate Light";
+            this.DuplicateLightButton.UseVisualStyleBackColor = true;
+            this.DuplicateLightButton.Click += new System.EventHandler(this.DuplicateLightButton_Click);
             // 
             // DeleteLightButton
             // 
             this.DeleteLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.DeleteLightButton.Enabled = false;
-            this.DeleteLightButton.Location = new System.Drawing.Point(96, 494);
+            this.DeleteLightButton.Location = new System.Drawing.Point(96, 457);
             this.DeleteLightButton.Name = "DeleteLightButton";
             this.DeleteLightButton.Size = new System.Drawing.Size(80, 23);
             this.DeleteLightButton.TabIndex = 7;
@@ -174,7 +189,7 @@
             // NewLightButton
             // 
             this.NewLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.NewLightButton.Location = new System.Drawing.Point(7, 494);
+            this.NewLightButton.Location = new System.Drawing.Point(7, 457);
             this.NewLightButton.Name = "NewLightButton";
             this.NewLightButton.Size = new System.Drawing.Size(80, 23);
             this.NewLightButton.TabIndex = 6;
@@ -192,7 +207,7 @@
             this.LightsTreeView.Location = new System.Drawing.Point(3, 3);
             this.LightsTreeView.Name = "LightsTreeView";
             this.LightsTreeView.ShowRootLines = false;
-            this.LightsTreeView.Size = new System.Drawing.Size(178, 485);
+            this.LightsTreeView.Size = new System.Drawing.Size(178, 448);
             this.LightsTreeView.TabIndex = 5;
             this.LightsTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.LightsTreeView_AfterSelect);
             // 
@@ -279,7 +294,7 @@
             this.LightPropertiesPanel.Controls.Add(this.label31);
             this.LightPropertiesPanel.Location = new System.Drawing.Point(4, 3);
             this.LightPropertiesPanel.Name = "LightPropertiesPanel";
-            this.LightPropertiesPanel.Size = new System.Drawing.Size(538, 517);
+            this.LightPropertiesPanel.Size = new System.Drawing.Size(529, 513);
             this.LightPropertiesPanel.TabIndex = 1;
             // 
             // VolumetricFadeDistanceUpDown
@@ -1127,7 +1142,8 @@
             // 
             this.EditMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.EditNewLightMenu,
-            this.EditDeleteLightMenu});
+            this.EditDeleteLightMenu,
+            this.EditDuplicateLightMenu});
             this.EditMenu.Name = "EditMenu";
             this.EditMenu.Size = new System.Drawing.Size(39, 20);
             this.EditMenu.Text = "Edit";
@@ -1135,7 +1151,7 @@
             // EditNewLightMenu
             // 
             this.EditNewLightMenu.Name = "EditNewLightMenu";
-            this.EditNewLightMenu.Size = new System.Drawing.Size(180, 22);
+            this.EditNewLightMenu.Size = new System.Drawing.Size(154, 22);
             this.EditNewLightMenu.Text = "New Light";
             this.EditNewLightMenu.Click += new System.EventHandler(this.EditNewLightMenu_Click);
             // 
@@ -1143,9 +1159,17 @@
             // 
             this.EditDeleteLightMenu.Enabled = false;
             this.EditDeleteLightMenu.Name = "EditDeleteLightMenu";
-            this.EditDeleteLightMenu.Size = new System.Drawing.Size(180, 22);
+            this.EditDeleteLightMenu.Size = new System.Drawing.Size(154, 22);
             this.EditDeleteLightMenu.Text = "Delete Light";
             this.EditDeleteLightMenu.Click += new System.EventHandler(this.EditDeleteLightMenu_Click);
+            // 
+            // EditDuplicateLightMenu
+            // 
+            this.EditDuplicateLightMenu.Enabled = false;
+            this.EditDuplicateLightMenu.Name = "EditDuplicateLightMenu";
+            this.EditDuplicateLightMenu.Size = new System.Drawing.Size(154, 22);
+            this.EditDuplicateLightMenu.Text = "Duplicate Light";
+            this.EditDuplicateLightMenu.Click += new System.EventHandler(this.EditDuplicateLightMenu_Click);
             // 
             // OptionsMenu
             // 
@@ -1193,7 +1217,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(733, 547);
+            this.ClientSize = new System.Drawing.Size(733, 543);
             this.Controls.Add(this.MainSplitContainer);
             this.Controls.Add(this.MainMenu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1291,6 +1315,7 @@
         private System.Windows.Forms.ToolStripMenuItem EditMenu;
         private System.Windows.Forms.ToolStripMenuItem EditNewLightMenu;
         private System.Windows.Forms.ToolStripMenuItem EditDeleteLightMenu;
+        private System.Windows.Forms.ToolStripMenuItem EditDuplicateLightMenu;
         private System.Windows.Forms.ToolStripMenuItem OptionsMenu;
         private System.Windows.Forms.ToolStripMenuItem OptionsShowOutlinesMenu;
         private System.Windows.Forms.ToolStripMenuItem MoveMenuItem;
@@ -1319,5 +1344,6 @@
         private System.Windows.Forms.NumericUpDown FlashinessUpDown;
         private System.Windows.Forms.Button DeleteLightButton;
         private System.Windows.Forms.Button NewLightButton;
+        private System.Windows.Forms.Button DuplicateLightButton;
     }
 }

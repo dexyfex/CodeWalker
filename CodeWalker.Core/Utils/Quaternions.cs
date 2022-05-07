@@ -67,6 +67,17 @@ namespace CodeWalker
             return new Vector4(q.X, q.Y, q.Z, q.W);
         }
 
+        public static Quaternion FastLerp(Quaternion a, Quaternion b, float v)
+        {
+            var r = new Quaternion();
+            var vi = 1.0f - v;
+            r.X = vi * a.X + v * b.X;
+            r.Y = vi * a.Y + v * b.Y;
+            r.Z = vi * a.Z + v * b.Z;
+            r.W = vi * a.W + v * b.W;
+            r.Normalize();
+            return r;
+        }
     }
 
 

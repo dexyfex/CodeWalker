@@ -212,10 +212,14 @@ namespace CodeWalker.GameFiles
                 //TestYfts();
                 //TestYpts();
                 //TestYnvs();
+                //TestYvrs();
+                //TestYwrs();
                 //TestYmaps();
+                //TestYpdbs();
                 //TestMrfs();
                 //TestPlacements();
                 //TestDrawables();
+                //TestCacheFiles();
                 //TestHeightmaps();
                 //TestWatermaps();
                 //GetShadersXml();
@@ -1195,50 +1199,16 @@ namespace CodeWalker.GameFiles
             AllCacheFiles = new List<CacheDatFile>();
             YmapHierarchyDict = new Dictionary<uint, MapDataStoreNode>();
 
-            string cachefilepath = "common.rpf\\data\\gta5_cache_y.dat";
-            if (EnableDlc)
-            {
-                cachefilepath = "update\\update.rpf\\common\\data\\gta5_cache_y.dat";
-            }
 
-            try
+            CacheDatFile loadCacheFile(string path, bool finalAttempt)
             {
-                var maincache = RpfMan.GetFile<CacheDatFile>(cachefilepath);
-                if (maincache != null)
+                try
                 {
-                    AllCacheFiles.Add(maincache);
-                    foreach (var node in maincache.AllMapNodes)
+                    var cache = RpfMan.GetFile<CacheDatFile>(path);
+                    if (cache != null)
                     {
-                        if (YmapDict.ContainsKey(node.Name))
-                        {
-                            YmapHierarchyDict[node.Name] = node;
-                        }
-                        else
-                        { } //ymap not found...
-                    }
-                }
-                else
-                {
-                    ErrorLog(cachefilepath + ": cache not loaded! Possibly an unsupported GTAV installation version.");
-                }
-            }
-            catch (Exception ex)
-            {
-                ErrorLog(cachefilepath + ": " + ex.ToString());
-            }
-
-
-            if (EnableDlc)
-            {
-                foreach (string dlccachefile in DlcCacheFileList)
-                {
-                    try
-                    {
-                        var dat = RpfMan.GetFile<CacheDatFile>(dlccachefile);
-                        if (dat == null)
-                        { continue; } //update\\x64\\dlcpacks\\mpspecialraces\\dlc.rpf\\x64\\data\\cacheloaderdata_dlc\\mpspecialraces_3336915258_cache_y.dat (hash of: mpspecialraces_interior_additions)
-                        AllCacheFiles.Add(dat);
-                        foreach (var node in dat.AllMapNodes)
+                        AllCacheFiles.Add(cache);
+                        foreach (var node in cache.AllMapNodes)
                         {
                             if (YmapDict.ContainsKey(node.Name))
                             {
@@ -1248,78 +1218,49 @@ namespace CodeWalker.GameFiles
                             { } //ymap not found...
                         }
                     }
-                    catch (Exception ex)
+                    else if (finalAttempt)
                     {
-                        string errstr = dlccachefile + "\n" + ex.ToString();
-                        ErrorLog(errstr);
+                        ErrorLog(path + ": main cachefile not loaded! Possibly an unsupported GTAV installation version.");
                     }
-
+                    else //update\x64\dlcpacks\mpspecialraces\dlc.rpf\x64\data\cacheloaderdata_dlc\mpspecialraces_3336915258_cache_y.dat (hash of: mpspecialraces_interior_additions)
+                    { }
+                    return cache;
                 }
+                catch (Exception ex)
+                {
+                    ErrorLog(path + ": " + ex.ToString());
+                }
+                return null;
+            }
 
-                //foreach (var dlcfile in DlcActiveRpfs)
-                //{
-                //    foreach (RpfEntry entry in dlcfile.AllEntries)
-                //    {
-                //        try
-                //        {
-                //            if (entry.NameLower.EndsWith("_cache_y.dat"))
-                //            {
-                //                var dat = RpfMan.GetFile<CacheDatFile>(entry);
-                //                AllCacheFiles.Add(dat);
-                //                foreach (var node in dat.AllMapNodes)
-                //                {
-                //                    if (YmapDict.ContainsKey(node.Name))
-                //                    {
-                //                        YmapHierarchyDict[node.Name] = node;
-                //                    }
-                //                    else
-                //                    { } //ymap not found...
-                //                }
-                //            }
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            string errstr = entry.Path + "\n" + ex.ToString();
-                //            ErrorLog(errstr);
-                //        }
-                //    }
-                //}
+
+            CacheDatFile maincache = null;
+            if (EnableDlc)
+            {
+                maincache = loadCacheFile("update\\update.rpf\\common\\data\\gta5_cache_y.dat", false);
+                if (maincache == null)
+                {
+                    maincache = loadCacheFile("update\\update2.rpf\\common\\data\\gta5_cache_y.dat", true);
+                }
+            }
+            else
+            {
+                maincache = loadCacheFile("common.rpf\\data\\gta5_cache_y.dat", true);
             }
 
 
 
 
 
-            //foreach (RpfFile file in RpfMan.BaseRpfs)
-            //{
-            //    if (file.AllEntries == null) continue;
-            //    foreach (RpfEntry entry in file.AllEntries)
-            //    {
-            //        try
-            //        {
-            //            //if (entry.Name.EndsWith("_manifest.ymf"))
-            //            //{
-            //            //    var ymf = GetFile<YmfFile>(entry);
-            //            //}
-            //            //else 
-            //            if (entry.NameLower.EndsWith("_cache_y.dat"))
-            //            {
-            //                //parse the cache dat files.
-            //                var dat = RpfMan.GetFile<CacheDatFile>(entry);
-            //                AllCacheFiles.Add(dat);
-            //                foreach (var node in dat.AllMapNodes)
-            //                {
-            //                    YmapHierarchyDict[node.Name] = node;
-            //                }
-            //            }
-            //        }
-            //        catch (Exception ex)
-            //        {
-            //            string errstr = entry.Path + "\n" + ex.ToString();
-            //            ErrorLog(errstr);
-            //        }
-            //    }
-            //}
+            if (EnableDlc)
+            {
+                foreach (string dlccachefile in DlcCacheFileList)
+                {
+                    loadCacheFile(dlccachefile, false);
+                }
+            }
+
+
         }
 
         private void InitArchetypeDicts()
@@ -3518,6 +3459,15 @@ namespace CodeWalker.GameFiles
                             YedFile yed = new YedFile(rfe);
                             RpfMan.LoadFile(yed, rfe);
 
+                            var xml = YedXml.GetXml(yed);
+                            var yed2 = XmlYed.GetYed(xml);
+                            var data2 = yed2.Save();
+                            var yed3 = new YedFile();
+                            RpfFile.LoadResourceFile(yed3, data2, 25);//full roundtrip
+                            var xml2 = YedXml.GetXml(yed3);
+                            if (xml != xml2)
+                            { }
+
                         }
                     }
 #if !DEBUG
@@ -4396,6 +4346,102 @@ namespace CodeWalker.GameFiles
             if (errorfiles.Count > 0)
             { }
         }
+        public void TestYvrs()
+        {
+
+            var exceptions = new List<Exception>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+#if !DEBUG
+                    try
+#endif
+                    {
+                        var rfe = entry as RpfFileEntry;
+                        if (rfe == null) continue;
+
+                        if (rfe.NameLower.EndsWith(".yvr"))
+                        {
+                            if (rfe.NameLower == "agencyprep001.yvr") continue; //this file seems corrupted
+
+                            UpdateStatus(string.Format(entry.Path));
+
+                            YvrFile yvr = new YvrFile(rfe);
+                            RpfMan.LoadFile(yvr, rfe);
+
+                            var xml = YvrXml.GetXml(yvr);
+                            var yvr2 = XmlYvr.GetYvr(xml);
+                            var data2 = yvr2.Save();
+                            var yvr3 = new YvrFile();
+                            RpfFile.LoadResourceFile(yvr3, data2, 1);//full roundtrip
+                            var xml2 = YvrXml.GetXml(yvr3);
+                            if (xml != xml2)
+                            { }
+
+                        }
+                    }
+#if !DEBUG
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+#endif
+                }
+            }
+
+            if (exceptions.Count > 0)
+            { }
+        }
+        public void TestYwrs()
+        {
+
+            var exceptions = new List<Exception>();
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+#if !DEBUG
+                    try
+#endif
+                    {
+                        var rfe = entry as RpfFileEntry;
+                        if (rfe == null) continue;
+
+                        if (rfe.NameLower.EndsWith(".ywr"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+
+                            YwrFile ywr = new YwrFile(rfe);
+                            RpfMan.LoadFile(ywr, rfe);
+
+                            var xml = YwrXml.GetXml(ywr);
+                            var ywr2 = XmlYwr.GetYwr(xml);
+                            var data2 = ywr2.Save();
+                            var ywr3 = new YwrFile();
+                            RpfFile.LoadResourceFile(ywr3, data2, 1);//full roundtrip
+                            var xml2 = YwrXml.GetXml(ywr3);
+                            if (xml != xml2)
+                            { }
+
+                        }
+                    }
+#if !DEBUG
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                        exceptions.Add(ex);
+                    }
+#endif
+                }
+            }
+
+            if (exceptions.Count > 0)
+            { }
+        }
         public void TestYmaps()
         {
             foreach (RpfFile file in AllRpfs)
@@ -4416,6 +4462,53 @@ namespace CodeWalker.GameFiles
                     {
                         UpdateStatus("Error! " + ex.ToString());
                     }
+                }
+            }
+        }
+        public void TestYpdbs()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    var rfe = entry as RpfFileEntry;
+                    if (rfe == null) continue;
+
+                    try
+                    {
+                        if (rfe.NameLower.EndsWith(".ypdb"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YpdbFile ypdb = RpfMan.GetFile<YpdbFile>(entry);
+                            if (ypdb != null)
+                            {
+                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                //var ndata = ypdb.Save();
+
+                                var xml = YpdbXml.GetXml(ypdb);
+                                var ypdb2 = XmlYpdb.GetYpdb(xml);
+                                var ndata = ypdb2.Save();
+
+                                if (ndata.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < ndata.Length; i++)
+                                    {
+                                        if (ndata[i] != odata[i])
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+
                 }
             }
         }
@@ -4803,6 +4896,49 @@ namespace CodeWalker.GameFiles
 
             UpdateStatus((DateTime.Now - starttime).ToString() + " elapsed, " + drawablecount.ToString() + " drawables, " + errs.Count.ToString() + " errors.");
 
+        }
+        public void TestCacheFiles()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        if (entry.NameLower.EndsWith("cache_y.dat"))// || entry.NameLower.EndsWith("cache_y_bank.dat"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            var cdfile = RpfMan.GetFile<CacheDatFile>(entry);
+                            if (cdfile != null)
+                            {
+                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                //var ndata = cdfile.Save();
+
+                                var xml = CacheDatXml.GetXml(cdfile);
+                                var cdf2 = XmlCacheDat.GetCacheDat(xml);
+                                var ndata = cdf2.Save();
+
+                                if (ndata.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < ndata.Length; i++)
+                                    {
+                                        if (ndata[i] != odata[i])
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
         }
         public void TestHeightmaps()
         {

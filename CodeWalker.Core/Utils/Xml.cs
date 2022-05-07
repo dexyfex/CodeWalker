@@ -144,6 +144,22 @@ namespace CodeWalker
             }
             return i;
         }
+        public static ulong GetChildULongAttribute(XmlNode node, string name, string attribute = "value")
+        {
+            if (node == null) return 0;
+            string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
+            ulong i;
+            if (val?.StartsWith("0x") ?? false)
+            {
+                var subs = val.Substring(2);
+                i = Convert.ToUInt64(subs, 16);
+            }
+            else
+            {
+                ulong.TryParse(val, out i);
+            }
+            return i;
+        }
         public static float GetChildFloatAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return 0;

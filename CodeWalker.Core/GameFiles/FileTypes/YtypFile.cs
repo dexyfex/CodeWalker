@@ -288,7 +288,7 @@ namespace CodeWalker.GameFiles
             { }
 
             NameHash = _CMapTypes.name;
-            if (NameHash == 0)
+            if ((NameHash == 0) && (entry.NameLower != null))
             {
                 int ind = entry.NameLower.LastIndexOf('.');
                 if (ind > 0)

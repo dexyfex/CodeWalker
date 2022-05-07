@@ -9,6 +9,309 @@ namespace CodeWalker.GameFiles
 {
     public class XmlMeta
     {
+
+
+        public static byte[] GetData(XmlDocument doc, MetaFormat mformat, string fpathin)
+        {
+            switch (mformat)
+            {
+                case MetaFormat.RSC:
+                    return GetRSCData(doc);
+                case MetaFormat.PSO:
+                    return GetPSOData(doc);
+                case MetaFormat.RBF:
+                    return GetRBFData(doc);
+                case MetaFormat.AudioRel:
+                    return GetRelData(doc);
+                case MetaFormat.Ynd:
+                    return GetYndData(doc);
+                case MetaFormat.Ynv:
+                    return GetYnvData(doc);
+                case MetaFormat.Ycd:
+                    return GetYcdData(doc);
+                case MetaFormat.Ybn:
+                    return GetYbnData(doc);
+                case MetaFormat.Ytd:
+                    return GetYtdData(doc, fpathin);
+                case MetaFormat.Ydr:
+                    return GetYdrData(doc, fpathin);
+                case MetaFormat.Ydd:
+                    return GetYddData(doc, fpathin);
+                case MetaFormat.Yft:
+                    return GetYftData(doc, fpathin);
+                case MetaFormat.Ypt:
+                    return GetYptData(doc, fpathin);
+                case MetaFormat.Yld:
+                    return GetYldData(doc, fpathin);
+                case MetaFormat.Yed:
+                    return GetYedData(doc, fpathin);
+                case MetaFormat.Ywr:
+                    return GetYwrData(doc, fpathin);
+                case MetaFormat.Yvr:
+                    return GetYvrData(doc, fpathin);
+                case MetaFormat.Awc:
+                    return GetAwcData(doc, fpathin);
+                case MetaFormat.CacheFile:
+                    return GetCacheFileData(doc);
+                case MetaFormat.Heightmap:
+                    return GetHeightmapData(doc);
+                case MetaFormat.Ypdb:
+                    return GetYpdbData(doc);
+            }
+            return null;
+        }
+        public static byte[] GetRSCData(XmlDocument doc)
+        {
+            var meta = GetMeta(doc);
+            if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0)) return null;
+            return ResourceBuilder.Build(meta, 2); //meta is RSC V:2
+        }
+        public static byte[] GetPSOData(XmlDocument doc)
+        {
+            var pso = XmlPso.GetPso(doc);
+            if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null)) return null;
+            return pso.Save();
+        }
+        public static byte[] GetRBFData(XmlDocument doc)
+        {
+            var rbf = XmlRbf.GetRbf(doc);
+            if (rbf.current == null) return null;
+            return rbf.Save();
+        }
+        public static byte[] GetRelData(XmlDocument doc)
+        {
+            var rel = XmlRel.GetRel(doc);
+            if ((rel.RelDatasSorted == null) || (rel.RelDatas == null)) return null;
+            return rel.Save();
+        }
+        public static byte[] GetYndData(XmlDocument doc)
+        {
+            var ynd = XmlYnd.GetYnd(doc);
+            if (ynd.NodeDictionary == null) return null;
+            return ynd.Save();
+        }
+        public static byte[] GetYnvData(XmlDocument doc)
+        {
+            var ynv = XmlYnv.GetYnv(doc);
+            if (ynv.Nav == null) return null;
+            return ynv.Save();
+        }
+        public static byte[] GetYcdData(XmlDocument doc)
+        {
+            var ycd = XmlYcd.GetYcd(doc);
+            if (ycd.ClipDictionary == null) return null;
+            return ycd.Save();
+        }
+        public static byte[] GetYbnData(XmlDocument doc)
+        {
+            var ybn = XmlYbn.GetYbn(doc);
+            if (ybn.Bounds == null) return null;
+            return ybn.Save();
+        }
+        public static byte[] GetYtdData(XmlDocument doc, string fpathin)
+        {
+            var ytd = XmlYtd.GetYtd(doc, fpathin);
+            if (ytd.TextureDict == null) return null;
+            return ytd.Save();
+        }
+        public static byte[] GetYdrData(XmlDocument doc, string fpathin)
+        {
+            var ydr = XmlYdr.GetYdr(doc, fpathin);
+            if (ydr.Drawable == null) return null;
+            return ydr.Save();
+        }
+        public static byte[] GetYddData(XmlDocument doc, string fpathin)
+        {
+            var ydd = XmlYdd.GetYdd(doc, fpathin);
+            if (ydd.DrawableDict == null) return null;
+            return ydd.Save();
+        }
+        public static byte[] GetYftData(XmlDocument doc, string fpathin)
+        {
+            var yft = XmlYft.GetYft(doc, fpathin);
+            if (yft.Fragment == null) return null;
+            return yft.Save();
+        }
+        public static byte[] GetYptData(XmlDocument doc, string fpathin)
+        {
+            var ypt = XmlYpt.GetYpt(doc, fpathin);
+            if (ypt.PtfxList == null) return null;
+            return ypt.Save();
+        }
+        public static byte[] GetYldData(XmlDocument doc, string fpathin)
+        {
+            var yld = XmlYld.GetYld(doc, fpathin);
+            if (yld.ClothDictionary == null) return null;
+            return yld.Save();
+        }
+        public static byte[] GetYedData(XmlDocument doc, string fpathin)
+        {
+            var yed = XmlYed.GetYed(doc, fpathin);
+            if (yed.ExpressionDictionary == null) return null;
+            return yed.Save();
+        }
+        public static byte[] GetYwrData(XmlDocument doc, string fpathin)
+        {
+            var ywr = XmlYwr.GetYwr(doc, fpathin);
+            if (ywr.Waypoints == null) return null;
+            return ywr.Save();
+        }
+        public static byte[] GetYvrData(XmlDocument doc, string fpathin)
+        {
+            var yvr = XmlYvr.GetYvr(doc, fpathin);
+            if (yvr.Records == null) return null;
+            return yvr.Save();
+        }
+        public static byte[] GetAwcData(XmlDocument doc, string fpathin)
+        {
+            var awc = XmlAwc.GetAwc(doc, fpathin);
+            if (awc.Streams == null) return null;
+            return awc.Save();
+        }
+        public static byte[] GetCacheFileData(XmlDocument doc)
+        {
+            var cdf = XmlCacheDat.GetCacheDat(doc);
+            if (cdf == null) return null;
+            return cdf.Save();
+        }
+        public static byte[] GetHeightmapData(XmlDocument doc)
+        {
+            var hmf = XmlHmap.GetHeightmap(doc);
+            if (hmf.MaxHeights == null) return null;
+            return hmf.Save();
+        }
+        public static byte[] GetYpdbData(XmlDocument doc)
+        {
+            var ypdb = XmlYpdb.GetYpdb(doc);
+            if (ypdb.WeightSet == null) return null;
+            return ypdb.Save();
+        }
+
+
+        public static string GetXMLFormatName(MetaFormat mformat)
+        {
+            switch (mformat)
+            {
+                case MetaFormat.RSC: return "Meta XML";
+                case MetaFormat.PSO: return "PSO XML";
+                case MetaFormat.RBF: return "RBF XML";
+                case MetaFormat.AudioRel: return "REL XML";
+                case MetaFormat.Ynd: return "YND XML";
+                case MetaFormat.Ynv: return "YNV XML";
+                case MetaFormat.Ycd: return "YCD XML";
+                case MetaFormat.Ybn: return "YBN XML";
+                case MetaFormat.Ytd: return "YTD XML";
+                case MetaFormat.Ydr: return "YDR XML";
+                case MetaFormat.Ydd: return "YDD XML";
+                case MetaFormat.Yft: return "YFT XML";
+                case MetaFormat.Ypt: return "YPT XML";
+                case MetaFormat.Yld: return "YLD XML";
+                case MetaFormat.Yed: return "YED XML";
+                case MetaFormat.Ywr: return "YWR XML";
+                case MetaFormat.Yvr: return "YVR XML";
+                case MetaFormat.Awc: return "AWC XML";
+                case MetaFormat.CacheFile: return "CacheFile XML";
+                case MetaFormat.Heightmap: return "Heightmap XML";
+                case MetaFormat.Ypdb: return "YPDB XML";
+                default: return "XML";
+            }
+        }
+        public static MetaFormat GetXMLFormat(string fnamel, out int trimlength)
+        {
+            var mformat = MetaFormat.RSC;
+            trimlength = 4;
+
+            if (!fnamel.EndsWith(".xml"))
+            {
+                mformat = MetaFormat.XML;//not really correct, but have to return something...
+            }
+            if (fnamel.EndsWith(".pso.xml"))
+            {
+                mformat = MetaFormat.PSO;
+                trimlength = 8;
+            }
+            if (fnamel.EndsWith(".rbf.xml"))
+            {
+                mformat = MetaFormat.RBF;
+                trimlength = 8;
+            }
+            if (fnamel.EndsWith(".rel.xml"))
+            {
+                mformat = MetaFormat.AudioRel;
+            }
+            if (fnamel.EndsWith(".ynd.xml"))
+            {
+                mformat = MetaFormat.Ynd;
+            }
+            if (fnamel.EndsWith(".ynv.xml"))
+            {
+                mformat = MetaFormat.Ynv;
+            }
+            if (fnamel.EndsWith(".ycd.xml"))
+            {
+                mformat = MetaFormat.Ycd;
+            }
+            if (fnamel.EndsWith(".ybn.xml"))
+            {
+                mformat = MetaFormat.Ybn;
+            }
+            if (fnamel.EndsWith(".ytd.xml"))
+            {
+                mformat = MetaFormat.Ytd;
+            }
+            if (fnamel.EndsWith(".ydr.xml"))
+            {
+                mformat = MetaFormat.Ydr;
+            }
+            if (fnamel.EndsWith(".ydd.xml"))
+            {
+                mformat = MetaFormat.Ydd;
+            }
+            if (fnamel.EndsWith(".yft.xml"))
+            {
+                mformat = MetaFormat.Yft;
+            }
+            if (fnamel.EndsWith(".ypt.xml"))
+            {
+                mformat = MetaFormat.Ypt;
+            }
+            if (fnamel.EndsWith(".yld.xml"))
+            {
+                mformat = MetaFormat.Yld;
+            }
+            if (fnamel.EndsWith(".yed.xml"))
+            {
+                mformat = MetaFormat.Yed;
+            }
+            if (fnamel.EndsWith(".ywr.xml"))
+            {
+                mformat = MetaFormat.Ywr;
+            }
+            if (fnamel.EndsWith(".yvr.xml"))
+            {
+                mformat = MetaFormat.Yvr;
+            }
+            if (fnamel.EndsWith(".awc.xml"))
+            {
+                mformat = MetaFormat.Awc;
+            }
+            if (fnamel.EndsWith("cache_y.dat.xml"))
+            {
+                mformat = MetaFormat.CacheFile;
+            }
+            if (fnamel.EndsWith(".dat.xml") && fnamel.StartsWith("heightmap"))
+            {
+                mformat = MetaFormat.Heightmap;
+            }
+            if (fnamel.EndsWith(".ypdb.xml"))
+            {
+                mformat = MetaFormat.Ypdb;
+            }
+            return mformat;
+        }
+
+
+
         public static Meta GetMeta(XmlDocument doc)
         {
             MetaBuilder mb = new MetaBuilder();

@@ -41,9 +41,9 @@
             this.RightXColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.RightYColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.RightZColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TopXColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TopYColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TopZColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ForwardXColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ForwardYColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ForwardZColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SteeringAngleColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.GasPedalPowerColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.BrakePedalPowerColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -81,9 +81,9 @@
             this.RightXColumn,
             this.RightYColumn,
             this.RightZColumn,
-            this.TopXColumn,
-            this.TopYColumn,
-            this.TopZColumn,
+            this.ForwardXColumn,
+            this.ForwardYColumn,
+            this.ForwardZColumn,
             this.SteeringAngleColumn,
             this.GasPedalPowerColumn,
             this.BrakePedalPowerColumn,
@@ -146,20 +146,20 @@
             this.RightZColumn.Text = "Right Z";
             this.RightZColumn.Width = 48;
             // 
-            // TopXColumn
+            // ForwardXColumn
             // 
-            this.TopXColumn.Text = "Top X";
-            this.TopXColumn.Width = 44;
+            this.ForwardXColumn.Text = "Fwd X";
+            this.ForwardXColumn.Width = 44;
             // 
-            // TopYColumn
+            // ForwardYColumn
             // 
-            this.TopYColumn.Text = "Top Y";
-            this.TopYColumn.Width = 44;
+            this.ForwardYColumn.Text = "Fwd Y";
+            this.ForwardYColumn.Width = 44;
             // 
-            // TopZColumn
+            // ForwardZColumn
             // 
-            this.TopZColumn.Text = "Top Z";
-            this.TopZColumn.Width = 44;
+            this.ForwardZColumn.Text = "Fwd Z";
+            this.ForwardZColumn.Width = 44;
             // 
             // SteeringAngleColumn
             // 
@@ -236,9 +236,9 @@
         private System.Windows.Forms.ColumnHeader RightXColumn;
         private System.Windows.Forms.ColumnHeader RightYColumn;
         private System.Windows.Forms.ColumnHeader RightZColumn;
-        private System.Windows.Forms.ColumnHeader TopXColumn;
-        private System.Windows.Forms.ColumnHeader TopYColumn;
-        private System.Windows.Forms.ColumnHeader TopZColumn;
+        private System.Windows.Forms.ColumnHeader ForwardXColumn;
+        private System.Windows.Forms.ColumnHeader ForwardYColumn;
+        private System.Windows.Forms.ColumnHeader ForwardZColumn;
         private System.Windows.Forms.ColumnHeader SteeringAngleColumn;
         private System.Windows.Forms.ColumnHeader GasPedalPowerColumn;
         private System.Windows.Forms.ColumnHeader BrakePedalPowerColumn;

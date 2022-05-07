@@ -29,10 +29,10 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RelForm));
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.RelPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.XmlTabPage = new System.Windows.Forms.TabPage();
@@ -48,6 +48,7 @@
             this.SearchButton = new System.Windows.Forms.Button();
             this.SearchResultsGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.SynthsTabPage = new System.Windows.Forms.TabPage();
+            this.SynthStopButton = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.SynthVariablesTextBox = new System.Windows.Forms.TextBox();
@@ -78,7 +79,6 @@
             this.wIPToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.SynthStopButton = new System.Windows.Forms.Button();
             this.MainTabControl.SuspendLayout();
             this.XmlTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.XmlTextBox)).BeginInit();
@@ -311,6 +311,18 @@
             this.SynthsTabPage.Text = "Synths";
             this.SynthsTabPage.UseVisualStyleBackColor = true;
             // 
+            // SynthStopButton
+            // 
+            this.SynthStopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.SynthStopButton.Enabled = false;
+            this.SynthStopButton.Location = new System.Drawing.Point(724, 2);
+            this.SynthStopButton.Name = "SynthStopButton";
+            this.SynthStopButton.Size = new System.Drawing.Size(104, 23);
+            this.SynthStopButton.TabIndex = 43;
+            this.SynthStopButton.Text = "Stop";
+            this.SynthStopButton.UseVisualStyleBackColor = true;
+            this.SynthStopButton.Click += new System.EventHandler(this.SynthStopButton_Click);
+            // 
             // label3
             // 
             this.label3.AutoSize = true;
@@ -336,6 +348,7 @@
             this.SynthVariablesTextBox.Name = "SynthVariablesTextBox";
             this.SynthVariablesTextBox.Size = new System.Drawing.Size(293, 87);
             this.SynthVariablesTextBox.TabIndex = 40;
+            this.SynthVariablesTextBox.TextChanged += new System.EventHandler(this.SynthVariablesTextBox_TextChanged);
             // 
             // SynthOutputsTextBox
             // 
@@ -343,23 +356,24 @@
             this.SynthOutputsTextBox.Name = "SynthOutputsTextBox";
             this.SynthOutputsTextBox.Size = new System.Drawing.Size(293, 20);
             this.SynthOutputsTextBox.TabIndex = 39;
+            this.SynthOutputsTextBox.TextChanged += new System.EventHandler(this.SynthOutputsTextBox_TextChanged);
             // 
             // SynthBufferChart
             // 
             this.SynthBufferChart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea2.Name = "ChartArea1";
-            this.SynthBufferChart.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.SynthBufferChart.Legends.Add(legend2);
+            chartArea1.Name = "ChartArea1";
+            this.SynthBufferChart.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.SynthBufferChart.Legends.Add(legend1);
             this.SynthBufferChart.Location = new System.Drawing.Point(363, 31);
             this.SynthBufferChart.Name = "SynthBufferChart";
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series2.IsXValueIndexed = true;
-            series2.Legend = "Legend1";
-            series2.Name = "Buffer";
-            this.SynthBufferChart.Series.Add(series2);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.IsXValueIndexed = true;
+            series1.Legend = "Legend1";
+            series1.Name = "Buffer";
+            this.SynthBufferChart.Series.Add(series1);
             this.SynthBufferChart.Size = new System.Drawing.Size(460, 112);
             this.SynthBufferChart.TabIndex = 38;
             this.SynthBufferChart.Text = "chart1";
@@ -612,18 +626,6 @@
             // SaveFileDialog
             // 
             this.SaveFileDialog.Filter = "XML files|*.xml|All files|*.*";
-            // 
-            // SynthStopButton
-            // 
-            this.SynthStopButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SynthStopButton.Enabled = false;
-            this.SynthStopButton.Location = new System.Drawing.Point(724, 2);
-            this.SynthStopButton.Name = "SynthStopButton";
-            this.SynthStopButton.Size = new System.Drawing.Size(104, 23);
-            this.SynthStopButton.TabIndex = 43;
-            this.SynthStopButton.Text = "Stop";
-            this.SynthStopButton.UseVisualStyleBackColor = true;
-            this.SynthStopButton.Click += new System.EventHandler(this.SynthStopButton_Click);
             // 
             // RelForm
             // 

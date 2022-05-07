@@ -56,6 +56,9 @@ namespace CodeWalker.Forms
         public RpfFileEntry rpfFileEntry { get; private set; } = null;
         private MetaFormat metaFormat = MetaFormat.XML;
 
+        private bool loadingSynth = false;
+        private Dat10Synth currentSynth = null;
+
 
         public RelForm(ExploreForm owner)
         {
@@ -414,7 +417,15 @@ namespace CodeWalker.Forms
                 if (outputs.Length <= i)
                     break;
 
-                outputsIndices[i] = byte.Parse(outputs[i].Substring(1));
+                var output = "0";
+                if (outputs[i].Length > 1)
+                {
+                    output = outputs[i].Substring(1);
+                }
+                if (byte.TryParse(output, out byte ind))
+                {
+                    outputsIndices[i] = ind;
+                }
             }
 
             return outputsIndices;
@@ -429,8 +440,8 @@ namespace CodeWalker.Forms
                 var parts = variablesLines[i].Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 variables[i] = new Dat10SynthVariable
                 {
-                    Name = XmlMeta.GetHash(parts[0]),
-                    Value = FloatUtil.Parse(parts[1]),
+                    Name = XmlMeta.GetHash((parts.Length > 0) ? parts[0] : ""),
+                    Value = FloatUtil.Parse((parts.Length > 1) ? parts[1] : ""),
                 };
             }
 
@@ -448,7 +459,7 @@ namespace CodeWalker.Forms
             if (error)
                 return null;
 
-            return new Dat10Synth(CurrentFile)
+            currentSynth = new Dat10Synth(CurrentFile)
             {
                 BuffersCount = result.BuffersCount,
                 RegistersCount = result.RegistersCount,
@@ -462,6 +473,8 @@ namespace CodeWalker.Forms
                 Variables = variables,
                 RuntimeCost = 123
             };
+
+            return currentSynth;
         }
 
 
@@ -648,6 +661,8 @@ namespace CodeWalker.Forms
                 return;
             }
 
+            loadingSynth = true;
+
             SynthTextBox.Text = Dat10Synth.Disassemble(synth.Bytecode, synth.Constants, synth.Variables, false).Disassembly;
             SynthTextBox.ClearUndo();
             SynthAssemblySyntaxHighlight(SynthTextBox.Range);
@@ -657,6 +672,10 @@ namespace CodeWalker.Forms
 
             SynthOutputsTextBox.Clear();
             SynthOutputsTextBox.Text = string.Join(" ", synth.OutputsIndices.Take(synth.OutputsCount).Select(bufferIdx => $"B{bufferIdx}"));
+
+            currentSynth = synth;
+
+            loadingSynth = false;
         }
 
         private void SynthTextBox_TextChangedDelayed(object sender, TextChangedEventArgs e)
@@ -729,12 +748,17 @@ namespace CodeWalker.Forms
                             {
                                 //for (int i = 0; i < buffersCopy.Length; i++)
                                 int i = synthesizer.Synth.OutputsIndices[0];
+                                try
                                 {
-                                    var series = SynthBufferChart.Series[$"B{i}"];
-                                    series.Points.Clear();
-                                    foreach (var v in buffersCopy[i])
-                                        series.Points.AddY(v);
+                                    var series = SynthBufferChart.Series.FindByName($"B{i}");
+                                    if (series != null)
+                                    {
+                                        series.Points.Clear();
+                                        foreach (var v in buffersCopy[i])
+                                            series.Points.AddY(Math.Max(Math.Min(v, 2.0f), -2.0f));//make sure crazy accidental values don't crash it later
+                                    }
                                 }
+                                catch { }
                             }));
                         };
                     }
@@ -766,6 +790,24 @@ namespace CodeWalker.Forms
         {
             if (synthesizer != null)
                 synthesizer.Stop();
+        }
+
+        private void SynthVariablesTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (loadingSynth) return;
+            if (currentSynth == null) return;
+
+            currentSynth.Variables = ParseSynthVariables();
+
+        }
+
+        private void SynthOutputsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (loadingSynth) return;
+            if (currentSynth == null) return;
+
+            currentSynth.OutputsIndices = ParseSynthOutputs();
+
         }
     }
 }

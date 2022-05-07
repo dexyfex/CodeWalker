@@ -105,7 +105,27 @@ namespace CodeWalker.GameFiles
             else if (fnl.EndsWith(".yld"))
             {
                 YldFile yld = RpfFile.GetFile<YldFile>(e, data);
-                return GetXml(yld, out filename, outputfolder);
+                return GetXml(yld, out filename);
+            }
+            else if (fnl.EndsWith(".yed"))
+            {
+                YedFile yed = RpfFile.GetFile<YedFile>(e, data);
+                return GetXml(yed, out filename);
+            }
+            else if (fnl.EndsWith(".ywr"))
+            {
+                YwrFile ywr = RpfFile.GetFile<YwrFile>(e, data);
+                return GetXml(ywr, out filename);
+            }
+            else if (fnl.EndsWith(".yvr"))
+            {
+                YvrFile yvr = RpfFile.GetFile<YvrFile>(e, data);
+                return GetXml(yvr, out filename);
+            }
+            else if (fnl.EndsWith(".ypdb"))
+            {
+                YpdbFile ypdb = RpfFile.GetFile<YpdbFile>(e, data);
+                return GetXml(ypdb, out filename);
             }
             else if (fnl.EndsWith(".awc"))
             {
@@ -235,11 +255,35 @@ namespace CodeWalker.GameFiles
             filename = fn + ".xml";
             return YptXml.GetXml(ypt, outputfolder);
         }
-        public static string GetXml(YldFile yld, out string filename, string outputfolder)
+        public static string GetXml(YldFile yld, out string filename)
         {
             var fn = (yld?.Name) ?? "";
             filename = fn + ".xml";
-            return YldXml.GetXml(yld, outputfolder);
+            return YldXml.GetXml(yld);
+        }
+        public static string GetXml(YedFile yed, out string filename)
+        {
+            var fn = (yed?.Name) ?? "";
+            filename = fn + ".xml";
+            return YedXml.GetXml(yed);
+        }
+        public static string GetXml(YwrFile ywr, out string filename)
+        {
+            var fn = (ywr?.Name) ?? "";
+            filename = fn + ".xml";
+            return YwrXml.GetXml(ywr);
+        }
+        public static string GetXml(YvrFile yvr, out string filename)
+        {
+            var fn = (yvr?.Name) ?? "";
+            filename = fn + ".xml";
+            return YvrXml.GetXml(yvr);
+        }
+        public static string GetXml(YpdbFile ypdb, out string filename)
+        {
+            var fn = (ypdb?.Name) ?? "";
+            filename = fn + ".xml";
+            return YpdbXml.GetXml(ypdb);
         }
         public static string GetXml(AwcFile awc, out string filename, string outputfolder)
         {
@@ -251,7 +295,7 @@ namespace CodeWalker.GameFiles
         {
             var fn = (cdf?.FileEntry?.Name) ?? "";
             filename = fn + ".xml";
-            return cdf.GetXml();
+            return CacheDatXml.GetXml(cdf);
         }
         public static string GetXml(HeightmapFile hmf, out string filename, string outputfolder)
         {
@@ -2169,8 +2213,12 @@ namespace CodeWalker.GameFiles
         Yft = 13,
         Ypt = 14,
         Yld = 15,
-        Awc = 16,
-        Heightmap = 17,
+        Yed = 16,
+        Ywr = 17,
+        Yvr = 18,
+        Awc = 19,
+        Heightmap = 20,
+        Ypdb = 21,
     }
 
 }

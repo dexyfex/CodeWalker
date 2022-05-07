@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -56,10 +58,68 @@ namespace CodeWalker.GameFiles
             InitDictionaries();
         }
 
+        public byte[] Save()
+        {
+            byte[] data = ResourceBuilder.Build(ExpressionDictionary, 25); //yed is type/version 25...
+
+            return data;
+        }
+
+
         public void InitDictionaries()
         {
             ExprMap = ExpressionDictionary?.ExprMap ?? new Dictionary<MetaHash, Expression>();
 
         }
     }
+
+
+    public class YedXml : MetaXmlBase
+    {
+
+        public static string GetXml(YedFile yed, string outputFolder = "")
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(XmlHeader);
+
+            if (yed?.ExpressionDictionary != null)
+            {
+                ExpressionDictionary.WriteXmlNode(yed.ExpressionDictionary, sb, 0);
+            }
+
+            return sb.ToString();
+        }
+
+    }
+
+    public class XmlYed
+    {
+
+        public static YedFile GetYed(string xml, string inputFolder = "")
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(xml);
+            return GetYed(doc, inputFolder);
+        }
+
+        public static YedFile GetYed(XmlDocument doc, string inputFolder = "")
+        {
+            YedFile r = new YedFile();
+
+            var node = doc.DocumentElement;
+            if (node != null)
+            {
+                r.ExpressionDictionary = ExpressionDictionary.ReadXmlNode(node);
+
+                r.InitDictionaries();
+            }
+
+            r.Name = Path.GetFileName(inputFolder);
+
+            return r;
+        }
+
+    }
+
+
 }

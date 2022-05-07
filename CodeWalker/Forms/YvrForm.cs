@@ -66,42 +66,42 @@ namespace CodeWalker.Forms
         private string GenerateText()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("PositionX, PositionY, PositionZ, Time, VelocityX, VelocityY, VelocityZ, RightX, RightY, RightZ, TopX, TopY, TopZ, SteeringAngle, GasPedalPower, BrakePedalPower, HandbrakeUsed");
+            sb.AppendLine("PositionX, PositionY, PositionZ, Time, VelocityX, VelocityY, VelocityZ, RightX, RightY, RightZ, ForwardX, ForwardY, ForwardZ, SteeringAngle, GasPedalPower, BrakePedalPower, HandbrakeUsed");
             foreach (var entry in yvr.Records.Entries.data_items)
             {
-                sb.Append(FloatUtil.ToString(entry.PositionX));
+                sb.Append(FloatUtil.ToString(entry.Position.X));
                 sb.Append(", ");
-                sb.Append(FloatUtil.ToString(entry.PositionY));
+                sb.Append(FloatUtil.ToString(entry.Position.Y));
                 sb.Append(", ");
-                sb.Append(FloatUtil.ToString(entry.PositionZ));
+                sb.Append(FloatUtil.ToString(entry.Position.Z));
                 sb.Append(", ");
                 sb.Append(entry.Time.ToString());
                 sb.Append(", ");
-                sb.Append(entry.VelocityX.ToString());
+                sb.Append(FloatUtil.ToString(entry.Velocity.X));
                 sb.Append(", ");
-                sb.Append(entry.VelocityY.ToString());
+                sb.Append(FloatUtil.ToString(entry.Velocity.Y));
                 sb.Append(", ");
-                sb.Append(entry.VelocityZ.ToString());
+                sb.Append(FloatUtil.ToString(entry.Velocity.Z));
                 sb.Append(", ");
-                sb.Append(entry.RightX.ToString());
+                sb.Append(FloatUtil.ToString(entry.Right.X));
                 sb.Append(", ");
-                sb.Append(entry.RightY.ToString());
+                sb.Append(FloatUtil.ToString(entry.Right.Y));
                 sb.Append(", ");
-                sb.Append(entry.RightZ.ToString());
+                sb.Append(FloatUtil.ToString(entry.Right.Z));
                 sb.Append(", ");
-                sb.Append(entry.TopX.ToString());
+                sb.Append(FloatUtil.ToString(entry.Forward.X));
                 sb.Append(", ");
-                sb.Append(entry.TopY.ToString());
+                sb.Append(FloatUtil.ToString(entry.Forward.Y));
                 sb.Append(", ");
-                sb.Append(entry.TopZ.ToString());
+                sb.Append(FloatUtil.ToString(entry.Forward.Z));
                 sb.Append(", ");
-                sb.Append(entry.SteeringAngle.ToString());
+                sb.Append(FloatUtil.ToString(entry.Steering));
                 sb.Append(", ");
-                sb.Append(entry.GasPedalPower.ToString());
+                sb.Append(FloatUtil.ToString(entry.GasPedal));
                 sb.Append(", ");
-                sb.Append(entry.BrakePedalPower.ToString());
+                sb.Append(FloatUtil.ToString(entry.BrakePedal));
                 sb.Append(", ");
-                sb.Append(entry.HandbrakeUsed.ToString());
+                sb.Append(entry.Handbrake.ToString());
                 sb.AppendLine();
             }
             return sb.ToString();
@@ -114,23 +114,23 @@ namespace CodeWalker.Forms
             {
                 string[] row =
                 {
-                    FloatUtil.ToString(entry.PositionX),
-                    FloatUtil.ToString(entry.PositionY),
-                    FloatUtil.ToString(entry.PositionZ),
+                    FloatUtil.ToString(entry.Position.X),
+                    FloatUtil.ToString(entry.Position.Y),
+                    FloatUtil.ToString(entry.Position.Z),
                     entry.Time.ToString(),
-                    entry.VelocityX.ToString(),
-                    entry.VelocityY.ToString(),
-                    entry.VelocityZ.ToString(),
-                    entry.RightX.ToString(),
-                    entry.RightY.ToString(),
-                    entry.RightZ.ToString(),
-                    entry.TopX.ToString(),
-                    entry.TopY.ToString(),
-                    entry.TopZ.ToString(),
-                    entry.SteeringAngle.ToString(),
-                    entry.GasPedalPower.ToString(),
-                    entry.BrakePedalPower.ToString(),
-                    entry.HandbrakeUsed.ToString(),
+                    FloatUtil.ToString(entry.Velocity.X),
+                    FloatUtil.ToString(entry.Velocity.Y),
+                    FloatUtil.ToString(entry.Velocity.Z),
+                    FloatUtil.ToString(entry.Right.X),
+                    FloatUtil.ToString(entry.Right.Y),
+                    FloatUtil.ToString(entry.Right.Z),
+                    FloatUtil.ToString(entry.Forward.X),
+                    FloatUtil.ToString(entry.Forward.Y),
+                    FloatUtil.ToString(entry.Forward.Z),
+                    FloatUtil.ToString(entry.Steering),
+                    FloatUtil.ToString(entry.GasPedal),
+                    FloatUtil.ToString(entry.BrakePedal),
+                    entry.Handbrake.ToString(),
                 };
                 MainListView.Items.Add(new ListViewItem(row));
             }

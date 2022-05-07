@@ -318,10 +318,38 @@ namespace CodeWalker.Forms
                 metaFormat = MetaFormat.Ynd;
             }
         }
+        public void LoadMeta(YldFile yld)
+        {
+            var fn = ((yld?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(yld, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = yld;
+            rpfFileEntry = yld?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (yld?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Yld;
+            }
+        }
+        public void LoadMeta(YedFile yed)
+        {
+            var fn = ((yed?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(yed, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = yed;
+            rpfFileEntry = yed?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (yed?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Yed;
+            }
+        }
         public void LoadMeta(CacheDatFile cachedat)
         {
             var fn = ((cachedat?.FileEntry?.Name) ?? "") + ".xml";
-            Xml = cachedat.GetXml();
+            Xml = MetaXml.GetXml(cachedat, out fn, "");
             FileName = fn;
             RawPropertyGrid.SelectedObject = cachedat;
             rpfFileEntry = cachedat?.FileEntry;
@@ -346,6 +374,20 @@ namespace CodeWalker.Forms
                 metaFormat = MetaFormat.Heightmap;
             }
         }
+        public void LoadMeta(YpdbFile ypdb)
+        {
+            var fn = ((ypdb?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = MetaXml.GetXml(ypdb, out fn);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = ypdb;
+            rpfFileEntry = ypdb?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (ypdb?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.Ypdb;
+            }
+        }
 
 
 
@@ -358,65 +400,23 @@ namespace CodeWalker.Forms
 
             if (!(exploreForm?.EditMode ?? false)) return false;
 
+            if(metaFormat == MetaFormat.XML) return false;//what are we even doing here?
+
             byte[] data = null;
 
 #if !DEBUG
             try
 #endif
             {
-                switch (metaFormat)
+
+                data = XmlMeta.GetData(doc, metaFormat, string.Empty);
+
+                if (data == null)
                 {
-                    default:
-                    case MetaFormat.XML: return false;//what are we even doing here?
-                    case MetaFormat.RSC:
-                        var meta = XmlMeta.GetMeta(doc);
-                        if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0))
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import Meta XML");
-                            return false;
-                        }
-                        data = ResourceBuilder.Build(meta, 2); //meta is RSC "Version":2    (it's actually a type identifier, not a version!)
-                        break;
-                    case MetaFormat.PSO:
-                        var pso = XmlPso.GetPso(doc);
-                        if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null))
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import PSO XML");
-                            return false;
-                        }
-                        data = pso.Save();
-                        break;
-                    case MetaFormat.RBF:
-                        var rbf = XmlRbf.GetRbf(doc);
-                        if (rbf.current == null)
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import RBF XML");
-                            return false;
-                        }
-                        data = rbf.Save();
-                        break;
-                    case MetaFormat.Ynd:
-                        var ynd = XmlYnd.GetYnd(doc);
-                        if (ynd.NodeDictionary == null)
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import YND XML");
-                            return false;
-                        }
-                        data = ynd.Save();
-                        break;
-                    case MetaFormat.CacheFile:
-                        MessageBox.Show("Sorry, CacheFile import is not supported.", "Cannot import CacheFile XML");
-                        return false;
-                    case MetaFormat.Heightmap:
-                        var hmap = XmlHmap.GetHeightmap(doc);
-                        if (hmap.MaxHeights == null)
-                        {
-                            MessageBox.Show("Schema not supported.", "Cannot import Heightmap XML");
-                            return false;
-                        }
-                        data = hmap.Save();
-                        break;
+                    MessageBox.Show("Schema not supported.", "Cannot import " + XmlMeta.GetXMLFormatName(metaFormat));
+                    return false;
                 }
+
             }
 #if !DEBUG
             catch (Exception ex)
@@ -425,11 +425,6 @@ namespace CodeWalker.Forms
                 return false;
             }
 #endif
-            if (data == null)
-            {
-                MessageBox.Show("Schema not supported. (Unspecified error - data was null!)", "Cannot convert XML");
-                return false;
-            }
 
             if (rpfFileEntry?.Parent != null)
             {
