@@ -369,14 +369,21 @@ namespace CodeWalker.GameFiles
             //var result2 = new T[count];
             //Buffer.BlockCopy(data, 0, result2, 0, (int)length); //error: "object must be an array of primitives" :(
 
+            //var result = new T[count];
+            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //for (uint i = 0; i < count; i++)
+            //{
+            //    result[i] = Marshal.PtrToStructure<T>(h + (int)(i * structsize));
+            //}
+            //handle.Free();
+
             var result = new T[count];
-            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            GCHandle handle = GCHandle.Alloc(result, GCHandleType.Pinned);
             var h = handle.AddrOfPinnedObject();
-            for (uint i = 0; i < count; i++)
-            {
-                result[i] = Marshal.PtrToStructure<T>(h + (int)(i * structsize));
-            }
+            Marshal.Copy(data, 0, h, (int)length);
             handle.Free();
+
 
             if (cache) arrayPool[(long)position] = result;
 
@@ -388,13 +395,21 @@ namespace CodeWalker.GameFiles
             var result = new T[count];
             var length = count * structsize;
             byte[] data = ReadBytes((int)length);
-            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+
+            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //for (uint i = 0; i < count; i++)
+            //{
+            //    result[i] = Marshal.PtrToStructure<T>(h + (int)(i * structsize));
+            //}
+            //handle.Free();
+
+            GCHandle handle = GCHandle.Alloc(result, GCHandleType.Pinned);
             var h = handle.AddrOfPinnedObject();
-            for (uint i = 0; i < count; i++)
-            {
-                result[i] = Marshal.PtrToStructure<T>(h + (int)(i * structsize));
-            }
+            Marshal.Copy(data, 0, h, (int)length);
             handle.Free();
+
+
             return result;
         }
 

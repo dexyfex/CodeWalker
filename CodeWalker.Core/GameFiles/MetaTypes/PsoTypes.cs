@@ -15848,11 +15848,17 @@ namespace CodeWalker.GameFiles
         {
             T[] items = new T[count];
             int itemsize = Marshal.SizeOf(typeof(T));
-            for (int i = 0; i < count; i++)
-            {
-                int off = offset + i * itemsize;
-                items[i] = ConvertDataRaw<T>(data, off);
-            }
+            //for (int i = 0; i < count; i++)
+            //{
+            //    int off = offset + i * itemsize;
+            //    items[i] = ConvertDataRaw<T>(data, off);
+            //}
+
+            GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            var h = handle.AddrOfPinnedObject();
+            Marshal.Copy(data, offset, h, itemsize * count);
+            handle.Free();
+
             return items;
         }
 

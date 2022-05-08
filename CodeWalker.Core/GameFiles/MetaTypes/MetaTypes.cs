@@ -1449,21 +1449,31 @@ namespace CodeWalker.GameFiles
         public static byte[] ConvertArrayToBytes<T>(params T[] items) where T : struct
         {
             if (items == null) return null;
-            int size = Marshal.SizeOf(typeof(T));
-            int sizetot = size * items.Length;
-            byte[] arrout = new byte[sizetot];
-            int offset = 0;
-            for (int i = 0; i < items.Length; i++)
-            {
-                byte[] arr = new byte[size];
-                IntPtr ptr = Marshal.AllocHGlobal(size);
-                Marshal.StructureToPtr(items[i], ptr, true);
-                Marshal.Copy(ptr, arr, 0, size);
-                Marshal.FreeHGlobal(ptr);
-                Buffer.BlockCopy(arr, 0, arrout, offset, size);
-                offset += size;
-            }
-            return arrout;
+
+            var size = Marshal.SizeOf(typeof(T)) * items.Length;
+            var b = new byte[size];
+            GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            var h = handle.AddrOfPinnedObject();
+            Marshal.Copy(h, b, 0, size);
+            handle.Free();
+            return b;
+
+
+            //int size = Marshal.SizeOf(typeof(T));
+            //int sizetot = size * items.Length;
+            //byte[] arrout = new byte[sizetot];
+            //int offset = 0;
+            //for (int i = 0; i < items.Length; i++)
+            //{
+            //    byte[] arr = new byte[size];
+            //    IntPtr ptr = Marshal.AllocHGlobal(size);
+            //    Marshal.StructureToPtr(items[i], ptr, true);
+            //    Marshal.Copy(ptr, arr, 0, size);
+            //    Marshal.FreeHGlobal(ptr);
+            //    Buffer.BlockCopy(arr, 0, arrout, offset, size);
+            //    offset += size;
+            //}
+            //return arrout;
         }
 
 
@@ -1487,11 +1497,16 @@ namespace CodeWalker.GameFiles
         {
             T[] items = new T[count];
             int itemsize = Marshal.SizeOf(typeof(T));
-            for (int i = 0; i < count; i++)
-            {
-                int off = offset + i * itemsize;
-                items[i] = ConvertData<T>(data, off);
-            }
+            //for (int i = 0; i < count; i++)
+            //{
+            //    int off = offset + i * itemsize;
+            //    items[i] = ConvertData<T>(data, off);
+            //}
+            GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            var h = handle.AddrOfPinnedObject();
+            Marshal.Copy(data, offset, h, itemsize * count);
+            handle.Free();
+
             return items;
         }
         public static T[] ConvertDataArray<T>(Meta meta, MetaName name, Array_StructurePointer array) where T : struct
