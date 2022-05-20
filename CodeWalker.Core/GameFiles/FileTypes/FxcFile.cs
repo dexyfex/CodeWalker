@@ -5,22 +5,23 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TC = System.ComponentModel.TypeConverterAttribute;
+using EXP = System.ComponentModel.ExpandableObjectConverter;
 
 //GTAV FXC file reader by dexyfex.
 // use this however you want. some credit would be nice.
 
 namespace CodeWalker.GameFiles
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class FxcFile : PackedFile
+    [TC(typeof(EXP))] public class FxcFile : PackedFile
     {
         public string Name { get; set; }
         public RpfFileEntry FileEntry { get; set; }
         public uint Hash { get; set; }
 
         public VertexType VertexType { get; set; }
-        public FxcHeaderExt[] Exts { get; set; }
-        public FxcHeaderChunk[] Chunks { get; set; }
+        public FxcPresetParam[] PresetParams { get; set; }
+        public FxcShaderGroup[] ShaderGroups { get; set; }
         public FxcShader[] Shaders { get; set; }
         public FxcCBuffer[] CBuffers1 { get; set; }
         public FxcVariable[] Variables1 { get; set; }
@@ -40,9 +41,6 @@ namespace CodeWalker.GameFiles
         public FxcVariable[] GlobalVariables { get; set; }
 
 
-        public string LastError { get; set; }
-
-
 
 
 
@@ -53,194 +51,228 @@ namespace CodeWalker.GameFiles
             Name = entry.Name;
             Hash = entry.ShortNameHash;
 
-            LastError = string.Empty;
-
             MemoryStream ms = new MemoryStream(data);
             BinaryReader br = new BinaryReader(ms);
 
             uint magic_rgxe = br.ReadUInt32();
-            if(magic_rgxe!= 1702389618) //"rgxe"
+            if (magic_rgxe != 1702389618) //"rgxe"
             {
                 return;
             }
 
             VertexType = (VertexType)br.ReadUInt32();
 
-            byte ec0 = br.ReadByte();
-            var exts1 = new List<FxcHeaderExt>();
-            for (int e = 0; e < ec0; e++)
+            byte ppCount = br.ReadByte();
+            if (ppCount > 0)
             {
-                FxcHeaderExt ext = new FxcHeaderExt();
-                ext.Name = ReadString(br);
-                ext.Unk0Byte = br.ReadByte(); //0
-                ext.Unk1Uint = br.ReadUInt32(); //2
-                exts1.Add(ext);
+                var pparams = new List<FxcPresetParam>();
+                for (int i = 0; i < ppCount; i++)
+                {
+                    FxcPresetParam pparam = new FxcPresetParam();
+                    pparam.Read(br);
+                    pparams.Add(pparam);
+                }
+                PresetParams = pparams.ToArray();
             }
-            Exts = exts1.ToArray();
 
 
-            List<FxcShader>[] shadergrps = new List<FxcShader>[6];
-
-            var chunks = new List<FxcHeaderChunk>();
+            var groups = new List<FxcShaderGroup>();
             var shaders = new List<FxcShader>();
-            int gindex = 0;
-            while (gindex<6)// (sc0 > 0)
+            for (int i = 0; i < 6; i++)
             {
-                var shadergrp = new List<FxcShader>();
-                shadergrps[gindex] = shadergrp;
 
-                gindex++;
-                byte sc0 = br.ReadByte();
-                if (sc0 == 0)
+                FxcShaderGroup group = new FxcShaderGroup();
+                group.Read(br, i);
+                groups.Add(group);
+                if (group.Shaders != null)
                 {
-                    sc0 = br.ReadByte(); //this is a little odd, sometimes a byte skip
-                }
-                FxcHeaderChunk chunk = new FxcHeaderChunk();
-                chunk.Read(br);
-                chunk.Gindex = gindex;
-                chunk.ShaderCount = sc0;
-                chunks.Add(chunk);
-                for (int s = 1; s < sc0; s++)
-                {
-                    bool exbyteflag1 = (gindex==5); //GS seems to be in diff format??
-                    bool vsgsps = (gindex == 1) || (gindex == 2) || (gindex == 5);
-                    FxcShader shader = new FxcShader();
-                    if (!shader.Read(br, exbyteflag1, vsgsps))
-                    {
-                        LastError += shader.LastError;
-                        //gindex = 6; //get outta the loop?
-                        //break;
-                    }
-                    shaders.Add(shader);
-                    shadergrp.Add(shader);
+                    shaders.AddRange(group.Shaders);
                 }
             }
 
+            ShaderGroups = groups.ToArray();
             Shaders = shaders.ToArray();
-            VertexShaders = shadergrps[0]?.ToArray();
-            PixelShaders = shadergrps[1]?.ToArray();
-            ComputeShaders = shadergrps[2]?.ToArray();
-            DomainShaders = shadergrps[3]?.ToArray();
-            GeometryShaders = shadergrps[4]?.ToArray();
-            HullShaders = shadergrps[5]?.ToArray();
+            VertexShaders = groups[0].Shaders;
+            PixelShaders = groups[1].Shaders;
+            ComputeShaders = groups[2].Shaders;
+            DomainShaders = groups[3].Shaders;
+            GeometryShaders = groups[4].Shaders;
+            HullShaders = groups[5].Shaders;
 
 
-            Chunks = chunks.ToArray();
-
-            //ms.Dispose();
-            //return;
 
             List<FxcVariable> globalVars = new List<FxcVariable>();
             CBufferDict = new Dictionary<uint, FxcCBuffer>();
-            FxcCBuffer cbtmp = null;
 
-            try //things can be uncertain after this...
+
+            byte cbCount1 = br.ReadByte();
+            if (cbCount1 > 0)
             {
-
-                byte cbCount1 = br.ReadByte();
-                if (cbCount1 > 0)
+                var cbuffers1 = new List<FxcCBuffer>();
+                for (int i = 0; i < cbCount1; i++) //cbuffers? includes?
                 {
-                    var cbuffers1 = new List<FxcCBuffer>();
-                    for (int i = 0; i < cbCount1; i++) //cbuffers? includes?
-                    {
-                        FxcCBuffer cbuf = new FxcCBuffer();
-                        cbuf.Read(br);
-                        cbuffers1.Add(cbuf);
-                        CBufferDict[cbuf.NameHash] = cbuf;
-                    }
-                    CBuffers1 = cbuffers1.ToArray();
+                    FxcCBuffer cbuf = new FxcCBuffer();
+                    cbuf.Read(br);
+                    cbuffers1.Add(cbuf);
+                    CBufferDict[cbuf.NameHash] = cbuf;
                 }
-
-                byte varCount1 = br.ReadByte();
-                if (varCount1 > 0)
-                {
-                    var vars1 = new List<FxcVariable>(); //cbuffer contents/vars
-                    for (int i = 0; i < varCount1; i++)
-                    {
-                        FxcVariable vari = new FxcVariable();
-                        vari.Read(br);
-                        vars1.Add(vari);
-                        if (CBufferDict.TryGetValue(vari.CBufferName, out cbtmp))
-                        {
-                            cbtmp.AddVariable(vari);
-                        }
-                        else
-                        {
-                            globalVars.Add(vari);
-                        }
-                    }
-                    Variables1 = vars1.ToArray();
-                }
-
-
-                byte cbCount2 = br.ReadByte(); //0,1, +?
-                if (cbCount2 > 0)
-                {
-                    var cbuffers2 = new List<FxcCBuffer>(); //more cbuffers..
-                    for (int i = 0; i < cbCount2; i++)
-                    {
-                        FxcCBuffer cbuf = new FxcCBuffer();
-                        cbuf.Read(br);
-                        cbuffers2.Add(cbuf);
-                        CBufferDict[cbuf.NameHash] = cbuf;
-                    }
-                    CBuffers2 = cbuffers2.ToArray();
-                }
-
-
-                byte varCount2 = br.ReadByte();
-                if (varCount2 > 0)
-                {
-                    var vars2 = new List<FxcVariable>();
-                    for (int i = 0; i < varCount2; i++) //textures/samplers
-                    {
-                        FxcVariable vari = new FxcVariable();
-                        vari.Read(br);
-                        vars2.Add(vari);
-                        if (CBufferDict.TryGetValue(vari.CBufferName, out cbtmp))
-                        {
-                            cbtmp.AddVariable(vari);
-                        }
-                        else
-                        {
-                            globalVars.Add(vari);
-                        }
-                    }
-                    Variables2 = vars2.ToArray();
-                }
-
-
-                byte techCount = br.ReadByte();
-                if (techCount > 0)
-                {
-                    var techniques = new List<FxcTechnique>();
-                    for (int i = 0; i < techCount; i++)
-                    {
-                        FxcTechnique tech = new FxcTechnique();
-                        tech.Read(br);
-                        techniques.Add(tech);
-                    }
-                    Techniques = techniques.ToArray();
-                }
-
-
-                foreach (var cbuf in CBufferDict.Values)
-                {
-                    cbuf.ConsolidateVariables();
-                }
-                GlobalVariables = globalVars.ToArray();
-
-
-                if (ms.Position != ms.Length)
-                { }
-
+                CBuffers1 = cbuffers1.ToArray();
             }
-            catch (Exception ex)
+
+            byte varCount1 = br.ReadByte();
+            if (varCount1 > 0)
             {
-                LastError = ex.ToString();
+                var vars1 = new List<FxcVariable>(); //cbuffer contents/vars
+                for (int i = 0; i < varCount1; i++)
+                {
+                    FxcVariable vari = new FxcVariable();
+                    vari.Read(br);
+                    vars1.Add(vari);
+                    if (CBufferDict.TryGetValue(vari.CBufferName, out var cbtmp))
+                    {
+                        cbtmp.AddVariable(vari);
+                    }
+                    else
+                    {
+                        globalVars.Add(vari);
+                    }
+                }
+                Variables1 = vars1.ToArray();
             }
+
+            byte cbCount2 = br.ReadByte(); //0,1, +?
+            if (cbCount2 > 0)
+            {
+                var cbuffers2 = new List<FxcCBuffer>(); //more cbuffers..
+                for (int i = 0; i < cbCount2; i++)
+                {
+                    FxcCBuffer cbuf = new FxcCBuffer();
+                    cbuf.Read(br);
+                    cbuffers2.Add(cbuf);
+                    CBufferDict[cbuf.NameHash] = cbuf;
+                }
+                CBuffers2 = cbuffers2.ToArray();
+            }
+
+            byte varCount2 = br.ReadByte();
+            if (varCount2 > 0)
+            {
+                var vars2 = new List<FxcVariable>();
+                for (int i = 0; i < varCount2; i++) //textures/samplers
+                {
+                    FxcVariable vari = new FxcVariable();
+                    vari.Read(br);
+                    vars2.Add(vari);
+                    if (CBufferDict.TryGetValue(vari.CBufferName, out var cbtmp))
+                    {
+                        cbtmp.AddVariable(vari);
+                    }
+                    else
+                    {
+                        globalVars.Add(vari);
+                    }
+                }
+                Variables2 = vars2.ToArray();
+            }
+
+            byte techCount = br.ReadByte();
+            if (techCount > 0)
+            {
+                var techniques = new List<FxcTechnique>();
+                for (int i = 0; i < techCount; i++)
+                {
+                    FxcTechnique tech = new FxcTechnique();
+                    tech.Read(br);
+                    techniques.Add(tech);
+                }
+                Techniques = techniques.ToArray();
+            }
+
+
+            foreach (var cbuf in CBufferDict.Values)
+            {
+                cbuf.ConsolidateVariables();
+            }
+            GlobalVariables = globalVars.ToArray();
+
+
+            if (ms.Position != ms.Length)
+            { }//no hit
+
 
             ms.Dispose();
+        }
+
+        public byte[] Save()
+        {
+            var s = new MemoryStream();
+            var w = new BinaryWriter(s);
+
+            w.Write((uint)1702389618); //"rgxe"
+            w.Write((uint)VertexType);
+
+            var ppCount = (byte)(PresetParams?.Length ?? 0);
+            w.Write(ppCount);
+            for (int i = 0; i < ppCount; i++)
+            {
+                PresetParams[i].Write(w);
+            }
+
+
+            ShaderGroups[0].Shaders = VertexShaders;
+            ShaderGroups[1].Shaders = PixelShaders;
+            ShaderGroups[2].Shaders = ComputeShaders;
+            ShaderGroups[3].Shaders = DomainShaders;
+            ShaderGroups[4].Shaders = GeometryShaders;
+            ShaderGroups[5].Shaders = HullShaders;
+
+            for (int i = 0; i < 6; i++)
+            {
+                var group = ShaderGroups[i];
+                group.Write(w, i);
+            }
+
+
+            var cbCount1 = (byte)(CBuffers1?.Length ?? 0);
+            w.Write(cbCount1);
+            for (int i = 0; i < cbCount1; i++)
+            {
+                CBuffers1[i].Write(w);
+            }
+
+            var varCount1 = (byte)(Variables1?.Length ?? 0);
+            w.Write(varCount1);
+            for (int i = 0; i < varCount1; i++)
+            {
+                Variables1[i].Write(w);
+            }
+
+            var cbCount2 = (byte)(CBuffers2?.Length ?? 0);
+            w.Write(cbCount2);
+            for (int i = 0; i < cbCount2; i++)
+            {
+                CBuffers2[i].Write(w);
+            }
+
+            var varCount2 = (byte)(Variables2?.Length ?? 0);
+            w.Write(varCount2);
+            for (int i = 0; i < varCount2; i++)
+            {
+                Variables2[i].Write(w);
+            }
+
+            var techCount = (byte)(Techniques?.Length ?? 0);
+            w.Write(techCount);
+            for (int i = 0; i < techCount; i++)
+            {
+                Techniques[i].Write(w);
+            }
+
+
+            var buf = new byte[s.Length];
+            s.Position = 0;
+            s.Read(buf, 0, buf.Length);
+            return buf;
         }
 
 
@@ -253,20 +285,20 @@ namespace CodeWalker.GameFiles
             sb.AppendLine("Vertex type: " + ((uint)VertexType).ToString());
             sb.AppendLine();
 
-            if (Exts != null)
+            if (PresetParams != null)
             {
                 sb.AppendLine("Header");
-                foreach (var ext in Exts)
+                foreach (var ext in PresetParams)
                 {
                     sb.AppendLine("  " + ext.ToString());
                 }
                 sb.AppendLine();
             }
 
-            if (Chunks != null)
+            if (ShaderGroups != null)
             {
                 sb.AppendLine("Sections");
-                foreach (var chunk in Chunks)
+                foreach (var chunk in ShaderGroups)
                 {
                     sb.AppendLine("  " + chunk.ToString());
                 }
@@ -279,10 +311,10 @@ namespace CodeWalker.GameFiles
                 foreach (var shader in Shaders)
                 {
                     sb.AppendLine("  " + shader.Name);
-                    if ((shader.Params != null) && (shader.Params.Length > 0))
+                    if ((shader.Variables != null) && (shader.Variables.Length > 0))
                     {
                         sb.AppendLine("    (Params)");
-                        foreach (var parm in shader.Params)
+                        foreach (var parm in shader.Variables)
                         {
                             sb.AppendLine("      " + parm);
                         }
@@ -463,9 +495,8 @@ namespace CodeWalker.GameFiles
         {
             byte sl = br.ReadByte();
             if (sl == 0) return string.Empty;
-            byte[] ba = new byte[sl];
-            br.Read(ba, 0, sl);
-            return (sl > 1) ? ASCIIEncoding.ASCII.GetString(ba, 0, sl - 1) : string.Empty;
+            byte[] ba = br.ReadBytes(sl);
+            return (sl > 1) ? Encoding.ASCII.GetString(ba, 0, sl - 1) : string.Empty;
         }
         public static string[] ReadStringArray(BinaryReader br)
         {
@@ -480,47 +511,128 @@ namespace CodeWalker.GameFiles
                 {
                     sb.Clear();
                     byte sl = br.ReadByte();
-                    for (int n = 0; n < sl; n++)
-                    {
-                        sb.Append((char)br.ReadByte());
-                    }
-                    r[i] = sb.ToString().Replace("\0", "");
+                    var ba = br.ReadBytes(sl);
+                    r[i] = (sl > 1) ? Encoding.ASCII.GetString(ba, 0, sl - 1) : string.Empty;
                 }
             }
 
             return r;
         }
 
-    }
-
-
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcHeaderExt
-    {
-        public string Name { get; set; }
-        public byte Unk0Byte { get; set; }
-        public uint Unk1Uint { get; set; }
-
-        public override string ToString()
+        public static void WriteString(BinaryWriter bw, string s)
         {
-            return Name + ": " + Unk0Byte.ToString() + ": " + Unk1Uint.ToString();
+            if (string.IsNullOrEmpty(s))
+            {
+                bw.Write((byte)0);
+            }
+            else
+            {
+                if (s.Length > 255)
+                { s = s.Substring(0, 255); }
+                var bytes = Encoding.ASCII.GetBytes(s);
+                bw.Write((byte)(bytes.Length + 1));
+                bw.Write(bytes);
+                bw.Write((byte)0);
+            }
         }
+        public static void WriteStringArray(BinaryWriter bw, string[] a)
+        {
+            byte sc = (byte)(a?.Length ?? 0);
+            bw.Write(sc);
+            for (int i = 0; i < sc; i++)
+            {
+                var s = a[i];
+                if (s.Length > 255)
+                { s = s.Substring(0, 255); }
+                var bytes = Encoding.ASCII.GetBytes(s);
+                bw.Write((byte)(bytes.Length + 1));
+                bw.Write(bytes);
+                bw.Write((byte)0);
+            }
+        }
+
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcHeaderChunk
+
+    [TC(typeof(EXP))] public class FxcPresetParam
     {
-        public string Name { get; set; }
-        public byte Unk1Byte { get; set; }
-        public byte Unk2Byte { get; set; }
-        public uint Unk3Uint { get; set; }
-        public int Gindex { get; set; } //index in the fxc file
-        public byte ShaderCount { get; set; } //number of shaders in the section
+        public string Name { get; set; } //eg. __rage_drawbucket, ExposeAlphaMap
+        public byte Unused0 { get; set; } //always 0  - possibly type identifier?
+        public uint Value { get; set; }
 
         public void Read(BinaryReader br)
         {
-            Name = FxcFile.ReadString(br); //usually "NULL"
+            Name = FxcFile.ReadString(br);
+            Unused0 = br.ReadByte(); //always 0
+            Value = br.ReadUInt32(); //eg 1, 2
+        }
+        public void Write(BinaryWriter bw)
+        {
+            FxcFile.WriteString(bw, Name);
+            bw.Write(Unused0);
+            bw.Write(Value);
+        }
+
+        public override string ToString()
+        {
+            return Name + ": " + Value.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public class FxcShaderGroup
+    {
+        public int Gindex { get; set; } //index in the fxc file
+        public byte ShaderCount { get; set; } //number of shaders in the section +1 (why +1 though? no idea)
+        public bool OffsetBy1 { get; set; }//don't know why, sometimes hull shaders get offset by 1 byte at the start
+        public string Name { get; set; } //"NULL"
+        public byte Unk1Byte { get; set; } //0
+        public byte Unk2Byte { get; set; } //0
+        public uint Unk3Uint { get; set; } //0
+        public FxcShader[] Shaders { get; set; }
+
+        public void Read(BinaryReader br, int gindex)
+        {
+            Gindex = gindex;
+            ShaderCount = br.ReadByte();
+            if (ShaderCount == 0)
+            {
+                ShaderCount = br.ReadByte(); //sometimes a byte skip, but only happens for hull shaders (gindex=5)
+                OffsetBy1 = true;
+            }
+            Name = FxcFile.ReadString(br); //always "NULL"
             Unk1Byte = br.ReadByte();
             Unk2Byte = br.ReadByte();
             Unk3Uint = br.ReadUInt32();
+
+            if (ShaderCount > 1)
+            {
+                Shaders = new FxcShader[ShaderCount-1];
+                for (int i = 1; i < ShaderCount; i++)
+                {
+                    FxcShader shader = new FxcShader();
+                    shader.Read(br, gindex);
+                    Shaders[i-1] = shader;
+                }
+            }
+
+        }
+        public void Write(BinaryWriter bw, int gindex)
+        {
+            ShaderCount = (byte)((Shaders?.Length ?? 0) + 1);
+
+            if (OffsetBy1)
+            {
+                bw.Write((byte)0);
+            }
+            bw.Write(ShaderCount);
+            FxcFile.WriteString(bw, Name);
+            bw.Write(Unk1Byte);
+            bw.Write(Unk2Byte);
+            bw.Write(Unk3Uint);
+            for (int i = 1; i < ShaderCount; i++)
+            {
+                Shaders[i-1].Write(bw, gindex);
+            }
         }
 
         public override string ToString()
@@ -529,11 +641,12 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcShader
+    [TC(typeof(EXP))] public class FxcShader
     {
         public long Offset { get; set; }
+        public bool OffsetBy1 { get; set; }//don't know why, sometimes geometry shaders get offset by 1 byte here
         public string Name { get; set; }
-        public string[] Params { get; set; }
+        public string[] Variables { get; set; }
         public FxcShaderBufferRef[] Buffers { get; set; }//CBuffers
         public byte VersionMajor { get; set; }
         public byte VersionMinor { get; set; }
@@ -541,64 +654,60 @@ namespace CodeWalker.GameFiles
         public byte[] ByteCode { get; set; }
         //public ShaderBytecode ByteCodeObj { get; set; }
         //public ShaderProfile ShaderProfile { get; set; }
-        public string Disassembly { get; set; }
-        public string LastError { get; set; }
+        public string Disassembly { get; set; }//see FxcParser
+        public string LastError { get; set; } //see FxcParser
 
-        public bool Read(BinaryReader br, bool exbyteflag, bool vsgsps)
+        public void Read(BinaryReader br, int gindex)
         {
             Offset = br.BaseStream.Position;
 
             Name = FxcFile.ReadString(br);
-
             if (Name.Length == 0)
             {
                 Name = FxcFile.ReadString(br); //why  (seems to be GS only)
-                exbyteflag = true;
+                OffsetBy1 = true;
             }
 
-
-            Params = FxcFile.ReadStringArray(br);
+            Variables = FxcFile.ReadStringArray(br);
 
             byte bufferCount = br.ReadByte();
             var buffers = new List<FxcShaderBufferRef>();
             for (int e = 0; e < bufferCount; e++)
             {
                 FxcShaderBufferRef ext = new FxcShaderBufferRef();
-                ext.Name = FxcFile.ReadString(br);
-                ext.Unk0Ushort = br.ReadUInt16();
+                ext.Read(br);
                 buffers.Add(ext);
             }
             Buffers = buffers.ToArray();
 
-            byte exbyte = 0;
-            if (exbyteflag)
+            if (gindex == 4) //GS seems to be slightly different format??
             {
-                exbyte = br.ReadByte(); //not sure what this is used for...
-                if ((exbyte != 0))
-                { }
+                var exbyte = br.ReadByte(); //not sure what this is used for...
+                if (exbyte != 0)
+                { }//no hit
             }
 
 
             uint datalength = br.ReadUInt32();
-
             if (datalength > 0)
             {
                 uint magic_dxbc = br.ReadUInt32();
                 if (magic_dxbc != 1128421444) //"DXBC" - directx bytecode header
                 {
-                    LastError += "Unexpected data found at DXBC header...\r\n";
-                    return false; //didn't find the DXBC header... abort!
+                    //LastError += "Unexpected data found at DXBC header...\r\n";
+                    return; //false; //didn't find the DXBC header... abort! (no hit here)
                 }
                 br.BaseStream.Position -= 4; //wind back because dx needs that header
 
                 ByteCode = br.ReadBytes((int)datalength);
 
-                if (vsgsps)
+                if ((gindex == 0) || (gindex == 1) || (gindex == 4)) //only for VS,PS,GS
                 {
                     VersionMajor = br.ReadByte();//4,5 //appears to be shader model version
-                    VersionMinor = br.ReadByte(); //perhaps shader minor version
+                    VersionMinor = br.ReadByte();
                 }
 
+                #region disassembly not done here - see FxcParser.cs
                 //try
                 //{
                 //    ByteCodeObj = new ShaderBytecode(ByteCode);
@@ -624,11 +733,43 @@ namespace CodeWalker.GameFiles
                 //    LastError += ex.ToString() + "\r\n";
                 //    return false;
                 //}
+                #endregion
             }
-            else
+        }
+        public void Write(BinaryWriter bw, int gindex)
+        {
+            if (OffsetBy1)
             {
+                bw.Write((byte)0);
             }
-            return true;
+            FxcFile.WriteString(bw, Name);
+            FxcFile.WriteStringArray(bw, Variables);
+
+            var bufferCount = (byte)(Buffers?.Length ?? 0);
+            bw.Write(bufferCount);
+            for (int i = 0; i < bufferCount; i++)
+            {
+                Buffers[i].Write(bw);
+            }
+
+            if (gindex == 4)
+            {
+                bw.Write((byte)0); //why is this here..? crazy GS
+            }
+
+            var dataLength = (uint)(ByteCode?.Length ?? 0);
+            bw.Write(dataLength);
+            if (dataLength > 0)
+            {
+                bw.Write(ByteCode);
+
+                if ((gindex == 0) || (gindex == 1) || (gindex == 4)) //only for VS,PS,GS
+                {
+                    bw.Write(VersionMajor);
+                    bw.Write(VersionMinor);
+                }
+            }
+
         }
 
 
@@ -639,48 +780,70 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcShaderBufferRef
+    [TC(typeof(EXP))] public class FxcShaderBufferRef
     {
-        public string Name { get; set; } //Buffer name
-        public ushort Unk0Ushort { get; set; }
+        public string Name { get; set; }
+        public ushort Slot { get; set; }
+
+        public void Read(BinaryReader br)
+        {
+            Name = FxcFile.ReadString(br);
+            Slot = br.ReadUInt16();
+        }
+        public void Write(BinaryWriter bw)
+        {
+            FxcFile.WriteString(bw, Name);
+            bw.Write(Slot);
+        }
 
         public override string ToString()
         {
-            return Name + ": " + Unk0Ushort.ToString();
+            return Name + ": " + Slot.ToString();
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcCBuffer
+    [TC(typeof(EXP))] public class FxcCBuffer
     {
-        public uint u003 { get; set; }
-        public ushort us001 { get; set; }
-        public ushort us002 { get; set; }
-        public ushort us003 { get; set; }
-        public ushort us004 { get; set; }
-        public ushort us005 { get; set; }
-        public ushort us006 { get; set; }
+        public uint Size { get; set; }
+        public ushort SlotVS { get; set; }
+        public ushort SlotPS { get; set; }
+        public ushort SlotCS { get; set; }
+        public ushort SlotDS { get; set; }
+        public ushort SlotGS { get; set; }
+        public ushort SlotHS { get; set; }
         public string Name { get; set; }
 
-        public uint NameHash { get { return JenkHash.GenHash(Name); } }
+        public uint NameHash { get { return JenkHash.GenHash(Name?.ToLowerInvariant()); } }
         public List<FxcVariable> VariablesList;
         public FxcVariable[] Variables { get; set; }
 
         public void Read(BinaryReader br)
         {
-            u003 = br.ReadUInt32(); //176, 16        //256
-            us001 = br.ReadUInt16(); //6, 5          
-            us002 = br.ReadUInt16(); //6, 12
-            us003 = br.ReadUInt16(); //6, 5
-            us004 = br.ReadUInt16(); //6, 5
-            us005 = br.ReadUInt16(); //6, 5
-            us006 = br.ReadUInt16(); //6, 5
+            Size = br.ReadUInt32(); //176, 16        //256
+            SlotVS = br.ReadUInt16(); //6, 5          
+            SlotPS = br.ReadUInt16(); //6, 12
+            SlotCS = br.ReadUInt16(); //6, 5
+            SlotDS = br.ReadUInt16(); //6, 5
+            SlotGS = br.ReadUInt16(); //6, 5
+            SlotHS = br.ReadUInt16(); //6, 5
             Name = FxcFile.ReadString(br); // <fxc name> _locals   //"rage_matrices", "misc_globals", "lighting_globals", "more_stuff"
             JenkIndex.Ensure(Name); //why not :P
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Size);
+            bw.Write(SlotVS);
+            bw.Write(SlotPS);
+            bw.Write(SlotCS);
+            bw.Write(SlotDS);
+            bw.Write(SlotGS);
+            bw.Write(SlotHS);
+            FxcFile.WriteString(bw, Name);
         }
 
         public override string ToString()
         {
-            return Name + ": " + u003 + ", " + us001 + ", " + us002 + ", " + us003 + ", " + us004 + ", " + us005 + ", " + us006;
+            return Name + ": " + Size + ", " + SlotVS + ", " + SlotPS + ", " + SlotCS + ", " + SlotDS + ", " + SlotGS + ", " + SlotHS;
         }
 
         public void AddVariable(FxcVariable vari)
@@ -692,44 +855,66 @@ namespace CodeWalker.GameFiles
         {
             if (VariablesList != null)
             {
+                VariablesList.Sort((a, b) => a.Offset.CompareTo(b.Offset));
                 Variables = VariablesList.ToArray();
                 VariablesList = null;
             }
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcVariable
+    public enum FxcVariableType : byte
     {
-        public byte b0 { get; set; }
-        public byte b1 { get; set; }
-        public byte b2 { get; set; }
-        public byte b3 { get; set; }
+        Float = 2,
+        Float2 = 3,
+        Float3 = 4,
+        Float4 = 5,
+        Texture = 6, //also sampler
+        Boolean = 7,
+        Float3x4 = 8,
+        Float4x4 = 9,
+        Int = 11,
+        Int4 = 14,
+        Buffer = 15,
+        Unused1 = 17,
+        Unused2 = 18,
+        Unused3 = 19,
+        Unused4 = 20,
+        UAVBuffer = 21,
+        UAVTexture = 22,
+    }
+
+    [TC(typeof(EXP))] public class FxcVariable
+    {
+        public FxcVariableType Type { get; set; }
+        public byte Count { get; set; } //array size
+        public byte Slot { get; set; } //possibly GPU variable slot index for other platforms? or for CPU side
+        public byte Group { get; set; } //maybe - variables in same buffer usually have same value
         public string Name1 { get; set; }
         public string Name2 { get; set; }
-        public byte b4 { get; set; }
-        public byte b5 { get; set; }
-        public byte b6 { get; set; }
-        public byte b7 { get; set; }
+        public byte Offset { get; set; } //base offset (aligned to 16?)
+        public byte Variant { get; set; } //255,0,1,2,3,4,5,7,9  seems to be used when multiple variables at same offset in the buffer
+        public byte Unused0 { get; set; }//0
+        public byte Unused1 { get; set; }//0
         public MetaHash CBufferName { get; set; }
         public byte ParamCount { get; set; }
         public FxcVariableParam[] Params { get; set; }
         public byte ValueCount { get; set; }
-        public float[] Values { get; set; }
+        public float[] Values { get; set; }//optional default value for the variable, should match up with Type? //TODO: how to know what types to use?
 
 
         public void Read(BinaryReader br)
         {
-            b0 = br.ReadByte(); //5
-            b1 = br.ReadByte(); //0,1
-            b2 = br.ReadByte(); //19    //17
-            b3 = br.ReadByte(); //2     //27
+            Type = (FxcVariableType)br.ReadByte();
+            Count = br.ReadByte();
+            Slot = br.ReadByte();
+            Group = br.ReadByte();
             Name1 = FxcFile.ReadString(br);
             Name2 = FxcFile.ReadString(br);
-            b4 = br.ReadByte(); //32
-            b5 = br.ReadByte(); //
-            b6 = br.ReadByte(); //
-            b7 = br.ReadByte(); //
-            CBufferName = br.ReadUInt32(); //hash
+            Offset = br.ReadByte();
+            Variant = br.ReadByte();
+            Unused0 = br.ReadByte(); //always 0
+            Unused1 = br.ReadByte(); //always 0
+            CBufferName = br.ReadUInt32();
 
 
             ParamCount = br.ReadByte(); //1
@@ -756,173 +941,8 @@ namespace CodeWalker.GameFiles
             }
 
 
-            #region debug validation
 
-            switch (b0)
-            {
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 11:
-                case 14:
-                case 17:
-                case 20:
-                    break;
-                case 15:
-                case 18:
-                case 19:
-                case 21:
-                case 22:
-                    break;
-                default:
-                    break;
-            }
-
-            switch (b1)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 8:
-                case 12:
-                case 254:
-                case 255:
-                    break;
-                case 14:
-                case 16:
-                case 24:
-                case 40:
-                case 117:
-                    break;
-                default:
-                    break;
-            }
-
-            switch (CBufferName)
-            {
-                case 2165770756:
-                case 3458315595:
-                case 1059338858:
-                case 3779850771:
-                case 2988188919:
-                case 713939274:
-                case 3369176576:
-                case 1927486087:
-                case 4135739982:
-                case 1032736383:
-                case 3084860475:
-                case 3844532749:
-                case 3635751376:
-                case 2172777116:
-                case 4255900365:
-                case 2725372071:
-                case 3661207622:
-                case 4213364555:
-                case 1519748817:
-                case 118958736:
-                case 2397841684:
-                case 1340365912:
-                case 2531859994:
-                case 0:
-                    break;
-                case 482774302:
-                case 2300268537:
-                case 2714887816:
-                case 2049538169:
-                case 1316881611:
-                case 3367312321:
-                case 4017086211:
-                case 3743503190:
-                case 938670440:
-                case 2782027784:
-                case 2865440919:
-                case 2384984532:
-                case 486482914:
-                case 3162602184:
-                case 1834530379:
-                case 1554708878:
-                case 1142002603:
-                case 3049310097:
-                case 764124013:
-                case 2526104914:
-                case 1561144077:
-                case 970248680:
-                case 3899781660:
-                case 1853474951:
-                case 2224880237:
-                case 3766848419:
-                case 2718810031:
-                case 115655537:
-                case 4224116138:
-                case 3572088685:
-                case 1438660507:
-                case 4092686193:
-                case 871214106:
-                case 2121263542:
-                case 3502503908:
-                case 586499600:
-                case 4046148196:
-                case 2999112456:
-                case 2355014976:
-                case 579364910:
-                case 2193272593:
-                case 1641847936:
-                case 1286180849:
-                case 3291504934:
-                case 278397346:
-                case 3346871633:
-                case 4091106477:
-                case 832855465:
-                case 3616072140:
-                case 3977262900:
-                case 2062541604:
-                case 950211059:
-                case 2380663322:
-                case 2783177544:
-                case 1100625170:
-                case 1279142172:
-                case 1004646027:
-                case 2092585241:
-                case 4165560568:
-                case 2651790209:
-                case 3453406875:
-                case 488789527:
-                case 3375019131:
-                case 519785780:
-                case 729415208:
-                case 556501613:
-                case 2829744882:
-                case 1778702372:
-                case 2564407213:
-                case 3291498326:
-                case 1275817784:
-                case 962813362:
-                case 2020034807:
-                case 2017746823:
-                case 1237102223:
-                case 4029270406:
-                case 673228990:
-                case 201854132:
-                case 1866965008:
-                case 957783816:
-                case 2522030664:
-                case 1910375705:
-                case 2656344872:
-                    break;
-                default:
-                    break;
-            }
-
-            switch (b3)
+            switch (Group)
             {
                 case 0:
                 case 1:
@@ -950,37 +970,92 @@ namespace CodeWalker.GameFiles
             }
 
 
-            #endregion
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write((byte)Type);
+            bw.Write(Count);
+            bw.Write(Slot);
+            bw.Write(Group);
+            FxcFile.WriteString(bw, Name1);
+            FxcFile.WriteString(bw, Name2);
+            bw.Write(Offset);
+            bw.Write(Variant);
+            bw.Write(Unused0);
+            bw.Write(Unused1);
+            bw.Write(CBufferName);
+
+            ParamCount = (byte)(Params?.Length ?? 0);
+            bw.Write(ParamCount);
+            for (int i = 0; i < ParamCount; i++)
+            {
+                Params[i].Write(bw);
+            }
+
+            ValueCount = (byte)(Values?.Length ?? 0);
+            bw.Write(ValueCount);
+            for (int i = 0; i < ValueCount; i++)
+            {
+                bw.Write(Values[i]);
+            }
 
 
         }
 
         public override string ToString()
         {
-            return b0.ToString() + ", " + b1.ToString() + ", " + b2.ToString() + ", " + b3.ToString() + ", " + b4.ToString() + ", " + b5.ToString() + ", " + b6.ToString() + ", " + b7.ToString() + ", " + CBufferName.ToString() + ", " + Name1 + ", " + Name2;
+            var pstr = (ParamCount > 0) ? (", " + ParamCount.ToString() + " params") : "";
+            var vstr = (ValueCount > 0) ? (", " + ValueCount.ToString() + " values") : "";
+            return Type.ToString() + ", " + Count.ToString() + ", " + Slot.ToString() + ", " + Group.ToString() + ", " + Offset.ToString() + ", " + Variant.ToString() + ", " + CBufferName.ToString() + ", " + Name1 + ", " + Name2 + pstr + vstr;
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcVariableParam
+    public enum FxcVariableParamType : byte
+    {
+        Int = 0,
+        Float = 1,
+        String = 2,
+    }
+
+    [TC(typeof(EXP))] public class FxcVariableParam
     {
         public string Name { get; set; }
-        public byte Type { get; set; }
+        public FxcVariableParamType Type { get; set; }
         public object Value { get; set; }
 
         public void Read(BinaryReader br)
         {
             Name = FxcFile.ReadString(br);
-            Type = br.ReadByte();
+            Type = (FxcVariableParamType)br.ReadByte();
             switch (Type)
             {
-                case 0:
-                    Value = br.ReadUInt32();
+                case FxcVariableParamType.Int:
+                    Value = br.ReadInt32();
                     break;
-                case 1:
+                case FxcVariableParamType.Float:
                     Value = br.ReadSingle();
                     break;
-                case 2:
+                case FxcVariableParamType.String:
                     Value = FxcFile.ReadString(br);
+                    break;
+                default:
+                    break;
+            }
+        }
+        public void Write(BinaryWriter bw)
+        {
+            FxcFile.WriteString(bw, Name);
+            bw.Write((byte)Type);
+            switch (Type)
+            {
+                case FxcVariableParamType.Int:
+                    bw.Write((int)Value);
+                    break;
+                case FxcVariableParamType.Float:
+                    bw.Write((float)Value);
+                    break;
+                case FxcVariableParamType.String:
+                    FxcFile.WriteString(bw, (string)Value);
                     break;
                 default:
                     break;
@@ -993,7 +1068,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcTechnique
+    [TC(typeof(EXP))] public class FxcTechnique
     {
         public string Name { get; set; }
         public byte PassCount { get; set; }
@@ -1016,6 +1091,18 @@ namespace CodeWalker.GameFiles
             }
 
         }
+        public void Write(BinaryWriter bw)
+        {
+            FxcFile.WriteString(bw, Name);
+            
+            PassCount = (byte)(Passes?.Length ?? 0);
+            bw.Write(PassCount);
+            for (int i = 0; i < PassCount; i++)
+            {
+                Passes[i].Write(bw);
+            }
+
+        }
 
         public override string ToString()
         {
@@ -1023,7 +1110,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcPass
+    [TC(typeof(EXP))] public class FxcPass
     {
         public byte VS { get; set; }
         public byte PS { get; set; }
@@ -1032,7 +1119,7 @@ namespace CodeWalker.GameFiles
         public byte GS { get; set; }
         public byte HS { get; set; }
         public byte ParamCount { get; set; }
-        public FxcPassParam[] Params { get; set; }
+        public FxcPassParam[] Params { get; set; } //probably referring to eg SetBlendState, SetRasterizerState etc
 
         public void Read(BinaryReader br)
         {
@@ -1050,10 +1137,25 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < ParamCount; i++)
                 {
                     FxcPassParam p = new FxcPassParam();
-                    p.u0 = br.ReadUInt32();
-                    p.u1 = br.ReadUInt32();
+                    p.Read(br);
                     Params[i] = p;
                 }
+            }
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(VS);
+            bw.Write(PS);
+            bw.Write(CS);
+            bw.Write(DS);
+            bw.Write(GS);
+            bw.Write(HS);
+
+            ParamCount = (byte)(Params?.Length ?? 0);
+            bw.Write(ParamCount);
+            for (int i = 0; i < ParamCount; i++)
+            {
+                Params[i].Write(bw);
             }
         }
 
@@ -1064,14 +1166,85 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class FxcPassParam
+    [TC(typeof(EXP))] public class FxcPassParam
     {
-        public uint u0 { get; set; }
-        public uint u1 { get; set; }
+        public uint Type { get; set; } //probably referring to eg SetBlendState, SetRasterizerState etc
+        public uint Value { get; set; }
+
+        public void Read(BinaryReader br)
+        {
+            Type = br.ReadUInt32();
+            Value = br.ReadUInt32();
+
+            //switch (Type)
+            //{
+            //    case 10:
+            //    case 3:
+            //    case 6:
+            //    case 7:
+            //    case 19:
+            //    case 20:
+            //    case 21:
+            //    case 22:
+            //    case 2:
+            //    case 11:
+            //    case 25:
+            //    case 23:
+            //    case 4:
+            //    case 5:
+            //    case 24:
+            //    case 26:
+            //    case 27:
+            //    case 14:
+            //    case 12:
+            //    case 13:
+            //    case 15:
+            //    case 16:
+            //    case 17:
+            //    case 18:
+            //    case 0:
+            //    case 9:
+            //    case 8:
+            //    case 29:
+            //        break;
+            //    default:
+            //        break;
+            //}
+            //switch (Value)
+            //{
+            //    case 0: //type 10, 3, 20, 21, 22, 2, 11, 18
+            //    case 1: //type 6, 25, 23, 5, 24, 14, 12, 13, 0
+            //    case 8: //type 7, 19
+            //    case 5: //type 7, 9
+            //    case 2: //type 4, 26
+            //    case 6: //type 27
+            //    case 7: //type 7, 16, 17
+            //    case 3: //type 15
+            //    case 4: //type 22
+            //    case 15://type 20
+            //    case 100://type 8
+            //    case 9: //type 4
+            //    case 12://type 16
+            //    case 67://type 16
+            //    case 64://type 17
+            //    case 191://type 18
+            //    case 0xBDCCCCCD://(-0.1f) type 29
+            //    case 0x3E4CCCCD://(0.2f) type 29
+            //    case 10://type 8
+            //        break;
+            //    default:
+            //        break;
+            //}
+        }
+        public void Write(BinaryWriter bw)
+        {
+            bw.Write(Type);
+            bw.Write(Value);
+        }
 
         public override string ToString()
         {
-            return u0.ToString() + ", " + u1.ToString();
+            return Type.ToString() + ", " + Value.ToString();
         }
     }
 

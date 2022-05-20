@@ -217,6 +217,7 @@ namespace CodeWalker.GameFiles
                 //TestYmaps();
                 //TestYpdbs();
                 //TestMrfs();
+                //TestFxcs();
                 //TestPlacements();
                 //TestDrawables();
                 //TestCacheFiles();
@@ -4528,6 +4529,44 @@ namespace CodeWalker.GameFiles
                             { 
                                 var odata = entry.File.ExtractFile(entry as RpfFileEntry);
                                 var ndata = mrffile.Save();
+                                if (ndata.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < ndata.Length; i++)
+                                    {
+                                        if (ndata[i] != odata[i])
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+                }
+            }
+        }
+        public void TestFxcs()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        if (entry.NameLower.EndsWith(".fxc"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            var fxcfile = RpfMan.GetFile<FxcFile>(entry);
+                            if (fxcfile != null)
+                            {
+                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                var ndata = fxcfile.Save();
                                 if (ndata.Length == odata.Length)
                                 {
                                     for (int i = 0; i < ndata.Length; i++)

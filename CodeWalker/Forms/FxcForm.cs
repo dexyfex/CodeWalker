@@ -79,14 +79,7 @@ namespace CodeWalker.Forms
             }
 
 
-            if (!string.IsNullOrEmpty(fxc.LastError))
-            {
-                StatusLabel.Text = fxc.LastError;
-            }
-            else
-            {
-                StatusLabel.Text = (fxc.Shaders?.Length??0).ToString() + " shaders, " + (fxc.Techniques?.Length??0).ToString() + " techniques";
-            }
+            StatusLabel.Text = (fxc.Shaders?.Length??0).ToString() + " shaders, " + (fxc.Techniques?.Length??0).ToString() + " techniques";
         }
 
 
