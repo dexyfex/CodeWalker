@@ -4577,6 +4577,34 @@ namespace CodeWalker.GameFiles
                                 }
                                 else
                                 { }
+
+                                var xml1 = FxcXml.GetXml(fxcfile);//won't output bytecodes with no output folder
+                                var fxc1 = XmlFxc.GetFxc(xml1);
+                                var xml2 = FxcXml.GetXml(fxc1);
+                                if (xml1 != xml2)
+                                { }
+
+
+                                for (int i = 0; i < fxcfile.Shaders.Length; i++)
+                                {
+                                    if (fxc1.Shaders[i].Name != fxcfile.Shaders[i].Name)
+                                    { }
+                                    fxc1.Shaders[i].ByteCode = fxcfile.Shaders[i].ByteCode;
+                                }
+
+                                var xdata = fxc1.Save();
+                                if (xdata.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < xdata.Length; i++)
+                                    {
+                                        if (xdata[i] != odata[i])
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+
+
                             }
                             else
                             { }

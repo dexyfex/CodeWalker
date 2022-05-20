@@ -51,6 +51,8 @@ namespace CodeWalker.GameFiles
                     return GetYvrData(doc, fpathin);
                 case MetaFormat.Awc:
                     return GetAwcData(doc, fpathin);
+                case MetaFormat.Fxc:
+                    return GetFxcData(doc, fpathin);
                 case MetaFormat.CacheFile:
                     return GetCacheFileData(doc);
                 case MetaFormat.Heightmap:
@@ -168,6 +170,12 @@ namespace CodeWalker.GameFiles
             if (awc.Streams == null) return null;
             return awc.Save();
         }
+        public static byte[] GetFxcData(XmlDocument doc, string fpathin)
+        {
+            var fxc = XmlFxc.GetFxc(doc, fpathin);
+            if (fxc.Shaders == null) return null;
+            return fxc.Save();
+        }
         public static byte[] GetCacheFileData(XmlDocument doc)
         {
             var cdf = XmlCacheDat.GetCacheDat(doc);
@@ -210,6 +218,7 @@ namespace CodeWalker.GameFiles
                 case MetaFormat.Ywr: return "YWR XML";
                 case MetaFormat.Yvr: return "YVR XML";
                 case MetaFormat.Awc: return "AWC XML";
+                case MetaFormat.Fxc: return "FXC XML";
                 case MetaFormat.CacheFile: return "CacheFile XML";
                 case MetaFormat.Heightmap: return "Heightmap XML";
                 case MetaFormat.Ypdb: return "YPDB XML";
@@ -294,6 +303,10 @@ namespace CodeWalker.GameFiles
             if (fnamel.EndsWith(".awc.xml"))
             {
                 mformat = MetaFormat.Awc;
+            }
+            if (fnamel.EndsWith(".fxc.xml"))
+            {
+                mformat = MetaFormat.Fxc;
             }
             if (fnamel.EndsWith("cache_y.dat.xml"))
             {

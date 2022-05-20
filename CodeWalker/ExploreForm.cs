@@ -278,7 +278,7 @@ namespace CodeWalker
             InitFileType(".ynv", "Nav Mesh", 9, FileTypeAction.ViewModel, true);
             InitFileType(".yvr", "Vehicle Record", 9, FileTypeAction.ViewYvr, true);
             InitFileType(".ywr", "Waypoint Record", 9, FileTypeAction.ViewYwr, true);
-            InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc);
+            InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc, true);
             InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed, true);
             InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld, true);
             InitFileType(".yfd", "Frame Filter Dictionary", 9, FileTypeAction.ViewYfd);
@@ -2107,7 +2107,7 @@ namespace CodeWalker
                 var nl = file?.File?.NameLower ?? file?.Name?.ToLowerInvariant();
                 if (!string.IsNullOrEmpty(nl))
                 {
-                    needfolder = nl.EndsWith(".ytd") || nl.EndsWith(".ydr") || nl.EndsWith(".ydd") || nl.EndsWith(".yft") || nl.EndsWith(".ypt") || nl.EndsWith(".awc");
+                    needfolder = nl.EndsWith(".ytd") || nl.EndsWith(".ydr") || nl.EndsWith(".ydd") || nl.EndsWith(".yft") || nl.EndsWith(".ypt") || nl.EndsWith(".awc") || nl.EndsWith(".fxc");
                 }
             }
 
