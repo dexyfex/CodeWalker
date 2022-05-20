@@ -2701,7 +2701,7 @@ namespace CodeWalker
         }
         private void UpdateMouseHits(YmapFile ymap)
         {
-            //find mouse hits for things like time cycle mods and car generators in ymaps.
+            //find mouse hits for things like MLOs, time cycle mods, grass batches, and car generators in ymaps.
 
             BoundingBox bbox = new BoundingBox();
             Ray mray = new Ray();
@@ -6019,7 +6019,7 @@ namespace CodeWalker
                     {
                         if (ProjectForm != null && MouseLButtonDown)
                         {
-                            ProjectForm.PaintGrass(MouseRayCollision, Input.ShiftPressed);
+                            ProjectForm.PaintGrass(MouseRayCollision, Input);
                         }
                         ControlBrushTimer = 0;
                     }

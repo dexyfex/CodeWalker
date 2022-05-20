@@ -9,10 +9,8 @@ using SharpDX;
 // - COMPLETED -- Optimization feature.
 // - COMPLETED -- Remove grass instances using CTRL + SHIFT + LMB
 
-// - Better gizmo for grass brush (like a circle with a little line in the middle sticking upwards)
 // - Maybe some kind of auto coloring system? I've noticed that mostly all grass in GTA inherits it's color from the surface it's on.
 // - Grass area fill (generate grass on ydr based on colision materials?)
-// - Need to have a way to erase instances from other batches in the current batches ymap.
 //   if we optimize our instances, we'd have to go through each batch to erase, this is very monotonous.
 
 // BUG
@@ -265,27 +263,6 @@ namespace CodeWalker.Project.Panels
             BatchChanged();
         }
 
-        public void EraseInstancesAtMouse(SpaceRayIntersectResult mouseRay)
-        {
-            var wf = ProjectForm.WorldForm;
-            if (wf == null) return;
-            var changed = false;
-            lock (wf.RenderSyncRoot)
-            {
-                if (CurrentBatch.EraseInstancesAtMouse(
-                    CurrentBatch,
-                    mouseRay,
-                    (float) RadiusNumericUpDown.Value
-                ))
-                {
-                    wf.UpdateGrassBatchGraphics(CurrentBatch);
-                    changed = true;
-                }
-            }
-
-            if (changed) BatchChanged();
-        }
-
         #endregion
 
         #region Privates
@@ -296,7 +273,7 @@ namespace CodeWalker.Project.Panels
             return res;
         }
 
-        private void BatchChanged()
+        internal void BatchChanged()
         {
             UpdateControls();
             CurrentBatch.UpdateInstanceCount();

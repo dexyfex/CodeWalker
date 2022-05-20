@@ -25,7 +25,7 @@ namespace CodeWalker.Project
         public ThemeBase Theme { get; private set; }
         public ProjectExplorerPanel ProjectExplorer { get; set; }
         public ProjectPanel PreviewPanel { get; set; }
-
+        public DeleteGrassPanel DeleteGrassPanel { get; set; }
 
         public GameFileCache GameFileCache { get; private set; }
         public RpfManager RpfMan { get; private set; }
@@ -355,6 +355,13 @@ namespace CodeWalker.Project
             ShowPanel(promote,
                 () => { return new EditProjectManifestPanel(this); }, //createFunc
                 (panel) => { panel.SetProject(CurrentProjectFile); }, //updateFunc
+                (panel) => { return true; }); //findFunc
+        }
+        public void ShowDeleteGrassPanel(bool promote)
+        {
+            ShowPanel(promote,
+                () => { DeleteGrassPanel = new DeleteGrassPanel(this); return DeleteGrassPanel; }, //createFunc
+                (panel) => { panel.SetProject(CurrentProjectFile); panel.IsFloat = true; }, //updateFunc
                 (panel) => { return true; }); //findFunc
         }
         public void ShowGenerateLODLightsPanel(bool promote)
@@ -1099,20 +1106,19 @@ namespace CodeWalker.Project
 
         public bool CanPaintInstances()
         {
-            // Possibly future proofing for procedural prop instances
-            if (CurrentGrassBatch != null)
+            if ((CurrentGrassBatch != null && CurrentGrassBatch.BrushEnabled) || (DeleteGrassPanel != null && DeleteGrassPanel.Mode != DeleteGrassPanel.DeleteGrassMode.None))
             {
-                if (CurrentGrassBatch.BrushEnabled)
-                    return true;
+                return true;
             }
-
             return false;
         }
         public float GetInstanceBrushRadius()
         {
-            if (CurrentGrassBatch != null)
-                return CurrentGrassBatch.BrushRadius;
-
+            var mode = (DeleteGrassPanel?.Mode ?? DeleteGrassPanel.DeleteGrassMode.None);
+            if (mode == DeleteGrassPanel.DeleteGrassMode.None || mode == DeleteGrassPanel.DeleteGrassMode.Batch)
+                return CurrentGrassBatch?.BrushRadius ?? 0f;
+            else if (DeleteGrassPanel != null && mode != DeleteGrassPanel.DeleteGrassMode.None)
+                return DeleteGrassPanel.BrushRadius;            
             return 0f;
         }
 
@@ -2311,6 +2317,15 @@ namespace CodeWalker.Project
 
             return batch;
         }
+        public void AddGrassBatchToProject(YmapGrassInstanceBatch batch)
+        {
+            var ymap = batch.Ymap;
+            if (!YmapExistsInProject(ymap))
+            {
+                ymap.HasChanged = true;
+                AddYmapToProject(ymap);
+            }
+        }
         public void AddGrassBatchToProject()
         {
             if (CurrentGrassBatch == null) return;
@@ -2373,26 +2388,36 @@ namespace CodeWalker.Project
 
             return true;
         }
-        public void PaintGrass(SpaceRayIntersectResult mouseRay, bool erase)
+        public void PaintGrass(SpaceRayIntersectResult mouseRay, InputManager input)
         {
             try
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { PaintGrass(mouseRay, erase); }));
+                    Invoke(new Action(() => { PaintGrass(mouseRay, input); }));
                     return;
                 }
 
                 if (!mouseRay.Hit || !mouseRay.TestComplete) return;
-                if (CurrentGrassBatch == null || (!CurrentGrassBatch.BrushEnabled)) return; // brush isn't enabled right now
-                EditYmapGrassPanel panel = FindPanel<EditYmapGrassPanel>(x => x.CurrentBatch == CurrentGrassBatch);
-                if (panel == null) return; // no panels with this batch
+
+                EditYmapGrassPanel batchPanel = FindPanel<EditYmapGrassPanel>(x => x.CurrentBatch == CurrentGrassBatch);
+                if (batchPanel == null && DeleteGrassPanel == null) return; // no relevant panels
 
                 // TODO: Maybe move these functions into the batch instead of the grass panel?
                 // although, the panel does have the brush settings.
-                if (!erase)
-                    panel.CreateInstancesAtMouse(mouseRay);
-                else panel.EraseInstancesAtMouse(mouseRay);
+
+                var mode = DeleteGrassPanel?.Mode;
+
+                if (CurrentGrassBatch != null && batchPanel != null && (mode == DeleteGrassPanel.DeleteGrassMode.Batch || (CurrentGrassBatch.BrushEnabled && input.ShiftPressed)))
+                    BulkEraseGrassInstancesAtMouse(mouseRay, (y) => y == CurrentYmapFile, (b) => b == CurrentGrassBatch);
+                else if (CurrentYmapFile != null && mode == DeleteGrassPanel.DeleteGrassMode.Ymap)
+                    BulkEraseGrassInstancesAtMouse(mouseRay, (y) => y == CurrentYmapFile);
+                else if (mode == DeleteGrassPanel.DeleteGrassMode.Project)
+                    BulkEraseGrassInstancesAtMouse(mouseRay, YmapExistsInProject);
+                else if (mode == DeleteGrassPanel.DeleteGrassMode.Any)
+                    BulkEraseGrassInstancesAtMouse(mouseRay);
+                else if (batchPanel != null && CurrentGrassBatch != null && CurrentGrassBatch.BrushEnabled)
+                    batchPanel.CreateInstancesAtMouse(mouseRay);
             }
             catch { }
         }
@@ -2400,6 +2425,7 @@ namespace CodeWalker.Project
         {
             if (CurrentProjectFile?.YmapFiles == null) return false;
             if (CurrentProjectFile.YmapFiles.Count <= 0) return false;
+            if (CurrentProjectFile.YmapFiles.Contains(batch.Ymap)) return true;
             foreach (var ymapFile in CurrentProjectFile.YmapFiles)
             {
                 if (ymapFile.GrassInstanceBatches == null) continue;
@@ -2410,6 +2436,53 @@ namespace CodeWalker.Project
                 }
             }
             return false;
+        }
+
+        public void BulkEraseGrassInstancesAtMouse(SpaceRayIntersectResult mouseRay) => BulkEraseGrassInstancesAtMouse(mouseRay, (y) => true);
+        public void BulkEraseGrassInstancesAtMouse(SpaceRayIntersectResult mouseRay, Predicate<YmapFile> ymapFilter) => BulkEraseGrassInstancesAtMouse(mouseRay, ymapFilter, (b) => true);
+        public void BulkEraseGrassInstancesAtMouse(SpaceRayIntersectResult mouseRay, Predicate<YmapFile> ymapFilter, Predicate<YmapGrassInstanceBatch> batchFilter)
+        {
+            if (!mouseRay.Hit) return;
+
+            float radius = DeleteGrassPanel?.BrushRadius ?? 5f;
+            var mouseSphere = new BoundingSphere(mouseRay.Position, radius);
+            if (WorldForm == null) return;
+            lock (WorldForm.RenderSyncRoot)
+            {
+                foreach (var ymap in WorldForm.Renderer.VisibleYmaps)
+                {
+                    if (ymap.GrassInstanceBatches == null) continue;
+                    if (!ymapFilter(ymap)) continue;
+
+                    for (int i = 0; i < ymap.GrassInstanceBatches.Length; i++)
+                    {
+                        var gb = ymap.GrassInstanceBatches[i];
+                        if (!batchFilter(gb)) continue;
+
+                        BoundingBox bbox = new BoundingBox();
+                        MapBox mb = new MapBox();
+                        mb.BBMin = gb.AABBMin;
+                        mb.BBMax = gb.AABBMax;
+                        mb.Orientation = Quaternion.Identity;
+                        mb.Scale = Vector3.One;
+
+                        bbox.Minimum = mb.BBMin;
+                        bbox.Maximum = mb.BBMax;
+
+                        // do not continue if mouse position + radius is not in this instance's bounding box
+                        if (!bbox.Intersects(mouseSphere)) continue;
+
+                        if (gb.EraseInstancesAtMouse(gb, mouseRay, radius))
+                        {
+                            WorldForm.UpdateGrassBatchGraphics(gb);
+                            AddGrassBatchToProject(gb);
+
+                            var gbp = FindPanel<EditYmapGrassPanel>(panel => panel.CurrentBatch == CurrentGrassBatch);
+                            gbp?.BatchChanged();
+                        }
+                    }
+                }
+            }
         }
 
         public YmapCarGen NewCarGen(YmapCarGen copy = null, bool copyPosition = false, bool selectNew = true)
@@ -9538,7 +9611,10 @@ namespace CodeWalker.Project
         {
             ImportMenyooXml();
         }
-
+        private void ToolsDeleteGrassMenu_Click(object sender, EventArgs e)
+        {
+            ShowDeleteGrassPanel(true);
+        }
         private void OptionsRenderGtavMapMenu_Click(object sender, EventArgs e)
         {
             OptionsRenderGtavMapMenu.Checked = !OptionsRenderGtavMapMenu.Checked;
@@ -9656,6 +9732,5 @@ namespace CodeWalker.Project
         {
             SaveAll();
         }
-
     }
 }
