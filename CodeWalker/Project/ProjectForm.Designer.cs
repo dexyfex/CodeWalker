@@ -69,6 +69,14 @@
             this.ViewThemeBlueMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewThemeLightMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewThemeDarkMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsManifestGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsLODLightsGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsNavMeshGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator31 = new System.Windows.Forms.ToolStripSeparator();
+            this.deleteGrassToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.YmapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.YmapNameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
@@ -174,14 +182,6 @@
             this.toolStripSeparator24 = new System.Windows.Forms.ToolStripSeparator();
             this.AudioAddToProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioRemoveFromProjectMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsManifestGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsLODLightsGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsNavMeshGeneratorMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolsImportMenyooXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator31 = new System.Windows.Forms.ToolStripSeparator();
-            this.deleteGrassToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsRenderGtavMapMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsRenderProjectItemsMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -213,7 +213,6 @@
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
-            this.vS2015BlueTheme1 = new WeifenLuo.WinFormsUI.Docking.VS2015BlueTheme();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -549,6 +548,65 @@
             this.ViewThemeDarkMenu.Size = new System.Drawing.Size(101, 22);
             this.ViewThemeDarkMenu.Text = "Dark";
             this.ViewThemeDarkMenu.Click += new System.EventHandler(this.ViewThemeDarkMenu_Click);
+            // 
+            // ToolsMenu
+            // 
+            this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolsManifestGeneratorMenu,
+            this.ToolsLODLightsGeneratorMenu,
+            this.ToolsNavMeshGeneratorMenu,
+            this.toolStripSeparator2,
+            this.ToolsImportMenyooXmlMenu,
+            this.toolStripSeparator31,
+            this.deleteGrassToolStripMenuItem});
+            this.ToolsMenu.Name = "ToolsMenu";
+            this.ToolsMenu.Size = new System.Drawing.Size(46, 20);
+            this.ToolsMenu.Text = "Tools";
+            // 
+            // ToolsManifestGeneratorMenu
+            // 
+            this.ToolsManifestGeneratorMenu.Name = "ToolsManifestGeneratorMenu";
+            this.ToolsManifestGeneratorMenu.Size = new System.Drawing.Size(196, 22);
+            this.ToolsManifestGeneratorMenu.Text = "Manifest Generator...";
+            this.ToolsManifestGeneratorMenu.Click += new System.EventHandler(this.ToolsManifestGeneratorMenu_Click);
+            // 
+            // ToolsLODLightsGeneratorMenu
+            // 
+            this.ToolsLODLightsGeneratorMenu.Name = "ToolsLODLightsGeneratorMenu";
+            this.ToolsLODLightsGeneratorMenu.Size = new System.Drawing.Size(196, 22);
+            this.ToolsLODLightsGeneratorMenu.Text = "LOD Lights Generator...";
+            this.ToolsLODLightsGeneratorMenu.Click += new System.EventHandler(this.ToolsLODLightsGeneratorMenu_Click);
+            // 
+            // ToolsNavMeshGeneratorMenu
+            // 
+            this.ToolsNavMeshGeneratorMenu.Name = "ToolsNavMeshGeneratorMenu";
+            this.ToolsNavMeshGeneratorMenu.Size = new System.Drawing.Size(196, 22);
+            this.ToolsNavMeshGeneratorMenu.Text = "Nav Mesh Generator...";
+            this.ToolsNavMeshGeneratorMenu.Click += new System.EventHandler(this.ToolsNavMeshGeneratorMenu_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(193, 6);
+            // 
+            // ToolsImportMenyooXmlMenu
+            // 
+            this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
+            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(196, 22);
+            this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
+            this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
+            // 
+            // toolStripSeparator31
+            // 
+            this.toolStripSeparator31.Name = "toolStripSeparator31";
+            this.toolStripSeparator31.Size = new System.Drawing.Size(193, 6);
+            // 
+            // deleteGrassToolStripMenuItem
+            // 
+            this.deleteGrassToolStripMenuItem.Name = "deleteGrassToolStripMenuItem";
+            this.deleteGrassToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.deleteGrassToolStripMenuItem.Text = "Delete Grass...";
+            this.deleteGrassToolStripMenuItem.Click += new System.EventHandler(this.ToolsDeleteGrassMenu_Click);
             // 
             // YmapMenu
             // 
@@ -1393,65 +1451,6 @@
             this.AudioRemoveFromProjectMenu.Text = "Remove from Project";
             this.AudioRemoveFromProjectMenu.Click += new System.EventHandler(this.AudioRemoveFromProjectMenu_Click);
             // 
-            // ToolsMenu
-            // 
-            this.ToolsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolsManifestGeneratorMenu,
-            this.ToolsLODLightsGeneratorMenu,
-            this.ToolsNavMeshGeneratorMenu,
-            this.toolStripSeparator2,
-            this.ToolsImportMenyooXmlMenu,
-            this.toolStripSeparator31,
-            this.deleteGrassToolStripMenuItem});
-            this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(46, 20);
-            this.ToolsMenu.Text = "Tools";
-            // 
-            // ToolsManifestGeneratorMenu
-            // 
-            this.ToolsManifestGeneratorMenu.Name = "ToolsManifestGeneratorMenu";
-            this.ToolsManifestGeneratorMenu.Size = new System.Drawing.Size(196, 22);
-            this.ToolsManifestGeneratorMenu.Text = "Manifest Generator...";
-            this.ToolsManifestGeneratorMenu.Click += new System.EventHandler(this.ToolsManifestGeneratorMenu_Click);
-            // 
-            // ToolsLODLightsGeneratorMenu
-            // 
-            this.ToolsLODLightsGeneratorMenu.Name = "ToolsLODLightsGeneratorMenu";
-            this.ToolsLODLightsGeneratorMenu.Size = new System.Drawing.Size(196, 22);
-            this.ToolsLODLightsGeneratorMenu.Text = "LOD Lights Generator...";
-            this.ToolsLODLightsGeneratorMenu.Click += new System.EventHandler(this.ToolsLODLightsGeneratorMenu_Click);
-            // 
-            // ToolsNavMeshGeneratorMenu
-            // 
-            this.ToolsNavMeshGeneratorMenu.Name = "ToolsNavMeshGeneratorMenu";
-            this.ToolsNavMeshGeneratorMenu.Size = new System.Drawing.Size(196, 22);
-            this.ToolsNavMeshGeneratorMenu.Text = "Nav Mesh Generator...";
-            this.ToolsNavMeshGeneratorMenu.Click += new System.EventHandler(this.ToolsNavMeshGeneratorMenu_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(193, 6);
-            // 
-            // ToolsImportMenyooXmlMenu
-            // 
-            this.ToolsImportMenyooXmlMenu.Name = "ToolsImportMenyooXmlMenu";
-            this.ToolsImportMenyooXmlMenu.Size = new System.Drawing.Size(196, 22);
-            this.ToolsImportMenyooXmlMenu.Text = "Import Menyoo XML...";
-            this.ToolsImportMenyooXmlMenu.Click += new System.EventHandler(this.ToolsImportMenyooXmlMenu_Click);
-            // 
-            // toolStripSeparator31
-            // 
-            this.toolStripSeparator31.Name = "toolStripSeparator31";
-            this.toolStripSeparator31.Size = new System.Drawing.Size(193, 6);
-            // 
-            // deleteGrassToolStripMenuItem
-            // 
-            this.deleteGrassToolStripMenuItem.Name = "deleteGrassToolStripMenuItem";
-            this.deleteGrassToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.deleteGrassToolStripMenuItem.Text = "Delete Grass...";
-            this.deleteGrassToolStripMenuItem.Click += new System.EventHandler(this.ToolsDeleteGrassMenu_Click);
-            // 
             // OptionsMenu
             // 
             this.OptionsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1908,6 +1907,5 @@
         private System.Windows.Forms.ToolStripMenuItem YtdRemoveFromProjectMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator31;
         private System.Windows.Forms.ToolStripMenuItem deleteGrassToolStripMenuItem;
-        private WeifenLuo.WinFormsUI.Docking.VS2015BlueTheme vS2015BlueTheme1;
     }
 }
