@@ -385,7 +385,7 @@ namespace CodeWalker.Forms
                 lights.Remove(selectedLight);
                 FragDrawable.OwnerFragment.LightAttributes.data_items = lights.ToArray();
                 UpdateLightParams();
-                LoadModel(Drawable);
+                LoadModel(FragDrawable);
             }
             else
             {
@@ -1080,6 +1080,16 @@ namespace CodeWalker.Forms
         private void MainSplitContainer_Panel2_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void newLightToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CreateLight();
+        }
+
+        private void deleteLightToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DeleteLight();
         }
     }
 }
