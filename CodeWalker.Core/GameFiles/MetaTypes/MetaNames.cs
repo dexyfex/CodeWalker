@@ -10518,87 +10518,49 @@ namespace CodeWalker.GameFiles
         set_pent_bar_party_0 = 1477224115,
         set_pent_bar_party_1 = 1384422307,
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         //entity sets los santos tuners
-        entity_set_bedroom,
-        entity_set_bedroom_empty,
-        entity_set_bombs,
-        entity_set_box_clutter,
-        entity_set_cabinets,
-        entity_set_car_lift_cutscene,
-        entity_set_car_lift_default,
-        entity_set_car_lift_purchase,
-        entity_set_chalkboard,
-        entity_set_container,
-        entity_set_cut_seats,
-        entity_set_def_table,
-        entity_set_drive,
-        entity_set_ecu,
-        entity_set_IAA,
-        entity_set_jammers,
-        entity_set_laptop,
-        entity_set_lightbox,
-        entity_set_methLab,
-        entity_set_plate,
-        entity_set_scope,
-        entity_set_style_1,
-        entity_set_style_2,
-        entity_set_style_3,
-        entity_set_style_4,
-        entity_set_style_5,
-        entity_set_style_6,
-        entity_set_style_7,
-        entity_set_style_8,
-        entity_set_style_9,
-        entity_set_table,
-        entity_set_thermal,
-        entity_set_train,
-        entity_set_virus,
-        entity_set_meet_crew,
-        entity_set_meet_lights,
-        entity_set_meet_lights_cheap,
-        entity_set_player,
-        entity_set_test_crew,
-        entity_set_test_lights,
-        entity_set_test_lights_cheap,
-        entity_set_time_trial,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        entity_set_bedroom = 3129144658,
+        entity_set_bedroom_empty = 3347840564,
+        entity_set_bombs = 525743327,
+        entity_set_box_clutter = 1031818314,
+        entity_set_cabinets = 1916302592,
+        entity_set_car_lift_cutscene = 2914291975,
+        entity_set_car_lift_default = 2325906517,
+        entity_set_car_lift_purchase = 3611787667,
+        entity_set_chalkboard = 2401226824,
+        entity_set_container = 517782419,
+        entity_set_cut_seats = 2786355142,
+        entity_set_def_table = 1436009546,
+        entity_set_drive = 2870228723,
+        entity_set_ecu = 2791684507,
+        entity_set_IAA = 918364381,
+        entity_set_jammers = 2511446195,
+        entity_set_laptop = 540906493,
+        entity_set_lightbox = 3393887517,
+        entity_set_methLab = 2342941978,
+        entity_set_plate = 1866395221,
+        entity_set_scope = 369244479,
+        entity_set_style_1 = 691157059,
+        entity_set_style_2 = 3112884438,
+        entity_set_style_3 = 1792129893,
+        entity_set_style_4 = 2515800489,
+        entity_set_style_5 = 3341218830,
+        entity_set_style_6 = 4068231872,
+        entity_set_style_7 = 2762288907,
+        entity_set_style_8 = 3462890135,
+        entity_set_style_9 = 2909728,
+        entity_set_table = 1363814671,
+        entity_set_thermal = 3259196227,
+        entity_set_train = 994455134,
+        entity_set_virus = 3652339227,
+        entity_set_meet_crew = 3246662929,
+        entity_set_meet_lights = 2046164063,
+        entity_set_meet_lights_cheap = 3770015517,
+        entity_set_player = 2936236095,
+        entity_set_test_crew = 3290739661,
+        entity_set_test_lights = 2832535535,
+        entity_set_test_lights_cheap = 1088634977,
+        entity_set_time_trial = 3456105870,
 
         //popgroups.ymt - From FiveM
         //For the pedgroups/item/name field
