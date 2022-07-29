@@ -77,6 +77,8 @@
             this.OptmizationThresholdNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.BrushModeCheckBox = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.brushModeGroupBox = new System.Windows.Forms.GroupBox();
+            this.label16 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.GrassBatchTab.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -92,6 +94,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.DensityNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RadiusNumericUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.OptmizationThresholdNumericUpDown)).BeginInit();
+            this.brushModeGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -101,7 +104,7 @@
             this.tabControl1.Location = new System.Drawing.Point(12, 65);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(486, 181);
+            this.tabControl1.Size = new System.Drawing.Size(525, 214);
             this.tabControl1.TabIndex = 37;
             // 
             // GrassBatchTab
@@ -110,7 +113,7 @@
             this.GrassBatchTab.Location = new System.Drawing.Point(4, 22);
             this.GrassBatchTab.Name = "GrassBatchTab";
             this.GrassBatchTab.Padding = new System.Windows.Forms.Padding(3);
-            this.GrassBatchTab.Size = new System.Drawing.Size(478, 155);
+            this.GrassBatchTab.Size = new System.Drawing.Size(517, 183);
             this.GrassBatchTab.TabIndex = 0;
             this.GrassBatchTab.Text = "Grass Batch";
             this.GrassBatchTab.UseVisualStyleBackColor = true;
@@ -130,7 +133,7 @@
             this.groupBox1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.groupBox1.Location = new System.Drawing.Point(12, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(460, 143);
+            this.groupBox1.Size = new System.Drawing.Size(460, 135);
             this.groupBox1.TabIndex = 42;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Batch";
@@ -250,12 +253,13 @@
             // 
             // BrushTab
             // 
+            this.BrushTab.Controls.Add(this.brushModeGroupBox);
             this.BrushTab.Controls.Add(this.groupBox2);
             this.BrushTab.Controls.Add(this.brushSettingsGroupBox);
             this.BrushTab.Location = new System.Drawing.Point(4, 22);
             this.BrushTab.Name = "BrushTab";
             this.BrushTab.Padding = new System.Windows.Forms.Padding(3);
-            this.BrushTab.Size = new System.Drawing.Size(478, 155);
+            this.BrushTab.Size = new System.Drawing.Size(517, 188);
             this.BrushTab.TabIndex = 1;
             this.BrushTab.Text = " Brush";
             this.BrushTab.UseVisualStyleBackColor = true;
@@ -272,9 +276,9 @@
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.RandomizeScaleCheckBox);
             this.groupBox2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.groupBox2.Location = new System.Drawing.Point(191, 3);
+            this.groupBox2.Location = new System.Drawing.Point(265, 6);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(281, 146);
+            this.groupBox2.Size = new System.Drawing.Size(246, 176);
             this.groupBox2.TabIndex = 39;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Instance Settings";
@@ -384,23 +388,23 @@
             this.brushSettingsGroupBox.Controls.Add(this.label5);
             this.brushSettingsGroupBox.Controls.Add(this.radiusLabel);
             this.brushSettingsGroupBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.brushSettingsGroupBox.Location = new System.Drawing.Point(8, 3);
+            this.brushSettingsGroupBox.Location = new System.Drawing.Point(11, 6);
             this.brushSettingsGroupBox.Name = "brushSettingsGroupBox";
-            this.brushSettingsGroupBox.Size = new System.Drawing.Size(177, 146);
+            this.brushSettingsGroupBox.Size = new System.Drawing.Size(246, 71);
             this.brushSettingsGroupBox.TabIndex = 38;
             this.brushSettingsGroupBox.TabStop = false;
             this.brushSettingsGroupBox.Text = "Brush Settings";
             // 
             // DensityNumericUpDown
             // 
-            this.DensityNumericUpDown.Location = new System.Drawing.Point(76, 57);
+            this.DensityNumericUpDown.Location = new System.Drawing.Point(187, 28);
             this.DensityNumericUpDown.Maximum = new decimal(new int[] {
             128,
             0,
             0,
             0});
             this.DensityNumericUpDown.Name = "DensityNumericUpDown";
-            this.DensityNumericUpDown.Size = new System.Drawing.Size(84, 20);
+            this.DensityNumericUpDown.Size = new System.Drawing.Size(53, 20);
             this.DensityNumericUpDown.TabIndex = 20;
             this.DensityNumericUpDown.Value = new decimal(new int[] {
             28,
@@ -410,15 +414,15 @@
             // 
             // RadiusNumericUpDown
             // 
-            this.RadiusNumericUpDown.DecimalPlaces = 2;
+            this.RadiusNumericUpDown.DecimalPlaces = 1;
             this.RadiusNumericUpDown.Increment = new decimal(new int[] {
             1,
             0,
             0,
-            131072});
-            this.RadiusNumericUpDown.Location = new System.Drawing.Point(76, 31);
+            65536});
+            this.RadiusNumericUpDown.Location = new System.Drawing.Point(52, 28);
             this.RadiusNumericUpDown.Name = "RadiusNumericUpDown";
-            this.RadiusNumericUpDown.Size = new System.Drawing.Size(84, 20);
+            this.RadiusNumericUpDown.Size = new System.Drawing.Size(65, 20);
             this.RadiusNumericUpDown.TabIndex = 11;
             this.RadiusNumericUpDown.Value = new decimal(new int[] {
             5,
@@ -430,7 +434,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(21, 59);
+            this.label5.Location = new System.Drawing.Point(141, 30);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(42, 13);
             this.label5.TabIndex = 19;
@@ -439,7 +443,7 @@
             // radiusLabel
             // 
             this.radiusLabel.AutoSize = true;
-            this.radiusLabel.Location = new System.Drawing.Point(21, 33);
+            this.radiusLabel.Location = new System.Drawing.Point(6, 30);
             this.radiusLabel.Name = "radiusLabel";
             this.radiusLabel.Size = new System.Drawing.Size(40, 13);
             this.radiusLabel.TabIndex = 10;
@@ -447,7 +451,7 @@
             // 
             // OptimizeBatchButton
             // 
-            this.OptimizeBatchButton.Location = new System.Drawing.Point(16, 280);
+            this.OptimizeBatchButton.Location = new System.Drawing.Point(16, 296);
             this.OptimizeBatchButton.Name = "OptimizeBatchButton";
             this.OptimizeBatchButton.Size = new System.Drawing.Size(108, 24);
             this.OptimizeBatchButton.TabIndex = 70;
@@ -461,16 +465,16 @@
             // 
             this.ExtentsMinTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExtentsMinTextBox.Location = new System.Drawing.Point(84, 319);
+            this.ExtentsMinTextBox.Location = new System.Drawing.Point(84, 335);
             this.ExtentsMinTextBox.Name = "ExtentsMinTextBox";
             this.ExtentsMinTextBox.ReadOnly = true;
-            this.ExtentsMinTextBox.Size = new System.Drawing.Size(380, 20);
+            this.ExtentsMinTextBox.Size = new System.Drawing.Size(449, 20);
             this.ExtentsMinTextBox.TabIndex = 55;
             // 
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(13, 349);
+            this.label14.Location = new System.Drawing.Point(13, 365);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(68, 13);
             this.label14.TabIndex = 54;
@@ -480,16 +484,16 @@
             // 
             this.ExtentsMaxTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExtentsMaxTextBox.Location = new System.Drawing.Point(84, 345);
+            this.ExtentsMaxTextBox.Location = new System.Drawing.Point(84, 361);
             this.ExtentsMaxTextBox.Name = "ExtentsMaxTextBox";
             this.ExtentsMaxTextBox.ReadOnly = true;
-            this.ExtentsMaxTextBox.Size = new System.Drawing.Size(380, 20);
+            this.ExtentsMaxTextBox.Size = new System.Drawing.Size(449, 20);
             this.ExtentsMaxTextBox.TabIndex = 53;
             // 
             // label13
             // 
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(13, 322);
+            this.label13.Location = new System.Drawing.Point(13, 338);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(65, 13);
             this.label13.TabIndex = 52;
@@ -498,7 +502,7 @@
             // GrassDeleteButton
             // 
             this.GrassDeleteButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.GrassDeleteButton.Location = new System.Drawing.Point(257, 397);
+            this.GrassDeleteButton.Location = new System.Drawing.Point(276, 397);
             this.GrassDeleteButton.Name = "GrassDeleteButton";
             this.GrassDeleteButton.Size = new System.Drawing.Size(95, 23);
             this.GrassDeleteButton.TabIndex = 51;
@@ -509,7 +513,7 @@
             // GrassAddToProjectButton
             // 
             this.GrassAddToProjectButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.GrassAddToProjectButton.Location = new System.Drawing.Point(159, 397);
+            this.GrassAddToProjectButton.Location = new System.Drawing.Point(178, 397);
             this.GrassAddToProjectButton.Name = "GrassAddToProjectButton";
             this.GrassAddToProjectButton.Size = new System.Drawing.Size(95, 23);
             this.GrassAddToProjectButton.TabIndex = 50;
@@ -550,7 +554,7 @@
             this.PositionTextBox.Location = new System.Drawing.Point(66, 39);
             this.PositionTextBox.Name = "PositionTextBox";
             this.PositionTextBox.ReadOnly = true;
-            this.PositionTextBox.Size = new System.Drawing.Size(275, 20);
+            this.PositionTextBox.Size = new System.Drawing.Size(314, 20);
             this.PositionTextBox.TabIndex = 58;
             // 
             // label1
@@ -565,7 +569,7 @@
             // GrassGoToButton
             // 
             this.GrassGoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.GrassGoToButton.Location = new System.Drawing.Point(347, 36);
+            this.GrassGoToButton.Location = new System.Drawing.Point(386, 36);
             this.GrassGoToButton.Name = "GrassGoToButton";
             this.GrassGoToButton.Size = new System.Drawing.Size(56, 23);
             this.GrassGoToButton.TabIndex = 56;
@@ -576,7 +580,7 @@
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(130, 286);
+            this.label17.Location = new System.Drawing.Point(130, 302);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(54, 13);
             this.label17.TabIndex = 71;
@@ -584,7 +588,7 @@
             // 
             // OptmizationThresholdNumericUpDown
             // 
-            this.OptmizationThresholdNumericUpDown.Location = new System.Drawing.Point(190, 284);
+            this.OptmizationThresholdNumericUpDown.Location = new System.Drawing.Point(190, 300);
             this.OptmizationThresholdNumericUpDown.Maximum = new decimal(new int[] {
             999999,
             0,
@@ -602,7 +606,7 @@
             // BrushModeCheckBox
             // 
             this.BrushModeCheckBox.AutoSize = true;
-            this.BrushModeCheckBox.Location = new System.Drawing.Point(16, 252);
+            this.BrushModeCheckBox.Location = new System.Drawing.Point(12, 25);
             this.BrushModeCheckBox.Name = "BrushModeCheckBox";
             this.BrushModeCheckBox.Size = new System.Drawing.Size(83, 17);
             this.BrushModeCheckBox.TabIndex = 68;
@@ -620,16 +624,35 @@
             this.label8.Text = ".ydr";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // brushModeGroupBox
+            // 
+            this.brushModeGroupBox.Controls.Add(this.label16);
+            this.brushModeGroupBox.Controls.Add(this.BrushModeCheckBox);
+            this.brushModeGroupBox.Location = new System.Drawing.Point(8, 83);
+            this.brushModeGroupBox.Name = "brushModeGroupBox";
+            this.brushModeGroupBox.Size = new System.Drawing.Size(249, 99);
+            this.brushModeGroupBox.TabIndex = 69;
+            this.brushModeGroupBox.TabStop = false;
+            this.brushModeGroupBox.Text = "Brush Mode";
+            // 
+            // label16
+            // 
+            this.label16.Location = new System.Drawing.Point(9, 49);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(231, 40);
+            this.label16.TabIndex = 69;
+            this.label16.Text = "Hold CTRL to paint instances in this batch. Hold CTRL+SHIFT to delete in this bat" +
+    "ch. Open Tools menu for bulk delete option.";
+            // 
             // EditYmapGrassPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(510, 443);
+            this.ClientSize = new System.Drawing.Size(549, 443);
             this.Controls.Add(this.label8);
             this.Controls.Add(this.label17);
             this.Controls.Add(this.OptmizationThresholdNumericUpDown);
             this.Controls.Add(this.OptimizeBatchButton);
-            this.Controls.Add(this.BrushModeCheckBox);
             this.Controls.Add(this.HashLabel);
             this.Controls.Add(this.ExtentsMinTextBox);
             this.Controls.Add(this.ArchetypeNameTextBox);
@@ -664,6 +687,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.DensityNumericUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RadiusNumericUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.OptmizationThresholdNumericUpDown)).EndInit();
+            this.brushModeGroupBox.ResumeLayout(false);
+            this.brushModeGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -718,5 +743,7 @@
         private System.Windows.Forms.Button OptimizeBatchButton;
         private System.Windows.Forms.CheckBox BrushModeCheckBox;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.GroupBox brushModeGroupBox;
+        private System.Windows.Forms.Label label16;
     }
 }
