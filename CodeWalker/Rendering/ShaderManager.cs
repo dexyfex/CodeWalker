@@ -235,6 +235,8 @@ namespace CodeWalker.Rendering
             bsAdd.Dispose();
             rsSolid.Dispose();
             rsWireframe.Dispose();
+            rsSolidDblSided.Dispose();
+            rsWireframeDblSided.Dispose();
 
             Widgets.Dispose();
             Paths.Dispose();
@@ -284,6 +286,8 @@ namespace CodeWalker.Rendering
 
         public void BeginFrame(DeviceContext context, double currentRealTime, float elapsedTime)
         {
+            if (disposed) return;
+
             CurrentRealTime = currentRealTime;
             CurrentElapsedTime = elapsedTime;
 

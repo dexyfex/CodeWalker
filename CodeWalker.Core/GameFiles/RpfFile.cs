@@ -898,19 +898,21 @@ namespace CodeWalker.GameFiles
             {
                 using (DeflateStream ds = new DeflateStream(new MemoryStream(bytes), CompressionMode.Decompress))
                 {
-                    MemoryStream outstr = new MemoryStream();
-                    ds.CopyTo(outstr);
-                    byte[] deflated = outstr.GetBuffer();
-                    byte[] outbuf = new byte[outstr.Length]; //need to copy to the right size buffer for output.
-                    Array.Copy(deflated, outbuf, outbuf.Length);
-
-                    if (outbuf.Length <= bytes.Length)
+                    using (var outstr = new MemoryStream())
                     {
-                        LastError = "Warning: Decompressed data was smaller than compressed data...";
-                        //return null; //could still be OK for tiny things!
-                    }
+                        ds.CopyTo(outstr);
+                        byte[] deflated = outstr.GetBuffer();
+                        byte[] outbuf = new byte[outstr.Length]; //need to copy to the right size buffer for output.
+                        Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
 
-                    return outbuf;
+                        if (outbuf.Length <= bytes.Length)
+                        {
+                            LastError = "Warning: Decompressed data was smaller than compressed data...";
+                            //return null; //could still be OK for tiny things!
+                        }
+
+                        return outbuf;
+                    }
                 }
             }
             catch (Exception ex)
@@ -924,13 +926,15 @@ namespace CodeWalker.GameFiles
         {
             using (MemoryStream ms = new MemoryStream())
             {
-                DeflateStream ds = new DeflateStream(ms, CompressionMode.Compress, true);
-                ds.Write(data, 0, data.Length);
-                ds.Close();
-                byte[] deflated = ms.GetBuffer();
-                byte[] outbuf = new byte[ms.Length]; //need to copy to the right size buffer...
-                Array.Copy(deflated, outbuf, outbuf.Length);
-                return outbuf;
+                using (var ds = new DeflateStream(ms, CompressionMode.Compress, true))
+                {
+                    ds.Write(data, 0, data.Length);
+                    ds.Close();
+                    byte[] deflated = ms.GetBuffer();
+                    byte[] outbuf = new byte[ms.Length]; //need to copy to the right size buffer...
+                    Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
+                    return outbuf;
+                }
             }
         }
 

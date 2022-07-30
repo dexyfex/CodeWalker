@@ -46,6 +46,7 @@ namespace CodeWalker.Rendering
 
             try
             {
+                //SharpDX.Configuration.EnableObjectTracking = true;
 
                 SwapChainDescription scd = new SwapChainDescription()
                 {
@@ -154,12 +155,18 @@ namespace CodeWalker.Rendering
 
             dxform.CleanupScene();
 
+            if (context != null) context.ClearState();
+
             //dipose of all objects
             if (depthview != null) depthview.Dispose();
             if (depthbuffer != null) depthbuffer.Dispose();
             if (targetview != null) targetview.Dispose();
             if (backbuffer != null) backbuffer.Dispose();
             if (swapchain != null) swapchain.Dispose();
+            if (context != null) context.Dispose();
+
+            //var objs = SharpDX.Diagnostics.ObjectTracker.FindActiveObjects();
+
             if (device != null) device.Dispose();
 
             GC.Collect();

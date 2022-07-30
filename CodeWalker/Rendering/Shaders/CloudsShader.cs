@@ -340,6 +340,7 @@ namespace CodeWalker.Rendering
 
 
             texsampler.Dispose();
+            texsampleranis.Dispose();
 
             layout.Dispose();
 

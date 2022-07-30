@@ -323,6 +323,7 @@ namespace CodeWalker.Rendering
             cacheitems.Clear();
             itemsToUnload = new ConcurrentQueue<TVal>();
             keysToInvalidate = new ConcurrentQueue<TKey>();
+            CacheUse = 0;
         }
 
 

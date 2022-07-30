@@ -415,6 +415,11 @@ namespace CodeWalker.Rendering
                 texsampler.Dispose();
                 texsampler = null;
             }
+            if (texsamplerc != null)
+            {
+                texsamplerc.Dispose();
+                texsamplerc = null;
+            }
 
             foreach (InputLayout layout in layouts.Values)
             {

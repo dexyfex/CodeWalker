@@ -1025,6 +1025,7 @@ namespace CodeWalker.Rendering
             texsampler.Dispose();
             texsampleranis.Dispose();
             texsamplertnt.Dispose();
+            texsamplertntyft.Dispose();
 
             foreach (InputLayout layout in layouts.Values)
             {
