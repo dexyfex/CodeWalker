@@ -598,7 +598,7 @@ namespace CodeWalker.GameFiles
 
 
                     string dlcname = GetDlcNameFromPath(dlcfile.Path);
-                    if (dlcname == "patchday27ng")
+                    if ((dlcname == "patchday27ng") && (SelectedDlc != dlcname))
                     {
                         continue; //hack to fix map getting completely broken by this DLC.. but why? need to investigate further!
                     }
