@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using System.Linq;
 
 namespace CodeWalker.GameFiles
 {
@@ -14,19 +15,23 @@ namespace CodeWalker.GameFiles
         public uint HeaderUnk1 { get; set; } = 0;
         public uint HeaderUnk2 { get; set; } = 0;
         public uint HeaderUnk3 { get; set; } = 0;
-        public uint DataLength { get; set; }
-        public uint FlagsCount { get; set; }
+        public uint DataLength { get; set; } // doesn't include the header (Magic to Unk1_Items) nor UnkBytes
+        public uint UnkBytesCount { get; set; }
         public uint Unk1_Count { get; set; }
-        public uint Unk2_Count { get; set; }
-        public uint Unk3_Count { get; set; }
+        public uint MoveNetworkTriggerCount { get; set; }
+        public uint MoveNetworkFlagCount { get; set; }
 
-        public MrfStructHeaderUnk1[] Unk1_Items { get; set; }
-        public MrfStructHeaderUnk2[] Unk2_Items { get; set; }
-        public MrfStructHeaderUnk3[] Unk3_Items { get; set; }
-        public byte[] FlagsItems { get; set; }
+        public MrfHeaderUnk1[] Unk1_Items { get; set; }
+        public MrfMoveNetworkTrigger[] MoveNetworkTriggers { get; set; }
+        public MrfMoveNetworkFlag[] MoveNetworkFlags { get; set; }
+        public byte[] UnkBytes { get; set; }
 
         public MrfNode[] AllNodes { get; set; }
-        public MrfNode RootNode { get; set; }
+        public MrfNodeStateBase RootState { get; set; }
+
+        // DOT graphs to visualize the move network
+        public string DebugTreeGraph { get; set; }
+        public string DebugStateGraph { get; set; }
 
         public MrfFile() : base(null, GameFileType.Mrf)
         {
@@ -58,8 +63,11 @@ namespace CodeWalker.GameFiles
         {
             MemoryStream s = new MemoryStream();
             DataWriter w = new DataWriter(s);
+            NoOpDataWriter nw = new NoOpDataWriter();
 
-            Write(w);
+            Write(nw, updateOffsets: true); // first pass to calculate relative offsets
+            DataLength = (uint)(nw.Length - 32 - (Unk1_Items?.Sum(i => i.Size) ?? 0) - UnkBytesCount);
+            Write(w, updateOffsets: false); // now write the MRF
 
             var buf = new byte[s.Length];
             s.Position = 0;
@@ -67,7 +75,7 @@ namespace CodeWalker.GameFiles
             return buf;
         }
 
-        private void Write(DataWriter w)
+        private void Write(DataWriter w, bool updateOffsets)
         {
             if (Magic != 0x45566F4D || Version != 2 || HeaderUnk1 != 0 || HeaderUnk2 != 0)
                 throw new Exception("Failed to write MRF, header is invalid!");
@@ -78,11 +86,10 @@ namespace CodeWalker.GameFiles
             w.Write(HeaderUnk2);
             w.Write(HeaderUnk3);
             w.Write(DataLength);
-            w.Write(FlagsCount);
+            w.Write(UnkBytesCount);
 
             // Unused in final game
             w.Write(Unk1_Count);
-
             if (Unk1_Count > 0)
             {
                 foreach (var entry in Unk1_Items)
@@ -92,36 +99,46 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            w.Write(Unk2_Count);
-
-            if (Unk2_Count > 0)
+            w.Write(MoveNetworkTriggerCount);
+            if (MoveNetworkTriggerCount > 0)
             {
-                foreach (var entry in Unk2_Items)
+                foreach (var entry in MoveNetworkTriggers)
                 {
-                    w.Write(entry.Unk1);
-                    w.Write(entry.Unk2);
+                    w.Write(entry.Name);
+                    w.Write(entry.BitPosition);
                 }
             }
 
-            w.Write(Unk3_Count);
-
-            if (Unk3_Count > 0)
+            w.Write(MoveNetworkFlagCount);
+            if (MoveNetworkFlagCount > 0)
             {
-                foreach (var entry in Unk3_Items)
+                foreach (var entry in MoveNetworkFlags)
                 {
-                    w.Write(entry.Unk1);
-                    w.Write(entry.Unk2);
+                    w.Write(entry.Name);
+                    w.Write(entry.BitPosition);
                 }
             }
 
             if (AllNodes != null)
             {
                 foreach (var node in AllNodes)
+                {
+                    if (updateOffsets) node.FileOffset = (int)w.Position;
                     node.Write(w);
+                    if (updateOffsets) node.FileDataSize = (int)(w.Position - node.FileOffset);
+                }
+
+                if (updateOffsets)
+                {
+                    foreach (var node in AllNodes)
+                    {
+                        node.UpdateRelativeOffsets();
+                    }
+                }
             }
 
-            for (int i = 0; i < FlagsCount; i++)
-                w.Write(FlagsItems[i]);
+            for (int i = 0; i < UnkBytesCount; i++)
+                w.Write(UnkBytes[i]);
         }
 
         private void Read(DataReader r)
@@ -132,7 +149,7 @@ namespace CodeWalker.GameFiles
             HeaderUnk2 = r.ReadUInt32();
             HeaderUnk3 = r.ReadUInt32(); // Should be 0
             DataLength = r.ReadUInt32();
-            FlagsCount = r.ReadUInt32();
+            UnkBytesCount = r.ReadUInt32();
 
             if (Magic != 0x45566F4D || Version != 2 || HeaderUnk1 != 0 || HeaderUnk2 != 0)
                 throw new Exception("Failed to read MRF, header is invalid!");
@@ -141,28 +158,28 @@ namespace CodeWalker.GameFiles
             Unk1_Count = r.ReadUInt32();
             if (Unk1_Count > 0)
             {
-                Unk1_Items = new MrfStructHeaderUnk1[Unk1_Count];
+                Unk1_Items = new MrfHeaderUnk1[Unk1_Count];
 
                 for (int i = 0; i < Unk1_Count; i++)
-                    Unk1_Items[i] = new MrfStructHeaderUnk1(r);
+                    Unk1_Items[i] = new MrfHeaderUnk1(r);
             }
 
-            Unk2_Count = r.ReadUInt32();
-            if (Unk2_Count > 0)
+            MoveNetworkTriggerCount = r.ReadUInt32();
+            if (MoveNetworkTriggerCount > 0)
             {
-                Unk2_Items = new MrfStructHeaderUnk2[Unk2_Count];
+                MoveNetworkTriggers = new MrfMoveNetworkTrigger[MoveNetworkTriggerCount];
 
-                for (int i = 0; i < Unk2_Count; i++)
-                    Unk2_Items[i] = new MrfStructHeaderUnk2(r);
+                for (int i = 0; i < MoveNetworkTriggerCount; i++)
+                    MoveNetworkTriggers[i] = new MrfMoveNetworkTrigger(r);
             }
 
-            Unk3_Count = r.ReadUInt32();
-            if (Unk3_Count > 0)
+            MoveNetworkFlagCount = r.ReadUInt32();
+            if (MoveNetworkFlagCount > 0)
             {
-                Unk3_Items = new MrfStructHeaderUnk3[Unk3_Count];
+                MoveNetworkFlags = new MrfMoveNetworkFlag[MoveNetworkFlagCount];
 
-                for (int i = 0; i < Unk3_Count; i++)
-                    Unk3_Items[i] = new MrfStructHeaderUnk3(r);
+                for (int i = 0; i < MoveNetworkFlagCount; i++)
+                    MoveNetworkFlags[i] = new MrfMoveNetworkFlag(r);
             }
 
             var nodes = new List<MrfNode>();
@@ -170,32 +187,33 @@ namespace CodeWalker.GameFiles
             while (true)
             {
                 var index = nodes.Count;
-                var offset = (int)r.Position;
 
                 var node = ReadNode(r);
                 
                 if (node == null) break;
 
                 node.FileIndex = index;
-                node.FileOffset = offset;
-                node.FileDataSize = ((int)r.Position) - offset;
-
                 nodes.Add(node);
             }
 
             AllNodes = nodes.ToArray();
 
-            if (FlagsCount != 0)
+            if (UnkBytesCount != 0)
             {
-                FlagsItems = new byte[FlagsCount];
+                UnkBytes = new byte[UnkBytesCount];
 
-                for (int i = 0; i < FlagsCount; i++)
-                    FlagsItems[i] = r.ReadByte();
+                for (int i = 0; i < UnkBytesCount; i++)
+                    UnkBytes[i] = r.ReadByte();
             }
 
+            RootState = AllNodes.Length > 0 ? (MrfNodeStateBase)AllNodes[0] : null; // the first node is always a state or state machine node (not inlined state machine)
+            ResolveRelativeOffsets();
 
-            BuildNodeHierarchy();
+            DebugTreeGraph = DumpTreeGraph();
+            DebugStateGraph = DumpStateGraph();
 
+            if (r.Length != (DataLength + 32 + (Unk1_Items?.Sum(i => i.Size) ?? 0) + UnkBytesCount))
+            { } // no hits
 
             if (r.Position != r.Length)
                 throw new Exception($"Failed to read MRF ({r.Position} / {r.Length})");
@@ -215,8 +233,9 @@ namespace CodeWalker.GameFiles
             }
 
             var node = CreateNode(nodeType);
-
+            node.FileOffset = (int)startPos;
             node.Read(r);
+            node.FileDataSize = (int)(r.Position - node.FileOffset);
 
             return node;
         }
@@ -225,176 +244,482 @@ namespace CodeWalker.GameFiles
         {
             switch (infoType)
             {
-                case MrfNodeType.StateMachineClass:
-                    return new MrfNodeStateMachineClass();
+                case MrfNodeType.StateMachine:
+                    return new MrfNodeStateMachine();
                 case MrfNodeType.Tail:
                     return new MrfNodeTail();
                 case MrfNodeType.InlinedStateMachine:
                     return new MrfNodeInlinedStateMachine();
-                case MrfNodeType.Unk4:
-                    return new MrfNodeUnk4();
+                case MrfNodeType.Animation:
+                    return new MrfNodeAnimation();
                 case MrfNodeType.Blend:
                     return new MrfNodeBlend();
                 case MrfNodeType.AddSubtract:
-                    return new MrfNodeAddSubstract();
+                    return new MrfNodeAddSubtract();
                 case MrfNodeType.Filter:
                     return new MrfNodeFilter();
-                case MrfNodeType.Unk8:
-                    return new MrfNodeUnk8();
+                case MrfNodeType.Mirror:
+                    return new MrfNodeMirror();
                 case MrfNodeType.Frame:
                     return new MrfNodeFrame();
-                case MrfNodeType.Unk10:
-                    return new MrfNodeUnk10();
+                case MrfNodeType.Ik:
+                    return new MrfNodeIk();
                 case MrfNodeType.BlendN:
                     return new MrfNodeBlendN();
                 case MrfNodeType.Clip:
                     return new MrfNodeClip();
-                case MrfNodeType.Unk17:
-                    return new MrfNodeUnk17();
-                case MrfNodeType.Unk18:
-                    return new MrfNodeUnk18();
+                case MrfNodeType.Pm:
+                    return new MrfNodePm();
+                case MrfNodeType.Extrapolate:
+                    return new MrfNodeExtrapolate();
                 case MrfNodeType.Expression:
                     return new MrfNodeExpression();
-                case MrfNodeType.Unk20:
-                    return new MrfNodeUnk20();
+                case MrfNodeType.Capture:
+                    return new MrfNodeCapture();
                 case MrfNodeType.Proxy:
                     return new MrfNodeProxy();
                 case MrfNodeType.AddN:
                     return new MrfNodeAddN();
                 case MrfNodeType.Identity:
                     return new MrfNodeIdentity();
-                case MrfNodeType.Unk24:
-                    return new MrfNodeUnk24();
-                case MrfNodeType.Unk25:
-                    return new MrfNodeUnk25();
+                case MrfNodeType.Merge:
+                    return new MrfNodeMerge();
+                case MrfNodeType.Pose:
+                    return new MrfNodePose();
                 case MrfNodeType.MergeN:
                     return new MrfNodeMergeN();
                 case MrfNodeType.State:
                     return new MrfNodeState();
                 case MrfNodeType.Invalid:
                     return new MrfNodeInvalid();
-                case MrfNodeType.Unk29:
-                    return new MrfNodeUnk29();
-                case MrfNodeType.SubNetworkClass:
-                    return new MrfNodeSubNetworkClass();
-                case MrfNodeType.Unk31:
-                    return new MrfNodeUnk31();
+                case MrfNodeType.JointLimit:
+                    return new MrfNodeJointLimit();
+                case MrfNodeType.SubNetwork:
+                    return new MrfNodeSubNetwork();
+                case MrfNodeType.Reference:
+                    return new MrfNodeReference();
             }
 
             throw new Exception($"A handler for ({infoType}) mrf node type is not valid");
         }
 
-
-        private int BuildNodeHierarchy(MrfNode node = null, int index = 0)
+        private void ResolveRelativeOffsets()
         {
-            if (AllNodes == null) return 0;
-            if (AllNodes.Length <= index) return 0;
-
-            if (node == null)
+            foreach (var n in AllNodes)
             {
-                var rlist = new List<MrfNode>();
-                for (int i = 0; i < AllNodes.Length; i++)
-                {
-                    var rnode = AllNodes[i];
-                    rlist.Add(rnode);
-                    i += BuildNodeHierarchy(rnode, i);
-                }
+                n.ResolveRelativeOffsets(this);
+            }
+        }
 
-                var smlist = new List<MrfNodeStateMachineClass>();
-                var imlist = new List<MrfNodeInlinedStateMachine>();
-                var snlist = new List<MrfNodeState>();
+        public MrfNode FindNodeAtFileOffset(int fileOffset)
+        {
+            foreach (var n in AllNodes)
+            {
+                if (n.FileOffset == fileOffset) return n;
+            }
+
+            return null;
+        }
+
+        public MrfMoveNetworkTrigger FindMoveNetworkTriggerForBit(int bitPosition)
+        {
+            if (MoveNetworkTriggers == null)
+            {
+                return null;
+            }
+
+            foreach (var trigger in MoveNetworkTriggers)
+            {
+                if (trigger.Name != 0xFFFFFFFF && trigger.BitPosition == bitPosition) return trigger;
+            }
+
+            return null;
+        }
+
+        public MrfMoveNetworkFlag FindMoveNetworkFlagForBit(int bitPosition)
+        {
+            if (MoveNetworkFlags == null)
+            {
+                return null;
+            }
+
+            foreach (var flag in MoveNetworkFlags)
+            {
+                if (flag.Name != 0xFFFFFFFF && flag.BitPosition == bitPosition) return flag;
+            }
+
+            return null;
+        }
+
+        // MoveNetworkTriggers and MoveNetworkFlags getters by name for reference of how the arrays should be sorted in buckets
+        public MrfMoveNetworkTrigger FindMoveNetworkTriggerByName(MetaHash name)
+        {
+            if (MoveNetworkTriggers == null)
+            {
+                return null;
+            }
+
+            for (int i = (int)(name.Hash % MoveNetworkTriggers.Length); ; i = (i + 1) % MoveNetworkTriggers.Length)
+            {
+                var trigger = MoveNetworkTriggers[i];
+                if (trigger.Name == 0xFFFFFFFF) break;
+                if (trigger.Name == name) return trigger;
+            }
+
+            return null;
+        }
+        public MrfMoveNetworkFlag FindMoveNetworkFlagByName(MetaHash name)
+        {
+            if (MoveNetworkFlags == null)
+            {
+                return null;
+            }
+
+            for (int i = (int)(name.Hash % MoveNetworkFlags.Length); ; i = (i + 1) % MoveNetworkFlags.Length)
+            {
+                var flag = MoveNetworkFlags[i];
+                if (flag.Name == 0xFFFFFFFF) break;
+                if (flag.Name == name) return flag;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Dump a DOT graph with the whole node hierarchy as a tree.
+        /// </summary>
+        public string DumpTreeGraph()
+        {
+            using (var w = new StringWriter())
+            {
+                w.WriteLine($@"digraph ""{Name}"" {{");
+                w.WriteLine($@"    label=""{Name}""");
+                w.WriteLine($@"    labelloc=""t""");
+                w.WriteLine($@"    concentrate=true");
+                w.WriteLine($@"    rankdir=""LR""");
+                w.WriteLine($@"    graph[fontname = ""Consolas""];");
+                w.WriteLine($@"    edge[fontname = ""Consolas""];");
+                w.WriteLine($@"    node[fontname = ""Consolas""];");
+                w.WriteLine();
+
+                w.WriteLine("    root [label=\"root\"];");
+
+                // nodes
                 foreach (var n in AllNodes)
                 {
-                    if (n is MrfNodeStateMachineClass sm) 
-                    { 
-                        smlist.Add(sm);
-                        if (sm.ChildNodes != null) for (int i = 0; i < sm.ChildNodes.Length; i++) if (sm.ChildNodes[i].NodeIndex != i)
-                                { }//sanity check - don't get here
+                    var id = n.FileOffset;
+                    var label = $"{n.NodeType} '{n.Name}'";
+                    w.WriteLine("    n{0} [label=\"{1}\"];", id, label);
+                }
+                w.WriteLine();
+
+                // edges
+                w.WriteLine("    n{0} -> root [color = black]", RootState.FileOffset);
+                foreach (var n in AllNodes)
+                {
+                    MrfStateTransition[] transitions = null;
+                    MrfNode initial = null;
+                    if (n is MrfNodeStateBase sb)
+                    {
+                        initial = sb.InitialNode;
+                        if (n is MrfNodeStateMachine sm)
+                        {
+                            transitions = sm.Transitions;
+                        }
+                        if (n is MrfNodeState sn)
+                        {
+                            transitions = sn.Transitions;
+                        }
                     }
+
+
                     if (n is MrfNodeInlinedStateMachine im)
                     {
-                        imlist.Add(im);
-                        if (im.ChildNodes != null) for (int i = 0; i < im.ChildNodes.Length; i++) if (im.ChildNodes[i].NodeIndex != i)
-                                { }//sanity check - don't get here
+                        w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"fallback\"]", n.FileOffset, im.FallbackNode.FileOffset);
                     }
-                    if (n is MrfNodeState sn)
-                    {
-                        snlist.Add(sn);
-                        if (sn.ChildNodes != null) for (int i = 0; i < sn.ChildNodes.Length; i++) if (sn.ChildNodes[i].NodeIndex != i)
-                                { }//sanity check - don't get here
-                    }
-                }
 
-                if (rlist.Count > 0)
-                {
-                    RootNode = rlist[0];
-                }
-                if (rlist.Count != 1)
-                { }//sanity check - don't get here
-                if (AllNodes.Length > 1000)
-                { }
-                return 0;
-            }
-
-            if (node is MrfNodeStateBase snode)
-            {
-                var c = 0;
-                var clist = new List<MrfNode>();
-                int ccount = snode.StateChildCount;
-                if (ccount == 0)
-                {
-                    return 0;
-                }
-                for (int i = 0; i <= ccount; i++)
-                {
-                    if ((i == ccount) && (node is MrfNodeState))
-                    { break; }
-                    var cind = index + c + i + 1;
-                    if (cind >= AllNodes.Length)
+                    if (n is MrfNodeWithChildBase f)
                     {
-                        if (i != ccount)
-                        { }//don't get here (tried to continue past the end of the array!)
-                        break; 
+                        w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"child\"]", n.FileOffset, f.Child.FileOffset);
                     }
-                    var cnode = AllNodes[cind];
-                    if (cnode is MrfNodeTail)
+
+                    if (n is MrfNodePairBase p)
                     {
-                        i--;
-                        c++;
-                        if (clist.Count > 0)
+                        w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"#0\"]", n.FileOffset, p.Child0.FileOffset);
+                        w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"#1\"]", n.FileOffset, p.Child1.FileOffset);
+                    }
+
+                    if (n is MrfNodeNBase nn && nn.Children != null)
+                    {
+                        for (int i = 0; i < nn.Children.Length; i++)
                         {
-                            var prevnode = clist[clist.Count - 1];
-                            if (prevnode is MrfNodeStateBase sprevnode)
-                            {
-                                if (sprevnode.TailNode != null)
-                                { }//don't get here (tail node was already assigned?!?)
-                                sprevnode.TailNode = cnode;
-                                if (clist.Count == ccount)
-                                { break; }//list is full, don't continue
-                            }
-                            else
-                            { }//don't get here (previous node isn't a state??)
+                            w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"#{2}\"]", n.FileOffset, nn.Children[i].FileOffset, i);
                         }
-                        else
-                        { }//don't get here (can't have tail without a previous node!)
-                        continue;
                     }
-                    else if (clist.Count == ccount)
-                    { break; }//this node isn't a tail, but the list is already full, so it must belong to another node
-                    if (cnode.NodeIndex != i)
-                    { break; }//don't get here (node index mismatch!)
-                    clist.Add(cnode);
-                    c += BuildNodeHierarchy(cnode, cind);//recurse...
+
+                    if (transitions != null)
+                    {
+                        foreach (var transition in transitions)
+                        {
+                            var conditions = transition.Conditions == null ? "[]" : "[" + string.Join(" & ", transition.Conditions.Select(c => c.ToExpressionString(this))) + "]";
+                            var target = transition.TargetState;
+                            w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"T {2}\"]", n.FileOffset, target.FileOffset, conditions);
+                        }
+                    }
+
+                    if (initial != null)
+                    {
+                        w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"init\"]", n.FileOffset, initial.FileOffset);
+                    }
                 }
-                if (clist.Count != ccount)
-                { }//don't get here (sanity check)
-                snode.ChildNodes = clist.ToArray();
-                return c + clist.Count;
+
+                // footer
+                w.WriteLine("}");
+
+                return w.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Dump a DOT graph of the state machines where nodes are placed inside their corresponding state.
+        /// </summary>
+        public string DumpStateGraph()
+        {
+            using (var w = new StringWriter())
+            {
+                w.WriteLine($@"digraph ""{Name}"" {{");
+                w.WriteLine($@"    label=""{Name}""");
+                w.WriteLine($@"    labelloc=""t""");
+                w.WriteLine($@"    concentrate=true");
+                w.WriteLine($@"    compound=true");
+                w.WriteLine($@"    rankdir=""LR""");
+                w.WriteLine($@"    graph[fontname = ""Consolas""];");
+                w.WriteLine($@"    edge[fontname = ""Consolas""];");
+                w.WriteLine($@"    node[fontname = ""Consolas""];");
+                w.WriteLine();
+
+                DumpNode(RootState, w, null);
+
+                w.WriteLine("    root [label=\"root\",shape=\"diamond\"];");
+                w.WriteLine("    root -> S{0} [color = black][lhead=\"clusterS{0}\"]", RootState.FileOffset);
+
+                // footer
+                w.WriteLine("}");
+
+                return w.ToString();
+            }
+        }
+
+        private void DumpStateMachineSubGraph(MrfNodeStateMachine sm, TextWriter w)
+        {
+            // header
+            w.WriteLine($@"subgraph ""clusterS{sm.FileOffset}"" {{");
+            w.WriteLine($@"    label=""State Machine '{sm.Name}'""");
+            w.WriteLine($@"    labelloc=""t""");
+            w.WriteLine($@"    concentrate=true");
+            w.WriteLine($@"    rankdir=""RL""");
+            w.WriteLine($@"    S{sm.FileOffset}[shape=""none""][style=""invis""][label=""""]"); // hidden node to be able to connect subgraphs
+            w.WriteLine();
+
+            if (sm.States != null)
+            {
+                foreach (var state in sm.States)
+                {
+                    var stateNode = state.State;
+                    if (stateNode is MrfNodeState ns) DumpStateSubGraph(ns, w);
+                    if (stateNode is MrfNodeStateMachine nsm) DumpStateMachineSubGraph(nsm, w);
+                    if (stateNode is MrfNodeInlinedStateMachine ism) DumpInlinedStateMachineSubGraph(ism, w);
+                }
+
+                foreach (var state in sm.States)
+                {
+                    var stateNode = state.State;
+                    MrfStateTransition[] transitions = null;
+                    if (stateNode is MrfNodeState ns) transitions = ns.Transitions;
+                    if (stateNode is MrfNodeStateMachine nsm) transitions = nsm.Transitions;
+
+                    DumpStateTransitionsGraph(stateNode, transitions, w);
+                }
             }
 
-            return 0;
+            w.WriteLine("    startS{0} [label=\"start\",shape=\"diamond\"];", sm.FileOffset);
+            w.WriteLine("    startS{0} -> S{1} [color = black][lhead=\"clusterS{1}\"]", sm.FileOffset, sm.InitialNode.FileOffset);
+
+            // footer
+            w.WriteLine("}");
         }
-    
+
+        private void DumpInlinedStateMachineSubGraph(MrfNodeInlinedStateMachine sm, TextWriter w)
+        {
+            // header
+            w.WriteLine($@"subgraph ""clusterS{sm.FileOffset}"" {{");
+            w.WriteLine($@"    label=""Inlined State Machine '{sm.Name}'""");
+            w.WriteLine($@"    labelloc=""t""");
+            w.WriteLine($@"    concentrate=true");
+            w.WriteLine($@"    rankdir=""RL""");
+            w.WriteLine($@"    S{sm.FileOffset}[shape=""none""][style=""invis""][label=""""]"); // hidden node to be able to connect subgraphs
+            w.WriteLine();
+
+            if (sm.States != null)
+            {
+                foreach (var state in sm.States)
+                {
+                    var stateNode = state.State;
+                    if (stateNode is MrfNodeState ns) DumpStateSubGraph(ns, w);
+                    if (stateNode is MrfNodeStateMachine nsm) DumpStateMachineSubGraph(nsm, w);
+                    if (stateNode is MrfNodeInlinedStateMachine ism) DumpInlinedStateMachineSubGraph(ism, w);
+                }
+
+                foreach (var state in sm.States)
+                {
+                    var stateNode = state.State;
+                    MrfStateTransition[] transitions = null;
+                    if (stateNode is MrfNodeState ns) transitions = ns.Transitions;
+                    if (stateNode is MrfNodeStateMachine nsm) transitions = nsm.Transitions;
+
+                    DumpStateTransitionsGraph(stateNode, transitions, w);
+                }
+            }
+
+            w.WriteLine("    startS{0} [label=\"start\",shape=\"diamond\"];", sm.FileOffset);
+            w.WriteLine("    startS{0} -> S{1} [color = black][lhead=\"clusterS{1}\"]", sm.FileOffset, sm.InitialNode.FileOffset);
+
+            if (sm.FallbackNode != null)
+            {
+                var fn = sm.FallbackNode;
+                DumpNode(fn, w, null);
+
+                w.WriteLine("    fallbackS{0} [label=\"fallback\",shape=\"diamond\"];", sm.FileOffset);
+                if (fn is MrfNodeStateBase) w.WriteLine("    fallbackS{0} -> S{1} [color = black][lhead=\"clusterS{1}\"]", sm.FileOffset, fn.FileOffset);
+                else w.WriteLine("    fallbackS{0} -> n{1} [color = black]", sm.FileOffset, fn.FileOffset);
+            }
+
+            // footer
+            w.WriteLine("}");
+        }
+
+        private void DumpStateTransitionsGraph(MrfNodeStateBase from, MrfStateTransition[] transitions, TextWriter w)
+        {
+            if (transitions != null)
+            {
+                int i = 0;
+                foreach (var transition in transitions)
+                {
+                    var conditions = transition.Conditions == null ? "[]" : "[" + string.Join(" & ", transition.Conditions.Select(c => c.ToExpressionString(this))) + "]";
+                    var target = transition.TargetState;
+                    w.WriteLine("    S{0} -> S{1} [color = black, xlabel=\"T#{2} {3}\"][ltail=\"clusterS{0}\"][lhead=\"clusterS{1}\"]", from.FileOffset, target.FileOffset, i, conditions);
+                    i++;
+                }
+            }
+        }
+
+        private void DumpStateSubGraph(MrfNodeStateBase state, TextWriter w)
+        {
+            if (state.InitialNode == null)
+            {
+                return;
+            }
+
+            // header
+            w.WriteLine($@"subgraph clusterS{state.FileOffset} {{");
+            w.WriteLine($@"    label=""State '{state.Name}'""");
+            w.WriteLine($@"    labelloc=""t""");
+            w.WriteLine($@"    concentrate=true");
+            w.WriteLine($@"    rankdir=""LR""");
+            w.WriteLine($@"    S{state.FileOffset}[shape=""none""][style=""invis""][label=""""]"); // hidden node to be able to connect subgraphs
+            w.WriteLine();
+
+            var initial = state.InitialNode;
+            DumpNode(initial, w, null);
+
+            w.WriteLine("    outputS{0} [label=\"output\",shape=\"point\"];", state.FileOffset);
+            if (initial is MrfNodeStateBase) w.WriteLine("    S{0} -> outputS{1} [color = black][ltail=\"clusterS{0}\"]", initial.FileOffset, state.FileOffset);
+            else w.WriteLine("    n{0} -> outputS{1} [color = black]", initial.FileOffset, state.FileOffset);
+
+            // footer
+            w.WriteLine("}");
+        }
+
+        private void DumpNodeGraph(MrfNode n, TextWriter w, HashSet<MrfNode> visitedNodes)
+        {
+            if (!visitedNodes.Add(n))
+            {
+                return;
+            }
+
+            var label = $"{n.NodeType} '{n.Name}'";
+            if (n is MrfNodeSubNetwork sub)
+            {
+                label += $"\\n'{sub.SubNetworkParameterName}'";
+            }
+
+            w.WriteLine("    n{0} [label=\"{1}\"];", n.FileOffset, label);
+
+            void writeConnection(MrfNode target, string connectionLabel)
+            {
+                if (target is MrfNodeStateBase) w.WriteLine("    S{1} -> n{0} [color = black, xlabel=\"{2}\"][ltail=\"clusterS{1}\"]", n.FileOffset, target.FileOffset, connectionLabel);
+                else w.WriteLine("    n{1} -> n{0} [color = black, xlabel=\"{2}\"]", n.FileOffset, target.FileOffset, connectionLabel);
+            }
+
+            if (n is MrfNodeInlinedStateMachine im)
+            {
+                DumpNode(im.FallbackNode, w, visitedNodes);
+                writeConnection(im.FallbackNode, "fallback");
+            }
+
+            if (n is MrfNodeWithChildBase f)
+            {
+                DumpNode(f.Child, w, visitedNodes);
+                writeConnection(f.Child, "");
+            }
+
+            if (n is MrfNodePairBase p)
+            {
+                DumpNode(p.Child0, w, visitedNodes);
+                DumpNode(p.Child1, w, visitedNodes);
+                writeConnection(p.Child0, "#0");
+                writeConnection(p.Child1, "#1");
+            }
+
+            if (n is MrfNodeNBase nn && nn.Children != null)
+            {
+                for (int i = 0; i < nn.Children.Length; i++)
+                {
+                    DumpNode(nn.Children[i], w, visitedNodes);
+                    writeConnection(nn.Children[i], $"#{i}");
+                }
+            }
+        }
+
+        private void DumpNode(MrfNode n, TextWriter w, HashSet<MrfNode> visitedNodes)
+        {
+            if (n is MrfNodeState ns) DumpStateSubGraph(ns, w);
+            else if (n is MrfNodeStateMachine nsm) DumpStateMachineSubGraph(nsm, w);
+            else if (n is MrfNodeInlinedStateMachine ism) DumpInlinedStateMachineSubGraph(ism, w);
+            else DumpNodeGraph(n, w, visitedNodes ?? new HashSet<MrfNode>());
+        }
+
+        /// <summary>
+        /// Writer used to calculate where the nodes will be placed, so the relative offsets can be calculated before using the real writer.
+        /// </summary>
+        private class NoOpDataWriter : DataWriter
+        {
+            private long length;
+            private long position;
+
+            public override long Length => length;
+            public override long Position { get => position; set => position = value; }
+
+            public NoOpDataWriter() : base(null, Endianess.LittleEndian)
+            {
+            }
+
+            protected override void WriteToStream(byte[] value, bool ignoreEndianess = false)
+            {
+                position += value.Length;
+                length = Math.Max(length, position);
+            }
+        }
     }
 
 
@@ -404,202 +729,655 @@ namespace CodeWalker.GameFiles
     public enum MrfNodeType : ushort
     {
         None = 0,
-        StateMachineClass = 1,
+        StateMachine = 1,
         Tail = 2,
         InlinedStateMachine = 3,
-        Unk4 = 4,
+        Animation = 4,
         Blend = 5,
         AddSubtract = 6,
         Filter = 7,
-        Unk8 = 8,
+        Mirror = 8,
         Frame = 9,
-        Unk10 = 10,
+        Ik = 10,
         BlendN = 13,
         Clip = 15,
-        Unk17 = 17,
-        Unk18 = 18,
+        Pm = 17,
+        Extrapolate = 18,
         Expression = 19,
-        Unk20 = 20,
+        Capture = 20,
         Proxy = 21,
         AddN = 22,
         Identity = 23,
-        Unk24 = 24,
-        Unk25 = 25,
+        Merge = 24,
+        Pose = 25,
         MergeN = 26,
         State = 27,
         Invalid = 28,
-        Unk29 = 29,
-        SubNetworkClass = 30,
-        Unk31 = 31,
+        JointLimit = 29,
+        SubNetwork = 30,
+        Reference = 31,
         Max = 32
     }
 
+    public enum MrfNodeParameterId : ushort // node parameter IDs are specific to the node type
+    {
+        // StateMachine
+        // none
+
+        // Tail
+        // none
+
+        // InlinedStateMachine
+        // none
+
+        // Animation
+        Animation_Animation = 0, // rage::crAnimation (only setter)
+        Animation_Unk1 = 1, // float
+        Animation_Unk2 = 2, // float
+        Animation_Unk3 = 3, // float
+        Animation_Unk4 = 4, // bool
+        Animation_Unk5 = 5, // bool
+
+        // Blend
+        Blend_Filter = 0, // rage::crFrameFilter
+        Blend_Weight = 1, // float
+
+        // AddSubtract
+        AddSubtract_Filter = 0, // rage::crFrameFilter
+        AddSubtract_Weight = 1, // float
+
+        // Filter
+        Filter_Filter = 0, // rage::crFrameFilter
+
+        // Mirror
+        Mirror_Filter = 0, // rage::crFrameFilter
+
+        // Frame
+        Frame_Frame = 0, // rage::crFrame
+
+        // Ik
+        // none
+
+        // BlendN
+        BlendN_Filter = 1,      // rage::crFrameFilter
+        BlendN_ChildWeight = 2, // float (extra arg is the child index)
+        BlendN_ChildFilter = 3, // rage::crFrameFilter (extra arg is the child index)
+
+        // Clip
+        Clip_Clip = 0,   // rage::crClip
+        Clip_Phase = 1,  // float
+        Clip_Rate = 2,   // float
+        Clip_Delta = 3,  // float
+        Clip_Looped = 4, // bool
+
+        // Pm
+        Pm_Motion = 0, // rage::crpmMotion
+        Pm_Unk1 = 1, // float
+        Pm_Unk2 = 2, // float
+        Pm_Unk3 = 3, // float
+        Pm_Unk4 = 4, // float
+
+        // Extrapolate
+        Extrapolate_Damping = 0, // float
+
+        // Expression
+        Expression_Expression = 0, // rage::crExpressions
+        Expression_Weight = 1,     // float
+        Expression_Variable = 2,   // float (extra arg is the variable name)
+
+        // Capture
+        Capture_Frame = 0, // rage::crFrame
+
+        // Proxy
+        Proxy_Node = 0, // rage::crmtNode (the type resolver returns rage::crmtObserver but the getter/setter expect a rage::crmtNode, R* bug?)
+
+        // AddN
+        AddN_Filter = 1,      // rage::crFrameFilter
+        AddN_ChildWeight = 2, // float (extra arg is the child index)
+        AddN_ChildFilter = 3, // rage::crFrameFilter (extra arg is the child index)
+
+        // Identity
+        // none
+
+        // Merge
+        Merge_Filter = 0, // rage::crFrameFilter
+
+        // Pose
+        Pose_IsNormalized = 0, // bool (getter hardcoded to true, setter does nothing)
+
+        // MergeN
+        MergeN_Filter = 1,      // rage::crFrameFilter
+        MergeN_ChildWeight = 2, // float (extra arg is the child index)
+        MergeN_ChildFilter = 3, // rage::crFrameFilter (extra arg is the child index)
+
+        // State
+        // none
+
+        // Invalid
+        // none
+
+        // JointLimit
+        JointLimit_Filter = 0, // rage::crFrameFilter (only setter exists)
+
+        // SubNetwork
+        // none
+
+        // Reference
+        // none
+    }
+
+    public enum MrfNodeEventId : ushort // node event IDs are specific to the node type
+    {
+        // StateMachine
+        // none
+
+        // Tail
+        // none
+
+        // InlinedStateMachine
+        // none
+
+        // Animation
+        Animation_Unk0 = 0,
+        Animation_Unk1 = 1,
+
+        // Blend
+        // none
+
+        // AddSubtract
+        // none
+
+        // Filter
+        // none
+
+        // Mirror
+        // none
+
+        // Frame
+        // none
+
+        // Ik
+        // none
+
+        // BlendN
+        // none
+
+        // Clip
+        Clip_IterationFinished = 0, // triggered when a looped clip iteration finishes playing
+        Clip_Finished = 1,          // triggered when a non-looped clip finishes playing
+        Clip_Unk2 = 2,
+        Clip_Unk3 = 3,
+        Clip_Unk4 = 4,
+
+        // Pm
+        Pm_Unk0 = 0,
+        Pm_Unk1 = 1,
+
+        // Extrapolate
+        // none
+
+        // Expression
+        // none
+
+        // Capture
+        // none
+
+        // Proxy
+        // none
+
+        // AddN
+        // none
+
+        // Identity
+        // none
+
+        // Merge
+
+        // Pose
+        // none
+
+        // MergeN
+        // none
+
+        // State
+        // none
+
+        // Invalid
+        // none
+
+        // JointLimit
+        // none
+
+        // SubNetwork
+        // none
+
+        // Reference
+        // none
+    }
+
     #region mrf node abstractions
-    
+
     [TC(typeof(EXP))] public abstract class MrfNode
     {
         public MrfNodeType NodeType { get; set; }
-        public ushort NodeIndex { get; set; } //index in the parent node
+        public ushort NodeIndex { get; set; } //index in the parent state node
+        public MetaHash Name { get; set; }
 
         public int FileIndex { get; set; } //index in the file
         public int FileOffset { get; set; } //offset in the file
         public int FileDataSize { get; set; } //number of bytes read from the file (this node only)
 
+        public MrfNode(MrfNodeType type)
+        {
+            NodeType = type;
+        }
+
         public virtual void Read(DataReader r)
         {
             NodeType = (MrfNodeType)r.ReadUInt16();
             NodeIndex = r.ReadUInt16();
+            Name = r.ReadUInt32();
         }
 
         public virtual void Write(DataWriter w)
         {
             w.Write((ushort)NodeType);
             w.Write(NodeIndex);
+            w.Write(Name);
         }
 
         public override string ToString()
         {
             return /* FileIndex.ToString() + ":" + FileOffset.ToString() + "+" + FileDataSize.ToString() + ": " +  */
-                NodeType.ToString() + " - " + NodeIndex.ToString();
+                NodeType.ToString() + " - " + NodeIndex.ToString() + " - " + Name.ToString();
+        }
+
+        public virtual void ResolveRelativeOffsets(MrfFile mrf)
+        {
+        }
+
+        public virtual void UpdateRelativeOffsets()
+        {
         }
     }
 
-    [TC(typeof(EXP))] public abstract class MrfNodeNameFlagsBase : MrfNode
+    [TC(typeof(EXP))] public abstract class MrfNodeWithFlagsBase : MrfNode
     {
-        public MetaHash NameHash { get; set; }
         public uint Flags { get; set; }
+
+        public MrfNodeWithFlagsBase(MrfNodeType type) : base(type) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
-            NameHash = new MetaHash(r.ReadUInt32());
             Flags = r.ReadUInt32();
         }
 
         public override void Write(DataWriter w)
         {
             base.Write(w);
-            w.Write(NameHash);
             w.Write(Flags);
+        }
+
+        public uint GetFlagsSubset(int bitOffset, uint mask)
+        {
+            return (Flags >> bitOffset) & mask;
+        }
+
+        public void SetFlagsSubset(int bitOffset, uint mask, uint value)
+        {
+            Flags = (Flags & ~(mask << bitOffset)) | ((value & mask) << bitOffset);
         }
 
         public override string ToString()
         {
-            return base.ToString() + " - " + NameHash.ToString() + " - " + Flags.ToString();
+            return base.ToString() + " - " + Flags.ToString("X8");
         }
     }
 
     [TC(typeof(EXP))] public abstract class MrfNodeStateBase : MrfNode
     {
-        public MetaHash NameHash { get; set; } // Used as an identifier for transitions
-        public uint StateByteCount { get; set; }
+        public int InitialNodeOffset { get; set; } // offset from the start of this field
+        public int InitialNodeFileOffset { get; set; }
         public uint StateUnk3 { get; set; }
-        public byte StateUnk4 { get; set; }
-        public byte StateUnk5 { get; set; }
-        public byte StateChildCount { get; set; }
-        public byte StateSectionCount { get; set; }
-        public uint StateUnk8 { get; set; }
-        public uint StateUnk9 { get; set; }
-        public uint StateFlags { get; set; }
+        public bool HasEntryParameter { get; set; }
+        public bool HasExitParameter { get; set; }
+        public byte StateChildCount { get; set; } // for Node(Inlined)StateMachine the number of states, for NodeState the number of children excluding NodeTails
+        public byte TransitionCount { get; set; }
+        public MetaHash EntryParameterName { get; set; } // bool parameter set to true when the network enters this node
+        public MetaHash ExitParameterName { get; set; } // bool parameter set to true when the network leaves this node
+        public int TransitionsOffset { get; set; } // offset from the start of this field
+        public int TransitionsFileOffset { get; set; }
 
-        public MrfNode[] ChildNodes { get; set; }
-        public MrfNode TailNode { get; set; }
+        public MrfNode InitialNode { get; set; } // for Node(Inlined)StateMachine this is a NodeStateBase, for NodeState it can be any node
 
+        public MrfNodeStateBase(MrfNodeType type) : base(type) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
-            NameHash = new MetaHash(r.ReadUInt32());
-            StateByteCount = r.ReadUInt32();
+            InitialNodeOffset = r.ReadInt32();
+            InitialNodeFileOffset = (int)(r.Position + InitialNodeOffset - 4);
             StateUnk3 = r.ReadUInt32();
-            StateUnk4 = r.ReadByte();
-            StateUnk5 = r.ReadByte();
+            HasEntryParameter = r.ReadByte() != 0;
+            HasExitParameter = r.ReadByte() != 0;
             StateChildCount = r.ReadByte();
-            StateSectionCount = r.ReadByte();
-            StateUnk8 = r.ReadUInt32();
-            StateUnk9 = r.ReadUInt32();
-            StateFlags = r.ReadUInt32();
+            TransitionCount = r.ReadByte();
+            EntryParameterName = r.ReadUInt32();
+            ExitParameterName = r.ReadUInt32();
+            TransitionsOffset = r.ReadInt32();
+            TransitionsFileOffset = (int)(r.Position + TransitionsOffset - 4);
         }
 
         public override void Write(DataWriter w)
         {
             base.Write(w);
-            w.Write(NameHash);
-            w.Write(StateByteCount);
+            w.Write(InitialNodeOffset);
             w.Write(StateUnk3);
-            w.Write(StateUnk4);
-            w.Write(StateUnk5);
+            w.Write((byte)(HasEntryParameter ? 1 : 0));
+            w.Write((byte)(HasExitParameter ? 1 : 0));
             w.Write(StateChildCount);
-            w.Write(StateSectionCount);
-            w.Write(StateUnk8);
-            w.Write(StateUnk9);
-            w.Write(StateFlags);
+            w.Write(TransitionCount);
+            w.Write(EntryParameterName);
+            w.Write(ExitParameterName);
+            w.Write(TransitionsOffset);
+        }
+
+        public override void ResolveRelativeOffsets(MrfFile mrf)
+        {
+            base.ResolveRelativeOffsets(mrf);
+
+            var initNode = mrf.FindNodeAtFileOffset(InitialNodeFileOffset);
+            if (initNode == null)
+            { } // no hits
+
+            if ((this is MrfNodeStateMachine || this is MrfNodeInlinedStateMachine) && !(initNode is MrfNodeStateBase))
+            { } // no hits, state machines initial node is always a MrfNodeStateBase
+
+            InitialNode = initNode;
+        }
+
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            InitialNodeFileOffset = InitialNode.FileOffset;
+            InitialNodeOffset = InitialNodeFileOffset - (FileOffset + 0x8);
+        }
+
+        protected void ResolveNodeOffsetsInTransitions(MrfStateTransition[] transitions, MrfFile mrf)
+        {
+            if (transitions == null)
+            {
+                return;
+            }
+
+            foreach (var t in transitions)
+            {
+                var node = mrf.FindNodeAtFileOffset(t.TargetStateFileOffset);
+                if (node == null)
+                { } // no hits
+
+                if (!(node is MrfNodeStateBase))
+                { } // no hits
+
+                t.TargetState = (MrfNodeStateBase)node;
+            }
+        }
+
+        protected void ResolveNodeOffsetsInStates(MrfStateRef[] states, MrfFile mrf)
+        {
+            if (states == null)
+            {
+                return;
+            }
+
+            foreach (var s in states)
+            {
+                var node = mrf.FindNodeAtFileOffset(s.StateFileOffset);
+                if (node == null)
+                { } // no hits
+
+                if (!(node is MrfNodeStateBase))
+                { } // no hits
+
+                s.State = (MrfNodeStateBase)node;
+            }
+        }
+
+        protected int UpdateNodeOffsetsInTransitions(MrfStateTransition[] transitions, int transitionsArrayOffset, bool offsetSetToZeroIfNoTransitions)
+        {
+            int offset = transitionsArrayOffset;
+            TransitionsFileOffset = offset;
+            TransitionsOffset = TransitionsFileOffset - (FileOffset + 0x1C);
+            if (transitions != null)
+            {
+                foreach (var transition in transitions)
+                {
+                    transition.TargetStateFileOffset = transition.TargetState.FileOffset;
+                    transition.TargetStateOffset = transition.TargetStateFileOffset - (offset + 0x14);
+                    transition.CalculateDataSize();
+                    offset += (int)transition.DataSize;
+                }
+            }
+            else if (offsetSetToZeroIfNoTransitions)
+            {
+                // Special case for some MrfNodeStateMachines with no transitions and MrfNodeInlinedStateMachines.
+                // Unlike MrfNodeState, when these don't have transtions the TransititionsOffset is 0.
+                // So we set it to 0 too to be able to compare Save() result byte by byte
+                TransitionsOffset = 0;
+                TransitionsFileOffset = FileOffset + 0x1C; // and keep FileOffset consistent with what Read() does
+            }
+            return offset;
+        }
+
+        protected int UpdateNodeOffsetsInStates(MrfStateRef[] states, int statesArrayOffset)
+        {
+            int offset = statesArrayOffset;
+            if (states != null)
+            {
+                foreach (var state in states)
+                {
+                    state.StateFileOffset = state.State.FileOffset;
+                    state.StateOffset = state.StateFileOffset - (offset + 4);
+                    offset += 8; // sizeof(MrfStructStateMachineStateRef)
+                }
+            }
+            return offset;
         }
 
         public override string ToString()
         {
-            return base.ToString() + " - " + NameHash.ToString()
-                + " - BC:" + StateByteCount.ToString()
+            return base.ToString() + " - " + Name.ToString()
+                + " - Init:" + InitialNodeOffset.ToString()
                 + " - CC:" + StateChildCount.ToString()
-                + " - SC:" + StateSectionCount.ToString()
+                + " - TC:" + TransitionCount.ToString()
                 + " - " + StateUnk3.ToString()
-                + " - " + StateUnk4.ToString()
-                + " - " + StateUnk5.ToString()
-                + " - " + StateUnk8.ToString()
-                + " - " + StateUnk9.ToString()
-                + " - F:" + StateFlags.ToString();
+                + " - OnEntry(" + HasEntryParameter.ToString() + "):" + EntryParameterName.ToString()
+                + " - OnExit(" + HasExitParameter.ToString() + "):" + ExitParameterName.ToString()
+                + " - TO:" + TransitionsOffset.ToString();
         }
     }
 
-
-
-    [TC(typeof(EXP))] public abstract class MrfNodeValueBase : MrfNode
+    [TC(typeof(EXP))] public abstract class MrfNodePairBase : MrfNodeWithFlagsBase
     {
-        public MetaHash Value { get; set; }//maybe not an actual hash
+        public int Child0Offset { get; set; }
+        public int Child0FileOffset { get; set; }
+        public int Child1Offset { get; set; }
+        public int Child1FileOffset { get; set; }
+
+        public MrfNode Child0 { get; set; }
+        public MrfNode Child1 { get; set; }
+
+        public MrfNodePairBase(MrfNodeType type) : base(type) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
-            Value = r.ReadUInt32();
+
+            Child0Offset = r.ReadInt32();
+            Child0FileOffset = (int)(r.Position + Child0Offset - 4);
+            Child1Offset = r.ReadInt32();
+            Child1FileOffset = (int)(r.Position + Child1Offset - 4);
         }
 
         public override void Write(DataWriter w)
         {
             base.Write(w);
-            w.Write(Value);
+
+            w.Write(Child0Offset);
+            w.Write(Child1Offset);
+        }
+
+        public override void ResolveRelativeOffsets(MrfFile mrf)
+        {
+            base.ResolveRelativeOffsets(mrf);
+
+            var child0 = mrf.FindNodeAtFileOffset(Child0FileOffset);
+            if (child0 == null)
+            { } // no hits
+
+            var child1 = mrf.FindNodeAtFileOffset(Child1FileOffset);
+            if (child1 == null)
+            { } // no hits
+
+            Child0 = child0;
+            Child1 = child1;
+        }
+
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            Child0FileOffset = Child0.FileOffset;
+            Child0Offset = Child0FileOffset - (FileOffset + 0xC + 0);
+            Child1FileOffset = Child1.FileOffset;
+            Child1Offset = Child1FileOffset - (FileOffset + 0xC + 4);
         }
     }
 
-    [TC(typeof(EXP))] public abstract class MrfNodeBlendAddSubtractBase : MrfNodeNameFlagsBase
+    public enum MrfSynchronizerType
     {
-        public int Unk1 { get; set; }
-        public int Unk2 { get; set; }
-        public uint Unk3 { get; set; }
-        public MetaHash Unk4 { get; set; }
-        public MetaHash Unk5 { get; set; }
-        public MetaHash Unk6 { get; set; }
+        Phase = 0, // attaches a rage::mvSynchronizerPhase instance to the node
+        Tag = 1,   // attaches a rage::mvSynchronizerTag instance to the node, sets the SynchronizerTagFlags field too
+        None = 2,
+    }
+
+    [Flags] public enum MrfSynchronizerTagFlags : uint
+    {
+        LeftFootHeel = 0x20,  // adds rage::mvSynchronizerTag::sm_LeftFootHeel to a rage::mvSynchronizerTag instance attached to the node
+        RightFootHeel = 0x40, // same but with rage::mvSynchronizerTag::sm_RightFootHeel
+    }
+
+    public enum MrfValueType
+    {
+        None = 0,
+        Literal = 1,   // specific value (in case of expressions, clips or filters, a dictionary/name hash pair)
+        Parameter = 2, // lookup value in the network parameters
+    }
+
+    public enum MrfInfluenceOverride
+    {
+        None = 0, // influence affected by weight (at least in NodeBlend case)
+        Zero = 1, // influence = 0.0
+        One  = 2, // influence = 1.0
+    }
+
+    [TC(typeof(EXP))] public abstract class MrfNodePairWeightedBase : MrfNodePairBase
+    {
+        // rage::mvNodePairDef
+
+        public MrfSynchronizerTagFlags SynchronizerTagFlags { get; set; }
+        public float Weight { get; set; }
+        public MetaHash WeightParameterName { get; set; }
+        public MetaHash FrameFilterDictionaryName { get; set; }
+        public MetaHash FrameFilterName { get; set; }
+        public MetaHash FrameFilterParameterName { get; set; }
+
+        // flags getters and setters
+        public MrfValueType WeightType
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+        public MrfValueType FrameFilterType
+        {
+            get => (MrfValueType)GetFlagsSubset(2, 3);
+            set => SetFlagsSubset(2, 3, (uint)value);
+        }
+        public bool UnkFlag6 // Transitional? RDR3's rage::mvNodePairDef::GetTransitionalFlagFrom(uint) reads these bits
+        {                    // always 0
+            get => GetFlagsSubset(6, 1) != 0;
+            set => SetFlagsSubset(6, 1, value ? 1 : 0u);
+        }
+        public uint UnkFlag7 // Immutable? RDR3's rage::mvNodePairDef::GetImmutableFlagFrom(unsigned int) reads these bits
+        {                    // 0 or 1
+            get => GetFlagsSubset(7, 3);
+            set => SetFlagsSubset(7, 3, value);
+        }
+        public MrfInfluenceOverride Child0InfluenceOverride
+        {
+            get => (MrfInfluenceOverride)GetFlagsSubset(12, 3);
+            set => SetFlagsSubset(12, 3, (uint)value);
+        }
+        public MrfInfluenceOverride Child1InfluenceOverride
+        {
+            get => (MrfInfluenceOverride)GetFlagsSubset(14, 3);
+            set => SetFlagsSubset(14, 3, (uint)value);
+        }
+        public MrfSynchronizerType SynchronizerType
+        {
+            get => (MrfSynchronizerType)GetFlagsSubset(19, 3);
+            set => SetFlagsSubset(19, 3, (uint)value);
+        }
+        public uint UnkFlag21 // OutputParameterRuleSet? RDR3's rage::mvNodePairDef::GetOutputParameterRuleSetFrom(uint) reads these bits
+        {                     // always 0
+            get => GetFlagsSubset(21, 3);
+            set => SetFlagsSubset(21, 3, value);
+        }
+        public uint UnkFlag23 // FirstFrameSyncOnly? RDR3's rage::mvNodePairDef::GetFirstFrameSyncOnlyFrom(uint) reads these bits
+        {                     // always 0
+            get => GetFlagsSubset(23, 3);
+            set => SetFlagsSubset(23, 3, value);
+        }
+        public bool UnkFlag25 // SortTargets? RDR3's rage::mvNodePairDef::GetSortTargetsFrom(uint) reads these bits
+        {                     // always 0
+            get => GetFlagsSubset(25, 1) != 0;
+            set => SetFlagsSubset(25, 1, value ? 1 : 0u);
+        }
+        public bool MergeBlend
+        {
+            get => GetFlagsSubset(31, 1) != 0;
+            set => SetFlagsSubset(31, 1, value ? 1 : 0u);
+        }
+
+        public MrfNodePairWeightedBase(MrfNodeType type) : base(type) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadInt32();
-            Unk2 = r.ReadInt32();
+            if (SynchronizerType == MrfSynchronizerType.Tag)
+                SynchronizerTagFlags = (MrfSynchronizerTagFlags)r.ReadUInt32();
 
-            if ((Flags & 0x180000) == 0x80000)
-                Unk3 = r.ReadUInt32();
-
-            if ((Flags & 3) != 0)
-                Unk4 = new MetaHash(r.ReadUInt32());
-
-            switch ((Flags >> 2) & 3)
+            switch (WeightType)
             {
-                case 1:
-                    Unk5 = new MetaHash(r.ReadUInt32());
-                    Unk6 = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Literal:
+                    Weight = r.ReadSingle();
                     break;
-                case 2:
-                    Unk6 = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Parameter:
+                    WeightParameterName = r.ReadUInt32();
+                    break;
+            }
+
+            switch (FrameFilterType)
+            {
+                case MrfValueType.Literal:
+                    FrameFilterDictionaryName = r.ReadUInt32();
+                    FrameFilterName = r.ReadUInt32();
+                    break;
+                case MrfValueType.Parameter:
+                    FrameFilterParameterName = r.ReadUInt32();
                     break;
             }
         }
@@ -608,48 +1386,103 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            w.Write(Unk1);
-            w.Write(Unk2);
+            if (SynchronizerType == MrfSynchronizerType.Tag)
+                w.Write((uint)SynchronizerTagFlags);
 
-            if ((Flags & 0x180000) == 0x80000)
-                w.Write(Unk3);
-
-            if ((Flags & 3) != 0)
-                w.Write(Unk4);
-
-            switch ((Flags >> 2) & 3)
+            switch (WeightType)
             {
-                case 1:
-                    w.Write(Unk5);
-                    w.Write(Unk6);
+                case MrfValueType.Literal:
+                    w.Write(Weight);
                     break;
-                case 2:
-                    w.Write(Unk6);
+                case MrfValueType.Parameter:
+                    w.Write(WeightParameterName);
+                    break;
+            }
+
+            switch (FrameFilterType)
+            {
+                case MrfValueType.Literal:
+                    w.Write(FrameFilterDictionaryName);
+                    w.Write(FrameFilterName);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(FrameFilterParameterName);
                     break;
             }
         }
     }
 
-    [TC(typeof(EXP))] public abstract class MrfNodeFilterUnkBase : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public abstract class MrfNodeWithChildBase : MrfNodeWithFlagsBase
     {
-        public uint Unk1 { get; set; }
-        public MetaHash Unk2 { get; set; }
-        public MetaHash Unk3 { get; set; }
+        public int ChildOffset { get; set; }
+        public int ChildFileOffset { get; set; }
+
+        public MrfNode Child { get; set; }
+
+        public MrfNodeWithChildBase(MrfNodeType type) : base(type) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
+            ChildOffset = r.ReadInt32();
+            ChildFileOffset = (int)(r.Position + ChildOffset - 4);
+        }
 
-            switch (Flags & 3)
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+
+            w.Write(ChildOffset);
+        }
+
+        public override void ResolveRelativeOffsets(MrfFile mrf)
+        {
+            base.ResolveRelativeOffsets(mrf);
+
+            var node = mrf.FindNodeAtFileOffset(ChildFileOffset);
+            if (node == null)
+            { } // no hits
+
+            Child = node;
+        }
+
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            ChildFileOffset = Child.FileOffset;
+            ChildOffset = ChildFileOffset - (FileOffset + 0xC);
+        }
+    }
+
+    [TC(typeof(EXP))] public abstract class MrfNodeWithChildAndFilterBase : MrfNodeWithChildBase
+    {
+        public MetaHash FrameFilterDictionaryName { get; set; }
+        public MetaHash FrameFilterName { get; set; }
+        public MetaHash FrameFilterParameterName { get; set; }
+
+        // flags getters and setters
+        public MrfValueType FrameFilterType
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+
+        public MrfNodeWithChildAndFilterBase(MrfNodeType type) : base(type) { }
+
+        public override void Read(DataReader r)
+        {
+            base.Read(r);
+
+            switch (FrameFilterType)
             {
-                case 1:
-                    Unk2 = new MetaHash(r.ReadUInt32()); // Filter Frame dict hash
-                    Unk3 = new MetaHash(r.ReadUInt32()); // Filter Frame name hash
+                case MrfValueType.Literal:
+                    FrameFilterDictionaryName = r.ReadUInt32();
+                    FrameFilterName = r.ReadUInt32();
                     break;
-                case 2:
-                    Unk3 = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Parameter:
+                    FrameFilterParameterName = r.ReadUInt32();
                     break;
             }
         }
@@ -658,194 +1491,336 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            w.Write(Unk1);
-
-            switch (Flags & 3)
+            switch (FrameFilterType)
             {
-                case 1:
+                case MrfValueType.Literal:
+                    w.Write(FrameFilterDictionaryName);
+                    w.Write(FrameFilterName);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(FrameFilterParameterName);
+                    break;
+            }
+        }
+    }
+
+    [TC(typeof(EXP))] public abstract class MrfNodeNBase : MrfNodeWithFlagsBase
+    {
+        // rage::mvNodeNDef
+
+        public MrfSynchronizerTagFlags SynchronizerTagFlags { get; set; }
+        public byte[] Unk2 { get; set; } // unused
+        public MetaHash Unk2ParameterName { get; set; } // unused
+        public MetaHash FrameFilterDictionaryName { get; set; }
+        public MetaHash FrameFilterName { get; set; }
+        public MetaHash FrameFilterParameterName { get; set; }
+        public int[] ChildrenOffsets { get; set; }
+        public int[] ChildrenFileOffsets { get; set; }
+        public MrfNodeNChildData[] ChildrenData { get; set; }
+        public uint[] ChildrenFlags { get; set; } // 8 bits per child
+
+        public MrfNode[] Children { get; set; }
+
+        // flags getters and setters
+        public MrfValueType Unk2Type
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+        public MrfValueType FrameFilterType
+        {
+            get => (MrfValueType)GetFlagsSubset(2, 3);
+            set => SetFlagsSubset(2, 3, (uint)value);
+        }
+        public bool ZeroDestination // name is correct based on RDR3 symbols but not sure about its use
+        {                           // only difference I found is when true the weight of child #0 returns 1.0 instead of the weight in ChildrenData
+            get => GetFlagsSubset(4, 1) != 0;
+            set => SetFlagsSubset(4, 1, value ? 1 : 0u);
+        }
+        public MrfSynchronizerType SynchronizerType
+        {
+            get => (MrfSynchronizerType)GetFlagsSubset(19, 3);
+            set => SetFlagsSubset(19, 3, (uint)value);
+        }
+        public uint ChildrenCount
+        {
+            get => GetFlagsSubset(26, 0x3F);
+            set => SetFlagsSubset(26, 0x3F, value);
+        }
+        
+        // ChildrenFlags getters and setters
+        public byte GetChildFlags(int index)
+        {
+            int blockIndex = 8 * index / 32;
+            int bitOffset = 8 * index % 32;
+            uint block = ChildrenFlags[blockIndex];
+            return (byte)((block >> bitOffset) & 0xFF);
+        }
+        public void SetChildFlags(int index, byte flags)
+        {
+            int blockIndex = 8 * index / 32;
+            int bitOffset = 8 * index % 32;
+            uint block = ChildrenFlags[blockIndex];
+            block = (block & ~(0xFFu << bitOffset)) | ((uint)flags << bitOffset);
+            ChildrenFlags[blockIndex] = block;
+        }
+        public MrfValueType GetChildWeightType(int index)
+        {
+            return (MrfValueType)(GetChildFlags(index) & 3);
+        }
+        public void SetChildWeightType(int index, MrfValueType type)
+        {
+            var flags = GetChildFlags(index);
+            flags = (byte)(flags & ~3u | ((uint)type & 3u));
+            SetChildFlags(index, flags);
+        }
+        public MrfValueType GetChildFrameFilterType(int index)
+        {
+            return (MrfValueType)((GetChildFlags(index) >> 4) & 3);
+        }
+        public void SetChildFrameFilterType(int index, MrfValueType type)
+        {
+            var flags = GetChildFlags(index);
+            flags = (byte)(flags & ~(3u << 4) | (((uint)type & 3u) << 4));
+            SetChildFlags(index, flags);
+        }
+
+        public MrfNodeNBase(MrfNodeType type) : base(type) { }
+
+        public override void Read(DataReader r)
+        {
+            base.Read(r);
+
+            if (SynchronizerType == MrfSynchronizerType.Tag)
+                SynchronizerTagFlags = (MrfSynchronizerTagFlags)r.ReadUInt32();
+
+            switch (Unk2Type)
+            {
+                case MrfValueType.Literal:
+                    Unk2 = r.ReadBytes(76); // Unused?
+                    break;
+                case MrfValueType.Parameter:
+                    Unk2ParameterName = r.ReadUInt32();
+                    break;
+            }
+
+            switch (FrameFilterType)
+            {
+                case MrfValueType.Literal:
+                    FrameFilterDictionaryName = r.ReadUInt32();
+                    FrameFilterName = r.ReadUInt32();
+                    break;
+                case MrfValueType.Parameter:
+                    FrameFilterParameterName = r.ReadUInt32();
+                    break;
+            }
+
+            var childrenCount = ChildrenCount;
+            if (childrenCount > 0)
+            {
+                ChildrenOffsets = new int[childrenCount];
+                ChildrenFileOffsets = new int[childrenCount];
+
+                for (int i = 0; i < childrenCount; i++)
+                {
+                    ChildrenOffsets[i] = r.ReadInt32();
+                    ChildrenFileOffsets[i] = (int)(r.Position + ChildrenOffsets[i] - 4);
+                }
+            }
+
+            var childrenFlagsBlockCount = (((2 * childrenCount) | 7) + 1) >> 3;
+
+            if (childrenFlagsBlockCount > 0)
+            {
+                ChildrenFlags = new uint[childrenFlagsBlockCount];
+
+                for (int i = 0; i < childrenFlagsBlockCount; i++)
+                    ChildrenFlags[i] = r.ReadUInt32();
+            }
+
+            if (ChildrenCount == 0)
+                return;
+
+            ChildrenData = new MrfNodeNChildData[childrenCount];
+
+            for (int i = 0; i < childrenCount; i++)
+            {
+                var item = new MrfNodeNChildData();
+
+                switch (GetChildWeightType(i))
+                {
+                    case MrfValueType.Literal:
+                        item.Weight = r.ReadSingle();
+                        break;
+                    case MrfValueType.Parameter:
+                        item.WeightParameterName = r.ReadUInt32();
+                        break;
+                }
+
+                switch (GetChildFrameFilterType(i))
+                {
+                    case MrfValueType.Literal:
+                        item.FrameFilterDictionaryName = r.ReadUInt32();
+                        item.FrameFilterName = r.ReadUInt32();
+                        break;
+                    case MrfValueType.Parameter:
+                        item.FrameFilterParameterName = r.ReadUInt32();
+                        break;
+                }
+
+                ChildrenData[i] = item;
+            }
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+
+            if (SynchronizerType == MrfSynchronizerType.Tag)
+                w.Write((uint)SynchronizerTagFlags);
+
+            switch (Unk2Type)
+            {
+                case MrfValueType.Literal:
                     w.Write(Unk2);
-                    w.Write(Unk3);
                     break;
-                case 2:
-                    w.Write(Unk3);
+                case MrfValueType.Parameter:
+                    w.Write(Unk2ParameterName);
                     break;
             }
-        }
-    }
 
-    [TC(typeof(EXP))] public abstract class MrfNodeNegativeBase : MrfNodeNameFlagsBase
-    {
-        public uint Unk1 { get; set; }
-        public byte[] Unk2 { get; set; }
-        public uint Unk3 { get; set; }
-        public uint Unk4 { get; set; }
-        public uint Unk5 { get; set; }
-        public uint Unk6 { get; set; }
-        public int[] Unk7 { get; set; }
-        public MrfStructNegativeDataUnk7[] Unk7_Items { get; set; }
-        public uint[] Unk8 { get; set; }
-
-        public override void Read(DataReader r)
-        {
-            base.Read(r);
-
-            var unkTypeFlag1 = Flags & 3;
-            var unkTypeFlag2 = (Flags >> 2) & 3;
-            var unk7Count = Flags >> 26;
-
-            if ((Flags & 0x180000) == 0x80000)
-                Unk1 = r.ReadUInt32();
-
-            if (unkTypeFlag1 == 1)
-                Unk2 = r.ReadBytes(76); // Unused?
-            else if (unkTypeFlag1 == 2)
-                Unk3 = r.ReadUInt32();
-
-            if (unkTypeFlag2 == 1)
+            switch (FrameFilterType)
             {
-                Unk4 = r.ReadUInt32();
-                Unk5 = r.ReadUInt32();
-            }
-            else if (unkTypeFlag2 == 2)
-                Unk6 = r.ReadUInt32();
-
-            if (unk7Count != 0)
-            {
-                Unk7 = new int[unk7Count];
-
-                for (int i = 0; i < unk7Count; i++)
-                    Unk7[i] = r.ReadInt32();
+                case MrfValueType.Literal:
+                    w.Write(FrameFilterDictionaryName);
+                    w.Write(FrameFilterName);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(FrameFilterParameterName);
+                    break;
             }
 
-            var unk8Count = (((2 * unk7Count) | 7) + 1) >> 3;
-
-            if (unk8Count != 0)
+            var childrenCount = ChildrenCount;
+            if (childrenCount > 0)
             {
-                Unk8 = new uint[unk8Count];
-
-                for (int i = 0; i < unk8Count; i++)
-                    Unk8[i] = r.ReadUInt32();
-            }
-
-            if (unk7Count == 0)
-                return;
-
-            Unk7_Items = new MrfStructNegativeDataUnk7[unk7Count];
-            int iteration = 0;
-
-            for (int i = 0; i < unk7Count; i++)
-            {
-                var unk8Value = Unk8[iteration >> 3];
-                var unk7Flag = unk8Value >> (4 * (iteration & 7));
-                var unkTypeFlag3 = (unk7Flag >> 4) & 3;
-
-                var item = new MrfStructNegativeDataUnk7();
-
-                if ((unk7Flag & 3) != 0)
-                    item.Unk1 = r.ReadUInt32();
-
-                if (unkTypeFlag3 == 1)
-                {
-                    item.Unk2 = r.ReadUInt32();
-                    item.Unk3 = r.ReadUInt32();
-                }
-                else if (unkTypeFlag3 == 2)
-                    item.Unk4 = r.ReadUInt32();
-
-                Unk7_Items[i] = item;
-
-                iteration += 2;
-            }
-        }
-
-        public override void Write(DataWriter w)
-        {
-            base.Write(w);
-
-            var unkTypeFlag1 = Flags & 3;
-            var unkTypeFlag2 = (Flags >> 2) & 3;
-            var unk7Count = Flags >> 26;
-
-            if ((Flags & 0x180000) == 0x80000)
-                w.Write(Unk1);
-
-            if (unkTypeFlag1 == 1)
-                w.Write(Unk2);
-            else if (unkTypeFlag1 == 2)
-                w.Write(Unk3);
-
-            if (unkTypeFlag2 == 1)
-            {
-                w.Write(Unk4);
-                w.Write(Unk5);
-            }
-            else if (unkTypeFlag2 == 2)
-                w.Write(Unk6);
-
-            if (unk7Count > 0)
-            {
-                foreach (var value in Unk7)
+                foreach (var value in ChildrenOffsets)
                     w.Write(value);
             }
 
-            var unk8Count = (((2 * unk7Count) | 7) + 1) >> 3;
+            var childrenFlagsBlockCount = (((2 * childrenCount) | 7) + 1) >> 3;
 
-            if (unk8Count > 0)
+            if (childrenFlagsBlockCount > 0)
             {
-                foreach (var value in Unk8)
+                foreach (var value in ChildrenFlags)
                     w.Write(value);
             }
 
-            if (unk7Count == 0)
+            if (childrenCount == 0)
                 return;
 
-            int iteration = 0;
-
-            foreach (var item in Unk7_Items)
+            for (int i = 0; i < childrenCount; i++)
             {
-                var unk8Value = Unk8[iteration >> 3];
-                var unk7Flag = unk8Value >> (4 * (iteration & 7));
-                var unkTypeFlag3 = (unk7Flag >> 4) & 3;
+                var item = ChildrenData[i];
 
-                if ((unk7Flag & 3) != 0)
-                    w.Write(item.Unk1);
-
-                if (unkTypeFlag3 == 1)
+                switch (GetChildWeightType(i))
                 {
-                    w.Write(item.Unk2);
-                    w.Write(item.Unk3);
+                    case MrfValueType.Literal:
+                        w.Write(item.Weight);
+                        break;
+                    case MrfValueType.Parameter:
+                        w.Write(item.WeightParameterName);
+                        break;
                 }
-                else if (unkTypeFlag3 == 2)
-                    w.Write(item.Unk4);
 
-                iteration += 2;
+                switch (GetChildFrameFilterType(i))
+                {
+                    case MrfValueType.Literal:
+                        w.Write(item.FrameFilterDictionaryName);
+                        w.Write(item.FrameFilterName);
+                        break;
+                    case MrfValueType.Parameter:
+                        w.Write(item.FrameFilterParameterName);
+                        break;
+                }
+            }
+        }
+
+        public override void ResolveRelativeOffsets(MrfFile mrf)
+        {
+            base.ResolveRelativeOffsets(mrf);
+
+            if (ChildrenFileOffsets != null)
+            {
+                Children = new MrfNode[ChildrenFileOffsets.Length];
+                for (int i = 0; i < ChildrenFileOffsets.Length; i++)
+                {
+                    var node = mrf.FindNodeAtFileOffset(ChildrenFileOffsets[i]);
+                    if (node == null)
+                    { } // no hits
+
+                    Children[i] = node;
+                }
+            }
+        }
+
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            var offset = FileOffset + 0xC/*sizeof(MrfNodeWithFlagsBase)*/;
+            offset += SynchronizerType == MrfSynchronizerType.Tag ? 4 : 0;
+            offset += Unk2Type == MrfValueType.Literal ? 76 : 0;
+            offset += Unk2Type == MrfValueType.Parameter ? 4 : 0;
+            offset += FrameFilterType == MrfValueType.Literal ? 8 : 0;
+            offset += FrameFilterType == MrfValueType.Parameter ? 4 : 0;
+            
+            if (Children != null)
+            {
+                ChildrenOffsets = new int[Children.Length];
+                ChildrenFileOffsets = new int[Children.Length];
+                for (int i = 0; i < Children.Length; i++)
+                {
+                    var node = Children[i];
+                    ChildrenFileOffsets[i] = node.FileOffset;
+                    ChildrenOffsets[i] = node.FileOffset - offset;
+                    offset += 4;
+                }
             }
         }
     }
     
+    [TC(typeof(EXP))] public struct MrfNodeNChildData
+    {
+        public float Weight { get; set; }
+        public MetaHash WeightParameterName { get; set; }
+        public MetaHash FrameFilterDictionaryName { get; set; }
+        public MetaHash FrameFilterName { get; set; }
+        public MetaHash FrameFilterParameterName { get; set; }
+
+        public override string ToString()
+        {
+            return $"{FloatUtil.ToString(Weight)} - {WeightParameterName} - {FrameFilterDictionaryName} - {FrameFilterName} - {FrameFilterParameterName}";
+        }
+    }
+
 
 
     #endregion
 
     #region mrf node structs
 
-    public abstract class MrfStruct
-    {
-        public abstract void Write(DataWriter w);
-    }
-
-    [TC(typeof(EXP))] public class MrfStructHeaderUnk1 : MrfStruct
+    [TC(typeof(EXP))] public class MrfHeaderUnk1
     {
         public uint Size { get; set; }
         public byte[] Bytes { get; set; }
 
-        public MrfStructHeaderUnk1(DataReader r)
+        public MrfHeaderUnk1(DataReader r)
         {
             Size = r.ReadUInt32();
             Bytes = r.ReadBytes((int)Size);
         }
 
-        public override void Write(DataWriter w)
+        public void Write(DataWriter w)
         {
             w.Write(Size);
             w.Write(Bytes);
@@ -857,511 +1832,976 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class MrfStructHeaderUnk2 : MrfStruct
+    /// <summary>
+    /// Parameter that can be triggered by the game to control transitions.
+    /// Only active for 1 tick.
+    /// The native `REQUEST_TASK_MOVE_NETWORK_STATE_TRANSITION` uses these triggers but appends "request" to the passed string,
+    /// e.g. `REQUEST_TASK_MOVE_NETWORK_STATE_TRANSITION(ped, "running")` will trigger "runningrequest".
+    /// </summary>
+    [TC(typeof(EXP))] public class MrfMoveNetworkTrigger
     {
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
+        public MetaHash Name { get; set; }
+        public int BitPosition { get; set; }
 
-        public MrfStructHeaderUnk2(DataReader r)
+        public MrfMoveNetworkTrigger(DataReader r)
         {
-            Unk1 = r.ReadUInt32();
-            Unk2 = r.ReadUInt32();
+            Name = r.ReadUInt32();
+            BitPosition = r.ReadInt32();
         }
-
-        public override void Write(DataWriter w)
+        
+        public void Write(DataWriter w)
         {
-            w.Write(Unk1);
-            w.Write(Unk2);
+            w.Write(Name);
+            w.Write(BitPosition);
         }
 
         public override string ToString()
         {
-            return Unk1.ToString() + " - " + Unk2.ToString();
+            return Name == 0xFFFFFFFF ? "--- bucket separator ---" : $"{Name} - {BitPosition}";
         }
     }
 
-    [TC(typeof(EXP))] public class MrfStructHeaderUnk3 : MrfStruct
+    /// <summary>
+    /// Parameter that can be toggled by the game to control transitions.
+    /// Can be enabled with fwClipSet.moveNetworkFlags too (seems like only if the game uses it as a MrfClipContainerType.VariableClipSet).
+    /// </summary>
+    [TC(typeof(EXP))] public class MrfMoveNetworkFlag
     {
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
+        public MetaHash Name { get; set; }
+        public int BitPosition { get; set; }
 
-        public MrfStructHeaderUnk3(DataReader r)
+        public MrfMoveNetworkFlag(DataReader r)
         {
-            Unk1 = r.ReadUInt32();
-            Unk2 = r.ReadUInt32();
+            Name = r.ReadUInt32();
+            BitPosition = r.ReadInt32();
         }
 
-        public override void Write(DataWriter w)
+        public void Write(DataWriter w)
         {
-            w.Write(Unk1);
-            w.Write(Unk2);
+            w.Write(Name);
+            w.Write(BitPosition);
         }
 
         public override string ToString()
         {
-            return Unk1.ToString() + " - " + Unk2.ToString();
+            return Name == 0xFFFFFFFF ? "--- bucket separator ---" : $"{Name} - {BitPosition}";
         }
     }
 
-    [TC(typeof(EXP))] public class MrfStructStateMainSection : MrfStruct
+    public enum MrfWeightModifierType
     {
-        //maybe Transition ..?
+        SlowInSlowOut = 0,
+        SlowOut = 1,
+        SlowIn = 2,
+        None = 3,
+    }
 
-        public uint Unk1 { get; set; }
-        public int Unk2 { get; set; }
-        public float Unk3 { get; set; }
-        public uint Unk4 { get; set; }
-        public uint Unk5 { get; set; }
-        public uint Unk6 { get; set; }
-        public uint Unk7 { get; set; }
-        public uint Unk8 { get; set; }
-        public MrfStructStateCondition[] Conditions { get; set; }
+    [TC(typeof(EXP))] public class MrfStateTransition
+    {
+        // rage::mvTransitionDef
 
-        public MrfStructStateMainSection(DataReader r)
+        public uint Flags { get; set; }
+        public MrfSynchronizerTagFlags SynchronizerTagFlags { get; set; }
+        public float Duration { get; set; } // time in seconds it takes for the transition to blend between the source and target states
+        public MetaHash DurationParameterName { get; set; }
+        public MetaHash ProgressParameterName { get; set; } // parameter where to store the transition progress percentage (0.0 to 1.0)
+        public int TargetStateOffset { get; set; } // offset from the start of this field
+        public int TargetStateFileOffset { get; set; }
+        public MetaHash FrameFilterDictionaryName { get; set; }
+        public MetaHash FrameFilterName { get; set; }
+        public MrfCondition[] Conditions { get; set; }
+
+        public MrfNodeStateBase TargetState { get; set; }
+
+        // flags getters and setters
+        public bool HasProgressParameter // if set, the transition progress percentage (0.0 to 1.0) is stored in ProgressParameterName
         {
-            Unk1 = r.ReadUInt32();
-            Unk2 = r.ReadInt32();
-            Unk3 = r.ReadSingle();
-            Unk4 = r.ReadUInt32();
-            Unk5 = r.ReadUInt32();
-            Unk6 = r.ReadUInt32();
+            get => GetFlagsSubset(1, 1) != 0;
+            set => SetFlagsSubset(1, 1, value ? 1 : 0u);
+        }
+        public bool UnkFlag2_DetachUpdateObservers // if set, executes rage::DetachUpdateObservers on the source state
+        {
+            get => GetFlagsSubset(1, 1) != 0;
+            set => SetFlagsSubset(1, 1, value ? 1 : 0u);
+        }
+        public bool HasDurationParameter // if set use DurationParameterName instead of DurationValue. DurationValue is used as default if the paramter is not found
+        {
+            get => GetFlagsSubset(3, 1) != 0;
+            set => SetFlagsSubset(3, 1, value ? 1 : 0u);
+        }
+        public uint DataSize // number of bytes this transition takes, used to iterate the transitions array
+        {
+            get => GetFlagsSubset(4, 0x3FFF); 
+            set => SetFlagsSubset(4, 0x3FFF, value);
+        }
+        public uint UnkFlag19
+        {
+            get => GetFlagsSubset(19, 1);
+            set => SetFlagsSubset(19, 1, value);
+        }
+        public uint ConditionCount
+        {
+            get => GetFlagsSubset(20, 0xF);
+            set => SetFlagsSubset(20, 0xF, value);
+        }
+        public MrfWeightModifierType BlendModifier // modifier for the blend between source and target states
+        {
+            get => (MrfWeightModifierType)GetFlagsSubset(24, 7);
+            set => SetFlagsSubset(24, 7, (uint)value);
+        }
+        public MrfSynchronizerType SynchronizerType
+        {
+            get => (MrfSynchronizerType)GetFlagsSubset(28, 3);
+            set => SetFlagsSubset(28, 3, (uint)value);
+        }
+        public bool HasFrameFilter
+        {
+            get => GetFlagsSubset(30, 1) != 0;
+            set => SetFlagsSubset(30, 1, value ? 1 : 0u);
+        }
 
-            uint flags = Unk1 & 0xFFFBFFFF;
-            var numconds = (flags >> 20) & 0xF;
+        public MrfStateTransition()
+        {
+        }
 
-            if (numconds > 0)
+        public MrfStateTransition(DataReader r)
+        {
+            var startReadPosition = r.Position;
+
+            Flags = r.ReadUInt32();
+            SynchronizerTagFlags = (MrfSynchronizerTagFlags)r.ReadUInt32();
+            Duration = r.ReadSingle();
+            DurationParameterName = r.ReadUInt32();
+            ProgressParameterName = r.ReadUInt32();
+            TargetStateOffset = r.ReadInt32();
+            TargetStateFileOffset = (int)(r.Position + TargetStateOffset - 4);
+
+            if (ConditionCount > 0)
             {
-                Conditions = new MrfStructStateCondition[numconds];
-                for (int i = 0; i < numconds; i++)
+                Conditions = new MrfCondition[ConditionCount];
+                for (int i = 0; i < ConditionCount; i++)
                 {
-                    Conditions[i] = new MrfStructStateCondition(r);
+                    var startPos = r.Position;
+                    var conditionType = (MrfConditionType)r.ReadUInt16();
+                    r.Position = startPos;
+                    
+                    MrfCondition cond;
+                    switch (conditionType)
+                    {
+                        case MrfConditionType.ParameterInsideRange:    cond = new MrfConditionParameterInsideRange(r); break;
+                        case MrfConditionType.ParameterOutsideRange:   cond = new MrfConditionParameterOutsideRange(r); break;
+                        case MrfConditionType.MoveNetworkTrigger:       cond = new MrfConditionMoveNetworkTrigger(r); break;
+                        case MrfConditionType.MoveNetworkFlag:          cond = new MrfConditionMoveNetworkFlag(r); break;
+                        case MrfConditionType.EventOccurred:            cond = new MrfConditionEventOccurred(r); break;
+                        case MrfConditionType.ParameterGreaterThan:    cond = new MrfConditionParameterGreaterThan(r); break;
+                        case MrfConditionType.ParameterGreaterOrEqual: cond = new MrfConditionParameterGreaterOrEqual(r); break;
+                        case MrfConditionType.ParameterLessThan:       cond = new MrfConditionParameterLessThan(r); break;
+                        case MrfConditionType.ParameterLessOrEqual:    cond = new MrfConditionParameterLessOrEqual(r); break;
+                        case MrfConditionType.TimeGreaterThan:          cond = new MrfConditionTimeGreaterThan(r); break;
+                        case MrfConditionType.TimeLessThan:             cond = new MrfConditionTimeLessThan(r); break;
+                        case MrfConditionType.BoolParameterExists:          cond = new MrfConditionBoolParameterExists(r); break;
+                        case MrfConditionType.BoolParameterEquals:          cond = new MrfConditionBoolParameterEquals(r); break;
+                        default: throw new Exception($"Unknown condition type ({conditionType})");
+                    }
+
+                    Conditions[i] = cond;
                 }
             }
 
-            if ((flags & 0x40000000) != 0)
+            if (HasFrameFilter)
             {
-                Unk7 = r.ReadUInt32();
-                Unk8 = r.ReadUInt32();
+                FrameFilterDictionaryName = r.ReadUInt32();
+                FrameFilterName = r.ReadUInt32();
             }
             else
             {
-                Unk7 = 0;
-                Unk8 = 0;
+                FrameFilterDictionaryName = 0;
+                FrameFilterName = 0;
             }
+
+            if ((r.Position - startReadPosition) != DataSize)
+            { } // not hits
         }
 
-        public override void Write(DataWriter w)
+        public void Write(DataWriter w)
         {
-            w.Write(Unk1);
-            w.Write(Unk2);
-            w.Write(Unk3);
-            w.Write(Unk4);
-            w.Write(Unk5);
-            w.Write(Unk6);
+            ConditionCount = (uint)(Conditions?.Length ?? 0);
 
-            // FIXME: might be broken if changed without flags, see "numconds"
+            w.Write(Flags);
+            w.Write((uint)SynchronizerTagFlags);
+            w.Write(Duration);
+            w.Write(DurationParameterName);
+            w.Write(ProgressParameterName);
+            w.Write(TargetStateOffset);
+
             if (Conditions != null)
                 for (int i = 0; i < Conditions.Length; i++)
                     Conditions[i].Write(w);
 
-            // FIXME: might be broken if changed without flags
-            uint flags = Unk1 & 0xFFFBFFFF;
-
-            if ((flags & 0x40000000) != 0)
+            if (HasFrameFilter)
             {
-                w.Write(Unk7);
-                w.Write(Unk8);
+                w.Write(FrameFilterDictionaryName);
+                w.Write(FrameFilterName);
             }
         }
 
-        public override string ToString()
+        public uint GetFlagsSubset(int bitOffset, uint mask)
         {
-            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + FloatUtil.ToString(Unk3)
-                + " - " + Unk4.ToString()
-                + " - " + Unk5.ToString()
-                + " - " + Unk6.ToString()
-                + " - " + Unk7.ToString()
-                + " - " + Unk8.ToString()
-                + " - " + (Conditions?.Length ?? 0).ToString() + " conditions";
+            return (Flags >> bitOffset) & mask;
         }
-    }
 
-    [TC(typeof(EXP))] public class MrfStructStateCondition : MrfStruct
-    {
-        public short UnkType { get; }
-        public short UnkIndex { get; }
-        public uint Unk1_1 { get; }
-        public uint Unk1_2 { get; }
-        public uint Unk1_3 { get; }
-        public uint Unk2_1 { get; }
-        public uint Unk3_1 { get; }
-        public uint Unk3_2 { get; }
-
-        public MrfStructStateCondition(DataReader r)
+        public void SetFlagsSubset(int bitOffset, uint mask, uint value)
         {
-            Unk1_1 = 0;
-            Unk1_2 = 0;
-            Unk1_3 = 0;
-            Unk2_1 = 0;
-            Unk3_1 = 0;
-            Unk3_2 = 0;
+            Flags = (Flags & ~(mask << bitOffset)) | ((value & mask) << bitOffset);
+        }
 
-            UnkType = r.ReadInt16();
-            UnkIndex = r.ReadInt16();
-
-            switch (UnkType)
+        public void CalculateDataSize()
+        {
+            uint dataSize = 0x18;
+            if (Conditions != null)
             {
-                case 0:
-                case 1:
-                    {
-                        Unk1_1 = r.ReadUInt32();
-                        Unk1_2 = r.ReadUInt32();
-                        Unk1_3 = r.ReadUInt32();
-                        break;
-                    }
-                case 9:
-                case 10:
-                    {
-                        Unk2_1 = r.ReadUInt32();
-                        break;
-                    }
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 11:
-                case 12:
-                    {
-                        Unk3_1 = r.ReadUInt32();
-                        Unk3_2 = r.ReadUInt32();
-                        break;
-                    }
+                dataSize += (uint)Conditions.Sum(c => c.DataSize);
             }
-        }
 
-        public override void Write(DataWriter w)
-        {
-            w.Write(UnkType);
-            w.Write(UnkIndex);
-
-            // FIXME: might be broken if changed outside
-            switch (UnkType)
+            if (HasFrameFilter)
             {
-                case 0:
-                case 1:
-                    {
-                        w.Write(Unk1_1);
-                        w.Write(Unk1_2);
-                        w.Write(Unk1_3);
-                        break;
-                    }
-                case 9:
-                case 10:
-                    {
-                        w.Write(Unk2_1);
-                        break;
-                    }
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 11:
-                case 12:
-                    {
-                        w.Write(Unk3_1);
-                        w.Write(Unk3_2);
-                        break;
-                    }
+                dataSize += 8;
             }
+
+            DataSize = dataSize;
         }
 
         public override string ToString()
         {
-            return UnkType.ToString() + " - " + UnkIndex.ToString()
-                + " - " + Unk1_1.ToString()
-                + " - " + Unk1_2.ToString()
-                + " - " + Unk1_3.ToString()
-                + " - " + Unk2_1.ToString()
-                + " - " + Unk3_1.ToString()
-                + " - " + Unk3_2.ToString();
+            return $"{TargetState?.Name.ToString() ?? TargetStateFileOffset.ToString()} - {FloatUtil.ToString(Duration)} - {Conditions?.Length ?? 0} conditions";
         }
     }
 
-    [TC(typeof(EXP))] public class MrfStructStateVariable : MrfStruct
+    public enum MrfConditionType : ushort
     {
-        public MetaHash VariableName { get; }
-        public ushort Unk2 { get; }
-        public ushort Unk3 { get; }
-        public uint Unk4 { get; }
+        ParameterInsideRange = 0,     // condition = Param > MinValue && Param < MaxValue
+        ParameterOutsideRange = 1,    // condition = Param < MinValue || Param > MaxValue
+        MoveNetworkTrigger = 2,       // condition = bittest(rage::mvMotionWeb.field_8, BitPosition) != Invert (each bit of field_8 represents a MrfMoveNetworkTrigger)
+        MoveNetworkFlag = 3,          // condition = bittest(rage::mvMotionWeb.field_C, BitPosition) != Invert (each bit of field_C represents a MrfMoveNetworkFlag)
+        EventOccurred = 4,            // condition = same behaviour as BoolParamExists but seems to be used with event names only
+        ParameterGreaterThan = 5,     // condition = Param > Value
+        ParameterGreaterOrEqual = 6,  // condition = Param >= Value
+        ParameterLessThan = 7,        // condition = Param < Value
+        ParameterLessOrEqual = 8,     // condition = Param <= Value
+        TimeGreaterThan = 9,          // condition = Time > Value (time since tha state started in seconds)
+        TimeLessThan = 10,            // condition = Time < Value
+        BoolParameterExists = 11,     // condition = exists(Param) != Invert
+        BoolParameterEquals = 12,     // condition = Param == Value
+    }
 
-        public MrfStructStateVariable(DataReader r)
+    [TC(typeof(EXP))] public abstract class MrfCondition
+    {
+        // rage::mvConditionDef
+
+        public MrfConditionType Type { get; set; }
+        public short Unk2 { get; set; }
+        public abstract uint DataSize { get; }
+
+        public MrfCondition(MrfConditionType type)
         {
-            VariableName = new MetaHash(r.ReadUInt32());
-            Unk2 = r.ReadUInt16();
-            Unk3 = r.ReadUInt16();
-            Unk4 = r.ReadUInt32();
+            Type = type;
         }
 
-        public override void Write(DataWriter w)
+        public MrfCondition(DataReader r)
         {
-            w.Write(VariableName);
+            Type = (MrfConditionType)r.ReadUInt16();
+            Unk2 = r.ReadInt16();
+        }
+
+        public virtual void Write(DataWriter w)
+        {
+            w.Write((ushort)Type);
             w.Write(Unk2);
-            w.Write(Unk3);
-            w.Write(Unk4);
         }
 
         public override string ToString()
         {
-            return VariableName.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString();
+            return $"{Type} - {Unk2}";
         }
+
+        /// <summary>
+        /// Returns the condition as a C-like expression. Mainly to include it in the debug DOT graphs.
+        /// </summary>
+        public abstract string ToExpressionString(MrfFile mrf);
     }
-
-    [TC(typeof(EXP))] public class MrfStructStateEvent : MrfStruct
+    [TC(typeof(EXP))] public abstract class MrfConditionWithParameterAndRangeBase : MrfCondition
     {
-        public ushort Unk1 { get; }
-        public ushort Unk2 { get; }
-        public MetaHash NameHash { get; }
+        public override uint DataSize => 16;
+        public MetaHash ParameterName { get; set; }
+        public float MaxValue { get; set; }
+        public float MinValue { get; set; }
 
-        public MrfStructStateEvent(DataReader r)
+        public MrfConditionWithParameterAndRangeBase(MrfConditionType type) : base(type) { }
+        public MrfConditionWithParameterAndRangeBase(DataReader r) : base(r)
         {
-            Unk1 = r.ReadUInt16();
-            Unk2 = r.ReadUInt16();
-            NameHash = new MetaHash(r.ReadUInt32());
+            ParameterName = r.ReadUInt32();
+            MaxValue = r.ReadSingle();
+            MinValue = r.ReadSingle();
         }
 
         public override void Write(DataWriter w)
         {
-            w.Write(Unk1);
-            w.Write(Unk2);
-            w.Write(NameHash);
+            base.Write(w);
+            w.Write(ParameterName);
+            w.Write(MaxValue);
+            w.Write(MinValue);
         }
 
         public override string ToString()
         {
-            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + NameHash.ToString();
+            return base.ToString() + $" - {{ {nameof(ParameterName)} = {ParameterName}, {nameof(MaxValue)} = {FloatUtil.ToString(MaxValue)}, {nameof(MinValue)} = {FloatUtil.ToString(MinValue)} }}";
         }
     }
-
-    [TC(typeof(EXP))] public class MrfStructStateUnk6 : MrfStruct
+    [TC(typeof(EXP))] public abstract class MrfConditionWithParameterAndValueBase : MrfCondition
     {
-        public MetaHash Unk1 { get; }
-        public ushort Unk2 { get; }
-        public ushort Unk3 { get; }
-        public uint Unk4 { get; }
+        public override uint DataSize => 12;
+        public MetaHash ParameterName { get; set; }
+        public float Value { get; set; }
 
-        public MrfStructStateUnk6(DataReader r)
+        public MrfConditionWithParameterAndValueBase(MrfConditionType type) : base(type) { }
+        public MrfConditionWithParameterAndValueBase(DataReader r) : base(r)
         {
-            Unk1 = new MetaHash(r.ReadUInt32());
-            Unk2 = r.ReadUInt16();
-            Unk3 = r.ReadUInt16();
-            Unk4 = r.ReadUInt32();
+            ParameterName = r.ReadUInt32();
+            Value = r.ReadSingle();
         }
 
         public override void Write(DataWriter w)
         {
-            w.Write(Unk1);
-            w.Write(Unk2);
-            w.Write(Unk3);
-            w.Write(Unk4);
+            base.Write(w);
+            w.Write(ParameterName);
+            w.Write(Value);
         }
 
         public override string ToString()
         {
-            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString();
+            return base.ToString() + $" - {{ {nameof(ParameterName)} = {ParameterName}, {nameof(Value)} = {FloatUtil.ToString(Value)} }}";
         }
     }
-
-    [TC(typeof(EXP))] public class MrfStructStateMachineState : MrfStruct
+    [TC(typeof(EXP))] public abstract class MrfConditionWithValueBase : MrfCondition
     {
-        public MetaHash StateName { get; }
-        public uint UnkValue { get; }
+        public override uint DataSize => 8;
+        public float Value { get; set; }
 
-        public MrfStructStateMachineState(DataReader r)
-        {
-            StateName = new MetaHash(r.ReadUInt32());
-            UnkValue = r.ReadUInt32();
-        }
-
-        public override void Write(DataWriter w)
-        {
-            w.Write(StateName);
-            w.Write(UnkValue);
-        }
-
-        public override string ToString()
-        {
-            return StateName.ToString() + " - " + UnkValue.ToString();
-        }
-    }
-
-    [TC(typeof(EXP))] public class MrfStructStateSignalVariable : MrfStruct
-    {
-        public float Value { get; }//always 0 - probably float?
-        public float Default { get; }
-        public float RangeMin { get; }
-        public float RangeMax { get; }
-
-        public MrfStructStateSignalVariable(DataReader r)
+        public MrfConditionWithValueBase(MrfConditionType type) : base(type) { }
+        public MrfConditionWithValueBase(DataReader r) : base(r)
         {
             Value = r.ReadSingle();
-            Default = r.ReadSingle();
-            RangeMin = r.ReadSingle();
-            RangeMax = r.ReadSingle();
         }
 
         public override void Write(DataWriter w)
         {
+            base.Write(w);
             w.Write(Value);
-            w.Write(Default);
-            w.Write(RangeMin);
-            w.Write(RangeMax);
         }
 
         public override string ToString()
         {
-            return Value.ToString() + " - " + Default.ToString() + " - (" + RangeMin.ToString() + " - " + RangeMax.ToString() + ")";
+            return base.ToString() + $" - {{ {nameof(Value)} = {FloatUtil.ToString(Value)} }}";
+        }
+    }
+    [TC(typeof(EXP))] public abstract class MrfConditionWithParameterAndBoolValueBase : MrfCondition
+    {
+        public override uint DataSize => 12;
+        public MetaHash ParameterName { get; set; }
+        public bool Value { get; set; }
+
+        public MrfConditionWithParameterAndBoolValueBase(MrfConditionType type) : base(type) { }
+        public MrfConditionWithParameterAndBoolValueBase(DataReader r) : base(r)
+        {
+            ParameterName = r.ReadUInt32();
+            Value = r.ReadUInt32() != 0;
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(ParameterName);
+            w.Write(Value ? 1 : 0u);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + $" - {{ {nameof(ParameterName)} = {ParameterName}, {nameof(Value)} = {Value} }}";
+        }
+    }
+    [TC(typeof(EXP))] public abstract class MrfConditionBitTestBase : MrfCondition
+    {
+        public override uint DataSize => 12;
+        public int BitPosition { get; set; }
+        public bool Invert { get; set; }
+
+        public MrfConditionBitTestBase(MrfConditionType type) : base(type) { }
+        public MrfConditionBitTestBase(DataReader r) : base(r)
+        {
+            BitPosition = r.ReadInt32();
+            Invert = r.ReadUInt32() != 0;
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(BitPosition);
+            w.Write(Invert ? 1u : 0u);
+        }
+
+        public string FindBitName(MrfFile mrf)
+        {
+            MetaHash? bitNameHash = null;
+            if (mrf != null)
+            {
+                bitNameHash = Type == MrfConditionType.MoveNetworkTrigger ?
+                                    mrf.FindMoveNetworkTriggerForBit(BitPosition)?.Name :
+                                    mrf.FindMoveNetworkFlagForBit(BitPosition)?.Name;
+            }
+            return bitNameHash.HasValue ? $"'{bitNameHash.Value}'" : BitPosition.ToString();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + $" - {{ {nameof(BitPosition)} = {BitPosition}, {nameof(Invert)} = {Invert} }}";
         }
     }
 
-    [TC(typeof(EXP))] public class MrfStructStateSignalData : MrfStruct
+    [TC(typeof(EXP))] public class MrfConditionParameterInsideRange : MrfConditionWithParameterAndRangeBase
     {
-        public uint Type { get; set; }      //0, 2, 4, 5
-        public uint NameHash { get; set; }  //only for Type==2, always 0 otherwise
-        public uint Unk1 { get; set; }      //only for Type==5, always 4
-        public float Unk2 { get; set; }     //only for Type==5, values: 0.0, 0.95, 0.8, 1.4, 1.8, 2.2, 0.2, 0.5  - maybe min value? always less than Unk3 when nonzero
-        public float Unk3 { get; set; }     //only for Type==5, values: 1.0, 1.4, 1.8, 2.2, 2.95, 0.8, 0.5       - maybe max value?
-        public uint ItemCount { get; set; } //only for Type==5
-        public uint Unk4 { get; set; }      //only for Type==5, always 4
+        public MrfConditionParameterInsideRange() : base(MrfConditionType.ParameterInsideRange) { }
+        public MrfConditionParameterInsideRange(DataReader r) : base(r) { }
 
-        public MrfStructStateSignalVariable[] Items { get; set; }
-
-        public MrfStructStateSignalData(DataReader r)
+        public override string ToExpressionString(MrfFile mrf)
         {
-            Type = r.ReadUInt32();
-            if (Type == 5)
+            return $"{FloatUtil.ToString(MinValue)} < '{ParameterName}' < {FloatUtil.ToString(MaxValue)}";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionParameterOutsideRange : MrfConditionWithParameterAndRangeBase
+    {
+        public MrfConditionParameterOutsideRange() : base(MrfConditionType.ParameterOutsideRange) { }
+        public MrfConditionParameterOutsideRange(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"'{ParameterName}' < {FloatUtil.ToString(MinValue)} < {FloatUtil.ToString(MaxValue)} < '{ParameterName}'";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionMoveNetworkTrigger : MrfConditionBitTestBase
+    {
+        public MrfConditionMoveNetworkTrigger() : base(MrfConditionType.MoveNetworkTrigger) { }
+        public MrfConditionMoveNetworkTrigger(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return (Invert ? "!" : "") + $"trigger({FindBitName(mrf)})";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionMoveNetworkFlag : MrfConditionBitTestBase
+    {
+        public MrfConditionMoveNetworkFlag() : base(MrfConditionType.MoveNetworkFlag) { }
+        public MrfConditionMoveNetworkFlag(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return (Invert ? "!" : "") + $"flag({FindBitName(mrf)})";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionParameterGreaterThan : MrfConditionWithParameterAndValueBase
+    {
+        public MrfConditionParameterGreaterThan() : base(MrfConditionType.ParameterGreaterThan) { }
+        public MrfConditionParameterGreaterThan(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"'{ParameterName}' > {FloatUtil.ToString(Value)}";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionParameterGreaterOrEqual : MrfConditionWithParameterAndValueBase
+    {
+        public MrfConditionParameterGreaterOrEqual() : base(MrfConditionType.ParameterGreaterOrEqual) { }
+        public MrfConditionParameterGreaterOrEqual(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"'{ParameterName}' >= {FloatUtil.ToString(Value)}";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionParameterLessThan : MrfConditionWithParameterAndValueBase
+    {
+        public MrfConditionParameterLessThan() : base(MrfConditionType.ParameterLessThan) { }
+        public MrfConditionParameterLessThan(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"'{ParameterName}' < {FloatUtil.ToString(Value)}";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionParameterLessOrEqual : MrfConditionWithParameterAndValueBase
+    {
+        public MrfConditionParameterLessOrEqual() : base(MrfConditionType.ParameterLessOrEqual) { }
+        public MrfConditionParameterLessOrEqual(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"'{ParameterName}' <= {FloatUtil.ToString(Value)}";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionTimeGreaterThan : MrfConditionWithValueBase
+    {
+        public MrfConditionTimeGreaterThan() : base(MrfConditionType.TimeGreaterThan) { }
+        public MrfConditionTimeGreaterThan(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"Time > {FloatUtil.ToString(Value)}";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionTimeLessThan : MrfConditionWithValueBase
+    {
+        public MrfConditionTimeLessThan() : base(MrfConditionType.TimeLessThan) { }
+        public MrfConditionTimeLessThan(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"Time < {FloatUtil.ToString(Value)}";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionEventOccurred : MrfConditionWithParameterAndBoolValueBase
+    {
+        public bool Invert { get => Value; set => Value = value; }
+
+        public MrfConditionEventOccurred() : base(MrfConditionType.EventOccurred) { }
+        public MrfConditionEventOccurred(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return (Invert ? "!" : "") + $"event('{ParameterName}')";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionBoolParameterExists : MrfConditionWithParameterAndBoolValueBase
+    {
+        public bool Invert { get => Value; set => Value = value; }
+
+        public MrfConditionBoolParameterExists() : base(MrfConditionType.BoolParameterExists) { }
+        public MrfConditionBoolParameterExists(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return (Invert ? "!" : "") + $"exists('{ParameterName}')";
+        }
+    }
+    [TC(typeof(EXP))] public class MrfConditionBoolParameterEquals : MrfConditionWithParameterAndBoolValueBase
+    {
+        public MrfConditionBoolParameterEquals() : base(MrfConditionType.BoolParameterEquals) { }
+        public MrfConditionBoolParameterEquals(DataReader r) : base(r) { }
+
+        public override string ToExpressionString(MrfFile mrf)
+        {
+            return $"'{ParameterName}' == {Value}";
+        }
+    }
+
+    /// <summary>
+    /// Before the target node updates, sets the target node parameter to the source network parameter value.
+    /// </summary>
+    [TC(typeof(EXP))] public class MrfStateInputParameter
+    {
+        // rage::mvNodeStateDef::InputParameter
+
+        public MetaHash SourceParameterName { get; }
+        public ushort TargetNodeIndex { get; }
+        public /*MrfNodeParameterId*/ushort TargetNodeParameterId { get; }
+        public uint TargetNodeParameterExtraArg { get; } // some node parameters require an additional argument to be passed (e.g. a name hash)
+
+        public MrfStateInputParameter(DataReader r)
+        {
+            SourceParameterName = r.ReadUInt32();
+            TargetNodeIndex = r.ReadUInt16();
+            TargetNodeParameterId = r.ReadUInt16();
+            TargetNodeParameterExtraArg = r.ReadUInt32();
+        }
+
+        public void Write(DataWriter w)
+        {
+            w.Write(SourceParameterName);
+            w.Write(TargetNodeIndex);
+            w.Write(TargetNodeParameterId);
+            w.Write(TargetNodeParameterExtraArg);
+        }
+
+        public override string ToString()
+        {
+            return SourceParameterName.ToString() + " - " + TargetNodeIndex.ToString() + " - " + TargetNodeParameterId.ToString() + " - " + TargetNodeParameterExtraArg.ToString();
+        }
+    }
+
+    /// <summary>
+    /// Sets a network bool parameter named <see cref="ParameterName"/> to true when the event occurs on the specified node.
+    /// </summary>
+    [TC(typeof(EXP))] public class MrfStateEvent
+    {
+        // rage::mvNodeStateDef::Event
+
+        public ushort NodeIndex { get; }
+        public /*MrfNodeEventId*/ushort NodeEventId { get; }
+        public MetaHash ParameterName { get; }
+
+        public MrfStateEvent(DataReader r)
+        {
+            NodeIndex = r.ReadUInt16();
+            NodeEventId = r.ReadUInt16();
+            ParameterName = r.ReadUInt32();
+        }
+
+        public void Write(DataWriter w)
+        {
+            w.Write(NodeIndex);
+            w.Write(NodeEventId);
+            w.Write(ParameterName);
+        }
+
+        public override string ToString()
+        {
+            return NodeIndex.ToString() + " - " + NodeEventId.ToString() + " - " + ParameterName.ToString();
+        }
+    }
+
+    /// <summary>
+    /// After the source node updates, sets the target network parameter to the source node parameter value.
+    /// </summary>
+    [TC(typeof(EXP))] public class MrfStateOutputParameter
+    {
+        // rage::mvNodeStateDef::OutputParameter
+
+        public MetaHash TargetParameterName { get; }
+        public ushort SourceNodeIndex { get; }
+        public /*MrfNodeParameterId*/ushort SourceNodeParameterId { get; }
+        public uint SourceNodeParameterExtraArg { get; }
+
+        public MrfStateOutputParameter(DataReader r)
+        {
+            TargetParameterName = r.ReadUInt32();
+            SourceNodeIndex = r.ReadUInt16();
+            SourceNodeParameterId = r.ReadUInt16();
+            SourceNodeParameterExtraArg = r.ReadUInt32();
+        }
+
+        public void Write(DataWriter w)
+        {
+            w.Write(TargetParameterName);
+            w.Write(SourceNodeIndex);
+            w.Write(SourceNodeParameterId);
+            w.Write(SourceNodeParameterExtraArg);
+        }
+
+        public override string ToString()
+        {
+            return TargetParameterName.ToString() + " - " + SourceNodeIndex.ToString() + " - " + SourceNodeParameterId.ToString() + " - " + SourceNodeParameterExtraArg.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public class MrfStateRef
+    {
+        public MetaHash StateName { get; set; }
+        public int StateOffset { get; set; } // offset from the start of this field
+        public int StateFileOffset { get; set; }
+
+        public MrfNodeStateBase State { get; set; }
+
+        public MrfStateRef()
+        {
+        }
+
+        public MrfStateRef(DataReader r)
+        {
+            StateName = r.ReadUInt32();
+            StateOffset = r.ReadInt32();
+            StateFileOffset = (int)(r.Position + StateOffset - 4);
+        }
+
+        public void Write(DataWriter w)
+        {
+            w.Write(StateName);
+            w.Write(StateOffset);
+        }
+
+        public override string ToString()
+        {
+            return StateName.ToString();
+        }
+    }
+
+    public enum MrfOperatorType : uint
+    {
+        Finish = 0,         // finish the operation
+        PushLiteral = 1,    // push a specific value, not used in vanilla MRFs
+        PushParameter = 2,  // push a network parameter value
+        Add = 3,            // adds the two values at the top of the stack, not used in vanilla MRFs
+        Multiply = 4,       // multiplies the two values at the top of the stack
+        Remap = 5,          // remaps the value at the top of the stack to another range
+    }
+
+    [TC(typeof(EXP))]
+    public abstract class MrfStateOperator
+    {
+        // rage::mvNodeStateDef::Operator
+
+        public MrfOperatorType Type { get; set; }      //0, 2, 4, 5
+
+        public MrfStateOperator(DataReader r)
+        {
+            Type = (MrfOperatorType)r.ReadUInt32();
+        }
+
+        public virtual void Write(DataWriter w)
+        {
+            w.Write((uint)Type);
+        }
+
+        public override string ToString()
+        {
+            return Type.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))]
+    public class MrfStateOperatorFinish : MrfStateOperator
+    {
+        public uint Unk1_Unused { get; set; }
+
+        public MrfStateOperatorFinish(DataReader r) : base(r)
+        {
+            Unk1_Unused = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(Unk1_Unused);
+        }
+    }
+
+    [TC(typeof(EXP))]
+    public class MrfStateOperatorPushLiteral : MrfStateOperator
+    {
+        public float Value { get; set; }
+
+        public MrfStateOperatorPushLiteral(DataReader r) : base(r)
+        {
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(Value);
+        }
+
+        public override string ToString()
+        {
+            return Type + " " + FloatUtil.ToString(Value);
+        }
+    }
+
+    [TC(typeof(EXP))]
+    public class MrfStateOperatorPushParameter : MrfStateOperator
+    {
+        public MetaHash ParameterName { get; set; }
+
+        public MrfStateOperatorPushParameter(DataReader r) : base(r)
+        {
+            ParameterName = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(ParameterName);
+        }
+
+        public override string ToString()
+        {
+            return Type + " '" + ParameterName + "'";
+        }
+    }
+
+    [TC(typeof(EXP))]
+    public class MrfStateOperatorAdd : MrfStateOperator
+    {
+        public uint Unk1_Unused { get; set; }
+
+        public MrfStateOperatorAdd(DataReader r) : base(r)
+        {
+            Unk1_Unused = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(Unk1_Unused);
+        }
+    }
+
+    [TC(typeof(EXP))]
+    public class MrfStateOperatorMultiply : MrfStateOperator
+    {
+        public uint Unk1_Unused { get; set; }
+
+        public MrfStateOperatorMultiply(DataReader r) : base(r)
+        {
+            Unk1_Unused = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(Unk1_Unused);
+        }
+    }
+
+    [TC(typeof(EXP))]
+    public class MrfStateOperatorRemap : MrfStateOperator
+    {
+        public int DataOffset { get; set; } = 4; // offset from the start of this field to Min field (always 4)
+        public float Min { get; set; }     // minimum of input range
+        public float Max { get; set; }     // maximum of input range
+        public uint RangeCount { get; set; }
+        public int RangesOffset { get; set; } = 4; // offset from the start of this field to Ranges array (always 4)
+
+        public MrfStateOperatorRemapRange[] Ranges { get; set; } // output ranges to choose from
+
+        public MrfStateOperatorRemap(DataReader r) : base(r)
+        {
+            DataOffset = r.ReadInt32();
+            Min = r.ReadSingle();
+            Max = r.ReadSingle();
+            RangeCount = r.ReadUInt32();
+            RangesOffset = r.ReadInt32();
+            Ranges = new MrfStateOperatorRemapRange[RangeCount];
+            for (int i = 0; i < RangeCount; i++)
             {
-                Unk1 = r.ReadUInt32();
-                Unk2 = r.ReadSingle();
-                Unk3 = r.ReadSingle();
-                ItemCount = r.ReadUInt32();
-                Unk4 = r.ReadUInt32();
-                Items = new MrfStructStateSignalVariable[ItemCount];
-                for (int i = 0; i < ItemCount; i++)
-                {
-                    Items[i] = new MrfStructStateSignalVariable(r);
-                }
-            }
-            else
-            {
-                NameHash = r.ReadUInt32();
+                Ranges[i] = new MrfStateOperatorRemapRange(r);
             }
         }
 
         public override void Write(DataWriter w)
         {
-            w.Write(Type);
-            if (Type == 5)
-            {
-                w.Write(Unk1);
-                w.Write(Unk2);
-                w.Write(Unk3);
-                w.Write(ItemCount);
-                w.Write(Unk4);
+            base.Write(w);
 
-                // FIXME: might be broken if changed outside
-                foreach (var item in Items)
-                    item.Write(w);
-            }
-            else
-            {
-                w.Write(NameHash);
-            }
+            RangeCount = (uint)(Ranges?.Length ?? 0);
 
-        }
+            w.Write(DataOffset);
+            w.Write(Min);
+            w.Write(Max);
+            w.Write(RangeCount);
+            w.Write(RangesOffset);
 
-        public override string ToString()
-        {
-            return Type.ToString() + " - " + NameHash.ToString() + " - " + 
-                Unk1.ToString() + " - " + Unk2.ToString() + " - " + FloatUtil.ToString(Unk3) + " - " + Unk4.ToString() + " - C:" + ItemCount.ToString();
-        }
-    }
-
-    [TC(typeof(EXP))] public class MrfStructStateSignal : MrfStruct
-    {
-        public ushort Unk1 { get; }
-        public ushort Unk2 { get; }
-        public ushort Unk3 { get; }//Items.Length * 8
-        public ushort Unk4 { get; }
-        public MrfStructStateSignalData[] Items { get; }
-
-        public MrfStructStateSignal(DataReader r)
-        {
-            Unk1 = r.ReadUInt16();
-            Unk2 = r.ReadUInt16();
-            Unk3 = r.ReadUInt16();
-            Unk4 = r.ReadUInt16();
-
-            var itemsList = new List<MrfStructStateSignalData>();
-
-            while (true)
-            {
-                var item = new MrfStructStateSignalData(r);
-                itemsList.Add(item);
-                if (item.Type == 0)
-                {
-                    break;
-                }
-            }
-
-            Items = itemsList.ToArray();
-
-        }
-
-        public override void Write(DataWriter w)
-        {
-            w.Write(Unk1);
-            w.Write(Unk2);
-            w.Write(Unk3);
-            w.Write(Unk4);
-
-            foreach (var item in Items)
+            foreach (var item in Ranges)
                 item.Write(w);
         }
 
         public override string ToString()
         {
-            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString() + " - " +
-                (Items?.Length ?? 0).ToString() + " items";
+            return Type + " (" + FloatUtil.ToString(Min) + ".." + FloatUtil.ToString(Max) + ") -> [" + string.Join(",", Ranges.AsEnumerable()) + "]";
         }
     }
 
-    
-    // FIXME: most likely broken
-
-    [TC(typeof(EXP))] public class MrfStructNegativeDataUnk7 : MrfStruct
+    [TC(typeof(EXP))]
+    public class MrfStateOperatorRemapRange
     {
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
-        public uint Unk3 { get; set; }
-        public uint Unk4 { get; set; }
+        public uint Unk1_Unused { get; } // always 0, seems unused
+        public float Percent { get; } // if less than or equal to ((origValue - origMin) / (origMax - origMin)), this range is selected for the remap operation
+        public float Length { get; } // Length = Max - Min
+        public float Min { get; }
 
-        public override void Write(DataWriter w)
+        public MrfStateOperatorRemapRange(DataReader r)
         {
-            w.Write(Unk1);
-            w.Write(Unk2);
-            w.Write(Unk3);
-            w.Write(Unk4);
+            Unk1_Unused = r.ReadUInt32();
+            Percent = r.ReadSingle();
+            Length = r.ReadSingle();
+            Min = r.ReadSingle();
+        }
+
+        public void Write(DataWriter w)
+        {
+            w.Write(Unk1_Unused);
+            w.Write(Percent);
+            w.Write(Length);
+            w.Write(Min);
         }
 
         public override string ToString()
         {
-            return Unk1.ToString() + " - " + Unk2.ToString() + " - " + Unk3.ToString() + " - " + Unk4.ToString();
+            return FloatUtil.ToString(Percent) + " - (" + FloatUtil.ToString(Min) + ".." + FloatUtil.ToString(Min+Length) + ")";
+        }
+    }
+
+    /// <summary>
+    /// Before the node updates, calculates the specified operations and stores the value in a node parameter.
+    /// </summary>
+    [TC(typeof(EXP))] public class MrfStateOperation
+    {
+        // rage::mvNodeStateDef::Operation
+
+        public ushort NodeIndex { get; }
+        public /*MrfNodeParameterId*/ushort NodeParameterId { get; }
+        public ushort Unk3 { get; }//Items.Length * 8  // TODO: verify what is this
+        public ushort NodeParameterExtraArg { get; }
+        public MrfStateOperator[] Operators { get; }
+
+        public MrfStateOperation(DataReader r)
+        {
+            NodeIndex = r.ReadUInt16();
+            NodeParameterId = r.ReadUInt16();
+            Unk3 = r.ReadUInt16();
+            NodeParameterExtraArg = r.ReadUInt16();
+
+            var operators = new List<MrfStateOperator>();
+
+            while (true)
+            {
+                var startPos = r.Position;
+                var opType = (MrfOperatorType)r.ReadUInt32();
+                r.Position = startPos;
+
+                MrfStateOperator op;
+                switch (opType)
+                {
+                    case MrfOperatorType.Finish:        op = new MrfStateOperatorFinish(r); break;
+                    case MrfOperatorType.PushLiteral:   op = new MrfStateOperatorPushLiteral(r); break;
+                    case MrfOperatorType.PushParameter: op = new MrfStateOperatorPushParameter(r); break;
+                    case MrfOperatorType.Add:           op = new MrfStateOperatorAdd(r); break;
+                    case MrfOperatorType.Multiply:      op = new MrfStateOperatorMultiply(r); break;
+                    case MrfOperatorType.Remap:         op = new MrfStateOperatorRemap(r); break;
+                    default: throw new Exception($"Unknown operator type ({opType})");
+                }
+
+                operators.Add(op);
+                if (opType == MrfOperatorType.Finish)
+                {
+                    break;
+                }
+            }
+
+            Operators = operators.ToArray();
+
+        }
+
+        public void Write(DataWriter w)
+        {
+            w.Write(NodeIndex);
+            w.Write(NodeParameterId);
+            w.Write(Unk3);
+            w.Write(NodeParameterExtraArg);
+
+            foreach (var op in Operators)
+                op.Write(w);
+        }
+
+        public override string ToString()
+        {
+            return NodeIndex.ToString() + " - " + NodeParameterId.ToString() + " - " + Unk3.ToString() + " - " + NodeParameterExtraArg.ToString() + " - " +
+                (Operators?.Length ?? 0).ToString() + " operators";
         }
     }
     
@@ -1369,12 +2809,14 @@ namespace CodeWalker.GameFiles
 
     #region mrf node classes
     
-    [TC(typeof(EXP))] public class MrfNodeStateMachineClass : MrfNodeStateBase
+    [TC(typeof(EXP))] public class MrfNodeStateMachine : MrfNodeStateBase
     {
         // rage__mvNodeStateMachineClass (1)
 
-        public MrfStructStateMachineState[] States { get; set; }
-        public MrfStructStateMainSection[] Sections { get; set; }
+        public MrfStateRef[] States { get; set; }
+        public MrfStateTransition[] Transitions { get; set; }
+
+        public MrfNodeStateMachine() : base(MrfNodeType.StateMachine) { }
 
         public override void Read(DataReader r)
         {
@@ -1383,105 +2825,182 @@ namespace CodeWalker.GameFiles
 
             if (StateChildCount > 0)
             {
-                States = new MrfStructStateMachineState[StateChildCount];
+                States = new MrfStateRef[StateChildCount];
                 for (int i = 0; i < StateChildCount; i++)
-                    States[i] = new MrfStructStateMachineState(r);
+                    States[i] = new MrfStateRef(r);
+
             }
 
-            if (StateSectionCount > 0)
+            if (TransitionCount > 0)
             {
-                Sections = new MrfStructStateMainSection[StateSectionCount];
-                for (int i = 0; i < StateSectionCount; i++)
-                    Sections[i] = new MrfStructStateMainSection(r);
+                if (r.Position != TransitionsFileOffset)
+                { } // no hits
+
+                Transitions = new MrfStateTransition[TransitionCount];
+                for (int i = 0; i < TransitionCount; i++)
+                    Transitions[i] = new MrfStateTransition(r);
             }
         }
 
         public override void Write(DataWriter w)
         {
+            StateChildCount = (byte)(States?.Length ?? 0);
+            TransitionCount = (byte)(Transitions?.Length ?? 0);
+
             base.Write(w);
 
             if (States != null)
                 foreach (var state in States)
                     state.Write(w);
 
-            if (Sections != null)
-                foreach(var section in Sections)
-                    section.Write(w);
+            if (Transitions != null)
+                foreach(var transition in Transitions)
+                    transition.Write(w);
         }
 
+        public override void ResolveRelativeOffsets(MrfFile mrf)
+        {
+            base.ResolveRelativeOffsets(mrf);
+
+            ResolveNodeOffsetsInTransitions(Transitions, mrf);
+            ResolveNodeOffsetsInStates(States, mrf);
+        }
+
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            var offset = (int)(FileOffset + 0x20/*sizeof(MrfNodeStateBase)*/);
+            offset = UpdateNodeOffsetsInStates(States, offset);
+
+            offset = UpdateNodeOffsetsInTransitions(Transitions, offset,
+                        offsetSetToZeroIfNoTransitions: TransitionsOffset == 0); // MrfNodeStateMachine doesn't seem consistent on whether TransitionsOffset
+                                                                                 // should be 0 if there are no transitions, so if it's already zero don't change it
+        }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeTail : MrfNodeValueBase
+    [TC(typeof(EXP))] public class MrfNodeTail : MrfNode
     {
         // rage__mvNodeTail (2)
 
+        public MrfNodeTail() : base(MrfNodeType.Tail) { }
     }
 
     [TC(typeof(EXP))] public class MrfNodeInlinedStateMachine : MrfNodeStateBase
     {
         // rage__mvNodeInlinedStateMachine (3)
 
-        public int Unk { get; set; } //usually(always?) negative, seems to be a byte offset maybe to parent node
-        public MrfStructStateMachineState[] States { get; set; }
+        public int FallbackNodeOffset { get; set; }
+        public int FallbackNodeFileOffset { get; set; }
+        public MrfStateRef[] States { get; set; }
+
+        public MrfNode FallbackNode { get; set; } // node used when a NodeTail is reached (maybe in some other cases too?). This node is considered a child
+                                                  // of the parent NodeState, so FallbackNode and its children (including their NodeIndex) should be
+                                                  // included in the parent NodeState.StateChildCount, not in this NodeInlinedStateMachine.StateChildCount
+
+        public MrfNodeInlinedStateMachine() : base(MrfNodeType.InlinedStateMachine) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk = r.ReadInt32();
+            FallbackNodeOffset = r.ReadInt32();
+            FallbackNodeFileOffset = (int)(r.Position + FallbackNodeOffset - 4);
 
             if (StateChildCount > 0)
             {
-                States = new MrfStructStateMachineState[StateChildCount];
+                States = new MrfStateRef[StateChildCount];
                 for (int i = 0; i < StateChildCount; i++)
-                    States[i] = new MrfStructStateMachineState(r);
+                    States[i] = new MrfStateRef(r);
             }
         }
 
         public override void Write(DataWriter w)
         {
+            StateChildCount = (byte)(States?.Length ?? 0);
+
             base.Write(w);
 
-            w.Write(Unk);
+            w.Write(FallbackNodeOffset);
 
             if (States != null)
                 foreach (var item in States)
                     item.Write(w);
         }
 
+        public override void ResolveRelativeOffsets(MrfFile mrf)
+        {
+            base.ResolveRelativeOffsets(mrf);
+
+            var fallbackNode = mrf.FindNodeAtFileOffset(FallbackNodeFileOffset);
+            if (fallbackNode == null)
+            { } // no hits
+
+            FallbackNode = fallbackNode;
+
+            ResolveNodeOffsetsInStates(States, mrf);
+        }
+
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            var offset = FileOffset + 0x20/*sizeof(MrfNodeStateBase)*/;
+
+            FallbackNodeFileOffset = FallbackNode.FileOffset;
+            FallbackNodeOffset = FallbackNodeFileOffset - offset;
+
+            offset += 4;
+            offset = UpdateNodeOffsetsInStates(States, offset);
+
+            offset = UpdateNodeOffsetsInTransitions(null, offset, offsetSetToZeroIfNoTransitions: true);
+        }
+
         public override string ToString()
         {
-            return base.ToString() + " - " + Unk.ToString();
+            return base.ToString() + " - " + FallbackNodeOffset.ToString();
         }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk4 : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodeAnimation : MrfNodeWithFlagsBase
     {
         // rage__mvNode* (4) not used in final game
+        // Probably not worth researching further. Seems like the introduction of NodeClip (and rage::crClip), made this node obsolete.
+        // Even the function pointer used to lookup the rage::crAnimation when AnimationType==Literal is null, so the only way to get animations is through a parameter.
 
-        public uint Unk1 { get; set; }
-        public uint Unk2_Count { get; set; }
-        public byte[] Unk2_Bytes { get; set; }
+        public uint AnimationUnkDataLength { get; set; }
+        public byte[] AnimationUnkData { get; set; }
+        public MetaHash AnimationName => AnimationUnkData == null ? 0 : BitConverter.ToUInt32(AnimationUnkData, 0);
+        public MetaHash AnimationParameterName { get; set; }
         public uint Unk3 { get; set; }
         public uint Unk4 { get; set; }
         public uint Unk5 { get; set; }
         public uint Unk6 { get; set; }
         public uint Unk7 { get; set; }
 
+        // flags getters and setters
+        public MrfValueType AnimationType
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+
+        public MrfNodeAnimation() : base(MrfNodeType.Animation) { }
+
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            switch (Flags & 3)
+            switch (AnimationType)
             {
-                case 1:
+                case MrfValueType.Literal:
                     {
-                        Unk2_Count = r.ReadUInt32();
-                        Unk2_Bytes = r.ReadBytes((int)Unk2_Count);
+                        AnimationUnkDataLength = r.ReadUInt32();
+                        AnimationUnkData = r.ReadBytes((int)AnimationUnkDataLength);
                         break;
                     }
-                case 2:
-                    Unk1 = r.ReadUInt32();
+                case MrfValueType.Parameter:
+                    AnimationParameterName = r.ReadUInt32();
                     break;
             }
 
@@ -1505,16 +3024,16 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            switch (Flags & 3)
+            switch (AnimationType)
             {
-                case 1:
+                case MrfValueType.Literal:
                     {
-                        w.Write(Unk2_Count);
-                        w.Write(Unk2_Bytes);
+                        w.Write(AnimationUnkDataLength);
+                        w.Write(AnimationUnkData);
                         break;
                     }
-                case 2:
-                    w.Write(Unk1);
+                case MrfValueType.Parameter:
+                    w.Write(AnimationParameterName);
                     break;
             }
 
@@ -1536,50 +3055,63 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TC(typeof(EXP))] public class MrfNodeBlend : MrfNodeBlendAddSubtractBase
+    [TC(typeof(EXP))] public class MrfNodeBlend : MrfNodePairWeightedBase
     {
         // rage__mvNodeBlend (5)
 
+        public MrfNodeBlend() : base(MrfNodeType.Blend) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeAddSubstract : MrfNodeBlendAddSubtractBase
+    [TC(typeof(EXP))] public class MrfNodeAddSubtract : MrfNodePairWeightedBase
     {
         // rage__mvNodeAddSubtract (6)
 
+        public MrfNodeAddSubtract() : base(MrfNodeType.AddSubtract) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeFilter : MrfNodeFilterUnkBase
+    [TC(typeof(EXP))] public class MrfNodeFilter : MrfNodeWithChildAndFilterBase
     {
         // rage__mvNodeFilter (7)
 
+        public MrfNodeFilter() : base(MrfNodeType.Filter) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk8 : MrfNodeFilterUnkBase
+    [TC(typeof(EXP))] public class MrfNodeMirror : MrfNodeWithChildAndFilterBase
     {
-        // rage__mvNode* (8)
+        // rage__mvNodeMirror (8)
 
+        public MrfNodeMirror() : base(MrfNodeType.Mirror) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeFrame : MrfNode
+    [TC(typeof(EXP))] public class MrfNodeFrame : MrfNodeWithFlagsBase
     {
         // rage__mvNodeFrame (9)
 
-        public uint Unk1 { get; set; }
-        public uint Flags { get; set; }
-        public uint Unk2 { get; set; }
-        public uint Unk3 { get; set; }
+        public MetaHash FrameParameterName { get; set; }
+        public MetaHash Unk3 { get; set; } // unused
+
+        // flags getters and setters
+        public MrfValueType FrameType // only Parameter type is supported
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+        public MrfValueType Unk3Type
+        {
+            get => (MrfValueType)GetFlagsSubset(4, 3);
+            set => SetFlagsSubset(4, 3, (uint)value);
+        }
+
+        public MrfNodeFrame() : base(MrfNodeType.Frame) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
-            Flags = r.ReadUInt32();
+            if (FrameType != MrfValueType.None)
+                FrameParameterName = r.ReadUInt32();
 
-            if ((Flags & 3) != 0)
-                Unk2 = r.ReadUInt32();
-
-            if ((Flags & 0x30) != 0)
+            if (Unk3Type != MrfValueType.None)
                 Unk3 = r.ReadUInt32();
         }
 
@@ -1587,144 +3119,257 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            w.Write(Unk1);
-            w.Write(Flags);
+            if (FrameType != MrfValueType.None)
+                w.Write(FrameParameterName);
 
-            if ((Flags & 3) != 0)
-                w.Write(Unk2);
-
-            if ((Flags & 0x30) != 0)
+            if (Unk3Type != MrfValueType.None)
                 w.Write(Unk3);
         }
-
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk10 : MrfNodeValueBase
+    [TC(typeof(EXP))] public class MrfNodeIk : MrfNode
     {
-        // rage__mvNode* (10)
+        // rage__mvNodeIk (10)
 
+        public MrfNodeIk() : base(MrfNodeType.Ik) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeBlendN : MrfNodeNegativeBase
+    [TC(typeof(EXP))] public class MrfNodeBlendN : MrfNodeNBase
     {
         // rage__mvNodeBlendN (13)
 
+        public MrfNodeBlendN() : base(MrfNodeType.BlendN) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeClip : MrfNodeNameFlagsBase
+    public enum MrfClipContainerType : uint
+    {
+        VariableClipSet = 0, // a fwClipSet stored in the move network by the game code (when this clipset is added to the network it enables its fwClipSet.moveNetworkFlags, when removed they are disabled)
+        ClipSet = 1,         // a fwClipSet
+        ClipDictionary = 2,  // a .ycd
+        Unk3 = 3,            // invalid?
+    }
+
+    [TC(typeof(EXP))] public class MrfNodeClip : MrfNodeWithFlagsBase
     {
         // rage__mvNodeClip (15)
 
-        //eg "Clip_XXX" (lowercase hash, XXX number eg 012)
-        //?- delta supplement
-        //?- delta
-        //?- looped
-        //?- phase
-        //?- rate
-
-
-        public MetaHash VariableName { get; set; }
-        public uint Unk2 { get; set; }
-        public MetaHash DictName { get; set; }
+        public MetaHash ClipParameterName { get; set; }
+        public MrfClipContainerType ClipContainerType { get; set; }
+        public MetaHash ClipContainerName { get; set; }
         public MetaHash ClipName { get; set; }
-        public MetaHash Unk5 { get; set; }
-        public MetaHash Unk6 { get; set; }
-        public uint Unk7 { get; set; }
-        public uint Unk8 { get; set; }
+        public float Phase { get; set; }
+        public MetaHash PhaseParameterName { get; set; }
+        public float Rate { get; set; }
+        public MetaHash RateParameterName { get; set; }
+        public float Delta { get; set; }
+        public MetaHash DeltaParameterName { get; set; }
+        public bool Looped { get; set; }
+        public MetaHash LoopedParameterName { get; set; }
+
+        // flags getters and setters
+        public MrfValueType ClipType
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+        public MrfValueType PhaseType
+        {
+            get => (MrfValueType)GetFlagsSubset(2, 3);
+            set => SetFlagsSubset(2, 3, (uint)value);
+        }
+        public MrfValueType RateType
+        {
+            get => (MrfValueType)GetFlagsSubset(4, 3);
+            set => SetFlagsSubset(4, 3, (uint)value);
+        }
+        public MrfValueType DeltaType
+        {
+            get => (MrfValueType)GetFlagsSubset(6, 3);
+            set => SetFlagsSubset(6, 3, (uint)value);
+        }
+        public MrfValueType LoopedType
+        {
+            get => (MrfValueType)GetFlagsSubset(8, 3);
+            set => SetFlagsSubset(8, 3, (uint)value);
+        }
+        public uint UnkFlag10
+        {
+            get => GetFlagsSubset(10, 3);
+            set => SetFlagsSubset(10, 3, value);
+        }
+
+        public MrfNodeClip() : base(MrfNodeType.Clip) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            switch (Flags & 3)
+            switch (ClipType)
             {
-                case 1:
+                case MrfValueType.Literal:
                     {
-                        Unk2 = r.ReadUInt32();
-                        DictName = new MetaHash(r.ReadUInt32());
+                        ClipContainerType = (MrfClipContainerType)r.ReadUInt32();
+                        ClipContainerName = r.ReadUInt32();
 
-                        if (Unk2 != 3)
-                            ClipName = new MetaHash(r.ReadUInt32());
-
+                        if (ClipContainerType != MrfClipContainerType.Unk3)
+                            ClipName = r.ReadUInt32();
                         break;
                     }
-                case 2:
-                    VariableName = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Parameter:
+                    ClipParameterName = r.ReadUInt32();
                     break;
             }
 
-            if (((Flags >> 2) & 3) != 0)
-                Unk5 = new MetaHash(r.ReadUInt32());
+            switch (PhaseType)
+            {
+                case MrfValueType.Literal:
+                    Phase = r.ReadSingle();
+                    break;
+                case MrfValueType.Parameter:
+                    PhaseParameterName = r.ReadUInt32();
+                    break;
+            }
 
-            if (((Flags >> 4) & 3) != 0)
-                Unk6 = new MetaHash(r.ReadUInt32());
+            switch (RateType)
+            {
+                case MrfValueType.Literal:
+                    Rate = r.ReadSingle();
+                    break;
+                case MrfValueType.Parameter:
+                    RateParameterName = r.ReadUInt32();
+                    break;
+            }
 
-            if (((Flags >> 6) & 3) != 0)
-                Unk7 = r.ReadUInt32();
+            switch (DeltaType)
+            {
+                case MrfValueType.Literal:
+                    Delta = r.ReadSingle();
+                    break;
+                case MrfValueType.Parameter:
+                    DeltaParameterName = r.ReadUInt32();
+                    break;
+            }
 
-            if (((Flags >> 8) & 3) != 0)
-                Unk8 = r.ReadUInt32();
+            switch (LoopedType)
+            {
+                case MrfValueType.Literal:
+                    Looped = r.ReadUInt32() != 0;
+                    break;
+                case MrfValueType.Parameter:
+                    LoopedParameterName = r.ReadUInt32();
+                    break;
+            }
         }
 
         public override void Write(DataWriter w)
         {
             base.Write(w);
 
-            switch (Flags & 3)
+            switch (ClipType)
             {
-                case 1:
+                case MrfValueType.Literal:
                     {
-                        w.Write(Unk2);
-                        w.Write(DictName);
+                        w.Write((uint)ClipContainerType);
+                        w.Write(ClipContainerName);
 
-                        if (Unk2 != 3)
+                        if (ClipContainerType != MrfClipContainerType.Unk3)
                             w.Write(ClipName);
 
                         break;
                     }
-                case 2:
-                    w.Write(VariableName);
+                case MrfValueType.Parameter:
+                    w.Write(ClipParameterName);
                     break;
             }
 
-            if (((Flags >> 2) & 3) != 0)
-                w.Write(Unk5);
+            switch (PhaseType)
+            {
+                case MrfValueType.Literal:
+                    w.Write(Phase);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(PhaseParameterName);
+                    break;
+            }
 
-            if (((Flags >> 4) & 3) != 0)
-                w.Write(Unk6);
+            switch (RateType)
+            {
+                case MrfValueType.Literal:
+                    w.Write(Rate);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(RateParameterName);
+                    break;
+            }
 
-            if (((Flags >> 6) & 3) != 0)
-                w.Write(Unk7);
+            switch (DeltaType)
+            {
+                case MrfValueType.Literal:
+                    w.Write(Delta);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(DeltaParameterName);
+                    break;
+            }
 
-            if (((Flags >> 8) & 3) != 0)
-                w.Write(Unk8);
+            switch (LoopedType)
+            {
+                case MrfValueType.Literal:
+                    w.Write(Looped ? 0x01000000 : 0u); // bool originally stored as a big-endian uint, game just checks != 0. Here we do it to output the same bytes as the input
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(LoopedParameterName);
+                    break;
+            }
         }
 
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk17 : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodePm : MrfNodeWithFlagsBase
     {
-        // rage__mvNode* (17)
+        // rage__mvNode* (17) not used in final game
+        // The backing node is rage::crmtNodePm
+        // Pm = Parameterized Motion
+        // In RDR3 renamed to rage::mvNodeMotion/rage::crmtNodeMotion?
 
-        public uint Unk1_Count { get; set; }
-        public byte[] Unk1_Bytes { get; set; }
-        public uint Unk2 { get; set; }
+        // Seems similar to NodeClip but for rage::crpmMotion/.#pm files (added in RDR3, WIP in GTA5/MP3?)
+        // In GTA5 the function pointer used to lookup the rage::crpmMotion is null
+
+        public uint MotionUnkDataLength { get; set; }
+        public byte[] MotionUnkData { get; set; }
+        public MetaHash MotionName => MotionUnkData == null ? 0 : BitConverter.ToUInt32(MotionUnkData, 0);
+        public MetaHash MotionParameterName { get; set; }
         public uint Unk3 { get; set; }
         public uint Unk4 { get; set; }
         public uint Unk5 { get; set; }
         public uint[] Unk6 { get; set; }
 
+        // flags getters and setters
+        public MrfValueType MotionType
+        {
+            // Literal not supported, the function pointer used to lookup the motion is null
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+
+        public MrfNodePm() : base(MrfNodeType.Pm) { }
+
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            if ((Flags & 3) == 1)
+            switch (MotionType)
             {
-                Unk1_Count = r.ReadUInt32();
-                Unk1_Bytes = r.ReadBytes((int)Unk1_Count);
+                case MrfValueType.Literal:
+                    {
+                        MotionUnkDataLength = r.ReadUInt32();
+                        MotionUnkData = r.ReadBytes((int)MotionUnkDataLength);
+                        break;
+                    }
+                case MrfValueType.Parameter:
+                    MotionParameterName = r.ReadUInt32();
+                    break;
             }
-            else if ((Flags & 3) == 2)
-                Unk2 = r.ReadUInt32();
 
             if (((Flags >> 2) & 3) != 0)
                 Unk3 = r.ReadUInt32();
@@ -1753,13 +3398,18 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            if ((Flags & 3) == 1)
+            switch (MotionType)
             {
-                w.Write(Unk1_Count);
-                w.Write(Unk1_Bytes);
+                case MrfValueType.Literal:
+                    {
+                        w.Write(MotionUnkDataLength);
+                        w.Write(MotionUnkData);
+                        break;
+                    }
+                case MrfValueType.Parameter:
+                    w.Write(MotionParameterName);
+                    break;
             }
-            else if ((Flags & 3) == 2)
-                w.Write(Unk2);
 
             if (((Flags >> 2) & 3) != 0)
                 w.Write(Unk3);
@@ -1781,90 +3431,148 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk18 : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodeExtrapolate : MrfNodeWithChildBase
     {
-        // rage__mvNode* (18)
+        // rage__mvNodeExtrapolate (18)
 
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
+        public float Damping { get; set; }
+        public MetaHash DampingParameterName { get; set; }
+
+        // flags getters and setters
+        public MrfValueType DampingType
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+
+        public MrfNodeExtrapolate() : base(MrfNodeType.Extrapolate) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
-
-            if ((Flags & 3) != 0)
-                Unk2 = r.ReadUInt32();
+            switch (DampingType)
+            {
+                case MrfValueType.Literal:
+                    Damping = r.ReadSingle();
+                    break;
+                case MrfValueType.Parameter:
+                    DampingParameterName = r.ReadUInt32();
+                    break;
+            }
         }
 
         public override void Write(DataWriter w)
         {
             base.Write(w);
 
-            w.Write(Unk1);
-
-            if ((Flags & 3) != 0)
-                w.Write(Unk2);
+            switch (DampingType)
+            {
+                case MrfValueType.Literal:
+                    w.Write(Damping);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(DampingParameterName);
+                    break;
+            }
         }
-
     }
 
-    [TC(typeof(EXP))] public class MrfNodeExpression : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodeExpression : MrfNodeWithChildBase
     {
         // rage__mvNodeExpression (19)
 
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
-        public MetaHash ExpressionDict { get; set; }
+        public MetaHash ExpressionDictionaryName { get; set; }
         public MetaHash ExpressionName { get; set; }
-        public MetaHash VariableName { get; set; }
-        public uint Unk6 { get; set; }
-        public uint[][] Unk7 { get; set; }
+        public MetaHash ExpressionParameterName { get; set; }
+        public float Weight { get; set; }
+        public MetaHash WeightParameterName { get; set; }
+        public MrfNodeExpressionVariable[] Variables { get; set; }
+
+        // flags getters and setters
+        public MrfValueType ExpressionType
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+        public MrfValueType WeightType
+        {
+            get => (MrfValueType)GetFlagsSubset(2, 3);
+            set => SetFlagsSubset(2, 3, (uint)value);
+        }
+        public uint VariableFlags
+        {
+            get => GetFlagsSubset(4, 0xFFFFFF);
+            set => SetFlagsSubset(4, 0xFFFFFF, value);
+        }
+        public uint VariableCount
+        {
+            get => GetFlagsSubset(28, 0xF);
+            set => SetFlagsSubset(28, 0xF, value);
+        }
+
+        // VariableFlags accessors by index
+        public MrfValueType GetVariableType(int index)
+        {
+            return (MrfValueType)GetFlagsSubset(4 + 2 * index, 3);
+        }
+        public void SetVariableType(int index, MrfValueType type)
+        {
+            SetFlagsSubset(4 + 2 * index, 3, (uint)type);
+        }
+
+        public MrfNodeExpression() : base(MrfNodeType.Expression) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
-
-            switch (Flags & 3)
+            switch (ExpressionType)
             {
-                case 1:
-                    ExpressionDict = new MetaHash(r.ReadUInt32());
-                    ExpressionName = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Literal:
+                    ExpressionDictionaryName = r.ReadUInt32();
+                    ExpressionName = r.ReadUInt32();
                     break;
-                case 2:
-                    VariableName = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Parameter:
+                    ExpressionParameterName = r.ReadUInt32();
                     break;
             }
 
-            if (((Flags >> 2) & 3) != 0)
-                Unk6 = r.ReadUInt32();
+            switch (WeightType)
+            {
+                case MrfValueType.Literal:
+                    Weight = r.ReadSingle();
+                    break;
+                case MrfValueType.Parameter:
+                    WeightParameterName = r.ReadUInt32();
+                    break;
+            }
 
-            var unk7Count = (Flags >> 28);
+            var varCount = VariableCount;
 
-            if (unk7Count == 0)
+            if (varCount == 0)
                 return;
 
-            var unkHeaderFlag = (Flags >> 4) & 0xFFFFFF;
-            var offset = 0;
+            Variables = new MrfNodeExpressionVariable[varCount];
 
-            Unk7 = new uint[unk7Count][];
-
-            for (int i = 0; i < unk7Count; i++)
+            for (int i = 0; i < varCount; i++)
             {
-                var unkTypeFlag = (unkHeaderFlag >> offset) & 3;
+                var type = GetVariableType(i);
+                var name = r.ReadUInt32();
+                float value = 0.0f;
+                uint valueParameterName = 0;
 
-                var value1 = r.ReadUInt32();
-                uint value2 = 0;
+                switch (type)
+                {
+                    case MrfValueType.Literal:
+                        value = r.ReadSingle();
+                        break;
+                    case MrfValueType.Parameter:
+                        valueParameterName = r.ReadUInt32();
+                        break;
+                }
 
-                if (unkTypeFlag == 2 || unkTypeFlag == 1)
-                    value2 = r.ReadUInt32();
-
-                Unk7[i] = new uint[2] { value1, value2 };
-
-                offset += 2;
+                Variables[i] = new MrfNodeExpressionVariable(name, value, valueParameterName);
             }
         }
 
@@ -1872,63 +3580,99 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            w.Write(Unk1);
-
-            switch (Flags & 3)
+            switch (ExpressionType)
             {
-                case 1:
-                    w.Write(ExpressionDict);
+                case MrfValueType.Literal:
+                    w.Write(ExpressionDictionaryName);
                     w.Write(ExpressionName);
                     break;
-                case 2:
-                    w.Write(VariableName);
+                case MrfValueType.Parameter:
+                    w.Write(ExpressionParameterName);
                     break;
             }
 
-            if (((Flags >> 2) & 3) != 0)
-                w.Write(Unk6);
+            switch (WeightType)
+            {
+                case MrfValueType.Literal:
+                    w.Write(Weight);
+                    break;
+                case MrfValueType.Parameter:
+                    w.Write(WeightParameterName);
+                    break;
+            }
 
-            var unk7Count = (Flags >> 28);
+            var varCount = VariableCount;
 
-            if (unk7Count == 0)
+            if (varCount == 0)
                 return;
 
-            var unkHeaderFlag = (Flags >> 4) & 0xFFFFFF;
-            var offset = 0;
-
-            foreach (var item in Unk7)
+            for (int i = 0; i < varCount; i++)
             {
-                var unkTypeFlag = (unkHeaderFlag >> offset) & 3;
+                var type = GetVariableType(i);
+                var variable = Variables[i];
+                w.Write(variable.Name);
 
-                w.Write(item[0]);
-
-                if (unkTypeFlag == 2 || unkTypeFlag == 1)
-                    w.Write(item[1]);
-
-                offset += 2;
+                switch (type)
+                {
+                    case MrfValueType.Literal:
+                        w.Write(variable.Value);
+                        break;
+                    case MrfValueType.Parameter:
+                        w.Write(variable.ValueParameterName);
+                        break;
+                }
             }
         }
-
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk20 : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public struct MrfNodeExpressionVariable
     {
-        // rage__mvNode* (20)
+        public MetaHash Name { get; set; }
+        public float Value { get; set; } // used if type == Literal
+        public MetaHash ValueParameterName { get; set; } // used if type == Parameter
 
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
-        public uint Unk3 { get; set; }
+        public MrfNodeExpressionVariable(MetaHash name, float value, MetaHash valueParameterName)
+        {
+            Name = name;
+            Value = value;
+            ValueParameterName = valueParameterName;
+        }
+        
+        public override string ToString()
+        {
+            return Name.ToString() + " - " + FloatUtil.ToString(Value) + " | " + ValueParameterName.ToString();
+        }
+    }
+
+    [TC(typeof(EXP))] public class MrfNodeCapture : MrfNodeWithChildBase
+    {
+        // rage::mvNodeCaptureDef (20)
+
+        public MetaHash FrameParameterName { get; set; }
+        public MetaHash Unk3 { get; set; } // unused
+
+        // flags getters and setters
+        public MrfValueType FrameType // only Parameter type is supported
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+        public MrfValueType Unk3Type
+        {
+            get => (MrfValueType)GetFlagsSubset(4, 3);
+            set => SetFlagsSubset(4, 3, (uint)value);
+        }
+
+        public MrfNodeCapture() : base(MrfNodeType.Capture) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
+            if (FrameType != MrfValueType.None)
+                FrameParameterName = r.ReadUInt32();
 
-            if ((Flags & 3) != 0)
-                Unk2 = r.ReadUInt32();
-   
-            if ((Flags & 0x30) != 0)
+            if (Unk3Type != MrfValueType.None)
                 Unk3 = r.ReadUInt32();
         }
 
@@ -1936,64 +3680,93 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            w.Write(Unk1);
+            if (FrameType != MrfValueType.None)
+                w.Write(FrameParameterName);
 
-            if ((Flags & 3) != 0)
-                w.Write(Unk2);
-
-            if ((Flags & 0x30) != 0)
+            if (Unk3Type != MrfValueType.None)
                 w.Write(Unk3);
         }
 
     }
 
-    [TC(typeof(EXP))] public class MrfNodeProxy : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodeProxy : MrfNode
     {
         // rage__mvNodeProxy (21)
 
-        //?- node
+        public MetaHash NodeParameterName { get; set; } // lookups a rage::crmtObserver parameter, then gets the observed node
+
+        public MrfNodeProxy() : base(MrfNodeType.Proxy) { }
+
+        public override void Read(DataReader r)
+        {
+            base.Read(r);
+            NodeParameterName = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(NodeParameterName);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + NodeParameterName.ToString();
+        }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeAddN : MrfNodeNegativeBase
+    [TC(typeof(EXP))] public class MrfNodeAddN : MrfNodeNBase
     {
         // rage__mvNodeAddN (22)
 
+        public MrfNodeAddN() : base(MrfNodeType.AddN) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeIdentity : MrfNodeValueBase
+    [TC(typeof(EXP))] public class MrfNodeIdentity : MrfNode
     {
         // rage__mvNodeIdentity (23)
 
+        public MrfNodeIdentity() : base(MrfNodeType.Identity) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk24 : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodeMerge : MrfNodePairBase
     {
-        // rage__mvNode* (24)
+        // rage::mvNodeMergeDef (24)
 
-        public uint Unk1 { get; set; }
-        public uint Unk2 { get; set; }
-        public uint Unk3 { get; set; }
-        public MetaHash Unk4 { get; set; }
-        public MetaHash Unk5 { get; set; }
+        public MrfSynchronizerTagFlags SynchronizerTagFlags { get; set; }
+        public MetaHash FrameFilterDictionaryName { get; set; }
+        public MetaHash FrameFilterName { get; set; }
+        public MetaHash FrameFilterParameterName { get; set; }
+
+        // flags getters and setters
+        public MrfValueType FrameFilterType
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+        public MrfSynchronizerType SynchronizerType
+        {
+            get => (MrfSynchronizerType)GetFlagsSubset(19, 3);
+            set => SetFlagsSubset(19, 3, (uint)value);
+        }
+
+        public MrfNodeMerge() : base(MrfNodeType.Merge) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
-            Unk2 = r.ReadUInt32();
+            if (SynchronizerType == MrfSynchronizerType.Tag)
+                SynchronizerTagFlags = (MrfSynchronizerTagFlags)r.ReadUInt32();
 
-            if ((Flags & 0x180000) == 0x80000)
-                Unk3 = r.ReadUInt32();
-
-            switch (Flags & 3)
+            switch (FrameFilterType)
             {
-                case 1:
-                    Unk4 = new MetaHash(r.ReadUInt32());
-                    Unk5 = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Literal:
+                    FrameFilterDictionaryName = r.ReadUInt32();
+                    FrameFilterName = r.ReadUInt32();
                     break;
-                case 2:
-                    Unk5 = new MetaHash(r.ReadUInt32());
+                case MrfValueType.Parameter:
+                    FrameFilterParameterName = r.ReadUInt32();
                     break;
             }
         }
@@ -2002,37 +3775,42 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            w.Write(Unk1);
-            w.Write(Unk2);
+            if (SynchronizerType == MrfSynchronizerType.Tag)
+                w.Write((uint)SynchronizerTagFlags);
 
-            if ((Flags & 0x180000) == 0x80000)
-                w.Write(Unk3);
-
-            switch (Flags & 3)
+            switch (FrameFilterType)
             {
-                case 1:
-                    w.Write(Unk4);
-                    w.Write(Unk5);
+                case MrfValueType.Literal:
+                    w.Write(FrameFilterDictionaryName);
+                    w.Write(FrameFilterName);
                     break;
-                case 2:
-                    w.Write(Unk5);
+                case MrfValueType.Parameter:
+                    w.Write(FrameFilterParameterName);
                     break;
             }
         }
-
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk25 : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodePose : MrfNodeWithFlagsBase
     {
-        // rage__mvNode* (25)
+        // rage__mvNodePose (25)
 
-        public uint Unk1 { get; set; }
+        public uint Unk1 { get; set; } // unused, with type==Literal always 0x01000000, probably a bool for the Pose_IsNormalized parameter hardcoded to true in the final game
+
+        // flags getters and setters
+        public MrfValueType Unk1Type
+        {
+            get => (MrfValueType)GetFlagsSubset(0, 3);
+            set => SetFlagsSubset(0, 3, (uint)value);
+        }
+
+        public MrfNodePose() : base(MrfNodeType.Pose) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            if ((Flags & 3) != 0)
+            if (Unk1Type != MrfValueType.None)
                 Unk1 = r.ReadUInt32();
         }
 
@@ -2040,218 +3818,308 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            if ((Flags & 3) != 0)
+            if (Unk1Type != MrfValueType.None)
                 w.Write(Unk1);
         }
 
     }
 
-    [TC(typeof(EXP))] public class MrfNodeMergeN : MrfNodeNegativeBase
+    [TC(typeof(EXP))] public class MrfNodeMergeN : MrfNodeNBase
     {
         // rage__mvNodeMergeN (26)
 
-        //?- filter
-        //?- input filter
-        //?- weight
+        public MrfNodeMergeN() : base(MrfNodeType.MergeN) { }
     }
 
     [TC(typeof(EXP))] public class MrfNodeState : MrfNodeStateBase
     {
         // rage__mvNodeState (27)
 
-        public uint Unk1 { get; set; }
-        public uint VariablesCount { get; set; }
-        public uint Unk3 { get; set; }
-        public uint EventsCount { get; set; }
-        public uint Unk5 { get; set; }
-        public uint Unk6Count { get; set; }
-        public uint Unk7 { get; set; }
-        public uint SignalsCount { get; set; }
+        public int InputParametersOffset { get; set; }
+        public int InputParametersFileOffset { get; set; }
+        public uint InputParameterCount { get; set; }
+        public int EventsOffset { get; set; }
+        public int EventsFileOffset { get; set; }
+        public uint EventCount { get; set; }
+        public int OutputParametersOffset { get; set; }
+        public int OutputParametersFileOffset { get; set; }
+        public uint OutputParameterCount { get; set; }
+        public int OperationsOffset { get; set; }
+        public int OperationsFileOffset { get; set; }
+        public uint OperationCount { get; set; }
 
-        public MrfStructStateMainSection[] Sections { get; set; }
-        public MrfStructStateVariable[] Variables { get; set; }
-        public MrfStructStateEvent[] Events { get; set; }
-        public MrfStructStateUnk6[] Unk6Items { get; set; }
-        public MrfStructStateSignal[] Signals { get; set; }
+        public MrfStateTransition[] Transitions { get; set; }
+        public MrfStateInputParameter[] InputParameters { get; set; }
+        public MrfStateEvent[] Events { get; set; }
+        public MrfStateOutputParameter[] OutputParameters { get; set; }
+        public MrfStateOperation[] Operations { get; set; }
+
+        public MrfNodeState() : base(MrfNodeType.State) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
-            VariablesCount = r.ReadUInt32();
-            Unk3 = r.ReadUInt32();
-            EventsCount = r.ReadUInt32();
-            Unk5 = r.ReadUInt32();
-            Unk6Count = r.ReadUInt32();
-            Unk7 = r.ReadUInt32();
-            SignalsCount = r.ReadUInt32();
+            InputParametersOffset = r.ReadInt32();
+            InputParametersFileOffset = (int)(r.Position + InputParametersOffset - 4);
+            InputParameterCount = r.ReadUInt32();
+            EventsOffset = r.ReadInt32();
+            EventsFileOffset = (int)(r.Position + EventsOffset - 4);
+            EventCount = r.ReadUInt32();
+            OutputParametersOffset = r.ReadInt32();
+            OutputParametersFileOffset = (int)(r.Position + OutputParametersOffset - 4);
+            OutputParameterCount = r.ReadUInt32();
+            OperationsOffset = r.ReadInt32();
+            OperationsFileOffset = (int)(r.Position + OperationsOffset - 4);
+            OperationCount = r.ReadUInt32();
 
 
-            if (StateSectionCount > 0)
+            if (TransitionCount > 0)
             {
-                Sections = new MrfStructStateMainSection[StateSectionCount];
-                for (int i = 0; i < StateSectionCount; i++)
-                    Sections[i] = new MrfStructStateMainSection(r);
+                if (r.Position != TransitionsFileOffset)
+                { } // no hits
+
+                Transitions = new MrfStateTransition[TransitionCount];
+                for (int i = 0; i < TransitionCount; i++)
+                    Transitions[i] = new MrfStateTransition(r);
             }
 
-            if (VariablesCount > 0)
+            if (InputParameterCount > 0)
             {
-                Variables = new MrfStructStateVariable[VariablesCount];
-                for (int i = 0; i < VariablesCount; i++)
-                    Variables[i] = new MrfStructStateVariable(r);
+                if (r.Position != InputParametersFileOffset)
+                { } // no hits
+
+                InputParameters = new MrfStateInputParameter[InputParameterCount];
+                for (int i = 0; i < InputParameterCount; i++)
+                    InputParameters[i] = new MrfStateInputParameter(r);
             }
 
-            if (EventsCount > 0)
+            if (EventCount > 0)
             {
-                Events = new MrfStructStateEvent[EventsCount];
-                for (int i = 0; i < EventsCount; i++)
-                    Events[i] = new MrfStructStateEvent(r);
+                if (r.Position != EventsFileOffset)
+                { } // no hits
+
+                Events = new MrfStateEvent[EventCount];
+                for (int i = 0; i < EventCount; i++)
+                    Events[i] = new MrfStateEvent(r);
             }
 
-            if (Unk6Count > 0)
+            if (OutputParameterCount > 0)
             {
-                Unk6Items = new MrfStructStateUnk6[Unk6Count];
-                for (int i = 0; i < Unk6Count; i++)
-                    Unk6Items[i] = new MrfStructStateUnk6(r);
+                if (r.Position != OutputParametersFileOffset)
+                { } // no hits
+
+                OutputParameters = new MrfStateOutputParameter[OutputParameterCount];
+                for (int i = 0; i < OutputParameterCount; i++)
+                    OutputParameters[i] = new MrfStateOutputParameter(r);
             }
 
-            if (SignalsCount > 0)
+            if (OperationCount > 0)
             {
-                Signals = new MrfStructStateSignal[SignalsCount];
-                for (int i = 0; i < SignalsCount; i++)
-                    Signals[i] = new MrfStructStateSignal(r);
+                if (r.Position != OperationsFileOffset)
+                { } // no hits
+
+                Operations = new MrfStateOperation[OperationCount];
+                for (int i = 0; i < OperationCount; i++)
+                    Operations[i] = new MrfStateOperation(r);
             }
         }
 
         public override void Write(DataWriter w)
         {
+            TransitionCount = (byte)(Transitions?.Length ?? 0);
+            InputParameterCount = (uint)(InputParameters?.Length ?? 0);
+            EventCount = (uint)(Events?.Length ?? 0);
+            OutputParameterCount = (uint)(OutputParameters?.Length ?? 0);
+            OperationCount = (uint)(Operations?.Length ?? 0);
+
             base.Write(w);
 
-            w.Write(Unk1);
-            w.Write(VariablesCount);
-            w.Write(Unk3);
-            w.Write(EventsCount);
-            w.Write(Unk5);
-            w.Write(Unk6Count);
-            w.Write(Unk7);
-            w.Write(SignalsCount);
+            w.Write(InputParametersOffset);
+            w.Write(InputParameterCount);
+            w.Write(EventsOffset);
+            w.Write(EventCount);
+            w.Write(OutputParametersOffset);
+            w.Write(OutputParameterCount);
+            w.Write(OperationsOffset);
+            w.Write(OperationCount);
 
-            if (Sections != null)
-                foreach (var section in Sections)
-                    section.Write(w);
+            if (Transitions != null)
+                foreach (var transition in Transitions)
+                    transition.Write(w);
 
-            if (Variables != null)
-                foreach (var item in Variables)
+            if (InputParameters != null)
+                foreach (var item in InputParameters)
                     item.Write(w);
 
             if (Events != null)
                 foreach (var item in Events)
                     item.Write(w);
 
-            if (Unk6Items != null)
-                foreach (var item in Unk6Items)
+            if (OutputParameters != null)
+                foreach (var item in OutputParameters)
                     item.Write(w);
 
-            if (Signals != null)
-                foreach (var item in Signals)
+            if (Operations != null)
+                foreach (var item in Operations)
                     item.Write(w);
+        }
+
+        public override void ResolveRelativeOffsets(MrfFile mrf)
+        {
+            base.ResolveRelativeOffsets(mrf);
+
+            ResolveNodeOffsetsInTransitions(Transitions, mrf);
+        }
+
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            var offset = FileOffset + 0x20/*sizeof(MrfNodeStateBase)*/ + 8*4/*all offsets/counts*/;
+
+            offset = UpdateNodeOffsetsInTransitions(Transitions, offset, offsetSetToZeroIfNoTransitions: false);
+
+            InputParametersFileOffset = offset;
+            InputParametersOffset = InputParametersFileOffset - (FileOffset + 0x20 + 0);
+            offset += (int)InputParameterCount * 0xC;
+
+            EventsFileOffset = offset;
+            EventsOffset = EventsFileOffset - (FileOffset + 0x20 + 8);
+            offset += (int)EventCount * 0x8;
+
+            OutputParametersFileOffset = offset;
+            OutputParametersOffset = OutputParametersFileOffset - (FileOffset + 0x20 + 0x10);
+            offset += (int)OutputParameterCount * 0xC;
+
+            OperationsFileOffset = offset;
+            OperationsOffset = OperationsFileOffset - (FileOffset + 0x20 + 0x18);
         }
 
         public override string ToString()
         {
-            return base.ToString() + " --- " + Unk1.ToString() + " - " + Unk3.ToString() + " - " + Unk5.ToString() + " - " + Unk7.ToString();
+            return base.ToString();
         }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeInvalid : MrfNodeValueBase
+    [TC(typeof(EXP))] public class MrfNodeInvalid : MrfNode
     {
         // rage__mvNodeInvalid (28)
 
+        public MrfNodeInvalid() : base(MrfNodeType.Invalid) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk29 : MrfNodeFilterUnkBase
+    [TC(typeof(EXP))] public class MrfNodeJointLimit : MrfNodeWithChildAndFilterBase
     {
-        // rage__mvNode* (29)
+        // rage__mvNodeJointLimit (29)
 
+        public MrfNodeJointLimit() : base(MrfNodeType.JointLimit) { }
     }
 
-    [TC(typeof(EXP))] public class MrfNodeSubNetworkClass : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodeSubNetwork : MrfNode
     {
         // rage__mvNodeSubNetworkClass (30)
 
+        public MetaHash SubNetworkParameterName { get; set; } // parameter of type rage::mvSubNetwork to lookup
+
+        public MrfNodeSubNetwork() : base(MrfNodeType.SubNetwork) { }
+
+        public override void Read(DataReader r)
+        {
+            base.Read(r);
+            SubNetworkParameterName = r.ReadUInt32();
+        }
+
+        public override void Write(DataWriter w)
+        {
+            base.Write(w);
+            w.Write(SubNetworkParameterName);
+        }
+
     }
 
-    [TC(typeof(EXP))] public class MrfNodeUnk31 : MrfNodeNameFlagsBase
+    [TC(typeof(EXP))] public class MrfNodeReference : MrfNode
     {
-        // rage__mvNode* (31)
+        // rage__mvNodeReference (31)
 
-        public uint Unk1 { get; set; }
-        public uint Unk2_Count { get; set; }
-        public uint[][] Unk2_Items { get; set; }
-        public uint Unk3_Count { get; set; }
-        public uint[][] Unk3_Items { get; set; }
-        public uint Unk4_Count { get; set; }
-        public uint[][] Unk4_Items { get; set; }
-        public uint Unk5_Count { get; set; }
-        public uint[][] Unk5_Items { get; set; }
+        // Unused in the final game but from testing, seems to work fine initially but when it finishes it crashes calling a pure virtual function rage::crmtNode::GetNodeTypeInfo
+        // Maybe some kind of double-free/use-after-free bug, not sure if a R* bug or an issue with the generated MRF file.
+
+        public MetaHash MoveNetworkName { get; set; } // .mrf file to lookup. Its RootState must be MrfNodeState, not MrfNodeStateMachine or it will crash
+        public int InitialParametersOffset { get; set; }
+        public int InitialParametersFileOffset { get; set; }
+        public uint InitialParameterCount { get; set; }
+        public MrfNodeReferenceInitialParameter[] InitialParameters { get; set; } // parameters added when the new network is created
+        public uint ImportedParameterCount { get; set; }
+        public MrfNodeReferenceImportedParameter[] ImportedParameters { get; set; } // each update these parameters are copied from the parent network to the new network
+        public uint MoveNetworkFlagCount { get; set; }
+        public MrfNodeReferenceMoveNetworkFlag[] MoveNetworkFlags { get; set; } // each update copies flag 'Name' state in the parent network to another bit in the *parent* network flags, the new bit position is defined by 'NewName' in the MrfFile.MoveNetworkFlags of the new network
+        public uint MoveNetworkTriggerCount { get; set; }
+        public MrfNodeReferenceMoveNetworkTrigger[] MoveNetworkTriggers { get; set; } // same as with the flags
+
+        public MrfNodeReference() : base(MrfNodeType.Reference) { }
 
         public override void Read(DataReader r)
         {
             base.Read(r);
 
-            Unk1 = r.ReadUInt32();
-            Unk2_Count = r.ReadUInt32();
-            Unk3_Count = r.ReadUInt32();
-            Unk4_Count = r.ReadUInt32();
-            Unk5_Count = r.ReadUInt32();
+            MoveNetworkName = r.ReadUInt32();
+            InitialParametersOffset = r.ReadInt32();
+            InitialParametersFileOffset = (int)(r.Position + InitialParametersOffset - 4);
+            InitialParameterCount = r.ReadUInt32();
+            ImportedParameterCount = r.ReadUInt32();
+            MoveNetworkFlagCount = r.ReadUInt32();
+            MoveNetworkTriggerCount = r.ReadUInt32();
 
-            if (Unk3_Count > 0)
+            if (ImportedParameterCount > 0)
             {
-                Unk3_Items = new uint[Unk3_Count][];
+                ImportedParameters = new MrfNodeReferenceImportedParameter[ImportedParameterCount];
 
-                for (int i = 0; i < Unk3_Count; i++)
+                for (int i = 0; i < ImportedParameterCount; i++)
                 {
-                    var value1 = r.ReadUInt32();
-                    var value2 = r.ReadUInt32();
-                    Unk3_Items[i] = new uint[] { value1, value2 };
+                    var name = r.ReadUInt32();
+                    var newName = r.ReadUInt32();
+                    ImportedParameters[i] = new MrfNodeReferenceImportedParameter(name, newName);
                 }
             }
 
-            if (Unk4_Count > 0)
+            if (MoveNetworkFlagCount > 0)
             {
-                Unk4_Items = new uint[Unk4_Count][];
+                MoveNetworkFlags = new MrfNodeReferenceMoveNetworkFlag[MoveNetworkFlagCount];
 
-                for (int i = 0; i < Unk4_Count; i++)
+                for (int i = 0; i < MoveNetworkFlagCount; i++)
                 {
-                    var value1 = r.ReadUInt32();
-                    var value2 = r.ReadUInt32();
-                    Unk4_Items[i] = new uint[] { value1, value2 };
+                    var name = r.ReadUInt32();
+                    var newName = r.ReadUInt32();
+                    MoveNetworkFlags[i] = new MrfNodeReferenceMoveNetworkFlag(name, newName);
                 }
             }
 
-            if (Unk5_Count > 0)
+            if (MoveNetworkTriggerCount > 0)
             {
-                Unk5_Items = new uint[Unk5_Count][];
+                MoveNetworkTriggers = new MrfNodeReferenceMoveNetworkTrigger[MoveNetworkTriggerCount];
 
-                for (int i = 0; i < Unk5_Count; i++)
+                for (int i = 0; i < MoveNetworkTriggerCount; i++)
                 {
-                    var value1 = r.ReadUInt32();
-                    var value2 = r.ReadUInt32();
-                    Unk5_Items[i] = new uint[] { value1, value2 };
+                    var name = r.ReadUInt32();
+                    var newName = r.ReadUInt32();
+                    MoveNetworkTriggers[i] = new MrfNodeReferenceMoveNetworkTrigger(name, newName);
                 }
             }
 
-            if (Unk2_Count > 0)
+            if (InitialParameterCount > 0)
             {
-                Unk2_Items = new uint[Unk2_Count][];
+                if (r.Position != InitialParametersFileOffset)
+                { }
 
-                for (int i = 0; i < Unk2_Count; i++)
+                InitialParameters = new MrfNodeReferenceInitialParameter[InitialParameterCount];
+
+                for (int i = 0; i < InitialParameterCount; i++)
                 {
-                    var value1 = r.ReadUInt32();
-                    var value2 = r.ReadUInt32();
-                    var value3 = r.ReadUInt32();
-                    Unk2_Items[i] = new uint[] { value1, value2, value3 };
+                    var type = r.ReadUInt32();
+                    var name = r.ReadUInt32();
+                    var data = r.ReadInt32();
+                    InitialParameters[i] = new MrfNodeReferenceInitialParameter(type, name, data);
                 }
             }
         }
@@ -2260,52 +4128,140 @@ namespace CodeWalker.GameFiles
         {
             base.Write(w);
 
-            w.Write(Unk1);
-            w.Write(Unk2_Count);
-            w.Write(Unk3_Count);
-            w.Write(Unk4_Count);
-            w.Write(Unk5_Count);
+            InitialParameterCount = (uint)(InitialParameters?.Length ?? 0);
+            ImportedParameterCount = (uint)(ImportedParameters?.Length ?? 0);
+            MoveNetworkFlagCount = (uint)(MoveNetworkFlags?.Length ?? 0);
+            MoveNetworkTriggerCount = (uint)(MoveNetworkTriggers?.Length ?? 0);
 
-            if (Unk3_Count > 0)
+            w.Write(MoveNetworkName);
+            w.Write(InitialParametersOffset);
+            w.Write(InitialParameterCount);
+            w.Write(ImportedParameterCount);
+            w.Write(MoveNetworkFlagCount);
+            w.Write(MoveNetworkTriggerCount);
+
+            if (ImportedParameterCount > 0)
             {
-                foreach (var entry in Unk3_Items)
+                foreach (var entry in ImportedParameters)
                 {
-                    w.Write(entry[0]);
-                    w.Write(entry[1]);
+                    w.Write(entry.Name);
+                    w.Write(entry.NewName);
                 }
             }
 
-            if (Unk4_Count > 0)
+            if (MoveNetworkFlagCount > 0)
             {
-                foreach (var entry in Unk4_Items)
+                foreach (var entry in MoveNetworkFlags)
                 {
-                    w.Write(entry[0]);
-                    w.Write(entry[1]);
+                    w.Write(entry.Name);
+                    w.Write(entry.NewName);
                 }
             }
 
-            if (Unk5_Count > 0)
+            if (MoveNetworkTriggerCount > 0)
             {
-                foreach (var entry in Unk5_Items)
+                foreach (var entry in MoveNetworkTriggers)
                 {
-                    w.Write(entry[0]);
-                    w.Write(entry[1]);
+                    w.Write(entry.Name);
+                    w.Write(entry.NewName);
                 }
             }
 
-            if (Unk2_Count > 0)
+            if (InitialParameterCount > 0)
             {
-                foreach (var entry in Unk2_Items)
+                // FIXME: Data when used as offset is not updated and not sure where what it would point to should be written
+                foreach (var entry in InitialParameters)
                 {
-                    w.Write(entry[0]);
-                    w.Write(entry[1]);
-                    w.Write(entry[2]);
+                    w.Write(entry.Type);
+                    w.Write(entry.Name);
+                    w.Write(entry.Data);
                 }
             }
         }
 
+        public override void UpdateRelativeOffsets()
+        {
+            base.UpdateRelativeOffsets();
+
+            var offset = FileOffset + 0x20;
+            offset += (int)ImportedParameterCount * 8;
+            offset += (int)MoveNetworkFlagCount * 8;
+            offset += (int)MoveNetworkTriggerCount * 8;
+            InitialParametersFileOffset = offset;
+            InitialParametersOffset = InitialParametersFileOffset - (FileOffset + 0xC);
+        }
     }
     
+    [TC(typeof(EXP))] public struct MrfNodeReferenceImportedParameter
+    {
+        public MetaHash Name { get; set; } // name in the parent network
+        public MetaHash NewName { get; set; } // name in the new network
+
+        public MrfNodeReferenceImportedParameter(MetaHash name, MetaHash newName)
+        {
+            Name = name;
+            NewName = newName;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} - {NewName}";
+        }
+    }
+    
+    [TC(typeof(EXP))] public struct MrfNodeReferenceInitialParameter
+    {
+        public uint Type { get; set; } // Animation = 0, Clip = 1, Expression = 2, Motion = 4, Float = 7
+        public MetaHash Name { get; set; }
+        public int Data { get; set; } //  For Type==Float, this the float value. For the other types, this is the offset to the actual data needed for the lookup (e.g. dictionary/name hash pair).
+
+        public MrfNodeReferenceInitialParameter(uint type, MetaHash name, int data)
+        {
+            Type = type;
+            Name = name;
+            Data = data;
+        }
+
+        public override string ToString()
+        {
+            return $"{Type} - {Name} - {Data}";
+        }
+    }
+    
+    [TC(typeof(EXP))] public struct MrfNodeReferenceMoveNetworkFlag
+    {
+        public MetaHash Name { get; set; } // name in the parent network
+        public MetaHash NewName { get; set; } // name in the new network
+
+        public MrfNodeReferenceMoveNetworkFlag(MetaHash name, MetaHash newName)
+        {
+            Name = name;
+            NewName = newName;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} - {NewName}";
+        }
+    }
+    
+    [TC(typeof(EXP))] public struct MrfNodeReferenceMoveNetworkTrigger
+    {
+        public MetaHash Name { get; set; } // name in the parent network
+        public MetaHash NewName { get; set; } // name in the new network
+
+        public MrfNodeReferenceMoveNetworkTrigger(MetaHash name, MetaHash newName)
+        {
+            Name = name;
+            NewName = newName;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name} - {NewName}";
+        }
+    }
+
     #endregion
 
 }

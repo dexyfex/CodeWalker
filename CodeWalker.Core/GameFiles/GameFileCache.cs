@@ -4554,6 +4554,103 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
+
+            // create and save a custom MRF
+            {
+                // Usage example:
+                //  RequestAnimDict("move_m@alien")
+                //  TaskMoveNetworkByName(PlayerPedId(), "mymrf", 0.0, true, 0, 0)
+                //  SetTaskMoveNetworkSignalFloat(PlayerPedId(), "sprintrate", 2.0)
+                var mymrf = new MrfFile();
+                var clip1 = new MrfNodeClip
+                {
+                    NodeIndex = 0,
+                    Name = JenkHash.GenHash("clip1"),
+                    ClipType = MrfValueType.Literal,
+                    ClipContainerType = MrfClipContainerType.ClipDictionary,
+                    ClipContainerName = JenkHash.GenHash("move_m@alien"),
+                    ClipName = JenkHash.GenHash("alien_run"),
+                    LoopedType = MrfValueType.Literal,
+                    Looped = true,
+                };
+                var clip2 = new MrfNodeClip
+                {
+                    NodeIndex = 0,
+                    Name = JenkHash.GenHash("clip2"),
+                    ClipType = MrfValueType.Literal,
+                    ClipContainerType = MrfClipContainerType.ClipDictionary,
+                    ClipContainerName = JenkHash.GenHash("move_m@alien"),
+                    ClipName = JenkHash.GenHash("alien_sprint"),
+                    LoopedType = MrfValueType.Literal,
+                    Looped = true,
+                    RateType = MrfValueType.Parameter,
+                    RateParameterName = JenkHash.GenHash("sprintrate"),
+                };
+                var clipstate1 = new MrfNodeState
+                {
+                    NodeIndex = 0,
+                    Name = JenkHash.GenHash("clipstate1"),
+                    InitialNode = clip1,
+                    Transitions = new[]
+                    {
+                        new MrfStateTransition
+                        {
+                            Duration = 2.5f,
+                            HasDurationParameter = false,
+                            //TargetState = clipstate2,
+                            Conditions = new[]
+                            {
+                                new MrfConditionTimeGreaterThan { Value = 4.0f },
+                            },
+                        }
+                    },
+                };
+                var clipstate2 = new MrfNodeState
+                {
+                    NodeIndex = 1,
+                    Name = JenkHash.GenHash("clipstate2"),
+                    InitialNode = clip2,
+                    Transitions = new[]
+                    {
+                        new MrfStateTransition
+                        {
+                            Duration = 2.5f,
+                            HasDurationParameter = false,
+                            //TargetState = clipstate1,
+                            Conditions = new[]
+                            {
+                                new MrfConditionTimeGreaterThan { Value = 4.0f },
+                            },
+                }
+                    },
+                };
+                clipstate1.Transitions[0].TargetState = clipstate2;
+                clipstate2.Transitions[0].TargetState = clipstate1;
+                var rootsm = new MrfNodeStateMachine
+                {
+                    NodeIndex = 0,
+                    Name = JenkHash.GenHash("statemachine"),
+                    States = new[]
+                    {
+                        new MrfStateRef { StateName = clipstate1.Name, State = clipstate1 },
+                        new MrfStateRef { StateName = clipstate2.Name, State = clipstate2 },
+                    },
+                    InitialNode = clipstate1,
+                };
+                mymrf.AllNodes = new MrfNode[]
+                {
+                    rootsm,
+                    clipstate1,
+                    clip1,
+                    clipstate2,
+                    clip2,
+                };
+                mymrf.RootState = rootsm;
+
+                var mymrfData = mymrf.Save();
+                //File.WriteAllBytes("mymrf.mrf", mymrfData);
+                //File.WriteAllText("mymrf.dot", mymrf.DumpStateGraph());
+            }
         }
         public void TestFxcs()
         {
