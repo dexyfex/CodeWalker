@@ -10561,6 +10561,13 @@ namespace CodeWalker.GameFiles
         entity_set_test_lights = 2832535535,
         entity_set_test_lights_cheap = 1088634977,
         entity_set_time_trial = 3456105870,
+        
+        //entity sets criminal enterprises
+        entity_set_office = 716833481,
+        entity_set_light_option_1 = 328084431,
+        entity_set_light_option_2 = 2971821821,
+        entity_set_light_option_3 = 2354126171,
+        entity_set_tint_options = 2873957312,
 
         //popgroups.ymt - From FiveM
         //For the pedgroups/item/name field
