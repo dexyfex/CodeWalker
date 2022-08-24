@@ -4543,6 +4543,39 @@ namespace CodeWalker.GameFiles
                                 }
                                 else
                                 { }
+
+                                var xml = MrfXml.GetXml(mrffile);
+                                var mrf2 = XmlMrf.GetMrf(xml);
+                                var ndata2 = mrf2.Save();
+                                if (ndata2.Length == odata.Length)
+                                {
+                                    for (int i = 0; i < ndata2.Length; i++)
+                                    {
+                                        if (ndata2[i] != odata[i] && !mrfDiffCanBeIgnored(i, mrffile))
+                                        { break; }
+                                    }
+                                }
+                                else
+                                { }
+
+                                bool mrfDiffCanBeIgnored(int fileOffset, MrfFile originalMrf)
+                                {
+                                    foreach (var n in originalMrf.AllNodes)
+                                    {
+                                        if (n is MrfNodeStateBase state)
+                                        {
+                                            // If TransitionCount is 0, the TransitionsOffset value can be ignored.
+                                            // TransitionsOffset in original MRFs isn't always set to 0 in this case,
+                                            // XML-imported MRFs always set it to 0
+                                            if (state.TransitionCount == 0 && fileOffset == (state.FileOffset + 0x1C))
+                                            {
+                                                return true;
+                                            }
+                                        }
+                                    }
+
+                                    return false;
+                                }
                             }
                             else
                             { }

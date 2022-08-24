@@ -147,6 +147,11 @@ namespace CodeWalker.GameFiles
                 HeightmapFile hmf = RpfFile.GetFile<HeightmapFile>(e, data);
                 return GetXml(hmf, out filename, outputfolder);
             }
+            else if (fnl.EndsWith(".mrf"))
+            {
+                MrfFile mrf = RpfFile.GetFile<MrfFile>(e, data);
+                return GetXml(mrf, out filename, outputfolder);
+            }
             filename = fn;
             return string.Empty;
         }
@@ -313,6 +318,12 @@ namespace CodeWalker.GameFiles
             var fn = (hmf?.Name) ?? "";
             filename = fn + ".xml";
             return HmapXml.GetXml(hmf);
+        }
+        public static string GetXml(MrfFile mrf, out string filename, string outputfolder)
+        {
+            var fn = (mrf?.Name) ?? "";
+            filename = fn + ".xml";
+            return MrfXml.GetXml(mrf);
         }
 
 
@@ -2231,6 +2242,7 @@ namespace CodeWalker.GameFiles
         Fxc = 20,
         Heightmap = 21,
         Ypdb = 22,
+        Mrf = 23,
     }
 
 }

@@ -298,7 +298,7 @@ namespace CodeWalker
             InitFileType(".png", "Portable Network Graphics", 16);
             InitFileType(".dds", "DirectDraw Surface", 16);
             InitFileType(".ytd", "Texture Dictionary", 16, FileTypeAction.ViewYtd, true);
-            InitFileType(".mrf", "Move Network File", 18, FileTypeAction.ViewMrf);
+            InitFileType(".mrf", "Move Network File", 18, FileTypeAction.ViewMrf, true);
             InitFileType(".ycd", "Clip Dictionary", 18, FileTypeAction.ViewYcd, true);
             InitFileType(".ypt", "Particle Effect", 18, FileTypeAction.ViewModel, true);
             InitFileType(".ybn", "Static Collisions", 19, FileTypeAction.ViewModel, true);
@@ -1793,9 +1793,9 @@ namespace CodeWalker
         private void ViewMrf(string name, string path, byte[] data, RpfFileEntry e)
         {
             var mrf = RpfFile.GetFile<MrfFile>(e, data);
-            GenericForm f = new GenericForm(this);
+            MetaForm f = new MetaForm(this);
             f.Show();
-            f.LoadFile(mrf, mrf.RpfFileEntry);
+            f.LoadMeta(mrf);
         }
         private void ViewNametable(string name, string path, byte[] data, RpfFileEntry e)
         {
