@@ -2708,6 +2708,20 @@ namespace CodeWalker.Project.Panels
         {
             inDoubleClick = (e.Clicks > 1); //disabling doubleclick expand/collapse
         }
+
+        private void ProjectTreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetData(DataFormats.FileDrop) != null) //disabling drag and drop text
+                e.Effect = DragDropEffects.All;
+        }
+
+        private void ProjectTreeView_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[]) e.Data.GetData(DataFormats.FileDrop);
+            ProjectForm.OpenFiles(files);
+
+        }
+
     }
     public delegate void ProjectExplorerItemSelectHandler(object item);
     public delegate void ProjectExplorerItemActivateHandler(object item);

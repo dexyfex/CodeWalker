@@ -34,6 +34,7 @@
             // 
             // ProjectTreeView
             // 
+            this.ProjectTreeView.AllowDrop = true;
             this.ProjectTreeView.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ProjectTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ProjectTreeView.FullRowSelect = true;
@@ -47,6 +48,8 @@
             this.ProjectTreeView.BeforeCollapse += new System.Windows.Forms.TreeViewCancelEventHandler(this.ProjectTreeView_BeforeCollapse);
             this.ProjectTreeView.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.ProjectTreeView_BeforeExpand);
             this.ProjectTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.ProjectTreeView_AfterSelect);
+            this.ProjectTreeView.DragDrop += new System.Windows.Forms.DragEventHandler(this.ProjectTreeView_DragDrop);
+            this.ProjectTreeView.DragEnter += new System.Windows.Forms.DragEventHandler(this.ProjectTreeView_DragEnter);
             this.ProjectTreeView.DoubleClick += new System.EventHandler(this.ProjectTreeView_DoubleClick);
             this.ProjectTreeView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ProjectTreeView_MouseDown);
             // 
