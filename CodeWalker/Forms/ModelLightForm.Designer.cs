@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ModelLightForm));
             this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
             this.DuplicateLightButton = new System.Windows.Forms.Button();
@@ -120,6 +121,9 @@
             this.MoveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RotateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ScaleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.LightMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.newLightToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteLightToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
@@ -140,6 +144,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.ColourGUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ColourRUpDown)).BeginInit();
             this.MainMenu.SuspendLayout();
+            this.LightMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // MainSplitContainer
@@ -202,6 +207,7 @@
             this.LightsTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.LightsTreeView.ContextMenuStrip = this.LightMenuStrip;
             this.LightsTreeView.FullRowSelect = true;
             this.LightsTreeView.HideSelection = false;
             this.LightsTreeView.Location = new System.Drawing.Point(3, 3);
@@ -1213,6 +1219,28 @@
             this.ScaleMenuItem.ToolTipText = "Scale";
             this.ScaleMenuItem.Click += new System.EventHandler(this.ScaleMenuItem_Click);
             // 
+            // LightMenuStrip
+            // 
+            this.LightMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newLightToolStripMenuItem,
+            this.deleteLightToolStripMenuItem});
+            this.LightMenuStrip.Name = "LightMenuStrip";
+            this.LightMenuStrip.Size = new System.Drawing.Size(138, 48);
+            // 
+            // newLightToolStripMenuItem
+            // 
+            this.newLightToolStripMenuItem.Name = "newLightToolStripMenuItem";
+            this.newLightToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.newLightToolStripMenuItem.Text = "New Light";
+            this.newLightToolStripMenuItem.Click += new System.EventHandler(this.newLightToolStripMenuItem_Click);
+            // 
+            // deleteLightToolStripMenuItem
+            // 
+            this.deleteLightToolStripMenuItem.Name = "deleteLightToolStripMenuItem";
+            this.deleteLightToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
+            this.deleteLightToolStripMenuItem.Text = "Delete Light";
+            this.deleteLightToolStripMenuItem.Click += new System.EventHandler(this.deleteLightToolStripMenuItem_Click);
+            // 
             // ModelLightForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1247,6 +1275,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.ColourRUpDown)).EndInit();
             this.MainMenu.ResumeLayout(false);
             this.MainMenu.PerformLayout();
+            this.LightMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1345,5 +1374,8 @@
         private System.Windows.Forms.Button DeleteLightButton;
         private System.Windows.Forms.Button NewLightButton;
         private System.Windows.Forms.Button DuplicateLightButton;
+        private System.Windows.Forms.ContextMenuStrip LightMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem newLightToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteLightToolStripMenuItem;
     }
 }
