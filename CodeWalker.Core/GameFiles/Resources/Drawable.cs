@@ -4724,6 +4724,7 @@ namespace CodeWalker.GameFiles
             YdrXml.ValueTag(sb, indent, "CoronaSize", FloatUtil.ToString(CoronaSize));
             YdrXml.ValueTag(sb, indent, "VolumeOuterExponent", FloatUtil.ToString(VolumeOuterExponent));
             YdrXml.ValueTag(sb, indent, "LightFadeDistance", LightFadeDistance.ToString());
+            YdrXml.ValueTag(sb, indent, "ShadowBlur", ShadowBlur.ToString());
             YdrXml.ValueTag(sb, indent, "ShadowFadeDistance", ShadowFadeDistance.ToString());
             YdrXml.ValueTag(sb, indent, "SpecularFadeDistance", SpecularFadeDistance.ToString());
             YdrXml.ValueTag(sb, indent, "VolumetricFadeDistance", VolumetricFadeDistance.ToString());
@@ -4766,6 +4767,7 @@ namespace CodeWalker.GameFiles
             CoronaSize = Xml.GetChildFloatAttribute(node, "CoronaSize", "value");
             VolumeOuterExponent = Xml.GetChildFloatAttribute(node, "VolumeOuterExponent", "value");
             LightFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "LightFadeDistance", "value");
+            ShadowBlur = (byte)Xml.GetChildUIntAttribute(node, "ShadowBlur", "value");
             ShadowFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "ShadowFadeDistance", "value");
             SpecularFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "SpecularFadeDistance", "value");
             VolumetricFadeDistance = (byte)Xml.GetChildUIntAttribute(node, "VolumetricFadeDistance", "value");
