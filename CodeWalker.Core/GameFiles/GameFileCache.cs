@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -68,6 +68,7 @@ namespace CodeWalker.GameFiles
 
         public bool EnableDlc { get; set; } = false;//true;//
         public bool EnableMods { get; set; } = false;
+        public bool EnableCayoWater { get; set; } = false;
 
         public List<string> DlcPaths { get; set; } = new List<string>();
         public List<RpfFile> DlcActiveRpfs { get; set; } = new List<RpfFile>();
@@ -143,7 +144,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public GameFileCache(long size, double cacheTime, string folder, string dlc, bool mods, string excludeFolders)
+        public GameFileCache(long size, double cacheTime, string folder, string dlc, bool mods, string excludeFolders, bool cayoWater)
         {
             mainCache = new Cache<GameFileCacheKey, GameFile>(size, cacheTime);//2GB is good as default
             SelectedDlc = dlc;
@@ -151,6 +152,7 @@ namespace CodeWalker.GameFiles
             EnableMods = mods;
             GTAFolder = folder;
             ExcludeFolders = excludeFolders;
+            EnableCayoWater = cayoWater;
         }
 
 
@@ -184,6 +186,7 @@ namespace CodeWalker.GameFiles
                 RpfMan = new RpfManager();
                 RpfMan.ExcludePaths = GetExcludePaths();
                 RpfMan.EnableMods = EnableMods;
+                RpfMan.EnableCayoWater = EnableCayoWater;
                 RpfMan.BuildExtendedJenkIndex = BuildExtendedJenkIndex;
                 RpfMan.Init(GTAFolder, UpdateStatus, ErrorLog);//, true);
 
@@ -247,6 +250,7 @@ namespace CodeWalker.GameFiles
             PreloadedMode = true;
             EnableDlc = true;//just so everything (mainly archetypes) will load..
             EnableMods = false;
+            EnableCayoWater = false;
             RpfMan = new RpfManager(); //try not to use this in this mode...
             RpfMan.Init(allRpfs);
 
@@ -1958,6 +1962,29 @@ namespace CodeWalker.GameFiles
 
                         InitGlobal();
                         InitDlc();
+                    }
+                }
+            }
+
+            return change;
+        }
+
+        public bool SetCayoWaterEnabled(bool enable)
+        {
+            bool change = (enable != EnableCayoWater);
+
+            if (change)
+            {
+                lock (updateSyncRoot)
+                {
+                    //lock (textureSyncRoot)
+                    {
+                        EnableCayoWater = enable;
+                        RpfMan.EnableCayoWater = enable;
+
+                        mainCache.Clear();
+
+                        InitGlobal();
                     }
                 }
             }

@@ -15,6 +15,7 @@ namespace CodeWalker.GameFiles
         public string Folder { get; private set; }
         public string[] ExcludePaths { get; set; }
         public bool EnableMods { get; set; }
+        public bool EnableCayoWater { get; set; }
         public bool BuildExtendedJenkIndex { get; set; } = true;
         public Action<string> UpdateStatus { get; private set; }
         public Action<string> ErrorLog { get; private set; }
