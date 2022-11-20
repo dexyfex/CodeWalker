@@ -71,11 +71,11 @@ namespace CodeWalker.Project.Panels
                 UnkBytesTextBox.Text = string.Empty;
                 Flags0TextBox.Text = string.Empty;
                 Flags1TextBox.Text = string.Empty;
-                Flags2TextBox.Text = string.Empty;
+                Unk13TextBox.Text = string.Empty;
                 Hash0TextBox.Text = string.Empty;
                 SceneTextBox.Text = string.Empty;
                 HashesTextBox.Text = string.Empty;
-                ExtParamsTextBox.Text = string.Empty;
+                DependentAmbiencesTextBox.Text = string.Empty;
                 populatingui = false;
             }
             else
@@ -105,7 +105,7 @@ namespace CodeWalker.Project.Panels
                 UnkBytesTextBox.Text = string.Format("{0}, {1}, {2}", z.Unk14, z.Unk15, z.Unk16);
                 Flags0TextBox.Text = z.Flags0.Hex;
                 Flags1TextBox.Text = z.Flags1.Hex;
-                Flags2TextBox.Text = z.Flags2.Hex;
+                Unk13TextBox.Text = z.Unk13.Hex;
                 Hash0TextBox.Text = z.UnkHash0.ToString();
                 SceneTextBox.Text = z.Scene.ToString();
 
@@ -120,9 +120,9 @@ namespace CodeWalker.Project.Panels
                 HashesTextBox.Text = sb.ToString();
 
                 sb.Clear();
-                if (z.ExtParams != null)
+                if (z.DependentAmbiences != null)
                 {
-                    foreach (var extparam in z.ExtParams)
+                    foreach (var extparam in z.DependentAmbiences)
                     {
                         sb.Append(extparam.Name.ToString());
                         sb.Append(", ");
@@ -130,7 +130,7 @@ namespace CodeWalker.Project.Panels
                         sb.AppendLine();
                     }
                 }
-                ExtParamsTextBox.Text = sb.ToString();
+                DependentAmbiencesTextBox.Text = sb.ToString();
 
                 populatingui = false;
 
@@ -476,20 +476,24 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Flags2TextBox_TextChanged(object sender, EventArgs e)
+        private void Unk13TextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            uint flags = 0;
-            if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            var hashstr = Unk13TextBox.Text;
+            uint hash = 0;
+            if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
             {
-                if (CurrentZone.AudioZone.Flags2 != flags)
-                {
-                    CurrentZone.AudioZone.Flags2 = flags;
+                hash = JenkHash.GenHash(hashstr);
+                JenkIndex.Ensure(hashstr);
+            }
 
-                    ProjectItemChanged();
-                }
+            if (CurrentZone.AudioZone.Unk13 != hash)
+            {
+                CurrentZone.AudioZone.Unk13 = hash;
+
+                ProjectItemChanged();
             }
         }
 
@@ -562,21 +566,21 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void ExtParamsTextBox_TextChanged(object sender, EventArgs e)
+        private void DependentAmbiencesTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var paramstrs = ExtParamsTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var paramstrs = DependentAmbiencesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
             {
-                var paramlist = new List<Dat151AmbientZone.ExtParam>();
+                var paramlist = new List<Dat151AmbientZone.DependentAmbience>();
                 foreach (var paramstr in paramstrs)
                 {
                     var paramvals = paramstr.Split(',');
                     if (paramvals?.Length == 2)
                     {
-                        var param = new Dat151AmbientZone.ExtParam();
+                        var param = new Dat151AmbientZone.DependentAmbience();
                         var hashstr = paramvals[0].Trim();
                         var valstr = paramvals[1].Trim();
                         uint hash = 0;
@@ -591,8 +595,8 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                CurrentZone.AudioZone.ExtParams = paramlist.ToArray();
-                CurrentZone.AudioZone.ExtParamsCount = (uint)paramlist.Count;
+                CurrentZone.AudioZone.DependentAmbiences = paramlist.ToArray();
+                CurrentZone.AudioZone.DependentAmbiencesCount = (uint)paramlist.Count;
 
                 ProjectItemChanged();
             }

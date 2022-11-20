@@ -35,11 +35,11 @@
             this.HashesTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.DeleteButton = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
-            this.Flags2TextBox = new System.Windows.Forms.TextBox();
+            this.TunnelTextBox = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
-            this.Flags1TextBox = new System.Windows.Forms.TextBox();
+            this.WallaTextBox = new System.Windows.Forms.TextBox();
             this.label13 = new System.Windows.Forms.Label();
-            this.Flags0TextBox = new System.Windows.Forms.TextBox();
+            this.FlagsTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // label12
@@ -102,15 +102,15 @@
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(44, 13);
             this.label21.TabIndex = 13;
-            this.label21.Text = "Flags 2:";
+            this.label21.Text = "Tunnel:";
             // 
-            // Flags2TextBox
+            // TunnelTextBox
             // 
-            this.Flags2TextBox.Location = new System.Drawing.Point(108, 84);
-            this.Flags2TextBox.Name = "Flags2TextBox";
-            this.Flags2TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags2TextBox.TabIndex = 14;
-            this.Flags2TextBox.TextChanged += new System.EventHandler(this.Flags2TextBox_TextChanged);
+            this.TunnelTextBox.Location = new System.Drawing.Point(108, 84);
+            this.TunnelTextBox.Name = "TunnelTextBox";
+            this.TunnelTextBox.Size = new System.Drawing.Size(155, 20);
+            this.TunnelTextBox.TabIndex = 14;
+            this.TunnelTextBox.TextChanged += new System.EventHandler(this.TunnelTextBox_TextChanged);
             // 
             // label14
             // 
@@ -119,15 +119,15 @@
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(44, 13);
             this.label14.TabIndex = 11;
-            this.label14.Text = "Flags 1:";
+            this.label14.Text = "Walla:";
             // 
-            // Flags1TextBox
+            // WallaTextBox
             // 
-            this.Flags1TextBox.Location = new System.Drawing.Point(108, 60);
-            this.Flags1TextBox.Name = "Flags1TextBox";
-            this.Flags1TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags1TextBox.TabIndex = 12;
-            this.Flags1TextBox.TextChanged += new System.EventHandler(this.Flags1TextBox_TextChanged);
+            this.WallaTextBox.Location = new System.Drawing.Point(108, 60);
+            this.WallaTextBox.Name = "WallaTextBox";
+            this.WallaTextBox.Size = new System.Drawing.Size(155, 20);
+            this.WallaTextBox.TabIndex = 12;
+            this.WallaTextBox.TextChanged += new System.EventHandler(this.WallaTextBox_TextChanged);
             // 
             // label13
             // 
@@ -136,15 +136,15 @@
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(44, 13);
             this.label13.TabIndex = 9;
-            this.label13.Text = "Flags 0:";
+            this.label13.Text = "Flags:";
             // 
-            // Flags0TextBox
+            // FlagsTextBox
             // 
-            this.Flags0TextBox.Location = new System.Drawing.Point(108, 36);
-            this.Flags0TextBox.Name = "Flags0TextBox";
-            this.Flags0TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags0TextBox.TabIndex = 10;
-            this.Flags0TextBox.TextChanged += new System.EventHandler(this.Flags0TextBox_TextChanged);
+            this.FlagsTextBox.Location = new System.Drawing.Point(108, 36);
+            this.FlagsTextBox.Name = "FlagsTextBox";
+            this.FlagsTextBox.Size = new System.Drawing.Size(155, 20);
+            this.FlagsTextBox.TabIndex = 10;
+            this.FlagsTextBox.TextChanged += new System.EventHandler(this.FlagsTextBox_TextChanged);
             // 
             // EditAudioInteriorPanel
             // 
@@ -153,11 +153,11 @@
             this.ClientSize = new System.Drawing.Size(562, 450);
             this.Controls.Add(this.DeleteButton);
             this.Controls.Add(this.label21);
-            this.Controls.Add(this.Flags2TextBox);
+            this.Controls.Add(this.TunnelTextBox);
             this.Controls.Add(this.label14);
-            this.Controls.Add(this.Flags1TextBox);
+            this.Controls.Add(this.WallaTextBox);
             this.Controls.Add(this.label13);
-            this.Controls.Add(this.Flags0TextBox);
+            this.Controls.Add(this.FlagsTextBox);
             this.Controls.Add(this.label12);
             this.Controls.Add(this.NameTextBox);
             this.Controls.Add(this.label19);
@@ -178,10 +178,10 @@
         private WinForms.TextBoxFix HashesTextBox;
         private System.Windows.Forms.Button DeleteButton;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.TextBox Flags2TextBox;
+        private System.Windows.Forms.TextBox TunnelTextBox;
         private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.TextBox Flags1TextBox;
+        private System.Windows.Forms.TextBox WallaTextBox;
         private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.TextBox Flags0TextBox;
+        private System.Windows.Forms.TextBox FlagsTextBox;
     }
 }

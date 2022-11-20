@@ -39,7 +39,7 @@
             this.Unk09UpDown = new System.Windows.Forms.NumericUpDown();
             this.Unk07UpDown = new System.Windows.Forms.NumericUpDown();
             this.Unk08UpDown = new System.Windows.Forms.NumericUpDown();
-            this.Unk06UpDown = new System.Windows.Forms.NumericUpDown();
+            this.FrequencyUpDown = new System.Windows.Forms.NumericUpDown();
             this.EndTimeUpDown = new System.Windows.Forms.NumericUpDown();
             this.StartTimeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label23 = new System.Windows.Forms.Label();
@@ -53,7 +53,7 @@
             this.label21 = new System.Windows.Forms.Label();
             this.Flags2TextBox = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
-            this.ExtParamsTextBox = new CodeWalker.WinForms.TextBoxFix();
+            this.VariablesTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.label15 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
@@ -66,7 +66,7 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.OuterRadTextBox = new System.Windows.Forms.TextBox();
+            this.OuterRadiusTextBox = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.Unk01TextBox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -74,7 +74,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.ChildSoundTextBox = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.InnerRadTextBox = new System.Windows.Forms.TextBox();
+            this.InnerRadiusTextBox = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.PositionTextBox = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
@@ -89,7 +89,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.Unk09UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk07UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk08UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk06UpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FrequencyUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.EndTimeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.StartTimeUpDown)).BeginInit();
             this.SuspendLayout();
@@ -129,7 +129,7 @@
             this.tabPage1.Controls.Add(this.Unk09UpDown);
             this.tabPage1.Controls.Add(this.Unk07UpDown);
             this.tabPage1.Controls.Add(this.Unk08UpDown);
-            this.tabPage1.Controls.Add(this.Unk06UpDown);
+            this.tabPage1.Controls.Add(this.FrequencyUpDown);
             this.tabPage1.Controls.Add(this.EndTimeUpDown);
             this.tabPage1.Controls.Add(this.StartTimeUpDown);
             this.tabPage1.Controls.Add(this.label23);
@@ -143,7 +143,7 @@
             this.tabPage1.Controls.Add(this.label21);
             this.tabPage1.Controls.Add(this.Flags2TextBox);
             this.tabPage1.Controls.Add(this.label20);
-            this.tabPage1.Controls.Add(this.ExtParamsTextBox);
+            this.tabPage1.Controls.Add(this.VariablesTextBox);
             this.tabPage1.Controls.Add(this.label15);
             this.tabPage1.Controls.Add(this.label17);
             this.tabPage1.Controls.Add(this.label18);
@@ -156,7 +156,7 @@
             this.tabPage1.Controls.Add(this.label6);
             this.tabPage1.Controls.Add(this.label7);
             this.tabPage1.Controls.Add(this.label10);
-            this.tabPage1.Controls.Add(this.OuterRadTextBox);
+            this.tabPage1.Controls.Add(this.OuterRadiusTextBox);
             this.tabPage1.Controls.Add(this.label4);
             this.tabPage1.Controls.Add(this.Unk01TextBox);
             this.tabPage1.Controls.Add(this.label3);
@@ -164,7 +164,7 @@
             this.tabPage1.Controls.Add(this.label2);
             this.tabPage1.Controls.Add(this.ChildSoundTextBox);
             this.tabPage1.Controls.Add(this.label1);
-            this.tabPage1.Controls.Add(this.InnerRadTextBox);
+            this.tabPage1.Controls.Add(this.InnerRadiusTextBox);
             this.tabPage1.Controls.Add(this.label16);
             this.tabPage1.Controls.Add(this.PositionTextBox);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
@@ -266,18 +266,18 @@
             this.Unk08UpDown.TabIndex = 53;
             this.Unk08UpDown.ValueChanged += new System.EventHandler(this.Unk08UpDown_ValueChanged);
             // 
-            // Unk06UpDown
+            // FrequencyUpDown
             // 
-            this.Unk06UpDown.Location = new System.Drawing.Point(84, 227);
-            this.Unk06UpDown.Maximum = new decimal(new int[] {
+            this.FrequencyUpDown.Location = new System.Drawing.Point(84, 227);
+            this.FrequencyUpDown.Maximum = new decimal(new int[] {
             65535,
             0,
             0,
             0});
-            this.Unk06UpDown.Name = "Unk06UpDown";
-            this.Unk06UpDown.Size = new System.Drawing.Size(102, 20);
-            this.Unk06UpDown.TabIndex = 49;
-            this.Unk06UpDown.ValueChanged += new System.EventHandler(this.Unk06UpDown_ValueChanged);
+            this.FrequencyUpDown.Name = "FrequencyUpDown";
+            this.FrequencyUpDown.Size = new System.Drawing.Size(102, 20);
+            this.FrequencyUpDown.TabIndex = 49;
+            this.FrequencyUpDown.ValueChanged += new System.EventHandler(this.FrequencyUpDown_ValueChanged);
             // 
             // EndTimeUpDown
             // 
@@ -413,17 +413,17 @@
             this.label20.TabIndex = 82;
             this.label20.Text = "Ext params:\r\nName (hash), Value (float), Flags";
             // 
-            // ExtParamsTextBox
+            // VariablesTextBox
             // 
-            this.ExtParamsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExtParamsTextBox.Location = new System.Drawing.Point(282, 271);
-            this.ExtParamsTextBox.Multiline = true;
-            this.ExtParamsTextBox.Name = "ExtParamsTextBox";
-            this.ExtParamsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.ExtParamsTextBox.Size = new System.Drawing.Size(262, 140);
-            this.ExtParamsTextBox.TabIndex = 83;
-            this.ExtParamsTextBox.WordWrap = false;
-            this.ExtParamsTextBox.TextChanged += new System.EventHandler(this.ExtParamsTextBox_TextChanged);
+            this.VariablesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.VariablesTextBox.Location = new System.Drawing.Point(282, 271);
+            this.VariablesTextBox.Multiline = true;
+            this.VariablesTextBox.Name = "VariablesTextBox";
+            this.VariablesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.VariablesTextBox.Size = new System.Drawing.Size(262, 140);
+            this.VariablesTextBox.TabIndex = 83;
+            this.VariablesTextBox.WordWrap = false;
+            this.VariablesTextBox.TextChanged += new System.EventHandler(this.VariablesTextBox_TextChanged);
             // 
             // label15
             // 
@@ -536,15 +536,15 @@
             this.label10.TabIndex = 35;
             this.label10.Text = "Outer radius:";
             // 
-            // OuterRadTextBox
+            // OuterRadiusTextBox
             // 
-            this.OuterRadTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.OuterRadiusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.OuterRadTextBox.Location = new System.Drawing.Point(84, 78);
-            this.OuterRadTextBox.Name = "OuterRadTextBox";
-            this.OuterRadTextBox.Size = new System.Drawing.Size(237, 20);
-            this.OuterRadTextBox.TabIndex = 36;
-            this.OuterRadTextBox.TextChanged += new System.EventHandler(this.OuterRadTextBox_TextChanged);
+            this.OuterRadiusTextBox.Location = new System.Drawing.Point(84, 78);
+            this.OuterRadiusTextBox.Name = "OuterRadiusTextBox";
+            this.OuterRadiusTextBox.Size = new System.Drawing.Size(237, 20);
+            this.OuterRadiusTextBox.TabIndex = 36;
+            this.OuterRadiusTextBox.TextChanged += new System.EventHandler(this.OuterRadiusTextBox_TextChanged);
             // 
             // label4
             // 
@@ -612,15 +612,15 @@
             this.label1.TabIndex = 33;
             this.label1.Text = "Inner radius:";
             // 
-            // InnerRadTextBox
+            // InnerRadiusTextBox
             // 
-            this.InnerRadTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.InnerRadiusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerRadTextBox.Location = new System.Drawing.Point(84, 54);
-            this.InnerRadTextBox.Name = "InnerRadTextBox";
-            this.InnerRadTextBox.Size = new System.Drawing.Size(237, 20);
-            this.InnerRadTextBox.TabIndex = 34;
-            this.InnerRadTextBox.TextChanged += new System.EventHandler(this.InnerRadTextBox_TextChanged);
+            this.InnerRadiusTextBox.Location = new System.Drawing.Point(84, 54);
+            this.InnerRadiusTextBox.Name = "InnerRadiusTextBox";
+            this.InnerRadiusTextBox.Size = new System.Drawing.Size(237, 20);
+            this.InnerRadiusTextBox.TabIndex = 34;
+            this.InnerRadiusTextBox.TextChanged += new System.EventHandler(this.InnerRadiusTextBox_TextChanged);
             // 
             // label16
             // 
@@ -688,7 +688,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.Unk09UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk07UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Unk08UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk06UpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FrequencyUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.EndTimeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.StartTimeUpDown)).EndInit();
             this.ResumeLayout(false);
@@ -705,7 +705,7 @@
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.TextBox Flags2TextBox;
         private System.Windows.Forms.Label label20;
-        private WinForms.TextBoxFix ExtParamsTextBox;
+        private WinForms.TextBoxFix VariablesTextBox;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
@@ -718,7 +718,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.TextBox OuterRadTextBox;
+        private System.Windows.Forms.TextBox OuterRadiusTextBox;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox Unk01TextBox;
         private System.Windows.Forms.Label label3;
@@ -726,7 +726,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox ChildSoundTextBox;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox InnerRadTextBox;
+        private System.Windows.Forms.TextBox InnerRadiusTextBox;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox PositionTextBox;
         private System.Windows.Forms.Label label23;
@@ -735,7 +735,7 @@
         private System.Windows.Forms.TextBox Flags4TextBox;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.TextBox Flags3TextBox;
-        private System.Windows.Forms.NumericUpDown Unk06UpDown;
+        private System.Windows.Forms.NumericUpDown FrequencyUpDown;
         private System.Windows.Forms.NumericUpDown EndTimeUpDown;
         private System.Windows.Forms.NumericUpDown StartTimeUpDown;
         private System.Windows.Forms.NumericUpDown Unk07UpDown;
