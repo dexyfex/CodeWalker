@@ -20702,7 +20702,7 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat4ConfigUnsignedInt : Dat4ConfigData
     {
-        public int Value { get; set; }
+        public uint Value { get; set; }
 
         public Dat4ConfigUnsignedInt(RelFile rel) : base(rel)
         {
@@ -20711,7 +20711,7 @@ namespace CodeWalker.GameFiles
         }
         public Dat4ConfigUnsignedInt(RelData d, BinaryReader br) : base(d, br)
         {
-            Value = br.ReadInt32();
+            Value = br.ReadUInt32();
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -20730,7 +20730,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Value = Xml.GetChildIntAttribute(node, "Value", "value");
+            Value = Xml.GetChildUIntAttribute(node, "Value", "value");
         }
     }
     [TC(typeof(EXP))] public class Dat4ConfigFloat : Dat4ConfigData
@@ -20809,8 +20809,7 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat4ConfigVector3 : Dat4ConfigData
     {
-        public Vector3 Vec1 { get; set; }
-        public Vector3 Vec2 { get; set; }
+        public Vector3 Value { get; set; }
 
         public Dat4ConfigVector3(RelFile rel) : base(rel)
         {
@@ -20819,8 +20818,9 @@ namespace CodeWalker.GameFiles
         }
         public Dat4ConfigVector3(RelData d, BinaryReader br) : base(d, br)
         {
-            Vec1 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Vec2 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            br.ReadBytes(8); // alignment padding
+            Value = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());//0x10-0x1C
+            br.ReadBytes(4); // alignment padding
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -20829,24 +20829,21 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
-            bw.Write(Vec1.X);
-            bw.Write(Vec1.Y);
-            bw.Write(Vec1.Z);
-            bw.Write(Vec2.X);
-            bw.Write(Vec2.Y);
-            bw.Write(Vec2.Z);
+            bw.Write(new byte[8]);
+            bw.Write(Value.X);
+            bw.Write(Value.Y);
+            bw.Write(Value.Z);
+            bw.Write(new byte[4]);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            RelXml.SelfClosingTag(sb, indent, "Vec1 " + FloatUtil.GetVector3XmlString(Vec1));
-            RelXml.SelfClosingTag(sb, indent, "Vec2 " + FloatUtil.GetVector3XmlString(Vec2));
+            RelXml.SelfClosingTag(sb, indent, "Value " + FloatUtil.GetVector3XmlString(Value));
         }
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Vec1 = Xml.GetChildVector3Attributes(node, "Vec1");
-            Vec2 = Xml.GetChildVector3Attributes(node, "Vec2");
+            Value = Xml.GetChildVector3Attributes(node, "Value");
         }
     }
     [TC(typeof(EXP))] public class Dat4ConfigVariableList : Dat4ConfigData
@@ -21035,39 +21032,31 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat4ConfigERSettings : Dat4ConfigData
     {
-        float Unk1 { get; set; }
-        float Unk2 { get; set; }
-        float Unk3 { get; set; }
-        float Unk4 { get; set; }
-        float Unk5 { get; set; }
-        float Unk6 { get; set; }
-        float Unk7 { get; set; }
-        int UnkItemsCount { get; set; }
-        UnkItem[] UnkItems { get; set; }
-        Vector4 UnkVec1 { get; set; }
-        Vector4 UnkVec2 { get; set; }
-        Vector4 UnkVec3 { get; set; }
-        Vector4 UnkVec4 { get; set; }
-        Vector4 UnkVec5 { get; set; }
-        Vector4 UnkVec6 { get; set; }
-        Vector4 UnkVec7 { get; set; }
-        Vector4 UnkVec8 { get; set; }
-        Vector4 UnkVec9 { get; set; }
-        int UnkVecCount1 { get; set; }
-        Vector4[] UnkVecs1 { get; set; }
-        int UnkVecCount2 { get; set; }
-        Vector4[] UnkVecs2 { get; set; }
-        int UnkVecCount3 { get; set; }
-        Vector4[] UnkVecs3 { get; set; }
+        // hashes appear in companion
+        float RoomSize { get; set; }
+        Vector3 hash_1F616274 { get; set; }
+        Vector3 ListenerPos { get; set; }
+        int AllPassesCount { get; set; }
+        Pass[] AllPasses { get; set; }
+        Vector4[] hash_84F123DC { get; set; } // fixed length 6
+        Vector4 hash_526F5F8A { get; set; }
+        Vector4 hash_5071232B { get; set; }
+        Vector4 hash_7D4AA574 { get; set; }
+        int hash_0776BC75_Count { get; set; }
+        Vector4[] hash_0776BC75 { get; set; }
+        int hash_7475AA16_Count { get; set; }
+        Vector4[] hash_7475AA16 { get; set; }
+        int hash_EACC7FE3_Count { get; set; }
+        Vector4[] hash_EACC7FE3 { get; set; }
 
 
-        public class UnkItem : IMetaXmlItem
+        public class Pass : IMetaXmlItem
         {
             public float UnkFloat { get; set; }
             public int UnkInt { get; set; }
 
-            public UnkItem() { }
-            public UnkItem(BinaryReader br)
+            public Pass() { }
+            public Pass(BinaryReader br)
             {
                 UnkFloat = br.ReadSingle();
                 UnkInt = br.ReadInt32();
@@ -21101,45 +21090,40 @@ namespace CodeWalker.GameFiles
         }
         public Dat4ConfigERSettings(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk1 = br.ReadSingle();
-            Unk2 = br.ReadSingle();
-            Unk3 = br.ReadSingle();
-            Unk4 = br.ReadSingle();
-            Unk5 = br.ReadSingle();
-            Unk6 = br.ReadSingle();
-            Unk7 = br.ReadSingle();
-            UnkItemsCount = br.ReadInt32();
-            UnkItems = new UnkItem[UnkItemsCount];
-            for (int i = 0; i < UnkItemsCount; i++)
+            RoomSize = br.ReadSingle();
+            hash_1F616274 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            ListenerPos = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            AllPassesCount = br.ReadInt32();
+            AllPasses = new Pass[AllPassesCount];
+            for (int i = 0; i < AllPassesCount; i++)
             {
-                UnkItems[i] = new UnkItem(br);
+                AllPasses[i] = new Pass(br);
             }
-            UnkVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec3 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec4 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec5 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec6 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec7 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec8 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec9 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVecCount1 = br.ReadInt32();
-            UnkVecs1 = new Vector4[UnkVecCount1];
-            for (int i = 0; i < UnkVecCount1; i++)
+            hash_84F123DC = new Vector4[6];
+            for (int i = 0; i < hash_84F123DC.Length; i++)
             {
-                UnkVecs1[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+                hash_84F123DC[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             }
-            UnkVecCount2 = br.ReadInt32();
-            UnkVecs2 = new Vector4[UnkVecCount1];
-            for (int i = 0; i < UnkVecCount2; i++)
+            hash_526F5F8A = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            hash_5071232B = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            hash_7D4AA574 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            hash_0776BC75_Count = br.ReadInt32();
+            hash_0776BC75 = new Vector4[hash_0776BC75_Count];
+            for (int i = 0; i < hash_0776BC75_Count; i++)
             {
-                UnkVecs2[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+                hash_0776BC75[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             }
-            UnkVecCount3 = br.ReadInt32();
-            UnkVecs3 = new Vector4[UnkVecCount1];
-            for (int i = 0; i < UnkVecCount3; i++)
+            hash_7475AA16_Count = br.ReadInt32();
+            hash_7475AA16 = new Vector4[hash_0776BC75_Count];
+            for (int i = 0; i < hash_7475AA16_Count; i++)
             {
-                UnkVecs3[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+                hash_7475AA16[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            }
+            hash_EACC7FE3_Count = br.ReadInt32();
+            hash_EACC7FE3 = new Vector4[hash_0776BC75_Count];
+            for (int i = 0; i < hash_EACC7FE3_Count; i++)
+            {
+                hash_EACC7FE3[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             }
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
@@ -21149,130 +21133,95 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
-            bw.Write(Unk1);
-            bw.Write(Unk2);
-            bw.Write(Unk3);
-            bw.Write(Unk4);
-            bw.Write(Unk5);
-            bw.Write(Unk6);
-            bw.Write(Unk7);
-            bw.Write(UnkItemsCount);
-            for (int i = 0; i < UnkItemsCount; i++)
+            bw.Write(RoomSize);
+            bw.Write(hash_1F616274.X);
+            bw.Write(hash_1F616274.Y);
+            bw.Write(hash_1F616274.Z);
+            bw.Write(ListenerPos.X);
+            bw.Write(ListenerPos.Y);
+            bw.Write(ListenerPos.Z);
+            bw.Write(AllPassesCount);
+            for (int i = 0; i < AllPassesCount; i++)
             {
-                UnkItems[i].Write(bw);
+                AllPasses[i].Write(bw);
             }
-            bw.Write(UnkVec1.X);
-            bw.Write(UnkVec1.Y);
-            bw.Write(UnkVec1.Z);
-            bw.Write(UnkVec1.W);
-            bw.Write(UnkVec2.X);
-            bw.Write(UnkVec2.Y);
-            bw.Write(UnkVec2.Z);
-            bw.Write(UnkVec2.W);
-            bw.Write(UnkVec3.X);
-            bw.Write(UnkVec3.Y);
-            bw.Write(UnkVec3.Z);
-            bw.Write(UnkVec3.W);
-            bw.Write(UnkVec4.X);
-            bw.Write(UnkVec4.Y);
-            bw.Write(UnkVec4.Z);
-            bw.Write(UnkVec4.W);
-            bw.Write(UnkVec5.X);
-            bw.Write(UnkVec5.Y);
-            bw.Write(UnkVec5.Z);
-            bw.Write(UnkVec5.W);
-            bw.Write(UnkVec6.X);
-            bw.Write(UnkVec6.Y);
-            bw.Write(UnkVec6.Z);
-            bw.Write(UnkVec6.W);
-            bw.Write(UnkVec7.X);
-            bw.Write(UnkVec7.Y);
-            bw.Write(UnkVec7.Z);
-            bw.Write(UnkVec7.W);
-            bw.Write(UnkVec8.X);
-            bw.Write(UnkVec8.Y);
-            bw.Write(UnkVec8.Z);
-            bw.Write(UnkVec8.W);
-            bw.Write(UnkVec9.X);
-            bw.Write(UnkVec9.Y);
-            bw.Write(UnkVec9.Z);
-            bw.Write(UnkVec9.W);
-            bw.Write(UnkVecCount1);
-            for (int i = 0; i < UnkVecCount1; i++)
+            for (int i = 0; i < hash_84F123DC.Length; i++)
             {
-                bw.Write(UnkVecs1[i].X);
-                bw.Write(UnkVecs1[i].Y);
-                bw.Write(UnkVecs1[i].Z);
-                bw.Write(UnkVecs1[i].W);
+                bw.Write(hash_84F123DC[i].X);
+                bw.Write(hash_84F123DC[i].Y);
+                bw.Write(hash_84F123DC[i].Z);
+                bw.Write(hash_84F123DC[i].W);
             }
-            bw.Write(UnkVecCount2);
-            for (int i = 0; i < UnkVecCount2; i++)
+            bw.Write(hash_526F5F8A.X);
+            bw.Write(hash_526F5F8A.Y);
+            bw.Write(hash_526F5F8A.Z);
+            bw.Write(hash_526F5F8A.W);
+            bw.Write(hash_5071232B.X);
+            bw.Write(hash_5071232B.Y);
+            bw.Write(hash_5071232B.Z);
+            bw.Write(hash_5071232B.W);
+            bw.Write(hash_7D4AA574.X);
+            bw.Write(hash_7D4AA574.Y);
+            bw.Write(hash_7D4AA574.Z);
+            bw.Write(hash_7D4AA574.W);
+            bw.Write(hash_0776BC75_Count);
+            for (int i = 0; i < hash_0776BC75_Count; i++)
             {
-                bw.Write(UnkVecs2[i].X);
-                bw.Write(UnkVecs2[i].Y);
-                bw.Write(UnkVecs2[i].Z);
-                bw.Write(UnkVecs2[i].W);
+                bw.Write(hash_0776BC75[i].X);
+                bw.Write(hash_0776BC75[i].Y);
+                bw.Write(hash_0776BC75[i].Z);
+                bw.Write(hash_0776BC75[i].W);
             }
-            bw.Write(UnkVecCount3);
-            for (int i = 0; i < UnkVecCount3; i++)
+            bw.Write(hash_7475AA16_Count);
+            for (int i = 0; i < hash_7475AA16_Count; i++)
             {
-                bw.Write(UnkVecs3[i].X);
-                bw.Write(UnkVecs3[i].Y);
-                bw.Write(UnkVecs3[i].Z);
-                bw.Write(UnkVecs3[i].W);
+                bw.Write(hash_7475AA16[i].X);
+                bw.Write(hash_7475AA16[i].Y);
+                bw.Write(hash_7475AA16[i].Z);
+                bw.Write(hash_7475AA16[i].W);
+            }
+            bw.Write(hash_EACC7FE3_Count);
+            for (int i = 0; i < hash_EACC7FE3_Count; i++)
+            {
+                bw.Write(hash_EACC7FE3[i].X);
+                bw.Write(hash_EACC7FE3[i].Y);
+                bw.Write(hash_EACC7FE3[i].Z);
+                bw.Write(hash_EACC7FE3[i].W);
             }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            RelXml.ValueTag(sb, indent, "Unk1", FloatUtil.ToString(Unk1));
-            RelXml.ValueTag(sb, indent, "Unk2", FloatUtil.ToString(Unk2));
-            RelXml.ValueTag(sb, indent, "Unk3", FloatUtil.ToString(Unk3));
-            RelXml.ValueTag(sb, indent, "Unk4", FloatUtil.ToString(Unk4));
-            RelXml.ValueTag(sb, indent, "Unk5", FloatUtil.ToString(Unk5));
-            RelXml.ValueTag(sb, indent, "Unk6", FloatUtil.ToString(Unk6));
-            RelXml.ValueTag(sb, indent, "Unk7", FloatUtil.ToString(Unk7));
-            RelXml.WriteItemArray(sb, UnkItems, indent, "UnkItems");
-            RelXml.SelfClosingTag(sb, indent, "UnkVec1 " + FloatUtil.GetVector4XmlString(UnkVec1));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec2 " + FloatUtil.GetVector4XmlString(UnkVec2));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec3 " + FloatUtil.GetVector4XmlString(UnkVec3));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec4 " + FloatUtil.GetVector4XmlString(UnkVec4));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec5 " + FloatUtil.GetVector4XmlString(UnkVec5));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec6 " + FloatUtil.GetVector4XmlString(UnkVec6));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec7 " + FloatUtil.GetVector4XmlString(UnkVec7));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec8 " + FloatUtil.GetVector4XmlString(UnkVec8));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec9 " + FloatUtil.GetVector4XmlString(UnkVec9));
-            RelXml.WriteRawArray(sb, UnkVecs1, indent, "UnkVecs1", "", RelXml.FormatVector4, 1);
-            RelXml.WriteRawArray(sb, UnkVecs2, indent, "UnkVecs2", "", RelXml.FormatVector4, 1);
-            RelXml.WriteRawArray(sb, UnkVecs3, indent, "UnkVecs3", "", RelXml.FormatVector4, 1);
+            RelXml.ValueTag(sb, indent, "RoomSize", FloatUtil.ToString(RoomSize));
+            RelXml.SelfClosingTag(sb, indent, "hash_1F616274 " + FloatUtil.GetVector3XmlString(hash_1F616274));
+            RelXml.SelfClosingTag(sb, indent, "ListenerPos " + FloatUtil.GetVector3XmlString(ListenerPos));
+            RelXml.WriteItemArray(sb, AllPasses, indent, "AllPasses");
+            RelXml.WriteRawArray(sb, hash_84F123DC, indent, "hash_84F123DC", "", RelXml.FormatVector4, 1);
+            RelXml.SelfClosingTag(sb, indent, "hash_526F5F8A " + FloatUtil.GetVector4XmlString(hash_526F5F8A));
+            RelXml.SelfClosingTag(sb, indent, "hash_5071232B " + FloatUtil.GetVector4XmlString(hash_5071232B));
+            RelXml.SelfClosingTag(sb, indent, "hash_7D4AA574 " + FloatUtil.GetVector4XmlString(hash_7D4AA574));
+            RelXml.WriteRawArray(sb, hash_0776BC75, indent, "hash_0776BC75", "", RelXml.FormatVector4, 1);
+            RelXml.WriteRawArray(sb, hash_7475AA16, indent, "hash_7475AA16", "", RelXml.FormatVector4, 1);
+            RelXml.WriteRawArray(sb, hash_EACC7FE3, indent, "hash_EACC7FE3", "", RelXml.FormatVector4, 1);
         }
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Unk1 = Xml.GetChildFloatAttribute(node, "Unk1", "value");
-            Unk2 = Xml.GetChildFloatAttribute(node, "Unk2", "value");
-            Unk3 = Xml.GetChildFloatAttribute(node, "Unk3", "value");
-            Unk4 = Xml.GetChildFloatAttribute(node, "Unk4", "value");
-            Unk5 = Xml.GetChildFloatAttribute(node, "Unk5", "value");
-            Unk6 = Xml.GetChildFloatAttribute(node, "Unk6", "value");
-            Unk7 = Xml.GetChildFloatAttribute(node, "Unk7", "value");
-            UnkItems = XmlRel.ReadItemArray<UnkItem>(node, "UnkItems");
-            UnkItemsCount = (UnkItems?.Length ?? 0);
-            UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1");
-            UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2");
-            UnkVec3 = Xml.GetChildVector4Attributes(node, "UnkVec3");
-            UnkVec4 = Xml.GetChildVector4Attributes(node, "UnkVec4");
-            UnkVec5 = Xml.GetChildVector4Attributes(node, "UnkVec5");
-            UnkVec6 = Xml.GetChildVector4Attributes(node, "UnkVec6");
-            UnkVec7 = Xml.GetChildVector4Attributes(node, "UnkVec7");
-            UnkVec8 = Xml.GetChildVector4Attributes(node, "UnkVec8");
-            UnkVec9 = Xml.GetChildVector4Attributes(node, "UnkVec9");
-            UnkVecs1 = Xml.GetChildRawVector4Array(node, "UnkVecs1");
-            UnkVecs2 = Xml.GetChildRawVector4Array(node, "UnkVecs2");
-            UnkVecs3 = Xml.GetChildRawVector4Array(node, "UnkVecs3");
-            UnkVecCount1 = UnkVecs1?.Length ?? 0;
-            UnkVecCount2 = UnkVecs2?.Length ?? 0;
-            UnkVecCount3 = UnkVecs3?.Length ?? 0;
+            RoomSize = Xml.GetChildFloatAttribute(node, "RoomSize", "value");
+            hash_1F616274 = Xml.GetChildVector3Attributes(node, "hash_1F616274");
+            ListenerPos = Xml.GetChildVector3Attributes(node, "ListenerPos");
+            AllPasses = XmlRel.ReadItemArray<Pass>(node, "AllPasses");
+            AllPassesCount = (AllPasses?.Length ?? 0);
+            hash_84F123DC = Xml.GetChildRawVector4Array(node, "hash_84F123DC");
+            hash_526F5F8A = Xml.GetChildVector4Attributes(node, "hash_526F5F8A");
+            hash_5071232B = Xml.GetChildVector4Attributes(node, "hash_5071232B");
+            hash_7D4AA574 = Xml.GetChildVector4Attributes(node, "hash_7D4AA574");
+            hash_0776BC75 = Xml.GetChildRawVector4Array(node, "hash_0776BC75");
+            hash_7475AA16 = Xml.GetChildRawVector4Array(node, "hash_7475AA16");
+            hash_EACC7FE3 = Xml.GetChildRawVector4Array(node, "hash_EACC7FE3");
+            hash_0776BC75_Count = hash_0776BC75?.Length ?? 0;
+            hash_7475AA16_Count = hash_7475AA16?.Length ?? 0;
+            hash_EACC7FE3_Count = hash_EACC7FE3?.Length ?? 0;
         }
     }
 
@@ -25072,6 +25021,7 @@ namespace CodeWalker.GameFiles
                 if (rel.IsAudioConfig)
                 {
                     ValueTag(sb, cindent, "IsAudioConfig", "true");
+                    ValueTag(sb, cindent, "IndexStringFlags", rel.IndexStringFlags.ToString());
                 }
 
                 if (rel.NameTable != null)
@@ -25224,7 +25174,10 @@ namespace CodeWalker.GameFiles
             rel.RelType = reltype;
             rel.DataUnkVal = Xml.GetChildUIntAttribute(node, "Version", "value");
             rel.IsAudioConfig = Xml.GetChildBoolAttribute(node, "IsAudioConfig", "value");
-
+            if (rel.IsAudioConfig)
+            {
+                rel.IndexStringFlags = Xml.GetChildUIntAttribute(node, "IndexStringFlags", "value");
+            }
             var ntnode = node.SelectSingleNode("ContainerPaths");
             if (ntnode != null)
             {
