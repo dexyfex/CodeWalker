@@ -57,7 +57,7 @@ namespace CodeWalker.Project.Panels
                 BBMinTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bbMin);
                 BBMaxTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bbMax);
                 BSCenterTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bsCentre);
-                BSRadiusTextBox.Text = FloatUtil.ToString(CurrentArchetype._BaseArchetypeDef.bsRadius);
+                BSRadiusTextBox.Text = CurrentArchetype._BaseArchetypeDef.bsRadius.ToString();
 
                 if (CurrentArchetype is MloArchetype MloArchetype)
                 {
