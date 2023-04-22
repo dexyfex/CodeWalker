@@ -2109,9 +2109,9 @@ namespace CodeWalker.Rendering
                 {
                     case BoundPolygonType.Triangle:
                         var ptri = poly as BoundPolygonTriangle;
-                        p1 = bgeom.GetVertex(ptri.vertIndex1);
-                        p2 = bgeom.GetVertex(ptri.vertIndex2);
-                        p3 = bgeom.GetVertex(ptri.vertIndex3);
+                        p1 = bgeom.GetVertexPos(ptri.vertIndex1);
+                        p2 = bgeom.GetVertexPos(ptri.vertIndex2);
+                        p3 = bgeom.GetVertexPos(ptri.vertIndex3);
                         n1 = Vector3.Normalize(Vector3.Cross(p2 - p1, p3 - p1));
                         AddVertex(p1, n1, colour, rverts, ref curvert);
                         AddVertex(p2, n1, colour, rverts, ref curvert);
@@ -2119,15 +2119,15 @@ namespace CodeWalker.Rendering
                         break;
                     case BoundPolygonType.Sphere:
                         var psph = poly as BoundPolygonSphere;
-                        rspheres[cursphere].Center = bgeom.GetVertex(psph.sphereIndex);
+                        rspheres[cursphere].Center = bgeom.GetVertexPos(psph.sphereIndex);
                         rspheres[cursphere].Radius = psph.sphereRadius;// * 0.5f;//diameter?
                         rspheres[cursphere].Colour = colour;
                         cursphere++;
                         break;
                     case BoundPolygonType.Capsule:
                         var bcap = poly as BoundPolygonCapsule;
-                        p1 = bgeom.GetVertex(bcap.capsuleIndex1);
-                        p2 = bgeom.GetVertex(bcap.capsuleIndex2);
+                        p1 = bgeom.GetVertexPos(bcap.capsuleIndex1);
+                        p2 = bgeom.GetVertexPos(bcap.capsuleIndex2);
                         a1 = p2 - p1;
                         n1 = Vector3.Normalize(a1);
                         p3 = Vector3.Normalize(n1.GetPerpVec());
@@ -2142,10 +2142,10 @@ namespace CodeWalker.Rendering
                         break;
                     case BoundPolygonType.Box:  //(...only 4 inds... = diagonal corners)
                         var pbox = poly as BoundPolygonBox;
-                        p1 = bgeom.GetVertex(pbox.boxIndex1);
-                        p2 = bgeom.GetVertex(pbox.boxIndex2);
-                        p3 = bgeom.GetVertex(pbox.boxIndex3);
-                        p4 = bgeom.GetVertex(pbox.boxIndex4);
+                        p1 = bgeom.GetVertexPos(pbox.boxIndex1);
+                        p2 = bgeom.GetVertexPos(pbox.boxIndex2);
+                        p3 = bgeom.GetVertexPos(pbox.boxIndex3);
+                        p4 = bgeom.GetVertexPos(pbox.boxIndex4);
                         a1 = ((p3 + p4) - (p1 + p2)) * 0.5f;
                         p2 = p1 + a1;
                         p3 = p3 - a1;
@@ -2159,8 +2159,8 @@ namespace CodeWalker.Rendering
                         break;
                     case BoundPolygonType.Cylinder:
                         var pcyl = poly as BoundPolygonCylinder;
-                        p1 = bgeom.GetVertex(pcyl.cylinderIndex1);
-                        p2 = bgeom.GetVertex(pcyl.cylinderIndex2);
+                        p1 = bgeom.GetVertexPos(pcyl.cylinderIndex1);
+                        p2 = bgeom.GetVertexPos(pcyl.cylinderIndex2);
                         a1 = p2 - p1;
                         n1 = Vector3.Normalize(a1);
                         p3 = Vector3.Normalize(n1.GetPerpVec());
