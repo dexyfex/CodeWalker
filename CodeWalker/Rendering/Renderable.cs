@@ -2301,14 +2301,14 @@ namespace CodeWalker.Rendering
         }
         public void Init(BoundDisc bdisc, ref Matrix xform)
         {
-            Matrix rmat = xform;
+            Matrix rmat = Matrix.RotationZ((float)Math.PI / 2) * xform;
             rmat.TranslationVector = Vector3.Zero;
 
             Bound = bdisc;
             BBMin = bdisc.BoxMin;
             BBMax = bdisc.BoxMax;
             BBOffset = xform.TranslationVector;
-            BBOrientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.UnitX, Vector3.UnitZ) * Quaternion.RotationMatrix(rmat);
+            BBOrientation = Quaternion.RotationMatrix(rmat);
 
             var mat = (BoundsMaterialType)bdisc.MaterialIndex;
             var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
@@ -2316,7 +2316,7 @@ namespace CodeWalker.Rendering
 
             var rcyl = new RenderableCylinder();
             rcyl.Colour = colour;
-            rcyl.Point1 = Vector3.TransformCoordinate(bdisc.SphereCenter - new Vector3(bdisc.Margin, 0, 0), xform);
+            rcyl.Point1 = Vector3.TransformCoordinate(bdisc.SphereCenter + new Vector3(bdisc.Margin, 0, 0), xform);
             rcyl.Orientation = BBOrientation;
             rcyl.Length = bdisc.Margin * 2.0f;
             rcyl.Radius = bdisc.SphereRadius;
