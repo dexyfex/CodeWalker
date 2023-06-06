@@ -352,6 +352,7 @@ namespace CodeWalker.Project.Panels
             flags3 += (((uint)PathNodeFlags32UpDown.Value & 127u) << 1);
 
             flags4 = BitUtil.UpdateBit(flags4, 0, PathNodeFlags41CheckBox.Checked);
+            flags4 = BitUtil.UpdateBit(flags4, 1, PathNodeFlags42CheckBox.Checked);
             flags4 += (((uint)PathNodeFlags42UpDown.Value & 7u) << 1);
             flags4 = BitUtil.UpdateBit(flags4, 4, PathNodeFlags45CheckBox.Checked);
             flags4 = BitUtil.UpdateBit(flags4, 5, PathNodeFlags46CheckBox.Checked);
@@ -904,6 +905,11 @@ namespace CodeWalker.Project.Panels
         }
 
         private void PathNodeFlags41CheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            SetPathNodeFlagsFromCheckBoxes();
+        }
+
+        private void PathNodeFlags42CheckBox_CheckedChanged(object sender, EventArgs e)
         {
             SetPathNodeFlagsFromCheckBoxes();
         }
