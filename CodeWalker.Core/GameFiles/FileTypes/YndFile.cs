@@ -621,6 +621,28 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    public enum YndNodeSpeed
+    {
+        Slow = 0,
+        Normal = 1,
+        Fast = 2,
+        Faster = 3
+    }
+
+    public enum YndNodeSpecialType
+    {
+        Normal = 0,
+        ParkingSpace = 2,
+        PedNavMeshLink = 10,
+        PedNodeGuidePlayer = 14,
+        TrafficLightJunctionStop = 15,
+        StopSign = 16,
+        Caution = 17,
+        PedNavMeshLinkUnk = 18,
+        RestrictedAccess = 19,
+        OffRoadJunction = 20
+    }
+
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndNode : BasePathNode
     {
@@ -648,17 +670,98 @@ namespace CodeWalker.GameFiles
         public YndJunction Junction { get; set; }
         public bool HasJunction;
 
+        // LinkCountUnk Properties
 
+        /// <summary>
+        /// Road Speed. Valid values:
+        /// 0: Slow
+        /// 1: Normal
+        /// 2: Fast
+        /// 3: Faster
+        /// </summary>
+        public YndNodeSpeed Speed
+        {
+            get
+            {
+                return (YndNodeSpeed)(this.LinkCountUnk >> 1);
+            }
+            set
+            {
+                this.LinkCountUnk = (this.LinkCountUnk & 0x1F3) | ((int)value << 1);
+            }
+        }
+
+        //// Flag0 Properties
+        public bool OffRoad { get { return (Flags0.Value & 8) > 0; } }
+        public bool NoBigVehicles { get { return (Flags0.Value & 32) > 0; } }
+        public bool CannotGoLeft { get { return (Flags0.Value & 128) > 0; } }
+
+        // Flag1 Properties
+        public bool SlipRoad { get { return (Flags1 & 1) > 0; } }
+        public bool IndicateKeepLeft { get { return (Flags1 & 2) > 0; } }
+        public bool IndicateKeepRight { get { return (Flags1 & 4) > 0; } }
+
+        /// <summary>
+        /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
+        /// I suspect this to be an enum. Especially since this attribute appears as an int
+        /// in the XML file
+        /// 
+        /// Known Special Types:
+        /// Normal                      = 0,    Most nodes
+        /// ParkingSpace?               = 2,    Only 4 on the map as far as I can see. Probably useless.
+        /// PedCrossRoad                = 10,   Any pedestrian crossing where vehicles have priority. Traffic light crossings etc.
+        /// PedNode                     = 14,
+        /// TrafficLightStopNode        = 15, 
+        /// StopJunctionNode            = 16, 
+        /// Caution (Slow Down)?        = 17,   Appears before barriers, and merges
+        /// PedCrossRoadWithPriority?   = 18,   Appears in off-road crossings
+        /// RestrictedAccess?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
+        /// OffRoadJunctionNode?        = 20    Appears on a junction node with more than one edge where there is an off-road connection.
+        /// </summary>
+        public YndNodeSpecialType Special { get { return (YndNodeSpecialType)(Flags1.Value >> 3); } }
+
+        // Flag2 Properties
+        public bool NoGps { get { return (Flags2.Value & 1) > 0; } }
+        public bool Highway { get { return (Flags2.Value & 64) > 0; } }
+        /// <summary>
+        /// A node being "disabled" does not mean that a vehicle will not travel through it.
+        /// </summary>
+        public bool IsDisabledUnk0 { get { return (Flags2.Value & 128) > 0; } }
+        public bool IsDisabledUnk1 { get { return (Flags2.Value & 16) > 0; } }
+
+        // Flag3 Properties
+        public bool Tunnel { get { return (Flags3 & 1) > 0; } }
+
+        /// <summary>
+        /// The heuristic value takes up the rest of Flags3.
+        /// It is a 7 bit integer, ranging from 0 to 127
+        /// For each node edge, it seems to add the FLOOR(DISTANCE(vTargetPos, vSourcePos)).
+        /// This is not 100% accurate with road merges etc (as is the nature of heuristics).
+        /// You'll see perfect accuracy in single lane roads, like alleys.
+        /// </summary>
+        public int HeuristicValue { get { return Flags3.Value >> 1; } }
+
+        // Flag4 Properties
+        /// <summary>
+        /// The first 4 bits of Flag4 is the density of the node. This ranges from 0 to 15.
+        /// </summary>
+        public int Density { get { return Flags4.Value & 15; } }
+
+        public bool LeftTurnsOnly { get { return (Flags1 & 128) > 0; } }
+
+
+        /// <summary>
+        /// If Special is 10, 14 or 18 this is a ped node.
+        /// </summary>
         public bool IsPedNode
         {
             get
             {
-                return false;// ((Flags4.Value >> 4) & 7) == 7;
+                return Special == YndNodeSpecialType.PedNavMeshLink
+                       || Special == YndNodeSpecialType.PedNodeGuidePlayer
+                       || Special == YndNodeSpecialType.PedNavMeshLinkUnk;
             }
         }
-
-
-
 
         public void Init(YndFile ynd, Node node)
         {
@@ -679,6 +782,21 @@ namespace CodeWalker.GameFiles
 
         public Color4 GetColour()
         {
+            if (IsDisabledUnk0 || IsDisabledUnk1)
+            {
+                return new Color4(1.0f, 0.0f, 0.0f, 1.0f);
+            }
+
+            if (IsPedNode)
+            {
+                return new Color4(1.0f, 0.0f, 1.0f, 1.0f);
+            }
+
+            if (Tunnel)
+            {
+                return new Color4(0.3f, 0.3f, 0.3f, 1.0f);
+            }
+
             Color4 c = new Color4(LinkCountUnk / 7.0f, Flags0.Value / 255.0f, Flags1.Value / 255.0f, 1.0f);
             //Color4 c = new Color4(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -905,6 +1023,11 @@ namespace CodeWalker.GameFiles
         public int OffsetValue { get { return (Flags1.Value >> 4) & 7; } }
         public bool NegativeOffset { get { return (Flags1.Value >> 7) > 0; } }
         public float LaneOffset { get { return (OffsetValue / 7.0f) * (NegativeOffset ? -0.5f : 0.5f); } }
+
+        public bool GpsBothWays { get { return (Flags0 & 1) > 0; } }
+        public bool NarrowRoad { get { return (Flags1 & 2) > 0; } }
+        public bool DontUseForNavigation { get { return (Flags2 & 1) > 0; } }
+        public bool Shortcut { get { return (Flags2 & 2) > 0; } }
 
 
         public void Init(YndFile ynd, YndNode node1, YndNode node2, NodeLink link)
