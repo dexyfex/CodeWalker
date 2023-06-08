@@ -37,6 +37,8 @@
             this.PathNodeFlags51CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags5UpDown = new System.Windows.Forms.NumericUpDown();
             this.PathNodeFlags4GroupBox = new System.Windows.Forms.GroupBox();
+            this.PathNodeFlags43UpDown = new System.Windows.Forms.NumericUpDown();
+            this.deadEndnessLabel = new System.Windows.Forms.Label();
             this.PathNodeFlags48CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags42UpDown = new System.Windows.Forms.NumericUpDown();
             this.label71 = new System.Windows.Forms.Label();
@@ -153,13 +155,12 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags43UpDown = new System.Windows.Forms.NumericUpDown();
-            this.deadEndnessLabel = new System.Windows.Forms.Label();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags5UpDown)).BeginInit();
             this.PathNodeFlags4GroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags43UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags42UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags4UpDown)).BeginInit();
             this.PathNodeFlags3GroupBox.SuspendLayout();
@@ -201,7 +202,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionHeightmapDimXUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMinZUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMaxZUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags43UpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // PathNodeTabControl
@@ -320,6 +320,30 @@
             this.PathNodeFlags4GroupBox.TabIndex = 47;
             this.PathNodeFlags4GroupBox.TabStop = false;
             this.PathNodeFlags4GroupBox.Text = "Flags 4";
+            this.PathNodeFlags4GroupBox.Enter += new System.EventHandler(this.PathNodeFlags4GroupBox_Enter);
+            // 
+            // PathNodeFlags43UpDown
+            // 
+            this.PathNodeFlags43UpDown.Location = new System.Drawing.Point(92, 72);
+            this.PathNodeFlags43UpDown.Maximum = new decimal(new int[] {
+            7,
+            0,
+            0,
+            0});
+            this.PathNodeFlags43UpDown.Name = "PathNodeFlags43UpDown";
+            this.PathNodeFlags43UpDown.Size = new System.Drawing.Size(57, 20);
+            this.PathNodeFlags43UpDown.TabIndex = 46;
+            this.PathNodeFlags43UpDown.ValueChanged += new System.EventHandler(this.PathNodeFlags43UpDown_ValueChanged);
+            // 
+            // deadEndnessLabel
+            // 
+            this.deadEndnessLabel.AutoSize = true;
+            this.deadEndnessLabel.Location = new System.Drawing.Point(6, 72);
+            this.deadEndnessLabel.Name = "deadEndnessLabel";
+            this.deadEndnessLabel.Size = new System.Drawing.Size(80, 13);
+            this.deadEndnessLabel.TabIndex = 45;
+            this.deadEndnessLabel.Text = "Dead Endness:";
+            this.deadEndnessLabel.Click += new System.EventHandler(this.label1_Click);
             // 
             // PathNodeFlags48CheckBox
             // 
@@ -1702,29 +1726,6 @@
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
             // 
-            // PathNodeFlags43UpDown
-            // 
-            this.PathNodeFlags43UpDown.Location = new System.Drawing.Point(92, 72);
-            this.PathNodeFlags43UpDown.Maximum = new decimal(new int[] {
-            7,
-            0,
-            0,
-            0});
-            this.PathNodeFlags43UpDown.Name = "PathNodeFlags43UpDown";
-            this.PathNodeFlags43UpDown.Size = new System.Drawing.Size(57, 20);
-            this.PathNodeFlags43UpDown.TabIndex = 46;
-            this.PathNodeFlags43UpDown.ValueChanged += new System.EventHandler(this.PathNodeFlags43UpDown_ValueChanged);
-            // 
-            // deadEndnessLabel
-            // 
-            this.deadEndnessLabel.AutoSize = true;
-            this.deadEndnessLabel.Location = new System.Drawing.Point(6, 72);
-            this.deadEndnessLabel.Name = "deadEndnessLabel";
-            this.deadEndnessLabel.Size = new System.Drawing.Size(80, 13);
-            this.deadEndnessLabel.TabIndex = 45;
-            this.deadEndnessLabel.Text = "Dead Endness:";
-            this.deadEndnessLabel.Click += new System.EventHandler(this.label1_Click);
-            // 
             // EditYndNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1742,6 +1743,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags5UpDown)).EndInit();
             this.PathNodeFlags4GroupBox.ResumeLayout(false);
             this.PathNodeFlags4GroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags43UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags42UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags4UpDown)).EndInit();
             this.PathNodeFlags3GroupBox.ResumeLayout(false);
@@ -1794,7 +1796,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionHeightmapDimXUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMinZUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMaxZUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags43UpDown)).EndInit();
             this.ResumeLayout(false);
 
         }

@@ -927,6 +927,11 @@ namespace CodeWalker.Project.Panels
             SetPathNodeFlagsFromCheckBoxes();
         }
 
+        private void PathNodeFlags43UpDown_ValueChanged(object sender, EventArgs e)
+        {
+            SetPathNodeFlagsFromCheckBoxes();
+        }
+
         private void PathNodeFlags52CheckBox_CheckedChanged(object sender, EventArgs e)
         {
             SetPathNodeFlagsFromCheckBoxes();
@@ -1252,12 +1257,12 @@ namespace CodeWalker.Project.Panels
 
         }
 
-        private void PathNodeFlags43UpDown_ValueChanged(object sender, EventArgs e)
+        private void label1_Click(object sender, EventArgs e)
         {
-            SetPathNodeFlagsFromCheckBoxes();
+
         }
 
-        private void label1_Click(object sender, EventArgs e)
+        private void PathNodeFlags4GroupBox_Enter(object sender, EventArgs e)
         {
 
         }
