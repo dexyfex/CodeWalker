@@ -63,13 +63,8 @@
             this.PathNodeFlags2Label = new System.Windows.Forms.Label();
             this.PathNodeFlags1GroupBox = new System.Windows.Forms.GroupBox();
             this.PathNodeFlags11CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags18CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags12CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags17CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags13CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags16CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags14CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags15CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags1UpDown = new System.Windows.Forms.NumericUpDown();
             this.PathNodeFlags1Label = new System.Windows.Forms.Label();
             this.PathNodeFlags0GroupBox = new System.Windows.Forms.GroupBox();
@@ -155,6 +150,8 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
+            this.SpecialTypeComboBox = new System.Windows.Forms.ComboBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -601,14 +598,11 @@
             // 
             // PathNodeFlags1GroupBox
             // 
+            this.PathNodeFlags1GroupBox.Controls.Add(this.label1);
+            this.PathNodeFlags1GroupBox.Controls.Add(this.SpecialTypeComboBox);
             this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags11CheckBox);
-            this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags18CheckBox);
             this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags12CheckBox);
-            this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags17CheckBox);
             this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags13CheckBox);
-            this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags16CheckBox);
-            this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags14CheckBox);
-            this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags15CheckBox);
             this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags1UpDown);
             this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags1Label);
             this.PathNodeFlags1GroupBox.Location = new System.Drawing.Point(128, 96);
@@ -629,17 +623,6 @@
             this.PathNodeFlags11CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags11CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags11CheckBox_CheckedChanged);
             // 
-            // PathNodeFlags18CheckBox
-            // 
-            this.PathNodeFlags18CheckBox.AutoSize = true;
-            this.PathNodeFlags18CheckBox.Location = new System.Drawing.Point(6, 192);
-            this.PathNodeFlags18CheckBox.Name = "PathNodeFlags18CheckBox";
-            this.PathNodeFlags18CheckBox.Size = new System.Drawing.Size(96, 17);
-            this.PathNodeFlags18CheckBox.TabIndex = 42;
-            this.PathNodeFlags18CheckBox.Text = "Junction unk 4";
-            this.PathNodeFlags18CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags18CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags18CheckBox_CheckedChanged);
-            // 
             // PathNodeFlags12CheckBox
             // 
             this.PathNodeFlags12CheckBox.AutoSize = true;
@@ -651,17 +634,6 @@
             this.PathNodeFlags12CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags12CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags12CheckBox_CheckedChanged);
             // 
-            // PathNodeFlags17CheckBox
-            // 
-            this.PathNodeFlags17CheckBox.AutoSize = true;
-            this.PathNodeFlags17CheckBox.Location = new System.Drawing.Point(6, 171);
-            this.PathNodeFlags17CheckBox.Name = "PathNodeFlags17CheckBox";
-            this.PathNodeFlags17CheckBox.Size = new System.Drawing.Size(108, 17);
-            this.PathNodeFlags17CheckBox.TabIndex = 41;
-            this.PathNodeFlags17CheckBox.Text = "Traffic light unk 3";
-            this.PathNodeFlags17CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags17CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags17CheckBox_CheckedChanged);
-            // 
             // PathNodeFlags13CheckBox
             // 
             this.PathNodeFlags13CheckBox.AutoSize = true;
@@ -672,39 +644,6 @@
             this.PathNodeFlags13CheckBox.Text = "Indicate Keep Right";
             this.PathNodeFlags13CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags13CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags13CheckBox_CheckedChanged);
-            // 
-            // PathNodeFlags16CheckBox
-            // 
-            this.PathNodeFlags16CheckBox.AutoSize = true;
-            this.PathNodeFlags16CheckBox.Location = new System.Drawing.Point(6, 150);
-            this.PathNodeFlags16CheckBox.Name = "PathNodeFlags16CheckBox";
-            this.PathNodeFlags16CheckBox.Size = new System.Drawing.Size(96, 17);
-            this.PathNodeFlags16CheckBox.TabIndex = 40;
-            this.PathNodeFlags16CheckBox.Text = "Junction unk 3";
-            this.PathNodeFlags16CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags16CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags16CheckBox_CheckedChanged);
-            // 
-            // PathNodeFlags14CheckBox
-            // 
-            this.PathNodeFlags14CheckBox.AutoSize = true;
-            this.PathNodeFlags14CheckBox.Location = new System.Drawing.Point(6, 108);
-            this.PathNodeFlags14CheckBox.Name = "PathNodeFlags14CheckBox";
-            this.PathNodeFlags14CheckBox.Size = new System.Drawing.Size(108, 17);
-            this.PathNodeFlags14CheckBox.TabIndex = 38;
-            this.PathNodeFlags14CheckBox.Text = "Traffic light unk 1";
-            this.PathNodeFlags14CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags14CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags14CheckBox_CheckedChanged);
-            // 
-            // PathNodeFlags15CheckBox
-            // 
-            this.PathNodeFlags15CheckBox.AutoSize = true;
-            this.PathNodeFlags15CheckBox.Location = new System.Drawing.Point(6, 129);
-            this.PathNodeFlags15CheckBox.Name = "PathNodeFlags15CheckBox";
-            this.PathNodeFlags15CheckBox.Size = new System.Drawing.Size(108, 17);
-            this.PathNodeFlags15CheckBox.TabIndex = 39;
-            this.PathNodeFlags15CheckBox.Text = "Traffic light unk 2";
-            this.PathNodeFlags15CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags15CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags15CheckBox_CheckedChanged);
             // 
             // PathNodeFlags1UpDown
             // 
@@ -1726,6 +1665,27 @@
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
             // 
+            // SpecialTypeComboBox
+            // 
+            this.SpecialTypeComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SpecialTypeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SpecialTypeComboBox.FormattingEnabled = true;
+            this.SpecialTypeComboBox.Location = new System.Drawing.Point(6, 129);
+            this.SpecialTypeComboBox.Name = "SpecialTypeComboBox";
+            this.SpecialTypeComboBox.Size = new System.Drawing.Size(114, 21);
+            this.SpecialTypeComboBox.TabIndex = 62;
+            this.SpecialTypeComboBox.SelectedIndexChanged += new System.EventHandler(this.SpecialTypeComboBox_SelectedIndexChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(6, 109);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(72, 13);
+            this.label1.TabIndex = 47;
+            this.label1.Text = "Special Type:";
+            // 
             // EditYndNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1739,6 +1699,7 @@
             this.PathNodePropertiesTabPage.ResumeLayout(false);
             this.PathNodePropertiesTabPage.PerformLayout();
             this.PathNodeFlags5GroupBox.ResumeLayout(false);
+            this.Load += new System.EventHandler(this.EditYndNodePathPanel_Load);
             this.PathNodeFlags5GroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags5UpDown)).EndInit();
             this.PathNodeFlags4GroupBox.ResumeLayout(false);
@@ -1834,13 +1795,8 @@
         private System.Windows.Forms.Label PathNodeFlags2Label;
         private System.Windows.Forms.GroupBox PathNodeFlags1GroupBox;
         private System.Windows.Forms.CheckBox PathNodeFlags11CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags18CheckBox;
         private System.Windows.Forms.CheckBox PathNodeFlags12CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags17CheckBox;
         private System.Windows.Forms.CheckBox PathNodeFlags13CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags16CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags14CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags15CheckBox;
         private System.Windows.Forms.NumericUpDown PathNodeFlags1UpDown;
         private System.Windows.Forms.Label PathNodeFlags1Label;
         private System.Windows.Forms.GroupBox PathNodeFlags0GroupBox;
@@ -1928,5 +1884,8 @@
         private System.Windows.Forms.CheckBox PathNodeJunctionEnableCheckBox;
         private System.Windows.Forms.NumericUpDown PathNodeFlags43UpDown;
         private System.Windows.Forms.Label deadEndnessLabel;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox SpecialTypeComboBox;
+
     }
 }
