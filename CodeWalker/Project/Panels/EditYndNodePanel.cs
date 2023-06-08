@@ -349,7 +349,7 @@ namespace CodeWalker.Project.Panels
             flags3 += (((uint)PathNodeFlags32UpDown.Value & 127u) << 1);
 
             flags4 += (((uint)PathNodeFlags42UpDown.Value & 15u));
-            flags4 += (((uint)PathNodeFlags43UpDown.Value & 7u) >> 4);
+            flags4 += (((uint)PathNodeFlags43UpDown.Value & 7u) << 4);
             flags4 = BitUtil.UpdateBit(flags4, 7, PathNodeFlags48CheckBox.Checked);
 
             flags5 = BitUtil.UpdateBit(flags5, 0, PathNodeFlags51CheckBox.Checked);
