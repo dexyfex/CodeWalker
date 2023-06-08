@@ -747,6 +747,8 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public int Density { get { return Flags4.Value & 15; } }
 
+        public int DeadEndness { get { return (Flags4.Value >> 4) & 7; } }
+
         public bool LeftTurnsOnly { get { return (Flags1 & 128) > 0; } }
 
 

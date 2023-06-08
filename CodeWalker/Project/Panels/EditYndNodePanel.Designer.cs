@@ -37,9 +37,6 @@
             this.PathNodeFlags51CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags5UpDown = new System.Windows.Forms.NumericUpDown();
             this.PathNodeFlags4GroupBox = new System.Windows.Forms.GroupBox();
-            this.PathNodeFlags45CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags46CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeFlags47CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags48CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags42UpDown = new System.Windows.Forms.NumericUpDown();
             this.label71 = new System.Windows.Forms.Label();
@@ -156,6 +153,8 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
+            this.PathNodeFlags43UpDown = new System.Windows.Forms.NumericUpDown();
+            this.deadEndnessLabel = new System.Windows.Forms.Label();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -202,6 +201,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionHeightmapDimXUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMinZUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMaxZUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags43UpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // PathNodeTabControl
@@ -307,9 +307,8 @@
             // 
             // PathNodeFlags4GroupBox
             // 
-            this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags45CheckBox);
-            this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags46CheckBox);
-            this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags47CheckBox);
+            this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags43UpDown);
+            this.PathNodeFlags4GroupBox.Controls.Add(this.deadEndnessLabel);
             this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags48CheckBox);
             this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags42UpDown);
             this.PathNodeFlags4GroupBox.Controls.Add(this.label71);
@@ -322,43 +321,10 @@
             this.PathNodeFlags4GroupBox.TabStop = false;
             this.PathNodeFlags4GroupBox.Text = "Flags 4";
             // 
-            // PathNodeFlags45CheckBox
-            // 
-            this.PathNodeFlags45CheckBox.AutoSize = true;
-            this.PathNodeFlags45CheckBox.Location = new System.Drawing.Point(6, 66);
-            this.PathNodeFlags45CheckBox.Name = "PathNodeFlags45CheckBox";
-            this.PathNodeFlags45CheckBox.Size = new System.Drawing.Size(161, 17);
-            this.PathNodeFlags45CheckBox.TabIndex = 36;
-            this.PathNodeFlags45CheckBox.Text = "Dead End Road (Exit) (0x10)";
-            this.PathNodeFlags45CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags45CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags45CheckBox_CheckedChanged);
-            // 
-            // PathNodeFlags46CheckBox
-            // 
-            this.PathNodeFlags46CheckBox.AutoSize = true;
-            this.PathNodeFlags46CheckBox.Location = new System.Drawing.Point(6, 87);
-            this.PathNodeFlags46CheckBox.Name = "PathNodeFlags46CheckBox";
-            this.PathNodeFlags46CheckBox.Size = new System.Drawing.Size(169, 17);
-            this.PathNodeFlags46CheckBox.TabIndex = 37;
-            this.PathNodeFlags46CheckBox.Text = "Dead End Road (Enter) (0x20)";
-            this.PathNodeFlags46CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags46CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags46CheckBox_CheckedChanged);
-            // 
-            // PathNodeFlags47CheckBox
-            // 
-            this.PathNodeFlags47CheckBox.AutoSize = true;
-            this.PathNodeFlags47CheckBox.Location = new System.Drawing.Point(6, 108);
-            this.PathNodeFlags47CheckBox.Name = "PathNodeFlags47CheckBox";
-            this.PathNodeFlags47CheckBox.Size = new System.Drawing.Size(154, 17);
-            this.PathNodeFlags47CheckBox.TabIndex = 38;
-            this.PathNodeFlags47CheckBox.Text = "Leads To Dead End (0x40)";
-            this.PathNodeFlags47CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeFlags47CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags47CheckBox_CheckedChanged);
-            // 
             // PathNodeFlags48CheckBox
             // 
             this.PathNodeFlags48CheckBox.AutoSize = true;
-            this.PathNodeFlags48CheckBox.Location = new System.Drawing.Point(6, 129);
+            this.PathNodeFlags48CheckBox.Location = new System.Drawing.Point(9, 97);
             this.PathNodeFlags48CheckBox.Name = "PathNodeFlags48CheckBox";
             this.PathNodeFlags48CheckBox.Size = new System.Drawing.Size(98, 17);
             this.PathNodeFlags48CheckBox.TabIndex = 39;
@@ -1736,6 +1702,29 @@
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
             // 
+            // PathNodeFlags43UpDown
+            // 
+            this.PathNodeFlags43UpDown.Location = new System.Drawing.Point(92, 72);
+            this.PathNodeFlags43UpDown.Maximum = new decimal(new int[] {
+            7,
+            0,
+            0,
+            0});
+            this.PathNodeFlags43UpDown.Name = "PathNodeFlags43UpDown";
+            this.PathNodeFlags43UpDown.Size = new System.Drawing.Size(57, 20);
+            this.PathNodeFlags43UpDown.TabIndex = 46;
+            this.PathNodeFlags43UpDown.ValueChanged += new System.EventHandler(this.PathNodeFlags43UpDown_ValueChanged);
+            // 
+            // deadEndnessLabel
+            // 
+            this.deadEndnessLabel.AutoSize = true;
+            this.deadEndnessLabel.Location = new System.Drawing.Point(6, 72);
+            this.deadEndnessLabel.Name = "deadEndnessLabel";
+            this.deadEndnessLabel.Size = new System.Drawing.Size(80, 13);
+            this.deadEndnessLabel.TabIndex = 45;
+            this.deadEndnessLabel.Text = "Dead Endness:";
+            this.deadEndnessLabel.Click += new System.EventHandler(this.label1_Click);
+            // 
             // EditYndNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1805,6 +1794,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionHeightmapDimXUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMinZUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMaxZUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags43UpDown)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1819,9 +1809,6 @@
         private System.Windows.Forms.CheckBox PathNodeFlags51CheckBox;
         private System.Windows.Forms.NumericUpDown PathNodeFlags5UpDown;
         private System.Windows.Forms.GroupBox PathNodeFlags4GroupBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags45CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags46CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeFlags47CheckBox;
         private System.Windows.Forms.CheckBox PathNodeFlags48CheckBox;
         private System.Windows.Forms.NumericUpDown PathNodeFlags42UpDown;
         private System.Windows.Forms.Label label71;
@@ -1938,5 +1925,7 @@
         private System.Windows.Forms.NumericUpDown PathNodeJunctionMaxZUpDown;
         private System.Windows.Forms.Label label65;
         private System.Windows.Forms.CheckBox PathNodeJunctionEnableCheckBox;
+        private System.Windows.Forms.NumericUpDown PathNodeFlags43UpDown;
+        private System.Windows.Forms.Label deadEndnessLabel;
     }
 }
