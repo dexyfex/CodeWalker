@@ -979,7 +979,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_12Ch { get; set; } // 0x00000000
 
 
-        public Vector3[] Vertices2 { get; set; }//found in some YFTs, same count as Vertices, and contents are similar
+        public Vector3[] Vertices2 { get; set; } // Vertices but shrunk by margin along normal
         public BoundPolygon[] Polygons { get; set; }
         public Vector3[] Vertices { get; set; }
         public BoundMaterialColour[] VertexColours { get; set; }//not sure, it seems like colours anyway, see eg. prologue03_10.ybn
@@ -1204,10 +1204,6 @@ namespace CodeWalker.GameFiles
             {
                 YbnXml.WriteRawArray(sb, Vertices, indent, "Vertices", "", YbnXml.FormatVector3, 1);
             }
-            if (Vertices2 != null)
-            {
-                YbnXml.WriteRawArray(sb, Vertices2, indent, "Vertices2", "", YbnXml.FormatVector3, 1);
-            }
             if (VertexColours != null)
             {
                 YbnXml.WriteRawArray(sb, VertexColours, indent, "VertexColours", "", YbnXml.FormatBoundMaterialColour, 1);
@@ -1228,7 +1224,6 @@ namespace CodeWalker.GameFiles
             Materials = XmlMeta.ReadItemArray<BoundMaterial_s>(node, "Materials");
             MaterialColours = XmlYbn.GetChildRawBoundMaterialColourArray(node, "MaterialColours");
             Vertices = Xml.GetChildRawVector3ArrayNullable(node, "Vertices");
-            Vertices2 = Xml.GetChildRawVector3ArrayNullable(node, "Vertices2");
             VertexColours = XmlYbn.GetChildRawBoundMaterialColourArray(node, "VertexColours");
 
             var pnode = node.SelectSingleNode("Polygons");
@@ -1253,10 +1248,8 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            if (Vertices2 != null && Vertices2.Length > 0)
-            {
-                CalculateOctants();
-            }
+            CalculateVertsShrunkByMargin();
+            CalculateOctants();
 
             BuildMaterials();
             CalculateQuantum();
@@ -1786,6 +1779,50 @@ namespace CodeWalker.GameFiles
                 Octants.Items[i] = getVerticesInOctant(i);
                 Octants.UpdateCounts();
             }
+        }
+
+        public void CalculateVertsShrunkByMargin()
+        {
+            Vector3[] vertNormals = CalculateVertNormals();
+            Vertices2 = new Vector3[Vertices.Length];
+
+            for (int i = 0; i < Vertices.Length; i++)
+            {
+                Vector3 normalShrunk = vertNormals[i] * -Margin;
+                Vertices2[i] = Vertices[i] + normalShrunk;
+            }
+        }
+
+        public Vector3[] CalculateVertNormals()
+        {
+            Vector3[] vertNormals = new Vector3[Vertices.Length];
+
+            for (int i = 0; i < Polygons.Length; i++)
+            {
+                var tri = Polygons[i] as BoundPolygonTriangle;
+                if (tri == null) { continue; }
+
+                var p1 = tri.Vertex1;
+                var p2 = tri.Vertex2;
+                var p3 = tri.Vertex3;
+                var p1Local = p1 - p2;
+                var p3Local = p3 - p2;
+                var normal = Vector3.Cross(p1Local, p3Local);
+                normal.Normalize();
+
+                vertNormals[tri.vertIndex1] += normal;
+                vertNormals[tri.vertIndex2] += normal;
+                vertNormals[tri.vertIndex3] += normal;
+            }
+
+            for (int i = 0; i < vertNormals.Length; i++)
+            {
+                if (vertNormals[i].IsZero) { continue; }
+
+                vertNormals[i].Normalize();
+            }
+
+            return vertNormals;
         }
 
         public void CalculateQuantum()
