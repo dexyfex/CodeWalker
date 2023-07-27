@@ -1216,12 +1216,6 @@ namespace CodeWalker.GameFiles
             {
                 YbnXml.WriteCustomItemArray(sb, Polygons, indent, "Polygons");
             }
-            if (Octants != null)
-            {
-                YbnXml.OpenTag(sb, indent, "Octants");
-                Octants.WriteXml(sb, indent + 1);
-                YbnXml.CloseTag(sb, indent, "Octants");
-            }
         }
         public override void ReadXml(XmlNode node)
         {
@@ -1259,11 +1253,9 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var onode = node.SelectSingleNode("Octants");
-            if (onode != null)
+            if (Vertices2 != null && Vertices2.Length > 0)
             {
-                Octants = new BoundGeomOctants();
-                Octants.ReadXml(onode);
+                CalculateOctants();
             }
 
             BuildMaterials();
@@ -1723,6 +1715,78 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public void CalculateOctants()
+        {
+            Octants = new BoundGeomOctants();
+
+            Vector3[] flipDirection = new Vector3[8]
+                {
+                    new Vector3(1.0f, 1.0f, 1.0f),
+                    new Vector3(-1.0f, 1.0f, 1.0f),
+                    new Vector3(1.0f, -1.0f, 1.0f),
+                    new Vector3(-1.0f, -1.0f, 1.0f),
+                    new Vector3(1.0f, 1.0f, -1.0f),
+                    new Vector3(-1.0f, 1.0f, -1.0f),
+                    new Vector3(1.0f, -1.0f, -1.0f),
+                    new Vector3(-1.0f, -1.0f, -1.0f)
+                };
+
+            bool isShadowed(Vector3 v1, Vector3 v2, int octant)
+            {
+                Vector3 direction = v2 - v1;
+                Vector3 flip = flipDirection[octant];
+                direction *= flip;
+
+                return direction.X >= 0.0 && direction.Y >= 0.0 && direction.Z >= 0.0;
+            }
+
+            uint[] getVerticesInOctant(int octant)
+            {
+                List<uint> octantIndices = new List<uint>();
+
+                for (uint ind1 = 0; ind1 < Vertices2.Length; ind1++)
+                {
+                    Vector3 vertex = Vertices2[ind1];
+
+                    bool shouldAdd = true;
+                    List<uint> octantIndices2 = new List<uint>();
+
+                    foreach (uint ind2 in octantIndices)
+                    {
+                        Vector3 vertex2 = Vertices2[ind2];
+
+                        if (isShadowed(vertex, vertex2, octant))
+                        {
+                            shouldAdd = false;
+                            octantIndices2 = octantIndices;
+                            break;
+                        }
+
+                        if (!isShadowed(vertex2, vertex, octant))
+                        {
+                            octantIndices2.Add(ind2);
+                        }
+
+                    }
+
+                    if (shouldAdd)
+                    {
+                        octantIndices2.Add(ind1);
+                    }
+
+                    octantIndices = octantIndices2;
+                }
+
+                return octantIndices.ToArray();
+            }
+
+
+            for (int i = 0; i < 8; i++)
+            {
+                Octants.Items[i] = getVerticesInOctant(i);
+                Octants.UpdateCounts();
+            }
+        }
 
         public void CalculateQuantum()
         {
@@ -4095,7 +4159,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public class BoundGeomOctants : ResourceSystemBlock, IMetaXmlItem
+    [TC(typeof(EXP))] public class BoundGeomOctants : ResourceSystemBlock
     {
         public uint[] Counts { get; set; } = new uint[8];
         public uint[][] Items { get; private set; } = new uint[8][];
@@ -4175,54 +4239,6 @@ namespace CodeWalker.GameFiles
             }
             writer.Write(new byte[32]);
         }
-        public void WriteXml(StringBuilder sb, int indent)
-        {
-            if (Items == null) return;
-            foreach (var item in Items)
-            {
-                YbnXml.Indent(sb, indent);
-                if (item != null)
-                {
-                    bool newline = true;
-                    foreach (var val in item)
-                    {
-                        if (!newline) sb.Append(", ");
-                        sb.Append(val.ToString());
-                        newline = false;
-                    }
-                }
-                sb.AppendLine();
-            }
-        }
-        public void ReadXml(XmlNode node)
-        {
-            var collist = new List<uint[]>();
-            var rowlist = new List<uint>();
-            var str = node.InnerText.Trim();
-            var split = str.Split('\n');
-            for (int i = 0; i < split.Length; i++)
-            {
-                var s = split[i]?.Trim();
-                //if (string.IsNullOrEmpty(s)) continue;
-                var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
-                rowlist.Clear();
-                for (int n = 0; n < split2.Length; n++)
-                {
-                    var ts = split2[n]?.Trim();
-                    if (string.IsNullOrEmpty(ts)) continue;
-                    if (uint.TryParse(ts, out uint u))
-                    {
-                        rowlist.Add(u);
-                    }
-                }
-                collist.Add(rowlist.ToArray());
-            }
-            Items = collist.ToArray();
-
-            UpdateCounts();
-        }
-
-
 
         public void UpdateCounts()
         {
