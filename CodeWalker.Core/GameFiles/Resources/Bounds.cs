@@ -941,10 +941,10 @@ namespace CodeWalker.GameFiles
         // structure data
         public uint Unknown_70h { get; set; } // 0x00000000
         public uint Unknown_74h { get; set; } // 0x00000000
-        public ulong Vertices2Pointer { get; set; }
+        public ulong VerticesShrunkPointer { get; set; }
         public ushort Unknown_80h { get; set; } // 0x0000
         public ushort Unknown_82h { get; set; } //des_.ydr's? some extra data to read..?? is this some extra poly count?
-        public uint Vertices2Count { get; set; } //always equal to VerticesCount
+        public uint VerticesShrunkCount { get; set; } //always equal to VerticesCount
         public ulong PolygonsPointer { get; set; }
         public Vector3 Quantum { get; set; }
         public float Unknown_9Ch { get; set; }
@@ -979,7 +979,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_12Ch { get; set; } // 0x00000000
 
 
-        public Vector3[] Vertices2 { get; set; } // Vertices but shrunk by margin along normal
+        public Vector3[] VerticesShrunk { get; set; } // Vertices but shrunk by margin along normal
         public BoundPolygon[] Polygons { get; set; }
         public Vector3[] Vertices { get; set; }
         public BoundMaterialColour[] VertexColours { get; set; }//not sure, it seems like colours anyway, see eg. prologue03_10.ybn
@@ -988,7 +988,7 @@ namespace CodeWalker.GameFiles
         public BoundMaterialColour[] MaterialColours { get; set; }
         public byte[] PolygonMaterialIndices { get; set; }
 
-        private ResourceSystemStructBlock<BoundVertex_s> Vertices2Block = null;
+        private ResourceSystemStructBlock<BoundVertex_s> VerticesShrunkBlock = null;
         private ResourceSystemDataBlock PolygonsBlock = null;
         private ResourceSystemStructBlock<BoundVertex_s> VerticesBlock = null;
         private ResourceSystemStructBlock<BoundMaterialColour> VertexColoursBlock = null;
@@ -1005,10 +1005,10 @@ namespace CodeWalker.GameFiles
 
             this.Unknown_70h = reader.ReadUInt32();
             this.Unknown_74h = reader.ReadUInt32();
-            this.Vertices2Pointer = reader.ReadUInt64();
+            this.VerticesShrunkPointer = reader.ReadUInt64();
             this.Unknown_80h = reader.ReadUInt16();
             this.Unknown_82h = reader.ReadUInt16();
-            this.Vertices2Count = reader.ReadUInt32();
+            this.VerticesShrunkCount = reader.ReadUInt32();
             this.PolygonsPointer = reader.ReadUInt64();
             this.Quantum = reader.ReadVector3();
             this.Unknown_9Ch = reader.ReadSingle();
@@ -1043,14 +1043,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_12Ch = reader.ReadUInt32();
 
 
-            var verts2 = reader.ReadStructsAt<BoundVertex_s>(this.Vertices2Pointer, this.Vertices2Count);
-            if (verts2 != null) //seems to be in YFT's
+            var vertsShrunk = reader.ReadStructsAt<BoundVertex_s>(this.VerticesShrunkPointer, this.VerticesShrunkCount);
+            if (vertsShrunk != null) //seems to be in YFT's
             {
-                Vertices2 = new Vector3[verts2.Length];
-                for (int i = 0; i < verts2.Length; i++)
+                VerticesShrunk = new Vector3[vertsShrunk.Length];
+                for (int i = 0; i < vertsShrunk.Length; i++)
                 {
-                    var bv = verts2[i];
-                    Vertices2[i] = bv.Vector * Quantum;
+                    var bv = vertsShrunk[i];
+                    VerticesShrunk[i] = bv.Vector * Quantum;
                 }
             }
 
@@ -1128,14 +1128,14 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            this.Vertices2Pointer = (ulong)(this.Vertices2Block != null ? this.Vertices2Block.FilePosition : 0);
+            this.VerticesShrunkPointer = (ulong)(this.VerticesShrunkBlock != null ? this.VerticesShrunkBlock.FilePosition : 0);
             this.PolygonsPointer = (ulong)(this.PolygonsBlock != null ? this.PolygonsBlock.FilePosition : 0);
             this.VerticesPointer = (ulong)(this.VerticesBlock != null ? this.VerticesBlock.FilePosition : 0);
             this.VertexColoursPointer = (ulong)(this.VertexColoursBlock != null ? this.VertexColoursBlock.FilePosition : 0);
             this.OctantsPointer = (ulong)(this.Octants != null ? this.Octants.FilePosition : 0);
             this.OctantItemsPointer = (OctantsPointer != 0) ? OctantsPointer + 32 : 0;
             this.VerticesCount = (uint)(this.VerticesBlock != null ? this.VerticesBlock.ItemCount : 0);
-            this.Vertices2Count = this.VerticesCount;
+            this.VerticesShrunkCount = this.VerticesCount;
             this.PolygonsCount = (uint)(this.Polygons != null ? this.Polygons.Length : 0);
             this.MaterialsPointer = (ulong)(this.MaterialsBlock != null ? this.MaterialsBlock.FilePosition : 0);
             this.MaterialColoursPointer = (ulong)(this.MaterialColoursBlock != null ? this.MaterialColoursBlock.FilePosition : 0);
@@ -1147,10 +1147,10 @@ namespace CodeWalker.GameFiles
             // write structure data
             writer.Write(this.Unknown_70h);
             writer.Write(this.Unknown_74h);
-            writer.Write(this.Vertices2Pointer);
+            writer.Write(this.VerticesShrunkPointer);
             writer.Write(this.Unknown_80h);
             writer.Write(this.Unknown_82h);
-            writer.Write(this.Vertices2Count);
+            writer.Write(this.VerticesShrunkCount);
             writer.Write(this.PolygonsPointer);
             writer.Write(this.Quantum);
             writer.Write(this.Unknown_9Ch);
@@ -1267,17 +1267,17 @@ namespace CodeWalker.GameFiles
             UpdateTriangleAreas();
 
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (Vertices2 != null)
+            if (VerticesShrunk != null)
             {
                 var verts = new List<BoundVertex_s>();
-                foreach (var v in Vertices2)
+                foreach (var v in VerticesShrunk)
                 {
                     var vq = v / Quantum;
                     var vs = new BoundVertex_s(vq);
                     verts.Add(vs);
                 }
-                Vertices2Block = new ResourceSystemStructBlock<BoundVertex_s>(verts.ToArray());
-                list.Add(Vertices2Block);
+                VerticesShrunkBlock = new ResourceSystemStructBlock<BoundVertex_s>(verts.ToArray());
+                list.Add(VerticesShrunkBlock);
             }
             if (Polygons != null)
             {
@@ -1737,16 +1737,16 @@ namespace CodeWalker.GameFiles
             {
                 List<uint> octantIndices = new List<uint>();
 
-                for (uint ind1 = 0; ind1 < Vertices2.Length; ind1++)
+                for (uint ind1 = 0; ind1 < VerticesShrunk.Length; ind1++)
                 {
-                    Vector3 vertex = Vertices2[ind1];
+                    Vector3 vertex = VerticesShrunk[ind1];
 
                     bool shouldAdd = true;
                     List<uint> octantIndices2 = new List<uint>();
 
                     foreach (uint ind2 in octantIndices)
                     {
-                        Vector3 vertex2 = Vertices2[ind2];
+                        Vector3 vertex2 = VerticesShrunk[ind2];
 
                         if (isShadowed(vertex, vertex2, octant))
                         {
@@ -1784,12 +1784,12 @@ namespace CodeWalker.GameFiles
         public void CalculateVertsShrunkByMargin()
         {
             Vector3[] vertNormals = CalculateVertNormals();
-            Vertices2 = new Vector3[Vertices.Length];
+            VerticesShrunk = new Vector3[Vertices.Length];
 
             for (int i = 0; i < Vertices.Length; i++)
             {
                 Vector3 normalShrunk = vertNormals[i] * -Margin;
-                Vertices2[i] = Vertices[i] + normalShrunk;
+                VerticesShrunk[i] = Vertices[i] + normalShrunk;
             }
         }
 
@@ -1837,9 +1837,9 @@ namespace CodeWalker.GameFiles
                     max = Vector3.Max(max, v);
                 }
             }
-            if (Vertices2 != null)
+            if (VerticesShrunk != null)
             {
-                foreach (var v in Vertices2)
+                foreach (var v in VerticesShrunk)
                 {
                     min = Vector3.Min(min, v);
                     max = Vector3.Max(max, v);
@@ -2092,7 +2092,7 @@ namespace CodeWalker.GameFiles
                 }
 
                 var verts = Vertices.ToList();
-                var verts2 = Vertices2?.ToList();
+                var verts2 = VerticesShrunk?.ToList();
                 var vertcols = VertexColours?.ToList();
                 var vertobjs = VertexObjects?.ToList();
                 verts.RemoveAt(index);
@@ -2100,11 +2100,11 @@ namespace CodeWalker.GameFiles
                 vertcols?.RemoveAt(index);
                 vertobjs?.RemoveAt(index);
                 Vertices = verts.ToArray();
-                Vertices2 = verts2?.ToArray();
+                VerticesShrunk = verts2?.ToArray();
                 VertexColours = vertcols?.ToArray();
                 VertexObjects = vertobjs?.ToArray();
                 VerticesCount = (uint)verts.Count;
-                Vertices2Count = VerticesCount;
+                VerticesShrunkCount = VerticesCount;
 
                 if (VertexObjects != null)
                 {
@@ -2158,7 +2158,7 @@ namespace CodeWalker.GameFiles
         public int AddVertex()
         {
             var verts = Vertices?.ToList() ?? new List<Vector3>();
-            var verts2 = Vertices2?.ToList();
+            var verts2 = VerticesShrunk?.ToList();
             var vertcols = VertexColours?.ToList();
             var vertobjs = VertexObjects?.ToList();
             var index = verts.Count;
@@ -2169,11 +2169,11 @@ namespace CodeWalker.GameFiles
             vertobjs?.Add(null);
 
             Vertices = verts.ToArray();
-            Vertices2 = verts2?.ToArray();
+            VerticesShrunk = verts2?.ToArray();
             VertexColours = vertcols?.ToArray();
             VertexObjects = vertobjs?.ToArray();
             VerticesCount = (uint)verts.Count;
-            Vertices2Count = VerticesCount;
+            VerticesShrunkCount = VerticesCount;
 
             return index;
         }
