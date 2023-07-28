@@ -2779,7 +2779,7 @@ namespace CodeWalker.GameFiles
                 if (child != null)
                 {
                     var cbox = new BoundingBox(child.BoxMin, child.BoxMax);
-                    var tcbox = cbox.Transform(child.Position, child.Orientation, child.Scale);
+                    var tcbox = cbox.Transform(child.Transform);
                     var it = new BVHBuilderItem();
                     it.Min = tcbox.Minimum;
                     it.Max = tcbox.Maximum;
@@ -2793,16 +2793,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var bvh = BVHBuilder.Build(items, 1); //composites have BVH item threshold of 1
-
-            BoxMin = bvh.BoundingBoxMin.XYZ();
-            BoxMax = bvh.BoundingBoxMax.XYZ();
-            BoxCenter = bvh.BoundingBoxCenter.XYZ();
-            SphereCenter = BoxCenter;
-            SphereRadius = (BoxMax - BoxCenter).Length();
-
-            BVH = bvh;
-
+            BVH = BVHBuilder.Build(items, 1); //composites have BVH item threshold of 1
         }
 
         public void UpdateChildrenFlags()
