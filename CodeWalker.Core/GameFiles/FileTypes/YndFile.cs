@@ -692,14 +692,42 @@ namespace CodeWalker.GameFiles
         }
 
         //// Flag0 Properties
-        public bool OffRoad { get { return (Flags0.Value & 8) > 0; } }
-        public bool NoBigVehicles { get { return (Flags0.Value & 32) > 0; } }
-        public bool CannotGoLeft { get { return (Flags0.Value & 128) > 0; } }
+        public bool OffRoad
+        {
+            get => (Flags0 & 8) > 0;
+            set => Flags0 = (byte)(value ? Flags0 | 8 : Flags0 ^ 8);
+        }
+
+        public bool NoBigVehicles
+        {
+            get => (Flags0.Value & 32) > 0;
+            set => Flags0 = (byte)(value ? Flags0 | 32 : Flags0 ^ 32);
+        }
+
+        public bool CannotGoLeft
+        {
+            get => (Flags0.Value & 128) > 0;
+            set => Flags0 = (byte)(value ? Flags0 | 128 : Flags0 ^ 32);
+        }
 
         // Flag1 Properties
-        public bool SlipRoad { get { return (Flags1 & 1) > 0; } }
-        public bool IndicateKeepLeft { get { return (Flags1 & 2) > 0; } }
-        public bool IndicateKeepRight { get { return (Flags1 & 4) > 0; } }
+        public bool SlipRoad
+        {
+            get => (Flags1 & 1) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 1 : Flags1 ^ 1);
+        }
+
+        public bool IndicateKeepLeft
+        {
+            get => (Flags1 & 2) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 2 : Flags1 ^ 2);
+        }
+
+        public bool IndicateKeepRight
+        {
+            get => (Flags1 & 4) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 4 : Flags1 ^ 4);
+        }
 
         /// <summary>
         /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
@@ -718,19 +746,46 @@ namespace CodeWalker.GameFiles
         /// RestrictedAccess?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
         /// OffRoadJunctionNode?        = 20    Appears on a junction node with more than one edge where there is an off-road connection.
         /// </summary>
-        public YndNodeSpecialType Special { get { return (YndNodeSpecialType)(Flags1.Value >> 3); } }
+        public YndNodeSpecialType Special
+        {
+            get => (YndNodeSpecialType)(Flags1.Value >> 3);
+            set => Flags1 = (byte)((Flags1 ^ 0xF8) | ((byte)value << 3));
+        }
 
         // Flag2 Properties
-        public bool NoGps { get { return (Flags2.Value & 1) > 0; } }
-        public bool Highway { get { return (Flags2.Value & 64) > 0; } }
+        public bool NoGps
+        {
+            get => (Flags2.Value & 1) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 1 : Flags2 ^ 1);
+        }
+
+        public bool Highway
+        {
+            get => (Flags2.Value & 64) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 64 : Flags2 ^ 64);
+        }
+
         /// <summary>
-        /// A node being "disabled" does not mean that a vehicle will not travel through it.
+        /// This seems to be heuristic based. A node being "disabled" does not mean that a vehicle will not travel through it.
         /// </summary>
-        public bool IsDisabledUnk0 { get { return (Flags2.Value & 128) > 0; } }
-        public bool IsDisabledUnk1 { get { return (Flags2.Value & 16) > 0; } }
+        public bool IsDisabledUnk0
+        {
+            get => (Flags2.Value & 128) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 128 : Flags2 ^ 128);
+        }
+
+        public bool IsDisabledUnk1
+        {
+            get { return (Flags2.Value & 16) > 0; }
+            set => Flags2 = (byte)(value ? Flags2 | 16 : Flags2 ^ 16);
+        }
 
         // Flag3 Properties
-        public bool Tunnel { get { return (Flags3 & 1) > 0; } }
+        public bool Tunnel
+        {
+            get { return (Flags3 & 1) > 0; }
+            set => Flags3 = (byte)(value ? Flags3 | 1 : Flags3 ^ 1);
+        }
 
         /// <summary>
         /// The heuristic value takes up the rest of Flags3.
@@ -739,29 +794,36 @@ namespace CodeWalker.GameFiles
         /// This is not 100% accurate with road merges etc (as is the nature of heuristics).
         /// You'll see perfect accuracy in single lane roads, like alleys.
         /// </summary>
-        public int HeuristicValue { get { return Flags3.Value >> 1; } }
+        public int HeuristicValue
+        {
+            get => Flags3.Value >> 1;
+            set => Flags3 = (byte)((Flags3 ^ 0xFE) | (value << 1));
+        }
 
         // Flag4 Properties
         /// <summary>
         /// The first 4 bits of Flag4 is the density of the node. This ranges from 0 to 15.
         /// </summary>
-        public int Density { get { return Flags4.Value & 15; } }
+        public int Density
+        {
+            get => Flags4.Value & 15;
+            set => Flags4 = (byte)((Flags4 ^ 0xF0) | (value & 15));
+        }
 
-        public bool LeftTurnsOnly { get { return (Flags1 & 128) > 0; } }
+        public bool LeftTurnsOnly
+        {
+            get => (Flags1 & 128) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 128 : Flags1 ^ 128);
+        }
 
 
         /// <summary>
         /// If Special is 10, 14 or 18 this is a ped node.
         /// </summary>
-        public bool IsPedNode
-        {
-            get
-            {
-                return Special == YndNodeSpecialType.PedNavMeshLink
-                       || Special == YndNodeSpecialType.PedNodeUnk
-                       || Special == YndNodeSpecialType.PedNavMeshLink2;
-            }
-        }
+        public bool IsPedNode =>
+            Special == YndNodeSpecialType.PedNavMeshLink
+            || Special == YndNodeSpecialType.PedNodeUnk
+            || Special == YndNodeSpecialType.PedNavMeshLink2;
 
         public void Init(YndFile ynd, Node node)
         {
