@@ -108,6 +108,13 @@ namespace CodeWalker.Project.Panels
                     ProjectForm.WorldForm.SelectObject(CurrentPathNode);
                 }
 
+                PathNodesSpeedComboBox.Items.Clear();
+                PathNodesSpeedComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpeed)).Cast<object>().ToArray());
+                PathNodesSpeedComboBox.SelectedItem = CurrentPathNode.Speed;
+
+                PathNodeSpecialTypeComboBox.Items.Clear();
+                PathNodeSpecialTypeComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpecialType)).Cast<object>().ToArray());
+                PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode.Special;
             }
         }
 
@@ -204,11 +211,6 @@ namespace CodeWalker.Project.Panels
                 PathNodeFlags11CheckBox.Checked = BitUtil.IsBitSet(flags1, 0);
                 PathNodeFlags12CheckBox.Checked = BitUtil.IsBitSet(flags1, 1);
                 PathNodeFlags13CheckBox.Checked = BitUtil.IsBitSet(flags1, 2);
-                PathNodeFlags14CheckBox.Checked = BitUtil.IsBitSet(flags1, 3);
-                PathNodeFlags15CheckBox.Checked = BitUtil.IsBitSet(flags1, 4);
-                PathNodeFlags16CheckBox.Checked = BitUtil.IsBitSet(flags1, 5);
-                PathNodeFlags17CheckBox.Checked = BitUtil.IsBitSet(flags1, 6);
-                PathNodeFlags18CheckBox.Checked = BitUtil.IsBitSet(flags1, 7);
 
                 PathNodeFlags21CheckBox.Checked = BitUtil.IsBitSet(flags2, 0);
                 PathNodeFlags22CheckBox.Checked = BitUtil.IsBitSet(flags2, 1);
@@ -230,8 +232,6 @@ namespace CodeWalker.Project.Panels
                 PathNodeFlags48CheckBox.Checked = BitUtil.IsBitSet(flags4, 7);
 
                 PathNodeFlags51CheckBox.Checked = BitUtil.IsBitSet(flags5, 0);
-                PathNodeFlags52CheckBox.Checked = BitUtil.IsBitSet(flags5, 1);
-                PathNodeFlags53CheckBox.Checked = BitUtil.IsBitSet(flags5, 2);
             }
             if (updateUpDowns)
             {
@@ -333,11 +333,6 @@ namespace CodeWalker.Project.Panels
             flags1 = BitUtil.UpdateBit(flags1, 0, PathNodeFlags11CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 1, PathNodeFlags12CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 2, PathNodeFlags13CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 3, PathNodeFlags14CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 4, PathNodeFlags15CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 5, PathNodeFlags16CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 6, PathNodeFlags17CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 7, PathNodeFlags18CheckBox.Checked);
 
             flags2 = BitUtil.UpdateBit(flags2, 0, PathNodeFlags21CheckBox.Checked);
             flags2 = BitUtil.UpdateBit(flags2, 1, PathNodeFlags22CheckBox.Checked);
@@ -359,8 +354,6 @@ namespace CodeWalker.Project.Panels
             flags4 = BitUtil.UpdateBit(flags4, 7, PathNodeFlags48CheckBox.Checked);
 
             flags5 = BitUtil.UpdateBit(flags5, 0, PathNodeFlags51CheckBox.Checked);
-            flags5 = BitUtil.UpdateBit(flags5, 1, PathNodeFlags52CheckBox.Checked);
-            flags5 = BitUtil.UpdateBit(flags5, 2, PathNodeFlags53CheckBox.Checked);
 
 
             lock (ProjectForm.ProjectSyncRoot)
@@ -933,17 +926,6 @@ namespace CodeWalker.Project.Panels
             SetPathNodeFlagsFromCheckBoxes(); //treat this one like checkboxes
         }
 
-        private void PathNodeFlags52CheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            SetPathNodeFlagsFromCheckBoxes();
-        }
-
-        private void PathNodeFlags53CheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            SetPathNodeFlagsFromCheckBoxes();
-        }
-
-
         private void PathNodeLinksListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentPathLink = PathNodeLinksListBox.SelectedItem as YndLink;
@@ -1251,6 +1233,23 @@ namespace CodeWalker.Project.Panels
                 ProjectForm.SetYndHasChanged(true);
             }
             //LoadPathNodeJunctionPage();
+        }
+
+        private void PathNodesSpeedComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentPathNode == null) return;
+            if (CurrentPathNode.Junction == null) return;
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                CurrentPathNode.Speed = (YndNodeSpeed)PathNodesSpeedComboBox.SelectedItem;
+                ProjectForm.SetYndHasChanged(true);
+            }
+        }
+
+        private void PathNodeSpecialTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
