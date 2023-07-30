@@ -115,6 +115,7 @@ namespace CodeWalker.Project.Panels
                 PathNodeSpecialTypeComboBox.Items.Clear();
                 PathNodeSpecialTypeComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpecialType)).Cast<object>().ToArray());
                 PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode.Special;
+                YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode.IsPedNode;
             }
         }
 
@@ -1249,7 +1250,15 @@ namespace CodeWalker.Project.Panels
 
         private void PathNodeSpecialTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            if (populatingui) return;
+            if (CurrentPathNode == null) return;
+            if (CurrentPathNode.Junction == null) return;
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                CurrentPathNode.Special = (YndNodeSpecialType)PathNodeSpecialTypeComboBox.SelectedItem;
+                YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode.IsPedNode;
+                ProjectForm.SetYndHasChanged(true);
+            }
         }
     }
 }

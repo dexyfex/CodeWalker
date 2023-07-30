@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using CodeWalker.World;
 
 namespace CodeWalker.GameFiles
 {
@@ -27,6 +28,7 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get; set; }
         public int CellX { get; set; }
         public int CellY { get; set; }
+
         public int AreaID
         {
             get
@@ -259,7 +261,7 @@ namespace CodeWalker.GameFiles
             YndNode yn = new YndNode();
             Node n = new Node();
             n.AreaID = (ushort)AreaID;
-            n.NodeID = (ushort)cnt;
+            n.NodeID = 0;
             yn.Init(this, n);
 
             int ncnt = cnt + 1;
@@ -272,93 +274,92 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
+            RecalculateNodeIndices();
+
             return yn;
         }
 
         public bool RemoveNode(YndNode node)
         {
-            List<YndNode> newnodes = new List<YndNode>();
-            int cnt = Nodes?.Length ?? 0;
-            bool r = false;
-            int ri = -1;
-            for (int i = 0; i < cnt; i++)
+
+            var nodes = Nodes.Where(n => n.AreaID != node.AreaID || n.NodeID != node.NodeID).ToArray();
+            Nodes = nodes;
+            NodeDictionary.NodesCount = (uint)nodes.Count();
+
+            // Delete links that target this node
+            var remLinks = new List<YndLink>();
+            foreach (var link in Links)
             {
-                var tn = Nodes[i];
-                if (tn != node)
+                if ((link.Node1.AreaID == node.AreaID && link.Node1.NodeID == node.NodeID)
+                    || (link.Node2.AreaID == node.AreaID && link.Node2.NodeID == node.NodeID))
                 {
-                    newnodes.Add(tn);
-                }
-                else
-                {
-                    r = true;
-                    ri = i;
+                    remLinks.Add(link);
                 }
             }
-            Nodes = newnodes.ToArray();
-            NodeDictionary.NodesCount = (uint)newnodes.Count;
-            NodeDictionary.NodesCountVehicle = Math.Min(NodeDictionary.NodesCountVehicle, NodeDictionary.NodesCount);
-            NodeDictionary.NodesCountPed = Math.Min(NodeDictionary.NodesCountPed, NodeDictionary.NodesCount);
 
-            //remap node ID's...
-            List<YndLink> remlinks = new List<YndLink>();
-            if (ri >= 0)
+            foreach (var n in Nodes)
             {
-                for (int i = 0; i < Nodes.Length; i++)
-                {
-                    var n = Nodes[i];
-                    if (n.NodeID != i)
-                    {
-                        n.NodeID = (ushort)i;
+                var rmLinks = n.Links.Where(l =>
+                    (l.Node1.AreaID == node.AreaID && l.Node1.NodeID == node.NodeID)
+                    || (l.Node2.AreaID == node.AreaID && l.Node2.NodeID == node.NodeID));
 
-
-                        //update nodeid's in links...
-                        for (int j = 0; j < Nodes.Length; j++)
-                        {
-                            var tn = Nodes[j];
-                            if ((tn != null) && (tn.Links != null))
-                            {
-                                for (int bl = 0; bl < tn.Links.Length; bl++)
-                                {
-                                    var backlink = tn.Links[bl];
-                                    if (backlink.Node2 == n)
-                                    {
-                                        backlink._RawData.NodeID = (ushort)i;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    //remove any links referencing the node.
-                    remlinks.Clear();
-                    if (n.Links != null)
-                    {
-                        for (int l = 0; l < n.Links.Length; l++)
-                        {
-                            var nlink = n.Links[l];
-                            if (nlink.Node2 == node)
-                            {
-                                remlinks.Add(nlink);
-                            }
-                        }
-                        for (int l = 0; l < remlinks.Count; l++)
-                        {
-                            n.RemoveLink(remlinks[l]);
-                        }
-                    }
-
-                }
-
+                n.Links = n.Links.Where(rl => !rmLinks.Contains(rl)).ToArray();
             }
 
-            UpdateAllNodePositions();
+            Links = Links.Where(l => !remLinks.Contains(l)).ToArray();
 
-            return r;
+            RecalculateNodeIndices();
+
+            return true;
         }
 
+        private void RecalculateNodeIndices()
+        {
+            // Sort nodes so ped nodes are at the end
+            var nodes = new List<YndNode>();
+            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).ToArray();
+            var pedNodes = Nodes.Where(n => n.IsPedNode).ToArray();
 
+            nodes.AddRange(vehicleNodes);
+            nodes.AddRange(pedNodes);
 
+            for (var i = 0; i < nodes.Count(); i++)
+            {
+                var node = nodes[i];
 
+                if (node.NodeID != i)
+                {
+                    //TODO: Add support for moving between areas
+                    UpdateLinksForUpdatedIndex(node.AreaID, node.NodeID, node.AreaID, (ushort)i);
+
+                    node.NodeID = (ushort)i;
+                }
+            }
+
+            NodeDictionary.NodesCountVehicle = (uint)nodes.Count();
+            NodeDictionary.NodesCountPed = (uint)pedNodes.Count();
+            NodeDictionary.NodesCount = NodeDictionary.NodesCountVehicle + NodeDictionary.NodesCountPed;
+
+            UpdateAllNodePositions();
+        }
+
+        private void UpdateLinksForUpdatedIndex(ushort oldAreaId, ushort oldNodeId, ushort newAreaId, ushort newNodeId)
+        {
+            foreach (var link in Links)
+            {
+                if (link.Node1.AreaID == oldAreaId && link.Node1.NodeID == oldNodeId)
+                {
+                    link.Node1.AreaID = newAreaId;
+                    link.Node1.NodeID = newNodeId;
+                }
+
+                if (link.Node2.AreaID == oldAreaId && link.Node2.NodeID == oldNodeId)
+                {
+                    link.Node2.AreaID = newAreaId;
+                    link.Node2.NodeID = newNodeId;
+                }
+            }
+        }
 
         public void UpdateBoundingBox()
         {

@@ -154,6 +154,7 @@
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeSpecialTypeComboBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
+            this.YndNodeIsPedNodeCheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -219,6 +220,7 @@
             // 
             // PathNodePropertiesTabPage
             // 
+            this.PathNodePropertiesTabPage.Controls.Add(this.YndNodeIsPedNodeCheckBox);
             this.PathNodePropertiesTabPage.Controls.Add(this.PathNodeSpecialTypeComboBox);
             this.PathNodePropertiesTabPage.Controls.Add(this.label2);
             this.PathNodePropertiesTabPage.Controls.Add(this.PathNodeFlags5GroupBox);
@@ -1833,6 +1835,17 @@
             this.label2.TabIndex = 46;
             this.label2.Text = "Special Type:";
             // 
+            // YndNodeIsPedNodeCheckBox
+            // 
+            this.YndNodeIsPedNodeCheckBox.AutoSize = true;
+            this.YndNodeIsPedNodeCheckBox.Enabled = false;
+            this.YndNodeIsPedNodeCheckBox.Location = new System.Drawing.Point(457, 139);
+            this.YndNodeIsPedNodeCheckBox.Name = "YndNodeIsPedNodeCheckBox";
+            this.YndNodeIsPedNodeCheckBox.Size = new System.Drawing.Size(216, 24);
+            this.YndNodeIsPedNodeCheckBox.TabIndex = 49;
+            this.YndNodeIsPedNodeCheckBox.Text = "Special Type Is Ped Node";
+            this.YndNodeIsPedNodeCheckBox.UseVisualStyleBackColor = true;
+            // 
             // EditYndNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -2034,5 +2047,6 @@
         private System.Windows.Forms.ComboBox PathNodesSpeedComboBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox PathNodeSpecialTypeComboBox;
+        private System.Windows.Forms.CheckBox YndNodeIsPedNodeCheckBox;
     }
 }
