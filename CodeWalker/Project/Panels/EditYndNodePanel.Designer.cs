@@ -44,6 +44,8 @@
             this.PathNodeFlags46CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags47CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeFlags48CheckBox = new System.Windows.Forms.CheckBox();
+            this.PathNodeFlags42UpDown = new System.Windows.Forms.NumericUpDown();
+            this.label71 = new System.Windows.Forms.Label();
             this.PathNodeFlags4UpDown = new System.Windows.Forms.NumericUpDown();
             this.PathNodeFlags4Label = new System.Windows.Forms.Label();
             this.PathNodeFlags3GroupBox = new System.Windows.Forms.GroupBox();
@@ -152,13 +154,12 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
-            this.label71 = new System.Windows.Forms.Label();
-            this.PathNodeFlags42UpDown = new System.Windows.Forms.NumericUpDown();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags5UpDown)).BeginInit();
             this.PathNodeFlags4GroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags42UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags4UpDown)).BeginInit();
             this.PathNodeFlags3GroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags32UpDown)).BeginInit();
@@ -199,7 +200,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionHeightmapDimXUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMinZUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMaxZUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags42UpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // PathNodeTabControl
@@ -404,6 +404,30 @@
             this.PathNodeFlags48CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags48CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags48CheckBox_CheckedChanged);
             // 
+            // PathNodeFlags42UpDown
+            // 
+            this.PathNodeFlags42UpDown.Location = new System.Drawing.Point(72, 199);
+            this.PathNodeFlags42UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.PathNodeFlags42UpDown.Maximum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.PathNodeFlags42UpDown.Name = "PathNodeFlags42UpDown";
+            this.PathNodeFlags42UpDown.Size = new System.Drawing.Size(86, 26);
+            this.PathNodeFlags42UpDown.TabIndex = 41;
+            this.PathNodeFlags42UpDown.ValueChanged += new System.EventHandler(this.PathNodeFlags42UpDown_ValueChanged);
+            // 
+            // label71
+            // 
+            this.label71.AutoSize = true;
+            this.label71.Location = new System.Drawing.Point(6, 201);
+            this.label71.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label71.Name = "label71";
+            this.label71.Size = new System.Drawing.Size(66, 20);
+            this.label71.TabIndex = 40;
+            this.label71.Text = "Density:";
+            // 
             // PathNodeFlags4UpDown
             // 
             this.PathNodeFlags4UpDown.Location = new System.Drawing.Point(9, 29);
@@ -446,7 +470,8 @@
             // 
             // PathNodeFlags32UpDown
             // 
-            this.PathNodeFlags32UpDown.Location = new System.Drawing.Point(220, 68);
+            this.PathNodeFlags32UpDown.Enabled = false;
+            this.PathNodeFlags32UpDown.Location = new System.Drawing.Point(177, 103);
             this.PathNodeFlags32UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags32UpDown.Maximum = new decimal(new int[] {
             127,
@@ -461,12 +486,12 @@
             // label70
             // 
             this.label70.AutoSize = true;
-            this.label70.Location = new System.Drawing.Point(166, 71);
+            this.label70.Location = new System.Drawing.Point(8, 104);
             this.label70.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label70.Name = "label70";
-            this.label70.Size = new System.Drawing.Size(42, 20);
+            this.label70.Size = new System.Drawing.Size(161, 20);
             this.label70.TabIndex = 36;
-            this.label70.Text = "Unk:";
+            this.label70.Text = "Heuristic (Automatic):";
             // 
             // PathNodeFlags31CheckBox
             // 
@@ -474,9 +499,9 @@
             this.PathNodeFlags31CheckBox.Location = new System.Drawing.Point(9, 69);
             this.PathNodeFlags31CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags31CheckBox.Name = "PathNodeFlags31CheckBox";
-            this.PathNodeFlags31CheckBox.Size = new System.Drawing.Size(125, 24);
+            this.PathNodeFlags31CheckBox.Size = new System.Drawing.Size(260, 24);
             this.PathNodeFlags31CheckBox.TabIndex = 35;
-            this.PathNodeFlags31CheckBox.Text = "Interior node";
+            this.PathNodeFlags31CheckBox.Text = "Tunnel (Temporarily break GPS)";
             this.PathNodeFlags31CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags31CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags31CheckBox_CheckedChanged);
             // 
@@ -543,9 +568,9 @@
             this.PathNodeFlags28CheckBox.Location = new System.Drawing.Point(9, 295);
             this.PathNodeFlags28CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags28CheckBox.Name = "PathNodeFlags28CheckBox";
-            this.PathNodeFlags28CheckBox.Size = new System.Drawing.Size(116, 24);
+            this.PathNodeFlags28CheckBox.Size = new System.Drawing.Size(140, 24);
             this.PathNodeFlags28CheckBox.TabIndex = 42;
-            this.PathNodeFlags28CheckBox.Text = "Back road?";
+            this.PathNodeFlags28CheckBox.Text = "Disabled unk 2";
             this.PathNodeFlags28CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags28CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags28CheckBox_CheckedChanged);
             // 
@@ -615,9 +640,9 @@
             this.PathNodeFlags25CheckBox.Location = new System.Drawing.Point(9, 198);
             this.PathNodeFlags25CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags25CheckBox.Name = "PathNodeFlags25CheckBox";
-            this.PathNodeFlags25CheckBox.Size = new System.Drawing.Size(112, 24);
+            this.PathNodeFlags25CheckBox.Size = new System.Drawing.Size(140, 24);
             this.PathNodeFlags25CheckBox.TabIndex = 39;
-            this.PathNodeFlags25CheckBox.Text = "Slow unk 3";
+            this.PathNodeFlags25CheckBox.Text = "Disabled unk 1";
             this.PathNodeFlags25CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags25CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags25CheckBox_CheckedChanged);
             // 
@@ -1808,30 +1833,6 @@
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
             // 
-            // label71
-            // 
-            this.label71.AutoSize = true;
-            this.label71.Location = new System.Drawing.Point(6, 201);
-            this.label71.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label71.Name = "label71";
-            this.label71.Size = new System.Drawing.Size(66, 20);
-            this.label71.TabIndex = 40;
-            this.label71.Text = "Density:";
-            // 
-            // PathNodeFlags42UpDown
-            // 
-            this.PathNodeFlags42UpDown.Location = new System.Drawing.Point(72, 199);
-            this.PathNodeFlags42UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeFlags42UpDown.Maximum = new decimal(new int[] {
-            15,
-            0,
-            0,
-            0});
-            this.PathNodeFlags42UpDown.Name = "PathNodeFlags42UpDown";
-            this.PathNodeFlags42UpDown.Size = new System.Drawing.Size(86, 26);
-            this.PathNodeFlags42UpDown.TabIndex = 41;
-            this.PathNodeFlags42UpDown.ValueChanged += new System.EventHandler(this.PathNodeFlags42UpDown_ValueChanged);
-            // 
             // EditYndNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -1850,6 +1851,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags5UpDown)).EndInit();
             this.PathNodeFlags4GroupBox.ResumeLayout(false);
             this.PathNodeFlags4GroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags42UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags4UpDown)).EndInit();
             this.PathNodeFlags3GroupBox.ResumeLayout(false);
             this.PathNodeFlags3GroupBox.PerformLayout();
@@ -1901,7 +1903,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionHeightmapDimXUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMinZUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.PathNodeJunctionMaxZUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.PathNodeFlags42UpDown)).EndInit();
             this.ResumeLayout(false);
 
         }

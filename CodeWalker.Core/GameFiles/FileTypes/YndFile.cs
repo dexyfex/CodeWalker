@@ -636,20 +636,6 @@ namespace CodeWalker.GameFiles
         OffRoadJunction = 20
     }
 
-    public struct YndNodeIndexUpdate
-    {
-        public ushort AreaId { get; set; }
-        public ushort OldNodeId { get; set; }
-        public ushort NewNodeId { get; set; }
-
-        public YndNodeIndexUpdate(ushort areaId, ushort oldNodeId, ushort newNodeId)
-        {
-            AreaId = areaId;
-            OldNodeId = oldNodeId;
-            NewNodeId = newNodeId;
-        }
-    }
-
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndNode : BasePathNode
     {
         public Node _RawData;
@@ -885,6 +871,7 @@ namespace CodeWalker.GameFiles
             Position = newpos;
 
             UpdateLinkLengths();
+            RecalculateHeuristic();
         }
 
 
@@ -908,6 +895,24 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
+        }
+
+        public void RecalculateHeuristic()
+        {
+            var link = Links?.Where(l => l.LaneCountBackward > 0).FirstOrDefault();
+            if (link is null)
+            {
+                HeuristicValue = 0;
+                return;
+            }
+
+            var partner = link.Node1 == this
+                ? link.Node2
+                : link.Node1;
+
+            var length = link.LinkLength;
+
+            HeuristicValue = partner.HeuristicValue + length;
         }
 
 
@@ -944,6 +949,8 @@ namespace CodeWalker.GameFiles
             Links = nlinks;
             LinkCount = ncnt;
 
+            RecalculateHeuristic();
+
             return l;
         }
 
@@ -966,6 +973,8 @@ namespace CodeWalker.GameFiles
             }
             Links = newlinks.ToArray();
             LinkCount = newlinks.Count;
+
+            RecalculateHeuristic();
             return r;
         }
 

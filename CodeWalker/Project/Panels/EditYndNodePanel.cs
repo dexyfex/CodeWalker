@@ -1251,6 +1251,7 @@ namespace CodeWalker.Project.Panels
                 {
                     CurrentPathNode.Speed = speed;
                     ProjectForm.SetYndHasChanged(true);
+                    UpdatePathNodeFlagsUI(true, true);
                 }
             }
         }
@@ -1298,6 +1299,7 @@ namespace CodeWalker.Project.Panels
 
                     CurrentPathNode.Special = special;
                     YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode.IsPedNode;
+                    UpdatePathNodeFlagsUI(true, true);
                     ProjectForm.SetYndHasChanged(true);
                 }
                 
