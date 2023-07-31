@@ -5223,12 +5223,12 @@ namespace CodeWalker
             else
             {
                 UpdatePathNodeGraphics(pathnode, false);
-                ProjectForm.AddYndToProject(ynd);
+                ProjectForm?.AddYndToProject(ynd);
 
                 foreach (var affectedFile in affectedFiles)
                 {
                     UpdatePathYndGraphics(affectedFile, false);
-                    ProjectForm.AddYndToProject(affectedFile);
+                    ProjectForm?.AddYndToProject(affectedFile);
                 }
 
 
