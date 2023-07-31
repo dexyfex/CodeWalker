@@ -624,7 +624,7 @@ namespace CodeWalker.GameFiles
 
     public enum YndNodeSpecialType
     {
-        Normal = 0,
+        None = 0,
         ParkingSpace = 2,
         PedNavMeshLink = 10,
         PedNodeUnk = 14,
@@ -824,13 +824,15 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public static bool IsSpecialTypeAPedNode(YndNodeSpecialType specialType)
+            => specialType == YndNodeSpecialType.PedNavMeshLink
+               || specialType == YndNodeSpecialType.PedNodeUnk
+               || specialType == YndNodeSpecialType.PedNavMeshLink2;
+
         /// <summary>
         /// If Special is 10, 14 or 18 this is a ped node.
         /// </summary>
-        public bool IsPedNode =>
-            Special == YndNodeSpecialType.PedNavMeshLink
-            || Special == YndNodeSpecialType.PedNodeUnk
-            || Special == YndNodeSpecialType.PedNavMeshLink2;
+        public bool IsPedNode => IsSpecialTypeAPedNode(Special);
 
         public void Init(YndFile ynd, Node node)
         {

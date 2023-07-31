@@ -659,23 +659,29 @@ namespace CodeWalker.World
 
         public bool RemoveYndNode(YndFile file, YndNode node, out YndFile[] affectedFiles)
         {
-            List<YndFile> files = new List<YndFile>();
             if (file.RemoveNode(node))
             {
-                foreach (var yndFile in AllYnds.Values)
-                {
-                    if (yndFile.RemoveLinksForNode(node))
-                    {
-                        files.Add(yndFile);
-                    }
-                }
-
-                affectedFiles = files.ToArray();
+                RemoveYndLinksForNode(node, out affectedFiles);
                 return true;
             }
 
-            affectedFiles = files.ToArray();
+            affectedFiles = Array.Empty<YndFile>();
             return false;
+        }
+
+        public void RemoveYndLinksForNode(YndNode node, out YndFile[] affectedFiles)
+        {
+            List<YndFile> files = new List<YndFile>();
+
+            foreach (var yndFile in AllYnds.Values)
+            {
+                if (yndFile.RemoveLinksForNode(node))
+                {
+                    files.Add(yndFile);
+                }
+            }
+
+            affectedFiles = files.ToArray();
         }
 
         private void InitNavGrid()

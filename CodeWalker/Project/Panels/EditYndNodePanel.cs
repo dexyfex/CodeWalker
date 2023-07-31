@@ -108,14 +108,15 @@ namespace CodeWalker.Project.Panels
                     ProjectForm.WorldForm.SelectObject(CurrentPathNode);
                 }
 
-                PathNodesSpeedComboBox.Items.Clear();
-                PathNodesSpeedComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpeed)).Cast<object>().ToArray());
-                PathNodesSpeedComboBox.SelectedItem = CurrentPathNode.Speed;
+                if (PathNodesSpeedComboBox.Items.Count == 0)
+                {
+                    PathNodesSpeedComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpeed)).Cast<object>().ToArray());
+                }
 
-                PathNodeSpecialTypeComboBox.Items.Clear();
-                PathNodeSpecialTypeComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpecialType)).Cast<object>().ToArray());
-                PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode.Special;
-                YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode.IsPedNode;
+                if (PathNodeSpecialTypeComboBox.Items.Count == 0)
+                {
+                    PathNodeSpecialTypeComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpecialType)).Cast<object>().ToArray());
+                }
             }
         }
 
@@ -225,14 +226,17 @@ namespace CodeWalker.Project.Panels
                 PathNodeFlags31CheckBox.Checked = BitUtil.IsBitSet(flags3, 0);
                 PathNodeFlags32UpDown.Value = (flags3 >> 1) & 127;
 
-                PathNodeFlags41CheckBox.Checked = BitUtil.IsBitSet(flags4, 0);
-                PathNodeFlags42UpDown.Value = (flags4 >> 1) & 7;
+                PathNodeFlags42UpDown.Value = (flags4) & 15;
                 PathNodeFlags45CheckBox.Checked = BitUtil.IsBitSet(flags4, 4);
                 PathNodeFlags46CheckBox.Checked = BitUtil.IsBitSet(flags4, 5);
                 PathNodeFlags47CheckBox.Checked = BitUtil.IsBitSet(flags4, 6);
                 PathNodeFlags48CheckBox.Checked = BitUtil.IsBitSet(flags4, 7);
 
                 PathNodeFlags51CheckBox.Checked = BitUtil.IsBitSet(flags5, 0);
+                YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode?.IsPedNode ?? false;
+
+                PathNodesSpeedComboBox.SelectedItem = CurrentPathNode?.Speed ?? (YndNodeSpeed)(-1);
+                PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode?.Special ?? (YndNodeSpecialType)(-1);
             }
             if (updateUpDowns)
             {
@@ -347,8 +351,7 @@ namespace CodeWalker.Project.Panels
             flags3 = BitUtil.UpdateBit(flags3, 0, PathNodeFlags31CheckBox.Checked);
             flags3 += (((uint)PathNodeFlags32UpDown.Value & 127u) << 1);
 
-            flags4 = BitUtil.UpdateBit(flags4, 0, PathNodeFlags41CheckBox.Checked);
-            flags4 += (((uint)PathNodeFlags42UpDown.Value & 7u) << 1);
+            flags4 += (((uint)PathNodeFlags42UpDown.Value & 15u));
             flags4 = BitUtil.UpdateBit(flags4, 4, PathNodeFlags45CheckBox.Checked);
             flags4 = BitUtil.UpdateBit(flags4, 5, PathNodeFlags46CheckBox.Checked);
             flags4 = BitUtil.UpdateBit(flags4, 6, PathNodeFlags47CheckBox.Checked);
@@ -1240,11 +1243,15 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentPathNode == null) return;
-            if (CurrentPathNode.Junction == null) return;
+
             lock (ProjectForm.ProjectSyncRoot)
             {
-                CurrentPathNode.Speed = (YndNodeSpeed)PathNodesSpeedComboBox.SelectedItem;
-                ProjectForm.SetYndHasChanged(true);
+                var speed = (YndNodeSpeed)PathNodesSpeedComboBox.SelectedItem;
+                if (CurrentPathNode.Speed != speed)
+                {
+                    CurrentPathNode.Speed = speed;
+                    ProjectForm.SetYndHasChanged(true);
+                }
             }
         }
 
@@ -1252,12 +1259,48 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentPathNode == null) return;
-            if (CurrentPathNode.Junction == null) return;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                CurrentPathNode.Special = (YndNodeSpecialType)PathNodeSpecialTypeComboBox.SelectedItem;
-                YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode.IsPedNode;
-                ProjectForm.SetYndHasChanged(true);
+                var special = (YndNodeSpecialType)PathNodeSpecialTypeComboBox.SelectedItem;
+
+                if (CurrentPathNode.Special != special)
+                {
+                    var isPedNode = CurrentPathNode.IsPedNode;
+                    bool specialIsPedNode = YndNode.IsSpecialTypeAPedNode(special);
+                    if (isPedNode != specialIsPedNode)
+                    {
+                        var res = MessageBox.Show(
+                            specialIsPedNode
+                                ? "This operation will change this node from a vehicle node to a ped node. This will remove all links. Are you sure you want to do this?"
+                                : "This operation will change this node from a ped node to a vehicle node. This will remove all links. Are you sure you want to do this?",
+                            "Are you sure?",
+                            MessageBoxButtons.YesNo
+                        );
+
+                        if (res == DialogResult.No)
+                        {
+                            PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode.Special;
+                            return;
+                        }
+
+                        if (ProjectForm != null)
+                        {
+                            ProjectForm.WorldForm.Space.RemoveYndLinksForNode(CurrentPathNode, out var affectedFiles);
+                            ProjectForm.AddYndToProject(CurrentYndFile);
+                            ProjectForm.WorldForm?.UpdatePathYndGraphics(CurrentYndFile, false);
+                            foreach (var file in affectedFiles)
+                            {
+                                ProjectForm.AddYndToProject(file);
+                                ProjectForm.WorldForm?.UpdatePathYndGraphics(file, false);
+                            }
+                        }
+                    }
+
+                    CurrentPathNode.Special = special;
+                    YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode.IsPedNode;
+                    ProjectForm.SetYndHasChanged(true);
+                }
+                
             }
         }
     }
