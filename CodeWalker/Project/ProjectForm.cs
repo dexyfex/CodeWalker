@@ -4733,20 +4733,20 @@ namespace CodeWalker.Project
         {
             if (CurrentYndFile == null) return null;
 
-            var n = CurrentYndFile.AddNode();
-            var areaid = n.AreaID;
-            var nodeid = n.NodeID;
+            var n = WorldForm.Space.AddYndNode(CurrentYndFile);
             if (copy == null)
             {
                 copy = CurrentPathNode;
             }
             if (copy != null)
             {
-                n.Init(CurrentYndFile, copy.RawData);
+                n.Flags0 = copy.Flags0;
+                n.Flags1 = copy.Flags1;
+                n.Flags2 = copy.Flags2;
+                n.Flags3 = copy.Flags3;
+                n.Flags4 = copy.Flags4;
                 n.LinkCountUnk = copy.LinkCountUnk;
             }
-            n.AreaID = areaid;
-            n.NodeID = nodeid;
 
             bool cp = copyPosition && (copy != null);
             Vector3 pos = cp ? copy.Position : GetSpawnPos(10.0f);
@@ -4811,11 +4811,12 @@ namespace CodeWalker.Project
             //}
 
             bool res = false;
+            YndFile[] affectedFiles = new YndFile[0];
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
-                    res = CurrentYndFile.RemoveNode(CurrentPathNode);
+                    res = WorldForm.Space.RemoveYndNode(CurrentYndFile, CurrentPathNode, out affectedFiles);
 
                     //WorldForm.SelectItem(null, null, null);
                 }
@@ -4824,6 +4825,7 @@ namespace CodeWalker.Project
             {
                 res = CurrentYndFile.RemoveNode(CurrentPathNode);
             }
+
             if (!res)
             {
                 MessageBox.Show("Unable to delete the path node. This shouldn't happen!");
@@ -4841,6 +4843,14 @@ namespace CodeWalker.Project
             if (WorldForm != null)
             {
                 WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+                AddYndToProject(CurrentYndFile);
+
+                foreach (var affectedFile in affectedFiles)
+                {
+                    WorldForm.UpdatePathYndGraphics(affectedFile, false);
+                    AddYndToProject(affectedFile);
+                }
+
                 WorldForm.SelectItem(null);
             }
 

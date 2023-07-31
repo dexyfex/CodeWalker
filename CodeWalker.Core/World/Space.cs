@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CodeWalker.World
 {
@@ -650,6 +651,32 @@ namespace CodeWalker.World
 
         }
 
+        public YndNode AddYndNode(YndFile file)
+        {
+            var n = file.AddNode();
+            return n;
+        }
+
+        public bool RemoveYndNode(YndFile file, YndNode node, out YndFile[] affectedFiles)
+        {
+            List<YndFile> files = new List<YndFile>();
+            if (file.RemoveNode(node))
+            {
+                foreach (var yndFile in AllYnds.Values)
+                {
+                    if (yndFile.RemoveLinksForNode(node))
+                    {
+                        files.Add(yndFile);
+                    }
+                }
+
+                affectedFiles = files.ToArray();
+                return true;
+            }
+
+            affectedFiles = files.ToArray();
+            return false;
+        }
 
         private void InitNavGrid()
         {

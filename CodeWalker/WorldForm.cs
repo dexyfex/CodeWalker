@@ -5216,13 +5216,22 @@ namespace CodeWalker
 
             //project not open, or cargen not selected there, just remove the cargen from the ymap...
             var ynd = pathnode.Ynd;
-            if (!ynd.RemoveNode(pathnode))
+            if (!Space.RemoveYndNode(ynd, pathnode, out var affectedFiles))
             {
                 MessageBox.Show("Unable to remove path node.");
             }
             else
             {
                 UpdatePathNodeGraphics(pathnode, false);
+                ProjectForm.AddYndToProject(ynd);
+
+                foreach (var affectedFile in affectedFiles)
+                {
+                    UpdatePathYndGraphics(affectedFile, false);
+                    ProjectForm.AddYndToProject(affectedFile);
+                }
+
+
                 SelectItem(null);
             }
         }

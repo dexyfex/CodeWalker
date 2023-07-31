@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ using CodeWalker.World;
 
 namespace CodeWalker.GameFiles
 {
+    public delegate void OnUpdateYndIndex(ushort areaId, ushort oldNodeId, ushort newNodeId);
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndFile : GameFile, PackedFile, BasePathData
     {
 
@@ -215,9 +218,6 @@ namespace CodeWalker.GameFiles
             }
         }
 
-
-
-
         public void InitNodesFromDictionary()
         {
             if (NodeDictionary != null)
@@ -261,7 +261,7 @@ namespace CodeWalker.GameFiles
             YndNode yn = new YndNode();
             Node n = new Node();
             n.AreaID = (ushort)AreaID;
-            n.NodeID = 0;
+            n.NodeID = (ushort)(Nodes?.Length ?? 0);
             yn.Init(this, n);
 
             int ncnt = cnt + 1;
@@ -286,39 +286,20 @@ namespace CodeWalker.GameFiles
             Nodes = nodes;
             NodeDictionary.NodesCount = (uint)nodes.Count();
 
-            // Delete links that target this node
-            var remLinks = new List<YndLink>();
-            foreach (var link in Links)
-            {
-                if ((link.Node1.AreaID == node.AreaID && link.Node1.NodeID == node.NodeID)
-                    || (link.Node2.AreaID == node.AreaID && link.Node2.NodeID == node.NodeID))
-                {
-                    remLinks.Add(link);
-                }
-            }
-
-            foreach (var n in Nodes)
-            {
-                var rmLinks = n.Links.Where(l =>
-                    (l.Node1.AreaID == node.AreaID && l.Node1.NodeID == node.NodeID)
-                    || (l.Node2.AreaID == node.AreaID && l.Node2.NodeID == node.NodeID));
-
-                n.Links = n.Links.Where(rl => !rmLinks.Contains(rl)).ToArray();
-            }
-
-            Links = Links.Where(l => !remLinks.Contains(l)).ToArray();
-
             RecalculateNodeIndices();
+            RemoveLinksForNode(node);
 
             return true;
         }
+
+        
 
         private void RecalculateNodeIndices()
         {
             // Sort nodes so ped nodes are at the end
             var nodes = new List<YndNode>();
-            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).ToArray();
-            var pedNodes = Nodes.Where(n => n.IsPedNode).ToArray();
+            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
+            var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
 
             nodes.AddRange(vehicleNodes);
             nodes.AddRange(pedNodes);
@@ -329,9 +310,6 @@ namespace CodeWalker.GameFiles
 
                 if (node.NodeID != i)
                 {
-                    //TODO: Add support for moving between areas
-                    UpdateLinksForUpdatedIndex(node.AreaID, node.NodeID, node.AreaID, (ushort)i);
-
                     node.NodeID = (ushort)i;
                 }
             }
@@ -339,26 +317,40 @@ namespace CodeWalker.GameFiles
             NodeDictionary.NodesCountVehicle = (uint)nodes.Count();
             NodeDictionary.NodesCountPed = (uint)pedNodes.Count();
             NodeDictionary.NodesCount = NodeDictionary.NodesCountVehicle + NodeDictionary.NodesCountPed;
+            Nodes = nodes.ToArray();
+
 
             UpdateAllNodePositions();
+
+            var t = Nodes.Where(n => n.NodeID == 579);
         }
 
-        private void UpdateLinksForUpdatedIndex(ushort oldAreaId, ushort oldNodeId, ushort newAreaId, ushort newNodeId)
+        /// <summary>
+        /// Removes links for node.
+        /// </summary>
+        /// <param name="node">node to check against.</param>
+        /// <returns><see cref="bool"/> indicating whether this file has been affected</returns>
+        public bool RemoveLinksForNode(YndNode node)
         {
-            foreach (var link in Links)
-            {
-                if (link.Node1.AreaID == oldAreaId && link.Node1.NodeID == oldNodeId)
-                {
-                    link.Node1.AreaID = newAreaId;
-                    link.Node1.NodeID = newNodeId;
-                }
+            // Delete links that target this node
+            var rmLinks = new List<YndLink>();
 
-                if (link.Node2.AreaID == oldAreaId && link.Node2.NodeID == oldNodeId)
-                {
-                    link.Node2.AreaID = newAreaId;
-                    link.Node2.NodeID = newNodeId;
-                }
+            foreach (var n in Nodes)
+            {
+                var nodeRmLinks = n.Links.Where(l =>
+                    l.Node1 == node || l.Node2 == node);
+
+                n.Links = n.Links.Where(rl => !nodeRmLinks.Contains(rl)).ToArray();
+                rmLinks.AddRange(nodeRmLinks);
             }
+
+            if (rmLinks.Any())
+            {
+                Links = Links.Where(l => !rmLinks.Contains(l)).ToArray();
+                return true;
+            }
+
+            return false;
         }
 
         public void UpdateBoundingBox()
@@ -642,6 +634,20 @@ namespace CodeWalker.GameFiles
         PedNavMeshLink2 = 18,
         RestrictedAccess = 19,
         OffRoadJunction = 20
+    }
+
+    public struct YndNodeIndexUpdate
+    {
+        public ushort AreaId { get; set; }
+        public ushort OldNodeId { get; set; }
+        public ushort NewNodeId { get; set; }
+
+        public YndNodeIndexUpdate(ushort areaId, ushort oldNodeId, ushort newNodeId)
+        {
+            AreaId = areaId;
+            OldNodeId = oldNodeId;
+            NewNodeId = newNodeId;
+        }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndNode : BasePathNode
