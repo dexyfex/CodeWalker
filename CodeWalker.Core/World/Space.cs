@@ -665,9 +665,10 @@ namespace CodeWalker.World
                 RemoveYndLinksForNode(node, out var affectedFilesFromLinkChanges);
                 totalAffectedFiles.AddRange(affectedFilesFromLinkChanges);
 
-                foreach (var affectedNode in affectedNodesFromDeletion)
+                foreach (var yndFile in AllYnds.Values
+                             .Where(y => (Math.Abs(file.CellX - y.CellX) == 1 || Math.Abs(file.CellY - y.CellY) == 1) && !totalAffectedFiles.Contains(y)))
                 {
-                    foreach (var yndFile in AllYnds.Values.Where(y => !totalAffectedFiles.Contains(y)))
+                    foreach (var affectedNode in affectedNodesFromDeletion)
                     {
                         if (yndFile.HasAnyLinksForNode(affectedNode))
                         {
