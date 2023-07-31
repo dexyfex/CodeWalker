@@ -651,9 +651,24 @@ namespace CodeWalker.World
 
         }
 
-        public YndNode AddYndNode(YndFile file)
+        public YndNode AddYndNode(YndFile file, out YndFile[] affectedFiles)
         {
-            var n = file.AddNode();
+            var totalAffectedFiles = new List<YndFile>();
+            var n = file.AddNode(out var affectedNodes);
+
+            foreach (var yndFile in AllYnds.Values
+                         .Where(y => (Math.Abs(file.CellX - y.CellX) == 1 || Math.Abs(file.CellY - y.CellY) == 1)))
+            {
+                foreach (var affectedNode in affectedNodes)
+                {
+                    if (yndFile.HasAnyLinksForNode(affectedNode))
+                    {
+                        totalAffectedFiles.Add(yndFile);
+                    }
+                }
+            }
+
+            affectedFiles = totalAffectedFiles.ToArray();
             return n;
         }
 

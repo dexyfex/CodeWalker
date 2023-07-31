@@ -1,4 +1,4 @@
-﻿using CodeWalker.GameFiles;
+using CodeWalker.GameFiles;
 using CodeWalker.Project.Panels;
 using CodeWalker.Properties;
 using CodeWalker.Utils;
@@ -4733,7 +4733,14 @@ namespace CodeWalker.Project
         {
             if (CurrentYndFile == null) return null;
 
-            var n = WorldForm.Space.AddYndNode(CurrentYndFile);
+            var n = WorldForm.Space.AddYndNode(CurrentYndFile, out var affectedFiles);
+
+            AddYndToProject(CurrentYndFile);
+            foreach (var affectedFile in affectedFiles)
+            {
+                AddYndToProject(affectedFile);
+            }
+
             if (copy == null)
             {
                 copy = CurrentPathNode;

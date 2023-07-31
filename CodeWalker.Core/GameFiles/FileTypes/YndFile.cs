@@ -255,7 +255,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public YndNode AddNode()
+        public YndNode AddNode(out YndNode[] affectedNodes)
         {
             int cnt = Nodes?.Length ?? 0;
             YndNode yn = new YndNode();
@@ -274,7 +274,7 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
-            RecalculateNodeIndices(out _);
+            RecalculateNodeIndices(out affectedNodes);
 
             return yn;
         }
