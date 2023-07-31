@@ -746,7 +746,7 @@ namespace CodeWalker.GameFiles
         public YndNodeSpecialType Special
         {
             get => (YndNodeSpecialType)(Flags1.Value >> 3);
-            set => Flags1 = (byte)((Flags1 ^ 0xF8) | ((byte)value << 3));
+            set => Flags1 = (byte)((Flags1 &~0xF8) | ((byte)value << 3));
         }
 
         // Flag2 Properties
@@ -794,7 +794,7 @@ namespace CodeWalker.GameFiles
         public int HeuristicValue
         {
             get => Flags3.Value >> 1;
-            set => Flags3 = (byte)((Flags3 ^ 0xFE) | (value << 1));
+            set => Flags3 = (byte)((Flags3 &~0xFE) | (value << 1));
         }
 
         // Flag4 Properties
@@ -804,7 +804,7 @@ namespace CodeWalker.GameFiles
         public int Density
         {
             get => Flags4.Value & 15;
-            set => Flags4 = (byte)((Flags4 ^ 0xF0) | (value & 15));
+            set => Flags4 = (byte)((Flags4 &~0xF0) | (value & 15));
         }
 
         public bool LeftTurnsOnly

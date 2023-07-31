@@ -369,7 +369,7 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathNode.Flags1.Value != flags1)
                 {
-                    CurrentPathNode.Flags1 = (byte)flags1;
+                    CurrentPathNode.Flags1 = (byte)((flags1 & 7) | 0xF8);
                     ProjectForm.SetYndHasChanged(true);
                 }
                 if (CurrentPathNode.Flags2.Value != flags2)
@@ -384,7 +384,7 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathNode.Flags4.Value != flags4)
                 {
-                    CurrentPathNode.Flags4 = (byte)flags4;
+                    CurrentPathNode.Flags4 = (byte)((flags4 & 15) | 0xF0);
                     ProjectForm.SetYndHasChanged(true);
                 }
                 if (CurrentPathNode.LinkCountUnk != flags5)
@@ -473,19 +473,6 @@ namespace CodeWalker.Project.Panels
             flags2 = BitUtil.UpdateBit(flags2, 0, PathNodeLinkFlags21CheckBox.Checked);
             flags2 = BitUtil.UpdateBit(flags2, 1, PathNodeLinkFlags22CheckBox.Checked);
 
-            int forwardLanes = (int)PathNodeLinkFwdLanesUpDown.Value;
-
-            if (forwardLanes != CurrentPathLink.LaneCountForward)
-            {
-                CurrentPathLink.SetForwardLanesBidirectionally(forwardLanes);
-            }
-
-            int backwardLanes = (int)PathNodeLinkBackLanesUpDown.Value;
-            if (backwardLanes != CurrentPathLink.LaneCountBackward)
-            {
-                CurrentPathLink.SetBackwardLanesBidirectionally(backwardLanes);
-            }
-
             bool updgfx = false;
             lock (ProjectForm.ProjectSyncRoot)
             {
@@ -502,7 +489,24 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathLink.Flags2.Value != flags2)
                 {
-                    CurrentPathLink.Flags2 = (byte)flags2;
+                    CurrentPathLink.Flags2 &= (byte)((flags2 & 3) | 0xFC);
+                    ProjectForm.SetYndHasChanged(true);
+                    updgfx = true;
+                }
+
+                int forwardLanes = (int)PathNodeLinkFwdLanesUpDown.Value;
+
+                if (forwardLanes != CurrentPathLink.LaneCountForward)
+                {
+                    CurrentPathLink.SetForwardLanesBidirectionally(forwardLanes);
+                    ProjectForm.SetYndHasChanged(true);
+                    updgfx = true;
+                }
+
+                int backwardLanes = (int)PathNodeLinkBackLanesUpDown.Value;
+                if (backwardLanes != CurrentPathLink.LaneCountBackward)
+                {
+                    CurrentPathLink.SetBackwardLanesBidirectionally(backwardLanes);
                     ProjectForm.SetYndHasChanged(true);
                     updgfx = true;
                 }
