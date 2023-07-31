@@ -314,7 +314,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            NodeDictionary.NodesCountVehicle = (uint)nodes.Count();
+            NodeDictionary.NodesCountVehicle = (uint)vehicleNodes.Count();
             NodeDictionary.NodesCountPed = (uint)pedNodes.Count();
             NodeDictionary.NodesCount = NodeDictionary.NodesCountVehicle + NodeDictionary.NodesCountPed;
             Nodes = nodes.ToArray();
