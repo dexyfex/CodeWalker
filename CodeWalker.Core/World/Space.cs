@@ -659,9 +659,24 @@ namespace CodeWalker.World
 
         public bool RemoveYndNode(YndFile file, YndNode node, out YndFile[] affectedFiles)
         {
-            if (file.RemoveNode(node))
+            var totalAffectedFiles = new List<YndFile>();
+            if (file.RemoveNode(node, out var affectedNodesFromDeletion))
             {
-                RemoveYndLinksForNode(node, out affectedFiles);
+                RemoveYndLinksForNode(node, out var affectedFilesFromLinkChanges);
+                totalAffectedFiles.AddRange(affectedFilesFromLinkChanges);
+
+                foreach (var affectedNode in affectedNodesFromDeletion)
+                {
+                    foreach (var yndFile in AllYnds.Values.Where(y => !totalAffectedFiles.Contains(y)))
+                    {
+                        if (yndFile.HasAnyLinksForNode(affectedNode))
+                        {
+                            totalAffectedFiles.Add(yndFile);
+                        }
+                    }
+                }
+
+                affectedFiles = totalAffectedFiles.ToArray();
                 return true;
             }
 

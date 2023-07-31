@@ -274,30 +274,29 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
-            RecalculateNodeIndices();
+            RecalculateNodeIndices(out _);
 
             return yn;
         }
 
-        public bool RemoveNode(YndNode node)
+        public bool RemoveNode(YndNode node, out YndNode[] affectedNodes)
         {
 
             var nodes = Nodes.Where(n => n.AreaID != node.AreaID || n.NodeID != node.NodeID).ToArray();
             Nodes = nodes;
             NodeDictionary.NodesCount = (uint)nodes.Count();
 
-            RecalculateNodeIndices();
             RemoveLinksForNode(node);
+            RecalculateNodeIndices(out affectedNodes);
 
             return true;
         }
 
-        
-
-        private void RecalculateNodeIndices()
+        private void RecalculateNodeIndices(out YndNode[] affectedNodes)
         {
             // Sort nodes so ped nodes are at the end
             var nodes = new List<YndNode>(Nodes.Length);
+            var affectedNodesList = new List<YndNode>();
             var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
             var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
 
@@ -311,6 +310,7 @@ namespace CodeWalker.GameFiles
                 if (node.NodeID != i)
                 {
                     node.NodeID = (ushort)i;
+                    affectedNodesList.Add(node);
                 }
             }
 
@@ -319,10 +319,10 @@ namespace CodeWalker.GameFiles
             NodeDictionary.NodesCount = NodeDictionary.NodesCountVehicle + NodeDictionary.NodesCountPed;
             Nodes = nodes.ToArray();
 
-
             UpdateAllNodePositions();
 
             var t = Nodes.Where(n => n.NodeID == 579);
+            affectedNodes = affectedNodesList.ToArray();
         }
 
         /// <summary>
@@ -351,6 +351,11 @@ namespace CodeWalker.GameFiles
             }
 
             return false;
+        }
+
+        public bool HasAnyLinksForNode(YndNode node)
+        {
+            return Links.Any(l => l.Node1 == node || l.Node2 == node);
         }
 
         public void UpdateBoundingBox()
@@ -661,7 +666,6 @@ namespace CodeWalker.GameFiles
 
         public YndJunction Junction { get; set; }
         public bool HasJunction;
-
 
         // LinkCountUnk Properties
 
