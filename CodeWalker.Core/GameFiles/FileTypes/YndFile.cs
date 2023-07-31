@@ -958,6 +958,21 @@ namespace CodeWalker.GameFiles
             return l;
         }
 
+        public bool TryGetLinkForNode(YndNode node, out YndLink link)
+        {
+            for (int i = 0; i < Links.Length; i++)
+            {
+                if (Links[i].Node2 == node)
+                {
+                    link = Links[i];
+                    return true;
+                }
+            }
+
+            link = null;
+            return false;
+        }
+
         public bool RemoveLink(YndLink l)
         {
             List<YndLink> newlinks = new List<YndLink>();
@@ -1002,8 +1017,17 @@ namespace CodeWalker.GameFiles
         public FlagsByte Flags2 { get { return _RawData.Flags2; } set { _RawData.Flags2 = value; } }
         public FlagsByte LinkLength { get { return _RawData.LinkLength; } set { _RawData.LinkLength = value; } }
 
-        public int LaneCountForward { get { return (Flags2.Value >> 5) & 7; } }
-        public int LaneCountBackward { get { return (Flags2.Value >> 2) & 7; } }
+        public int LaneCountForward
+        {
+            get => (Flags2.Value >> 5) & 7;
+            set => Flags2 =  (byte)((Flags2 &~0xE0) | ((value & 7) << 5));
+        }
+
+        public int LaneCountBackward
+        {
+            get => (Flags2.Value >> 2) & 7;
+            set => Flags2 = (byte)((Flags2 &~0x1C) | ((value & 7) << 2));
+        }
 
         public int OffsetValue { get { return (Flags1.Value >> 4) & 7; } }
         public bool NegativeOffset { get { return (Flags1.Value >> 7) > 0; } }
@@ -1041,6 +1065,25 @@ namespace CodeWalker.GameFiles
             Flags2 = link.Flags2;
         }
 
+        public void SetForwardLanesBidirectionally(int value)
+        {
+            LaneCountForward = value;
+
+            if (Node2.TryGetLinkForNode(Node1, out var node2Link))
+            {
+                node2Link.LaneCountBackward = value;
+            }
+        }
+
+        public void SetBackwardLanesBidirectionally(int value)
+        {
+            LaneCountBackward = value;
+
+            if (Node2.TryGetLinkForNode(Node1, out var node2Link))
+            {
+                node2Link.LaneCountForward = value;
+            }
+        }
 
 
         public Color4 GetColour()

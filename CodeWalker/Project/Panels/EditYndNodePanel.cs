@@ -472,8 +472,19 @@ namespace CodeWalker.Project.Panels
 
             flags2 = BitUtil.UpdateBit(flags2, 0, PathNodeLinkFlags21CheckBox.Checked);
             flags2 = BitUtil.UpdateBit(flags2, 1, PathNodeLinkFlags22CheckBox.Checked);
-            flags2 += (((uint)PathNodeLinkBackLanesUpDown.Value & 7u) << 2);
-            flags2 += (((uint)PathNodeLinkFwdLanesUpDown.Value & 7u) << 5);
+
+            int forwardLanes = (int)PathNodeLinkFwdLanesUpDown.Value;
+
+            if (forwardLanes != CurrentPathLink.LaneCountForward)
+            {
+                CurrentPathLink.SetForwardLanesBidirectionally(forwardLanes);
+            }
+
+            int backwardLanes = (int)PathNodeLinkBackLanesUpDown.Value;
+            if (backwardLanes != CurrentPathLink.LaneCountBackward)
+            {
+                CurrentPathLink.SetBackwardLanesBidirectionally(backwardLanes);
+            }
 
             bool updgfx = false;
             lock (ProjectForm.ProjectSyncRoot)
