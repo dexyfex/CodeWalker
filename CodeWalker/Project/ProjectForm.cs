@@ -792,7 +792,7 @@ namespace CodeWalker.Project
                     }
                 }
 
-                var multisel = MapSelection.FromProjectObject(arr); //convert to MapSelection array
+                var multisel = MapSelection.FromProjectObject(WorldForm, arr); //convert to MapSelection array
                 item = multisel.MultipleSelectionItems;
             }
 
@@ -4757,8 +4757,12 @@ namespace CodeWalker.Project
 
             bool cp = copyPosition && (copy != null);
             Vector3 pos = cp ? copy.Position : GetSpawnPos(10.0f);
-            n.SetPosition(pos);
+            WorldForm.Space.SetYndNodePosition(n, pos, out affectedFiles);
 
+            foreach (var affectedFile in affectedFiles)
+            {
+                AddYndToProject(affectedFile);
+            }
 
             if (copy != null)
             {

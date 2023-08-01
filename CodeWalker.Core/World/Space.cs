@@ -672,13 +672,16 @@ namespace CodeWalker.World
             return n;
         }
 
-        public bool RemoveYndNode(YndFile file, YndNode node, out YndFile[] affectedFiles)
+        public bool RemoveYndNode(YndFile file, YndNode node, out YndFile[] affectedFiles, bool removeLinks = true)
         {
             var totalAffectedFiles = new List<YndFile>();
             if (file.RemoveNode(node, out var affectedNodesFromDeletion))
             {
-                RemoveYndLinksForNode(node, out var affectedFilesFromLinkChanges);
-                totalAffectedFiles.AddRange(affectedFilesFromLinkChanges);
+                if (removeLinks)
+                {
+                    RemoveYndLinksForNode(node, out var affectedFilesFromLinkChanges);
+                    totalAffectedFiles.AddRange(affectedFilesFromLinkChanges);
+                }
 
                 foreach (var yndFile in AllYnds.Values
                              .Where(y => (Math.Abs(file.CellX - y.CellX) == 1 || Math.Abs(file.CellY - y.CellY) == 1) && !totalAffectedFiles.Contains(y)))
@@ -698,6 +701,28 @@ namespace CodeWalker.World
 
             affectedFiles = Array.Empty<YndFile>();
             return false;
+        }
+
+        public void SetYndNodePosition(YndNode node, Vector3 newPosition, out YndFile[] affectedFiles)
+        {
+            var totalAffectedFiles = new List<YndFile>();
+
+            node.SetPosition(newPosition);
+            var expectedArea = NodeGrid.GetCellForPosition(newPosition);
+
+            if (node.AreaID != expectedArea.ID)
+            {
+                var nodeYnd = AllYnds.Values.FirstOrDefault(ynd => ynd.AreaID == node.AreaID);
+                var newYnd = AllYnds.Values.FirstOrDefault(ynd => ynd.AreaID == expectedArea.ID);
+
+                if (RemoveYndNode(nodeYnd, node, out var affectedFilesFromDelete))
+                {
+                    newYnd.AddNode(node, out var affectedFilesFromAdd);
+                    totalAffectedFiles.AddRange(affectedFilesFromDelete);
+                }
+            }
+
+            affectedFiles = totalAffectedFiles.ToArray();
         }
 
         public void RemoveYndLinksForNode(YndNode node, out YndFile[] affectedFiles)
@@ -2081,6 +2106,19 @@ namespace CodeWalker.World
             {
                 return Cells[x, y];
             }
+            return null;
+        }
+
+        public SpaceNodeGridCell GetCellForPosition(Vector3 position)
+        {
+            var x = (int)((position.X - CornerX) / CellSize);
+            var y = (int)((position.Y - CornerY) / CellSize);
+
+            if ((x >= 0) && (x < CellCountX) && (y >= 0) && (y < CellCountY))
+            {
+                return Cells[x, y];
+            }
+
             return null;
         }
 

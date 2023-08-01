@@ -691,7 +691,13 @@ namespace CodeWalker.Project.Panels
             {
                 if (CurrentPathNode.Position != v)
                 {
-                    CurrentPathNode.SetPosition(v);
+                    ProjectForm.WorldForm.Space.SetYndNodePosition(CurrentPathNode, v, out var affectedFiles);
+
+                    foreach (var affectedFile in affectedFiles)
+                    {
+                        ProjectForm.AddYndToProject(affectedFile);
+                    }
+
                     ProjectForm.SetYndHasChanged(true);
                     change = true;
                 }

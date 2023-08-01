@@ -259,10 +259,16 @@ namespace CodeWalker.GameFiles
         {
             int cnt = Nodes?.Length ?? 0;
             YndNode yn = new YndNode();
+            return AddNode(yn, out affectedNodes);
+        }
+
+        public YndNode AddNode(YndNode node, out YndNode[] affectedNodes)
+        {
+            int cnt = Nodes?.Length ?? 0;
             Node n = new Node();
             n.AreaID = (ushort)AreaID;
             n.NodeID = (ushort)(Nodes?.Length ?? 0);
-            yn.Init(this, n);
+            node.Init(this, n);
 
             int ncnt = cnt + 1;
             YndNode[] nnodes = new YndNode[ncnt];
@@ -270,13 +276,13 @@ namespace CodeWalker.GameFiles
             {
                 nnodes[i] = Nodes[i];
             }
-            nnodes[cnt] = yn;
+            nnodes[cnt] = node;
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
             RecalculateNodeIndices(out affectedNodes);
 
-            return yn;
+            return node;
         }
 
         public bool RemoveNode(YndNode node, out YndNode[] affectedNodes)
@@ -297,8 +303,8 @@ namespace CodeWalker.GameFiles
             // Sort nodes so ped nodes are at the end
             var nodes = new List<YndNode>(Nodes.Length);
             var affectedNodesList = new List<YndNode>();
-            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
-            var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
+            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.Position.Length()).ToArray();
+            var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.Position.Length()).ToArray();
 
             nodes.AddRange(vehicleNodes);
             nodes.AddRange(pedNodes);

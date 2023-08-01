@@ -20,6 +20,7 @@ namespace CodeWalker
 {
     public partial class WorldForm : Form, DXForm
     {
+
         public Form Form { get { return this; } } //for DXForm/DXManager use
 
         public Renderer Renderer = null;
@@ -220,6 +221,10 @@ namespace CodeWalker
             timecycle = Renderer.timecycle;
             weather = Renderer.weather;
             clouds = Renderer.clouds;
+
+            CurMouseHit.WorldForm = this;
+            LastMouseHit.WorldForm = this;
+            PrevMouseHit.WorldForm = this;
 
             initedOk = Renderer.Init();
         }
@@ -3416,7 +3421,7 @@ namespace CodeWalker
             }
             else
             {
-                var ms = MapSelection.FromProjectObject(obj, parent);
+                var ms = MapSelection.FromProjectObject(this, obj, parent);
                 if (!ms.HasValue)
                 {
                     SelectItem(null, addSelection);
