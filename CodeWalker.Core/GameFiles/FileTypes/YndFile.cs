@@ -319,8 +319,8 @@ namespace CodeWalker.GameFiles
             // Sort nodes so ped nodes are at the end
             var nodes = new List<YndNode>(Nodes.Length);
             var affectedNodesList = new List<YndNode>();
-            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.Position.Length()).ToArray();
-            var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.Position.Length()).ToArray();
+            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
+            var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
 
             nodes.AddRange(vehicleNodes);
             nodes.AddRange(pedNodes);
