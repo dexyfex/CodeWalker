@@ -12,8 +12,6 @@ using CodeWalker.World;
 
 namespace CodeWalker.GameFiles
 {
-    public delegate void OnUpdateYndIndex(ushort areaId, ushort oldNodeId, ushort newNodeId);
-
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndFile : GameFile, PackedFile, BasePathData
     {
 
