@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -321,7 +321,6 @@ namespace CodeWalker.GameFiles
 
             UpdateAllNodePositions();
 
-            var t = Nodes.Where(n => n.NodeID == 579);
             affectedNodes = affectedNodesList.ToArray();
         }
 
@@ -340,7 +339,12 @@ namespace CodeWalker.GameFiles
                 var nodeRmLinks = n.Links.Where(l =>
                     l.Node1 == node || l.Node2 == node);
 
-                n.Links = n.Links.Where(rl => !nodeRmLinks.Contains(rl)).ToArray();
+                var toRemove = n.Links.Where(rl => nodeRmLinks.Contains(rl)).ToArray();
+                foreach (var rl in toRemove)
+                {
+                    n.RemoveLink(rl);
+                }
+
                 rmLinks.AddRange(nodeRmLinks);
             }
 
@@ -631,12 +635,12 @@ namespace CodeWalker.GameFiles
     {
         None = 0,
         ParkingSpace = 2,
-        PedNavMeshLink = 10,
+        PedTrafficLightCrossing = 10,
         PedNodeUnk = 14,
         TrafficLightJunctionStop = 15,
         StopSign = 16,
         Caution = 17,
-        PedNavMeshLink2 = 18,
+        PedNavMeshLinkUnk = 18,
         RestrictedAccess = 19,
         OffRoadJunction = 20
     }
@@ -692,38 +696,38 @@ namespace CodeWalker.GameFiles
         public bool OffRoad
         {
             get => (Flags0 & 8) > 0;
-            set => Flags0 = (byte)(value ? Flags0 | 8 : Flags0 ^ 8);
+            set => Flags0 = (byte)(value ? Flags0 | 8 : Flags0 &~ 8);
         }
 
         public bool NoBigVehicles
         {
             get => (Flags0.Value & 32) > 0;
-            set => Flags0 = (byte)(value ? Flags0 | 32 : Flags0 ^ 32);
+            set => Flags0 = (byte)(value ? Flags0 | 32 : Flags0 &~ 32);
         }
 
         public bool CannotGoLeft
         {
             get => (Flags0.Value & 128) > 0;
-            set => Flags0 = (byte)(value ? Flags0 | 128 : Flags0 ^ 32);
+            set => Flags0 = (byte)(value ? Flags0 | 128 : Flags0 &~ 32);
         }
 
         // Flag1 Properties
         public bool SlipRoad
         {
             get => (Flags1 & 1) > 0;
-            set => Flags1 = (byte)(value ? Flags1 | 1 : Flags1 ^ 1);
+            set => Flags1 = (byte)(value ? Flags1 | 1 : Flags1 &~ 1);
         }
 
         public bool IndicateKeepLeft
         {
             get => (Flags1 & 2) > 0;
-            set => Flags1 = (byte)(value ? Flags1 | 2 : Flags1 ^ 2);
+            set => Flags1 = (byte)(value ? Flags1 | 2 : Flags1 &~ 2);
         }
 
         public bool IndicateKeepRight
         {
             get => (Flags1 & 4) > 0;
-            set => Flags1 = (byte)(value ? Flags1 | 4 : Flags1 ^ 4);
+            set => Flags1 = (byte)(value ? Flags1 | 4 : Flags1 &~ 4);
         }
 
         /// <summary>
@@ -753,13 +757,20 @@ namespace CodeWalker.GameFiles
         public bool NoGps
         {
             get => (Flags2.Value & 1) > 0;
-            set => Flags2 = (byte)(value ? Flags2 | 1 : Flags2 ^ 1);
+            set => Flags2 = (byte)(value ? Flags2 | 1 : Flags2 &~ 1);
+        }
+
+        // Fork in the road
+        public bool IsDecisionPoint
+        {
+            get => (Flags2.Value & 4) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 4 : Flags2 &~ 4);
         }
 
         public bool Highway
         {
             get => (Flags2.Value & 64) > 0;
-            set => Flags2 = (byte)(value ? Flags2 | 64 : Flags2 ^ 64);
+            set => Flags2 = (byte)(value ? Flags2 | 64 : Flags2 &~ 64);
         }
 
         /// <summary>
@@ -768,20 +779,20 @@ namespace CodeWalker.GameFiles
         public bool IsDisabledUnk0
         {
             get => (Flags2.Value & 128) > 0;
-            set => Flags2 = (byte)(value ? Flags2 | 128 : Flags2 ^ 128);
+            set => Flags2 = (byte)(value ? Flags2 | 128 : Flags2 &~ 128);
         }
 
         public bool IsDisabledUnk1
         {
             get { return (Flags2.Value & 16) > 0; }
-            set => Flags2 = (byte)(value ? Flags2 | 16 : Flags2 ^ 16);
+            set => Flags2 = (byte)(value ? Flags2 | 16 : Flags2 &~ 16);
         }
 
         // Flag3 Properties
         public bool Tunnel
         {
             get { return (Flags3 & 1) > 0; }
-            set => Flags3 = (byte)(value ? Flags3 | 1 : Flags3 ^ 1);
+            set => Flags3 = (byte)(value ? Flags3 | 1 : Flags3 &~ 1);
         }
 
         /// <summary>
@@ -810,14 +821,14 @@ namespace CodeWalker.GameFiles
         public bool LeftTurnsOnly
         {
             get => (Flags1 & 128) > 0;
-            set => Flags1 = (byte)(value ? Flags1 | 128 : Flags1 ^ 128);
+            set => Flags1 = (byte)(value ? Flags1 | 128 : Flags1 &~ 128);
         }
 
 
         public static bool IsSpecialTypeAPedNode(YndNodeSpecialType specialType)
-            => specialType == YndNodeSpecialType.PedNavMeshLink
+            => specialType == YndNodeSpecialType.PedTrafficLightCrossing
                || specialType == YndNodeSpecialType.PedNodeUnk
-               || specialType == YndNodeSpecialType.PedNavMeshLink2;
+               || specialType == YndNodeSpecialType.PedNavMeshLinkUnk;
 
         /// <summary>
         /// If Special is 10, 14 or 18 this is a ped node.
@@ -903,7 +914,7 @@ namespace CodeWalker.GameFiles
 
         public void RecalculateHeuristic()
         {
-            var link = Links?.Where(l => l.LaneCountBackward > 0).FirstOrDefault();
+            var link = Links?.FirstOrDefault(l => l.LaneCountBackward > 0);
             if (link is null)
             {
                 HeuristicValue = 0;
