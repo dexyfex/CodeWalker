@@ -257,16 +257,32 @@ namespace CodeWalker.GameFiles
         {
             int cnt = Nodes?.Length ?? 0;
             YndNode yn = new YndNode();
-            return AddNode(yn, out affectedNodes);
-        }
-
-        public YndNode AddNode(YndNode node, out YndNode[] affectedNodes)
-        {
-            int cnt = Nodes?.Length ?? 0;
             Node n = new Node();
             n.AreaID = (ushort)AreaID;
             n.NodeID = (ushort)(Nodes?.Length ?? 0);
-            node.Init(this, n);
+            yn.Init(this, n);
+
+            int ncnt = cnt + 1;
+            YndNode[] nnodes = new YndNode[ncnt];
+            for (int i = 0; i < cnt; i++)
+            {
+                nnodes[i] = Nodes[i];
+            }
+            nnodes[cnt] = yn;
+            Nodes = nnodes;
+            NodeDictionary.NodesCount = (uint)ncnt;
+
+            RecalculateNodeIndices(out affectedNodes);
+
+            return yn;
+        }
+
+        public void MigrateNode(YndNode node, out YndNode[] affectedNodes)
+        {
+            int cnt = Nodes?.Length ?? 0;
+            node.Ynd = this;
+            node.AreaID = (ushort)AreaID;
+            node.NodeID = (ushort)(Nodes?.Length ?? 0);
 
             int ncnt = cnt + 1;
             YndNode[] nnodes = new YndNode[ncnt];
@@ -279,18 +295,20 @@ namespace CodeWalker.GameFiles
             NodeDictionary.NodesCount = (uint)ncnt;
 
             RecalculateNodeIndices(out affectedNodes);
-
-            return node;
         }
 
-        public bool RemoveNode(YndNode node, out YndNode[] affectedNodes)
+        public bool RemoveNode(YndNode node, bool removeLinks, out YndNode[] affectedNodes)
         {
 
             var nodes = Nodes.Where(n => n.AreaID != node.AreaID || n.NodeID != node.NodeID).ToArray();
             Nodes = nodes;
             NodeDictionary.NodesCount = (uint)nodes.Count();
 
-            RemoveLinksForNode(node);
+            if (removeLinks)
+            {
+                RemoveLinksForNode(node);
+            }
+
             RecalculateNodeIndices(out affectedNodes);
 
             return true;

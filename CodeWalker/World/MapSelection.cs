@@ -1065,7 +1065,7 @@ namespace CodeWalker
                 WorldForm.Space.SetYndNodePosition(PathNode, newpos, out var affectedFiles);
                 foreach (var affectedFile in affectedFiles)
                 {
-
+                    WorldForm.UpdatePathYndGraphics(affectedFile, false);
                 }
             }
             else if (NavPoly != null)

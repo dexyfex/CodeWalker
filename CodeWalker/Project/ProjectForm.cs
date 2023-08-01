@@ -4757,12 +4757,7 @@ namespace CodeWalker.Project
 
             bool cp = copyPosition && (copy != null);
             Vector3 pos = cp ? copy.Position : GetSpawnPos(10.0f);
-            WorldForm.Space.SetYndNodePosition(n, pos, out affectedFiles);
-
-            foreach (var affectedFile in affectedFiles)
-            {
-                AddYndToProject(affectedFile);
-            }
+            WorldForm.Space.SetYndNodePosition(n, pos, out _);
 
             if (copy != null)
             {
@@ -4830,7 +4825,7 @@ namespace CodeWalker.Project
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
-                    res = WorldForm.Space.RemoveYndNode(CurrentYndFile, CurrentPathNode, out affectedFiles);
+                    res = WorldForm.Space.RemoveYndNode(CurrentYndFile, CurrentPathNode, true, out affectedFiles);
 
                     //WorldForm.SelectItem(null, null, null);
                 }

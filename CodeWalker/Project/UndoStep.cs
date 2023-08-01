@@ -1286,6 +1286,7 @@ namespace CodeWalker.Project
 
         private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
+            //TODO: Support migrating back!
             wf.Space.SetYndNodePosition(PathNode, p, out _);
 
             if (PathNode != sel.PathNode)

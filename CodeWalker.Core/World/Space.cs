@@ -672,10 +672,10 @@ namespace CodeWalker.World
             return n;
         }
 
-        public bool RemoveYndNode(YndFile file, YndNode node, out YndFile[] affectedFiles, bool removeLinks = true)
+        public bool RemoveYndNode(YndFile file, YndNode node, bool removeLinks, out YndFile[] affectedFiles)
         {
             var totalAffectedFiles = new List<YndFile>();
-            if (file.RemoveNode(node, out var affectedNodesFromDeletion))
+            if (file.RemoveNode(node, removeLinks, out var affectedNodesFromDeletion))
             {
                 if (removeLinks)
                 {
@@ -715,9 +715,10 @@ namespace CodeWalker.World
                 var nodeYnd = AllYnds.Values.FirstOrDefault(ynd => ynd.AreaID == node.AreaID);
                 var newYnd = AllYnds.Values.FirstOrDefault(ynd => ynd.AreaID == expectedArea.ID);
 
-                if (RemoveYndNode(nodeYnd, node, out var affectedFilesFromDelete))
+                if (RemoveYndNode(nodeYnd, node, false, out var affectedFilesFromDelete))
                 {
-                    newYnd.AddNode(node, out var affectedFilesFromAdd);
+                    totalAffectedFiles.Add(nodeYnd);
+                    newYnd.MigrateNode(node, out var affectedFilesFromAdd);
                     totalAffectedFiles.AddRange(affectedFilesFromDelete);
                 }
             }
