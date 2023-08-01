@@ -431,7 +431,11 @@ namespace CodeWalker.GameFiles
                         //float inner = totwidth*(backfrac-0.5f);
                         //float outer = totwidth*0.5f;
 
-                        float lanewidth = node.IsPedNode ? 0.5f : 5.5f;
+                        float lanewidth = 
+                            link.Shortcut || node.IsPedNode
+                                ? 0.5f 
+                                : 5.5f;
+
                         float inner = link.LaneOffset * lanewidth;// 0.0f;
                         float outer = inner + Math.Max(lanewidth * link.LaneCountForward, 0.5f);
 
@@ -635,12 +639,12 @@ namespace CodeWalker.GameFiles
     {
         None = 0,
         ParkingSpace = 2,
-        PedTrafficLightCrossing = 10,
+        PedRoadCrossing = 10,
         PedNodeUnk = 14,
         TrafficLightJunctionStop = 15,
         StopSign = 16,
         Caution = 17,
-        PedNavMeshLinkUnk = 18,
+        PedRoadCrossing2Unk = 18,
         RestrictedAccess = 19,
         OffRoadJunction = 20
     }
@@ -760,8 +764,7 @@ namespace CodeWalker.GameFiles
             set => Flags2 = (byte)(value ? Flags2 | 1 : Flags2 &~ 1);
         }
 
-        // Fork in the road
-        public bool IsDecisionPoint
+        public bool IsJunction
         {
             get => (Flags2.Value & 4) > 0;
             set => Flags2 = (byte)(value ? Flags2 | 4 : Flags2 &~ 4);
@@ -826,9 +829,9 @@ namespace CodeWalker.GameFiles
 
 
         public static bool IsSpecialTypeAPedNode(YndNodeSpecialType specialType)
-            => specialType == YndNodeSpecialType.PedTrafficLightCrossing
+            => specialType == YndNodeSpecialType.PedRoadCrossing
                || specialType == YndNodeSpecialType.PedNodeUnk
-               || specialType == YndNodeSpecialType.PedNavMeshLinkUnk;
+               || specialType == YndNodeSpecialType.PedRoadCrossing2Unk;
 
         /// <summary>
         /// If Special is 10, 14 or 18 this is a ped node.
@@ -930,6 +933,14 @@ namespace CodeWalker.GameFiles
             HeuristicValue = partner.HeuristicValue + length;
         }
 
+        public void CheckIfJunction()
+        {
+            // If this is a 3 node junction (4 including itself)
+            IsJunction = Links
+                .Where(l => !l.Shortcut)
+                .SelectMany(l => new[] { l.Node1, l.Node2 }).Distinct().Count() > 3;
+        }
+
 
         public YndLink AddLink(YndNode tonode = null)
         {
@@ -965,6 +976,7 @@ namespace CodeWalker.GameFiles
             LinkCount = ncnt;
 
             RecalculateHeuristic();
+            CheckIfJunction();
 
             return l;
         }
@@ -1005,9 +1017,9 @@ namespace CodeWalker.GameFiles
             LinkCount = newlinks.Count;
 
             RecalculateHeuristic();
+            CheckIfJunction();
             return r;
         }
-
 
         public override string ToString()
         {
@@ -1074,6 +1086,8 @@ namespace CodeWalker.GameFiles
             Flags0 = link.Flags0;
             Flags1 = link.Flags1;
             Flags2 = link.Flags2;
+
+            CheckIfJunction();
         }
 
         public void SetForwardLanesBidirectionally(int value)
@@ -1084,6 +1098,8 @@ namespace CodeWalker.GameFiles
             {
                 node2Link.LaneCountBackward = value;
             }
+
+            CheckIfJunction();
         }
 
         public void SetBackwardLanesBidirectionally(int value)
@@ -1094,6 +1110,14 @@ namespace CodeWalker.GameFiles
             {
                 node2Link.LaneCountForward = value;
             }
+
+            CheckIfJunction();
+        }
+
+        public void CheckIfJunction()
+        {
+            Node1?.CheckIfJunction();
+            Node2?.CheckIfJunction();
         }
 
 
@@ -1107,56 +1131,26 @@ namespace CodeWalker.GameFiles
             //var c = new Color4(f0, f1, f2, 1.0f);
 
             var c = new Color4(0.0f, 0.0f, 0.0f, 0.5f);
+
+            if (Node1.IsDisabledUnk0 || Node1.IsDisabledUnk1 || Node2.IsDisabledUnk0 || Node2.IsDisabledUnk1)
+            {
+                c.Red = 0.02f;
+                return c;
+            }
+
+            if (Shortcut)
+            {
+                c.Blue = 0.2f;
+                return c;
+            }
+
             c.Green = LaneCountForward / 7.0f;
             c.Red = LaneCountBackward / 7.0f;
 
-
-            //if ((Flags0.Value & 1) > 0) c.Red = 1.0f; //? some small pieces in city, roads at docks, and mall at beach
-            //if ((Flags0.Value & 2) > 0) c.Red = 1.0f; //3x segments joining east canal paths to roads, also josh's driveway - scripted?
-            //if ((Flags0.Value & 4) > 0) c.Red = 1.0f; //? looks fairly random, 0 for water, alternating - slope related?
-            //if ((Flags0.Value & 8) > 0) c.Red = 1.0f; //? like above
-            //if ((Flags0.Value & 16) > 0) c.Red = 1.0f; //? similar to above, but less
-            //if ((Flags0.Value & 32) > 0) c.Red = 1.0f; //? like above
-            //if ((Flags0.Value & 64) > 0) c.Red = 1.0f; //? slightly less random
-            //if ((Flags0.Value & 128) > 0) c.Red = 1.0f; //? still looks random...
-
-            //if ((Flags1.Value & 1) > 0) c.Red = 1.0f; //***not used?
-            //if ((Flags1.Value & 2) > 0) c.Red = 1.0f; //?possibly width/type bit
-            //if ((Flags1.Value & 4) > 0) c.Red = 1.0f; //avoid routing? no through road / no other exit?
-            //if ((Flags1.Value & 8) > 0) c.Red = 1.0f; //prefer routing? exit from dead end?
-            //if ((Flags1.Value & 16) > 0) c.Red = 1.0f; //offset value.   mostly single lane, carpark access, golf course, alleyways, driveways, beach area etc
-            //if ((Flags1.Value & 32) > 0) c.Green = 1.0f; //offset value.  similar to above
-            //if ((Flags1.Value & 64) > 0) c.Green = 1.0f; //offset value.  similar to above
-            //if ((Flags1.Value & 128) > 0) c.Red = 1.0f; //offset value. (sign)  similar to above (all paired with their back links!)
-
-            //if ((Flags2.Value & 1) > 0) c.Red = 1.0f; //angled link - merge? enter/exit divided road section, most big junctions, always paired
-            //if ((Flags2.Value & 2) > 0) c.Red = 1.0f; //lane change/u-turn link?  always paired
-            //if ((Flags2.Value & 4) > 0) c.Red = 1.0f; //lane count back dir
-            //if ((Flags2.Value & 8) > 0) c.Red = 1.0f; //lane count back dir
-            //if ((Flags2.Value & 16) > 0) c.Red = 1.0f; //lane count back dir
-            //if ((Flags2.Value & 32) > 0) c.Green = 1.0f; //lane count forward dir
-            //if ((Flags2.Value & 64) > 0) c.Green = 1.0f; //lane count forward dir
-            //if ((Flags2.Value & 128) > 0) c.Green = 1.0f; //lane count forward dir
-
-            ////var lanesfwd = (Flags2.Value >> 5) & 7;
-            ////var lanesbck = (Flags2.Value >> 2) & 7;
-            //////if ((lanesfwd > 0) && (lanesbck > 0) && (lanesfwd != lanesbck))
-            //////{ }
-
-
-
-            //var t = (Flags1.Value >> 4)&1;
-            //c.Red = t / 1.0f;
-            //c.Green = 1.0f - c.Red;
-            ////if (((Flags1.Value & 128) > 0))// && ((Flags1.Value & 64) == 0))
-            ////{ c.Red += 1.0f; }
-
-
+            
 
             return c;
         }
-
-
 
         public override string ToString()
         {

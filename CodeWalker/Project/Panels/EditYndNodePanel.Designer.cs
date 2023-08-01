@@ -604,9 +604,9 @@
             this.PathNodeFlags23CheckBox.Location = new System.Drawing.Point(9, 134);
             this.PathNodeFlags23CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags23CheckBox.Name = "PathNodeFlags23CheckBox";
-            this.PathNodeFlags23CheckBox.Size = new System.Drawing.Size(138, 24);
+            this.PathNodeFlags23CheckBox.Size = new System.Drawing.Size(95, 24);
             this.PathNodeFlags23CheckBox.TabIndex = 37;
-            this.PathNodeFlags23CheckBox.Text = "Junction unk 5";
+            this.PathNodeFlags23CheckBox.Text = "Junction";
             this.PathNodeFlags23CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags23CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags23CheckBox_CheckedChanged);
             // 

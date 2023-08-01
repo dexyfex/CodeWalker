@@ -1,4 +1,4 @@
-using CodeWalker.GameFiles;
+﻿using CodeWalker.GameFiles;
 using CodeWalker.Project.Panels;
 using CodeWalker.Properties;
 using CodeWalker.Utils;
@@ -4784,6 +4784,9 @@ namespace CodeWalker.Project
                 }
             }
 
+            n.CheckIfJunction();
+            copy.CheckIfJunction();
+
             CurrentYndFile.UpdateAllNodePositions(); //for the graphics...
             CurrentYndFile.BuildBVH();
 
@@ -4829,11 +4832,11 @@ namespace CodeWalker.Project
                 }
             }
             else
-            {
-                res = CurrentYndFile.RemoveNode(CurrentPathNode);
-            }
+            //{
+            //    res = CurrentYndFile.RemoveNode(CurrentPathNode);
+            //}
 
-            if (!res)
+            //if (!res)
             {
                 MessageBox.Show("Unable to delete the path node. This shouldn't happen!");
             }
