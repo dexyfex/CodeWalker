@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditYndNodePanel));
             this.PathNodeTabControl = new System.Windows.Forms.TabControl();
             this.PathNodePropertiesTabPage = new System.Windows.Forms.TabPage();
+            this.FloodCopyFlagsButton = new System.Windows.Forms.Button();
             this.YndNodeIsPedNodeCheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeSpecialTypeComboBox = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -102,6 +103,7 @@
             this.PathNodeLinksListBox = new System.Windows.Forms.ListBox();
             this.PathNodeLinkCountLabel = new System.Windows.Forms.Label();
             this.PathNodeLinkPanel = new System.Windows.Forms.Panel();
+            this.PathNodeSelectPartnerButton = new System.Windows.Forms.Button();
             this.PathLinkFlags2GroupBox = new System.Windows.Forms.GroupBox();
             this.PathNodeLinkFlags21CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeLinkFlags22CheckBox = new System.Windows.Forms.CheckBox();
@@ -154,7 +156,6 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeSelectPartnerButton = new System.Windows.Forms.Button();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -220,6 +221,7 @@
             // 
             // PathNodePropertiesTabPage
             // 
+            this.PathNodePropertiesTabPage.Controls.Add(this.FloodCopyFlagsButton);
             this.PathNodePropertiesTabPage.Controls.Add(this.YndNodeIsPedNodeCheckBox);
             this.PathNodePropertiesTabPage.Controls.Add(this.PathNodeSpecialTypeComboBox);
             this.PathNodePropertiesTabPage.Controls.Add(this.label2);
@@ -249,6 +251,16 @@
             this.PathNodePropertiesTabPage.TabIndex = 2;
             this.PathNodePropertiesTabPage.Text = "Node Properties";
             this.PathNodePropertiesTabPage.UseVisualStyleBackColor = true;
+            // 
+            // FloodCopyFlagsButton
+            // 
+            this.FloodCopyFlagsButton.Location = new System.Drawing.Point(614, 98);
+            this.FloodCopyFlagsButton.Name = "FloodCopyFlagsButton";
+            this.FloodCopyFlagsButton.Size = new System.Drawing.Size(135, 35);
+            this.FloodCopyFlagsButton.TabIndex = 50;
+            this.FloodCopyFlagsButton.Text = "Flood Copy";
+            this.FloodCopyFlagsButton.UseVisualStyleBackColor = true;
+            this.FloodCopyFlagsButton.Click += new System.EventHandler(this.FloodCopyFlagsButton_Click);
             // 
             // YndNodeIsPedNodeCheckBox
             // 
@@ -1138,6 +1150,16 @@
             this.PathNodeLinkPanel.Size = new System.Drawing.Size(719, 645);
             this.PathNodeLinkPanel.TabIndex = 0;
             // 
+            // PathNodeSelectPartnerButton
+            // 
+            this.PathNodeSelectPartnerButton.Location = new System.Drawing.Point(314, 536);
+            this.PathNodeSelectPartnerButton.Name = "PathNodeSelectPartnerButton";
+            this.PathNodeSelectPartnerButton.Size = new System.Drawing.Size(125, 51);
+            this.PathNodeSelectPartnerButton.TabIndex = 19;
+            this.PathNodeSelectPartnerButton.Text = "Select Partner";
+            this.PathNodeSelectPartnerButton.UseVisualStyleBackColor = true;
+            this.PathNodeSelectPartnerButton.Click += new System.EventHandler(this.PathNodeSelectPartnerButton_Click);
+            // 
             // PathLinkFlags2GroupBox
             // 
             this.PathLinkFlags2GroupBox.Controls.Add(this.PathNodeLinkFlags21CheckBox);
@@ -1586,7 +1608,7 @@
             this.PathNodeJunctionTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeJunctionTabPage.Name = "PathNodeJunctionTabPage";
             this.PathNodeJunctionTabPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeJunctionTabPage.Size = new System.Drawing.Size(770, 655);
+            this.PathNodeJunctionTabPage.Size = new System.Drawing.Size(901, 655);
             this.PathNodeJunctionTabPage.TabIndex = 1;
             this.PathNodeJunctionTabPage.Text = "Junction";
             this.PathNodeJunctionTabPage.UseVisualStyleBackColor = true;
@@ -1837,16 +1859,6 @@
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
             // 
-            // PathNodeSelectPartnerButton
-            // 
-            this.PathNodeSelectPartnerButton.Location = new System.Drawing.Point(314, 536);
-            this.PathNodeSelectPartnerButton.Name = "PathNodeSelectPartnerButton";
-            this.PathNodeSelectPartnerButton.Size = new System.Drawing.Size(125, 51);
-            this.PathNodeSelectPartnerButton.TabIndex = 19;
-            this.PathNodeSelectPartnerButton.Text = "Select Partner";
-            this.PathNodeSelectPartnerButton.UseVisualStyleBackColor = true;
-            this.PathNodeSelectPartnerButton.Click += new System.EventHandler(this.PathNodeSelectPartnerButton_Click);
-            // 
             // EditYndNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -2049,5 +2061,6 @@
         private System.Windows.Forms.NumericUpDown PathNodeFlags42UpDown;
         private System.Windows.Forms.Label label71;
         private System.Windows.Forms.Button PathNodeSelectPartnerButton;
+        private System.Windows.Forms.Button FloodCopyFlagsButton;
     }
 }

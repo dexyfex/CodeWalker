@@ -1361,5 +1361,11 @@ namespace CodeWalker.Project.Panels
             LoadPathNodeLinkPage();
             PathNodeLinksListBox.SelectedItem = partner;
         }
+
+        private void FloodCopyFlagsButton_Click(object sender, EventArgs e)
+        {
+            CurrentPathNode?.FloodCopyFlags();
+            ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+        }
     }
 }

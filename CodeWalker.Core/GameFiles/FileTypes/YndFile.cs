@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -1054,6 +1055,47 @@ namespace CodeWalker.GameFiles
             RecalculateHeuristic();
             CheckIfJunction();
             return r;
+        }
+
+        public void FloodCopyFlags()
+        {
+            FloodCopyFlags(this, new List<YndNode>());
+        }
+
+        private void FloodCopyFlags(YndNode basis, List<YndNode> seenNodes)
+        {
+            if (Links == null || !Links.Any())
+            {
+                return;
+            }
+
+            if (seenNodes.Contains(this))
+            {
+                return;
+            }
+
+            seenNodes.Add(this);
+            if (basis != this)
+            {
+                Flags0 = basis.Flags0;
+                Flags1 = basis.Flags1;
+                Flags2 = basis.Flags2;
+                Flags3 = basis.Flags3;
+                Flags4 = basis.Flags4;
+                LinkCountUnk = basis.LinkCountUnk;
+                RecalculateHeuristic();
+            }
+
+            CheckIfJunction();
+
+            if (!IsJunction)
+            {
+                foreach (var yndLink in Links)
+                {
+                    yndLink.Node1.FloodCopyFlags(basis, seenNodes);
+                    yndLink.Node2.FloodCopyFlags(basis, seenNodes);
+                }
+            }
         }
 
         public override string ToString()
