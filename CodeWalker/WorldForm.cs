@@ -3145,7 +3145,7 @@ namespace CodeWalker
                         MapBox mb = new MapBox();
 
                         int lanestot = ln.LaneCountForward + ln.LaneCountBackward;
-                        float lanewidth = n.IsPedNode ? 0.5f : 5.5f;
+                        float lanewidth = ln.GetLaneWidth();
                         float inner = ln.LaneOffset * lanewidth;// 0.0f;
                         float outer = inner + Math.Max(lanewidth * ln.LaneCountForward, 0.5f);
                         float totwidth = lanestot * lanewidth;

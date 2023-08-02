@@ -567,6 +567,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentPathNode == null) return;
 
+
             var l = CurrentPathNode.AddLink();
 
             LoadPathNodeTabPage();
@@ -583,6 +584,12 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentPathLink == null) return;
             if (CurrentPathNode == null) return;
+
+            var partners = CurrentPathLink.Node2.Links.Where(l => l.Node2 == CurrentPathNode);
+            foreach (var partner in partners)
+            {
+                partner.Node1.RemoveLink(partner);
+            }
 
             var r = CurrentPathNode.RemoveLink(CurrentPathLink);
 
@@ -604,6 +611,7 @@ namespace CodeWalker.Project.Panels
             YndNode linknode = null;
             ushort areaid = CurrentPathLink._RawData.AreaID;
             ushort nodeid = CurrentPathLink._RawData.NodeID;
+
             if (areaid == CurrentYndFile.AreaID)
             {
                 //link to the same ynd. find the new node in the current ynd.
@@ -630,9 +638,17 @@ namespace CodeWalker.Project.Panels
                 PathNodeLinkageStatusLabel.Text = "";
             }
 
+            var partner = CurrentPathLink.Node2.Links.FirstOrDefault(l => l.Node2 == CurrentPathNode);
+            partner?.Node1.RemoveLink(partner);
+
             CurrentPathLink.Node2 = linknode;
             CurrentPathLink.UpdateLength();
+            var l2 = linknode?.AddLink(CurrentPathNode);
 
+            if (l2 != null && partner != null)
+            {
+                l2.CopyFlags(partner);
+            }
 
             ////need to rebuild the link verts.. updating the graphics should do it...
             if (ProjectForm.WorldForm != null)
@@ -1325,6 +1341,25 @@ namespace CodeWalker.Project.Panels
                 }
                 
             }
+        }
+
+        private void PathNodeSelectPartnerButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentPathLink == null)
+                return;
+
+            var partner = CurrentPathLink.Node2.Links.FirstOrDefault(l => l.Node2 == CurrentPathNode);
+            if (partner == null)
+            {
+                MessageBox.Show("Error", "Could not find partner!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            CurrentPathNode = partner.Node1;
+            CurrentPathLink = partner;
+            LoadPathNodeLinkPage();
+            LoadPathNodeLinkPage();
+            PathNodeLinksListBox.SelectedItem = partner;
         }
     }
 }

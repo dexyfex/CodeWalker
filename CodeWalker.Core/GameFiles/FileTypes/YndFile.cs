@@ -437,6 +437,11 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var node in Nodes)
                 {
+                    if (node.Links is null)
+                    {
+                        continue;
+                    }
+
                     foreach (var link in node.Links)
                     {
                         var p0 = link.Node1?.Position ?? Vector3.Zero;
@@ -958,8 +963,17 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public YndLink AddLink(YndNode tonode = null)
+        public YndLink AddLink(YndNode tonode = null, bool bidirectional = true)
         {
+            if (Links != null)
+            {
+                var existing = Links.FirstOrDefault(el => el.Node2 == tonode);
+                if (existing != null)
+                {
+                    return existing;
+                }
+            }
+
             YndLink l = new YndLink();
             l._RawData.AreaID = AreaID;
             l.Node1 = this;
@@ -990,6 +1004,11 @@ namespace CodeWalker.GameFiles
             nlinks[cnt] = l;
             Links = nlinks;
             LinkCount = ncnt;
+
+            if (bidirectional)
+            {
+                tonode?.AddLink(this, false);
+            }
 
             RecalculateHeuristic();
             CheckIfJunction();

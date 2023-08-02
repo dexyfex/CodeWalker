@@ -154,6 +154,7 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
+            this.PathNodeSelectPartnerButton = new System.Windows.Forms.Button();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -214,7 +215,7 @@
             this.PathNodeTabControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeTabControl.Name = "PathNodeTabControl";
             this.PathNodeTabControl.SelectedIndex = 0;
-            this.PathNodeTabControl.Size = new System.Drawing.Size(778, 688);
+            this.PathNodeTabControl.Size = new System.Drawing.Size(909, 688);
             this.PathNodeTabControl.TabIndex = 29;
             // 
             // PathNodePropertiesTabPage
@@ -244,7 +245,7 @@
             this.PathNodePropertiesTabPage.Location = new System.Drawing.Point(4, 29);
             this.PathNodePropertiesTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodePropertiesTabPage.Name = "PathNodePropertiesTabPage";
-            this.PathNodePropertiesTabPage.Size = new System.Drawing.Size(770, 655);
+            this.PathNodePropertiesTabPage.Size = new System.Drawing.Size(901, 655);
             this.PathNodePropertiesTabPage.TabIndex = 2;
             this.PathNodePropertiesTabPage.Text = "Node Properties";
             this.PathNodePropertiesTabPage.UseVisualStyleBackColor = true;
@@ -891,7 +892,7 @@
             // 
             this.PathNodeDeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.PathNodeDeleteButton.Enabled = false;
-            this.PathNodeDeleteButton.Location = new System.Drawing.Point(627, 55);
+            this.PathNodeDeleteButton.Location = new System.Drawing.Point(758, 55);
             this.PathNodeDeleteButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeDeleteButton.Name = "PathNodeDeleteButton";
             this.PathNodeDeleteButton.Size = new System.Drawing.Size(135, 35);
@@ -902,6 +903,7 @@
             // 
             // PathNodeAreaIDUpDown
             // 
+            this.PathNodeAreaIDUpDown.Enabled = false;
             this.PathNodeAreaIDUpDown.Location = new System.Drawing.Point(117, 18);
             this.PathNodeAreaIDUpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeAreaIDUpDown.Maximum = new decimal(new int[] {
@@ -918,7 +920,7 @@
             // 
             this.PathNodeAddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.PathNodeAddToProjectButton.Enabled = false;
-            this.PathNodeAddToProjectButton.Location = new System.Drawing.Point(483, 55);
+            this.PathNodeAddToProjectButton.Location = new System.Drawing.Point(614, 55);
             this.PathNodeAddToProjectButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeAddToProjectButton.Name = "PathNodeAddToProjectButton";
             this.PathNodeAddToProjectButton.Size = new System.Drawing.Size(135, 35);
@@ -959,6 +961,7 @@
             // 
             // PathNodeNodeIDUpDown
             // 
+            this.PathNodeNodeIDUpDown.Enabled = false;
             this.PathNodeNodeIDUpDown.Location = new System.Drawing.Point(333, 18);
             this.PathNodeNodeIDUpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeNodeIDUpDown.Maximum = new decimal(new int[] {
@@ -1037,7 +1040,7 @@
             this.PathNodeLinksTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeLinksTabPage.Name = "PathNodeLinksTabPage";
             this.PathNodeLinksTabPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeLinksTabPage.Size = new System.Drawing.Size(770, 655);
+            this.PathNodeLinksTabPage.Size = new System.Drawing.Size(901, 655);
             this.PathNodeLinksTabPage.TabIndex = 0;
             this.PathNodeLinksTabPage.Text = "Path Links";
             this.PathNodeLinksTabPage.UseVisualStyleBackColor = true;
@@ -1060,7 +1063,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.PathNodeLinkPanel);
-            this.splitContainer2.Size = new System.Drawing.Size(762, 645);
+            this.splitContainer2.Size = new System.Drawing.Size(893, 645);
             this.splitContainer2.SplitterDistance = 168;
             this.splitContainer2.SplitterWidth = 6;
             this.splitContainer2.TabIndex = 0;
@@ -1116,6 +1119,7 @@
             // 
             // PathNodeLinkPanel
             // 
+            this.PathNodeLinkPanel.Controls.Add(this.PathNodeSelectPartnerButton);
             this.PathNodeLinkPanel.Controls.Add(this.PathLinkFlags2GroupBox);
             this.PathNodeLinkPanel.Controls.Add(this.PathLinkFlags1GroupBox);
             this.PathNodeLinkPanel.Controls.Add(this.PathLinkFlags0GroupBox);
@@ -1131,7 +1135,7 @@
             this.PathNodeLinkPanel.Location = new System.Drawing.Point(0, 0);
             this.PathNodeLinkPanel.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeLinkPanel.Name = "PathNodeLinkPanel";
-            this.PathNodeLinkPanel.Size = new System.Drawing.Size(588, 645);
+            this.PathNodeLinkPanel.Size = new System.Drawing.Size(719, 645);
             this.PathNodeLinkPanel.TabIndex = 0;
             // 
             // PathLinkFlags2GroupBox
@@ -1833,11 +1837,21 @@
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
             // 
+            // PathNodeSelectPartnerButton
+            // 
+            this.PathNodeSelectPartnerButton.Location = new System.Drawing.Point(314, 536);
+            this.PathNodeSelectPartnerButton.Name = "PathNodeSelectPartnerButton";
+            this.PathNodeSelectPartnerButton.Size = new System.Drawing.Size(125, 51);
+            this.PathNodeSelectPartnerButton.TabIndex = 19;
+            this.PathNodeSelectPartnerButton.Text = "Select Partner";
+            this.PathNodeSelectPartnerButton.UseVisualStyleBackColor = true;
+            this.PathNodeSelectPartnerButton.Click += new System.EventHandler(this.PathNodeSelectPartnerButton_Click);
+            // 
             // EditYndNodePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(783, 694);
+            this.ClientSize = new System.Drawing.Size(914, 694);
             this.Controls.Add(this.PathNodeTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -2034,5 +2048,6 @@
         private System.Windows.Forms.CheckBox YndNodeIsPedNodeCheckBox;
         private System.Windows.Forms.NumericUpDown PathNodeFlags42UpDown;
         private System.Windows.Forms.Label label71;
+        private System.Windows.Forms.Button PathNodeSelectPartnerButton;
     }
 }

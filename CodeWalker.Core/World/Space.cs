@@ -750,6 +750,11 @@ namespace CodeWalker.World
         {
             var totalAffectedFiles = new List<YndFile>();
 
+            if (node.Links != null)
+            {
+                totalAffectedFiles.AddRange(node.Links.SelectMany(l => new[] { l.Node1.Ynd, l.Node2.Ynd }).Distinct());
+            }
+
             node.SetPosition(newPosition);
             var expectedArea = NodeGrid.GetCellForPosition(newPosition);
 
@@ -761,11 +766,13 @@ namespace CodeWalker.World
                 if (RemoveYndNode(nodeYnd, node, false, out var affectedFilesFromDelete))
                 {
                     totalAffectedFiles.Add(nodeYnd);
-                    newYnd.MigrateNode(node, out var affectedFilesFromAdd);
+                    newYnd.MigrateNode(node, out var affectedNodesForMigrate);
                     totalAffectedFiles.AddRange(affectedFilesFromDelete);
+
+                    var affectedFilesForMigrate = affectedNodesForMigrate.Select(n => n.Ynd).Distinct();
+                    totalAffectedFiles.AddRange(affectedFilesForMigrate);
                 }
             }
-
             affectedFiles = totalAffectedFiles.ToArray();
         }
 
