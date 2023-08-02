@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using CodeWalker.World;
+using System.Xml.Linq;
 
 namespace CodeWalker.GameFiles
 {
@@ -442,8 +443,7 @@ namespace CodeWalker.GameFiles
                     {
                         var p0 = link.Node1?.Position ?? Vector3.Zero;
                         var p1 = link.Node2?.Position ?? Vector3.Zero;
-                        var diff = p1 - p0;
-                        var dir = Vector3.Normalize(diff);
+                        var dir = link.GetDirection();
                         var ax = Vector3.Cross(dir, Vector3.UnitZ);
 
 
@@ -453,12 +453,9 @@ namespace CodeWalker.GameFiles
                         //float inner = totwidth*(backfrac-0.5f);
                         //float outer = totwidth*0.5f;
 
-                        float lanewidth = 
-                            link.Shortcut || node.IsPedNode
-                                ? 0.5f 
-                                : 5.5f;
+                        float lanewidth = link.GetLaneWidth();
 
-                        float inner = link.LaneOffset * lanewidth;// 0.0f;
+                            float inner = link.LaneOffset * lanewidth;// 0.0f;
                         float outer = inner + Math.Max(lanewidth * link.LaneCountForward, 0.5f);
 
                         float totwidth = lanestot * lanewidth;
@@ -881,20 +878,20 @@ namespace CodeWalker.GameFiles
         {
             if (IsDisabledUnk0 || IsDisabledUnk1)
             {
-                return new Color4(1.0f, 0.0f, 0.0f, 1.0f);
+                return new Color4(1.0f, 0.0f, 0.0f, 0.5f);
             }
 
             if (IsPedNode)
             {
-                return new Color4(1.0f, 0.0f, 1.0f, 1.0f);
+                return new Color4(1.0f, 0.0f, 1.0f, 0.5f);
             }
 
             if (Tunnel)
             {
-                return new Color4(0.3f, 0.3f, 0.3f, 1.0f);
+                return new Color4(0.3f, 0.3f, 0.3f, 0.5f);
             }
 
-            return new Color4(LinkCountUnk / 7.0f, Flags0.Value / 255.0f, Flags1.Value / 255.0f, 1.0f);
+            return new Color4(LinkCountUnk / 7.0f, Flags0.Value / 255.0f, Flags1.Value / 255.0f, 0.5f);
         }
 
 
@@ -1112,6 +1109,11 @@ namespace CodeWalker.GameFiles
             CheckIfJunction();
         }
 
+        public bool IsTwoWay()
+        {
+            return LaneCountForward > 0 && LaneCountBackward > 0;
+        }
+
         public void SetForwardLanesBidirectionally(int value)
         {
             LaneCountForward = value;
@@ -1142,7 +1144,6 @@ namespace CodeWalker.GameFiles
             Node2?.CheckIfJunction();
         }
 
-
         public Color4 GetColour()
         {
 
@@ -1163,6 +1164,7 @@ namespace CodeWalker.GameFiles
             if (Shortcut)
             {
                 c.Blue = 0.2f;
+                c.Green = 0.2f;
                 return c;
             }
 
@@ -1172,6 +1174,29 @@ namespace CodeWalker.GameFiles
             
 
             return c;
+        }
+
+        public float GetLaneWidth()
+        {
+            if (Shortcut || Node1.IsPedNode || Node2.IsPedNode)
+            {
+                return 0.5f;
+            }
+
+            if (NarrowRoad)
+            {
+                return 4.0f;
+            }
+
+            return 5.5f;
+        }
+
+        public Vector3 GetDirection()
+        {
+            var p0 = Node1?.Position ?? Vector3.Zero;
+            var p1 = Node2?.Position ?? Vector3.Zero;
+            var diff = p1 - p0;
+            return Vector3.Normalize(diff);
         }
 
         public override string ToString()

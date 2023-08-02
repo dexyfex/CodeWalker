@@ -2,6 +2,7 @@
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -568,6 +569,7 @@ namespace CodeWalker.World
         }
         public void BuildYndVerts(YndFile ynd, List<EditorVertex> tverts = null)
         {
+            var laneColour = (uint) new Color4(0f, 0f, 1f, 1f).ToRgba();
             var ynodes = ynd.Nodes;
             if (ynodes == null) return;
 
@@ -586,11 +588,20 @@ namespace CodeWalker.World
                 nvert.Position = node.Position;
                 nvert.Colour = (uint)node.Colour.ToRgba();
 
-
                 for (int l = 0; l < node.Links.Length; l++)
                 {
                     YndLink yl = node.Links[l];
-                    var tnode = yl.Node2;
+                    var laneDir = yl.GetDirection();
+                    var laneDirCross = Vector3.Cross(laneDir, Vector3.UnitZ);
+                    var laneWidth = yl.GetLaneWidth();
+                    var laneHalfWidth = laneWidth / 2;
+                    var offset = yl.IsTwoWay()
+                        ? yl.LaneOffset * laneWidth - laneHalfWidth
+                        : yl.LaneOffset - yl.LaneCountForward * laneWidth / 2f + laneHalfWidth;
+
+                    var iOffset = yl.IsTwoWay() ? 1 : 0;
+
+                        var tnode = yl.Node2;
                     if (tnode == null) continue; //invalid links could hit here
                     var tvert = new EditorVertex();
                     tvert.Position = tnode.Position;
@@ -598,6 +609,37 @@ namespace CodeWalker.World
 
                     tverts.Add(nvert);
                     tverts.Add(tvert);
+
+                    // Add lane display
+                    for (int j = iOffset; j < yl.LaneCountForward + iOffset; j++)
+                    {
+                        var vertOffset = laneDirCross * (offset + laneWidth * j);
+                        
+                        vertOffset.Z = 0.1f;
+                        var lvert1 = new EditorVertex
+                        {
+                            Position = nvert.Position + vertOffset,
+                            Colour = laneColour
+                        };
+
+                        var lvert2 = new EditorVertex
+                        {
+                            Position = tvert.Position + vertOffset,
+                            Colour = laneColour
+                        };
+
+                        tverts.Add(lvert1);
+                        tverts.Add(lvert2);
+
+                        // Arrow
+                        var apos = lvert1.Position + laneDir * yl.LinkLength / 2;
+                        const float asize = 0.5f;
+                        const float negasize = asize * -1f;
+                        tverts.Add(new EditorVertex(){ Position = apos, Colour = laneColour});
+                        tverts.Add(new EditorVertex() { Position = apos + laneDir * negasize + laneDirCross * asize, Colour = laneColour });
+                        tverts.Add(new EditorVertex() { Position = apos, Colour = laneColour });
+                        tverts.Add(new EditorVertex() { Position = apos + laneDir * negasize + laneDirCross * negasize, Colour = laneColour });
+                    }
                 }
             }
             ynd.LinkedVerts = tverts.ToArray();
