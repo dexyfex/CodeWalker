@@ -1299,9 +1299,9 @@
             this.PathNodeLinkFlags11CheckBox.Location = new System.Drawing.Point(9, 69);
             this.PathNodeLinkFlags11CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeLinkFlags11CheckBox.Name = "PathNodeLinkFlags11CheckBox";
-            this.PathNodeLinkFlags11CheckBox.Size = new System.Drawing.Size(128, 24);
+            this.PathNodeLinkFlags11CheckBox.Size = new System.Drawing.Size(115, 24);
             this.PathNodeLinkFlags11CheckBox.TabIndex = 30;
-            this.PathNodeLinkFlags11CheckBox.Text = "Narrow Road";
+            this.PathNodeLinkFlags11CheckBox.Text = "Unknown 1";
             this.PathNodeLinkFlags11CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeLinkFlags11CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags11CheckBox_CheckedChanged);
             // 
@@ -1323,9 +1323,9 @@
             this.PathNodeLinkFlags12CheckBox.Location = new System.Drawing.Point(9, 102);
             this.PathNodeLinkFlags12CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeLinkFlags12CheckBox.Name = "PathNodeLinkFlags12CheckBox";
-            this.PathNodeLinkFlags12CheckBox.Size = new System.Drawing.Size(115, 24);
+            this.PathNodeLinkFlags12CheckBox.Size = new System.Drawing.Size(128, 24);
             this.PathNodeLinkFlags12CheckBox.TabIndex = 31;
-            this.PathNodeLinkFlags12CheckBox.Text = "Unknown 1";
+            this.PathNodeLinkFlags12CheckBox.Text = "Narrow Road";
             this.PathNodeLinkFlags12CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeLinkFlags12CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags12CheckBox_CheckedChanged);
             // 

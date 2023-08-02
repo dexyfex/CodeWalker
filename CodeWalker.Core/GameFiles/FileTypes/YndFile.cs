@@ -422,8 +422,6 @@ namespace CodeWalker.GameFiles
         private void UpdateLinkTriangleVertices()
         {
             //build triangles for the path links display
-
-
             int vc = 0;
             if (Links != null)
             {
@@ -446,7 +444,6 @@ namespace CodeWalker.GameFiles
                         var dir = link.GetDirection();
                         var ax = Vector3.Cross(dir, Vector3.UnitZ);
 
-
                         float lanestot = link.LaneCountForward + link.LaneCountBackward;
                         //float backfrac = Math.Min(Math.Max(link.LaneCountBackward / lanestot, 0.1f), 0.9f);
                         //float lanewidth = 7.0f;
@@ -455,8 +452,8 @@ namespace CodeWalker.GameFiles
 
                         float lanewidth = link.GetLaneWidth();
 
-                            float inner = link.LaneOffset * lanewidth;// 0.0f;
-                        float outer = inner + Math.Max(lanewidth * link.LaneCountForward, 0.5f);
+                        float inner = link.LaneOffset * lanewidth;// 0.0f;
+                        float outer = inner + lanewidth * link.LaneCountForward;
 
                         float totwidth = lanestot * lanewidth;
                         float halfwidth = totwidth * 0.5f;
@@ -1146,8 +1143,6 @@ namespace CodeWalker.GameFiles
 
         public Color4 GetColour()
         {
-
-
             //float f0 = Flags0.Value / 255.0f;
             //float f1 = Flags1.Value / 255.0f;
             //float f2 = Flags2.Value / 255.0f;
@@ -1155,9 +1150,19 @@ namespace CodeWalker.GameFiles
 
             var c = new Color4(0.0f, 0.0f, 0.0f, 0.5f);
 
-            if (Node1.IsDisabledUnk0 || Node1.IsDisabledUnk1 || Node2.IsDisabledUnk0 || Node2.IsDisabledUnk1)
+            if (Node1.IsDisabledUnk0 
+                || Node1.IsDisabledUnk1 
+                || Node2.IsDisabledUnk0 
+                || Node2.IsDisabledUnk1)
             {
                 c.Red = 0.02f;
+                return c;
+            }
+
+            if (Node1.IsPedNode || Node2.IsPedNode)
+            {
+                c.Red = 0.2f;
+                c.Green = 0.15f;
                 return c;
             }
 
@@ -1168,9 +1173,20 @@ namespace CodeWalker.GameFiles
                 return c;
             }
 
-            c.Green = LaneCountForward / 7.0f;
-            c.Red = LaneCountBackward / 7.0f;
+            if (DontUseForNavigation)
+            {
+                c.Blue = 0.2f;
+                c.Red = 0.2f;
+                return c;
+            }
 
+            if (LaneCountForward == 0)
+            {
+                c.Red = 0.5f;
+                return c;
+            }
+
+            c.Green = 0.2f;
             
 
             return c;
@@ -1181,6 +1197,11 @@ namespace CodeWalker.GameFiles
             if (Shortcut || Node1.IsPedNode || Node2.IsPedNode)
             {
                 return 0.5f;
+            }
+
+            if (DontUseForNavigation)
+            {
+                return 2.5f;
             }
 
             if (NarrowRoad)

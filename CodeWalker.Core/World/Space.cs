@@ -601,7 +601,8 @@ namespace CodeWalker.World
 
                     var iOffset = yl.IsTwoWay() ? 1 : 0;
 
-                        var tnode = yl.Node2;
+                    var tnode = yl.Node2;
+
                     if (tnode == null) continue; //invalid links could hit here
                     var tvert = new EditorVertex();
                     tvert.Position = tnode.Position;

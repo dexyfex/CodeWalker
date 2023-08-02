@@ -8630,7 +8630,11 @@ namespace CodeWalker.Project
 
             if (WorldForm != null)
             {
-                WorldForm.UpdatePathYndGraphics(ynd, true); //links don't get drawn until something changes otherwise
+                // TODO: Wasteful -- be smarter about this
+                foreach (var file in CurrentProjectFile.YndFiles)
+                {
+                    WorldForm.UpdatePathYndGraphics(file, true); //links don't get drawn until something changes otherwise
+                }
                 //note: this is actually necessary to properly populate junctions data........
             }
         }
