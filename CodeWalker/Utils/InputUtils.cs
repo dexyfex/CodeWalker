@@ -260,6 +260,8 @@ namespace CodeWalker
         public Keys EditScale = Keys.R;
         public Keys Jump = Keys.Space; //for control mode
         public Keys FirstPerson = Keys.P;
+        public Keys CreateYndNodeLink = Keys.J;
+        public Keys CreateYndNodeShortcut = Keys.K;
 
         public KeyBindings(StringCollection sc)
         {
@@ -294,6 +296,8 @@ namespace CodeWalker
                 case "Edit Rotation": EditRotation = k; break;
                 case "Edit Scale": EditScale = k; break;
                 case "First Person Mode": FirstPerson = k; break;
+                case "Create Ynd Node Link": CreateYndNodeLink = k; break;
+                case "Create Ynd Node Shortcut": CreateYndNodeShortcut = k; break;
             }
         }
 
@@ -315,6 +319,8 @@ namespace CodeWalker
             sc.Add(GetSettingItem("Edit Rotation", EditRotation));
             sc.Add(GetSettingItem("Edit Scale", EditScale));
             sc.Add(GetSettingItem("First Person Mode", FirstPerson));
+            sc.Add(GetSettingItem("Create Ynd Node Link", CreateYndNodeLink));
+            sc.Add(GetSettingItem("Create Ynd Node Shortcut", CreateYndNodeShortcut));
             return sc;
         }
 

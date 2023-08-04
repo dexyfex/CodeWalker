@@ -4739,6 +4739,7 @@ namespace CodeWalker.Project
             foreach (var affectedFile in affectedFiles)
             {
                 AddYndToProject(affectedFile);
+                SetYndHasChanged(affectedFile, true);
             }
 
             if (copy == null)
@@ -4843,7 +4844,7 @@ namespace CodeWalker.Project
             var delnode = CurrentPathNode;
 
             ProjectExplorer?.RemovePathNodeTreeNode(CurrentPathNode);
-            ProjectExplorer?.SetYndHasChanged(CurrentYndFile, true);
+            SetYndHasChanged(CurrentYndFile, true);
 
             ClosePanel((EditYndNodePanel p) => { return p.Tag == delnode; });
 
@@ -4858,6 +4859,7 @@ namespace CodeWalker.Project
                 {
                     WorldForm.UpdatePathYndGraphics(affectedFile, false);
                     AddYndToProject(affectedFile);
+                    SetYndHasChanged(affectedFile, true, true);
                 }
 
                 WorldForm.SelectItem(null);
@@ -8449,16 +8451,21 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
-        public void SetYndHasChanged(bool changed)
+
+        public void SetYndHasChanged(bool changed, bool force = false)
         {
-            if (CurrentYndFile == null) return;
+            SetYndHasChanged(CurrentYndFile, changed, force);
+        }
+        public void SetYndHasChanged(YndFile yndFile, bool changed, bool force = false)
+        {
+            if (yndFile == null) return;
 
-            bool changechange = changed != CurrentYndFile.HasChanged;
-            if (!changechange) return;
+            bool changechange = changed != yndFile.HasChanged;
+            if (!force && !changechange) return;
 
-            CurrentYndFile.HasChanged = changed;
+            yndFile.HasChanged = changed;
 
-            ProjectExplorer?.SetYndHasChanged(CurrentYndFile, changed);
+            ProjectExplorer?.SetYndHasChanged(yndFile, changed);
 
             PromoteIfPreviewPanelActive();
         }
@@ -8633,6 +8640,16 @@ namespace CodeWalker.Project
                 // TODO: Wasteful -- be smarter about this
                 foreach (var file in CurrentProjectFile.YndFiles)
                 {
+                    foreach (var affected in WorldForm.Space.GetYndFilesThatDependOnYndFile(file))
+                    {
+                        if (CurrentProjectFile.ContainsYnd(affected))
+                        {
+                            continue;
+                        }
+
+                        WorldForm.UpdatePathYndGraphics(affected, true);
+                    }
+
                     WorldForm.UpdatePathYndGraphics(file, true); //links don't get drawn until something changes otherwise
                 }
                 //note: this is actually necessary to properly populate junctions data........

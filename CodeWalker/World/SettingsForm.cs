@@ -62,6 +62,8 @@ namespace CodeWalker.World
             AddKeyBinding("Edit Rotation", keyBindings.EditRotation);
             AddKeyBinding("Edit Scale", keyBindings.EditScale);
             AddKeyBinding("First Person Mode", keyBindings.FirstPerson);
+            AddKeyBinding("Create Ynd Node Link", keyBindings.CreateYndNodeLink);
+            AddKeyBinding("Create Ynd Node Shortcut", keyBindings.CreateYndNodeShortcut);
 
         }
         private void LoadMouseSettings()

@@ -1,4 +1,4 @@
-﻿using CodeWalker.GameFiles;
+using CodeWalker.GameFiles;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -694,9 +694,15 @@ namespace CodeWalker.World
 
         }
 
+        public YndFile[] GetYndFilesThatDependOnYndFile(YndFile file)
+        {
+            return AllYnds.Values.Where(y => y.Links.Any(l => l.Node2.AreaID == file.AreaID)).ToArray();
+        }
+
         public YndNode AddYndNode(YndFile file, out YndFile[] affectedFiles)
         {
             var totalAffectedFiles = new List<YndFile>();
+
             var n = file.AddNode(out var affectedNodes);
 
             foreach (var yndFile in AllYnds.Values

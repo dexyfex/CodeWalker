@@ -168,7 +168,7 @@ namespace CodeWalker.GameFiles
 
                     //LinkCount = node.LinkCountFlags.Value >> 3;
                     //LinkCountUnk = node.LinkCountFlags.Value & 7;
-                    byte lcflags = (byte)((node.LinkCount << 3) + (node.LinkCountUnk & 7));
+                    byte lcflags = (byte)((node.LinkCount << 3) | (node.LinkCountUnk & 7));
                     node._RawData.LinkCountFlags = lcflags;
 
                     nodes[i] = node.RawData;
@@ -661,12 +661,12 @@ namespace CodeWalker.GameFiles
     {
         None = 0,
         ParkingSpace = 2,
-        PedRoadCrossing = 10,
-        PedNodeUnk = 14,
+        PedNodeRoadCrossing = 10,
+        PedNodeGuidePlayer = 14,
         TrafficLightJunctionStop = 15,
         StopSign = 16,
         Caution = 17,
-        PedRoadCrossing2Unk = 18,
+        PedRoadCrossingNoWait = 18,
         RestrictedAccess = 19,
         OffRoadJunction = 20
     }
@@ -710,11 +710,11 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                return (YndNodeSpeed)(this.LinkCountUnk >> 1);
+                return (YndNodeSpeed)((this.LinkCountUnk >> 1) & 3);
             }
             set
             {
-                this.LinkCountUnk = (this.LinkCountUnk & 0x1F3) | ((int)value << 1);
+                this.LinkCountUnk = (this.LinkCountUnk &~ 6) | (((int)value & 3) << 1);
             }
         }
 
@@ -840,7 +840,13 @@ namespace CodeWalker.GameFiles
         public int Density
         {
             get => Flags4.Value & 15;
-            set => Flags4 = (byte)((Flags4 &~0xF0) | (value & 15));
+            set => Flags4 = (byte)((Flags4 &~ 15) | (value & 15));
+        }
+
+        public int DeadEndness
+        {
+            get => Flags4.Value & 112;
+            set => Flags4 = (byte)((Flags4 & ~ 112) | (value & 112));
         }
 
         public bool LeftTurnsOnly
@@ -851,9 +857,9 @@ namespace CodeWalker.GameFiles
 
 
         public static bool IsSpecialTypeAPedNode(YndNodeSpecialType specialType)
-            => specialType == YndNodeSpecialType.PedRoadCrossing
-               || specialType == YndNodeSpecialType.PedNodeUnk
-               || specialType == YndNodeSpecialType.PedRoadCrossing2Unk;
+            => specialType == YndNodeSpecialType.PedNodeRoadCrossing
+               || specialType == YndNodeSpecialType.PedNodeGuidePlayer
+               || specialType == YndNodeSpecialType.PedRoadCrossingNoWait;
 
         /// <summary>
         /// If Special is 10, 14 or 18 this is a ped node.
@@ -961,6 +967,17 @@ namespace CodeWalker.GameFiles
             IsJunction = Links
                 .Where(l => !l.Shortcut)
                 .SelectMany(l => new[] { l.Node1, l.Node2 }).Distinct().Count() > 3;
+
+            if (!IsJunction && Special == YndNodeSpecialType.OffRoadJunction)
+            {
+                Special = YndNodeSpecialType.None;
+            }
+
+            if (IsJunction && Special == YndNodeSpecialType.None || Special == YndNodeSpecialType.OffRoadJunction)
+            {
+                var hasOffroadLink = Links.Any(l => l.Node2.OffRoad);
+                Special = hasOffroadLink ? YndNodeSpecialType.OffRoadJunction : YndNodeSpecialType.None;
+            }
         }
 
 
@@ -1057,32 +1074,37 @@ namespace CodeWalker.GameFiles
             return r;
         }
 
-        public void FloodCopyFlags()
+        public void FloodCopyFlags(out YndFile[] affectedFiles)
         {
-            FloodCopyFlags(this, new List<YndNode>());
+            FloodCopyFlags(this, new List<YndNode>(), out affectedFiles);
         }
 
-        private void FloodCopyFlags(YndNode basis, List<YndNode> seenNodes)
+        private void FloodCopyFlags(YndNode basis, List<YndNode> seenNodes, out YndFile[] affectedFiles)
         {
+            var affectedFilesList = new List<YndFile>();
             if (Links == null || !Links.Any())
             {
+                affectedFiles = Array.Empty<YndFile>();
                 return;
             }
 
             if (seenNodes.Contains(this))
             {
+                affectedFiles = Array.Empty<YndFile>();
                 return;
             }
 
             seenNodes.Add(this);
-            if (basis != this)
+            if (basis != this && !IsJunction)
             {
                 Flags0 = basis.Flags0;
                 Flags1 = basis.Flags1;
                 Flags2 = basis.Flags2;
                 Flags3 = basis.Flags3;
                 Flags4 = basis.Flags4;
-                LinkCountUnk = basis.LinkCountUnk;
+                LinkCountUnk = (LinkCountUnk &~ 7) | (basis.LinkCountUnk & 7);
+
+                affectedFilesList.Add(Ynd);
                 RecalculateHeuristic();
             }
 
@@ -1092,10 +1114,20 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var yndLink in Links)
                 {
-                    yndLink.Node1.FloodCopyFlags(basis, seenNodes);
-                    yndLink.Node2.FloodCopyFlags(basis, seenNodes);
+                    if (yndLink.Shortcut)
+                    {
+                        continue;
+                    }
+
+                    yndLink.Node1.FloodCopyFlags(basis, seenNodes, out var node1Files);
+                    yndLink.Node2.FloodCopyFlags(basis, seenNodes, out var node2Files);
+
+                    affectedFilesList.AddRange(node1Files);
+                    affectedFilesList.AddRange(node2Files);
                 }
             }
+
+            affectedFiles = affectedFilesList.Distinct().ToArray();
         }
 
         public override string ToString()
@@ -1109,7 +1141,18 @@ namespace CodeWalker.GameFiles
     {
         public YndFile Ynd { get; set; }
         public YndNode Node1 { get; set; }
-        public YndNode Node2 { get; set; }
+
+        private YndNode _node2;
+        public YndNode Node2
+        {
+            get => _node2;
+            set
+            {
+                _node2 = value;
+                UpdateTargetIndex();
+            }
+        }
+
         public NodeLink _RawData;
         public NodeLink RawData { get { return _RawData; } set { _RawData = value; } }
         public FlagsByte Flags0 { get { return _RawData.Flags0; } set { _RawData.Flags0 = value; } }
@@ -1129,14 +1172,24 @@ namespace CodeWalker.GameFiles
             set => Flags2 = (byte)((Flags2 &~0x1C) | ((value & 7) << 2));
         }
 
-        public int OffsetValue { get { return (Flags1.Value >> 4) & 7; } }
+        public int OffsetValue
+        {
+            get => (Flags1.Value >> 4) & 7;
+            set => Flags2 = (byte)((Flags2 & ~0x70) | ((value & 7) << 4));
+        }
+
         public bool NegativeOffset { get { return (Flags1.Value >> 7) > 0; } }
         public float LaneOffset { get { return (OffsetValue / 7.0f) * (NegativeOffset ? -0.5f : 0.5f); } }
 
         public bool GpsBothWays { get { return (Flags0 & 1) > 0; } }
         public bool NarrowRoad { get { return (Flags1 & 2) > 0; } }
         public bool DontUseForNavigation { get { return (Flags2 & 1) > 0; } }
-        public bool Shortcut { get { return (Flags2 & 2) > 0; } }
+
+        public bool Shortcut
+        {
+            get { return (Flags2 & 2) > 0; }
+            set => Flags2 = value ? (byte)(Flags2 | 2) : (byte)(Flags2 &~ 2);
+        }
 
 
         public void Init(YndFile ynd, YndNode node1, YndNode node2, NodeLink link)
@@ -1211,11 +1264,24 @@ namespace CodeWalker.GameFiles
 
             var c = new Color4(0.0f, 0.0f, 0.0f, 0.5f);
 
+            if (Shortcut)
+            {
+                c.Blue = 0.2f;
+                c.Green = 0.2f;
+                return c;
+            }
+
             if (Node1.IsDisabledUnk0 
                 || Node1.IsDisabledUnk1 
                 || Node2.IsDisabledUnk0 
                 || Node2.IsDisabledUnk1)
             {
+                if (Node1.OffRoad || Node2.OffRoad)
+                {
+                    c.Red = 0.0196f;
+                    c.Green = 0.0156f;
+                    c.Blue = 0.0043f;
+                }
                 c.Red = 0.02f;
                 return c;
             }
@@ -1227,10 +1293,11 @@ namespace CodeWalker.GameFiles
                 return c;
             }
 
-            if (Shortcut)
+            if (Node1.OffRoad || Node2.OffRoad)
             {
-                c.Blue = 0.2f;
-                c.Green = 0.2f;
+                c.Red = 0.196f;
+                c.Green = 0.156f;
+                c.Blue = 0.043f;
                 return c;
             }
 
@@ -1279,6 +1346,12 @@ namespace CodeWalker.GameFiles
             var p1 = Node2?.Position ?? Vector3.Zero;
             var diff = p1 - p0;
             return Vector3.Normalize(diff);
+        }
+
+        public void UpdateTargetIndex()
+        {
+            _RawData.AreaID = Node2.AreaID;
+            _RawData.NodeID = Node2.NodeID;
         }
 
         public override string ToString()

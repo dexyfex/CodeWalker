@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Linq;
 using SharpDX;
 using SharpDX.XInput;
 using Device = SharpDX.Direct3D11.Device;
@@ -3599,6 +3600,9 @@ namespace CodeWalker
             {
                 ProjectForm.OnWorldSelectionChanged(SelectedItem);
             }
+
+            // If an item has been selected the user is likely to use a keybind. We need focus!
+            Focus();
         }
         public void SelectMulti(MapSelection[] items, bool addSelection = false, bool notifyProject = true)
         {
@@ -5234,6 +5238,7 @@ namespace CodeWalker
                 {
                     UpdatePathYndGraphics(affectedFile, false);
                     ProjectForm?.AddYndToProject(affectedFile);
+                    affectedFile.HasChanged = true;
                 }
 
 
@@ -5793,7 +5798,6 @@ namespace CodeWalker
             SubtitleLabel.Visible = true;
             SubtitleTimer.Interval = (int)(duration * 1000.0f);
             SubtitleTimer.Enabled = true;
-
         }
 
 
@@ -5809,10 +5813,81 @@ namespace CodeWalker
             }
         }
 
+        private void TryCreateNodeLink()
+        {
+            if (SelectionMode != MapSelectionMode.Path)
+            {
+                return;
+            }
 
+            var selection = SelectedItem.MultipleSelectionItems;
+            if (selection?.Length != 2)
+            {
+                MessageBox.Show("Please select 2 nodes to perform this action",
+                    "Join Failed.",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
+            var n1 = selection[0].PathNode;
+            var n2 = selection[1].PathNode;
+            if (n1 != null && n2 != null)
+            {
+                var link = n1.AddLink(n2);
+                if (link == null)
+                {
+                    MessageBox.Show("Failed to join nodes. The nodes are likely too far away!", "Join Failed.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
 
+                var copy = n1.Links.FirstOrDefault();
 
+                link.SetForwardLanesBidirectionally(copy?.LaneCountBackward ?? 1);
+                link.SetBackwardLanesBidirectionally(copy?.LaneCountForward ?? 1);
+                UpdatePathYndGraphics(n1.Ynd, false);
+                UpdatePathYndGraphics(n2.Ynd, false);
+            }
+        }
+
+        private void TryCreateNodeShortcut()
+        {
+            if (SelectionMode != MapSelectionMode.Path)
+            {
+                return;
+            }
+
+            var selection = SelectedItem.MultipleSelectionItems;
+            if (selection?.Length != 2)
+            {
+                MessageBox.Show("Please select 2 nodes to perform this action",
+                    "Join Failed.",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var n1 = selection[0].PathNode;
+            var n2 = selection[1].PathNode;
+            if (n1 != null && n2 != null)
+            {
+                var link = n1.AddLink(n2);
+                if (link == null)
+                {
+                    MessageBox.Show("Failed to join nodes. The nodes are likely too far away!", "Join Failed.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                link.SetForwardLanesBidirectionally(1);
+                link.Shortcut = true;
+
+                if (n2.TryGetLinkForNode(n1, out var backLink))
+                {
+                    backLink.Shortcut = true;
+                }
+
+                UpdatePathYndGraphics(n1.Ynd, false);
+                UpdatePathYndGraphics(n2.Ynd, false);
+            }
+        }
 
 
         private void StatsUpdateTimer_Tick(object sender, EventArgs e)
@@ -6218,6 +6293,15 @@ namespace CodeWalker
                     if (k == kb.FirstPerson)
                     {
                         SetControlMode((ControlMode == WorldControlMode.Free) ? WorldControlMode.Ped : WorldControlMode.Free);
+                    }
+                    if (k == kb.CreateYndNodeLink)
+                    {
+                        TryCreateNodeLink();
+                    }
+
+                    if (k == kb.CreateYndNodeShortcut)
+                    {
+                        TryCreateNodeShortcut();
                     }
                     if (k == Keys.Delete)
                     {
