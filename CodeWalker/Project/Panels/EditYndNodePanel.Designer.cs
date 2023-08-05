@@ -117,7 +117,6 @@
             this.PathNodeLinkOffsetSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label61 = new System.Windows.Forms.Label();
             this.PathNodeLinkFlags11CheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeLinkFlags18CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeLinkFlags12CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeLinkFlags13CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeLinkFlags14CheckBox = new System.Windows.Forms.CheckBox();
@@ -1287,7 +1286,6 @@
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkOffsetSizeUpDown);
             this.PathLinkFlags1GroupBox.Controls.Add(this.label61);
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags11CheckBox);
-            this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags18CheckBox);
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags12CheckBox);
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags13CheckBox);
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags14CheckBox);
@@ -1297,14 +1295,14 @@
             this.PathLinkFlags1GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathLinkFlags1GroupBox.Name = "PathLinkFlags1GroupBox";
             this.PathLinkFlags1GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathLinkFlags1GroupBox.Size = new System.Drawing.Size(200, 278);
+            this.PathLinkFlags1GroupBox.Size = new System.Drawing.Size(187, 241);
             this.PathLinkFlags1GroupBox.TabIndex = 17;
             this.PathLinkFlags1GroupBox.TabStop = false;
             this.PathLinkFlags1GroupBox.Text = "Flags 1";
             // 
             // PathNodeLinkOffsetSizeUpDown
             // 
-            this.PathNodeLinkOffsetSizeUpDown.Location = new System.Drawing.Point(105, 234);
+            this.PathNodeLinkOffsetSizeUpDown.Location = new System.Drawing.Point(68, 200);
             this.PathNodeLinkOffsetSizeUpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeLinkOffsetSizeUpDown.Maximum = new decimal(new int[] {
             7,
@@ -1319,12 +1317,12 @@
             // label61
             // 
             this.label61.AutoSize = true;
-            this.label61.Location = new System.Drawing.Point(9, 237);
+            this.label61.Location = new System.Drawing.Point(9, 202);
             this.label61.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label61.Name = "label61";
-            this.label61.Size = new System.Drawing.Size(89, 20);
+            this.label61.Size = new System.Drawing.Size(57, 20);
             this.label61.TabIndex = 38;
-            this.label61.Text = "Offset size:";
+            this.label61.Text = "Offset:";
             // 
             // PathNodeLinkFlags11CheckBox
             // 
@@ -1337,18 +1335,6 @@
             this.PathNodeLinkFlags11CheckBox.Text = "Unused 1";
             this.PathNodeLinkFlags11CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeLinkFlags11CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags11CheckBox_CheckedChanged);
-            // 
-            // PathNodeLinkFlags18CheckBox
-            // 
-            this.PathNodeLinkFlags18CheckBox.AutoSize = true;
-            this.PathNodeLinkFlags18CheckBox.Location = new System.Drawing.Point(9, 198);
-            this.PathNodeLinkFlags18CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeLinkFlags18CheckBox.Name = "PathNodeLinkFlags18CheckBox";
-            this.PathNodeLinkFlags18CheckBox.Size = new System.Drawing.Size(142, 24);
-            this.PathNodeLinkFlags18CheckBox.TabIndex = 37;
-            this.PathNodeLinkFlags18CheckBox.Text = "Negative offset";
-            this.PathNodeLinkFlags18CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeLinkFlags18CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags18CheckBox_CheckedChanged);
             // 
             // PathNodeLinkFlags12CheckBox
             // 
@@ -2054,7 +2040,6 @@
         private System.Windows.Forms.NumericUpDown PathNodeLinkOffsetSizeUpDown;
         private System.Windows.Forms.Label label61;
         private System.Windows.Forms.CheckBox PathNodeLinkFlags11CheckBox;
-        private System.Windows.Forms.CheckBox PathNodeLinkFlags18CheckBox;
         private System.Windows.Forms.CheckBox PathNodeLinkFlags12CheckBox;
         private System.Windows.Forms.CheckBox PathNodeLinkFlags13CheckBox;
         private System.Windows.Forms.CheckBox PathNodeLinkFlags14CheckBox;

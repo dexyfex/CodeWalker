@@ -291,8 +291,7 @@ namespace CodeWalker.Project.Panels
                 PathNodeLinkFlags12CheckBox.Checked = BitUtil.IsBitSet(flags1, 1);
                 PathNodeLinkFlags13CheckBox.Checked = BitUtil.IsBitSet(flags1, 2);
                 PathNodeLinkFlags14CheckBox.Checked = BitUtil.IsBitSet(flags1, 3);
-                PathNodeLinkOffsetSizeUpDown.Value = (flags1 >> 4) & 7;
-                PathNodeLinkFlags18CheckBox.Checked = BitUtil.IsBitSet(flags1, 7);
+                PathNodeLinkOffsetSizeUpDown.Value = (flags1 >> 4) & 15;
 
                 PathNodeLinkFlags21CheckBox.Checked = BitUtil.IsBitSet(flags2, 0);
                 PathNodeLinkFlags22CheckBox.Checked = BitUtil.IsBitSet(flags2, 1);
@@ -483,8 +482,7 @@ namespace CodeWalker.Project.Panels
             flags1 = BitUtil.UpdateBit(flags1, 1, PathNodeLinkFlags12CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 2, PathNodeLinkFlags13CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 3, PathNodeLinkFlags14CheckBox.Checked);
-            flags1 += (((uint)PathNodeLinkOffsetSizeUpDown.Value & 7u) << 4);
-            flags1 = BitUtil.UpdateBit(flags1, 7, PathNodeLinkFlags18CheckBox.Checked);
+            flags1 += (byte)new ByteConverter().ConvertTo(((int)PathNodeLinkOffsetSizeUpDown.Value & 15) << 3, typeof(uint));
 
             flags2 = BitUtil.UpdateBit(flags2, 0, PathNodeLinkFlags21CheckBox.Checked);
             flags2 = BitUtil.UpdateBit(flags2, 1, PathNodeLinkFlags22CheckBox.Checked);
