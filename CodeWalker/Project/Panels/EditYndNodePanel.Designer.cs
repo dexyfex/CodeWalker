@@ -217,7 +217,7 @@
             this.PathNodeTabControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeTabControl.Name = "PathNodeTabControl";
             this.PathNodeTabControl.SelectedIndex = 0;
-            this.PathNodeTabControl.Size = new System.Drawing.Size(909, 688);
+            this.PathNodeTabControl.Size = new System.Drawing.Size(909, 705);
             this.PathNodeTabControl.TabIndex = 29;
             // 
             // PathNodePropertiesTabPage
@@ -249,7 +249,7 @@
             this.PathNodePropertiesTabPage.Location = new System.Drawing.Point(4, 29);
             this.PathNodePropertiesTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodePropertiesTabPage.Name = "PathNodePropertiesTabPage";
-            this.PathNodePropertiesTabPage.Size = new System.Drawing.Size(901, 655);
+            this.PathNodePropertiesTabPage.Size = new System.Drawing.Size(901, 672);
             this.PathNodePropertiesTabPage.TabIndex = 2;
             this.PathNodePropertiesTabPage.Text = "Node Properties";
             this.PathNodePropertiesTabPage.UseVisualStyleBackColor = true;
@@ -317,7 +317,7 @@
             this.PathNodeFlags5GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags5GroupBox.Name = "PathNodeFlags5GroupBox";
             this.PathNodeFlags5GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeFlags5GroupBox.Size = new System.Drawing.Size(334, 129);
+            this.PathNodeFlags5GroupBox.Size = new System.Drawing.Size(334, 146);
             this.PathNodeFlags5GroupBox.TabIndex = 48;
             this.PathNodeFlags5GroupBox.TabStop = false;
             this.PathNodeFlags5GroupBox.Text = "Flags 5";
@@ -480,7 +480,7 @@
             this.PathNodeFlags3GroupBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags3GroupBox.Name = "PathNodeFlags3GroupBox";
             this.PathNodeFlags3GroupBox.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeFlags3GroupBox.Size = new System.Drawing.Size(334, 129);
+            this.PathNodeFlags3GroupBox.Size = new System.Drawing.Size(334, 146);
             this.PathNodeFlags3GroupBox.TabIndex = 46;
             this.PathNodeFlags3GroupBox.TabStop = false;
             this.PathNodeFlags3GroupBox.Text = "Flags 3";
@@ -804,9 +804,9 @@
             this.PathNodeFlags08CheckBox.Location = new System.Drawing.Point(9, 295);
             this.PathNodeFlags08CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags08CheckBox.Name = "PathNodeFlags08CheckBox";
-            this.PathNodeFlags08CheckBox.Size = new System.Drawing.Size(135, 24);
+            this.PathNodeFlags08CheckBox.Size = new System.Drawing.Size(137, 24);
             this.PathNodeFlags08CheckBox.TabIndex = 42;
-            this.PathNodeFlags08CheckBox.Text = "Cannot go left";
+            this.PathNodeFlags08CheckBox.Text = "CannotGoLeft";
             this.PathNodeFlags08CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags08CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags08CheckBox_CheckedChanged);
             // 
@@ -816,9 +816,9 @@
             this.PathNodeFlags02CheckBox.Location = new System.Drawing.Point(9, 102);
             this.PathNodeFlags02CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags02CheckBox.Name = "PathNodeFlags02CheckBox";
-            this.PathNodeFlags02CheckBox.Size = new System.Drawing.Size(130, 24);
+            this.PathNodeFlags02CheckBox.Size = new System.Drawing.Size(132, 24);
             this.PathNodeFlags02CheckBox.TabIndex = 36;
-            this.PathNodeFlags02CheckBox.Text = "GPS enable?";
+            this.PathNodeFlags02CheckBox.Text = "GPS Enabled";
             this.PathNodeFlags02CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags02CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags02CheckBox_CheckedChanged);
             // 
@@ -828,9 +828,9 @@
             this.PathNodeFlags07CheckBox.Location = new System.Drawing.Point(9, 263);
             this.PathNodeFlags07CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags07CheckBox.Name = "PathNodeFlags07CheckBox";
-            this.PathNodeFlags07CheckBox.Size = new System.Drawing.Size(144, 24);
+            this.PathNodeFlags07CheckBox.Size = new System.Drawing.Size(147, 24);
             this.PathNodeFlags07CheckBox.TabIndex = 41;
-            this.PathNodeFlags07CheckBox.Text = "Cannot go right";
+            this.PathNodeFlags07CheckBox.Text = "CannotGoRight";
             this.PathNodeFlags07CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags07CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags07CheckBox_CheckedChanged);
             // 
@@ -1891,7 +1891,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(914, 694);
+            this.ClientSize = new System.Drawing.Size(914, 711);
             this.Controls.Add(this.PathNodeTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
