@@ -142,6 +142,7 @@
             this.PathNodeJunctionTabPage = new System.Windows.Forms.TabPage();
             this.label78 = new System.Windows.Forms.Label();
             this.PathNodeJunctionPanel = new System.Windows.Forms.Panel();
+            this.YndNodeJunctionGenerateButton = new System.Windows.Forms.Button();
             this.PathNodeJunctionPosYUpDown = new System.Windows.Forms.NumericUpDown();
             this.label59 = new System.Windows.Forms.Label();
             this.PathNodeJunctionPosXUpDown = new System.Windows.Forms.NumericUpDown();
@@ -156,7 +157,6 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
-            this.YndNodeJunctionGenerateButton = new System.Windows.Forms.Button();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -387,10 +387,10 @@
             // 
             // PathNodeFlags44UpDown
             // 
-            this.PathNodeFlags44UpDown.Location = new System.Drawing.Point(124, 71);
+            this.PathNodeFlags44UpDown.Location = new System.Drawing.Point(124, 100);
             this.PathNodeFlags44UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags44UpDown.Maximum = new decimal(new int[] {
-            15,
+            7,
             0,
             0,
             0});
@@ -402,7 +402,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(5, 73);
+            this.label3.Location = new System.Drawing.Point(5, 102);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(113, 20);
@@ -412,7 +412,7 @@
             // PathNodeFlags48CheckBox
             // 
             this.PathNodeFlags48CheckBox.AutoSize = true;
-            this.PathNodeFlags48CheckBox.Location = new System.Drawing.Point(9, 140);
+            this.PathNodeFlags48CheckBox.Location = new System.Drawing.Point(44, 145);
             this.PathNodeFlags48CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags48CheckBox.Name = "PathNodeFlags48CheckBox";
             this.PathNodeFlags48CheckBox.Size = new System.Drawing.Size(126, 24);
@@ -423,7 +423,7 @@
             // 
             // PathNodeFlags42UpDown
             // 
-            this.PathNodeFlags42UpDown.Location = new System.Drawing.Point(124, 104);
+            this.PathNodeFlags42UpDown.Location = new System.Drawing.Point(124, 64);
             this.PathNodeFlags42UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags42UpDown.Maximum = new decimal(new int[] {
             15,
@@ -438,7 +438,7 @@
             // label71
             // 
             this.label71.AutoSize = true;
-            this.label71.Location = new System.Drawing.Point(52, 106);
+            this.label71.Location = new System.Drawing.Point(52, 66);
             this.label71.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label71.Name = "label71";
             this.label71.Size = new System.Drawing.Size(66, 20);
@@ -447,6 +447,7 @@
             // 
             // PathNodeFlags4UpDown
             // 
+            this.PathNodeFlags4UpDown.Enabled = false;
             this.PathNodeFlags4UpDown.Location = new System.Drawing.Point(9, 29);
             this.PathNodeFlags4UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags4UpDown.Maximum = new decimal(new int[] {
@@ -665,6 +666,7 @@
             // 
             // PathNodeFlags2UpDown
             // 
+            this.PathNodeFlags2UpDown.Enabled = false;
             this.PathNodeFlags2UpDown.Location = new System.Drawing.Point(9, 29);
             this.PathNodeFlags2UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags2UpDown.Maximum = new decimal(new int[] {
@@ -741,6 +743,7 @@
             // 
             // PathNodeFlags1UpDown
             // 
+            this.PathNodeFlags1UpDown.Enabled = false;
             this.PathNodeFlags1UpDown.Location = new System.Drawing.Point(9, 29);
             this.PathNodeFlags1UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags1UpDown.Maximum = new decimal(new int[] {
@@ -882,6 +885,7 @@
             // 
             // PathNodeFlags0UpDown
             // 
+            this.PathNodeFlags0UpDown.Enabled = false;
             this.PathNodeFlags0UpDown.Location = new System.Drawing.Point(9, 29);
             this.PathNodeFlags0UpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeFlags0UpDown.Maximum = new decimal(new int[] {
@@ -1652,6 +1656,16 @@
             this.PathNodeJunctionPanel.Size = new System.Drawing.Size(735, 583);
             this.PathNodeJunctionPanel.TabIndex = 1;
             // 
+            // YndNodeJunctionGenerateButton
+            // 
+            this.YndNodeJunctionGenerateButton.Location = new System.Drawing.Point(86, 266);
+            this.YndNodeJunctionGenerateButton.Name = "YndNodeJunctionGenerateButton";
+            this.YndNodeJunctionGenerateButton.Size = new System.Drawing.Size(129, 51);
+            this.YndNodeJunctionGenerateButton.TabIndex = 55;
+            this.YndNodeJunctionGenerateButton.Text = "Generate";
+            this.YndNodeJunctionGenerateButton.UseVisualStyleBackColor = true;
+            this.YndNodeJunctionGenerateButton.Click += new System.EventHandler(this.YndNodeJunctionGenerateButton_Click);
+            // 
             // PathNodeJunctionPosYUpDown
             // 
             this.PathNodeJunctionPosYUpDown.DecimalPlaces = 5;
@@ -1886,16 +1900,6 @@
             this.PathNodeJunctionEnableCheckBox.Text = "Enable Junction Heightmap";
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
-            // 
-            // YndNodeJunctionGenerateButton
-            // 
-            this.YndNodeJunctionGenerateButton.Location = new System.Drawing.Point(86, 266);
-            this.YndNodeJunctionGenerateButton.Name = "YndNodeJunctionGenerateButton";
-            this.YndNodeJunctionGenerateButton.Size = new System.Drawing.Size(129, 51);
-            this.YndNodeJunctionGenerateButton.TabIndex = 55;
-            this.YndNodeJunctionGenerateButton.Text = "Generate";
-            this.YndNodeJunctionGenerateButton.UseVisualStyleBackColor = true;
-            this.YndNodeJunctionGenerateButton.Click += new System.EventHandler(this.YndNodeJunctionGenerateButton_Click);
             // 
             // EditYndNodePanel
             // 

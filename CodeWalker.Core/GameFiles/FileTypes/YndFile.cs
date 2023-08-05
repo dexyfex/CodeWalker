@@ -662,7 +662,7 @@ namespace CodeWalker.GameFiles
         None = 0,
         ParkingSpace = 2,
         PedNodeRoadCrossing = 10,
-        PedNodeGuidePlayer = 14,
+        PedNodeAssistedMovement = 14,
         TrafficLightJunctionStop = 15,
         StopSign = 16,
         Caution = 17,
@@ -858,7 +858,7 @@ namespace CodeWalker.GameFiles
 
         public static bool IsSpecialTypeAPedNode(YndNodeSpecialType specialType)
             => specialType == YndNodeSpecialType.PedNodeRoadCrossing
-               || specialType == YndNodeSpecialType.PedNodeGuidePlayer
+               || specialType == YndNodeSpecialType.PedNodeAssistedMovement
                || specialType == YndNodeSpecialType.PedRoadCrossingNoWait;
 
         /// <summary>
