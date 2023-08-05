@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -495,7 +496,6 @@ namespace CodeWalker.World
             }
 
             //string str = sb.ToString();
-
         }
 
         private void AddRpfYnds(RpfFile rpffile, Dictionary<uint, RpfFileEntry> yndentries)
@@ -795,6 +795,64 @@ namespace CodeWalker.World
             }
 
             affectedFiles = files.ToArray();
+        }
+
+        public void GenerateYndNodeJunctionHeightMap(YndNode node)
+        {
+            if (node.Junction == null)
+            {
+                node.Junction = new YndJunction();
+            }
+
+            var junc = node.Junction;
+            var maxZ = junc.MaxZ / 32f;
+            var minZ = junc.MinZ / 32f;
+            var xStart = junc.PositionX / 4f;
+            var yStart = junc.PositionY / 4f;
+            var sizeX = junc._RawData.HeightmapDimX;
+            var sizeY = junc._RawData.HeightmapDimY;
+
+            var start = new Vector3(xStart, yStart, maxZ);
+            var layers = new[] { true, false, false };
+
+            var maxDist = maxZ - minZ;
+
+            StringBuilder t = new StringBuilder();
+
+            var sb = new StringBuilder();
+
+            for (int y = 0; y < sizeY; y++)
+            {
+                var offy = y * 2.0f;
+                for (int x = 0; x < sizeX; x++)
+                {
+                    var offx = x * 2.0f;
+                    var result = RayIntersect(new Ray(start + new Vector3(offx, offy, 0f), Vector3.UnitZ * -1), maxDist);
+
+                    var p = start + new Vector3(offx, offy, 0f) + Vector3.UnitZ * -1 * maxDist;
+                    t.AppendLine($"{p.X}, {p.Y}, {p.Z}");
+                    if (!result.Hit)
+                    {
+                        sb.Append("0 ");
+                        continue;
+                    }
+
+                    var actualDist = (byte)(result.HitDist / maxDist * 255);
+                    sb.Append(actualDist);
+                    sb.Append(' ');
+                }
+
+                // Remove trailing space
+                sb.Remove(sb.Length - 1, 1);
+                sb.AppendLine();
+            }
+
+            // Remove trailing new line
+            sb.Remove(sb.Length - 1, 1);
+
+            var tt = t.ToString();
+
+            junc.SetHeightmap(sb.ToString());
         }
 
         private void InitNavGrid()

@@ -156,6 +156,7 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
+            this.YndNodeJunctionGenerateButton = new System.Windows.Forms.Button();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -1630,6 +1631,7 @@
             this.PathNodeJunctionPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.PathNodeJunctionPanel.Controls.Add(this.YndNodeJunctionGenerateButton);
             this.PathNodeJunctionPanel.Controls.Add(this.PathNodeJunctionPosYUpDown);
             this.PathNodeJunctionPanel.Controls.Add(this.label59);
             this.PathNodeJunctionPanel.Controls.Add(this.PathNodeJunctionPosXUpDown);
@@ -1652,18 +1654,24 @@
             // 
             // PathNodeJunctionPosYUpDown
             // 
+            this.PathNodeJunctionPosYUpDown.DecimalPlaces = 5;
+            this.PathNodeJunctionPosYUpDown.Increment = new decimal(new int[] {
+            3125,
+            0,
+            0,
+            327680});
             this.PathNodeJunctionPosYUpDown.Location = new System.Drawing.Point(86, 125);
             this.PathNodeJunctionPosYUpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeJunctionPosYUpDown.Maximum = new decimal(new int[] {
-            32767,
+            102396875,
             0,
             0,
-            0});
+            327680});
             this.PathNodeJunctionPosYUpDown.Minimum = new decimal(new int[] {
-            32768,
+            102396875,
             0,
             0,
-            -2147483648});
+            -2147155968});
             this.PathNodeJunctionPosYUpDown.Name = "PathNodeJunctionPosYUpDown";
             this.PathNodeJunctionPosYUpDown.Size = new System.Drawing.Size(129, 26);
             this.PathNodeJunctionPosYUpDown.TabIndex = 53;
@@ -1681,18 +1689,24 @@
             // 
             // PathNodeJunctionPosXUpDown
             // 
+            this.PathNodeJunctionPosXUpDown.DecimalPlaces = 5;
+            this.PathNodeJunctionPosXUpDown.Increment = new decimal(new int[] {
+            3125,
+            0,
+            0,
+            327680});
             this.PathNodeJunctionPosXUpDown.Location = new System.Drawing.Point(86, 85);
             this.PathNodeJunctionPosXUpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeJunctionPosXUpDown.Maximum = new decimal(new int[] {
-            32767,
+            102396875,
             0,
             0,
-            0});
+            327680});
             this.PathNodeJunctionPosXUpDown.Minimum = new decimal(new int[] {
-            32768,
+            102396875,
             0,
             0,
-            -2147483648});
+            -2147155968});
             this.PathNodeJunctionPosXUpDown.Name = "PathNodeJunctionPosXUpDown";
             this.PathNodeJunctionPosXUpDown.Size = new System.Drawing.Size(129, 26);
             this.PathNodeJunctionPosXUpDown.TabIndex = 51;
@@ -1793,18 +1807,24 @@
             // 
             // PathNodeJunctionMinZUpDown
             // 
+            this.PathNodeJunctionMinZUpDown.DecimalPlaces = 5;
+            this.PathNodeJunctionMinZUpDown.Increment = new decimal(new int[] {
+            3125,
+            0,
+            0,
+            327680});
             this.PathNodeJunctionMinZUpDown.Location = new System.Drawing.Point(86, 45);
             this.PathNodeJunctionMinZUpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeJunctionMinZUpDown.Maximum = new decimal(new int[] {
-            32767,
+            102396875,
             0,
             0,
-            0});
+            327680});
             this.PathNodeJunctionMinZUpDown.Minimum = new decimal(new int[] {
-            32768,
+            102396875,
             0,
             0,
-            -2147483648});
+            -2147155968});
             this.PathNodeJunctionMinZUpDown.Name = "PathNodeJunctionMinZUpDown";
             this.PathNodeJunctionMinZUpDown.Size = new System.Drawing.Size(129, 26);
             this.PathNodeJunctionMinZUpDown.TabIndex = 32;
@@ -1822,18 +1842,24 @@
             // 
             // PathNodeJunctionMaxZUpDown
             // 
+            this.PathNodeJunctionMaxZUpDown.DecimalPlaces = 5;
+            this.PathNodeJunctionMaxZUpDown.Increment = new decimal(new int[] {
+            3125,
+            0,
+            0,
+            327680});
             this.PathNodeJunctionMaxZUpDown.Location = new System.Drawing.Point(86, 5);
             this.PathNodeJunctionMaxZUpDown.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeJunctionMaxZUpDown.Maximum = new decimal(new int[] {
-            32767,
+            102396875,
             0,
             0,
-            0});
+            327680});
             this.PathNodeJunctionMaxZUpDown.Minimum = new decimal(new int[] {
-            32768,
+            102396875,
             0,
             0,
-            -2147483648});
+            -2147155968});
             this.PathNodeJunctionMaxZUpDown.Name = "PathNodeJunctionMaxZUpDown";
             this.PathNodeJunctionMaxZUpDown.Size = new System.Drawing.Size(129, 26);
             this.PathNodeJunctionMaxZUpDown.TabIndex = 30;
@@ -1860,6 +1886,16 @@
             this.PathNodeJunctionEnableCheckBox.Text = "Enable Junction Heightmap";
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
+            // 
+            // YndNodeJunctionGenerateButton
+            // 
+            this.YndNodeJunctionGenerateButton.Location = new System.Drawing.Point(86, 266);
+            this.YndNodeJunctionGenerateButton.Name = "YndNodeJunctionGenerateButton";
+            this.YndNodeJunctionGenerateButton.Size = new System.Drawing.Size(129, 51);
+            this.YndNodeJunctionGenerateButton.TabIndex = 55;
+            this.YndNodeJunctionGenerateButton.Text = "Generate";
+            this.YndNodeJunctionGenerateButton.UseVisualStyleBackColor = true;
+            this.YndNodeJunctionGenerateButton.Click += new System.EventHandler(this.YndNodeJunctionGenerateButton_Click);
             // 
             // EditYndNodePanel
             // 
@@ -2065,5 +2101,6 @@
         private System.Windows.Forms.Button PathNodeFloodCopyButton;
         private System.Windows.Forms.NumericUpDown PathNodeFlags44UpDown;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button YndNodeJunctionGenerateButton;
     }
 }
