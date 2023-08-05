@@ -417,7 +417,7 @@ namespace CodeWalker.GameFiles
 
             UpdateLinkTriangleVertices();
 
-            UpdateJunctionTriangleVertices();
+            //UpdateJunctionTriangleVertices();
         }
 
         private void UpdateLinkTriangleVertices()
