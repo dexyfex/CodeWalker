@@ -1170,8 +1170,8 @@ namespace CodeWalker.Project.Panels
                         //init new junction
                         j._RawData.HeightmapDimX = 16;
                         j._RawData.HeightmapDimY = 16;
-                        j.MaxZ = (short)(CurrentPathNode.Position.Z * 32 + 16);
-                        j.MinZ = (short)(CurrentPathNode.Position.Z * 32 - 16);
+                        j.MaxZ = (short)(CurrentPathNode.Position.Z * 32 + 32);
+                        j.MinZ = (short)(CurrentPathNode.Position.Z * 32 - 32);
                         j.PositionX = (short)(CurrentPathNode.Position.X * 4f - j.RawData.HeightmapDimY * 4f);
                         j.PositionY = (short)(CurrentPathNode.Position.Y * 4f - j.RawData.HeightmapDimY * 4f);
                         j.Heightmap = new YndJunctionHeightmap(Enumerable.Repeat((byte)255, j._RawData.HeightmapDimX * j._RawData.HeightmapDimY).ToArray(), j);

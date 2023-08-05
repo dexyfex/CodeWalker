@@ -824,20 +824,25 @@ namespace CodeWalker.World
             for (int y = 0; y < sizeY; y++)
             {
                 var offy = y * 2.0f;
+
                 for (int x = 0; x < sizeX; x++)
                 {
                     var offx = x * 2.0f;
-                    var result = RayIntersect(new Ray(start + new Vector3(offx, offy, 0f), Vector3.UnitZ * -1), maxDist);
+                    var result = RayIntersect(new Ray(start + new Vector3(offx, offy, 0f), new Vector3(0f, 0f, -1f)), maxDist, layers);
 
-                    var p = start + new Vector3(offx, offy, 0f) + Vector3.UnitZ * -1 * maxDist;
-                    t.AppendLine($"{p.X}, {p.Y}, {p.Z}");
+                    var p = start + new Vector3(offx, offy, 0f);
+                    //t.AppendLine($"{p.X}, {p.Y}, {p.Z}");
+
                     if (!result.Hit)
                     {
-                        sb.Append("0 ");
+                        sb.Append("000 ");
                         continue;
                     }
 
-                    var actualDist = (byte)(result.HitDist / maxDist * 255);
+                    t.AppendLine($"{result.Position.X}, {result.Position.Y}, {result.Position.Z}");
+
+                    var height = Math.Min(Math.Max(result.Position.Z, minZ), maxZ);
+                    var actualDist = (byte)((height - minZ) / maxDist * 255);
                     sb.Append(actualDist);
                     sb.Append(' ');
                 }
@@ -1197,6 +1202,11 @@ namespace CodeWalker.World
             for (int i = 0; i < items.Count; i++)
             {
                 var item = items[i];
+                if (item == null)
+                {
+                    continue;
+                }
+
                 var hash = item.Name;
                 if (!ymaps.ContainsKey(hash))
                 {
@@ -1324,6 +1334,10 @@ namespace CodeWalker.World
             for (int i = 0; i < mapdatalist.Count; i++)
             {
                 var mapdata = mapdatalist[i];
+                if (mapdata == null)
+                {
+                    continue;
+                }
                 if ((mapdata.ContentFlags & 1) == 0)
                 { continue; } //only test HD ymaps
 
