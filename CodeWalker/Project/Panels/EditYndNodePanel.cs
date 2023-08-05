@@ -123,8 +123,8 @@ namespace CodeWalker.Project.Panels
                 PathNodesSpeedComboBox.SelectedItem = CurrentPathNode.Speed;
 
                 PathNodeEnableDisableButton.Text = CurrentPathNode.IsDisabledUnk0
-                    ? "Enable Road"
-                    : "Disable Road";
+                    ? "Enable Section"
+                    : "Disable Section";
             }
         }
 
@@ -1441,24 +1441,29 @@ namespace CodeWalker.Project.Panels
                 return;
             }
 
-            CurrentPathNode.IsDisabledUnk0 = !CurrentPathNode.IsDisabledUnk0;
-            CurrentPathNode.IsDisabledUnk1 = CurrentPathNode.IsDisabledUnk0;
-            CurrentPathNode.FloodCopyFlags(out var affectedFiles);
-
-            PathNodeEnableDisableButton.Text = CurrentPathNode.IsDisabledUnk0
-                ? "Enable Road"
-                : "Disable Road";
-
-            ProjectForm.AddYndToProject(CurrentYndFile);
-            ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
-
-            foreach (var affectedFile in affectedFiles)
+            lock (ProjectForm.ProjectSyncRoot)
             {
-                ProjectForm.AddYndToProject(affectedFile);
-                ProjectForm.SetYndHasChanged(affectedFile, true);
-                ProjectForm.WorldForm.UpdatePathYndGraphics(affectedFile, false);
+                CurrentPathNode.IsDisabledUnk0 = !CurrentPathNode.IsDisabledUnk0;
+                CurrentPathNode.IsDisabledUnk1 = CurrentPathNode.IsDisabledUnk0;
+                CurrentPathNode.FloodCopyFlags(out var affectedFiles);
+
+                PathNodeEnableDisableButton.Text = CurrentPathNode.IsDisabledUnk0
+                    ? "Enable Section"
+                    : "Disable Section";
+
+                ProjectForm.AddYndToProject(CurrentYndFile);
+                ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+
+                foreach (var affectedFile in affectedFiles)
+                {
+                    ProjectForm.AddYndToProject(affectedFile);
+                    ProjectForm.SetYndHasChanged(affectedFile, true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(affectedFile, false);
+                }
+
             }
 
+            UpdatePathNodeFlagsUI(true, false);
         }
 
         private void label61_Click(object sender, EventArgs e)

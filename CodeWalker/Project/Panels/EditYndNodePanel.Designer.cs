@@ -114,6 +114,7 @@
             this.PathNodeLinkFlags2UpDown = new System.Windows.Forms.NumericUpDown();
             this.PathNodeLinkFlags2Label = new System.Windows.Forms.Label();
             this.PathLinkFlags1GroupBox = new System.Windows.Forms.GroupBox();
+            this.PathNodeLinkFlags18CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeLinkOffsetSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label61 = new System.Windows.Forms.Label();
             this.PathNodeLinkFlags11CheckBox = new System.Windows.Forms.CheckBox();
@@ -156,7 +157,6 @@
             this.PathNodeJunctionMaxZUpDown = new System.Windows.Forms.NumericUpDown();
             this.label65 = new System.Windows.Forms.Label();
             this.PathNodeJunctionEnableCheckBox = new System.Windows.Forms.CheckBox();
-            this.PathNodeLinkFlags18CheckBox = new System.Windows.Forms.CheckBox();
             this.PathNodeTabControl.SuspendLayout();
             this.PathNodePropertiesTabPage.SuspendLayout();
             this.PathNodeFlags5GroupBox.SuspendLayout();
@@ -263,7 +263,7 @@
             this.PathNodeEnableDisableButton.Name = "PathNodeEnableDisableButton";
             this.PathNodeEnableDisableButton.Size = new System.Drawing.Size(135, 35);
             this.PathNodeEnableDisableButton.TabIndex = 53;
-            this.PathNodeEnableDisableButton.Text = "Enable Road";
+            this.PathNodeEnableDisableButton.Text = "Enable Section";
             this.PathNodeEnableDisableButton.UseVisualStyleBackColor = true;
             this.PathNodeEnableDisableButton.Click += new System.EventHandler(this.PathNodeEnableDisableButton_Click);
             // 
@@ -1302,6 +1302,18 @@
             this.PathLinkFlags1GroupBox.TabStop = false;
             this.PathLinkFlags1GroupBox.Text = "Flags 1";
             // 
+            // PathNodeLinkFlags18CheckBox
+            // 
+            this.PathNodeLinkFlags18CheckBox.AutoSize = true;
+            this.PathNodeLinkFlags18CheckBox.Location = new System.Drawing.Point(9, 200);
+            this.PathNodeLinkFlags18CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.PathNodeLinkFlags18CheckBox.Name = "PathNodeLinkFlags18CheckBox";
+            this.PathNodeLinkFlags18CheckBox.Size = new System.Drawing.Size(145, 24);
+            this.PathNodeLinkFlags18CheckBox.TabIndex = 40;
+            this.PathNodeLinkFlags18CheckBox.Text = "Negative Offset";
+            this.PathNodeLinkFlags18CheckBox.UseVisualStyleBackColor = true;
+            this.PathNodeLinkFlags18CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags18CheckBox_CheckedChanged);
+            // 
             // PathNodeLinkOffsetSizeUpDown
             // 
             this.PathNodeLinkOffsetSizeUpDown.Location = new System.Drawing.Point(68, 234);
@@ -1604,7 +1616,7 @@
             this.PathNodeJunctionTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.PathNodeJunctionTabPage.Name = "PathNodeJunctionTabPage";
             this.PathNodeJunctionTabPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeJunctionTabPage.Size = new System.Drawing.Size(901, 655);
+            this.PathNodeJunctionTabPage.Size = new System.Drawing.Size(901, 672);
             this.PathNodeJunctionTabPage.TabIndex = 1;
             this.PathNodeJunctionTabPage.Text = "Junction";
             this.PathNodeJunctionTabPage.UseVisualStyleBackColor = true;
@@ -1889,18 +1901,6 @@
             this.PathNodeJunctionEnableCheckBox.Text = "Enable Junction Heightmap";
             this.PathNodeJunctionEnableCheckBox.UseVisualStyleBackColor = true;
             this.PathNodeJunctionEnableCheckBox.CheckedChanged += new System.EventHandler(this.PathNodeJunctionEnableCheckBox_CheckedChanged);
-            // 
-            // PathNodeLinkFlags18CheckBox
-            // 
-            this.PathNodeLinkFlags18CheckBox.AutoSize = true;
-            this.PathNodeLinkFlags18CheckBox.Location = new System.Drawing.Point(9, 200);
-            this.PathNodeLinkFlags18CheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.PathNodeLinkFlags18CheckBox.Name = "PathNodeLinkFlags18CheckBox";
-            this.PathNodeLinkFlags18CheckBox.Size = new System.Drawing.Size(145, 24);
-            this.PathNodeLinkFlags18CheckBox.TabIndex = 40;
-            this.PathNodeLinkFlags18CheckBox.Text = "Negative Offset";
-            this.PathNodeLinkFlags18CheckBox.UseVisualStyleBackColor = true;
-            this.PathNodeLinkFlags18CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags18CheckBox_CheckedChanged);
             // 
             // EditYndNodePanel
             // 
