@@ -411,13 +411,12 @@ namespace CodeWalker.GameFiles
             NodePositions = np;
         }
 
-        public void UpdateTriangleVertices()
+        public void UpdateTriangleVertices(YndNode[] selectedNodes)
         {
             //note: called from space.BuildYndVerts()
 
             UpdateLinkTriangleVertices();
-
-            //UpdateJunctionTriangleVertices();
+            UpdateJunctionTriangleVertices(selectedNodes);
         }
 
         private void UpdateLinkTriangleVertices()
@@ -505,93 +504,79 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        private void UpdateJunctionTriangleVertices()
+        private void UpdateJunctionTriangleVertices(YndNode[] selectedNodes)
         {
-            //build triangles for the junctions bytes display....
-
-            int vc = 0;
-            if (Junctions != null)
+            if (selectedNodes == null)
             {
-                foreach (var j in Junctions)
-                {
-                    var d = j.Heightmap;
-                    if (d == null) continue;
-                    vc += d.CountX * d.CountY * 6;
-                }
+                return;
             }
 
-            List<EditorVertex> verts = new List<EditorVertex>(vc);
+            //build triangles for the junctions bytes display....
+            List<EditorVertex> verts = new List<EditorVertex>();
             EditorVertex v0 = new EditorVertex();
             EditorVertex v1 = new EditorVertex();
             EditorVertex v2 = new EditorVertex();
             EditorVertex v3 = new EditorVertex();
-            if (Nodes != null)
+
+            foreach (var node in selectedNodes)
             {
-                foreach (var node in Nodes)
+                if (node.Junction == null) continue;
+                var j = node.Junction;
+                var d = j.Heightmap;
+                if (d == null) continue;
+
+                float maxz = j.MaxZ / 32.0f;
+                float minz = j.MinZ / 32.0f;
+                float rngz = maxz - minz;
+                float posx = j.PositionX / 4.0f;
+                float posy = j.PositionY / 4.0f;
+
+                Vector3 pos = new Vector3(posx, posy, 0.0f);
+                Vector3 siz = new Vector3(d.CountX, d.CountY, 0.0f) * 2.0f;
+                //Vector3 siz = new Vector3(jx, jy, 0.0f);
+                Vector3 cnr = pos;// - siz * 0.5f;
+                                  //Vector3 inc = new Vector3(1.0f/jx)
+
+                cnr.Z = minz;// + 2.0f;
+
+                for (int y = 1; y < d.CountY; y++) //rows progress up the Y axis.
                 {
-                    if (node.Junction == null) continue;
-                    var j = node.Junction;
-                    var d = j.Heightmap;
-                    if (d == null) continue;
+                    var row0 = d.Rows[y - 1];
+                    var row1 = d.Rows[y];
+                    float offy = y * 2.0f;
 
-                    float maxz = j.MaxZ / 32.0f;
-                    float minz = j.MinZ / 32.0f;
-                    float rngz = maxz - minz;
-                    float posx = j.PositionX / 4.0f;
-                    float posy = j.PositionY / 4.0f;
-
-                    Vector3 pos = new Vector3(posx, posy, 0.0f);
-                    Vector3 siz = new Vector3(d.CountX, d.CountY, 0.0f) * 2.0f;
-                    //Vector3 siz = new Vector3(jx, jy, 0.0f);
-                    Vector3 cnr = pos;// - siz * 0.5f;
-                    //Vector3 inc = new Vector3(1.0f/jx)
-
-                    cnr.Z = minz;// + 2.0f;
-
-                    for (int y = 1; y < d.CountY; y++) //rows progress up the Y axis.
+                    for (int x = 1; x < d.CountX; x++) //values progress along the X axis.
                     {
-                        var row0 = d.Rows[y - 1];
-                        var row1 = d.Rows[y];
-                        float offy = y * 2.0f;
-
-                        for (int x = 1; x < d.CountX; x++) //values progress along the X axis.
-                        {
-                            var val0 = row0.Values[x - 1] / 255.0f;
-                            var val1 = row0.Values[x] / 255.0f;
-                            var val2 = row1.Values[x - 1] / 255.0f;
-                            var val3 = row1.Values[x] / 255.0f;
-                            float offx = x * 2.0f;
-                            v0.Position = cnr + new Vector3(offx - 2.0f, offy - 2.0f, val0 * rngz);
-                            v1.Position = cnr + new Vector3(offx + 0.0f, offy - 2.0f, val1 * rngz);
-                            v2.Position = cnr + new Vector3(offx - 2.0f, offy + 0.0f, val2 * rngz);
-                            v3.Position = cnr + new Vector3(offx + 0.0f, offy + 0.0f, val3 * rngz);
-                            v0.Colour = (uint)new Color4(val0, 1.0f - val0, 0.0f, 1.0f).ToRgba();
-                            v1.Colour = (uint)new Color4(val1, 1.0f - val1, 0.0f, 1.0f).ToRgba();
-                            v2.Colour = (uint)new Color4(val2, 1.0f - val2, 0.0f, 1.0f).ToRgba();
-                            v3.Colour = (uint)new Color4(val3, 1.0f - val3, 0.0f, 1.0f).ToRgba();
-                            verts.Add(v0);
-                            verts.Add(v1);
-                            verts.Add(v2);
-                            verts.Add(v2);
-                            verts.Add(v1);
-                            verts.Add(v3);
-                        }
+                        var val0 = row0.Values[x - 1] / 255.0f;
+                        var val1 = row0.Values[x] / 255.0f;
+                        var val2 = row1.Values[x - 1] / 255.0f;
+                        var val3 = row1.Values[x] / 255.0f;
+                        float offx = x * 2.0f;
+                        v0.Position = cnr + new Vector3(offx - 2.0f, offy - 2.0f, val0 * rngz);
+                        v1.Position = cnr + new Vector3(offx + 0.0f, offy - 2.0f, val1 * rngz);
+                        v2.Position = cnr + new Vector3(offx - 2.0f, offy + 0.0f, val2 * rngz);
+                        v3.Position = cnr + new Vector3(offx + 0.0f, offy + 0.0f, val3 * rngz);
+                        v0.Colour = (uint)new Color4(val0, 1.0f - val0, 0.0f, 1.0f).ToRgba();
+                        v1.Colour = (uint)new Color4(val1, 1.0f - val1, 0.0f, 1.0f).ToRgba();
+                        v2.Colour = (uint)new Color4(val2, 1.0f - val2, 0.0f, 1.0f).ToRgba();
+                        v3.Colour = (uint)new Color4(val3, 1.0f - val3, 0.0f, 1.0f).ToRgba();
+                        verts.Add(v0);
+                        verts.Add(v1);
+                        verts.Add(v2);
+                        verts.Add(v2);
+                        verts.Add(v1);
+                        verts.Add(v3);
                     }
-
-
                 }
             }
-
+            
             if (verts.Count > 0)
             {
-                TriangleVerts = verts.ToArray();
+                var newTriangles = new List<EditorVertex>(TriangleVerts.Length + verts.Count);
+                newTriangles.AddRange(TriangleVerts);
+                newTriangles.AddRange(verts);
+                TriangleVerts = newTriangles.ToArray();
             }
-            else
-            {
-                TriangleVerts = null;
-            }
-
-
         }
 
 

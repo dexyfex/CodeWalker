@@ -572,7 +572,7 @@ namespace CodeWalker.World
             ynd.Links = tlinks.ToArray();
 
         }
-        public void BuildYndVerts(YndFile ynd, List<EditorVertex> tverts = null)
+        public void BuildYndVerts(YndFile ynd, YndNode[] selectedNodes, List<EditorVertex> tverts = null)
         {
             var laneColour = (uint) new Color4(0f, 0f, 1f, 1f).ToRgba();
             var ynodes = ynd.Nodes;
@@ -650,8 +650,7 @@ namespace CodeWalker.World
             }
             ynd.LinkedVerts = tverts.ToArray();
 
-
-            ynd.UpdateTriangleVertices();
+            ynd.UpdateTriangleVertices(selectedNodes);
         }
         public void BuildYndJuncs(YndFile ynd)
         {
@@ -695,7 +694,7 @@ namespace CodeWalker.World
 
             BuildYndJuncs(ynd);
 
-            BuildYndVerts(ynd, tverts);
+            BuildYndVerts(ynd, null, tverts);
 
         }
 

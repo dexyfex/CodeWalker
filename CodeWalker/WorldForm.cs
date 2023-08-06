@@ -170,6 +170,7 @@ namespace CodeWalker
         MapSelection SelectedItem;
         MapSelection CopiedItem;
         WorldInfoForm InfoForm = null;
+        private YndFile SelectedYndFile = null;
         public MapSelection CurrentMapSelection { get { return SelectedItem; } }
 
 
@@ -1871,6 +1872,15 @@ namespace CodeWalker
 
         public void UpdatePathYndGraphics(YndFile ynd, bool fullupdate)
         {
+            if (ynd == null)
+            {
+                return;
+            }
+
+            var selection = SelectedItem.PathNode != null
+                ? new[] { SelectedItem.PathNode }
+                : null;
+
             if (fullupdate)
             {
                 ynd.UpdateAllNodePositions();
@@ -1881,7 +1891,7 @@ namespace CodeWalker
             else
             {
                 ynd.UpdateAllNodePositions();
-                space.BuildYndVerts(ynd);
+                space.BuildYndVerts(ynd, selection);
             }
             //lock (Renderer.RenderSyncRoot)
             {
@@ -3522,6 +3532,8 @@ namespace CodeWalker
                                 items.Add(SelectedItem);
                                 items.Add(mhitv);
                                 SelectedItem.SetMultipleSelectionItems(items.ToArray());
+
+                                
                             }
                         }
                         else //empty incoming value... do nothing?
@@ -3531,6 +3543,13 @@ namespace CodeWalker
                     }
                     else //same thing was selected a 2nd time, just clear the selection.
                     {
+                        if (SelectedYndFile != null) // Stop rendering junction heightmaps
+                        {
+                            UpdatePathYndGraphics(SelectedYndFile, false);
+                        }
+
+                        SelectedYndFile = null;
+
                         SelectedItem.Clear();
                         mhit = null; //dont's wants to selects it agains!
                         change = true;
@@ -3572,9 +3591,21 @@ namespace CodeWalker
                 if (mhit.HasValue)
                 {
                     SelectedItem = mhitv;
+
+                    if (SelectedItem.PathNode != null) // Start rendering junction heightmap
+                    {
+                        SelectedYndFile = SelectedItem.PathNode.Ynd;
+                        UpdatePathYndGraphics(SelectedYndFile, false);
+                    }
                 }
                 else
                 {
+                    if (SelectedYndFile != null) // Stop rendering junction heightmaps
+                    {
+                        UpdatePathYndGraphics(SelectedYndFile, false);
+                        SelectedYndFile = null;
+                    }
+
                     SelectedItem.Clear();
                 }
 
@@ -3599,6 +3630,11 @@ namespace CodeWalker
             if (notifyProject && change && (ProjectForm != null) && (!addSelection || manualSelection))
             {
                 ProjectForm.OnWorldSelectionChanged(SelectedItem);
+            }
+
+            if (SelectedYndFile != null)
+            {
+                UpdatePathYndGraphics(SelectedYndFile, false);
             }
 
             // If an item has been selected the user is likely to use a keybind. We need focus!
