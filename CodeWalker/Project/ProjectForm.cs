@@ -1,4 +1,4 @@
-﻿using CodeWalker.GameFiles;
+using CodeWalker.GameFiles;
 using CodeWalker.Project.Panels;
 using CodeWalker.Properties;
 using CodeWalker.Utils;
@@ -8634,6 +8634,7 @@ namespace CodeWalker.Project
             byte[] data = File.ReadAllBytes(filename);
 
             ynd.Load(data);
+            WorldForm.Space.PatchYndFile(ynd);
 
             if (WorldForm != null)
             {

@@ -40,7 +40,7 @@ namespace CodeWalker.Project.Panels
 
         private void UpdateFormTitle()
         {
-            var sn = CurrentPathNode.StreetName.Hash == 0 ? "Path node" : CurrentPathNode.StreetName.ToString();
+            var sn = CurrentPathNode.StreetName.Hash == 0 ? "Path node" : CurrentPathNode?.StreetName.ToString() ?? string.Empty;
             Text = sn + " " + CurrentPathNode.NodeID.ToString();
         }
 

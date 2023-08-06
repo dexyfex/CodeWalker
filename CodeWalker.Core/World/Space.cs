@@ -498,6 +498,22 @@ namespace CodeWalker.World
             //string str = sb.ToString();
         }
 
+        public void PatchYndFile(YndFile ynd)
+        {
+            NodeGrid.UpdateYnd(ynd);
+
+            foreach (var affected in GetYndFilesThatDependOnYndFile(ynd))
+            {
+                foreach (var link in affected.Links)
+                {
+                    if (link.Node2.AreaID == ynd.AreaID)
+                    {
+                        link.Node2 = NodeGrid.GetYndNode(link.Node2.AreaID, link.Node2.NodeID);
+                    }
+                }
+            }
+        }
+
         private void AddRpfYnds(RpfFile rpffile, Dictionary<uint, RpfFileEntry> yndentries)
         {
             if (rpffile.AllEntries == null) return;
@@ -2262,6 +2278,12 @@ namespace CodeWalker.World
             return cell.Ynd.Nodes[nodeid];
         }
 
+        public void UpdateYnd(YndFile ynd)
+        {
+            var x = ynd.CellX;
+            var y = ynd.CellY;
+            Cells[x, y].Ynd = ynd;
+        }
     }
     public class SpaceNodeGridCell
     {
