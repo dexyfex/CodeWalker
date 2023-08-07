@@ -948,6 +948,12 @@ namespace CodeWalker.GameFiles
 
         public void CheckIfJunction()
         {
+            if (Links == null)
+            {
+                IsJunction = false;
+                return;
+            }
+
             // If this is a 3 node junction (4 including itself)
             IsJunction = Links
                 .Where(l => !l.Shortcut)

@@ -4785,7 +4785,7 @@ namespace CodeWalker.Project
             }
 
             n.CheckIfJunction();
-            copy.CheckIfJunction();
+            copy?.CheckIfJunction();
 
             CurrentYndFile.UpdateAllNodePositions(); //for the graphics...
             CurrentYndFile.BuildBVH();
