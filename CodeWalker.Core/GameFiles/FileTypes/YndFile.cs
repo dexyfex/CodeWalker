@@ -652,7 +652,7 @@ namespace CodeWalker.GameFiles
         StopSign = 16,
         Caution = 17,
         PedRoadCrossingNoWait = 18,
-        RestrictedAccess = 19,
+        EmergencyVehiclesOnly = 19,
         OffRoadJunction = 20
     }
 
@@ -755,7 +755,7 @@ namespace CodeWalker.GameFiles
         /// StopJunctionNode            = 16, 
         /// Caution (Slow Down)?        = 17,   Appears before barriers, and merges
         /// PedCrossRoadWithPriority?   = 18,   Appears in off-road crossings
-        /// RestrictedAccess?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
+        /// EmergencyVehiclesOnly?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
         /// OffRoadJunctionNode?        = 20    Appears on a junction node with more than one edge where there is an off-road connection.
         /// </summary>
         public YndNodeSpecialType Special
