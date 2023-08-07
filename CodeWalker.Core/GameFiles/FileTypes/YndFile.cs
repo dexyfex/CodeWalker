@@ -556,10 +556,10 @@ namespace CodeWalker.GameFiles
                         v1.Position = cnr + new Vector3(offx + 0.0f, offy - 2.0f, val1 * rngz);
                         v2.Position = cnr + new Vector3(offx - 2.0f, offy + 0.0f, val2 * rngz);
                         v3.Position = cnr + new Vector3(offx + 0.0f, offy + 0.0f, val3 * rngz);
-                        v0.Colour = (uint)new Color4(val0, 1.0f - val0, 0.0f, 1.0f).ToRgba();
-                        v1.Colour = (uint)new Color4(val1, 1.0f - val1, 0.0f, 1.0f).ToRgba();
-                        v2.Colour = (uint)new Color4(val2, 1.0f - val2, 0.0f, 1.0f).ToRgba();
-                        v3.Colour = (uint)new Color4(val3, 1.0f - val3, 0.0f, 1.0f).ToRgba();
+                        v0.Colour = (uint)new Color4(val0, 1.0f - val0, 0.0f, 0.3f).ToRgba();
+                        v1.Colour = (uint)new Color4(val1, 1.0f - val1, 0.0f, 0.3f).ToRgba();
+                        v2.Colour = (uint)new Color4(val2, 1.0f - val2, 0.0f, 0.3f).ToRgba();
+                        v3.Colour = (uint)new Color4(val3, 1.0f - val3, 0.0f, 0.3f).ToRgba();
                         verts.Add(v0);
                         verts.Add(v1);
                         verts.Add(v2);
