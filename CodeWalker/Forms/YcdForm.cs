@@ -138,7 +138,7 @@ namespace CodeWalker.Forms
 
             if (ycd?.ClipMapEntries != null)
             {
-                foreach (var cme in ycd.ClipMapEntries)
+                foreach (var cme in ycd.ClipMapEntries.OrderBy(x => x.Clip?.ShortName ?? x.Hash.ToString())
                 {
                     if (cme != null)
                     {
