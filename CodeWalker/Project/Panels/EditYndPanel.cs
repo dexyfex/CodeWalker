@@ -101,14 +101,20 @@ namespace CodeWalker.Project.Panels
             int y = (int)YndAreaIDYUpDown.Value;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                var areaid = y * 32 + x;
-                if (Ynd.AreaID != areaid)
+                if (ProjectForm.WorldForm == null)
                 {
-                    Ynd.AreaID = areaid;
-                    Ynd.Name = "nodes" + areaid.ToString() + ".ynd";
-                    YndAreaIDInfoLabel.Text = "ID: " + areaid.ToString();
-                    ProjectForm.SetYndHasChanged(true);
+                    MessageBox.Show("You can only do this while in full CodeWalker", "Error", MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
                 }
+
+                ProjectForm.WorldForm.Space.MoveYndArea(Ynd, x, y);
+                ProjectForm.SetYndHasChanged(Ynd, true);
+
+                // Take the updated information
+                YndAreaIDInfoLabel.Text = Ynd.AreaID.ToString();
+                YndAreaIDXUpDown.Value = Ynd.CellX;
+                YndAreaIDYUpDown.Value = Ynd.CellY;
             }
             UpdateFormTitleYndChanged();
         }

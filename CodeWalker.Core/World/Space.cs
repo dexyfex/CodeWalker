@@ -705,55 +705,81 @@ namespace CodeWalker.World
 
         public YndNode AddYndNode(YndFile file, out YndFile[] affectedFiles)
         {
-            var totalAffectedFiles = new List<YndFile>();
 
-            var n = file.AddNode(out var affectedNodes);
+            var n = file.AddNode();
 
-            foreach (var yndFile in AllYnds.Values
-                         .Where(y => (Math.Abs(file.CellX - y.CellX) == 1 || Math.Abs(file.CellY - y.CellY) == 1)))
-            {
-                foreach (var affectedNode in affectedNodes)
-                {
-                    if (yndFile.HasAnyLinksForNode(affectedNode))
-                    {
-                        totalAffectedFiles.Add(yndFile);
-                    }
-                }
-            }
-
-            affectedFiles = totalAffectedFiles.ToArray();
+            affectedFiles = GetYndFilesThatDependOnYndFile(file);
             return n;
         }
 
         public bool RemoveYndNode(YndFile file, YndNode node, bool removeLinks, out YndFile[] affectedFiles)
         {
+            if (file == null)
+            {
+                affectedFiles = Array.Empty<YndFile>();
+                return true;
+            }
+
             var totalAffectedFiles = new List<YndFile>();
-            if (file.RemoveNode(node, removeLinks, out var affectedNodesFromDeletion))
+            if (file.RemoveNode(node, removeLinks))
             {
                 if (removeLinks)
                 {
                     RemoveYndLinksForNode(node, out var affectedFilesFromLinkChanges);
                     totalAffectedFiles.AddRange(affectedFilesFromLinkChanges);
+
                 }
 
-                foreach (var yndFile in AllYnds.Values
-                             .Where(y => (Math.Abs(file.CellX - y.CellX) == 1 || Math.Abs(file.CellY - y.CellY) == 1) && !totalAffectedFiles.Contains(y)))
-                {
-                    foreach (var affectedNode in affectedNodesFromDeletion)
-                    {
-                        if (yndFile.HasAnyLinksForNode(affectedNode))
-                        {
-                            totalAffectedFiles.Add(yndFile);
-                        }
-                    }
-                }
-
-                affectedFiles = totalAffectedFiles.ToArray();
+                totalAffectedFiles.AddRange(GetYndFilesThatDependOnYndFile(file));
+                affectedFiles = totalAffectedFiles.Distinct().ToArray();
                 return true;
             }
 
             affectedFiles = Array.Empty<YndFile>();
             return false;
+        }
+
+        public void MoveYndArea(YndFile ynd, int desiredX, int desiredY)
+        {
+            var xDir = Math.Min(1, Math.Max(-1, desiredX - ynd.CellX));
+            var yDir = Math.Min(1, Math.Max(-1, desiredY - ynd.CellY));
+
+            var x = desiredX;
+            var y = desiredY;
+
+            if (xDir != 0)
+            {
+                while (x >= 0 && x <= 31)
+                {
+                    if (NodeGrid.Cells[x, y].Ynd == null)
+                    {
+                        ynd.CellX = x;
+                        ynd.CellY = y;
+                        ynd.AreaID = y * 32 + x;
+                        NodeGrid.UpdateYnd(ynd);
+                        break;
+                    }
+
+                    x += xDir;
+                }
+            }
+
+            if (yDir != 0)
+            {
+                while (y >= 0 && y <= 31)
+                {
+                    if (NodeGrid.Cells[x, y].Ynd == null)
+                    {
+                        ynd.CellX = y;
+                        ynd.CellY = y;
+                        ynd.AreaID = y * 32 + x;
+                        NodeGrid.UpdateYnd(ynd);
+                        break;
+                    }
+
+                    y += yDir;
+                }
+            }
         }
 
         public void SetYndNodePosition(YndNode node, Vector3 newPosition, out YndFile[] affectedFiles)
@@ -771,8 +797,8 @@ namespace CodeWalker.World
 
             if (node.AreaID != expectedArea.ID)
             {
-                var nodeYnd = AllYnds.Values.FirstOrDefault(ynd => ynd.AreaID == node.AreaID);
-                var newYnd = AllYnds.Values.FirstOrDefault(ynd => ynd.AreaID == expectedArea.ID);
+                var nodeYnd = NodeGrid.GetCell(node.AreaID).Ynd;
+                var newYnd = expectedArea.Ynd;
                 if (newYnd == null)
                 {
                     node.SetPosition(oldPosition);
@@ -783,21 +809,20 @@ namespace CodeWalker.World
                 if (RemoveYndNode(nodeYnd, node, false, out var affectedFilesFromDelete))
                 {
                     totalAffectedFiles.Add(nodeYnd);
-                    newYnd.MigrateNode(node, out var affectedNodesForMigrate);
-                    totalAffectedFiles.AddRange(affectedFilesFromDelete);
-
-                    var affectedFilesForMigrate = affectedNodesForMigrate.Select(n => n.Ynd).Distinct();
-                    totalAffectedFiles.AddRange(affectedFilesForMigrate);
+                    newYnd.MigrateNode(node);
+                    totalAffectedFiles.AddRange(GetYndFilesThatDependOnYndFile(nodeYnd));
+                    totalAffectedFiles.AddRange(GetYndFilesThatDependOnYndFile(node.Ynd));
                 }
             }
-            affectedFiles = totalAffectedFiles.ToArray();
+
+            affectedFiles = totalAffectedFiles.Distinct().ToArray();
         }
 
         public void RemoveYndLinksForNode(YndNode node, out YndFile[] affectedFiles)
         {
             List<YndFile> files = new List<YndFile>();
 
-            foreach (var yndFile in AllYnds.Values)
+            foreach (var yndFile in GetYndFilesThatDependOnYndFile(node.Ynd))
             {
                 if (yndFile.RemoveLinksForNode(node))
                 {
@@ -1793,7 +1818,6 @@ namespace CodeWalker.World
 
             return true;
         }
-
     }
 
 
@@ -2275,6 +2299,17 @@ namespace CodeWalker.World
 
         public void UpdateYnd(YndFile ynd)
         {
+            for (int xx = 0; xx < Cells.GetLength(0); xx++)
+            {
+                for (int yy = 0; yy < Cells.GetLength(1); yy++)
+                {
+                    if (Cells[xx, yy].Ynd == ynd)
+                    {
+                        Cells[xx, yy].Ynd = null;
+                    }
+                }
+            }
+
             var x = ynd.CellX;
             var y = ynd.CellY;
             Cells[x, y].Ynd = ynd;

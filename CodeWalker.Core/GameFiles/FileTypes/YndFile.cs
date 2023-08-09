@@ -120,6 +120,7 @@ namespace CodeWalker.GameFiles
         {
             if (BuildStructsOnSave)
             {
+                RecalculateNodeIndices();
                 BuildStructs();
             }
 
@@ -255,7 +256,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public YndNode AddNode(out YndNode[] affectedNodes)
+        public YndNode AddNode()
         {
             int cnt = Nodes?.Length ?? 0;
             YndNode yn = new YndNode();
@@ -274,12 +275,10 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
-            RecalculateNodeIndices(out affectedNodes);
-
             return yn;
         }
 
-        public void MigrateNode(YndNode node, out YndNode[] affectedNodes)
+        public void MigrateNode(YndNode node)
         {
             int cnt = Nodes?.Length ?? 0;
             node.Ynd = this;
@@ -296,10 +295,21 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
-            RecalculateNodeIndices(out affectedNodes);
+            var links = new List<YndLink>();
+            if (Links != null)
+            {
+                links.AddRange(Links);
+            }
+
+            foreach (var nodeLink in node.Links)
+            {
+                links.Add(nodeLink);
+            }
+
+            Links = links.ToArray();
         }
 
-        public bool RemoveNode(YndNode node, bool removeLinks, out YndNode[] affectedNodes)
+        public bool RemoveNode(YndNode node, bool removeLinks)
         {
 
             var nodes = Nodes.Where(n => n.AreaID != node.AreaID || n.NodeID != node.NodeID).ToArray();
@@ -311,13 +321,15 @@ namespace CodeWalker.GameFiles
                 RemoveLinksForNode(node);
             }
 
-            RecalculateNodeIndices(out affectedNodes);
-
             return true;
         }
 
-        private void RecalculateNodeIndices(out YndNode[] affectedNodes)
+        private void RecalculateNodeIndices()
         {
+            if (Nodes == null)
+            {
+                return;
+            }
             // Sort nodes so ped nodes are at the end
             var nodes = new List<YndNode>(Nodes.Length);
             var affectedNodesList = new List<YndNode>();
@@ -344,8 +356,6 @@ namespace CodeWalker.GameFiles
             Nodes = nodes.ToArray();
 
             UpdateAllNodePositions();
-
-            affectedNodes = affectedNodesList.ToArray();
         }
 
         /// <summary>
@@ -572,8 +582,8 @@ namespace CodeWalker.GameFiles
             
             if (verts.Count > 0)
             {
-                var newTriangles = new List<EditorVertex>(TriangleVerts.Length + verts.Count);
-                newTriangles.AddRange(TriangleVerts);
+                var newTriangles = new List<EditorVertex>(TriangleVerts?.Length ?? 0 + verts.Count);
+                newTriangles.AddRange(TriangleVerts ?? Array.Empty<EditorVertex>());
                 newTriangles.AddRange(verts);
                 TriangleVerts = newTriangles.ToArray();
             }
@@ -974,13 +984,15 @@ namespace CodeWalker.GameFiles
 
         public YndLink AddLink(YndNode tonode = null, bool bidirectional = true)
         {
-            if (Links != null)
+            if (Links == null)
             {
-                var existing = Links.FirstOrDefault(el => el.Node2 == tonode);
-                if (existing != null)
-                {
-                    return existing;
-                }
+                Links = Array.Empty<YndLink>();
+            }
+
+            var existing = Links.FirstOrDefault(el => el.Node2 == tonode);
+            if (existing != null)
+            {
+                return existing;
             }
 
             YndLink l = new YndLink();
