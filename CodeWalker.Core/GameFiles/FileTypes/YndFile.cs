@@ -301,9 +301,12 @@ namespace CodeWalker.GameFiles
                 links.AddRange(Links);
             }
 
-            foreach (var nodeLink in node.Links)
+            if (node.Links != null)
             {
-                links.Add(nodeLink);
+                foreach (var nodeLink in node.Links)
+                {
+                    links.Add(nodeLink);
+                }
             }
 
             Links = links.ToArray();

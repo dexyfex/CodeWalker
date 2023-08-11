@@ -753,10 +753,6 @@ namespace CodeWalker.World
                 {
                     if (NodeGrid.Cells[x, y].Ynd == null)
                     {
-                        ynd.CellX = x;
-                        ynd.CellY = y;
-                        ynd.AreaID = y * 32 + x;
-                        NodeGrid.UpdateYnd(ynd);
                         break;
                     }
 
@@ -770,16 +766,19 @@ namespace CodeWalker.World
                 {
                     if (NodeGrid.Cells[x, y].Ynd == null)
                     {
-                        ynd.CellX = y;
-                        ynd.CellY = y;
-                        ynd.AreaID = y * 32 + x;
-                        NodeGrid.UpdateYnd(ynd);
                         break;
                     }
 
                     y += yDir;
                 }
             }
+
+            ynd.CellX = x;
+            ynd.CellY = y;
+            var areaId = y * 32 + x;
+            ynd.AreaID = areaId;
+            ynd.Name = $"nodes{areaId}";
+            NodeGrid.UpdateYnd(ynd);
         }
 
         public void SetYndNodePosition(YndNode node, Vector3 newPosition, out YndFile[] affectedFiles)
