@@ -25,6 +25,7 @@ namespace CodeWalker
         private volatile bool Ready = false;
 
         private Dictionary<string, FileTypeInfo> FileTypes;
+        private readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
         private MainTreeFolder RootFolder;
         private List<MainTreeFolder> ExtraRootFolders = new List<MainTreeFolder>();
@@ -333,8 +334,12 @@ namespace CodeWalker
         }
         public FileTypeInfo GetFileType(string fn)
         {
-            var fi = new FileInfo(fn);
-            var ext = fi.Extension.ToLowerInvariant();
+            if (fn.IndexOfAny(InvalidFileNameChars) != -1)
+            {
+                return FileTypes[""];
+            }
+
+            var ext = Path.GetExtension(fn).ToLowerInvariant();
             if (!string.IsNullOrEmpty(ext))
             {
                 FileTypeInfo ft;
