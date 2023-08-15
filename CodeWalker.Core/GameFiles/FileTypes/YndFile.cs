@@ -32,6 +32,8 @@ namespace CodeWalker.GameFiles
         public int CellX { get; set; }
         public int CellY { get; set; }
 
+        public bool ShouldRecalculateIndices { get; set; }
+
         public int AreaID
         {
             get
@@ -275,6 +277,8 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
+            ShouldRecalculateIndices = true;
+
             return yn;
         }
 
@@ -310,6 +314,8 @@ namespace CodeWalker.GameFiles
             }
 
             Links = links.ToArray();
+
+            ShouldRecalculateIndices = true;
         }
 
         public bool RemoveNode(YndNode node, bool removeLinks)
@@ -324,11 +330,18 @@ namespace CodeWalker.GameFiles
                 RemoveLinksForNode(node);
             }
 
+            ShouldRecalculateIndices = true;
+
             return true;
         }
 
-        private void RecalculateNodeIndices()
+        public void RecalculateNodeIndices()
         {
+            if (!ShouldRecalculateIndices)
+            {
+                return;
+            }
+
             if (Nodes == null)
             {
                 return;
@@ -359,6 +372,7 @@ namespace CodeWalker.GameFiles
             Nodes = nodes.ToArray();
 
             UpdateAllNodePositions();
+            ShouldRecalculateIndices = false;
         }
 
         /// <summary>

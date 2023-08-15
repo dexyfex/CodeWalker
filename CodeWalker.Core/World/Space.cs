@@ -832,6 +832,14 @@ namespace CodeWalker.World
             affectedFiles = files.ToArray();
         }
 
+        public void RecalculateAllYndIndices()
+        {
+            foreach (var yndFile in AllYnds.Values)
+            {
+                yndFile.RecalculateNodeIndices();
+            }
+        }
+
         public void GenerateYndNodeJunctionHeightMap(YndNode node)
         {
             if (node.Junction == null)
