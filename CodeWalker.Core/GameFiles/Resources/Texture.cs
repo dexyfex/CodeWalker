@@ -80,7 +80,26 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_18h);
             writer.Write(this.Unknown_1Ch);
             writer.WriteBlock(this.TextureNameHashes);
-            writer.WriteBlock(this.Textures);
+            if (Textures?.data_items != null)
+            {
+                foreach (var tex in Textures.data_items)
+                {
+                    string textureName = tex.Name;
+                    if (textureName.StartsWith("pack:/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureName = textureName.Substring(6);
+                    }
+
+                    if (textureName.EndsWith(".dds", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureName = textureName.Substring(0, textureName.Length - 4);
+                    }
+
+                    tex.Name = textureName;
+
+                    tex.Write(writer);
+                }
+            }
         }
         public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
@@ -90,6 +109,20 @@ namespace CodeWalker.GameFiles
                 foreach (var tex in Textures.data_items)
                 {
                     YtdXml.OpenTag(sb, indent, "Item");
+                    string textureName = tex.Name;
+
+                    if (textureName.StartsWith("pack:/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureName = textureName.Substring(6);
+                    }
+
+                    if (textureName.EndsWith(".dds", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureName = textureName.Substring(0, textureName.Length - 4); // Strip any existing ".dds" suffix
+                    }
+
+                    tex.Name = textureName;
+
                     tex.WriteXml(sb, indent + 1, ddsfolder);
                     YtdXml.CloseTag(sb, indent, "Item");
                 }
