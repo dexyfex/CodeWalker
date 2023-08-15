@@ -1980,7 +1980,18 @@ namespace CodeWalker.Forms
             {
                 try
                 {
-                    string fpath = folderpath + tex.Name + ".dds";
+                    string textureName = tex.Name;
+                    if (textureName.StartsWith("pack:/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureName = textureName.Substring(6);
+                    }
+
+                    if (textureName.EndsWith(".dds", StringComparison.OrdinalIgnoreCase))
+                    {
+                        textureName = textureName.Substring(0, textureName.Length - 4);
+                    }
+
+                    string fpath = folderpath + textureName + ".dds";
                     byte[] dds = DDSIO.GetDDSFile(tex);
                     File.WriteAllBytes(fpath, dds);
                     successcount++;
