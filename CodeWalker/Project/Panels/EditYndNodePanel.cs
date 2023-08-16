@@ -43,6 +43,11 @@ namespace CodeWalker.Project.Panels
             Text = sn + " " + CurrentPathNode.NodeID.ToString();
         }
 
+        private void EditYndNodePathPanel_Load(object sender, EventArgs e)
+        {
+            SpecialTypeComboBox.Items.AddRange(Enum.GetNames(typeof(YndNodeSpecialType)));
+        }
+
         public void UpdateYndNodeUI()
         {
             LoadPathNodeTabPage();
@@ -189,7 +194,6 @@ namespace CodeWalker.Project.Panels
             var flags4 = CurrentPathNode?.Flags4.Value ?? 0;
             var flags5 = (uint)(CurrentPathNode?.LinkCountUnk ?? 0);
 
-
             if (updateCheckboxes)
             {
                 PathNodeFlags01CheckBox.Checked = BitUtil.IsBitSet(flags0, 0);
@@ -204,11 +208,7 @@ namespace CodeWalker.Project.Panels
                 PathNodeFlags11CheckBox.Checked = BitUtil.IsBitSet(flags1, 0);
                 PathNodeFlags12CheckBox.Checked = BitUtil.IsBitSet(flags1, 1);
                 PathNodeFlags13CheckBox.Checked = BitUtil.IsBitSet(flags1, 2);
-                PathNodeFlags14CheckBox.Checked = BitUtil.IsBitSet(flags1, 3);
-                PathNodeFlags15CheckBox.Checked = BitUtil.IsBitSet(flags1, 4);
-                PathNodeFlags16CheckBox.Checked = BitUtil.IsBitSet(flags1, 5);
-                PathNodeFlags17CheckBox.Checked = BitUtil.IsBitSet(flags1, 6);
-                PathNodeFlags18CheckBox.Checked = BitUtil.IsBitSet(flags1, 7);
+                SpecialTypeComboBox.SelectedItem = ((YndNodeSpecialType)((flags1 >> 3) & 31)).ToString();
 
                 PathNodeFlags21CheckBox.Checked = BitUtil.IsBitSet(flags2, 0);
                 PathNodeFlags22CheckBox.Checked = BitUtil.IsBitSet(flags2, 1);
@@ -222,11 +222,8 @@ namespace CodeWalker.Project.Panels
                 PathNodeFlags31CheckBox.Checked = BitUtil.IsBitSet(flags3, 0);
                 PathNodeFlags32UpDown.Value = (flags3 >> 1) & 127;
 
-                PathNodeFlags41CheckBox.Checked = BitUtil.IsBitSet(flags4, 0);
-                PathNodeFlags42UpDown.Value = (flags4 >> 1) & 7;
-                PathNodeFlags45CheckBox.Checked = BitUtil.IsBitSet(flags4, 4);
-                PathNodeFlags46CheckBox.Checked = BitUtil.IsBitSet(flags4, 5);
-                PathNodeFlags47CheckBox.Checked = BitUtil.IsBitSet(flags4, 6);
+                PathNodeFlags42UpDown.Value = (flags4) & 15;
+                PathNodeFlags43UpDown.Value = (flags4 >> 4) & 7;
                 PathNodeFlags48CheckBox.Checked = BitUtil.IsBitSet(flags4, 7);
 
                 PathNodeFlags51CheckBox.Checked = BitUtil.IsBitSet(flags5, 0);
@@ -333,11 +330,7 @@ namespace CodeWalker.Project.Panels
             flags1 = BitUtil.UpdateBit(flags1, 0, PathNodeFlags11CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 1, PathNodeFlags12CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 2, PathNodeFlags13CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 3, PathNodeFlags14CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 4, PathNodeFlags15CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 5, PathNodeFlags16CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 6, PathNodeFlags17CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 7, PathNodeFlags18CheckBox.Checked);
+            flags1 += ((uint)(YndNodeSpecialType)Enum.Parse(typeof(YndNodeSpecialType), (string)SpecialTypeComboBox.SelectedItem) << 3);
 
             flags2 = BitUtil.UpdateBit(flags2, 0, PathNodeFlags21CheckBox.Checked);
             flags2 = BitUtil.UpdateBit(flags2, 1, PathNodeFlags22CheckBox.Checked);
@@ -351,11 +344,8 @@ namespace CodeWalker.Project.Panels
             flags3 = BitUtil.UpdateBit(flags3, 0, PathNodeFlags31CheckBox.Checked);
             flags3 += (((uint)PathNodeFlags32UpDown.Value & 127u) << 1);
 
-            flags4 = BitUtil.UpdateBit(flags4, 0, PathNodeFlags41CheckBox.Checked);
-            flags4 += (((uint)PathNodeFlags42UpDown.Value & 7u) << 1);
-            flags4 = BitUtil.UpdateBit(flags4, 4, PathNodeFlags45CheckBox.Checked);
-            flags4 = BitUtil.UpdateBit(flags4, 5, PathNodeFlags46CheckBox.Checked);
-            flags4 = BitUtil.UpdateBit(flags4, 6, PathNodeFlags47CheckBox.Checked);
+            flags4 += (((uint)PathNodeFlags42UpDown.Value & 15u));
+            flags4 += (((uint)PathNodeFlags43UpDown.Value & 7u) << 4);
             flags4 = BitUtil.UpdateBit(flags4, 7, PathNodeFlags48CheckBox.Checked);
 
             flags5 = BitUtil.UpdateBit(flags5, 0, PathNodeFlags51CheckBox.Checked);
@@ -930,7 +920,12 @@ namespace CodeWalker.Project.Panels
 
         private void PathNodeFlags42UpDown_ValueChanged(object sender, EventArgs e)
         {
-            SetPathNodeFlagsFromCheckBoxes(); //treat this one like checkboxes
+            SetPathNodeFlagsFromCheckBoxes();
+        }
+
+        private void PathNodeFlags43UpDown_ValueChanged(object sender, EventArgs e)
+        {
+            SetPathNodeFlagsFromCheckBoxes();
         }
 
         private void PathNodeFlags52CheckBox_CheckedChanged(object sender, EventArgs e)
@@ -1251,6 +1246,26 @@ namespace CodeWalker.Project.Panels
                 ProjectForm.SetYndHasChanged(true);
             }
             //LoadPathNodeJunctionPage();
+        }
+
+        private void label71_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void PathNodeFlags4GroupBox_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SpecialTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetPathNodeFlagsFromCheckBoxes();
         }
     }
 }
