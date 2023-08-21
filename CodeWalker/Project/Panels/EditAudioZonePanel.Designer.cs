@@ -36,9 +36,9 @@
             this.DeleteButton = new System.Windows.Forms.Button();
             this.AddToProjectButton = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
-            this.Flags2TextBox = new System.Windows.Forms.TextBox();
+            this.Unk13TextBox = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
-            this.ExtParamsTextBox = new CodeWalker.WinForms.TextBoxFix();
+            this.DependentAmbiencesTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.label19 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.UnkVec3TextBox = new System.Windows.Forms.TextBox();
@@ -111,9 +111,9 @@
             this.tabPage1.Controls.Add(this.DeleteButton);
             this.tabPage1.Controls.Add(this.AddToProjectButton);
             this.tabPage1.Controls.Add(this.label21);
-            this.tabPage1.Controls.Add(this.Flags2TextBox);
+            this.tabPage1.Controls.Add(this.Unk13TextBox);
             this.tabPage1.Controls.Add(this.label20);
-            this.tabPage1.Controls.Add(this.ExtParamsTextBox);
+            this.tabPage1.Controls.Add(this.DependentAmbiencesTextBox);
             this.tabPage1.Controls.Add(this.label19);
             this.tabPage1.Controls.Add(this.label15);
             this.tabPage1.Controls.Add(this.UnkVec3TextBox);
@@ -211,16 +211,16 @@
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(44, 13);
             this.label21.TabIndex = 70;
-            this.label21.Text = "Flags 2:";
+            this.label21.Text = "Unk13:";
             // 
-            // Flags2TextBox
+            // Unk13TextBox
             // 
-            this.Flags2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Flags2TextBox.Location = new System.Drawing.Point(390, 103);
-            this.Flags2TextBox.Name = "Flags2TextBox";
-            this.Flags2TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags2TextBox.TabIndex = 71;
-            this.Flags2TextBox.TextChanged += new System.EventHandler(this.Flags2TextBox_TextChanged);
+            this.Unk13TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Unk13TextBox.Location = new System.Drawing.Point(390, 103);
+            this.Unk13TextBox.Name = "Unk13TextBox";
+            this.Unk13TextBox.Size = new System.Drawing.Size(155, 20);
+            this.Unk13TextBox.TabIndex = 71;
+            this.Unk13TextBox.TextChanged += new System.EventHandler(this.Unk13TextBox_TextChanged);
             // 
             // label20
             // 
@@ -232,17 +232,17 @@
             this.label20.TabIndex = 78;
             this.label20.Text = "Ext params:   Name (hash), Value (float)";
             // 
-            // ExtParamsTextBox
+            // DependentAmbiencesTextBox
             // 
-            this.ExtParamsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExtParamsTextBox.Location = new System.Drawing.Point(335, 319);
-            this.ExtParamsTextBox.Multiline = true;
-            this.ExtParamsTextBox.Name = "ExtParamsTextBox";
-            this.ExtParamsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.ExtParamsTextBox.Size = new System.Drawing.Size(209, 92);
-            this.ExtParamsTextBox.TabIndex = 79;
-            this.ExtParamsTextBox.WordWrap = false;
-            this.ExtParamsTextBox.TextChanged += new System.EventHandler(this.ExtParamsTextBox_TextChanged);
+            this.DependentAmbiencesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DependentAmbiencesTextBox.Location = new System.Drawing.Point(335, 319);
+            this.DependentAmbiencesTextBox.Multiline = true;
+            this.DependentAmbiencesTextBox.Name = "DependentAmbiencesTextBox";
+            this.DependentAmbiencesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.DependentAmbiencesTextBox.Size = new System.Drawing.Size(209, 92);
+            this.DependentAmbiencesTextBox.TabIndex = 79;
+            this.DependentAmbiencesTextBox.WordWrap = false;
+            this.DependentAmbiencesTextBox.TextChanged += new System.EventHandler(this.DependentAmbiencesTextBox_TextChanged);
             // 
             // label19
             // 
@@ -741,10 +741,10 @@
         private System.Windows.Forms.Label label18;
         private System.Windows.Forms.TextBox UnkVec1TextBox;
         private System.Windows.Forms.Label label20;
-        private WinForms.TextBoxFix ExtParamsTextBox;
+        private WinForms.TextBoxFix DependentAmbiencesTextBox;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.TextBox Flags2TextBox;
+        private System.Windows.Forms.TextBox Unk13TextBox;
         private System.Windows.Forms.Button AddToProjectButton;
         private System.Windows.Forms.Button DeleteButton;
         private System.Windows.Forms.Label label22;

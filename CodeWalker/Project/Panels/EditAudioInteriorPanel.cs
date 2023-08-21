@@ -49,9 +49,9 @@ namespace CodeWalker.Project.Panels
 
                 populatingui = true;
                 NameTextBox.Text = string.Empty;
-                Flags0TextBox.Text = string.Empty;
-                Flags1TextBox.Text = string.Empty;
-                Flags2TextBox.Text = string.Empty;
+                FlagsTextBox.Text = string.Empty;
+                WallaTextBox.Text = string.Empty;
+                TunnelTextBox.Text = string.Empty;
                 HashesTextBox.Text = string.Empty;
                 populatingui = false;
             }
@@ -65,9 +65,9 @@ namespace CodeWalker.Project.Panels
 
                 NameTextBox.Text = ci.NameHash.ToString();
 
-                Flags0TextBox.Text = ci.Unk0.Hex;
-                Flags1TextBox.Text = ci.Unk1.Hex;
-                Flags2TextBox.Text = ci.Unk2.Hex;
+                FlagsTextBox.Text = ci.Flags.Hex;
+                WallaTextBox.Text = ci.Walla.ToString();
+                TunnelTextBox.Text = ci.Tunnel.ToString();
 
                 StringBuilder sb = new StringBuilder();
                 if (ci.Rooms != null)
@@ -120,54 +120,62 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Flags0TextBox_TextChanged(object sender, EventArgs e)
+        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentInterior == null) return;
 
             uint flags = 0;
-            if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            if (uint.TryParse(FlagsTextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentInterior.Unk0 != flags)
+                if (CurrentInterior.Flags != flags)
                 {
-                    CurrentInterior.Unk0 = flags;
+                    CurrentInterior.Flags = flags;
 
                     ProjectItemChanged();
                 }
             }
         }
 
-        private void Flags1TextBox_TextChanged(object sender, EventArgs e)
+        private void WallaTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentInterior == null) return;
 
-            uint flags = 0;
-            if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            uint hash = 0;
+            string name = WallaTextBox.Text;
+            if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
-                if (CurrentInterior.Unk1 != flags)
-                {
-                    CurrentInterior.Unk1 = flags;
+                hash = JenkHash.GenHash(name);
+                JenkIndex.Ensure(name);
+            }
 
-                    ProjectItemChanged();
-                }
+            if (CurrentInterior.Walla != hash)
+            {
+                CurrentInterior.Walla = hash;
+
+                ProjectItemChanged();
             }
         }
 
-        private void Flags2TextBox_TextChanged(object sender, EventArgs e)
+        private void TunnelTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentInterior == null) return;
 
-            uint flags = 0;
-            if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            uint hash = 0;
+            string name = TunnelTextBox.Text;
+            if (!uint.TryParse(name, out hash))//don't re-hash hashes
             {
-                if (CurrentInterior.Unk2 != flags)
-                {
-                    CurrentInterior.Unk2 = flags;
+                hash = JenkHash.GenHash(name);
+                JenkIndex.Ensure(name);
+            }
 
-                    ProjectItemChanged();
-                }
+            if (CurrentInterior.Tunnel != hash)
+            {
+                CurrentInterior.Tunnel = hash;
+
+                ProjectItemChanged();
             }
         }
 
