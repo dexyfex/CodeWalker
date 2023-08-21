@@ -281,7 +281,7 @@ namespace CodeWalker
             InitFileType(".fxc", "Compiled Shaders", 9, FileTypeAction.ViewFxc, true);
             InitFileType(".yed", "Expression Dictionary", 9, FileTypeAction.ViewYed, true);
             InitFileType(".yld", "Cloth Dictionary", 9, FileTypeAction.ViewYld, true);
-            InitFileType(".yfd", "Frame Filter Dictionary", 9, FileTypeAction.ViewYfd);
+            InitFileType(".yfd", "Frame Filter Dictionary", 9, FileTypeAction.ViewYfd, true);
             InitFileType(".asi", "ASI Plugin", 9);
             InitFileType(".dll", "Dynamic Link Library", 9);
             InitFileType(".exe", "Executable", 10);
@@ -1772,9 +1772,9 @@ namespace CodeWalker
         private void ViewYfd(string name, string path, byte[] data, RpfFileEntry e)
         {
             var yfd = RpfFile.GetFile<YfdFile>(e, data);
-            GenericForm f = new GenericForm(this);
+            MetaForm f = new MetaForm(this);
             f.Show();
-            f.LoadFile(yfd, yfd.RpfFileEntry);
+            f.LoadMeta(yfd);
         }
         private void ViewCacheDat(string name, string path, byte[] data, RpfFileEntry e)
         {

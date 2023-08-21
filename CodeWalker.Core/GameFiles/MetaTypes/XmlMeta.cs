@@ -59,6 +59,8 @@ namespace CodeWalker.GameFiles
                     return GetHeightmapData(doc);
                 case MetaFormat.Ypdb:
                     return GetYpdbData(doc);
+                case MetaFormat.Yfd:
+                    return GetYfdData(doc);
                 case MetaFormat.Mrf:
                     return GetMrfData(doc);
             }
@@ -196,6 +198,12 @@ namespace CodeWalker.GameFiles
             if (ypdb.WeightSet == null) return null;
             return ypdb.Save();
         }
+        public static byte[] GetYfdData(XmlDocument doc)
+        {
+            var yfd = XmlYfd.GetYfd(doc);
+            if (yfd.FrameFilterDictionary == null) return null;
+            return yfd.Save();
+        }
         public static byte[] GetMrfData(XmlDocument doc)
         {
             var mrf = XmlMrf.GetMrf(doc);
@@ -231,6 +239,7 @@ namespace CodeWalker.GameFiles
                 case MetaFormat.Heightmap: return "Heightmap XML";
                 case MetaFormat.Ypdb: return "YPDB XML";
                 case MetaFormat.Mrf: return "MRF XML";
+                case MetaFormat.Yfd: return "YFD XML";
                 default: return "XML";
             }
         }
@@ -328,6 +337,10 @@ namespace CodeWalker.GameFiles
             if (fnamel.EndsWith(".ypdb.xml"))
             {
                 mformat = MetaFormat.Ypdb;
+            }
+            if (fnamel.EndsWith(".yfd.xml"))
+            {
+                mformat = MetaFormat.Yfd;
             }
             if (fnamel.EndsWith(".mrf.xml"))
             {
