@@ -300,7 +300,7 @@ namespace CodeWalker.Rendering
                         {
                             Matrix ptrans = (parentind < modeltransforms.Length) ? modeltransforms[parentind] : Matrix.Identity;
                             ptrans.Column4 = Vector4.UnitW;
-                            trans = Matrix.Multiply(ptrans, trans);
+                            trans = Matrix.Multiply(trans, ptrans);
                             parentind = ((pinds != null) && (parentind < pinds.Length)) ? pinds[parentind] : (short)-1;
                         }
                     }
