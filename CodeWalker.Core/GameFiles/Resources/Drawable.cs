@@ -27,7 +27,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1Ch; // 0x00000000
         public ulong Unknown_20h; // 0x0000000000000000
         public ulong Unknown_28h; // 0x0000000000000000
-        public uint Unknown_30h { get; set; }//wtf is this?? (shadercount-1)*3+8 ..?
+        public uint ShaderGroupBlocksSize { get; set; } // divided by 16
         public uint Unknown_34h; // 0x00000000
         public ulong Unknown_38h; // 0x0000000000000000
 
@@ -65,7 +65,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadUInt32();
             this.Unknown_20h = reader.ReadUInt64();
             this.Unknown_28h = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadUInt32();
+            this.ShaderGroupBlocksSize = reader.ReadUInt32();
             this.Unknown_34h = reader.ReadUInt32();
             this.Unknown_38h = reader.ReadUInt64();
 
@@ -77,78 +77,6 @@ namespace CodeWalker.GameFiles
                 this.ShadersPointer, // offset
                 this.ShadersCount1
             );
-
-
-            // wtf is Unknown_30h ???
-            //switch (ShadersCount1)
-            //{
-            //    case 1: if ((Unknown_30h != 8) && (Unknown_30h != 25))
-            //        { }
-            //        break;
-            //    case 2: if ((Unknown_30h != 11) && (Unknown_30h != 61) && (Unknown_30h != 50) && (Unknown_30h != 51))
-            //        { }
-            //        break;
-            //    case 3: if ((Unknown_30h != 15) && (Unknown_30h != 78))
-            //        { }
-            //        break;
-            //    case 4: if ((Unknown_30h != 18) && (Unknown_30h != 108))
-            //        { }
-            //        break;
-            //    case 5: if ((Unknown_30h != 22) && (Unknown_30h != 135) && (Unknown_30h != 137))
-            //        { }
-            //        break;
-            //    case 6: if (Unknown_30h != 25)
-            //        { }
-            //        break;
-            //    case 7: if (Unknown_30h != 29)
-            //        { }
-            //        break;
-            //    case 8: if (Unknown_30h != 32)
-            //        { }
-            //        break;
-            //    case 9: if (Unknown_30h != 36)
-            //        { }
-            //        break;
-            //    case 10: if (Unknown_30h != 39)
-            //        { }
-            //        break;
-            //    case 11: if (Unknown_30h != 43)
-            //        { }
-            //        break;
-            //    case 12: if (Unknown_30h != 46)
-            //        { }
-            //        break;
-            //    case 13: if (Unknown_30h != 50)
-            //        { }
-            //        break;
-            //    case 14: if (Unknown_30h != 53)
-            //        { }
-            //        break;
-            //    case 15: if (Unknown_30h != 57)
-            //        { }
-            //        break;
-            //    case 16: if (Unknown_30h != 60)
-            //        { }
-            //        break;
-            //    case 17: if (Unknown_30h != 64)
-            //        { }
-            //        break;
-            //    case 18: if (Unknown_30h != 67)
-            //        { }
-            //        break;
-            //    case 19: if (Unknown_30h != 71)
-            //        { }
-            //        break;
-            //    case 20: if (Unknown_30h != 74)
-            //        { }
-            //        break;
-            //    default:
-            //        break;
-            //}
-
-            //var cnt = 8 + ((ShadersCount1 > 0) ? ShadersCount1-1 : 0) * 3;
-            //if (cnt != Unknown_30h)
-            //{ }
 
             //if (Unknown_4h != 1)
             //{ }
@@ -170,6 +98,10 @@ namespace CodeWalker.GameFiles
             this.ShadersPointer = (ulong)(this.Shaders != null ? this.Shaders.FilePosition : 0);
             this.ShadersCount1 = (ushort)(this.Shaders != null ? this.Shaders.Count : 0);
             this.ShadersCount2 = this.ShadersCount1;
+            // In vanilla files this includes the size of the Shaders array, ShaderFX blocks and, sometimes,
+            // ShaderParametersBlocks since they are placed contiguously after the ShaderGroup in the file.
+            // But CW doesn't always do this so we only include the ShaderGroup size.
+            this.ShaderGroupBlocksSize = (uint)this.BlockLength / 16;
 
             // write structure data
             writer.Write(this.VFT);
@@ -181,13 +113,12 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_1Ch);
             writer.Write(this.Unknown_20h);
             writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_30h);
+            writer.Write(this.ShaderGroupBlocksSize);
             writer.Write(this.Unknown_34h);
             writer.Write(this.Unknown_38h);
         }
         public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
-            YdrXml.ValueTag(sb, indent, "Unknown30", Unknown_30h.ToString());
             if (TextureDictionary != null)
             {
                 TextureDictionary.WriteXmlNode(TextureDictionary, sb, indent, ddsfolder, "TextureDictionary");
@@ -196,7 +127,6 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node, string ddsfolder)
         {
-            Unknown_30h = Xml.GetChildUIntAttribute(node, "Unknown30", "value");
             var tnode = node.SelectSingleNode("TextureDictionary");
             if (tnode != null)
             {
@@ -4816,7 +4746,7 @@ namespace CodeWalker.GameFiles
         public uint RenderMaskFlagsVlow { get; set; }
         public ulong JointsPointer { get; set; }
         public ushort Unknown_98h { get; set; } // 0x0000
-        public ushort Unknown_9Ah { get; set; }
+        public ushort DrawableModelsBlocksSize { get; set; } // divided by 16
         public uint Unknown_9Ch { get; set; } // 0x00000000
         public ulong DrawableModelsPointer { get; set; }
 
@@ -4925,7 +4855,7 @@ namespace CodeWalker.GameFiles
             this.RenderMaskFlagsVlow = reader.ReadUInt32();
             this.JointsPointer = reader.ReadUInt64();
             this.Unknown_98h = reader.ReadUInt16();
-            this.Unknown_9Ah = reader.ReadUInt16();
+            this.DrawableModelsBlocksSize = reader.ReadUInt16();
             this.Unknown_9Ch = reader.ReadUInt32();
             this.DrawableModelsPointer = reader.ReadUInt64();
 
@@ -5113,54 +5043,6 @@ namespace CodeWalker.GameFiles
             //    default:
             //        break;//no hit
             //}
-            //switch (Unknown_9Ah)//wtf isthis? flags?
-            //{
-            //    case 18:
-            //    case 33:
-            //    case 34:
-            //    case 46:
-            //    case 58:
-            //    case 209:
-            //    case 71:
-            //    case 172:
-            //    case 64:
-            //    case 122:
-            //    case 96:
-            //    case 248:
-            //    case 147:
-            //    case 51:
-            //    case 159:
-            //    case 134:
-            //    case 108:
-            //    case 83:
-            //    case 336:
-            //    case 450:
-            //    case 197:
-            //    case 374:
-            //    case 184:
-            //    case 310:
-            //    case 36:
-            //    case 386:
-            //    case 285:
-            //    case 260:
-            //    case 77:
-            //    case 361:
-            //    case 235:
-            //    case 91:
-            //    case 223:
-            //    case 1207:
-            //    case 2090:
-            //    case 45:
-            //    case 52:
-            //    case 526:
-            //    case 3081:
-            //    case 294:
-            //    case 236:
-            //    case 156:
-            //        break;
-            //    default://still lots more..
-            //        break;
-            //}
 
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -5176,6 +5058,7 @@ namespace CodeWalker.GameFiles
             this.DrawableModelsVeryLowPointer = (ulong)(DrawableModels?.GetVLowPointer() ?? 0);
             this.JointsPointer = (ulong)(this.Joints != null ? this.Joints.FilePosition : 0);
             this.DrawableModelsPointer = (ulong)(DrawableModels?.FilePosition ?? 0);
+            this.DrawableModelsBlocksSize = (ushort)Math.Ceiling((DrawableModels?.BlockLength ?? 0) / 16.0);
 
             // write structure data
             writer.Write(this.ShaderGroupPointer);
@@ -5200,7 +5083,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.RenderMaskFlagsVlow);
             writer.Write(this.JointsPointer);
             writer.Write(this.Unknown_98h);
-            writer.Write(this.Unknown_9Ah);
+            writer.Write(this.DrawableModelsBlocksSize);
             writer.Write(this.Unknown_9Ch);
             writer.Write(this.DrawableModelsPointer);
         }
@@ -5218,7 +5101,6 @@ namespace CodeWalker.GameFiles
             YdrXml.ValueTag(sb, indent, "FlagsMed", FlagsMed.ToString());
             YdrXml.ValueTag(sb, indent, "FlagsLow", FlagsLow.ToString());
             YdrXml.ValueTag(sb, indent, "FlagsVlow", FlagsVlow.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown9A", Unknown_9Ah.ToString());
             if (ShaderGroup != null)
             {
                 YdrXml.OpenTag(sb, indent, "ShaderGroup");
@@ -5272,7 +5154,6 @@ namespace CodeWalker.GameFiles
             FlagsMed = (byte)Xml.GetChildUIntAttribute(node, "FlagsMed", "value");
             FlagsLow = (byte)Xml.GetChildUIntAttribute(node, "FlagsLow", "value");
             FlagsVlow = (byte)Xml.GetChildUIntAttribute(node, "FlagsVlow", "value");
-            Unknown_9Ah = (ushort)Xml.GetChildUIntAttribute(node, "Unknown9A", "value");
             var sgnode = node.SelectSingleNode("ShaderGroup");
             if (sgnode != null)
             {
@@ -5468,7 +5349,7 @@ namespace CodeWalker.GameFiles
                 r.RenderMaskFlagsLow = RenderMaskFlagsLow;
                 r.RenderMaskFlagsVlow = RenderMaskFlagsVlow;
                 r.Unknown_98h = Unknown_98h;
-                r.Unknown_9Ah = Unknown_9Ah;
+                r.DrawableModelsBlocksSize = DrawableModelsBlocksSize;
                 r.ShaderGroup = ShaderGroup;
                 r.Skeleton = Skeleton?.Clone();
                 r.DrawableModels = new DrawableModelsBlock();
