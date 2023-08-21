@@ -1017,13 +1017,13 @@ namespace CodeWalker
                         if ((placement.InnerPos != Vector3.Zero) && (placement.OuterPos != Vector3.Zero))
                         {
                             ms.CamRelPos = placement.InnerPos - camera.Position;
-                            ms.Radius = placement.InnerRad;
+                            ms.Radius = placement.InnerRadius;
                             Renderer.HilightSpheres.Add(ms);
 
                             if (renderaudioouterbounds)
                             {
                                 ms.CamRelPos = placement.OuterPos - camera.Position;
-                                ms.Radius = placement.OuterRad;
+                                ms.Radius = placement.OuterRadius;
                                 Renderer.BoundingSpheres.Add(ms);
                             }
 
@@ -1605,7 +1605,7 @@ namespace CodeWalker
                     mode = BoundsShaderMode.Sphere;
                     MapSphere wsph = new MapSphere();
                     wsph.CamRelPos = au.OuterPos - camera.Position;
-                    wsph.Radius = au.OuterRad;
+                    wsph.Radius = au.OuterRadius;
                     Renderer.WhiteSpheres.Add(wsph);
                 }
                 else

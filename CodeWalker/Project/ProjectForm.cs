@@ -6413,7 +6413,6 @@ namespace CodeWalker.Project
             //AA800420 sphere
             zone.Flags0 = cp ? copy.AudioZone.Flags0.Value : 0xAA800424;
             zone.Flags1 = cp ? copy.AudioZone.Flags1 : 0;
-            zone.Flags2 = cp ? copy.AudioZone.Flags2 : 0;
             zone.Shape = cp ? copy.AudioZone.Shape : Dat151ZoneShape.Box;
             zone.PlaybackZoneSize = cp ? copy.AudioZone.PlaybackZoneSize : Vector3.One * 10.0f;
             zone.PlaybackZoneAngle = cp ? copy.AudioZone.PlaybackZoneAngle : 0;
@@ -6430,13 +6429,14 @@ namespace CodeWalker.Project
             zone.UnkHash0 = cp ? copy.AudioZone.UnkHash0 : 0;
             zone.Scene = cp ? copy.AudioZone.Scene : 0;
             zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector2(-1, 0);
+            zone.Unk13 = cp ? copy.AudioZone.Unk13 : 0;
             zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
             zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
             zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
             zone.RulesCount = cp ? copy.AudioZone.RulesCount : (byte)0;
             zone.Rules = cp ? copy.AudioZone.Rules : null;
-            zone.ExtParamsCount = cp ? copy.AudioZone.ExtParamsCount : 0;
-            zone.ExtParams = cp ? copy.AudioZone.ExtParams : null;
+            zone.DependentAmbiencesCount = cp ? copy.AudioZone.DependentAmbiencesCount : 0;
+            zone.DependentAmbiences = cp ? copy.AudioZone.DependentAmbiences : null;
             zone.Name = "zone1";
             zone.NameHash = JenkHash.GenHash(zone.Name);
 
@@ -6538,12 +6538,12 @@ namespace CodeWalker.Project
 
             emitter.Flags0 = cp ? copy.AudioEmitter.Flags0.Value : 0xAA001100;
             emitter.Flags5 = cp ? copy.AudioEmitter.Flags5.Value : 0xFFFFFFFF;
-            emitter.InnerRad = cp ? copy.AudioEmitter.InnerRad : 0.0f;
-            emitter.OuterRad = cp ? copy.AudioEmitter.OuterRad : 20.0f;
+            emitter.InnerRadius = cp ? copy.AudioEmitter.InnerRadius : 0.0f;
+            emitter.OuterRadius = cp ? copy.AudioEmitter.OuterRadius : 20.0f;
             emitter.Unk01 = cp ? copy.AudioEmitter.Unk01 : 1.0f;
             emitter.StartTime = cp ? copy.AudioEmitter.StartTime : (ushort)0;
             emitter.EndTime = cp ? copy.AudioEmitter.EndTime : (ushort)1440;
-            emitter.Unk06 = cp ? copy.AudioEmitter.Unk06.Value : (ushort)0;
+            emitter.Frequency = cp ? copy.AudioEmitter.Frequency.Value : (ushort)0;
             emitter.Unk07 = cp ? copy.AudioEmitter.Unk07.Value : (ushort)0;
             emitter.Unk08 = cp ? copy.AudioEmitter.Unk08.Value : (byte)0;
             emitter.Unk09 = cp ? copy.AudioEmitter.Unk09.Value : (byte)1;
@@ -6782,8 +6782,9 @@ namespace CodeWalker.Project
 
             interior.Name = "interior1";
             interior.NameHash = JenkHash.GenHash(interior.Name);
-            interior.Unk0 = 0xAAAAA844;
-            interior.Unk1 = 0xD4855127;
+            interior.Flags = 0xAAAAA844;
+            interior.Walla = 3565506855;
+            interior.Tunnel = (uint)MetaName.null_sound;
 
             CurrentAudioFile.AddRelData(interior);
 

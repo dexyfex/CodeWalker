@@ -113,12 +113,12 @@ namespace CodeWalker.World
         public Vector3 InnerPos { get; set; }
         public Vector3 InnerMin { get; set; }
         public Vector3 InnerMax { get; set; }
-        public float InnerRad { get; set; }
+        public float InnerRadius { get; set; }
         public Quaternion InnerOri { get; set; }
         public Vector3 OuterPos { get; set; }
         public Vector3 OuterMin { get; set; }
         public Vector3 OuterMax { get; set; }
-        public float OuterRad { get; set; }
+        public float OuterRadius { get; set; }
         public Quaternion OuterOri { get; set; }
         public Vector3 Position { get; set; }
         public Vector3 HitboxMin { get; set; }
@@ -170,8 +170,8 @@ namespace CodeWalker.World
                 case Dat151ZoneShape.Sphere:
                     InnerPos = zone.PlaybackZonePosition;
                     InnerOri = Quaternion.Identity;
-                    InnerRad = zone.PlaybackZoneSize.X;
-                    OuterRad = zone.ActivationZoneSize.X;
+                    InnerRadius = zone.PlaybackZoneSize.X;
+                    OuterRadius = zone.ActivationZoneSize.X;
                     break;
                 case Dat151ZoneShape.Line:
                     InnerPos = zone.PlaybackZonePosition;
@@ -194,7 +194,7 @@ namespace CodeWalker.World
             HitboxMin = useouter ? OuterMin : InnerMin;
             Orientation = useouter ? OuterOri : InnerOri;
             OrientationInv = Quaternion.Invert(Orientation);
-            HitSphereRad = InnerRad;
+            HitSphereRad = InnerRadius;
             if (zone.Shape == Dat151ZoneShape.Sphere)
             {
                 Position = InnerPos;
@@ -215,16 +215,16 @@ namespace CodeWalker.World
             OrientationInv = Quaternion.Identity;
             InnerPos = emitter.Position;
             OuterPos = InnerPos;
-            InnerRad = emitter.InnerRad;
-            OuterRad = emitter.OuterRad;
+            InnerRadius = emitter.InnerRadius;
+            OuterRadius = emitter.OuterRadius;
 
-            bool useouter = (InnerRad == 0);
+            bool useouter = (InnerRadius == 0);
             if (useouter)
             {
-                InnerRad = 1;
+                InnerRadius = 1;
             }
             Position = InnerPos;
-            HitSphereRad = InnerRad;// useouter ? OuterRad : InnerRad;
+            HitSphereRad = InnerRadius;// useouter ? OuterRadius : InnerRadius;
 
         }
 
