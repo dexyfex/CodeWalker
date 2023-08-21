@@ -127,6 +127,11 @@ namespace CodeWalker.GameFiles
                 YpdbFile ypdb = RpfFile.GetFile<YpdbFile>(e, data);
                 return GetXml(ypdb, out filename);
             }
+            else if (fnl.EndsWith(".yfd"))
+            {
+                YfdFile yfd = RpfFile.GetFile<YfdFile>(e, data);
+                return GetXml(yfd, out filename);
+            }
             else if (fnl.EndsWith(".awc"))
             {
                 AwcFile awc = RpfFile.GetFile<AwcFile>(e, data);
@@ -294,6 +299,12 @@ namespace CodeWalker.GameFiles
             var fn = (ypdb?.Name) ?? "";
             filename = fn + ".xml";
             return YpdbXml.GetXml(ypdb);
+        }
+        public static string GetXml(YfdFile yfd, out string filename)
+        {
+            var fn = (yfd?.Name) ?? "";
+            filename = fn + ".xml";
+            return YfdXml.GetXml(yfd);
         }
         public static string GetXml(AwcFile awc, out string filename, string outputfolder)
         {
@@ -2243,6 +2254,7 @@ namespace CodeWalker.GameFiles
         Heightmap = 21,
         Ypdb = 22,
         Mrf = 23,
+        Yfd = 24,
     }
 
 }

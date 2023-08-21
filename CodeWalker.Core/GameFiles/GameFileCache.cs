@@ -216,6 +216,7 @@ namespace CodeWalker.GameFiles
                 //TestYwrs();
                 //TestYmaps();
                 //TestYpdbs();
+                //TestYfds();
                 //TestMrfs();
                 //TestFxcs();
                 //TestPlacements();
@@ -4503,6 +4504,54 @@ namespace CodeWalker.GameFiles
                                     }
                                 }
                                 else
+                                { }
+                            }
+                            else
+                            { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        UpdateStatus("Error! " + ex.ToString());
+                    }
+
+                }
+            }
+        }
+        public void TestYfds()
+        {
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    var rfe = entry as RpfFileEntry;
+                    if (rfe == null) continue;
+
+                    try
+                    {
+                        if (rfe.NameLower.EndsWith(".yfd"))
+                        {
+                            UpdateStatus(string.Format(entry.Path));
+                            YfdFile yfd = RpfMan.GetFile<YfdFile>(entry);
+                            if (yfd != null)
+                            {
+                                if (yfd.FrameFilterDictionary != null)
+                                {
+                                    // check that all signatures can be re-calculated
+                                    foreach (var f in yfd.FrameFilterDictionary.Filters.data_items)
+                                    {
+                                        if (f.Signature != f.CalculateSignature())
+                                        { }
+                                    }
+                                }
+
+                                var xml = YfdXml.GetXml(yfd);
+                                var yfd2 = XmlYfd.GetYfd(xml);
+                                var data2 = yfd2.Save();
+                                var yfd3 = new YfdFile();
+                                RpfFile.LoadResourceFile(yfd3, data2, 4);//full roundtrip
+                                var xml2 = YfdXml.GetXml(yfd3);
+                                if (xml != xml2)
                                 { }
                             }
                             else

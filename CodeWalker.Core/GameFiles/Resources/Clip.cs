@@ -4400,8 +4400,8 @@ namespace CodeWalker.GameFiles
             get { return 80; }
         }
 
-        public float Unknown_40h { get; set; }
-        public float Unknown_44h { get; set; }
+        public float StartPhase { get; set; }
+        public float EndPhase { get; set; }
         public ulong TagsPointer { get; set; }
 
         // reference data
@@ -4413,8 +4413,8 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_40h = reader.ReadSingle();
-            this.Unknown_44h = reader.ReadSingle();
+            this.StartPhase = reader.ReadSingle();
+            this.EndPhase = reader.ReadSingle();
             this.TagsPointer = reader.ReadUInt64();
 
             // read reference data
@@ -4431,8 +4431,8 @@ namespace CodeWalker.GameFiles
             this.TagsPointer = (ulong)(this.Tags != null ? this.Tags.FilePosition : 0);
 
             // write structure data         
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
+            writer.Write(this.StartPhase);
+            writer.Write(this.EndPhase);
             writer.Write(this.TagsPointer);
         }
 
@@ -4445,21 +4445,21 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return base.ToString() + ": " + Unknown_40h.ToString() + ", " + Unknown_44h.ToString();
+            return base.ToString() + ": " + StartPhase.ToString() + ", " + EndPhase.ToString();
         }
 
 
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            YcdXml.ValueTag(sb, indent, "Unknown40", FloatUtil.ToString(Unknown_40h));
-            YcdXml.ValueTag(sb, indent, "Unknown44", FloatUtil.ToString(Unknown_44h));
+            YcdXml.ValueTag(sb, indent, "StartPhase", FloatUtil.ToString(StartPhase));
+            YcdXml.ValueTag(sb, indent, "EndPhase", FloatUtil.ToString(EndPhase));
         }
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Unknown_40h = Xml.GetChildFloatAttribute(node, "Unknown40", "value");
-            Unknown_44h = Xml.GetChildFloatAttribute(node, "Unknown44", "value");
+            StartPhase = Xml.GetChildFloatAttribute(node, "StartPhase", "value");
+            EndPhase = Xml.GetChildFloatAttribute(node, "EndPhase", "value");
         }
     }
 
