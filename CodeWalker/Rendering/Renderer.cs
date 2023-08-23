@@ -1057,7 +1057,7 @@ namespace CodeWalker.Rendering
                     RenderSelectionCone(pos, tx, ty, dir, (float)Math.Sin(innerAngle) * extent, (float)Math.Cos(innerAngle) * extent, colwht);
                     break;
                 case LightType.Capsule:
-                    outerAngle = light.ConeOuterAngle * 0.25f;
+                    outerAngle = light.Extent.X * 0.5f;
                     RenderSelectionCapsule(pos, tx, ty, dir, extent, outerAngle, colwht);
                     break;
             }

@@ -152,7 +152,7 @@ namespace CodeWalker.Project.Panels
                                     var outer = (byte)Math.Round(la.ConeOuterAngle * 1.4117647f);
                                     if (type == 4)
                                     {
-                                        outer = (byte)Math.Max(Math.Max(la.Extent.X, la.Extent.Y), la.Extent.Z);
+                                        outer = (byte)Math.Round(la.Extent.X * 1.82f);
                                     }
 
 
