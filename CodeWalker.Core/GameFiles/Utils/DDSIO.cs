@@ -185,6 +185,10 @@ namespace CodeWalker.Utils
                     px = imgdata;
                     swaprb = false;
                     break;
+                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: // TextureFormat.D3DFMT_X8R8G8B8
+                    px = imgdata;
+                    swaprb = false;
+                    break;
                 default:
                     break; //shouldn't get here...
             }
@@ -491,6 +495,7 @@ namespace CodeWalker.Utils
                 case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: format = TextureFormat.D3DFMT_A8B8G8R8; break;
                 case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM: format = TextureFormat.D3DFMT_L8; break;
                 case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: format = TextureFormat.D3DFMT_A8R8G8B8; break;
+                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: format = TextureFormat.D3DFMT_X8R8G8B8; break;
             }
             return format;
         }
@@ -514,6 +519,7 @@ namespace CodeWalker.Utils
                 case TextureFormat.D3DFMT_A8B8G8R8: format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM; break;
                 case TextureFormat.D3DFMT_L8: format = DXGI_FORMAT.DXGI_FORMAT_R8_UNORM; break;
                 case TextureFormat.D3DFMT_A8R8G8B8: format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM; break;
+                case TextureFormat.D3DFMT_X8R8G8B8: format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM; break;
             }
             return format;
         }

@@ -659,6 +659,7 @@ namespace CodeWalker.GameFiles
     public enum TextureFormat : uint
     {
         D3DFMT_A8R8G8B8 = 21,
+        D3DFMT_X8R8G8B8 = 22,
         D3DFMT_A1R5G5B5 = 25,
         D3DFMT_A8 = 28,
         D3DFMT_A8B8G8R8 = 32,
