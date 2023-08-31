@@ -2071,7 +2071,7 @@ namespace CodeWalker.GameFiles
         public float Unknown_70h { get; set; }
         public float Unknown_74h { get; set; } // 0, 0.1f, 0.25f, 1.0f
         public float PlaybackDelay { get; set; }
-        public float Unknown_7Ch { get; set; }
+        public float PlaybackDelayModifier { get; set; }
         public float PlaybackSpeedScale { get; set; }
         public float PlaybackSpeedScaleModifier { get; set; }
         public uint Unknown_88h { get; set; } // eg. 0x01010105
@@ -2141,7 +2141,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_70h = reader.ReadSingle();
             this.Unknown_74h = reader.ReadSingle();
             this.PlaybackDelay = reader.ReadSingle();
-            this.Unknown_7Ch = reader.ReadSingle();
+            this.PlaybackDelayModifier = reader.ReadSingle();
             this.PlaybackSpeedScale = reader.ReadSingle();
             this.PlaybackSpeedScaleModifier = reader.ReadSingle();
             this.Unknown_88h = reader.ReadUInt32();
@@ -2531,7 +2531,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_70h);
             writer.Write(this.Unknown_74h);
             writer.Write(this.PlaybackDelay);
-            writer.Write(this.Unknown_7Ch);
+            writer.Write(this.PlaybackDelayModifier);
             writer.Write(this.PlaybackSpeedScale);
             writer.Write(this.PlaybackSpeedScaleModifier);
             writer.Write(this.Unknown_88h);
@@ -2572,7 +2572,7 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown70", FloatUtil.ToString(Unknown_70h));
             YptXml.ValueTag(sb, indent, "Unknown74", FloatUtil.ToString(Unknown_74h));
             YptXml.ValueTag(sb, indent, "PlaybackDelay", FloatUtil.ToString(PlaybackDelay));
-            YptXml.ValueTag(sb, indent, "Unknown7C", FloatUtil.ToString(Unknown_7Ch));
+            YptXml.ValueTag(sb, indent, "PlaybackDelayModifier", FloatUtil.ToString(PlaybackDelayModifier));
             YptXml.ValueTag(sb, indent, "PlaybackSpeedScale", FloatUtil.ToString(PlaybackSpeedScale));
             YptXml.ValueTag(sb, indent, "PlaybackSpeedScaleModifier", FloatUtil.ToString(PlaybackSpeedScaleModifier));
             YptXml.ValueTag(sb, indent, "Unknown88", YptXml.UintString(Unknown_88h));
@@ -2617,7 +2617,7 @@ namespace CodeWalker.GameFiles
             Unknown_70h = Xml.GetChildFloatAttribute(node, "Unknown70");
             Unknown_74h = Xml.GetChildFloatAttribute(node, "Unknown74");
             PlaybackDelay = Xml.GetChildFloatAttribute(node, "PlaybackDelay");
-            Unknown_7Ch = Xml.GetChildFloatAttribute(node, "Unknown7C");
+            PlaybackDelayModifier = Xml.GetChildFloatAttribute(node, "PlaybackDelayModifier");
             PlaybackSpeedScale = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScale");
             PlaybackSpeedScaleModifier = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScaleModifier");
             Unknown_88h = Xml.GetChildUIntAttribute(node, "Unknown88");
