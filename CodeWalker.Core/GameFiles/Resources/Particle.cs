@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using TC = System.ComponentModel.TypeConverterAttribute;
 
 
 /*
@@ -3000,7 +2999,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x40;
 
         // structure data
-        public ResourceSimpleList64<ParticleStringBlock> Unknown_0h { get; set; }
+        public ResourceSimpleList64<ParticleStringBlock> EventEmitterFlags { get; set; }
         public ResourceSimpleList64<ParticleUnknown2> Unknown_10h { get; set; }
         public ulong Unknown_20h = 1; // 0x0000000000000001
         public ResourceSimpleList64<ParticleUnknown2Block> Unknown_28h { get; set; }
@@ -3009,7 +3008,7 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleStringBlock>>();
+            this.EventEmitterFlags = reader.ReadBlock<ResourceSimpleList64<ParticleStringBlock>>();
             this.Unknown_10h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2>>();
             this.Unknown_20h = reader.ReadUInt64();
             this.Unknown_28h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2Block>>();
@@ -3020,7 +3019,7 @@ namespace CodeWalker.GameFiles
             //if (Unknown_38h != 0)
             //{ }//no hit
 
-            var cnt1 = (Unknown_0h?.data_items?.Length ?? 0);
+            var cnt1 = (EventEmitterFlags?.data_items?.Length ?? 0);
             var cnt2 = (Unknown_10h?.data_items?.Length ?? 0);
             var cnt3 = (Unknown_28h?.data_items?.Length ?? 0);
 
@@ -3063,7 +3062,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.WriteBlock(this.Unknown_0h);
+            writer.WriteBlock(this.EventEmitterFlags);
             writer.WriteBlock(this.Unknown_10h);
             writer.Write(this.Unknown_20h);
             writer.WriteBlock(this.Unknown_28h);
@@ -3071,20 +3070,20 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            if (Unknown_0h?.data_items != null)
+            if (EventEmitterFlags?.data_items != null)
             {
-                if (Unknown_0h.data_items.Length > 0)
+                if (EventEmitterFlags.data_items.Length > 0)
                 {
-                    YptXml.OpenTag(sb, indent, "Unknown0");
-                    foreach (var item in Unknown_0h.data_items)
+                    YptXml.OpenTag(sb, indent, "EventEmitterFlags");
+                    foreach (var item in EventEmitterFlags.data_items)
                     {
                         YptXml.StringTag(sb, indent + 1, "Item", YptXml.XmlEscape(item?.Name?.Value ?? ""));
                     }
-                    YptXml.CloseTag(sb, indent, "Unknown0");
+                    YptXml.CloseTag(sb, indent, "EventEmitterFlags");
                 }
                 else
                 {
-                    YptXml.SelfClosingTag(sb, indent, "Unknown0");
+                    YptXml.SelfClosingTag(sb, indent, "EventEmitterFlags");
                 }
             }
             if (Unknown_10h?.data_items != null)
@@ -3098,9 +3097,9 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            Unknown_0h = new ResourceSimpleList64<ParticleStringBlock>();
-            //Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleStringBlock>(node, "Unknown0");
-            var unode = node.SelectSingleNode("Unknown0");
+            EventEmitterFlags = new ResourceSimpleList64<ParticleStringBlock>();
+            //EventEmitterFlags.data_items = XmlMeta.ReadItemArray<ParticleStringBlock>(node, "EventEmitterFlags");
+            var unode = node.SelectSingleNode("EventEmitterFlags");
             if (unode != null)
             {
                 var inodes = unode.SelectNodes("Item");
@@ -3112,7 +3111,7 @@ namespace CodeWalker.GameFiles
                     blk.Name = (string_r)iname;
                     ilist.Add(blk);
                 }
-                Unknown_0h.data_items = ilist.ToArray();
+                EventEmitterFlags.data_items = ilist.ToArray();
             }
 
             Unknown_10h = new ResourceSimpleList64<ParticleUnknown2>();
@@ -3138,7 +3137,7 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0, Unknown_0h),
+                new Tuple<long, IResourceBlock>(0, EventEmitterFlags),
                 new Tuple<long, IResourceBlock>(0x10, Unknown_10h),
                 new Tuple<long, IResourceBlock>(0x28, Unknown_28h)
             };
@@ -4029,26 +4028,26 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x20;
 
         // structure data
-        public float Unknown_0h { get; set; }
-        public float Unknown_4h { get; set; }
+        public float InterpolationInterval { get; set; }
+        public float KeyFrameMultiplier { get; set; }
         public ulong Unknown_8h; // 0x0000000000000000
-        public float Unknown_10h { get; set; }
-        public float Unknown_14h { get; set; }
-        public float Unknown_18h { get; set; }
-        public float Unknown_1Ch { get; set; }
+        public float RedChannelColour { get; set; }
+        public float GreenChannelColour { get; set; }
+        public float BlueChannelColour { get; set; }
+        public float AlphaChannelColour { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadSingle();
-            this.Unknown_4h = reader.ReadSingle();
+            this.InterpolationInterval = reader.ReadSingle();
+            this.KeyFrameMultiplier = reader.ReadSingle();
             this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadSingle();
-            this.Unknown_14h = reader.ReadSingle();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadSingle();
+            this.RedChannelColour = reader.ReadSingle();
+            this.GreenChannelColour = reader.ReadSingle();
+            this.BlueChannelColour = reader.ReadSingle();
+            this.AlphaChannelColour = reader.ReadSingle();
 
-            switch (Unknown_0h)
+            switch (InterpolationInterval)
             {
                 case 0:
                 case 1.0f:
@@ -4060,7 +4059,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more..
             }
-            switch (Unknown_4h)
+            switch (KeyFrameMultiplier)
             {
                 case 0:
                 case 1.0f:
@@ -4075,7 +4074,7 @@ namespace CodeWalker.GameFiles
             }
             //if (Unknown_8h != 0)
             //{ }//no hit
-            switch (Unknown_10h)
+            switch (RedChannelColour)
             {
                 case 0:
                 case 1.2f:
@@ -4092,7 +4091,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more..
             }
-            switch (Unknown_14h)
+            switch (GreenChannelColour)
             {
                 case 0:
                 case 1.2f:
@@ -4108,7 +4107,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more...
             }
-            switch (Unknown_18h)
+            switch (BlueChannelColour)
             {
                 case -0.8f:
                 case -0.5f:
@@ -4121,7 +4120,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more...
             }
-            switch (Unknown_1Ch)
+            switch (AlphaChannelColour)
             {
                 case 0:
                 case 1.0f:
@@ -4138,36 +4137,36 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.Unknown_0h);
-            writer.Write(this.Unknown_4h);
+            writer.Write(this.InterpolationInterval);
+            writer.Write(this.KeyFrameMultiplier);
             writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
+            writer.Write(this.RedChannelColour);
+            writer.Write(this.GreenChannelColour);
+            writer.Write(this.BlueChannelColour);
+            writer.Write(this.AlphaChannelColour);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YptXml.ValueTag(sb, indent, "Unknown0", FloatUtil.ToString(Unknown_0h));
-            YptXml.ValueTag(sb, indent, "Unknown4", FloatUtil.ToString(Unknown_4h));
-            YptXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
-            YptXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
-            YptXml.ValueTag(sb, indent, "Unknown18", FloatUtil.ToString(Unknown_18h));
-            YptXml.ValueTag(sb, indent, "Unknown1C", FloatUtil.ToString(Unknown_1Ch));
+            YptXml.ValueTag(sb, indent, "InterpolationInterval", FloatUtil.ToString(InterpolationInterval));
+            YptXml.ValueTag(sb, indent, "KeyFrameMultiplier", FloatUtil.ToString(KeyFrameMultiplier));
+            YptXml.ValueTag(sb, indent, "RedChannelColour", FloatUtil.ToString(RedChannelColour));
+            YptXml.ValueTag(sb, indent, "GreenChannelColour", FloatUtil.ToString(GreenChannelColour));
+            YptXml.ValueTag(sb, indent, "BlueChannelColour", FloatUtil.ToString(BlueChannelColour));
+            YptXml.ValueTag(sb, indent, "AlphaChannelColour", FloatUtil.ToString(AlphaChannelColour));
         }
         public void ReadXml(XmlNode node)
         {
-            Unknown_0h = Xml.GetChildFloatAttribute(node, "Unknown0");
-            Unknown_4h = Xml.GetChildFloatAttribute(node, "Unknown4");
-            Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10");
-            Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14");
-            Unknown_18h = Xml.GetChildFloatAttribute(node, "Unknown18");
-            Unknown_1Ch = Xml.GetChildFloatAttribute(node, "Unknown1C");
+            InterpolationInterval = Xml.GetChildFloatAttribute(node, "InterpolationInterval");
+            KeyFrameMultiplier = Xml.GetChildFloatAttribute(node, "KeyFrameMultiplier");
+            RedChannelColour = Xml.GetChildFloatAttribute(node, "RedChannelColour");
+            GreenChannelColour = Xml.GetChildFloatAttribute(node, "GreenChannelColour");
+            BlueChannelColour = Xml.GetChildFloatAttribute(node, "BlueChannelColour");
+            AlphaChannelColour = Xml.GetChildFloatAttribute(node, "AlphaChannelColour");
         }
 
         public override string ToString()
         {
-            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", Unknown_0h, Unknown_4h, Unknown_10h, Unknown_14h, Unknown_18h, Unknown_1Ch);
+            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", InterpolationInterval, KeyFrameMultiplier, RedChannelColour, GreenChannelColour, BlueChannelColour, AlphaChannelColour);
         }
 
     }
