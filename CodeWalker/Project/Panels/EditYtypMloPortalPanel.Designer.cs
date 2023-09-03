@@ -188,7 +188,7 @@
             "256 - Mirror exterior portals",
             "512 - Mirror Portal Traversal",
             "1024 - Mirror Floor",
-            "2048 - Water Surface (need Mirror)",
+            "2048 - Mirror Floor (Water)",
             "4096 - Light Bleeding",
             "8192 - Water extent to horizon"});
             this.FlagsCheckedListBox.Location = new System.Drawing.Point(318, 15);
