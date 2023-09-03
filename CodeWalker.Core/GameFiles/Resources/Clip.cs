@@ -3151,7 +3151,7 @@ namespace CodeWalker.GameFiles
 
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
-            YcdXml.StringTag(sb, indent, "Hash", YcdXml.HashString(Hash));
+            YcdXml.StringTag(sb, indent, "Hash", MetaXml.XmlEscape(YcdXml.HashString(Hash)));
             YcdXml.StringTag(sb, indent, "Name", MetaXml.XmlEscape(Name));
             YcdXml.ValueTag(sb, indent, "Type", Type.ToString());
             YcdXml.ValueTag(sb, indent, "Unknown30", Unknown_30h.ToString());
