@@ -177,20 +177,20 @@
             this.FlagsCheckedListBox.CheckOnClick = true;
             this.FlagsCheckedListBox.FormattingEnabled = true;
             this.FlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - Disables exterior rendering",
-            "2 - Disables interior rendering",
+            "1 - One-Way",
+            "2 - Link Interiors together",
             "4 - Mirror",
-            "8 - Extra bloom",
-            "16 - Unk05",
+            "8 - Disable Timecycle Modifier",
+            "16 - Unused?",
             "32 - Use exterior LOD",
             "64 - Hide when door closed",
-            "128 - Unk08",
+            "128 - Mirror Directional Light",
             "256 - Mirror exterior portals",
-            "512 - Unk10",
-            "1024 - Mirror limbo entities",
-            "2048 - Unk12",
-            "4096 - Unk13",
-            "8192 - Disable farclipping"});
+            "512 - Mirror Portal Traversal",
+            "1024 - Mirror Floor",
+            "2048 - Mirror Floor (Water)",
+            "4096 - Light Bleeding",
+            "8192 - Water extent to horizon"});
             this.FlagsCheckedListBox.Location = new System.Drawing.Point(318, 15);
             this.FlagsCheckedListBox.Name = "FlagsCheckedListBox";
             this.FlagsCheckedListBox.Size = new System.Drawing.Size(184, 214);
