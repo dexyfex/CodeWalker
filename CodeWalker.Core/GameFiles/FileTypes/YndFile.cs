@@ -1,11 +1,10 @@
-﻿using SharpDX;
+﻿using CodeWalker.World;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace CodeWalker.GameFiles
@@ -27,6 +26,9 @@ namespace CodeWalker.GameFiles
         public Vector3 BBMax { get; set; }
         public int CellX { get; set; }
         public int CellY { get; set; }
+
+        public bool ShouldRecalculateIndices { get; set; }
+
         public int AreaID
         {
             get
@@ -115,6 +117,7 @@ namespace CodeWalker.GameFiles
         {
             if (BuildStructsOnSave)
             {
+                RecalculateNodeIndices();
                 BuildStructs();
             }
 
@@ -163,7 +166,7 @@ namespace CodeWalker.GameFiles
 
                     //LinkCount = node.LinkCountFlags.Value >> 3;
                     //LinkCountUnk = node.LinkCountFlags.Value & 7;
-                    byte lcflags = (byte)((node.LinkCount << 3) + (node.LinkCountUnk & 7));
+                    byte lcflags = (byte)((node.LinkCount << 3) | (node.LinkCountUnk & 7));
                     node._RawData.LinkCountFlags = lcflags;
 
                     nodes[i] = node.RawData;
@@ -259,7 +262,7 @@ namespace CodeWalker.GameFiles
             YndNode yn = new YndNode();
             Node n = new Node();
             n.AreaID = (ushort)AreaID;
-            n.NodeID = (ushort)cnt;
+            n.NodeID = (ushort)(Nodes?.Length ?? 0);
             yn.Init(this, n);
 
             int ncnt = cnt + 1;
@@ -272,93 +275,141 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
+            ShouldRecalculateIndices = true;
+
             return yn;
         }
 
-        public bool RemoveNode(YndNode node)
+        public void MigrateNode(YndNode node)
         {
-            List<YndNode> newnodes = new List<YndNode>();
             int cnt = Nodes?.Length ?? 0;
-            bool r = false;
-            int ri = -1;
+            node.Ynd = this;
+            node.AreaID = (ushort)AreaID;
+            node.NodeID = (ushort)(Nodes?.Length ?? 0);
+
+            int ncnt = cnt + 1;
+            YndNode[] nnodes = new YndNode[ncnt];
             for (int i = 0; i < cnt; i++)
             {
-                var tn = Nodes[i];
-                if (tn != node)
-                {
-                    newnodes.Add(tn);
-                }
-                else
-                {
-                    r = true;
-                    ri = i;
-                }
+                nnodes[i] = Nodes[i];
             }
-            Nodes = newnodes.ToArray();
-            NodeDictionary.NodesCount = (uint)newnodes.Count;
-            NodeDictionary.NodesCountVehicle = Math.Min(NodeDictionary.NodesCountVehicle, NodeDictionary.NodesCount);
-            NodeDictionary.NodesCountPed = Math.Min(NodeDictionary.NodesCountPed, NodeDictionary.NodesCount);
+            nnodes[cnt] = node;
+            Nodes = nnodes;
+            NodeDictionary.NodesCount = (uint)ncnt;
 
-            //remap node ID's...
-            List<YndLink> remlinks = new List<YndLink>();
-            if (ri >= 0)
+            var links = new List<YndLink>();
+            if (Links != null)
             {
-                for (int i = 0; i < Nodes.Length; i++)
-                {
-                    var n = Nodes[i];
-                    if (n.NodeID != i)
-                    {
-                        n.NodeID = (ushort)i;
-
-
-                        //update nodeid's in links...
-                        for (int j = 0; j < Nodes.Length; j++)
-                        {
-                            var tn = Nodes[j];
-                            if ((tn != null) && (tn.Links != null))
-                            {
-                                for (int bl = 0; bl < tn.Links.Length; bl++)
-                                {
-                                    var backlink = tn.Links[bl];
-                                    if (backlink.Node2 == n)
-                                    {
-                                        backlink._RawData.NodeID = (ushort)i;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    //remove any links referencing the node.
-                    remlinks.Clear();
-                    if (n.Links != null)
-                    {
-                        for (int l = 0; l < n.Links.Length; l++)
-                        {
-                            var nlink = n.Links[l];
-                            if (nlink.Node2 == node)
-                            {
-                                remlinks.Add(nlink);
-                            }
-                        }
-                        for (int l = 0; l < remlinks.Count; l++)
-                        {
-                            n.RemoveLink(remlinks[l]);
-                        }
-                    }
-
-                }
-
+                links.AddRange(Links);
             }
 
-            UpdateAllNodePositions();
+            if (node.Links != null)
+            {
+                foreach (var nodeLink in node.Links)
+                {
+                    links.Add(nodeLink);
+                }
+            }
 
-            return r;
+            Links = links.ToArray();
+
+            ShouldRecalculateIndices = true;
         }
 
+        public bool RemoveNode(YndNode node, bool removeLinks)
+        {
 
+            var nodes = Nodes.Where(n => n.AreaID != node.AreaID || n.NodeID != node.NodeID).ToArray();
+            Nodes = nodes;
+            NodeDictionary.NodesCount = (uint)nodes.Count();
 
+            if (removeLinks)
+            {
+                RemoveLinksForNode(node);
+            }
 
+            ShouldRecalculateIndices = true;
+
+            return true;
+        }
+
+        public void RecalculateNodeIndices()
+        {
+            if (!ShouldRecalculateIndices)
+            {
+                return;
+            }
+
+            if (Nodes == null)
+            {
+                return;
+            }
+            // Sort nodes so ped nodes are at the end
+            var nodes = new List<YndNode>(Nodes.Length);
+            var affectedNodesList = new List<YndNode>();
+            var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
+            var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
+
+            nodes.AddRange(vehicleNodes);
+            nodes.AddRange(pedNodes);
+
+            for (var i = 0; i < nodes.Count(); i++)
+            {
+                var node = nodes[i];
+
+                if (node.NodeID != i)
+                {
+                    node.NodeID = (ushort)i;
+                    affectedNodesList.Add(node);
+                }
+            }
+
+            NodeDictionary.NodesCountVehicle = (uint)vehicleNodes.Count();
+            NodeDictionary.NodesCountPed = (uint)pedNodes.Count();
+            NodeDictionary.NodesCount = NodeDictionary.NodesCountVehicle + NodeDictionary.NodesCountPed;
+            Nodes = nodes.ToArray();
+
+            UpdateAllNodePositions();
+            ShouldRecalculateIndices = false;
+        }
+
+        /// <summary>
+        /// Removes links for node.
+        /// </summary>
+        /// <param name="node">node to check against.</param>
+        /// <returns><see cref="bool"/> indicating whether this file has been affected</returns>
+        public bool RemoveLinksForNode(YndNode node)
+        {
+            // Delete links that target this node
+            var rmLinks = new List<YndLink>();
+
+            foreach (var n in Nodes)
+            {
+                var nodeRmLinks = n.Links.Where(l =>
+                    l.Node1 == node || l.Node2 == node);
+
+                var toRemove = n.Links.Where(rl => nodeRmLinks.Contains(rl)).ToArray();
+                foreach (var rl in toRemove)
+                {
+                    n.RemoveLink(rl);
+                }
+
+                rmLinks.AddRange(nodeRmLinks);
+            }
+
+            if (rmLinks.Any())
+            {
+                Links = Links.Where(l => !rmLinks.Contains(l)).ToArray();
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool HasAnyLinksForNode(YndNode node)
+        {
+            return Links.Any(l => l.Node1 == node || l.Node2 == node);
+        }
 
         public void UpdateBoundingBox()
         {
@@ -385,20 +436,17 @@ namespace CodeWalker.GameFiles
             NodePositions = np;
         }
 
-        public void UpdateTriangleVertices()
+        public void UpdateTriangleVertices(YndNode[] selectedNodes)
         {
             //note: called from space.BuildYndVerts()
 
             UpdateLinkTriangleVertices();
-
-            //UpdateJunctionTriangleVertices();
+            UpdateJunctionTriangleVertices(selectedNodes);
         }
 
         private void UpdateLinkTriangleVertices()
         {
             //build triangles for the path links display
-
-
             int vc = 0;
             if (Links != null)
             {
@@ -414,14 +462,17 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var node in Nodes)
                 {
+                    if (node.Links is null)
+                    {
+                        continue;
+                    }
+
                     foreach (var link in node.Links)
                     {
                         var p0 = link.Node1?.Position ?? Vector3.Zero;
                         var p1 = link.Node2?.Position ?? Vector3.Zero;
-                        var diff = p1 - p0;
-                        var dir = Vector3.Normalize(diff);
+                        var dir = link.GetDirection();
                         var ax = Vector3.Cross(dir, Vector3.UnitZ);
-
 
                         float lanestot = link.LaneCountForward + link.LaneCountBackward;
                         //float backfrac = Math.Min(Math.Max(link.LaneCountBackward / lanestot, 0.1f), 0.9f);
@@ -429,9 +480,10 @@ namespace CodeWalker.GameFiles
                         //float inner = totwidth*(backfrac-0.5f);
                         //float outer = totwidth*0.5f;
 
-                        float lanewidth = node.IsPedNode ? 0.5f : 5.5f;
+                        float lanewidth = link.GetLaneWidth();
+
                         float inner = link.LaneOffset * lanewidth;// 0.0f;
-                        float outer = inner + Math.Max(lanewidth * link.LaneCountForward, 0.5f);
+                        float outer = inner + lanewidth * link.LaneCountForward;
 
                         float totwidth = lanestot * lanewidth;
                         float halfwidth = totwidth * 0.5f;
@@ -477,93 +529,90 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        private void UpdateJunctionTriangleVertices()
+        private void UpdateJunctionTriangleVertices(YndNode[] selectedNodes)
         {
-            //build triangles for the junctions bytes display....
-
-            int vc = 0;
-            if (Junctions != null)
+            if (selectedNodes == null)
             {
-                foreach (var j in Junctions)
-                {
-                    var d = j.Heightmap;
-                    if (d == null) continue;
-                    vc += d.CountX * d.CountY * 6;
-                }
+                return;
             }
 
-            List<EditorVertex> verts = new List<EditorVertex>(vc);
+            //build triangles for the junctions bytes display....
+            List<EditorVertex> verts = new List<EditorVertex>();
             EditorVertex v0 = new EditorVertex();
             EditorVertex v1 = new EditorVertex();
             EditorVertex v2 = new EditorVertex();
             EditorVertex v3 = new EditorVertex();
-            if (Nodes != null)
+
+            foreach (var node in selectedNodes)
             {
-                foreach (var node in Nodes)
+                if (node.Ynd != this) continue;
+                if (node.Junction == null) continue;
+                var j = node.Junction;
+                var d = j.Heightmap;
+                if (d == null) continue;
+
+                float maxz = j.MaxZ / 32.0f;
+                float minz = j.MinZ / 32.0f;
+                float rngz = maxz - minz;
+                float posx = j.PositionX / 4.0f;
+                float posy = j.PositionY / 4.0f;
+
+                Vector3 pos = new Vector3(posx, posy, 0.0f);
+                Vector3 siz = new Vector3(d.CountX, d.CountY, 0.0f) * 2.0f;
+                //Vector3 siz = new Vector3(jx, jy, 0.0f);
+                Vector3 cnr = pos;// - siz * 0.5f;
+                                  //Vector3 inc = new Vector3(1.0f/jx)
+
+                cnr.Z = minz;// + 2.0f;
+
+                for (int y = 1; y < d.CountY; y++) //rows progress up the Y axis.
                 {
-                    if (node.Junction == null) continue;
-                    var j = node.Junction;
-                    var d = j.Heightmap;
-                    if (d == null) continue;
+                    var row0 = d.Rows[y - 1];
+                    var row1 = d.Rows[y];
+                    float offy = y * 2.0f;
 
-                    float maxz = j.MaxZ / 32.0f;
-                    float minz = j.MinZ / 32.0f;
-                    float rngz = maxz - minz;
-                    float posx = j.PositionX / 4.0f;
-                    float posy = j.PositionY / 4.0f;
-
-                    Vector3 pos = new Vector3(posx, posy, 0.0f);
-                    Vector3 siz = new Vector3(d.CountX, d.CountY, 0.0f) * 2.0f;
-                    //Vector3 siz = new Vector3(jx, jy, 0.0f);
-                    Vector3 cnr = pos;// - siz * 0.5f;
-                    //Vector3 inc = new Vector3(1.0f/jx)
-
-                    cnr.Z = minz;// + 2.0f;
-
-                    for (int y = 1; y < d.CountY; y++) //rows progress up the Y axis.
+                    for (int x = 1; x < d.CountX; x++) //values progress along the X axis.
                     {
-                        var row0 = d.Rows[y - 1];
-                        var row1 = d.Rows[y];
-                        float offy = y * 2.0f;
-
-                        for (int x = 1; x < d.CountX; x++) //values progress along the X axis.
-                        {
-                            var val0 = row0.Values[x - 1] / 255.0f;
-                            var val1 = row0.Values[x] / 255.0f;
-                            var val2 = row1.Values[x - 1] / 255.0f;
-                            var val3 = row1.Values[x] / 255.0f;
-                            float offx = x * 2.0f;
-                            v0.Position = cnr + new Vector3(offx - 2.0f, offy - 2.0f, val0 * rngz);
-                            v1.Position = cnr + new Vector3(offx + 0.0f, offy - 2.0f, val1 * rngz);
-                            v2.Position = cnr + new Vector3(offx - 2.0f, offy + 0.0f, val2 * rngz);
-                            v3.Position = cnr + new Vector3(offx + 0.0f, offy + 0.0f, val3 * rngz);
-                            v0.Colour = (uint)new Color4(val0, 1.0f - val0, 0.0f, 1.0f).ToRgba();
-                            v1.Colour = (uint)new Color4(val1, 1.0f - val1, 0.0f, 1.0f).ToRgba();
-                            v2.Colour = (uint)new Color4(val2, 1.0f - val2, 0.0f, 1.0f).ToRgba();
-                            v3.Colour = (uint)new Color4(val3, 1.0f - val3, 0.0f, 1.0f).ToRgba();
-                            verts.Add(v0);
-                            verts.Add(v1);
-                            verts.Add(v2);
-                            verts.Add(v2);
-                            verts.Add(v1);
-                            verts.Add(v3);
-                        }
+                        var val0 = row0.Values[x - 1] / 255.0f;
+                        var val1 = row0.Values[x] / 255.0f;
+                        var val2 = row1.Values[x - 1] / 255.0f;
+                        var val3 = row1.Values[x] / 255.0f;
+                        float offx = x * 2.0f;
+                        v0.Position = cnr + new Vector3(offx - 2.0f, offy - 2.0f, val0 * rngz);
+                        v1.Position = cnr + new Vector3(offx + 0.0f, offy - 2.0f, val1 * rngz);
+                        v2.Position = cnr + new Vector3(offx - 2.0f, offy + 0.0f, val2 * rngz);
+                        v3.Position = cnr + new Vector3(offx + 0.0f, offy + 0.0f, val3 * rngz);
+                        v0.Colour = (uint)new Color4(val0, 1.0f - val0, 0.0f, 0.3f).ToRgba();
+                        v1.Colour = (uint)new Color4(val1, 1.0f - val1, 0.0f, 0.3f).ToRgba();
+                        v2.Colour = (uint)new Color4(val2, 1.0f - val2, 0.0f, 0.3f).ToRgba();
+                        v3.Colour = (uint)new Color4(val3, 1.0f - val3, 0.0f, 0.3f).ToRgba();
+                        verts.Add(v0);
+                        verts.Add(v1);
+                        verts.Add(v2);
+                        verts.Add(v2);
+                        verts.Add(v1);
+                        verts.Add(v3);
                     }
-
-
                 }
             }
-
+            
             if (verts.Count > 0)
             {
-                TriangleVerts = verts.ToArray();
+                var vertsarr = verts.ToArray();
+                if (TriangleVerts != null)
+                {
+                    var nvc = vertsarr.Length;
+                    var tvc = TriangleVerts.Length;
+                    var newTriangles = new EditorVertex[tvc + nvc];
+                    Array.Copy(TriangleVerts, newTriangles, tvc);
+                    Array.Copy(vertsarr, 0, newTriangles, tvc, nvc);
+                    TriangleVerts = newTriangles;
+                }
+                else
+                {
+                    TriangleVerts = vertsarr;
+                }
             }
-            else
-            {
-                TriangleVerts = null;
-            }
-
-
         }
 
 
@@ -615,12 +664,68 @@ namespace CodeWalker.GameFiles
 
 
 
+
+        public YndNode AddYndNode(Space space, out YndFile[] affectedFiles)
+        {
+
+            var n = AddNode();
+
+            affectedFiles = space.GetYndFilesThatDependOnYndFile(this);
+            return n;
+        }
+
+        public bool RemoveYndNode(Space space, YndNode node, bool removeLinks, out YndFile[] affectedFiles)
+        {
+            var totalAffectedFiles = new List<YndFile>();
+            if (RemoveNode(node, removeLinks))
+            {
+                if (removeLinks)
+                {
+                    node.RemoveYndLinksForNode(space, out var affectedFilesFromLinkChanges);
+                    totalAffectedFiles.AddRange(affectedFilesFromLinkChanges);
+
+                }
+
+                totalAffectedFiles.AddRange(space.GetYndFilesThatDependOnYndFile(this));
+                affectedFiles = totalAffectedFiles.Distinct().ToArray();
+                return true;
+            }
+
+            affectedFiles = Array.Empty<YndFile>();
+            return false;
+        }
+
+
+
+
+
         public override string ToString()
         {
             return RpfFileEntry?.ToString() ?? string.Empty;
         }
     }
 
+    public enum YndNodeSpeed
+    {
+        Slow = 0,
+        Normal = 1,
+        Fast = 2,
+        Faster = 3
+    }
+
+    public enum YndNodeSpecialType
+    {
+        None = 0,
+        ParkingSpace = 2,
+        PedNodeRoadCrossing = 10,
+        PedNodeAssistedMovement = 14,
+        TrafficLightJunctionStop = 15,
+        StopSign = 16,
+        Caution = 17,
+        PedRoadCrossingNoWait = 18,
+        EmergencyVehiclesOnly = 19,
+        OffRoadJunction = 20
+    }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YndNode : BasePathNode
     {
@@ -649,15 +754,142 @@ namespace CodeWalker.GameFiles
         public bool HasJunction;
 
 
-        public bool IsPedNode
+        public YndNodeSpeed Speed
         {
             get
             {
-                return false;// ((Flags4.Value >> 4) & 7) == 7;
+                return (YndNodeSpeed)((LinkCountUnk >> 1) & 3);
+            }
+            set
+            {
+                LinkCountUnk = (LinkCountUnk &~ 6) | (((int)value & 3) << 1);
             }
         }
 
+        //// Flag0 Properties
+        public bool OffRoad
+        {
+            get => (Flags0 & 8) > 0;
+            set => Flags0 = (byte)(value ? Flags0 | 8 : Flags0 &~ 8);
+        }
+        public bool NoBigVehicles
+        {
+            get => (Flags0.Value & 32) > 0;
+            set => Flags0 = (byte)(value ? Flags0 | 32 : Flags0 &~ 32);
+        }
+        public bool CannotGoLeft
+        {
+            get => (Flags0.Value & 128) > 0;
+            set => Flags0 = (byte)(value ? Flags0 | 128 : Flags0 &~ 32);
+        }
 
+        // Flag1 Properties
+        public bool SlipRoad
+        {
+            get => (Flags1 & 1) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 1 : Flags1 &~ 1);
+        }
+        public bool IndicateKeepLeft
+        {
+            get => (Flags1 & 2) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 2 : Flags1 &~ 2);
+        }
+        public bool IndicateKeepRight
+        {
+            get => (Flags1 & 4) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 4 : Flags1 &~ 4);
+        }
+        public YndNodeSpecialType Special
+        {
+            /// <summary>
+            /// Special type is the last 5 bits in Flags1. I cannot see a flag pattern here.
+            /// I suspect this to be an enum. Especially since this attribute appears as an int
+            /// in the XML file
+            /// 
+            /// Known Special Types:
+            /// Normal                      = 0,    Most nodes
+            /// ParkingSpace?               = 2,    Only 4 on the map as far as I can see. Probably useless.
+            /// PedCrossRoad                = 10,   Any pedestrian crossing where vehicles have priority. Traffic light crossings etc.
+            /// PedNode                     = 14,
+            /// TrafficLightStopNode        = 15, 
+            /// StopJunctionNode            = 16, 
+            /// Caution (Slow Down)?        = 17,   Appears before barriers, and merges
+            /// PedCrossRoadWithPriority?   = 18,   Appears in off-road crossings
+            /// EmergencyVehiclesOnly?           = 19,   Appears in the airport entrance, the airbase, and the road where the house falls down. Probably to stop all nav.
+            /// OffRoadJunctionNode?        = 20    Appears on a junction node with more than one edge where there is an off-road connection.
+            /// </summary>
+            get => (YndNodeSpecialType)(Flags1.Value >> 3);
+            set => Flags1 = (byte)((Flags1 &~0xF8) | ((byte)value << 3));
+        }
+
+        // Flag2 Properties
+        public bool NoGps
+        {
+            get => (Flags2.Value & 1) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 1 : Flags2 &~ 1);
+        }
+        public bool IsJunction
+        {
+            get => (Flags2.Value & 4) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 4 : Flags2 &~ 4);
+        }
+        public bool Highway
+        {
+            get => (Flags2.Value & 64) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 64 : Flags2 &~ 64);
+        }
+        public bool IsDisabledUnk0 // This seems to be heuristic based. A node being "disabled" does not mean that a vehicle will not travel through it.
+        {
+            get => (Flags2.Value & 128) > 0;
+            set => Flags2 = (byte)(value ? Flags2 | 128 : Flags2 &~ 128);
+        }
+        public bool IsDisabledUnk1
+        {
+            get { return (Flags2.Value & 16) > 0; }
+            set => Flags2 = (byte)(value ? Flags2 | 16 : Flags2 &~ 16);
+        }
+
+        // Flag3 Properties
+        public bool Tunnel
+        {
+            get { return (Flags3 & 1) > 0; }
+            set => Flags3 = (byte)(value ? Flags3 | 1 : Flags3 &~ 1);
+        }
+        public int HeuristicValue
+        {
+            /// <summary>
+            /// The heuristic value takes up the rest of Flags3.
+            /// It is a 7 bit integer, ranging from 0 to 127
+            /// For each node edge, it seems to add the FLOOR(DISTANCE(vTargetPos, vSourcePos)).
+            /// This is not 100% accurate with road merges etc (as is the nature of heuristics).
+            /// You'll see perfect accuracy in single lane roads, like alleys.
+            /// </summary>
+            get => Flags3.Value >> 1;
+            set => Flags3 = (byte)((Flags3 &~0xFE) | (value << 1));
+        }
+
+        // Flag4 Properties
+        public int Density // The first 4 bits of Flag4 is the density of the node. This ranges from 0 to 15.
+        {
+            get => Flags4.Value & 15;
+            set => Flags4 = (byte)((Flags4 &~ 15) | (value & 15));
+        }
+        public int DeadEndness
+        {
+            get => Flags4.Value & 112;
+            set => Flags4 = (byte)((Flags4 & ~ 112) | (value & 112));
+        }
+        public bool LeftTurnsOnly
+        {
+            get => (Flags1 & 128) > 0;
+            set => Flags1 = (byte)(value ? Flags1 | 128 : Flags1 &~ 128);
+        }
+
+        public static bool IsSpecialTypeAPedNode(YndNodeSpecialType specialType)
+            => specialType == YndNodeSpecialType.PedNodeRoadCrossing
+               || specialType == YndNodeSpecialType.PedNodeAssistedMovement
+               || specialType == YndNodeSpecialType.PedRoadCrossingNoWait;
+        public bool IsPedNode => IsSpecialTypeAPedNode(Special);// If Special is 10, 14 or 18 this is a ped node.
 
 
         public void Init(YndFile ynd, Node node)
@@ -679,106 +911,22 @@ namespace CodeWalker.GameFiles
 
         public Color4 GetColour()
         {
-            Color4 c = new Color4(LinkCountUnk / 7.0f, Flags0.Value / 255.0f, Flags1.Value / 255.0f, 1.0f);
-            //Color4 c = new Color4(0.0f, 0.0f, 0.0f, 1.0f);
+            if (IsDisabledUnk0 || IsDisabledUnk1)
+            {
+                return new Color4(1.0f, 0.0f, 0.0f, 0.5f);
+            }
 
-            //c.Red = (LinkCountUnk >> 1) / 3.0f;
-            //c.Red = (Flags3.Value >> 1) / 127.0f;
-            //c.Red = ((Flags4.Value >> 1) & 7) / 7.0f; //density value?
-            //c.Green = 1.0f - c.Red;
+            if (IsPedNode)
+            {
+                return new Color4(1.0f, 0.0f, 1.0f, 0.5f);
+            }
 
+            if (Tunnel)
+            {
+                return new Color4(0.3f, 0.3f, 0.3f, 0.5f);
+            }
 
-            //if ((Flags0.Value & 1) > 0) c.Red += 1.0f; //script activated? N Yankton only + small piece in self storage
-            //if ((Flags0.Value & 2) > 0) c.Red += 1.0f; //car can use / gps?
-            //if ((Flags0.Value & 4) > 0) c.Red += 1.0f; //***not used
-            //if ((Flags0.Value & 8) > 0) c.Red += 1.0f; //gravel surface? country roads mostly
-            //if ((Flags0.Value & 16) > 0) c.Red += 1.0f; //***not used
-            //if ((Flags0.Value & 32) > 0) c.Red += 1.0f; //slow speed? hills roads, prison boundary, carparks, airport roads etc
-            //if ((Flags0.Value & 64) > 0) c.Red += 1.0f; //intersection entry 1 (has priority)?
-            //if ((Flags0.Value & 128) > 0) c.Green += 1.0f; //intersection entry 2 unk?
-
-            //if ((Flags1.Value & 1) > 0) c.Red += 1.0f; //left turn lane?
-            //if ((Flags1.Value & 2) > 0) c.Red += 1.0f; //left turn node of no return
-            //if ((Flags1.Value & 4) > 0) c.Red += 1.0f; //right turn node of no return
-            //if ((Flags1.Value & 8) > 0) c.Red += 1.0f; //entry for traffic lights / boom gates etc
-            //if ((Flags1.Value & 16) > 0) c.Red += 1.0f; //entry for traffic lights / boom gates etc + peds crossing
-            //if ((Flags1.Value & 32) > 0) c.Red += 1.0f; //intersection entry 3 unk?
-            //if ((Flags1.Value & 64) > 0) c.Red += 1.0f; //entry for traffic lights / boom gates etc + peds crossing
-            //if ((Flags1.Value & 128) > 0) c.Red += 1.0f; //intersection minor/stop, T?
-
-            ////[16 bits pos Z here]
-
-            //if ((Flags2.Value & 1) > 0) c.Red += 1.0f; //slow traffic? peds? carparks? military? GPS disable routing??
-            //if ((Flags2.Value & 2) > 0) c.Red += 1.0f; //***not used
-            //if ((Flags2.Value & 4) > 0) c.Red += 1.0f; //intersection decision?
-            //if ((Flags2.Value & 8) > 0) c.Red += 1.0f; //***not used
-            //if ((Flags2.Value & 16) > 0) c.Red += 1.0f; //slower traffic?
-            //if ((Flags2.Value & 32) > 0) c.Red += 1.0f; //water/boat
-            //if ((Flags2.Value & 64) > 0) c.Red += 1.0f; //freeways  /peds?
-            //if ((Flags2.Value & 128) > 0) c.Red += 1.0f; //not a main road...?
-
-            //if ((LinkCountUnk & 1) > 0) c.Red += 1.0f; //has junction heightmap
-            //if ((LinkCountUnk & 2) > 0) c.Red += 1.0f; //speed/density/type related? not runways, not freeways
-            //if ((LinkCountUnk & 4) > 0) c.Red += 1.0f; //higher speed? eg freeway
-            ////[5 bits LinkCount here]
-
-            //if ((Flags3.Value & 1) > 0) c.Red += 1.0f; //is in an interior
-            //if ((Flags3.Value & 2) > 0) c.Red += 1.0f; //heuristic val?
-            //if ((Flags3.Value & 4) > 0) c.Red += 1.0f; //heuristic val?
-            //if ((Flags3.Value & 8) > 0) c.Red += 1.0f; //heuristic val?
-            //if ((Flags3.Value & 16) > 0) c.Red += 1.0f; //heuristic val?
-            //if ((Flags3.Value & 32) > 0) c.Red += 1.0f; //heuristic val?
-            //if ((Flags3.Value & 64) > 0) c.Red += 1.0f; //heuristic val?
-            //if ((Flags3.Value & 128) > 0) c.Red += 1.0f; //heuristic val?
-
-            //if ((Flags4.Value & 1) > 0) c.Red += 1.0f; //slow traffic?
-            //if ((Flags4.Value & 2) > 0) c.Red += 1.0f; //density/popgroup value..?
-            //if ((Flags4.Value & 4) > 0) c.Green += 1.0f; //density/popgroup value..?
-            //if ((Flags4.Value & 8) > 0) c.Blue += 1.0f; //density/popgroup value..?
-            //if ((Flags4.Value & 16) > 0) c.Red += 1.0f; //special/peds path?
-            //if ((Flags4.Value & 32) > 0) c.Green += 1.0f; //special/peds path?
-            //if ((Flags4.Value & 64) > 0) c.Blue += 1.0f; //special/peds path?
-            //if ((Flags4.Value & 128) > 0) c.Blue += 1.0f; //intersection entry left turn?
-
-
-
-
-
-
-            ////regarding paths.xml:
-            ////rubidium - Today at 8:37 AM
-            //also, quick glimpse over the xml for attributes:
-            ////> grep - i "attribute name" paths.xml | awk - F'^"' ' { print $2 }' | sort - u
-            //Block If No Lanes
-            //Cannot Go Left
-            //Cannot Go Right
-            //Density
-            //Disabled
-            //Dont Use For Navigation
-            //GpsBothWays
-            //Highway
-            //Indicate Keep Left
-            //Indicate Keep Right
-            //Lanes In
-            //Lanes Out
-            //Left Turns Only
-            //Narrowroad
-            //No Big Vehicles
-            //NoGps
-            //Off Road
-            //Shortcut
-            //Slip Lane
-            //Special
-            //Speed
-            //Streetname
-            //Tunnel
-            //Water
-            //Width
-
-
-
-
-            return c;
+            return new Color4(LinkCountUnk / 7.0f, Flags0.Value / 255.0f, Flags1.Value / 255.0f, 0.5f);
         }
 
 
@@ -795,6 +943,7 @@ namespace CodeWalker.GameFiles
             Position = newpos;
 
             UpdateLinkLengths();
+            RecalculateHeuristic();
         }
 
 
@@ -820,9 +969,63 @@ namespace CodeWalker.GameFiles
             }
         }
 
-
-        public YndLink AddLink(YndNode tonode = null)
+        public void RecalculateHeuristic()
         {
+            var link = Links?.FirstOrDefault(l => l.LaneCountBackward > 0);
+            if (link is null)
+            {
+                HeuristicValue = 0;
+                return;
+            }
+
+            var partner = link.Node1 == this
+                ? link.Node2
+                : link.Node1;
+
+            var length = link.LinkLength;
+
+            HeuristicValue = partner.HeuristicValue + length;
+        }
+
+        public void CheckIfJunction()
+        {
+            if (Links == null)
+            {
+                IsJunction = false;
+                return;
+            }
+
+            // If this is a 3 node junction (4 including itself)
+            IsJunction = Links
+                .Where(l => !l.Shortcut)
+                .SelectMany(l => new[] { l.Node1, l.Node2 }).Distinct().Count() > 3;
+
+            if (!IsJunction && Special == YndNodeSpecialType.OffRoadJunction)
+            {
+                Special = YndNodeSpecialType.None;
+            }
+
+            if (IsJunction && Special == YndNodeSpecialType.None || Special == YndNodeSpecialType.OffRoadJunction)
+            {
+                var hasOffroadLink = Links.Any(l => l.Node2.OffRoad);
+                Special = hasOffroadLink ? YndNodeSpecialType.OffRoadJunction : YndNodeSpecialType.None;
+            }
+        }
+
+
+        public YndLink AddLink(YndNode tonode = null, bool bidirectional = true)
+        {
+            if (Links == null)
+            {
+                Links = Array.Empty<YndLink>();
+            }
+
+            var existing = Links.FirstOrDefault(el => el.Node2 == tonode);
+            if (existing != null)
+            {
+                return existing;
+            }
+
             YndLink l = new YndLink();
             l._RawData.AreaID = AreaID;
             l.Node1 = this;
@@ -854,7 +1057,30 @@ namespace CodeWalker.GameFiles
             Links = nlinks;
             LinkCount = ncnt;
 
+            if (bidirectional)
+            {
+                tonode?.AddLink(this, false);
+            }
+
+            RecalculateHeuristic();
+            CheckIfJunction();
+
             return l;
+        }
+
+        public bool TryGetLinkForNode(YndNode node, out YndLink link)
+        {
+            for (int i = 0; i < Links.Length; i++)
+            {
+                if (Links[i].Node2 == node)
+                {
+                    link = Links[i];
+                    return true;
+                }
+            }
+
+            link = null;
+            return false;
         }
 
         public bool RemoveLink(YndLink l)
@@ -876,8 +1102,188 @@ namespace CodeWalker.GameFiles
             }
             Links = newlinks.ToArray();
             LinkCount = newlinks.Count;
+
+            RecalculateHeuristic();
+            CheckIfJunction();
             return r;
         }
+
+        public void FloodCopyFlags(out YndFile[] affectedFiles)
+        {
+            FloodCopyFlags(this, new List<YndNode>(), out affectedFiles);
+        }
+
+        private void FloodCopyFlags(YndNode basis, List<YndNode> seenNodes, out YndFile[] affectedFiles)
+        {
+            var affectedFilesList = new List<YndFile>();
+            if (Links == null || !Links.Any())
+            {
+                affectedFiles = Array.Empty<YndFile>();
+                return;
+            }
+
+            if (seenNodes.Contains(this))
+            {
+                affectedFiles = Array.Empty<YndFile>();
+                return;
+            }
+
+            seenNodes.Add(this);
+            if (basis != this && !IsJunction)
+            {
+                Flags0 = basis.Flags0;
+                Flags1 = basis.Flags1;
+                Flags2 = basis.Flags2;
+                Flags3 = basis.Flags3;
+                Flags4 = basis.Flags4;
+                LinkCountUnk = (LinkCountUnk &~ 7) | (basis.LinkCountUnk & 7);
+
+                affectedFilesList.Add(Ynd);
+                RecalculateHeuristic();
+            }
+
+            CheckIfJunction();
+
+            if (!IsJunction)
+            {
+                foreach (var yndLink in Links)
+                {
+                    if (yndLink.Shortcut)
+                    {
+                        continue;
+                    }
+
+                    yndLink.Node1.FloodCopyFlags(basis, seenNodes, out var node1Files);
+                    yndLink.Node2.FloodCopyFlags(basis, seenNodes, out var node2Files);
+
+                    affectedFilesList.AddRange(node1Files);
+                    affectedFilesList.AddRange(node2Files);
+                }
+            }
+
+            affectedFiles = affectedFilesList.Distinct().ToArray();
+        }
+
+
+
+
+
+        public void SetYndNodePosition(Space space, Vector3 newPosition, out YndFile[] affectedFiles)
+        {
+            var totalAffectedFiles = new List<YndFile>();
+
+            if (Links != null)
+            {
+                totalAffectedFiles.AddRange(Links.SelectMany(l => new[] { l.Node1.Ynd, l.Node2.Ynd }).Distinct());
+            }
+
+            var oldPosition = Position;
+            SetPosition(newPosition);
+            var expectedArea = space.NodeGrid.GetCellForPosition(newPosition);
+
+            if (AreaID != expectedArea.ID)
+            {
+                var nodeYnd = space.NodeGrid.GetCell(AreaID).Ynd;
+                var newYnd = expectedArea.Ynd;
+                if (newYnd == null)
+                {
+                    SetPosition(oldPosition);
+                    affectedFiles = Array.Empty<YndFile>();
+                    return;
+                }
+
+                if ((nodeYnd == null) ||
+                    nodeYnd.RemoveYndNode(space, this, false, out var affectedFilesFromDelete))
+                {
+                    totalAffectedFiles.Add(nodeYnd);
+                    newYnd.MigrateNode(this);
+                    totalAffectedFiles.AddRange(space.GetYndFilesThatDependOnYndFile(nodeYnd));
+                    totalAffectedFiles.AddRange(space.GetYndFilesThatDependOnYndFile(Ynd));
+                }
+            }
+
+            affectedFiles = totalAffectedFiles.Distinct().ToArray();
+        }
+
+        public void RemoveYndLinksForNode(Space space, out YndFile[] affectedFiles)
+        {
+            List<YndFile> files = new List<YndFile>();
+
+            foreach (var yndFile in space.GetYndFilesThatDependOnYndFile(Ynd))
+            {
+                if (yndFile.RemoveLinksForNode(this))
+                {
+                    files.Add(yndFile);
+                }
+            }
+
+            affectedFiles = files.ToArray();
+        }
+
+        public void GenerateYndNodeJunctionHeightMap(Space space)
+        {
+            if (Junction == null)
+            {
+                Junction = new YndJunction();
+            }
+
+            var junc = Junction;
+            var maxZ = junc.MaxZ / 32f;
+            var minZ = junc.MinZ / 32f;
+            var xStart = junc.PositionX / 4f;
+            var yStart = junc.PositionY / 4f;
+            var sizeX = junc._RawData.HeightmapDimX;
+            var sizeY = junc._RawData.HeightmapDimY;
+
+            var start = new Vector3(xStart, yStart, maxZ);
+            var layers = new[] { true, false, false };
+
+            var maxDist = maxZ - minZ;
+
+            var t = new StringBuilder();
+
+            var sb = new StringBuilder();
+
+            for (int y = 0; y < sizeY; y++)
+            {
+                var offy = y * 2.0f;
+
+                for (int x = 0; x < sizeX; x++)
+                {
+                    var offx = x * 2.0f;
+                    var result = space.RayIntersect(new Ray(start + new Vector3(offx, offy, 0f), new Vector3(0f, 0f, -1f)), maxDist, layers);
+
+                    var p = start + new Vector3(offx, offy, 0f);
+                    //t.AppendLine($"{p.X}, {p.Y}, {p.Z}");
+
+                    if (!result.Hit)
+                    {
+                        sb.Append("000 ");
+                        continue;
+                    }
+
+                    t.AppendLine($"{result.Position.X}, {result.Position.Y}, {result.Position.Z}");
+
+                    var height = Math.Min(Math.Max(result.Position.Z, minZ), maxZ);
+                    var actualDist = (byte)((height - minZ) / maxDist * 255);
+                    sb.Append(actualDist);
+                    sb.Append(' ');
+                }
+
+                // Remove trailing space
+                sb.Remove(sb.Length - 1, 1);
+                sb.AppendLine();
+            }
+
+            // Remove trailing new line
+            sb.Remove(sb.Length - 1, 1);
+
+            var tt = t.ToString();
+
+            junc.SetHeightmap(sb.ToString());
+        }
+
+
 
 
         public override string ToString()
@@ -891,7 +1297,18 @@ namespace CodeWalker.GameFiles
     {
         public YndFile Ynd { get; set; }
         public YndNode Node1 { get; set; }
-        public YndNode Node2 { get; set; }
+
+        private YndNode _node2;
+        public YndNode Node2
+        {
+            get => _node2;
+            set
+            {
+                _node2 = value;
+                UpdateTargetIndex();
+            }
+        }
+
         public NodeLink _RawData;
         public NodeLink RawData { get { return _RawData; } set { _RawData = value; } }
         public FlagsByte Flags0 { get { return _RawData.Flags0; } set { _RawData.Flags0 = value; } }
@@ -899,12 +1316,36 @@ namespace CodeWalker.GameFiles
         public FlagsByte Flags2 { get { return _RawData.Flags2; } set { _RawData.Flags2 = value; } }
         public FlagsByte LinkLength { get { return _RawData.LinkLength; } set { _RawData.LinkLength = value; } }
 
-        public int LaneCountForward { get { return (Flags2.Value >> 5) & 7; } }
-        public int LaneCountBackward { get { return (Flags2.Value >> 2) & 7; } }
+        public int LaneCountForward
+        {
+            get => (Flags2.Value >> 5) & 7;
+            set => Flags2 =  (byte)((Flags2 &~0xE0) | ((value & 7) << 5));
+        }
 
-        public int OffsetValue { get { return (Flags1.Value >> 4) & 7; } }
+        public int LaneCountBackward
+        {
+            get => (Flags2.Value >> 2) & 7;
+            set => Flags2 = (byte)((Flags2 &~0x1C) | ((value & 7) << 2));
+        }
+
+        public int OffsetValue
+        {
+            get => (Flags1.Value >> 4) & 7;
+            set => Flags2 = (byte)((Flags2 & ~0x70) | ((value & 7) << 4));
+        }
+
         public bool NegativeOffset { get { return (Flags1.Value >> 7) > 0; } }
         public float LaneOffset { get { return (OffsetValue / 7.0f) * (NegativeOffset ? -0.5f : 0.5f); } }
+
+        public bool GpsBothWays { get { return (Flags0 & 1) > 0; } }
+        public bool NarrowRoad { get { return (Flags1 & 2) > 0; } }
+        public bool DontUseForNavigation { get { return (Flags2 & 1) > 0; } }
+
+        public bool Shortcut
+        {
+            get { return (Flags2 & 2) > 0; }
+            set => Flags2 = value ? (byte)(Flags2 | 2) : (byte)(Flags2 &~ 2);
+        }
 
 
         public void Init(YndFile ynd, YndNode node1, YndNode node2, NodeLink link)
@@ -931,70 +1372,143 @@ namespace CodeWalker.GameFiles
             Flags0 = link.Flags0;
             Flags1 = link.Flags1;
             Flags2 = link.Flags2;
+
+            CheckIfJunction();
         }
 
+        public bool IsTwoWay()
+        {
+            return LaneCountForward > 0 && LaneCountBackward > 0;
+        }
 
+        public void SetForwardLanesBidirectionally(int value)
+        {
+            LaneCountForward = value;
+
+            if (Node2.TryGetLinkForNode(Node1, out var node2Link))
+            {
+                node2Link.LaneCountBackward = value;
+            }
+
+            CheckIfJunction();
+        }
+
+        public void SetBackwardLanesBidirectionally(int value)
+        {
+            LaneCountBackward = value;
+
+            if (Node2.TryGetLinkForNode(Node1, out var node2Link))
+            {
+                node2Link.LaneCountForward = value;
+            }
+
+            CheckIfJunction();
+        }
+
+        public void CheckIfJunction()
+        {
+            Node1?.CheckIfJunction();
+            Node2?.CheckIfJunction();
+        }
 
         public Color4 GetColour()
         {
-
-
             //float f0 = Flags0.Value / 255.0f;
             //float f1 = Flags1.Value / 255.0f;
             //float f2 = Flags2.Value / 255.0f;
             //var c = new Color4(f0, f1, f2, 1.0f);
 
             var c = new Color4(0.0f, 0.0f, 0.0f, 0.5f);
-            c.Green = LaneCountForward / 7.0f;
-            c.Red = LaneCountBackward / 7.0f;
 
+            if (Shortcut)
+            {
+                c.Blue = 0.2f;
+                c.Green = 0.2f;
+                return c;
+            }
 
-            //if ((Flags0.Value & 1) > 0) c.Red = 1.0f; //? some small pieces in city, roads at docks, and mall at beach
-            //if ((Flags0.Value & 2) > 0) c.Red = 1.0f; //3x segments joining east canal paths to roads, also josh's driveway - scripted?
-            //if ((Flags0.Value & 4) > 0) c.Red = 1.0f; //? looks fairly random, 0 for water, alternating - slope related?
-            //if ((Flags0.Value & 8) > 0) c.Red = 1.0f; //? like above
-            //if ((Flags0.Value & 16) > 0) c.Red = 1.0f; //? similar to above, but less
-            //if ((Flags0.Value & 32) > 0) c.Red = 1.0f; //? like above
-            //if ((Flags0.Value & 64) > 0) c.Red = 1.0f; //? slightly less random
-            //if ((Flags0.Value & 128) > 0) c.Red = 1.0f; //? still looks random...
+            if (Node1.IsDisabledUnk0 
+                || Node1.IsDisabledUnk1 
+                || Node2.IsDisabledUnk0 
+                || Node2.IsDisabledUnk1)
+            {
+                if (Node1.OffRoad || Node2.OffRoad)
+                {
+                    c.Red = 0.0196f;
+                    c.Green = 0.0156f;
+                    c.Blue = 0.0043f;
+                }
+                c.Red = 0.02f;
+                return c;
+            }
 
-            //if ((Flags1.Value & 1) > 0) c.Red = 1.0f; //***not used?
-            //if ((Flags1.Value & 2) > 0) c.Red = 1.0f; //?possibly width/type bit
-            //if ((Flags1.Value & 4) > 0) c.Red = 1.0f; //avoid routing? no through road / no other exit?
-            //if ((Flags1.Value & 8) > 0) c.Red = 1.0f; //prefer routing? exit from dead end?
-            //if ((Flags1.Value & 16) > 0) c.Red = 1.0f; //offset value.   mostly single lane, carpark access, golf course, alleyways, driveways, beach area etc
-            //if ((Flags1.Value & 32) > 0) c.Green = 1.0f; //offset value.  similar to above
-            //if ((Flags1.Value & 64) > 0) c.Green = 1.0f; //offset value.  similar to above
-            //if ((Flags1.Value & 128) > 0) c.Red = 1.0f; //offset value. (sign)  similar to above (all paired with their back links!)
+            if (Node1.IsPedNode || Node2.IsPedNode)
+            {
+                c.Red = 0.2f;
+                c.Green = 0.15f;
+                return c;
+            }
 
-            //if ((Flags2.Value & 1) > 0) c.Red = 1.0f; //angled link - merge? enter/exit divided road section, most big junctions, always paired
-            //if ((Flags2.Value & 2) > 0) c.Red = 1.0f; //lane change/u-turn link?  always paired
-            //if ((Flags2.Value & 4) > 0) c.Red = 1.0f; //lane count back dir
-            //if ((Flags2.Value & 8) > 0) c.Red = 1.0f; //lane count back dir
-            //if ((Flags2.Value & 16) > 0) c.Red = 1.0f; //lane count back dir
-            //if ((Flags2.Value & 32) > 0) c.Green = 1.0f; //lane count forward dir
-            //if ((Flags2.Value & 64) > 0) c.Green = 1.0f; //lane count forward dir
-            //if ((Flags2.Value & 128) > 0) c.Green = 1.0f; //lane count forward dir
+            if (Node1.OffRoad || Node2.OffRoad)
+            {
+                c.Red = 0.196f;
+                c.Green = 0.156f;
+                c.Blue = 0.043f;
+                return c;
+            }
 
-            ////var lanesfwd = (Flags2.Value >> 5) & 7;
-            ////var lanesbck = (Flags2.Value >> 2) & 7;
-            //////if ((lanesfwd > 0) && (lanesbck > 0) && (lanesfwd != lanesbck))
-            //////{ }
+            if (DontUseForNavigation)
+            {
+                c.Blue = 0.2f;
+                c.Red = 0.2f;
+                return c;
+            }
 
+            if (LaneCountForward == 0)
+            {
+                c.Red = 0.5f;
+                return c;
+            }
 
-
-            //var t = (Flags1.Value >> 4)&1;
-            //c.Red = t / 1.0f;
-            //c.Green = 1.0f - c.Red;
-            ////if (((Flags1.Value & 128) > 0))// && ((Flags1.Value & 64) == 0))
-            ////{ c.Red += 1.0f; }
-
-
+            c.Green = 0.2f;
+            
 
             return c;
         }
 
+        public float GetLaneWidth()
+        {
+            if (Shortcut || Node1.IsPedNode || Node2.IsPedNode)
+            {
+                return 0.5f;
+            }
 
+            if (DontUseForNavigation)
+            {
+                return 2.5f;
+            }
+
+            if (NarrowRoad)
+            {
+                return 4.0f;
+            }
+
+            return 5.5f;
+        }
+
+        public Vector3 GetDirection()
+        {
+            var p0 = Node1?.Position ?? Vector3.Zero;
+            var p1 = Node2?.Position ?? Vector3.Zero;
+            var diff = p1 - p0;
+            return Vector3.Normalize(diff);
+        }
+
+        public void UpdateTargetIndex()
+        {
+            _RawData.AreaID = Node2.AreaID;
+            _RawData.NodeID = Node2.NodeID;
+        }
 
         public override string ToString()
         {

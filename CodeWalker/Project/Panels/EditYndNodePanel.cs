@@ -39,7 +39,7 @@ namespace CodeWalker.Project.Panels
 
         private void UpdateFormTitle()
         {
-            var sn = CurrentPathNode.StreetName.Hash == 0 ? "Path node" : CurrentPathNode.StreetName.ToString();
+            var sn = CurrentPathNode.StreetName.Hash == 0 ? "Path node" : CurrentPathNode?.StreetName.ToString() ?? string.Empty;
             Text = sn + " " + CurrentPathNode.NodeID.ToString();
         }
 
@@ -108,6 +108,22 @@ namespace CodeWalker.Project.Panels
                     ProjectForm.WorldForm.SelectObject(CurrentPathNode);
                 }
 
+                if (PathNodesSpeedComboBox.Items.Count == 0)
+                {
+                    PathNodesSpeedComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpeed)).Cast<object>().ToArray());
+                }
+
+                if (PathNodeSpecialTypeComboBox.Items.Count == 0)
+                {
+                    PathNodeSpecialTypeComboBox.Items.AddRange(Enum.GetValues(typeof(YndNodeSpecialType)).Cast<object>().ToArray());
+                }
+
+                PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode.Special;
+                PathNodesSpeedComboBox.SelectedItem = CurrentPathNode.Speed;
+
+                PathNodeEnableDisableButton.Text = CurrentPathNode.IsDisabledUnk0
+                    ? "Enable Section"
+                    : "Disable Section";
             }
         }
 
@@ -128,8 +144,8 @@ namespace CodeWalker.Project.Panels
             {
                 populatingui = true;
                 PathNodeLinkPanel.Enabled = true;
-                PathNodeLinkAreaIDUpDown.Value = CurrentPathLink._RawData.AreaID;
-                PathNodeLinkNodeIDUpDown.Value = CurrentPathLink._RawData.NodeID;
+                PathNodeLinkAreaIDUpDown.Value = CurrentPathLink.Node2?.AreaID ?? 0;
+                PathNodeLinkNodeIDUpDown.Value = CurrentPathLink.Node2?.NodeID ?? 0;
 
                 UpdatePathNodeLinkFlagsUI(true, true);
 
@@ -166,10 +182,10 @@ namespace CodeWalker.Project.Panels
                 populatingui = true;
                 PathNodeJunctionEnableCheckBox.Checked = CurrentPathNode.HasJunction;
                 PathNodeJunctionPanel.Enabled = PathNodeJunctionEnableCheckBox.Checked;
-                PathNodeJunctionMaxZUpDown.Value = junc.MaxZ;
-                PathNodeJunctionMinZUpDown.Value = junc.MinZ;
-                PathNodeJunctionPosXUpDown.Value = junc.PositionX;
-                PathNodeJunctionPosYUpDown.Value = junc.PositionY;
+                PathNodeJunctionMaxZUpDown.Value = (decimal)junc.MaxZ / 32;
+                PathNodeJunctionMinZUpDown.Value = (decimal)junc.MinZ / 32;
+                PathNodeJunctionPosXUpDown.Value = (decimal)junc.PositionX / 32;
+                PathNodeJunctionPosYUpDown.Value = (decimal)junc.PositionY / 32 ;
                 PathNodeJunctionHeightmapDimXUpDown.Value = junc.Heightmap.CountX;
                 PathNodeJunctionHeightmapDimYUpDown.Value = junc.Heightmap.CountY;
                 PathNodeJunctionHeightmapBytesTextBox.Text = junc.Heightmap?.GetDataString() ?? "";
@@ -204,11 +220,6 @@ namespace CodeWalker.Project.Panels
                 PathNodeFlags11CheckBox.Checked = BitUtil.IsBitSet(flags1, 0);
                 PathNodeFlags12CheckBox.Checked = BitUtil.IsBitSet(flags1, 1);
                 PathNodeFlags13CheckBox.Checked = BitUtil.IsBitSet(flags1, 2);
-                PathNodeFlags14CheckBox.Checked = BitUtil.IsBitSet(flags1, 3);
-                PathNodeFlags15CheckBox.Checked = BitUtil.IsBitSet(flags1, 4);
-                PathNodeFlags16CheckBox.Checked = BitUtil.IsBitSet(flags1, 5);
-                PathNodeFlags17CheckBox.Checked = BitUtil.IsBitSet(flags1, 6);
-                PathNodeFlags18CheckBox.Checked = BitUtil.IsBitSet(flags1, 7);
 
                 PathNodeFlags21CheckBox.Checked = BitUtil.IsBitSet(flags2, 0);
                 PathNodeFlags22CheckBox.Checked = BitUtil.IsBitSet(flags2, 1);
@@ -222,16 +233,15 @@ namespace CodeWalker.Project.Panels
                 PathNodeFlags31CheckBox.Checked = BitUtil.IsBitSet(flags3, 0);
                 PathNodeFlags32UpDown.Value = (flags3 >> 1) & 127;
 
-                PathNodeFlags41CheckBox.Checked = BitUtil.IsBitSet(flags4, 0);
-                PathNodeFlags42UpDown.Value = (flags4 >> 1) & 7;
-                PathNodeFlags45CheckBox.Checked = BitUtil.IsBitSet(flags4, 4);
-                PathNodeFlags46CheckBox.Checked = BitUtil.IsBitSet(flags4, 5);
-                PathNodeFlags47CheckBox.Checked = BitUtil.IsBitSet(flags4, 6);
+                PathNodeFlags42UpDown.Value = (flags4) & 15;
+                PathNodeFlags44UpDown.Value = (flags4 >> 4) & 7;
                 PathNodeFlags48CheckBox.Checked = BitUtil.IsBitSet(flags4, 7);
 
                 PathNodeFlags51CheckBox.Checked = BitUtil.IsBitSet(flags5, 0);
-                PathNodeFlags52CheckBox.Checked = BitUtil.IsBitSet(flags5, 1);
-                PathNodeFlags53CheckBox.Checked = BitUtil.IsBitSet(flags5, 2);
+                YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode?.IsPedNode ?? false;
+
+                PathNodesSpeedComboBox.SelectedItem = CurrentPathNode?.Speed ?? (YndNodeSpeed)(-1);
+                PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode?.Special ?? YndNodeSpecialType.None;
             }
             if (updateUpDowns)
             {
@@ -280,7 +290,7 @@ namespace CodeWalker.Project.Panels
                 PathNodeLinkFlags12CheckBox.Checked = BitUtil.IsBitSet(flags1, 1);
                 PathNodeLinkFlags13CheckBox.Checked = BitUtil.IsBitSet(flags1, 2);
                 PathNodeLinkFlags14CheckBox.Checked = BitUtil.IsBitSet(flags1, 3);
-                PathNodeLinkOffsetSizeUpDown.Value = (flags1 >> 4) & 7;
+                PathNodeLinkOffsetSizeUpDown.Value = flags1 >> 4 & 7;
                 PathNodeLinkFlags18CheckBox.Checked = BitUtil.IsBitSet(flags1, 7);
 
                 PathNodeLinkFlags21CheckBox.Checked = BitUtil.IsBitSet(flags2, 0);
@@ -333,11 +343,6 @@ namespace CodeWalker.Project.Panels
             flags1 = BitUtil.UpdateBit(flags1, 0, PathNodeFlags11CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 1, PathNodeFlags12CheckBox.Checked);
             flags1 = BitUtil.UpdateBit(flags1, 2, PathNodeFlags13CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 3, PathNodeFlags14CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 4, PathNodeFlags15CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 5, PathNodeFlags16CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 6, PathNodeFlags17CheckBox.Checked);
-            flags1 = BitUtil.UpdateBit(flags1, 7, PathNodeFlags18CheckBox.Checked);
 
             flags2 = BitUtil.UpdateBit(flags2, 0, PathNodeFlags21CheckBox.Checked);
             flags2 = BitUtil.UpdateBit(flags2, 1, PathNodeFlags22CheckBox.Checked);
@@ -351,16 +356,11 @@ namespace CodeWalker.Project.Panels
             flags3 = BitUtil.UpdateBit(flags3, 0, PathNodeFlags31CheckBox.Checked);
             flags3 += (((uint)PathNodeFlags32UpDown.Value & 127u) << 1);
 
-            flags4 = BitUtil.UpdateBit(flags4, 0, PathNodeFlags41CheckBox.Checked);
-            flags4 += (((uint)PathNodeFlags42UpDown.Value & 7u) << 1);
-            flags4 = BitUtil.UpdateBit(flags4, 4, PathNodeFlags45CheckBox.Checked);
-            flags4 = BitUtil.UpdateBit(flags4, 5, PathNodeFlags46CheckBox.Checked);
-            flags4 = BitUtil.UpdateBit(flags4, 6, PathNodeFlags47CheckBox.Checked);
+            flags4 = (byte)((flags4 & ~ 15) | ((uint)PathNodeFlags42UpDown.Value & 15u));
+            flags4 = (byte)((flags4 & ~ 112) | ((uint)PathNodeFlags44UpDown.Value & 7) << 4);
             flags4 = BitUtil.UpdateBit(flags4, 7, PathNodeFlags48CheckBox.Checked);
 
             flags5 = BitUtil.UpdateBit(flags5, 0, PathNodeFlags51CheckBox.Checked);
-            flags5 = BitUtil.UpdateBit(flags5, 1, PathNodeFlags52CheckBox.Checked);
-            flags5 = BitUtil.UpdateBit(flags5, 2, PathNodeFlags53CheckBox.Checked);
 
 
             lock (ProjectForm.ProjectSyncRoot)
@@ -372,7 +372,8 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathNode.Flags1.Value != flags1)
                 {
-                    CurrentPathNode.Flags1 = (byte)flags1;
+                    // Ignore the last 5 bits for special type
+                    CurrentPathNode.Flags1 = (byte)((uint)(CurrentPathNode.Flags1 &~ 7) | (flags1 & 7));
                     ProjectForm.SetYndHasChanged(true);
                 }
                 if (CurrentPathNode.Flags2.Value != flags2)
@@ -387,15 +388,26 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathNode.Flags4.Value != flags4)
                 {
-                    CurrentPathNode.Flags4 = (byte)flags4;
+                    CurrentPathNode.Flags4 = (byte)(flags4);
                     ProjectForm.SetYndHasChanged(true);
                 }
                 if (CurrentPathNode.LinkCountUnk != flags5)
                 {
-                    CurrentPathNode.LinkCountUnk = (byte)flags5;
+                    // Ignore bits 1 and 2 for speed
+                    CurrentPathNode.LinkCountUnk = (byte)((uint)(CurrentPathNode.LinkCountUnk &~ 0xF9) | (flags5 & 0xF9));
                     ProjectForm.SetYndHasChanged(true);
                 }
+
+                // Allow partner nodes to check if they've become an offroad junction
+                if (CurrentPathNode.Links != null)
+                {
+                    foreach (var yndLink in CurrentPathNode.Links)
+                    {
+                        yndLink.Node2?.CheckIfJunction();
+                    }
+                }
             }
+                
 
             populatingui = true;
             UpdatePathNodeFlagsUI(false, true); //update updowns
@@ -423,7 +435,7 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathNode.Flags1.Value != flags1)
                 {
-                    CurrentPathNode.Flags1 = (byte)flags1;
+                    CurrentPathNode.Flags1 = (byte)((uint)(CurrentPathNode.Flags1 & ~7) | (flags1 & 7));
                     ProjectForm.SetYndHasChanged(true);
                 }
                 if (CurrentPathNode.Flags2.Value != flags2)
@@ -443,7 +455,7 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathNode.LinkCountUnk != flags5)
                 {
-                    CurrentPathNode.LinkCountUnk = (byte)flags5;
+                    CurrentPathNode.LinkCountUnk = (byte)((uint)(CurrentPathNode.LinkCountUnk & ~0xF9) | (flags5 & 0xF9));
                     ProjectForm.SetYndHasChanged(true);
                 }
             }
@@ -475,8 +487,6 @@ namespace CodeWalker.Project.Panels
 
             flags2 = BitUtil.UpdateBit(flags2, 0, PathNodeLinkFlags21CheckBox.Checked);
             flags2 = BitUtil.UpdateBit(flags2, 1, PathNodeLinkFlags22CheckBox.Checked);
-            flags2 += (((uint)PathNodeLinkBackLanesUpDown.Value & 7u) << 2);
-            flags2 += (((uint)PathNodeLinkFwdLanesUpDown.Value & 7u) << 5);
 
             bool updgfx = false;
             lock (ProjectForm.ProjectSyncRoot)
@@ -494,7 +504,24 @@ namespace CodeWalker.Project.Panels
                 }
                 if (CurrentPathLink.Flags2.Value != flags2)
                 {
-                    CurrentPathLink.Flags2 = (byte)flags2;
+                    CurrentPathLink.Flags2= (byte)((uint)(CurrentPathLink.Flags2 & ~ 3) | flags2);
+                    ProjectForm.SetYndHasChanged(true);
+                    updgfx = true;
+                }
+
+                int forwardLanes = (int)PathNodeLinkFwdLanesUpDown.Value;
+
+                if (forwardLanes != CurrentPathLink.LaneCountForward)
+                {
+                    CurrentPathLink.SetForwardLanesBidirectionally(forwardLanes);
+                    ProjectForm.SetYndHasChanged(true);
+                    updgfx = true;
+                }
+
+                int backwardLanes = (int)PathNodeLinkBackLanesUpDown.Value;
+                if (backwardLanes != CurrentPathLink.LaneCountBackward)
+                {
+                    CurrentPathLink.SetBackwardLanesBidirectionally(backwardLanes);
                     ProjectForm.SetYndHasChanged(true);
                     updgfx = true;
                 }
@@ -555,6 +582,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentPathNode == null) return;
 
+
             var l = CurrentPathNode.AddLink();
 
             LoadPathNodeTabPage();
@@ -571,6 +599,12 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentPathLink == null) return;
             if (CurrentPathNode == null) return;
+
+            var partners = CurrentPathLink.Node2.Links.Where(l => l.Node2 == CurrentPathNode);
+            foreach (var partner in partners)
+            {
+                partner.Node1.RemoveLink(partner);
+            }
 
             var r = CurrentPathNode.RemoveLink(CurrentPathLink);
 
@@ -592,6 +626,7 @@ namespace CodeWalker.Project.Panels
             YndNode linknode = null;
             ushort areaid = CurrentPathLink._RawData.AreaID;
             ushort nodeid = CurrentPathLink._RawData.NodeID;
+
             if (areaid == CurrentYndFile.AreaID)
             {
                 //link to the same ynd. find the new node in the current ynd.
@@ -618,9 +653,17 @@ namespace CodeWalker.Project.Panels
                 PathNodeLinkageStatusLabel.Text = "";
             }
 
+            var partner = CurrentPathLink.Node2.Links.FirstOrDefault(l => l.Node2 == CurrentPathNode);
+            partner?.Node1.RemoveLink(partner);
+
             CurrentPathLink.Node2 = linknode;
             CurrentPathLink.UpdateLength();
+            var l2 = linknode?.AddLink(CurrentPathNode);
 
+            if (l2 != null && partner != null)
+            {
+                l2.CopyFlags(partner);
+            }
 
             ////need to rebuild the link verts.. updating the graphics should do it...
             if (ProjectForm.WorldForm != null)
@@ -679,7 +722,14 @@ namespace CodeWalker.Project.Panels
             {
                 if (CurrentPathNode.Position != v)
                 {
-                    CurrentPathNode.SetPosition(v);
+                    CurrentPathNode.SetYndNodePosition(ProjectForm.WorldForm.Space, v, out var affectedFiles);
+
+                    foreach (var affectedFile in affectedFiles)
+                    {
+                        ProjectForm.AddYndToProject(affectedFile);
+                        ProjectForm.SetYndHasChanged(affectedFile, true);
+                    }
+
                     ProjectForm.SetYndHasChanged(true);
                     change = true;
                 }
@@ -933,16 +983,10 @@ namespace CodeWalker.Project.Panels
             SetPathNodeFlagsFromCheckBoxes(); //treat this one like checkboxes
         }
 
-        private void PathNodeFlags52CheckBox_CheckedChanged(object sender, EventArgs e)
+        private void PathNodeFlags44UpDown_ValueChanged(object sender, EventArgs e)
         {
-            SetPathNodeFlagsFromCheckBoxes();
+            SetPathNodeFlagsFromCheckBoxes(); //treat this one like checkboxes
         }
-
-        private void PathNodeFlags53CheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            SetPathNodeFlagsFromCheckBoxes();
-        }
-
 
         private void PathNodeLinksListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -1123,14 +1167,19 @@ namespace CodeWalker.Project.Panels
                     {
                         var j = new YndJunction();
                         //init new junction
-                        j._RawData.HeightmapDimX = 1;
-                        j._RawData.HeightmapDimY = 1;
-                        j.Heightmap = new YndJunctionHeightmap(new byte[] { 255 }, j);
+                        j._RawData.HeightmapDimX = 16;
+                        j._RawData.HeightmapDimY = 16;
+                        j.MaxZ = (short)(CurrentPathNode.Position.Z * 32 + 32);
+                        j.MinZ = (short)(CurrentPathNode.Position.Z * 32 - 32);
+                        j.PositionX = (short)(CurrentPathNode.Position.X * 4f - j.RawData.HeightmapDimY * 4f);
+                        j.PositionY = (short)(CurrentPathNode.Position.Y * 4f - j.RawData.HeightmapDimY * 4f);
+                        j.Heightmap = new YndJunctionHeightmap(Enumerable.Repeat((byte)255, j._RawData.HeightmapDimX * j._RawData.HeightmapDimY).ToArray(), j);
                         j.RefData = new NodeJunctionRef() { AreaID = (ushort)CurrentPathNode.AreaID, NodeID = (ushort)CurrentPathNode.NodeID };
 
                         CurrentPathNode.Junction = j;
                     }
                     ProjectForm.SetYndHasChanged(true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
                 }
             }
             LoadPathNodeJunctionPage();
@@ -1141,7 +1190,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentPathNode == null) return;
             if (CurrentPathNode.Junction == null) return;
-            short val = (short)PathNodeJunctionMaxZUpDown.Value;
+            short val = (short)(PathNodeJunctionMaxZUpDown.Value * 32);
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentPathNode.Junction.MaxZ != val)
@@ -1149,6 +1198,7 @@ namespace CodeWalker.Project.Panels
                     CurrentPathNode.Junction.MaxZ = val;
                     CurrentPathNode.Junction._RawData.MaxZ = val;
                     ProjectForm.SetYndHasChanged(true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
                 }
             }
         }
@@ -1158,7 +1208,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentPathNode == null) return;
             if (CurrentPathNode.Junction == null) return;
-            short val = (short)PathNodeJunctionMinZUpDown.Value;
+            short val = (short)(PathNodeJunctionMinZUpDown.Value * 32);
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentPathNode.Junction.MinZ != val)
@@ -1166,6 +1216,7 @@ namespace CodeWalker.Project.Panels
                     CurrentPathNode.Junction.MinZ = val;
                     CurrentPathNode.Junction._RawData.MinZ = val;
                     ProjectForm.SetYndHasChanged(true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
                 }
             }
         }
@@ -1175,7 +1226,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentPathNode == null) return;
             if (CurrentPathNode.Junction == null) return;
-            short val = (short)PathNodeJunctionPosXUpDown.Value;
+            short val = (short)(PathNodeJunctionPosXUpDown.Value * 32);
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentPathNode.Junction.PositionX != val)
@@ -1183,6 +1234,7 @@ namespace CodeWalker.Project.Panels
                     CurrentPathNode.Junction.PositionX = val;
                     CurrentPathNode.Junction._RawData.PositionX = val;
                     ProjectForm.SetYndHasChanged(true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
                 }
             }
         }
@@ -1192,7 +1244,7 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentPathNode == null) return;
             if (CurrentPathNode.Junction == null) return;
-            short val = (short)PathNodeJunctionPosYUpDown.Value;
+            short val = (short)(PathNodeJunctionPosYUpDown.Value * 32);
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentPathNode.Junction.PositionY != val)
@@ -1200,6 +1252,7 @@ namespace CodeWalker.Project.Panels
                     CurrentPathNode.Junction.PositionY = val;
                     CurrentPathNode.Junction._RawData.PositionY = val;
                     ProjectForm.SetYndHasChanged(true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
                 }
             }
         }
@@ -1217,6 +1270,7 @@ namespace CodeWalker.Project.Panels
                     CurrentPathNode.Junction._RawData.HeightmapDimX = val;
                     CurrentPathNode.Junction.ResizeHeightmap();
                     ProjectForm.SetYndHasChanged(true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
                 }
             }
             LoadPathNodeJunctionPage();
@@ -1235,6 +1289,7 @@ namespace CodeWalker.Project.Panels
                     CurrentPathNode.Junction._RawData.HeightmapDimY = val;
                     CurrentPathNode.Junction.ResizeHeightmap();
                     ProjectForm.SetYndHasChanged(true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
                 }
             }
             LoadPathNodeJunctionPage();
@@ -1249,8 +1304,166 @@ namespace CodeWalker.Project.Panels
             {
                 CurrentPathNode.Junction.SetHeightmap(PathNodeJunctionHeightmapBytesTextBox.Text);
                 ProjectForm.SetYndHasChanged(true);
+                ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
             }
             //LoadPathNodeJunctionPage();
         }
+
+        private void YndNodeJunctionGenerateButton_Click(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentPathNode == null) return;
+            if (CurrentPathNode.Junction == null) return;
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                CurrentPathNode.GenerateYndNodeJunctionHeightMap(ProjectForm.WorldForm.Space);
+                ProjectForm.SetYndHasChanged(true);
+                ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+            }
+
+            LoadPathNodeJunctionPage();
+        }
+
+        private void PathNodesSpeedComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentPathNode == null) return;
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                var speed = (YndNodeSpeed)PathNodesSpeedComboBox.SelectedItem;
+                if (CurrentPathNode.Speed != speed)
+                {
+                    CurrentPathNode.Speed = speed;
+                    ProjectForm.SetYndHasChanged(true);
+                    UpdatePathNodeFlagsUI(true, true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+                }
+            }
+        }
+
+        private void PathNodeSpecialTypeComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentPathNode == null) return;
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                var special = (YndNodeSpecialType)PathNodeSpecialTypeComboBox.SelectedItem;
+
+                if (CurrentPathNode.Special != special)
+                {
+                    var isPedNode = CurrentPathNode.IsPedNode;
+                    bool specialIsPedNode = YndNode.IsSpecialTypeAPedNode(special);
+                    if (isPedNode != specialIsPedNode)
+                    {
+                        var res = MessageBox.Show(
+                            specialIsPedNode
+                                ? "This operation will change this node from a vehicle node to a ped node. This will remove all links. Are you sure you want to do this?"
+                                : "This operation will change this node from a ped node to a vehicle node. This will remove all links. Are you sure you want to do this?",
+                            "Are you sure?",
+                            MessageBoxButtons.YesNo
+                        );
+
+                        if (res == DialogResult.No)
+                        {
+                            PathNodeSpecialTypeComboBox.SelectedItem = CurrentPathNode.Special;
+                            return;
+                        }
+
+                        if (ProjectForm != null)
+                        {
+                            CurrentPathNode.RemoveYndLinksForNode(ProjectForm.WorldForm.Space, out var affectedFiles);
+                            ProjectForm.AddYndToProject(CurrentYndFile);
+                            ProjectForm.WorldForm?.UpdatePathYndGraphics(CurrentYndFile, false);
+                            foreach (var file in affectedFiles)
+                            {
+                                ProjectForm.AddYndToProject(file);
+                                ProjectForm.WorldForm?.UpdatePathYndGraphics(file, false);
+                                ProjectForm.SetYndHasChanged(file, true);
+                            }
+                        }
+                    }
+
+                    CurrentPathNode.Special = special;
+                    YndNodeIsPedNodeCheckBox.Checked = CurrentPathNode.IsPedNode;
+                    UpdatePathNodeFlagsUI(true, true);
+                    ProjectForm.SetYndHasChanged(true);
+                }
+                
+            }
+        }
+
+        private void PathNodeSelectPartnerButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentPathLink == null)
+                return;
+
+            var partner = CurrentPathLink.Node2.Links.FirstOrDefault(l => l.Node2 == CurrentPathNode);
+            if (partner == null)
+            {
+                MessageBox.Show("Could not find partner!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            CurrentPathNode = partner.Node1;
+            CurrentPathLink = partner;
+            LoadPathNodeLinkPage();
+            LoadPathNodeLinkPage();
+            PathNodeLinksListBox.SelectedItem = partner;
+        }
+        
+        private void PathNodeFloodCopyButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentPathNode == null)
+            {
+                return;
+            }
+
+            CurrentPathNode.FloodCopyFlags(out var affectedFiles);
+
+            ProjectForm.AddYndToProject(CurrentYndFile);
+            ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+
+            foreach (var affectedFile in affectedFiles)
+            {
+                ProjectForm.AddYndToProject(affectedFile);
+                ProjectForm.SetYndHasChanged(affectedFile, true);
+                ProjectForm.WorldForm.UpdatePathYndGraphics(affectedFile, false);
+            }
+        }
+
+        private void PathNodeEnableDisableButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentPathNode == null)
+            {
+                return;
+            }
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                CurrentPathNode.IsDisabledUnk0 = !CurrentPathNode.IsDisabledUnk0;
+                CurrentPathNode.IsDisabledUnk1 = CurrentPathNode.IsDisabledUnk0;
+                CurrentPathNode.FloodCopyFlags(out var affectedFiles);
+
+                PathNodeEnableDisableButton.Text = CurrentPathNode.IsDisabledUnk0
+                    ? "Enable Section"
+                    : "Disable Section";
+
+                ProjectForm.AddYndToProject(CurrentYndFile);
+                ProjectForm.WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+
+                foreach (var affectedFile in affectedFiles)
+                {
+                    ProjectForm.AddYndToProject(affectedFile);
+                    ProjectForm.SetYndHasChanged(affectedFile, true);
+                    ProjectForm.WorldForm.UpdatePathYndGraphics(affectedFile, false);
+                }
+
+            }
+
+            UpdatePathNodeFlagsUI(true, false);
+        }
+
     }
 }

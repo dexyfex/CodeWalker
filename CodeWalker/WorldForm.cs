@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.Linq;
 using SharpDX;
 using SharpDX.XInput;
 using Device = SharpDX.Direct3D11.Device;
@@ -220,6 +221,10 @@ namespace CodeWalker
             timecycle = Renderer.timecycle;
             weather = Renderer.weather;
             clouds = Renderer.clouds;
+
+            CurMouseHit.WorldForm = this;
+            LastMouseHit.WorldForm = this;
+            PrevMouseHit.WorldForm = this;
 
             initedOk = Renderer.Init();
         }
@@ -1865,6 +1870,15 @@ namespace CodeWalker
 
         public void UpdatePathYndGraphics(YndFile ynd, bool fullupdate)
         {
+            if (ynd == null)
+            {
+                return;
+            }
+
+            var selection = SelectedItem.PathNode != null
+                ? new[] { SelectedItem.PathNode }
+                : null;
+
             if (fullupdate)
             {
                 ynd.UpdateAllNodePositions();
@@ -1875,7 +1889,7 @@ namespace CodeWalker
             else
             {
                 ynd.UpdateAllNodePositions();
-                space.BuildYndVerts(ynd);
+                space.BuildYndVerts(ynd, selection);
             }
             //lock (Renderer.RenderSyncRoot)
             {
@@ -3140,7 +3154,7 @@ namespace CodeWalker
                         MapBox mb = new MapBox();
 
                         int lanestot = ln.LaneCountForward + ln.LaneCountBackward;
-                        float lanewidth = n.IsPedNode ? 0.5f : 5.5f;
+                        float lanewidth = ln.GetLaneWidth();
                         float inner = ln.LaneOffset * lanewidth;// 0.0f;
                         float outer = inner + Math.Max(lanewidth * ln.LaneCountForward, 0.5f);
                         float totwidth = lanestot * lanewidth;
@@ -3416,7 +3430,7 @@ namespace CodeWalker
             }
             else
             {
-                var ms = MapSelection.FromProjectObject(obj, parent);
+                var ms = MapSelection.FromProjectObject(this, obj, parent);
                 if (!ms.HasValue)
                 {
                     SelectItem(null, addSelection);
@@ -3446,7 +3460,7 @@ namespace CodeWalker
                 mhitv.Drawable = gameFileCache.TryGetDrawable(mhitv.Archetype); //no drawable given.. try to get it from the cache.. if it's not there, drawable info won't display...
             }
 
-
+            var oldnode = SelectedItem.PathNode;
             bool change = false;
             if (mhit != null)
             {
@@ -3593,6 +3607,19 @@ namespace CodeWalker
             if (notifyProject && change && (ProjectForm != null) && (!addSelection || manualSelection))
             {
                 ProjectForm.OnWorldSelectionChanged(SelectedItem);
+            }
+
+            var newnode = SelectedItem.PathNode;
+            if (newnode != oldnode)//this is to allow junction heightmaps to be displayed when selecting a junction node
+            {
+                UpdatePathYndGraphics(oldnode?.Ynd, false);
+                UpdatePathYndGraphics(newnode?.Ynd, false);
+            }
+
+            if (change)
+            {
+                // If an item has been selected the user is likely to use a keybind. We need focus!
+                Focus();
             }
         }
         public void SelectMulti(MapSelection[] items, bool addSelection = false, bool notifyProject = true)
@@ -5213,16 +5240,27 @@ namespace CodeWalker
         private void DeletePathNode(YndNode pathnode)
         {
             if (pathnode == null) return;
+            if (pathnode.Ynd == null) return;
 
-            //project not open, or cargen not selected there, just remove the cargen from the ymap...
+            //project not open, or node not selected there, just remove the node from the ynd...
             var ynd = pathnode.Ynd;
-            if (!ynd.RemoveNode(pathnode))
+            if (!ynd.RemoveYndNode(Space, pathnode, true, out var affectedFiles))
             {
                 MessageBox.Show("Unable to remove path node.");
             }
             else
             {
                 UpdatePathNodeGraphics(pathnode, false);
+                ProjectForm?.AddYndToProject(ynd);
+
+                foreach (var affectedFile in affectedFiles)
+                {
+                    UpdatePathYndGraphics(affectedFile, false);
+                    ProjectForm?.AddYndToProject(affectedFile);
+                    affectedFile.HasChanged = true;
+                }
+
+
                 SelectItem(null);
             }
         }
@@ -5798,6 +5836,82 @@ namespace CodeWalker
 
 
 
+        private void TryCreateNodeLink()//TODO: move this to project window
+        {
+            if (SelectionMode != MapSelectionMode.Path)
+            {
+                return;
+            }
+
+            var selection = SelectedItem.MultipleSelectionItems;
+            if (selection?.Length != 2)
+            {
+                MessageBox.Show("Please select 2 nodes to perform this action",
+                    "Join Failed.",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var n1 = selection[0].PathNode;
+            var n2 = selection[1].PathNode;
+            if (n1 != null && n2 != null)
+            {
+                var link = n1.AddLink(n2);
+                if (link == null)
+                {
+                    MessageBox.Show("Failed to join nodes. The nodes are likely too far away!", "Join Failed.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                var copy = n1.Links.FirstOrDefault();
+
+                link.SetForwardLanesBidirectionally(copy?.LaneCountBackward ?? 1);
+                link.SetBackwardLanesBidirectionally(copy?.LaneCountForward ?? 1);
+                UpdatePathYndGraphics(n1.Ynd, false);
+                UpdatePathYndGraphics(n2.Ynd, false);
+            }
+        }
+
+        private void TryCreateNodeShortcut()//TODO: move this to project window
+        {
+            if (SelectionMode != MapSelectionMode.Path)
+            {
+                return;
+            }
+
+            var selection = SelectedItem.MultipleSelectionItems;
+            if (selection?.Length != 2)
+            {
+                MessageBox.Show("Please select 2 nodes to perform this action",
+                    "Join Failed.",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var n1 = selection[0].PathNode;
+            var n2 = selection[1].PathNode;
+            if (n1 != null && n2 != null)
+            {
+                var link = n1.AddLink(n2);
+                if (link == null)
+                {
+                    MessageBox.Show("Failed to join nodes. The nodes are likely too far away!", "Join Failed.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                link.SetForwardLanesBidirectionally(1);
+                link.Shortcut = true;
+
+                if (n2.TryGetLinkForNode(n1, out var backLink))
+                {
+                    backLink.Shortcut = true;
+                }
+
+                UpdatePathYndGraphics(n1.Ynd, false);
+                UpdatePathYndGraphics(n2.Ynd, false);
+            }
+        }
+
 
 
 
@@ -6208,6 +6322,17 @@ namespace CodeWalker
                     if (k == Keys.Delete)
                     {
                         DeleteItem();
+                    }
+                    if (SelectionMode == MapSelectionMode.Path)
+                    {
+                        if (k == Keys.J)
+                        {
+                            TryCreateNodeLink();
+                        }
+                        if (k == Keys.K)
+                        {
+                            TryCreateNodeShortcut();
+                        }
                     }
                 }
                 else

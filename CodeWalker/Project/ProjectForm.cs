@@ -792,7 +792,7 @@ namespace CodeWalker.Project
                     }
                 }
 
-                var multisel = MapSelection.FromProjectObject(arr); //convert to MapSelection array
+                var multisel = MapSelection.FromProjectObject(WorldForm, arr); //convert to MapSelection array
                 item = multisel.MultipleSelectionItems;
             }
 
@@ -4622,16 +4622,6 @@ namespace CodeWalker.Project
             if ((CurrentYndFile == null) && (CurrentPathNode != null)) CurrentYndFile = CurrentPathNode.Ynd;
             if (CurrentYndFile == null) return;
 
-            // Check that vehicle nodes and ped nodes add up to total nodes
-            if (CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
-            {
-                var result = MessageBox.Show($"YND Area {CurrentYndFile.AreaID}: The total number of nodes ({CurrentYndFile.NodeDictionary.NodesCount}) does not match the total number of ped ({CurrentYndFile.NodeDictionary.NodesCountPed}) and vehicle ({CurrentYndFile.NodeDictionary.NodesCountVehicle}) nodes. You should manually adjust the number of nodes on the YND screen.\n\nDo you want to continue saving the YND file? Some of your nodes may not work in game.", $"Node count mismatch in Area {CurrentYndFile.AreaID}", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
-                if (result == DialogResult.Cancel)
-                {
-                    return;
-                }
-            }
-
             string yndname = CurrentYndFile.Name;
             string filepath = CurrentYndFile.FilePath;
             if (string.IsNullOrEmpty(filepath))
@@ -4662,7 +4652,7 @@ namespace CodeWalker.Project
                     CurrentYndFile.Name = CurrentYndFile.RpfFileEntry.Name;
                 }
 
-
+                WorldForm.Space.RecalculateAllYndIndices();
                 data = CurrentYndFile.Save();
             }
 
@@ -4733,25 +4723,32 @@ namespace CodeWalker.Project
         {
             if (CurrentYndFile == null) return null;
 
-            var n = CurrentYndFile.AddNode();
-            var areaid = n.AreaID;
-            var nodeid = n.NodeID;
+            var n = CurrentYndFile.AddYndNode(WorldForm.Space, out var affectedFiles);
+
+            AddYndToProject(CurrentYndFile);
+            foreach (var affectedFile in affectedFiles)
+            {
+                AddYndToProject(affectedFile);
+                SetYndHasChanged(affectedFile, true);
+            }
+
             if (copy == null)
             {
                 copy = CurrentPathNode;
             }
             if (copy != null)
             {
-                n.Init(CurrentYndFile, copy.RawData);
+                n.Flags0 = copy.Flags0;
+                n.Flags1 = copy.Flags1;
+                n.Flags2 = copy.Flags2;
+                n.Flags3 = copy.Flags3;
+                n.Flags4 = copy.Flags4;
                 n.LinkCountUnk = copy.LinkCountUnk;
             }
-            n.AreaID = areaid;
-            n.NodeID = nodeid;
 
             bool cp = copyPosition && (copy != null);
             Vector3 pos = cp ? copy.Position : GetSpawnPos(10.0f);
-            n.SetPosition(pos);
-
+            n.SetYndNodePosition(WorldForm.Space, pos, out _);
 
             if (copy != null)
             {
@@ -4776,6 +4773,9 @@ namespace CodeWalker.Project
                     }
                 }
             }
+
+            n.CheckIfJunction();
+            copy?.CheckIfJunction();
 
             CurrentYndFile.UpdateAllNodePositions(); //for the graphics...
             CurrentYndFile.BuildBVH();
@@ -4811,20 +4811,22 @@ namespace CodeWalker.Project
             //}
 
             bool res = false;
+            YndFile[] affectedFiles = new YndFile[0];
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
-                    res = CurrentYndFile.RemoveNode(CurrentPathNode);
+                    res = CurrentYndFile.RemoveYndNode(WorldForm.Space, CurrentPathNode, true, out affectedFiles);
 
                     //WorldForm.SelectItem(null, null, null);
                 }
             }
             else
-            {
-                res = CurrentYndFile.RemoveNode(CurrentPathNode);
-            }
-            if (!res)
+            //{
+            //    res = CurrentYndFile.RemoveNode(CurrentPathNode);
+            //}
+
+            //if (!res)
             {
                 MessageBox.Show("Unable to delete the path node. This shouldn't happen!");
             }
@@ -4832,7 +4834,7 @@ namespace CodeWalker.Project
             var delnode = CurrentPathNode;
 
             ProjectExplorer?.RemovePathNodeTreeNode(CurrentPathNode);
-            ProjectExplorer?.SetYndHasChanged(CurrentYndFile, true);
+            SetYndHasChanged(CurrentYndFile, true);
 
             ClosePanel((EditYndNodePanel p) => { return p.Tag == delnode; });
 
@@ -4841,6 +4843,15 @@ namespace CodeWalker.Project
             if (WorldForm != null)
             {
                 WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+                AddYndToProject(CurrentYndFile);
+
+                foreach (var affectedFile in affectedFiles)
+                {
+                    WorldForm.UpdatePathYndGraphics(affectedFile, false);
+                    AddYndToProject(affectedFile);
+                    SetYndHasChanged(affectedFile, true, true);
+                }
+
                 WorldForm.SelectItem(null);
             }
 
@@ -7082,7 +7093,9 @@ namespace CodeWalker.Project
 
             lock (projectsyncroot)
             {
-                if (renderitems && (CurrentProjectFile != null))
+                if (CurrentProjectFile == null) return;
+                var hasymapytyp = ((CurrentProjectFile.YmapFiles.Count > 0) || (CurrentProjectFile.YtypFiles.Count > 0));
+                if (renderitems && hasymapytyp)
                 {
                     for (int i = 0; i < CurrentProjectFile.YmapFiles.Count; i++)
                     {
@@ -7100,12 +7113,12 @@ namespace CodeWalker.Project
                     }
 
                     visiblemloentities.Clear();
-                    foreach (var kvp in ymaps)
+                    foreach (var kvp in ymaps)//TODO: improve performance
                     {
                         var ymap = kvp.Value;
-                        if (ymap.AllEntities != null)
+                        if (ymap.AllEntities != null)//THIS IS TERRIBLE! EATING ALL FPS
                         {
-                            foreach (var ent in ymap.AllEntities)
+                            foreach (var ent in ymap.AllEntities)//WHYYYY - maybe only do this after loading/editing ytyp!
                             {
                                 Archetype arch = GameFileCache.GetArchetype(ent._CEntityDef.archetypeName);
                                 if ((arch != null) && (ent.Archetype != arch))
@@ -8431,16 +8444,21 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
-        public void SetYndHasChanged(bool changed)
+
+        public void SetYndHasChanged(bool changed, bool force = false)
         {
-            if (CurrentYndFile == null) return;
+            SetYndHasChanged(CurrentYndFile, changed, force);
+        }
+        public void SetYndHasChanged(YndFile yndFile, bool changed, bool force = false)
+        {
+            if (yndFile == null) return;
 
-            bool changechange = changed != CurrentYndFile.HasChanged;
-            if (!changechange) return;
+            bool changechange = changed != yndFile.HasChanged;
+            if (!force && !changechange) return;
 
-            CurrentYndFile.HasChanged = changed;
+            yndFile.HasChanged = changed;
 
-            ProjectExplorer?.SetYndHasChanged(CurrentYndFile, changed);
+            ProjectExplorer?.SetYndHasChanged(yndFile, changed);
 
             PromoteIfPreviewPanelActive();
         }
@@ -8609,10 +8627,25 @@ namespace CodeWalker.Project
             byte[] data = File.ReadAllBytes(filename);
 
             ynd.Load(data);
+            WorldForm.Space.PatchYndFile(ynd);
 
             if (WorldForm != null)
             {
-                WorldForm.UpdatePathYndGraphics(ynd, true); //links don't get drawn until something changes otherwise
+                // TODO: Wasteful -- be smarter about this
+                foreach (var file in CurrentProjectFile.YndFiles)
+                {
+                    foreach (var affected in WorldForm.Space.GetYndFilesThatDependOnYndFile(file))
+                    {
+                        if (CurrentProjectFile.ContainsYnd(affected))
+                        {
+                            continue;
+                        }
+
+                        WorldForm.UpdatePathYndGraphics(affected, true);
+                    }
+
+                    WorldForm.UpdatePathYndGraphics(file, true); //links don't get drawn until something changes otherwise
+                }
                 //note: this is actually necessary to properly populate junctions data........
             }
         }

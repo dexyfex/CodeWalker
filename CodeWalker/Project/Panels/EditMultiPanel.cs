@@ -42,6 +42,7 @@ namespace CodeWalker.Project.Panels
         private void LoadItems()
         {
             MultiItem = new MapSelection();
+            MultiItem.WorldForm = ProjectForm.WorldForm;
             MultiItem.Clear();
             MultiItem.SetMultipleSelectionItems(Items);
 

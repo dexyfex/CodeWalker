@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeWalker.World
 {
@@ -493,7 +492,13 @@ namespace CodeWalker.World
             }
 
             //string str = sb.ToString();
+        }
 
+        public void PatchYndFile(YndFile ynd)
+        {
+            //ideally we should be able to revert to the vanilla ynd's after closing the project window,
+            //but codewalker can always just be restarted, so who cares really
+            NodeGrid.UpdateYnd(ynd);
         }
 
         private void AddRpfYnds(RpfFile rpffile, Dictionary<uint, RpfFileEntry> yndentries)
@@ -565,8 +570,9 @@ namespace CodeWalker.World
             ynd.Links = tlinks.ToArray();
 
         }
-        public void BuildYndVerts(YndFile ynd, List<EditorVertex> tverts = null)
+        public void BuildYndVerts(YndFile ynd, YndNode[] selectedNodes, List<EditorVertex> tverts = null)
         {
+            var laneColour = (uint) new Color4(0f, 0f, 1f, 1f).ToRgba();
             var ynodes = ynd.Nodes;
             if (ynodes == null) return;
 
@@ -589,7 +595,18 @@ namespace CodeWalker.World
                 for (int l = 0; l < node.Links.Length; l++)
                 {
                     YndLink yl = node.Links[l];
+                    var laneDir = yl.GetDirection();
+                    var laneDirCross = Vector3.Cross(laneDir, Vector3.UnitZ);
+                    var laneWidth = yl.GetLaneWidth();
+                    var laneHalfWidth = laneWidth / 2;
+                    var offset = yl.IsTwoWay()
+                        ? yl.LaneOffset * laneWidth - laneHalfWidth
+                        : yl.LaneOffset - yl.LaneCountForward * laneWidth / 2f + laneHalfWidth;
+
+                    var iOffset = yl.IsTwoWay() ? 1 : 0;
+
                     var tnode = yl.Node2;
+
                     if (tnode == null) continue; //invalid links could hit here
                     var tvert = new EditorVertex();
                     tvert.Position = tnode.Position;
@@ -597,12 +614,42 @@ namespace CodeWalker.World
 
                     tverts.Add(nvert);
                     tverts.Add(tvert);
+
+                    // Add lane display
+                    for (int j = iOffset; j < yl.LaneCountForward + iOffset; j++)
+                    {
+                        var vertOffset = laneDirCross * (offset + laneWidth * j);
+                        
+                        vertOffset.Z = 0.1f;
+                        var lvert1 = new EditorVertex
+                        {
+                            Position = nvert.Position + vertOffset,
+                            Colour = laneColour
+                        };
+
+                        var lvert2 = new EditorVertex
+                        {
+                            Position = tvert.Position + vertOffset,
+                            Colour = laneColour
+                        };
+
+                        tverts.Add(lvert1);
+                        tverts.Add(lvert2);
+
+                        // Arrow
+                        var apos = lvert1.Position + laneDir * yl.LinkLength / 2;
+                        const float asize = 0.5f;
+                        const float negasize = asize * -1f;
+                        tverts.Add(new EditorVertex(){ Position = apos, Colour = laneColour});
+                        tverts.Add(new EditorVertex() { Position = apos + laneDir * negasize + laneDirCross * asize, Colour = laneColour });
+                        tverts.Add(new EditorVertex() { Position = apos, Colour = laneColour });
+                        tverts.Add(new EditorVertex() { Position = apos + laneDir * negasize + laneDirCross * negasize, Colour = laneColour });
+                    }
                 }
             }
             ynd.LinkedVerts = tverts.ToArray();
 
-
-            ynd.UpdateTriangleVertices();
+            ynd.UpdateTriangleVertices(selectedNodes);
         }
         public void BuildYndJuncs(YndFile ynd)
         {
@@ -646,8 +693,63 @@ namespace CodeWalker.World
 
             BuildYndJuncs(ynd);
 
-            BuildYndVerts(ynd, tverts);
+            BuildYndVerts(ynd, null, tverts);
 
+        }
+
+        public YndFile[] GetYndFilesThatDependOnYndFile(YndFile file)
+        {
+            return AllYnds.Values.Where(y => y.Links.Any(l => l.Node2.AreaID == file.AreaID)).ToArray();
+        }
+
+        public void MoveYndArea(YndFile ynd, int desiredX, int desiredY)
+        {
+            var xDir = Math.Min(1, Math.Max(-1, desiredX - ynd.CellX));
+            var yDir = Math.Min(1, Math.Max(-1, desiredY - ynd.CellY));
+
+            var x = desiredX;
+            var y = desiredY;
+
+            if (xDir != 0)
+            {
+                while (x >= 0 && x <= 31)
+                {
+                    if (NodeGrid.Cells[x, y].Ynd == null)
+                    {
+                        break;
+                    }
+
+                    x += xDir;
+                }
+            }
+
+            if (yDir != 0)
+            {
+                while (y >= 0 && y <= 31)
+                {
+                    if (NodeGrid.Cells[x, y].Ynd == null)
+                    {
+                        break;
+                    }
+
+                    y += yDir;
+                }
+            }
+
+            ynd.CellX = x;
+            ynd.CellY = y;
+            var areaId = y * 32 + x;
+            ynd.AreaID = areaId;
+            ynd.Name = $"nodes{areaId}";
+            NodeGrid.UpdateYnd(ynd);
+        }
+
+        public void RecalculateAllYndIndices()
+        {
+            foreach (var yndFile in AllYnds.Values)
+            {
+                yndFile.RecalculateNodeIndices();
+            }
         }
 
 
@@ -993,6 +1095,11 @@ namespace CodeWalker.World
             for (int i = 0; i < items.Count; i++)
             {
                 var item = items[i];
+                if (item == null)
+                {
+                    continue;
+                }
+
                 var hash = item.Name;
                 if (!ymaps.ContainsKey(hash))
                 {
@@ -1120,6 +1227,10 @@ namespace CodeWalker.World
             for (int i = 0; i < mapdatalist.Count; i++)
             {
                 var mapdata = mapdatalist[i];
+                if (mapdata == null)
+                {
+                    continue;
+                }
                 if ((mapdata.ContentFlags & 1) == 0)
                 { continue; } //only test HD ymaps
 
@@ -2020,6 +2131,19 @@ namespace CodeWalker.World
             return null;
         }
 
+        public SpaceNodeGridCell GetCellForPosition(Vector3 position)
+        {
+            var x = (int)((position.X - CornerX) / CellSize);
+            var y = (int)((position.Y - CornerY) / CellSize);
+
+            if ((x >= 0) && (x < CellCountX) && (y >= 0) && (y < CellCountY))
+            {
+                return Cells[x, y];
+            }
+
+            return null;
+        }
+
 
         public YndNode GetYndNode(ushort areaid, ushort nodeid)
         {
@@ -2031,6 +2155,23 @@ namespace CodeWalker.World
             return cell.Ynd.Nodes[nodeid];
         }
 
+        public void UpdateYnd(YndFile ynd)
+        {
+            for (int xx = 0; xx < Cells.GetLength(0); xx++)
+            {
+                for (int yy = 0; yy < Cells.GetLength(1); yy++)
+                {
+                    if (Cells[xx, yy].Ynd == ynd)
+                    {
+                        Cells[xx, yy].Ynd = null;
+                    }
+                }
+            }
+
+            var x = ynd.CellX;
+            var y = ynd.CellY;
+            Cells[x, y].Ynd = ynd;
+        }
     }
     public class SpaceNodeGridCell
     {
