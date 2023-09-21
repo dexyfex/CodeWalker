@@ -150,7 +150,6 @@ namespace CodeWalker
             sgrp.ShadersCount2 = (ushort)slist.Count;
             sgrp.VFT = 1080113376;//is this needed?
             sgrp.Unknown_4h = 1;
-            sgrp.Unknown_30h = (uint)(8 + slist.Count*3);//WTF is this?
 
 
             var d = new Drawable();
@@ -164,7 +163,6 @@ namespace CodeWalker
             d.LodDistMed = 9998;
             d.LodDistLow = 9998;
             d.LodDistVlow = 9998;
-            d.Unknown_9Ah = 33;//WTF is this???
             d.FileVFT = 1079446584;
             d.FileUnknown = 1;
             d.DrawableModels = new DrawableModelsBlock();

@@ -215,6 +215,11 @@ namespace CodeWalker.GameFiles
 
                 namesrdr.Position = e.NameOffset;
                 e.Name = namesrdr.ReadString();
+                if (e.Name.Length > 256)
+                {
+                    // long names can freeze the RPFExplorer
+                    e.Name = e.Name.Substring(0, 256);
+                }
                 e.NameLower = e.Name.ToLowerInvariant();
 
                 if ((e is RpfFileEntry) && string.IsNullOrEmpty(e.Name))
@@ -312,7 +317,7 @@ namespace CodeWalker.GameFiles
 
                         //search all the sub resources for YSC files. (recurse!)
                         string lname = binentry.NameLower;
-                        if (lname.EndsWith(".rpf"))
+                        if (lname.EndsWith(".rpf") && binentry.Path.Length < 5000) // a long path is most likely an attempt to crash CW, so skip it
                         {
                             br.BaseStream.Position = StartPos + ((long)binentry.FileOffset * 512);
 

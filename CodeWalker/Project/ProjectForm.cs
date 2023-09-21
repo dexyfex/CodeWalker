@@ -792,7 +792,7 @@ namespace CodeWalker.Project
                     }
                 }
 
-                var multisel = MapSelection.FromProjectObject(arr); //convert to MapSelection array
+                var multisel = MapSelection.FromProjectObject(WorldForm, arr); //convert to MapSelection array
                 item = multisel.MultipleSelectionItems;
             }
 
@@ -4622,16 +4622,6 @@ namespace CodeWalker.Project
             if ((CurrentYndFile == null) && (CurrentPathNode != null)) CurrentYndFile = CurrentPathNode.Ynd;
             if (CurrentYndFile == null) return;
 
-            // Check that vehicle nodes and ped nodes add up to total nodes
-            if (CurrentYndFile.NodeDictionary != null && (CurrentYndFile.NodeDictionary.NodesCountPed + CurrentYndFile.NodeDictionary.NodesCountVehicle != CurrentYndFile.NodeDictionary.NodesCount))
-            {
-                var result = MessageBox.Show($"YND Area {CurrentYndFile.AreaID}: The total number of nodes ({CurrentYndFile.NodeDictionary.NodesCount}) does not match the total number of ped ({CurrentYndFile.NodeDictionary.NodesCountPed}) and vehicle ({CurrentYndFile.NodeDictionary.NodesCountVehicle}) nodes. You should manually adjust the number of nodes on the YND screen.\n\nDo you want to continue saving the YND file? Some of your nodes may not work in game.", $"Node count mismatch in Area {CurrentYndFile.AreaID}", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
-                if (result == DialogResult.Cancel)
-                {
-                    return;
-                }
-            }
-
             string yndname = CurrentYndFile.Name;
             string filepath = CurrentYndFile.FilePath;
             if (string.IsNullOrEmpty(filepath))
@@ -4662,7 +4652,7 @@ namespace CodeWalker.Project
                     CurrentYndFile.Name = CurrentYndFile.RpfFileEntry.Name;
                 }
 
-
+                WorldForm.Space.RecalculateAllYndIndices();
                 data = CurrentYndFile.Save();
             }
 
@@ -4733,25 +4723,32 @@ namespace CodeWalker.Project
         {
             if (CurrentYndFile == null) return null;
 
-            var n = CurrentYndFile.AddNode();
-            var areaid = n.AreaID;
-            var nodeid = n.NodeID;
+            var n = CurrentYndFile.AddYndNode(WorldForm.Space, out var affectedFiles);
+
+            AddYndToProject(CurrentYndFile);
+            foreach (var affectedFile in affectedFiles)
+            {
+                AddYndToProject(affectedFile);
+                SetYndHasChanged(affectedFile, true);
+            }
+
             if (copy == null)
             {
                 copy = CurrentPathNode;
             }
             if (copy != null)
             {
-                n.Init(CurrentYndFile, copy.RawData);
+                n.Flags0 = copy.Flags0;
+                n.Flags1 = copy.Flags1;
+                n.Flags2 = copy.Flags2;
+                n.Flags3 = copy.Flags3;
+                n.Flags4 = copy.Flags4;
                 n.LinkCountUnk = copy.LinkCountUnk;
             }
-            n.AreaID = areaid;
-            n.NodeID = nodeid;
 
             bool cp = copyPosition && (copy != null);
             Vector3 pos = cp ? copy.Position : GetSpawnPos(10.0f);
-            n.SetPosition(pos);
-
+            n.SetYndNodePosition(WorldForm.Space, pos, out _);
 
             if (copy != null)
             {
@@ -4776,6 +4773,9 @@ namespace CodeWalker.Project
                     }
                 }
             }
+
+            n.CheckIfJunction();
+            copy?.CheckIfJunction();
 
             CurrentYndFile.UpdateAllNodePositions(); //for the graphics...
             CurrentYndFile.BuildBVH();
@@ -4811,20 +4811,22 @@ namespace CodeWalker.Project
             //}
 
             bool res = false;
+            YndFile[] affectedFiles = new YndFile[0];
             if (WorldForm != null)
             {
                 lock (WorldForm.RenderSyncRoot) //don't try to do this while rendering...
                 {
-                    res = CurrentYndFile.RemoveNode(CurrentPathNode);
+                    res = CurrentYndFile.RemoveYndNode(WorldForm.Space, CurrentPathNode, true, out affectedFiles);
 
                     //WorldForm.SelectItem(null, null, null);
                 }
             }
             else
-            {
-                res = CurrentYndFile.RemoveNode(CurrentPathNode);
-            }
-            if (!res)
+            //{
+            //    res = CurrentYndFile.RemoveNode(CurrentPathNode);
+            //}
+
+            //if (!res)
             {
                 MessageBox.Show("Unable to delete the path node. This shouldn't happen!");
             }
@@ -4832,7 +4834,7 @@ namespace CodeWalker.Project
             var delnode = CurrentPathNode;
 
             ProjectExplorer?.RemovePathNodeTreeNode(CurrentPathNode);
-            ProjectExplorer?.SetYndHasChanged(CurrentYndFile, true);
+            SetYndHasChanged(CurrentYndFile, true);
 
             ClosePanel((EditYndNodePanel p) => { return p.Tag == delnode; });
 
@@ -4841,6 +4843,15 @@ namespace CodeWalker.Project
             if (WorldForm != null)
             {
                 WorldForm.UpdatePathYndGraphics(CurrentYndFile, false);
+                AddYndToProject(CurrentYndFile);
+
+                foreach (var affectedFile in affectedFiles)
+                {
+                    WorldForm.UpdatePathYndGraphics(affectedFile, false);
+                    AddYndToProject(affectedFile);
+                    SetYndHasChanged(affectedFile, true, true);
+                }
+
                 WorldForm.SelectItem(null);
             }
 
@@ -6413,7 +6424,6 @@ namespace CodeWalker.Project
             //AA800420 sphere
             zone.Flags0 = cp ? copy.AudioZone.Flags0.Value : 0xAA800424;
             zone.Flags1 = cp ? copy.AudioZone.Flags1 : 0;
-            zone.Flags2 = cp ? copy.AudioZone.Flags2 : 0;
             zone.Shape = cp ? copy.AudioZone.Shape : Dat151ZoneShape.Box;
             zone.PlaybackZoneSize = cp ? copy.AudioZone.PlaybackZoneSize : Vector3.One * 10.0f;
             zone.PlaybackZoneAngle = cp ? copy.AudioZone.PlaybackZoneAngle : 0;
@@ -6430,13 +6440,14 @@ namespace CodeWalker.Project
             zone.UnkHash0 = cp ? copy.AudioZone.UnkHash0 : 0;
             zone.Scene = cp ? copy.AudioZone.Scene : 0;
             zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector2(-1, 0);
+            zone.Unk13 = cp ? copy.AudioZone.Unk13 : 0;
             zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
             zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
             zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
             zone.RulesCount = cp ? copy.AudioZone.RulesCount : (byte)0;
             zone.Rules = cp ? copy.AudioZone.Rules : null;
-            zone.ExtParamsCount = cp ? copy.AudioZone.ExtParamsCount : 0;
-            zone.ExtParams = cp ? copy.AudioZone.ExtParams : null;
+            zone.DependentAmbiencesCount = cp ? copy.AudioZone.DependentAmbiencesCount : 0;
+            zone.DependentAmbiences = cp ? copy.AudioZone.DependentAmbiences : null;
             zone.Name = "zone1";
             zone.NameHash = JenkHash.GenHash(zone.Name);
 
@@ -6538,12 +6549,12 @@ namespace CodeWalker.Project
 
             emitter.Flags0 = cp ? copy.AudioEmitter.Flags0.Value : 0xAA001100;
             emitter.Flags5 = cp ? copy.AudioEmitter.Flags5.Value : 0xFFFFFFFF;
-            emitter.InnerRad = cp ? copy.AudioEmitter.InnerRad : 0.0f;
-            emitter.OuterRad = cp ? copy.AudioEmitter.OuterRad : 20.0f;
+            emitter.InnerRadius = cp ? copy.AudioEmitter.InnerRadius : 0.0f;
+            emitter.OuterRadius = cp ? copy.AudioEmitter.OuterRadius : 20.0f;
             emitter.Unk01 = cp ? copy.AudioEmitter.Unk01 : 1.0f;
             emitter.StartTime = cp ? copy.AudioEmitter.StartTime : (ushort)0;
             emitter.EndTime = cp ? copy.AudioEmitter.EndTime : (ushort)1440;
-            emitter.Unk06 = cp ? copy.AudioEmitter.Unk06.Value : (ushort)0;
+            emitter.Frequency = cp ? copy.AudioEmitter.Frequency.Value : (ushort)0;
             emitter.Unk07 = cp ? copy.AudioEmitter.Unk07.Value : (ushort)0;
             emitter.Unk08 = cp ? copy.AudioEmitter.Unk08.Value : (byte)0;
             emitter.Unk09 = cp ? copy.AudioEmitter.Unk09.Value : (byte)1;
@@ -6782,8 +6793,9 @@ namespace CodeWalker.Project
 
             interior.Name = "interior1";
             interior.NameHash = JenkHash.GenHash(interior.Name);
-            interior.Unk0 = 0xAAAAA844;
-            interior.Unk1 = 0xD4855127;
+            interior.Flags = 0xAAAAA844;
+            interior.Walla = 3565506855;
+            interior.Tunnel = (uint)MetaName.null_sound;
 
             CurrentAudioFile.AddRelData(interior);
 
@@ -7081,7 +7093,9 @@ namespace CodeWalker.Project
 
             lock (projectsyncroot)
             {
-                if (renderitems && (CurrentProjectFile != null))
+                if (CurrentProjectFile == null) return;
+                var hasymapytyp = ((CurrentProjectFile.YmapFiles.Count > 0) || (CurrentProjectFile.YtypFiles.Count > 0));
+                if (renderitems && hasymapytyp)
                 {
                     for (int i = 0; i < CurrentProjectFile.YmapFiles.Count; i++)
                     {
@@ -7099,12 +7113,12 @@ namespace CodeWalker.Project
                     }
 
                     visiblemloentities.Clear();
-                    foreach (var kvp in ymaps)
+                    foreach (var kvp in ymaps)//TODO: improve performance
                     {
                         var ymap = kvp.Value;
-                        if (ymap.AllEntities != null)
+                        if (ymap.AllEntities != null)//THIS IS TERRIBLE! EATING ALL FPS
                         {
-                            foreach (var ent in ymap.AllEntities)
+                            foreach (var ent in ymap.AllEntities)//WHYYYY - maybe only do this after loading/editing ytyp!
                             {
                                 Archetype arch = GameFileCache.GetArchetype(ent._CEntityDef.archetypeName);
                                 if ((arch != null) && (ent.Archetype != arch))
@@ -8430,16 +8444,21 @@ namespace CodeWalker.Project
 
             PromoteIfPreviewPanelActive();
         }
-        public void SetYndHasChanged(bool changed)
+
+        public void SetYndHasChanged(bool changed, bool force = false)
         {
-            if (CurrentYndFile == null) return;
+            SetYndHasChanged(CurrentYndFile, changed, force);
+        }
+        public void SetYndHasChanged(YndFile yndFile, bool changed, bool force = false)
+        {
+            if (yndFile == null) return;
 
-            bool changechange = changed != CurrentYndFile.HasChanged;
-            if (!changechange) return;
+            bool changechange = changed != yndFile.HasChanged;
+            if (!force && !changechange) return;
 
-            CurrentYndFile.HasChanged = changed;
+            yndFile.HasChanged = changed;
 
-            ProjectExplorer?.SetYndHasChanged(CurrentYndFile, changed);
+            ProjectExplorer?.SetYndHasChanged(yndFile, changed);
 
             PromoteIfPreviewPanelActive();
         }
@@ -8608,10 +8627,25 @@ namespace CodeWalker.Project
             byte[] data = File.ReadAllBytes(filename);
 
             ynd.Load(data);
+            WorldForm.Space.PatchYndFile(ynd);
 
             if (WorldForm != null)
             {
-                WorldForm.UpdatePathYndGraphics(ynd, true); //links don't get drawn until something changes otherwise
+                // TODO: Wasteful -- be smarter about this
+                foreach (var file in CurrentProjectFile.YndFiles)
+                {
+                    foreach (var affected in WorldForm.Space.GetYndFilesThatDependOnYndFile(file))
+                    {
+                        if (CurrentProjectFile.ContainsYnd(affected))
+                        {
+                            continue;
+                        }
+
+                        WorldForm.UpdatePathYndGraphics(affected, true);
+                    }
+
+                    WorldForm.UpdatePathYndGraphics(file, true); //links don't get drawn until something changes otherwise
+                }
                 //note: this is actually necessary to properly populate junctions data........
             }
         }

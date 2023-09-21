@@ -127,6 +127,11 @@ namespace CodeWalker
         public static BoundingBox Transform(this BoundingBox b, Vector3 position, Quaternion orientation, Vector3 scale)
         {
             var mat = Matrix.Transformation(Vector3.Zero, Quaternion.Identity, scale, Vector3.Zero, orientation, position);
+            return b.Transform(mat);
+        }
+
+        public static BoundingBox Transform(this BoundingBox b, Matrix mat)
+        {
             var matabs = mat;
             matabs.Column1 = mat.Column1.Abs();
             matabs.Column2 = mat.Column2.Abs();

@@ -45,6 +45,7 @@ namespace CodeWalker
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public struct MapSelection
     {
+        public WorldForm WorldForm { get; set; }
         public YmapEntityDef EntityDef { get; set; }
         public Archetype Archetype { get; set; }
         public DrawableBase Drawable { get; set; }
@@ -1062,7 +1063,11 @@ namespace CodeWalker
             }
             else if (PathNode != null)
             {
-                PathNode.SetPosition(newpos);
+                PathNode.SetYndNodePosition(WorldForm.Space, newpos, out var affectedFiles);
+                foreach (var affectedFile in affectedFiles)
+                {
+                    WorldForm.UpdatePathYndGraphics(affectedFile, false);
+                }
             }
             else if (NavPoly != null)
             {
@@ -1491,16 +1496,17 @@ namespace CodeWalker
             return null;
         }
 
-        public static MapSelection FromProjectObject(object o, object parent = null)
+        public static MapSelection FromProjectObject(WorldForm worldForm, object o, object parent = null)
         {
             const float nrad = 0.5f;
             var ms = new MapSelection();
+            ms.WorldForm = worldForm;
             if (o is object[] arr)
             {
                 var multi = new MapSelection[arr.Length];
                 for (int i = 0; i < arr.Length; i++)
                 {
-                    multi[i] = FromProjectObject(arr[i]);
+                    multi[i] = FromProjectObject(worldForm, arr[i]);
                 }
                 ms.SetMultipleSelectionItems(multi);
             }

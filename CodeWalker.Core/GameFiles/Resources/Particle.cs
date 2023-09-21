@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using TC = System.ComponentModel.TypeConverterAttribute;
 
 
 /*
@@ -2071,14 +2070,14 @@ namespace CodeWalker.GameFiles
         public uint Unknown_6Ch { get; set; } = 0x7f800001; // 0x7f800001
         public float Unknown_70h { get; set; }
         public float Unknown_74h { get; set; } // 0, 0.1f, 0.25f, 1.0f
-        public float Unknown_78h { get; set; }
-        public float Unknown_7Ch { get; set; }
-        public float Unknown_80h { get; set; }
-        public float Unknown_84h { get; set; }
+        public float PlaybackDelay { get; set; }
+        public float PlaybackDelayModifier { get; set; }
+        public float PlaybackSpeedScale { get; set; }
+        public float PlaybackSpeedScaleModifier { get; set; }
         public uint Unknown_88h { get; set; } // eg. 0x01010105
         public uint Unknown_8Ch { get; set; } // eg. 0x01010002
-        public float Unknown_90h { get; set; }
-        public float Unknown_94h { get; set; }
+        public float CullRadius { get; set; }
+        public float CullDistance { get; set; }
         public float Unknown_98h { get; set; }
         public uint Unknown_9Ch { get; set; } = 0x7f800001;// 0x7f800001
         public float Unknown_A0h { get; set; }
@@ -2141,14 +2140,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_6Ch = reader.ReadUInt32();
             this.Unknown_70h = reader.ReadSingle();
             this.Unknown_74h = reader.ReadSingle();
-            this.Unknown_78h = reader.ReadSingle();
-            this.Unknown_7Ch = reader.ReadSingle();
-            this.Unknown_80h = reader.ReadSingle();
-            this.Unknown_84h = reader.ReadSingle();
+            this.PlaybackDelay = reader.ReadSingle();
+            this.PlaybackDelayModifier = reader.ReadSingle();
+            this.PlaybackSpeedScale = reader.ReadSingle();
+            this.PlaybackSpeedScaleModifier = reader.ReadSingle();
             this.Unknown_88h = reader.ReadUInt32();
             this.Unknown_8Ch = reader.ReadUInt32();
-            this.Unknown_90h = reader.ReadSingle();
-            this.Unknown_94h = reader.ReadSingle();
+            this.CullRadius = reader.ReadSingle();
+            this.CullDistance = reader.ReadSingle();
             this.Unknown_98h = reader.ReadSingle();
             this.Unknown_9Ch = reader.ReadUInt32();
             this.Unknown_A0h = reader.ReadSingle();
@@ -2531,14 +2530,14 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_6Ch);
             writer.Write(this.Unknown_70h);
             writer.Write(this.Unknown_74h);
-            writer.Write(this.Unknown_78h);
-            writer.Write(this.Unknown_7Ch);
-            writer.Write(this.Unknown_80h);
-            writer.Write(this.Unknown_84h);
+            writer.Write(this.PlaybackDelay);
+            writer.Write(this.PlaybackDelayModifier);
+            writer.Write(this.PlaybackSpeedScale);
+            writer.Write(this.PlaybackSpeedScaleModifier);
             writer.Write(this.Unknown_88h);
             writer.Write(this.Unknown_8Ch);
-            writer.Write(this.Unknown_90h);
-            writer.Write(this.Unknown_94h);
+            writer.Write(this.CullRadius);
+            writer.Write(this.CullDistance);
             writer.Write(this.Unknown_98h);
             writer.Write(this.Unknown_9Ch);
             writer.Write(this.Unknown_A0h);
@@ -2572,14 +2571,14 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown54", YptXml.UintString(Unknown_54h));
             YptXml.ValueTag(sb, indent, "Unknown70", FloatUtil.ToString(Unknown_70h));
             YptXml.ValueTag(sb, indent, "Unknown74", FloatUtil.ToString(Unknown_74h));
-            YptXml.ValueTag(sb, indent, "Unknown78", FloatUtil.ToString(Unknown_78h));
-            YptXml.ValueTag(sb, indent, "Unknown7C", FloatUtil.ToString(Unknown_7Ch));
-            YptXml.ValueTag(sb, indent, "Unknown80", FloatUtil.ToString(Unknown_80h));
-            YptXml.ValueTag(sb, indent, "Unknown84", FloatUtil.ToString(Unknown_84h));
+            YptXml.ValueTag(sb, indent, "PlaybackDelay", FloatUtil.ToString(PlaybackDelay));
+            YptXml.ValueTag(sb, indent, "PlaybackDelayModifier", FloatUtil.ToString(PlaybackDelayModifier));
+            YptXml.ValueTag(sb, indent, "PlaybackSpeedScale", FloatUtil.ToString(PlaybackSpeedScale));
+            YptXml.ValueTag(sb, indent, "PlaybackSpeedScaleModifier", FloatUtil.ToString(PlaybackSpeedScaleModifier));
             YptXml.ValueTag(sb, indent, "Unknown88", YptXml.UintString(Unknown_88h));
             YptXml.ValueTag(sb, indent, "Unknown8C", YptXml.UintString(Unknown_8Ch));
-            YptXml.ValueTag(sb, indent, "Unknown90", FloatUtil.ToString(Unknown_90h));
-            YptXml.ValueTag(sb, indent, "Unknown94", FloatUtil.ToString(Unknown_94h));
+            YptXml.ValueTag(sb, indent, "CullRadius", FloatUtil.ToString(CullRadius));
+            YptXml.ValueTag(sb, indent, "CullDistance", FloatUtil.ToString(CullDistance));
             YptXml.ValueTag(sb, indent, "Unknown98", FloatUtil.ToString(Unknown_98h));
             YptXml.ValueTag(sb, indent, "UnknownA0", FloatUtil.ToString(Unknown_A0h));
             YptXml.ValueTag(sb, indent, "UnknownA4", FloatUtil.ToString(Unknown_A4h));
@@ -2617,14 +2616,14 @@ namespace CodeWalker.GameFiles
             Unknown_54h = Xml.GetChildUIntAttribute(node, "Unknown54");
             Unknown_70h = Xml.GetChildFloatAttribute(node, "Unknown70");
             Unknown_74h = Xml.GetChildFloatAttribute(node, "Unknown74");
-            Unknown_78h = Xml.GetChildFloatAttribute(node, "Unknown78");
-            Unknown_7Ch = Xml.GetChildFloatAttribute(node, "Unknown7C");
-            Unknown_80h = Xml.GetChildFloatAttribute(node, "Unknown80");
-            Unknown_84h = Xml.GetChildFloatAttribute(node, "Unknown84");
+            PlaybackDelay = Xml.GetChildFloatAttribute(node, "PlaybackDelay");
+            PlaybackDelayModifier = Xml.GetChildFloatAttribute(node, "PlaybackDelayModifier");
+            PlaybackSpeedScale = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScale");
+            PlaybackSpeedScaleModifier = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScaleModifier");
             Unknown_88h = Xml.GetChildUIntAttribute(node, "Unknown88");
             Unknown_8Ch = Xml.GetChildUIntAttribute(node, "Unknown8C");
-            Unknown_90h = Xml.GetChildFloatAttribute(node, "Unknown90");
-            Unknown_94h = Xml.GetChildFloatAttribute(node, "Unknown94");
+            CullRadius = Xml.GetChildFloatAttribute(node, "CullRadius");
+            CullDistance = Xml.GetChildFloatAttribute(node, "CullDistance");
             Unknown_98h = Xml.GetChildFloatAttribute(node, "Unknown98");
             Unknown_A0h = Xml.GetChildFloatAttribute(node, "UnknownA0");
             Unknown_A4h = Xml.GetChildFloatAttribute(node, "UnknownA4");
@@ -2724,10 +2723,10 @@ namespace CodeWalker.GameFiles
         public ulong ParticleRuleNamePointer { get; set; }
         public ulong EmitterRulePointer { get; set; }
         public ulong ParticleRulePointer { get; set; }
-        public float Unknown_50h { get; set; }
-        public float Unknown_54h { get; set; }
-        public float Unknown_58h { get; set; }
-        public float Unknown_5Ch { get; set; }
+        public float MoveSpeedScale { get; set; }
+        public float MoveSpeedScaleModifier { get; set; }
+        public float ParticleScale { get; set; }
+        public float ParticleScaleModifier { get; set; }
         public uint Colour1 { get; set; } // eg. 0xfffafafa - colour?
         public uint Colour2 { get; set; } // eg. 0x5affffff - colour?
         public ulong Unknown_68h; // 0x0000000000000000
@@ -2756,10 +2755,10 @@ namespace CodeWalker.GameFiles
             this.ParticleRuleNamePointer = reader.ReadUInt64();
             this.EmitterRulePointer = reader.ReadUInt64();
             this.ParticleRulePointer = reader.ReadUInt64();
-            this.Unknown_50h = reader.ReadSingle();
-            this.Unknown_54h = reader.ReadSingle();
-            this.Unknown_58h = reader.ReadSingle();
-            this.Unknown_5Ch = reader.ReadSingle();
+            this.MoveSpeedScale = reader.ReadSingle();
+            this.MoveSpeedScaleModifier = reader.ReadSingle();
+            this.ParticleScale = reader.ReadSingle();
+            this.ParticleScaleModifier = reader.ReadSingle();
             this.Colour1 = reader.ReadUInt32();
             this.Colour2 = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt64();
@@ -2829,7 +2828,7 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_28h != 0)
             //{ }//no hit
-            switch (Unknown_50h)
+            switch (MoveSpeedScale)
             {
                 case 1.0f:
                 case 2.0f:
@@ -2839,7 +2838,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Unknown_54h)
+            switch (MoveSpeedScaleModifier)
             {
                 case 1.0f:
                 case 2.0f:
@@ -2849,7 +2848,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//and more
             }
-            switch (Unknown_58h)
+            switch (ParticleScale)
             {
                 case 1.0f:
                 case 0.5f:
@@ -2860,7 +2859,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Unknown_5Ch)
+            switch (ParticleScaleModifier)
             {
                 case 1.0f:
                 case 1.2f:
@@ -2929,10 +2928,10 @@ namespace CodeWalker.GameFiles
             writer.Write(this.ParticleRuleNamePointer);
             writer.Write(this.EmitterRulePointer);
             writer.Write(this.ParticleRulePointer);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_5Ch);
+            writer.Write(this.MoveSpeedScale);
+            writer.Write(this.MoveSpeedScaleModifier);
+            writer.Write(this.ParticleScale);
+            writer.Write(this.ParticleScaleModifier);
             writer.Write(this.Colour1);
             writer.Write(this.Colour2);
             writer.Write(this.Unknown_68h);
@@ -2943,10 +2942,10 @@ namespace CodeWalker.GameFiles
             YptXml.StringTag(sb, indent, "ParticleRule", YptXml.XmlEscape(ParticleRuleName?.Value ?? ""));
             YptXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
             YptXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
-            YptXml.ValueTag(sb, indent, "Unknown50", FloatUtil.ToString(Unknown_50h));
-            YptXml.ValueTag(sb, indent, "Unknown54", FloatUtil.ToString(Unknown_54h));
-            YptXml.ValueTag(sb, indent, "Unknown58", FloatUtil.ToString(Unknown_58h));
-            YptXml.ValueTag(sb, indent, "Unknown5C", FloatUtil.ToString(Unknown_5Ch));
+            YptXml.ValueTag(sb, indent, "MoveSpeedScale", FloatUtil.ToString(MoveSpeedScale));
+            YptXml.ValueTag(sb, indent, "MoveSpeedScaleModifier", FloatUtil.ToString(MoveSpeedScaleModifier));
+            YptXml.ValueTag(sb, indent, "ParticleScale", FloatUtil.ToString(ParticleScale));
+            YptXml.ValueTag(sb, indent, "ParticleScaleModifier", FloatUtil.ToString(ParticleScaleModifier));
             YptXml.ValueTag(sb, indent, "Colour1", YptXml.UintString(Colour1));
             YptXml.ValueTag(sb, indent, "Colour2", YptXml.UintString(Colour2));
             if (UnknownData != null)
@@ -2962,10 +2961,10 @@ namespace CodeWalker.GameFiles
             ParticleRuleName = (string_r)Xml.GetChildInnerText(node, "ParticleRule"); if (ParticleRuleName.Value == null) ParticleRuleName = null;
             Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10");
             Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14");
-            Unknown_50h = Xml.GetChildFloatAttribute(node, "Unknown50");
-            Unknown_54h = Xml.GetChildFloatAttribute(node, "Unknown54");
-            Unknown_58h = Xml.GetChildFloatAttribute(node, "Unknown58");
-            Unknown_5Ch = Xml.GetChildFloatAttribute(node, "Unknown5C");
+            MoveSpeedScale = Xml.GetChildFloatAttribute(node, "MoveSpeedScale");
+            MoveSpeedScaleModifier = Xml.GetChildFloatAttribute(node, "MoveSpeedScaleModifier");
+            ParticleScale = Xml.GetChildFloatAttribute(node, "ParticleScale");
+            ParticleScaleModifier = Xml.GetChildFloatAttribute(node, "ParticleScaleModifier");
             Colour1 = Xml.GetChildUIntAttribute(node, "Colour1");
             Colour2 = Xml.GetChildUIntAttribute(node, "Colour2");
             var udnode = node.SelectSingleNode("UnknownData");
@@ -3000,7 +2999,7 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x40;
 
         // structure data
-        public ResourceSimpleList64<ParticleStringBlock> Unknown_0h { get; set; }
+        public ResourceSimpleList64<ParticleStringBlock> EventEmitterFlags { get; set; }
         public ResourceSimpleList64<ParticleUnknown2> Unknown_10h { get; set; }
         public ulong Unknown_20h = 1; // 0x0000000000000001
         public ResourceSimpleList64<ParticleUnknown2Block> Unknown_28h { get; set; }
@@ -3009,7 +3008,7 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleStringBlock>>();
+            this.EventEmitterFlags = reader.ReadBlock<ResourceSimpleList64<ParticleStringBlock>>();
             this.Unknown_10h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2>>();
             this.Unknown_20h = reader.ReadUInt64();
             this.Unknown_28h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2Block>>();
@@ -3020,7 +3019,7 @@ namespace CodeWalker.GameFiles
             //if (Unknown_38h != 0)
             //{ }//no hit
 
-            var cnt1 = (Unknown_0h?.data_items?.Length ?? 0);
+            var cnt1 = (EventEmitterFlags?.data_items?.Length ?? 0);
             var cnt2 = (Unknown_10h?.data_items?.Length ?? 0);
             var cnt3 = (Unknown_28h?.data_items?.Length ?? 0);
 
@@ -3063,7 +3062,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.WriteBlock(this.Unknown_0h);
+            writer.WriteBlock(this.EventEmitterFlags);
             writer.WriteBlock(this.Unknown_10h);
             writer.Write(this.Unknown_20h);
             writer.WriteBlock(this.Unknown_28h);
@@ -3071,20 +3070,20 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            if (Unknown_0h?.data_items != null)
+            if (EventEmitterFlags?.data_items != null)
             {
-                if (Unknown_0h.data_items.Length > 0)
+                if (EventEmitterFlags.data_items.Length > 0)
                 {
-                    YptXml.OpenTag(sb, indent, "Unknown0");
-                    foreach (var item in Unknown_0h.data_items)
+                    YptXml.OpenTag(sb, indent, "EventEmitterFlags");
+                    foreach (var item in EventEmitterFlags.data_items)
                     {
                         YptXml.StringTag(sb, indent + 1, "Item", YptXml.XmlEscape(item?.Name?.Value ?? ""));
                     }
-                    YptXml.CloseTag(sb, indent, "Unknown0");
+                    YptXml.CloseTag(sb, indent, "EventEmitterFlags");
                 }
                 else
                 {
-                    YptXml.SelfClosingTag(sb, indent, "Unknown0");
+                    YptXml.SelfClosingTag(sb, indent, "EventEmitterFlags");
                 }
             }
             if (Unknown_10h?.data_items != null)
@@ -3098,9 +3097,9 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            Unknown_0h = new ResourceSimpleList64<ParticleStringBlock>();
-            //Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleStringBlock>(node, "Unknown0");
-            var unode = node.SelectSingleNode("Unknown0");
+            EventEmitterFlags = new ResourceSimpleList64<ParticleStringBlock>();
+            //EventEmitterFlags.data_items = XmlMeta.ReadItemArray<ParticleStringBlock>(node, "EventEmitterFlags");
+            var unode = node.SelectSingleNode("EventEmitterFlags");
             if (unode != null)
             {
                 var inodes = unode.SelectNodes("Item");
@@ -3112,7 +3111,7 @@ namespace CodeWalker.GameFiles
                     blk.Name = (string_r)iname;
                     ilist.Add(blk);
                 }
-                Unknown_0h.data_items = ilist.ToArray();
+                EventEmitterFlags.data_items = ilist.ToArray();
             }
 
             Unknown_10h = new ResourceSimpleList64<ParticleUnknown2>();
@@ -3138,7 +3137,7 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0, Unknown_0h),
+                new Tuple<long, IResourceBlock>(0, EventEmitterFlags),
                 new Tuple<long, IResourceBlock>(0x10, Unknown_10h),
                 new Tuple<long, IResourceBlock>(0x28, Unknown_28h)
             };
@@ -4029,26 +4028,26 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 0x20;
 
         // structure data
-        public float Unknown_0h { get; set; }
-        public float Unknown_4h { get; set; }
+        public float InterpolationInterval { get; set; }
+        public float KeyFrameMultiplier { get; set; }
         public ulong Unknown_8h; // 0x0000000000000000
-        public float Unknown_10h { get; set; }
-        public float Unknown_14h { get; set; }
-        public float Unknown_18h { get; set; }
-        public float Unknown_1Ch { get; set; }
+        public float RedChannelColour { get; set; }
+        public float GreenChannelColour { get; set; }
+        public float BlueChannelColour { get; set; }
+        public float AlphaChannelColour { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadSingle();
-            this.Unknown_4h = reader.ReadSingle();
+            this.InterpolationInterval = reader.ReadSingle();
+            this.KeyFrameMultiplier = reader.ReadSingle();
             this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadSingle();
-            this.Unknown_14h = reader.ReadSingle();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadSingle();
+            this.RedChannelColour = reader.ReadSingle();
+            this.GreenChannelColour = reader.ReadSingle();
+            this.BlueChannelColour = reader.ReadSingle();
+            this.AlphaChannelColour = reader.ReadSingle();
 
-            switch (Unknown_0h)
+            switch (InterpolationInterval)
             {
                 case 0:
                 case 1.0f:
@@ -4060,7 +4059,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more..
             }
-            switch (Unknown_4h)
+            switch (KeyFrameMultiplier)
             {
                 case 0:
                 case 1.0f:
@@ -4075,7 +4074,7 @@ namespace CodeWalker.GameFiles
             }
             //if (Unknown_8h != 0)
             //{ }//no hit
-            switch (Unknown_10h)
+            switch (RedChannelColour)
             {
                 case 0:
                 case 1.2f:
@@ -4092,7 +4091,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more..
             }
-            switch (Unknown_14h)
+            switch (GreenChannelColour)
             {
                 case 0:
                 case 1.2f:
@@ -4108,7 +4107,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more...
             }
-            switch (Unknown_18h)
+            switch (BlueChannelColour)
             {
                 case -0.8f:
                 case -0.5f:
@@ -4121,7 +4120,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break; //and more...
             }
-            switch (Unknown_1Ch)
+            switch (AlphaChannelColour)
             {
                 case 0:
                 case 1.0f:
@@ -4138,36 +4137,36 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.Unknown_0h);
-            writer.Write(this.Unknown_4h);
+            writer.Write(this.InterpolationInterval);
+            writer.Write(this.KeyFrameMultiplier);
             writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
+            writer.Write(this.RedChannelColour);
+            writer.Write(this.GreenChannelColour);
+            writer.Write(this.BlueChannelColour);
+            writer.Write(this.AlphaChannelColour);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YptXml.ValueTag(sb, indent, "Unknown0", FloatUtil.ToString(Unknown_0h));
-            YptXml.ValueTag(sb, indent, "Unknown4", FloatUtil.ToString(Unknown_4h));
-            YptXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
-            YptXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
-            YptXml.ValueTag(sb, indent, "Unknown18", FloatUtil.ToString(Unknown_18h));
-            YptXml.ValueTag(sb, indent, "Unknown1C", FloatUtil.ToString(Unknown_1Ch));
+            YptXml.ValueTag(sb, indent, "InterpolationInterval", FloatUtil.ToString(InterpolationInterval));
+            YptXml.ValueTag(sb, indent, "KeyFrameMultiplier", FloatUtil.ToString(KeyFrameMultiplier));
+            YptXml.ValueTag(sb, indent, "RedChannelColour", FloatUtil.ToString(RedChannelColour));
+            YptXml.ValueTag(sb, indent, "GreenChannelColour", FloatUtil.ToString(GreenChannelColour));
+            YptXml.ValueTag(sb, indent, "BlueChannelColour", FloatUtil.ToString(BlueChannelColour));
+            YptXml.ValueTag(sb, indent, "AlphaChannelColour", FloatUtil.ToString(AlphaChannelColour));
         }
         public void ReadXml(XmlNode node)
         {
-            Unknown_0h = Xml.GetChildFloatAttribute(node, "Unknown0");
-            Unknown_4h = Xml.GetChildFloatAttribute(node, "Unknown4");
-            Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10");
-            Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14");
-            Unknown_18h = Xml.GetChildFloatAttribute(node, "Unknown18");
-            Unknown_1Ch = Xml.GetChildFloatAttribute(node, "Unknown1C");
+            InterpolationInterval = Xml.GetChildFloatAttribute(node, "InterpolationInterval");
+            KeyFrameMultiplier = Xml.GetChildFloatAttribute(node, "KeyFrameMultiplier");
+            RedChannelColour = Xml.GetChildFloatAttribute(node, "RedChannelColour");
+            GreenChannelColour = Xml.GetChildFloatAttribute(node, "GreenChannelColour");
+            BlueChannelColour = Xml.GetChildFloatAttribute(node, "BlueChannelColour");
+            AlphaChannelColour = Xml.GetChildFloatAttribute(node, "AlphaChannelColour");
         }
 
         public override string ToString()
         {
-            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", Unknown_0h, Unknown_4h, Unknown_10h, Unknown_14h, Unknown_18h, Unknown_1Ch);
+            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}", InterpolationInterval, KeyFrameMultiplier, RedChannelColour, GreenChannelColour, BlueChannelColour, AlphaChannelColour);
         }
 
     }

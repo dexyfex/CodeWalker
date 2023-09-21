@@ -338,7 +338,7 @@ namespace CodeWalker.Project.Panels
 
         private void BSRadiusTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (float.TryParse(BSRadiusTextBox.Text, out float f))
+            if (FloatUtil.TryParse(BSRadiusTextBox.Text, out float f))
             {
                 if (!MathUtil.NearEqual(CurrentArchetype._BaseArchetypeDef.bsRadius, f))
                 {
