@@ -12,6 +12,7 @@ using Device = SharpDX.Direct3D11.Device;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -41,8 +42,9 @@ namespace CodeWalker.Rendering
 
         public DistantLightsShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\DistantLightsVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\DistantLightsPS.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "DistantLightsVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "DistantLightsPS.cso"));
 
             lightsvs = new VertexShader(device, vsbytes);
             lightsps = new PixelShader(device, psbytes);

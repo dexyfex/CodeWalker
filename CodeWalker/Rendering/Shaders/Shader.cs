@@ -10,6 +10,8 @@ using Device = SharpDX.Direct3D11.Device;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 using CodeWalker.World;
+using System.Diagnostics;
+using System.IO;
 
 namespace CodeWalker.Rendering
 {
@@ -25,6 +27,5 @@ namespace CodeWalker.Rendering
         public abstract void UnbindResources(DeviceContext context);
 
         //public abstract void Dispose();
-
     }
 }

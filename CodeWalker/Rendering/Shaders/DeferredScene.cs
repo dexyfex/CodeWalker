@@ -13,6 +13,7 @@ using CodeWalker.World;
 using SharpDX;
 using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -128,17 +129,18 @@ namespace CodeWalker.Rendering
         {
             var device = dxman.device;
 
-            byte[] bDirLightVS = File.ReadAllBytes("Shaders\\DirLightVS.cso");
-            byte[] bDirLightPS = File.ReadAllBytes("Shaders\\DirLightPS.cso");
-            byte[] bDirLightMSPS = File.ReadAllBytes("Shaders\\DirLightPS_MS.cso");
-            byte[] bLodLightVS = File.ReadAllBytes("Shaders\\LodLightsVS.cso");
-            byte[] bLodLightPS = File.ReadAllBytes("Shaders\\LodLightsPS.cso");
-            byte[] bLodLightMSPS = File.ReadAllBytes("Shaders\\LodLightsPS_MS.cso");
-            byte[] bLightVS = File.ReadAllBytes("Shaders\\LightVS.cso");
-            byte[] bLightPS = File.ReadAllBytes("Shaders\\LightPS.cso");
-            byte[] bLightMSPS = File.ReadAllBytes("Shaders\\LightPS_MS.cso");
-            byte[] bFinalVS = File.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
-            byte[] bSSAAPS = File.ReadAllBytes("Shaders\\PPSSAAPS.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] bDirLightVS = File.ReadAllBytes(Path.Combine(folder, "DirLightVS.cso"));
+            byte[] bDirLightPS = File.ReadAllBytes(Path.Combine(folder, "DirLightPS.cso"));
+            byte[] bDirLightMSPS = File.ReadAllBytes(Path.Combine(folder, "DirLightPS_MS.cso"));
+            byte[] bLodLightVS = File.ReadAllBytes(Path.Combine(folder, "LodLightsVS.cso"));
+            byte[] bLodLightPS = File.ReadAllBytes(Path.Combine(folder, "LodLightsPS.cso"));
+            byte[] bLodLightMSPS = File.ReadAllBytes(Path.Combine(folder, "LodLightsPS_MS.cso"));
+            byte[] bLightVS = File.ReadAllBytes(Path.Combine(folder, "LightVS.cso"));
+            byte[] bLightPS = File.ReadAllBytes(Path.Combine(folder, "LightPS.cso"));
+            byte[] bLightMSPS = File.ReadAllBytes(Path.Combine(folder, "LightPS_MS.cso"));
+            byte[] bFinalVS = File.ReadAllBytes(Path.Combine(folder, "PPFinalPassVS.cso"));
+            byte[] bSSAAPS = File.ReadAllBytes(Path.Combine(folder, "PPSSAAPS.cso"));
 
             DirLightVS = new VertexShader(device, bDirLightVS);
             DirLightPS = new PixelShader(device, bDirLightPS);

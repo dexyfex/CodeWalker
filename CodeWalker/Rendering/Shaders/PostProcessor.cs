@@ -13,6 +13,7 @@ using CodeWalker.World;
 using SharpDX;
 using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -186,14 +187,15 @@ namespace CodeWalker.Rendering
         {
             var device = dxman.device;
 
-            byte[] bReduceTo1DCS = File.ReadAllBytes("Shaders\\PPReduceTo1DCS.cso");
-            byte[] bReduceTo0DCS = File.ReadAllBytes("Shaders\\PPReduceTo0DCS.cso");
-            byte[] bLumBlendCS = File.ReadAllBytes("Shaders\\PPLumBlendCS.cso");
-            byte[] bBloomFilterBPHCS = File.ReadAllBytes("Shaders\\PPBloomFilterBPHCS.cso");
-            byte[] bBloomFilterVCS = File.ReadAllBytes("Shaders\\PPBloomFilterVCS.cso");
-            byte[] bCopyPixelsPS = File.ReadAllBytes("Shaders\\PPCopyPixelsPS.cso");
-            byte[] bFinalPassVS = File.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
-            byte[] bFinalPassPS = File.ReadAllBytes("Shaders\\PPFinalPassPS.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] bReduceTo1DCS = File.ReadAllBytes(Path.Combine(folder, "PPReduceTo1DCS.cso"));
+            byte[] bReduceTo0DCS = File.ReadAllBytes(Path.Combine(folder, "PPReduceTo0DCS.cso"));
+            byte[] bLumBlendCS = File.ReadAllBytes(Path.Combine(folder, "PPLumBlendCS.cso"));
+            byte[] bBloomFilterBPHCS = File.ReadAllBytes(Path.Combine(folder, "PPBloomFilterBPHCS.cso"));
+            byte[] bBloomFilterVCS = File.ReadAllBytes(Path.Combine(folder, "PPBloomFilterVCS.cso"));
+            byte[] bCopyPixelsPS = File.ReadAllBytes(Path.Combine(folder, "PPCopyPixelsPS.cso"));
+            byte[] bFinalPassVS = File.ReadAllBytes(Path.Combine(folder, "PPFinalPassVS.cso"));
+            byte[] bFinalPassPS = File.ReadAllBytes(Path.Combine(folder, "PPFinalPassPS.cso"));
 
             ReduceTo1DCS = new ComputeShader(device, bReduceTo1DCS);
             ReduceTo0DCS = new ComputeShader(device, bReduceTo0DCS);

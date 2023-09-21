@@ -11,6 +11,7 @@ using SharpDX.Direct3D11;
 using System.IO;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -131,12 +132,13 @@ namespace CodeWalker.Rendering
 
         public SkydomeShader(Device device)
         {
-            byte[] skyvsbytes = File.ReadAllBytes("Shaders\\SkydomeVS.cso");
-            byte[] skypsbytes = File.ReadAllBytes("Shaders\\SkydomePS.cso");
-            byte[] sunvsbytes = File.ReadAllBytes("Shaders\\SkySunVS.cso");
-            byte[] sunpsbytes = File.ReadAllBytes("Shaders\\SkySunPS.cso");
-            byte[] moonvsbytes = File.ReadAllBytes("Shaders\\SkyMoonVS.cso");
-            byte[] moonpsbytes = File.ReadAllBytes("Shaders\\SkyMoonPS.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] skyvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkydomeVS.cso"));
+            byte[] skypsbytes = File.ReadAllBytes(Path.Combine(folder, "SkydomePS.cso"));
+            byte[] sunvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkySunVS.cso"));
+            byte[] sunpsbytes = File.ReadAllBytes(Path.Combine(folder, "SkySunPS.cso"));
+            byte[] moonvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkyMoonVS.cso"));
+            byte[] moonpsbytes = File.ReadAllBytes(Path.Combine(folder, "SkyMoonPS.cso"));
 
             skyvs = new VertexShader(device, skyvsbytes);
             skyps = new PixelShader(device, skypsbytes);

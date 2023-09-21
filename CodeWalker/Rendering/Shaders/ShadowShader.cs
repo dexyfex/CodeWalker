@@ -12,6 +12,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 using SharpDX;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -81,9 +82,10 @@ namespace CodeWalker.Rendering
 
         public ShadowShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\ShadowVS.cso");
-            byte[] vssbytes = File.ReadAllBytes("Shaders\\ShadowVS_Skin.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\ShadowPS.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "ShadowVS.cso"));
+            byte[] vssbytes = File.ReadAllBytes(Path.Combine(folder, "ShadowVS_Skin.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "ShadowPS.cso"));
 
             shadowvs = new VertexShader(device, vsbytes);
             shadowvs_skin = new VertexShader(device, vssbytes);

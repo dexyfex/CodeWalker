@@ -8,6 +8,7 @@ using CodeWalker.World;
 using SharpDX.Direct3D11;
 using SharpDX;
 using System.IO;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -39,8 +40,9 @@ namespace CodeWalker.Rendering
 
         public WidgetShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\WidgetVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\WidgetPS.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "WidgetVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "WidgetPS.cso"));
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);
