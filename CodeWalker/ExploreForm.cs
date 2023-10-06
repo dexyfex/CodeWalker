@@ -3170,7 +3170,7 @@ namespace CodeWalker
 
             Form form = new Form() {
                 Width = 450,
-                Height = 250,
+                Height = 290,
                 FormBorderStyle = FormBorderStyle.FixedDialog,
                 Text = "Defragment RPF Archive - CodeWalker by dexyfex",
                 StartPosition = FormStartPosition.CenterParent,
@@ -3181,14 +3181,20 @@ namespace CodeWalker
             var addLabel = new Func<int, string, Control>((y, t) => {
                 return addCtrl(new Label() { Left = 30, Top = y, Width = 370, Height = 20, Text = t });
             });
+            var addCheckbox = new Func<int, string, bool, Control>((y, t, defaultVal) =>
+            {
+                return addCtrl(new CheckBox() { Left = 33, Top = y, Width = 370, Height = 20, Text = t, Checked = defaultVal });
+            });
             var rpfNameLabel = addLabel(20, "Archive: " + rpf.Path);
             var curSizeLabel = addLabel(40, string.Empty);
             var newSizeLabel = addLabel(60, string.Empty);
             var redSizeLabel = addLabel(80, string.Empty);
             var statusLabel = addLabel(110, string.Empty);
-            var progressBar = addCtrl(new ProgressBar() { Left = 30, Top = 130, Width = 370, Height = 20, Minimum = 0, Maximum = 1000, MarqueeAnimationSpeed = 50 }) as ProgressBar;
-            var beginButton = addCtrl(new Button() { Text = "Begin Defragment", Left = 30, Top = 170, Width = 120 }) as Button;
-            var closeButton = addCtrl(new Button() { Text = "Close", Left = 320, Top = 170, Width = 80 }) as Button;
+            CheckBox recursiveCheckbox = addCheckbox(130, "Recursive", true) as CheckBox;
+            CheckBox encryptionCheckbox = addCheckbox(150, "Fix encryption", true) as CheckBox;
+            var progressBar = addCtrl(new ProgressBar() { Left = 30, Top = 180, Width = 370, Height = 20, Minimum = 0, Maximum = 1000, MarqueeAnimationSpeed = 50 }) as ProgressBar;
+            var beginButton = addCtrl(new Button() { Text = "Begin Defragment", Left = 30, Top = 210, Width = 120 }) as Button;
+            var closeButton = addCtrl(new Button() { Text = "Close", Left = 320, Top = 210, Width = 80 }) as Button;
             var inProgress = false;
             var updateProgress = new Action<string, float>((s, p) => { form.Invoke(new Action(() => {
                 statusLabel.Text = s;
@@ -3196,7 +3202,7 @@ namespace CodeWalker
             }));});
             var updateSizeLabels = new Action<bool>((init) => {
                 var curSize = rpf.FileSize;
-                var newSize = rpf.GetDefragmentedFileSize();
+                var newSize = rpf.GetDefragmentedFileSize(recursiveCheckbox.Checked);
                 var redSize = curSize - newSize;
                 curSizeLabel.Text = "Archive current size: " + TextUtil.GetBytesReadable(curSize);
                 newSizeLabel.Text = "Defragmented size: " + TextUtil.GetBytesReadable(newSize);
@@ -3212,7 +3218,7 @@ namespace CodeWalker
                 if (!EnsureRpfValidEncryption(rpf)) return;
                 inProgress = true;
                 enableUi(false);
-                RpfFile.Defragment(rpf, updateProgress);
+                RpfFile.Defragment(rpf, updateProgress, recursiveCheckbox.Checked, encryptionCheckbox.Checked);
                 updateProgress("Defragment complete.", 1.0f);
                 enableUi(true);
                 form.Invoke(new Action(() => { updateSizeLabels(false); }));
@@ -3221,6 +3227,7 @@ namespace CodeWalker
             updateSizeLabels(true);
             beginButton.Click += (sender, e) => { defragment(); };
             closeButton.Click += (sender, e) => { form.Close(); };
+            recursiveCheckbox.Click += (sender, e) => { updateSizeLabels(false); };
             form.FormClosing += (s, e) => { e.Cancel = inProgress; };
             form.ShowDialog(this);
             RefreshMainListView();
