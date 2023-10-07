@@ -1466,13 +1466,13 @@ namespace CodeWalker.GameFiles
                     var fentry = entry as RpfFileEntry;
                     if (fentry != null)
                     {
-                        if (!fentry.Name.EndsWith(".rpf"))
+                        var childRpf = this.FindChildArchive(fentry);
+                        if (childRpf == null)
                         {
                             blockcount += GetBlockCount(fentry.GetFileSize());
                         }
                         else
                         {
-                            var childRpf = this.FindChildArchive(fentry);
                             childRpfsSize += childRpf.GetDefragmentedFileSize(true);
                         }
                     }
@@ -1956,10 +1956,13 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var entry in file?.AllEntries) 
                 {
-                    if (entry.NameHash != 0 && entry.Name.EndsWith(".rpf"))
+                    if (entry is RpfFileEntry)
                     {
                         var childRpf = file.FindChildArchive(entry as RpfFileEntry);
-                        Defragment(childRpf, null, true);
+                        if (childRpf != null)
+                        {
+                            Defragment(childRpf, null, true);
+                        }
                     }
                 }
             }
