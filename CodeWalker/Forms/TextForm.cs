@@ -197,7 +197,7 @@ namespace CodeWalker.Forms
 
             if (string.IsNullOrEmpty(FileName)) saveAs = true;
             if (string.IsNullOrEmpty(FilePath)) saveAs = true;
-            else if ((FilePath.ToLowerInvariant().StartsWith(GTAFolder.CurrentGTAFolder.ToLowerInvariant()))) saveAs = true;
+            else if (FilePath.StartsWith(GTAFolder.CurrentGTAFolder, StringComparison.OrdinalIgnoreCase)) saveAs = true;
             if (!File.Exists(FilePath)) saveAs = true;
 
             var fn = FilePath;
@@ -277,7 +277,7 @@ namespace CodeWalker.Forms
                 return false;
             }
 
-            if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+            if (!rpfFileEntry.Path.StartsWith("mods", StringComparison.OrdinalIgnoreCase))
             {
                 if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {

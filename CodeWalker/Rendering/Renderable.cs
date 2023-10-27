@@ -1475,6 +1475,7 @@ namespace CodeWalker.Rendering
             public float FalloffExponent;
             public float InnerAngle;//for cone
             public float OuterAngleOrCapExt;//outer angle for cone, cap extent for capsule
+            public float Distance;
         }
 
         public LODLight[] Points;
@@ -1512,7 +1513,7 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < n; i++)
             {
                 var l = ll.LodLights[i];
-                if (l.Enabled == false) continue;
+                if (l.Enabled == false || l.Visible == false) continue;
                 var light = new LODLight();
                 light.Position = l.Position;
                 light.Colour = (uint)l.Colour.ToBgra();
@@ -1547,6 +1548,58 @@ namespace CodeWalker.Rendering
 
             DataSize = (points.Count + spots.Count + caps.Count) * 80;
 
+        }
+
+        public (int, int, int) UpdateLods(Vector3 refPos)
+        {
+            for (int i = 0; i < Points.Length; i++)
+            {
+                Points[i].Distance = Vector3.DistanceSquared(refPos, Points[i].Position);
+            }
+            for (int i = 0; i < Spots.Length; i++)
+            {
+                Spots[i].Distance = Vector3.DistanceSquared(refPos, Spots[i].Position);
+            }
+
+            for (int i = 0; i < Caps.Length; i++)
+            {
+                Caps[i].Distance = Vector3.DistanceSquared(refPos, Caps[i].Position);
+            }
+
+            Array.Sort(Points, (a, b) => a.Distance.CompareTo(b.Distance));
+            Array.Sort(Spots, (a, b) => a.Distance.CompareTo(b.Distance));
+            Array.Sort(Caps, (a, b) => a.Distance.CompareTo(b.Distance));
+
+            var spotsIndex = 0;
+            var pointsIndex = 0;
+            var capsIndex = 0;
+            for (int i = 0; i < Points.Length; i++)
+            {
+                if (Points[i].Distance > 100_000)
+                {
+                    pointsIndex = i;
+                    break;
+                }
+            }
+            for (int i = 0; i < Spots.Length; i++)
+            {
+                if (Spots[i].Distance > 100_000)
+                {
+                    spotsIndex = i;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < Caps.Length; i++)
+            {
+                if (Caps[i].Distance > 100_000)
+                {
+                    capsIndex = i;
+                    break;
+                }
+            }
+
+            return (pointsIndex, spotsIndex, capsIndex);
         }
 
         public override void Load(Device device)

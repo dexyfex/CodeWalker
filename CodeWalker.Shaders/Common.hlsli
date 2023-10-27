@@ -1,6 +1,3 @@
-
-
-
 struct ShaderGlobalLightParams
 {
     float3 LightDir;

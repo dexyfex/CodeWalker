@@ -546,14 +546,14 @@ namespace CodeWalker.World
         private void LoadYcds()
         {
             int cutListCount = (CameraCutList?.Length ?? 0) + 1;
-            var shortName = CutFile.FileEntry?.GetShortNameLower() ?? "";
+            var shortName = CutFile.FileEntry?.ShortName ?? "";
             Ycds = new YcdFile[cutListCount];
             if (!string.IsNullOrEmpty(shortName))
             {
                 for (int i = 0; i < cutListCount; i++)
                 {
                     var ycdname = shortName + "-" + i.ToString();
-                    var ycdhash = JenkHash.GenHash(ycdname);
+                    var ycdhash = JenkHash.GenHashLower(ycdname);
                     var ycd = GameFileCache.GetYcd(ycdhash);
                     while ((ycd != null) && (!ycd.Loaded))
                     {

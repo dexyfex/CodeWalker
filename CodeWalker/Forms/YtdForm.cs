@@ -249,7 +249,6 @@ namespace CodeWalker.Forms
             if (tex == null) return;
 
             tex.Name = CurrentTexture.Name;
-            tex.NameHash = CurrentTexture.NameHash;
             tex.Usage = CurrentTexture.Usage;
             tex.UsageFlags = CurrentTexture.UsageFlags;
             tex.Unknown_32h = CurrentTexture.Unknown_32h;
@@ -285,7 +284,6 @@ namespace CodeWalker.Forms
             var tex = CurrentTexture;
 
             tex.Name = name;
-            tex.NameHash = JenkHash.GenHash(name.ToLowerInvariant());
 
             var textures = new List<Texture>();
             textures.AddRange(TexDict.Textures.data_items);
@@ -323,8 +321,7 @@ namespace CodeWalker.Forms
                 var dds = File.ReadAllBytes(fn);
                 var tex = DDSIO.GetTexture(dds);
                 tex.Name = Path.GetFileNameWithoutExtension(fn);
-                tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
-                JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
+                JenkIndex.EnsureLower(tex.Name);
                 return tex;
             }
             catch
@@ -456,7 +453,7 @@ namespace CodeWalker.Forms
                     if (!saveas)
                     {
                         isinrpf = true;
-                        if (!rpfFileEntry.Path.ToLowerInvariant().StartsWith("mods"))
+                        if (!rpfFileEntry.Path.StartsWith("mods", StringComparison.OrdinalIgnoreCase))
                         {
                             if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
                             {

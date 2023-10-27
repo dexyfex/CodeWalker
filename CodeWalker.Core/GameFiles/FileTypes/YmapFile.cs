@@ -96,7 +96,7 @@ namespace CodeWalker.GameFiles
                 return;
             }
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
             Meta = rd.ReadBlock<Meta>();//maybe null this after load to reduce memory consumption?
 
@@ -1336,15 +1336,11 @@ namespace CodeWalker.GameFiles
         {
             var newnamel = newname.ToLowerInvariant();
             var newnamex = newname + ".ymap";
-            var newnamexl = newname.ToLowerInvariant();
             var newhash = JenkHash.GenHash(newnamel);
             JenkIndex.Ensure(newnamel);
             if (RpfFileEntry != null)
             {
                 RpfFileEntry.Name = newnamex;
-                RpfFileEntry.NameLower = newnamexl;
-                RpfFileEntry.NameHash = JenkHash.GenHash(newnamexl);
-                RpfFileEntry.ShortNameHash = newhash;
             }
             Name = newnamex;
             _CMapData.name = newhash;
@@ -3034,6 +3030,8 @@ namespace CodeWalker.GameFiles
 
         public bool Enabled { get; set; } = true;
 
+        public bool Visible { get; set; } = true;
+
         public void Init(YmapLODLights l, YmapDistantLODLights p, int i)
         {
             LodLights = l;
@@ -3306,7 +3304,7 @@ namespace CodeWalker.GameFiles
             var vertexCount = indicesOffset / 12;
             var indexCount = (int)(dataSize - indicesOffset);// / 4;
             Data = MetaTypes.GetByteArray(meta, vptr, dataSize);
-            Vertices = MetaTypes.ConvertDataArray<Vector3>(Data, 0, vertexCount);
+            Vertices = MetaTypes.ConvertDataArray<Vector3>(Data, 0, vertexCount).ToArray();
             Indices = new byte[indexCount];
             Buffer.BlockCopy(Data, indicesOffset, Indices, 0, indexCount);
             BuildTriangles();

@@ -40,36 +40,35 @@ namespace CodeWalker.GameFiles
                 throw new Exception("File entry wasn't a resource! (is it binary data?)");
             }
 
-            ResourceDataReader rd = null;
+            
             try
             {
-                rd = new ResourceDataReader(resentry, data);
+                using var rd = new ResourceDataReader(resentry, data);
+
+                ClothDictionary = rd?.ReadBlock<ClothDictionary>();
+
+                if (ClothDictionary != null)
+                {
+                    Dict = new Dictionary<uint, CharacterCloth>();
+                    int n = ClothDictionary.ClothNameHashes?.data_items?.Length ?? 0;
+                    for (int i = 0; i < n; i++)
+                    {
+                        if (i >= (ClothDictionary.Clothes?.data_items?.Length ?? 0)) break;
+
+                        var hash = ClothDictionary.ClothNameHashes.data_items[i];
+                        var cloth = ClothDictionary.Clothes.data_items[i];
+
+                        Dict[hash] = cloth;
+                    }
+                }
+
+                Loaded = true;
             }
             catch (Exception ex)
             {
                 //data = entry.File.DecompressBytes(data); //??
                 LoadException = ex.ToString();
             }
-
-            ClothDictionary = rd?.ReadBlock<ClothDictionary>();
-
-
-            if (ClothDictionary != null)
-            {
-                Dict = new Dictionary<uint, CharacterCloth>();
-                int n = ClothDictionary.ClothNameHashes?.data_items?.Length ?? 0;
-                for (int i = 0; i < n; i++)
-                {
-                    if (i >= (ClothDictionary.Clothes?.data_items?.Length ?? 0)) break;
-
-                    var hash = ClothDictionary.ClothNameHashes.data_items[i];
-                    var cloth = ClothDictionary.Clothes.data_items[i];
-
-                    Dict[hash] = cloth;
-                }
-            }
-
-            Loaded = true;
         }
 
         public byte[] Save()

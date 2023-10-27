@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -99,6 +100,10 @@ namespace CodeWalker
                 bytes = newb; //trim starting byte order mark
             }
             return Encoding.UTF8.GetString(bytes);
+        }
+        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        {
+            return source?.IndexOf(toCheck, comp) >= 0;
         }
 
     }
@@ -268,6 +273,24 @@ namespace CodeWalker
         public static uint RotateRight(uint value, int count)
         {
             return (value >> count) | (value << (32 - count));
+        }
+    }
+
+    public static class SpanExtensions
+    {
+        public static int Read(this Stream stream, Span<byte> buffer)
+        {
+            var n = Math.Min(stream.Length - stream.Position, buffer.Length);
+            if (n <= 0)
+                return 0;
+            
+            for (int i = 0; i < buffer.Length; i++)
+            {
+                var result = stream.ReadByte();
+                buffer[i] = (byte)result;
+            }
+
+            return buffer.Length;
         }
     }
 

@@ -67,13 +67,9 @@ namespace CodeWalker.GameFiles
 
 
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
             Meta = rd.ReadBlock<Meta>();
-
-
-
-
 
         }
 
@@ -90,13 +86,13 @@ namespace CodeWalker.GameFiles
 
             MapDataGroups = PsoTypes.GetObjectArray<YmfMapDataGroup, CMapDataGroup>(Pso, d.MapDataGroups);
 
-            imapDependencies = PsoTypes.GetItemArray<CImapDependency>(Pso, d.imapDependencies);
+            imapDependencies = PsoTypes.GetItemArray<CImapDependency>(Pso, d.imapDependencies).ToArray();
 
             imapDependencies2 = PsoTypes.GetObjectArray<YmfImapDependency2, CImapDependencies>(Pso, d.imapDependencies_2);
 
             itypDependencies2 = PsoTypes.GetObjectArray<YmfItypDependency2, CItypDependencies>(Pso, d.itypDependencies_2);
 
-            HDTxdAssetBindings = PsoTypes.GetItemArray<CHDTxdAssetBinding>(Pso, d.HDTxdBindingArray);
+            HDTxdAssetBindings = PsoTypes.GetItemArray<CHDTxdAssetBinding>(Pso, d.HDTxdBindingArray).ToArray();
 
             Interiors = PsoTypes.GetObjectArray<YmfInterior, CInteriorBoundsFiles>(Pso, d.Interiors);
 

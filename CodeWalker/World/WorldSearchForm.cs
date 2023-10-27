@@ -77,7 +77,7 @@ namespace CodeWalker.World
             {
 
                 var rpfman = gfc.RpfMan;
-                var rpflist = loadedOnly ? gfc.ActiveMapRpfFiles.Values.ToList() : rpfman.AllRpfs;
+                IEnumerable<RpfFile> rpflist = loadedOnly ? gfc.ActiveMapRpfFiles.Values : rpfman.AllRpfs;
                 var results = new List<Archetype>();
 
                 foreach (var rpf in rpflist)
@@ -319,7 +319,7 @@ namespace CodeWalker.World
             {
 
                 var rpfman = gfc.RpfMan;
-                var rpflist = loadedOnly ? gfc.ActiveMapRpfFiles.Values.ToList() : rpfman.AllRpfs;
+                IEnumerable<RpfFile> rpflist = loadedOnly ? gfc.ActiveMapRpfFiles.Values : rpfman.AllRpfs;
                 var results = new List<YmapEntityDef>();
 
                 foreach (var rpf in rpflist)

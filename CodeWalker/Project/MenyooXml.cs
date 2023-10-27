@@ -123,8 +123,8 @@ namespace CodeWalker.Project
 
             XmlElement enode = node as XmlElement;
 
-            var hashstr = Xml.GetChildInnerText(node, "ModelHash").ToLowerInvariant();
-            if (hashstr.StartsWith("0x")) hashstr = hashstr.Substring(2);
+            var hashstr = Xml.GetChildInnerText(node, "ModelHash");
+            if (hashstr.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) hashstr = hashstr.Substring(2);
             ModelHash = Convert.ToUInt32(hashstr, 16);
 
             Type = Xml.GetChildIntInnerText(node, "Type");

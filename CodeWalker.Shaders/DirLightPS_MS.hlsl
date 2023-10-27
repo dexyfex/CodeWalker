@@ -34,7 +34,8 @@ PS_OUTPUT main(VS_Output input)
     for (int i = 0; i < sc; i++)
     {
         float depth = DepthTex.Load(ssloc, i);
-        if (depth == 0) continue; //no existing subpixel rendered here
+        if (depth == 0)
+            continue; //no existing subpixel rendered here
     
         float4 diffuse = DiffuseTex.Load(ssloc, i);
         float4 normal = NormalTex.Load(ssloc, i);
@@ -56,7 +57,8 @@ PS_OUTPUT main(VS_Output input)
     d *= SampleMult;
     a *= SampleMult;
     
-    if (d <= 0) discard;
+    if (d <= 0)
+        discard;
     
     PS_OUTPUT output;
     output.Colour = float4(c, a);

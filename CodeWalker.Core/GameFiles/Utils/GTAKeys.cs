@@ -47,7 +47,7 @@ namespace CodeWalker.GameFiles
         public static byte[] PC_AES_KEY; // 32
 
         // ng decryption/encryption expanded keys...      
-        public static byte[][] PC_NG_KEYS; // 101, 272
+        public static uint[][][] PC_NG_KEYS; // 101, 272
 
         // ng decryption tables...       
         public static uint[][][] PC_NG_DECRYPT_TABLES; // 17, 16, 256
@@ -73,15 +73,26 @@ namespace CodeWalker.GameFiles
             var exeStr = new MemoryStream(exeData);
 
             updateStatus("Searching for AES key...");
-            PC_AES_KEY = HashSearch.SearchHash(exeStr, GTA5KeyHashes.PC_AES_KEY_HASH, 0x20);
+            PC_AES_KEY = HashSearch.SearchHash(exeStr, GTA5KeyHashes.PC_AES_KEY_HASH, 32);
             //updateStatus("aes key found");
 
             updateStatus("Searching for NG keys...");
-            PC_NG_KEYS = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_KEY_HASHES, 0x110);
+            //PC_NG_KEYS = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_KEY_HASHES, 272);
+            var tabs = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_KEY_HASHES, 272);
+            PC_NG_KEYS = new uint[tabs.Length][][];
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                PC_NG_KEYS[i] = new uint[tabs[i].Length / 4 / 4][];
+                for (int j = 0; j < tabs[i].Length / 4; j++)
+                {
+                    Buffer.BlockCopy(tabs[i], 0, PC_NG_KEYS[i][j], 0, 16);
+                }
+                //Buffer.BlockCopy(tabs[i], 0, PC_NG_DECRYPT_TABLES[i][j], 0, tabs[i].Length);
+            }
             //updateStatus("ng keys found");
 
             updateStatus("Searching for NG decrypt tables...");
-            var tabs = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_DECRYPT_TABLE_HASHES, 0x400);
+            tabs = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_DECRYPT_TABLE_HASHES, 1024);
             //updateStatus("ng decrypt tables found");
 
             updateStatus("Searching for NG hash lookup tables...");
@@ -277,14 +288,14 @@ namespace CodeWalker.GameFiles
                 db[i] = (byte)((m[i] - rb1[i] - rb2[i] - rb3[i] - rb4[i]) & 0xFF);
             }
 
-            db = GTACrypto.DecryptAESData(db, PC_AES_KEY);
+            GTACrypto.DecryptAESData(db, PC_AES_KEY);
 
             byte[] b = null;
             using (MemoryStream dms = new MemoryStream(db))
             {
                 using (DeflateStream ds = new DeflateStream(dms, CompressionMode.Decompress))
                 {
-                    using (MemoryStream outstr = new MemoryStream())
+                    using (MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream())
                     {
                         ds.CopyTo(outstr);
                         b = outstr.GetBuffer();
@@ -848,10 +859,12 @@ namespace CodeWalker.GameFiles
                     random.NextBytes(buf_encrypted);
 
                     // decrypt                   
-                    var buf_decrypted = GTACrypto.DecryptNGRoundA(
+                    GTACrypto.DecryptNGRoundA(
                         buf_encrypted,
                         noKey,
                         tables);
+
+                    var buf_decrypted = buf_encrypted;
 
                     // make row
                     var row = new RandomGaussRow();
@@ -1148,50 +1161,59 @@ namespace CodeWalker.GameFiles
 
     public class CryptoIO
     {
-        public static byte[][] ReadNgKeys(string fileName)
+        public static uint[][][] ReadNgKeys(string fileName)
         {
-            byte[][] result;
+            using var fs = new FileStream(fileName, FileMode.Open);
+            using var rd = new DataReader(fs);
 
-            var fs = new FileStream(fileName, FileMode.Open);
-            var rd = new DataReader(fs);
+            return ReadNgKeys(rd);
+        }
+        public static uint[][][] ReadNgKeys(byte[] data)
+        {
+            using var rd = new DataReader(new MemoryStream(data));
 
-            result = new byte[101][];
+            return ReadNgKeys(rd);
+        }
+
+        public static uint[][][] ReadNgKeys(DataReader rd)
+        {
+            var result = new uint[101][][];
             for (int i = 0; i < 101; i++)
             {
-                result[i] = rd.ReadBytes(272);
+                result[i] = new uint[68 / 4][];
+                for (int j = 0; j < 68 / 4; j++)
+                {
+                    result[i][j] = new uint[4];
+                    for (int k = 0; k < 4; k++)
+                    {
+                        result[i][j][k] = rd.ReadUInt32();
+                    }
+                    
+                }
             }
 
-            fs.Close();
 
             return result;
         }
-        public static byte[][] ReadNgKeys(byte[] data)
-        {
-            byte[][] result;
-
-            var rd = new DataReader(new MemoryStream(data));
-
-            result = new byte[101][];
-            for (int i = 0; i < 101; i++)
-            {
-                result[i] = rd.ReadBytes(272);
-            }
 
 
-            return result;
-        }
-
-
-        public static void WriteNgKeys(string fileName, byte[][] keys)
+        public static void WriteNgKeys(string fileName, uint[][][] keys)
         {
             //var fs = new FileStream(fileName, FileMode.Create);
             //var wr = new DataWriter(fs);
-            var ms = new MemoryStream();
-            var wr = new DataWriter(ms);
+            using var ms = new MemoryStream();
+            using var wr = new DataWriter(ms);
 
             for (int i = 0; i < 101; i++)
             {
-                wr.Write(keys[i]);
+                for (int j = 0; j < keys[i].Length; j++)
+                {
+                    for (int k = 0; j < keys[i][j].Length; k++)
+                    {
+                        wr.Write(keys[i][j][k]);
+                    }
+                    
+                }
             }
 
             //fs.Close();
@@ -1207,8 +1229,8 @@ namespace CodeWalker.GameFiles
         {
             uint[][][] result;
 
-            var fs = new FileStream(fileName, FileMode.Open);
-            var rd = new DataReader(fs);
+            using var fs = new FileStream(fileName, FileMode.Open);
+            using var rd = new DataReader(fs);
 
             // 17 rounds...
             result = new uint[17][][];
@@ -1235,7 +1257,7 @@ namespace CodeWalker.GameFiles
         {
             uint[][][] result;
 
-            var rd = new DataReader(new MemoryStream(data));
+            using var rd = new DataReader(new MemoryStream(data));
 
             // 17 rounds...
             result = new uint[17][][];
@@ -1263,8 +1285,8 @@ namespace CodeWalker.GameFiles
         {
             //var fs = new FileStream(fileName, FileMode.Create);
             //var wr = new DataWriter(fs);
-            var ms = new MemoryStream();
-            var wr = new DataWriter(ms);
+            using var ms = new MemoryStream();
+            using var wr = new DataWriter(ms);
 
             // 17 rounds...
             for (int i = 0; i < 17; i++)
@@ -1293,8 +1315,8 @@ namespace CodeWalker.GameFiles
         {
             GTA5NGLUT[][] result;
 
-            var fs = new FileStream(fileName, FileMode.Open);
-            var rd = new DataReader(fs);
+            using var fs = new FileStream(fileName, FileMode.Open);
+            using var rd = new DataReader(fs);
 
             // 17 rounds...
             result = new GTA5NGLUT[17][];

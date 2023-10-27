@@ -101,6 +101,28 @@ namespace CodeWalker.GameFiles
             Hash = hash;
             Type = type;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            if (obj is not GameFileCacheKey gameFileCacheKey) return false;
+            return gameFileCacheKey.Hash == Hash && gameFileCacheKey.Type == Type;
+        }
+
+        public static bool operator ==(GameFileCacheKey first, GameFileCacheKey second)
+        {
+            return first.Equals(second);
+        }
+
+        public static bool operator !=(GameFileCacheKey first, GameFileCacheKey second)
+        {
+            return !first.Equals(second);
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)Hash;
+        }
     }
 
 

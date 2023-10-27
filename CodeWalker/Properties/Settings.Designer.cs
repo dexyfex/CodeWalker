@@ -12,7 +12,7 @@ namespace CodeWalker.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.5.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.7.0.0")]
     public sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -142,7 +142,7 @@ namespace CodeWalker.Properties {
                 this["Wireframe"] = value;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -154,43 +154,7 @@ namespace CodeWalker.Properties {
                 this["Skydome"] = value;
             }
         }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool LODLights {
-            get {
-                return ((bool)(this["LODLights"]));
-            }
-            set {
-                this["LODLights"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool NatrualAmbientLight {
-            get {
-                return ((bool)(this["NatrualAmbientLight"]));
-            }
-            set {
-                this["NatrualAmbientLight"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool ArtificialAmbientLight {
-            get {
-                return ((bool)(this["ArtificialAmbientLight"]));
-            }
-            set {
-                this["ArtificialAmbientLight"] = value;
-            }
-        }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -526,55 +490,7 @@ namespace CodeWalker.Properties {
                 this["RenderMode"] = value;
             }
         }
-
-        [global::System.Configuration.UserScopedSetting()]
-        [global::System.Diagnostics.DebuggerNonUserCode()]
-        [global::System.Configuration.DefaultSettingValue("EXTRASUNNY")]
-        public string Weather {
-            get {
-                return ((string)(this["Weather"]));
-            }
-            set {
-                this["Weather"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSetting()]
-        [global::System.Diagnostics.DebuggerNonUserCode()]
-        [global::System.Configuration.DefaultSettingValue("GLOBAL")]
-        public string Region {
-            get {
-                return ((string)(this["Region"]));
-            }
-            set {
-                this["Region"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSetting()]
-        [global::System.Diagnostics.DebuggerNonUserCode()]
-        [global::System.Configuration.DefaultSettingValue("contrails")]
-        public string Clouds {
-            get {
-                return ((string)(this["Clouds"]));
-            }
-            set {
-                this["Clouds"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSetting()]
-        [global::System.Diagnostics.DebuggerNonUserCode()]
-        [global::System.Configuration.DefaultSettingValue("720")]
-        public int TimeOfDay {
-            get {
-                return ((int)(this["TimeOfDay"]));
-            }
-            set {
-                this["TimeOfDay"] = value;
-            }
-        }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("DiffuseSampler")]
@@ -912,6 +828,102 @@ namespace CodeWalker.Properties {
             }
             set {
                 this["RPFExplorerStartFolder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("720")]
+        public int TimeOfDay {
+            get {
+                return ((int)(this["TimeOfDay"]));
+            }
+            set {
+                this["TimeOfDay"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LODLights {
+            get {
+                return ((bool)(this["LODLights"]));
+            }
+            set {
+                this["LODLights"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Global")]
+        public string Region {
+            get {
+                return ((string)(this["Region"]));
+            }
+            set {
+                this["Region"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("contrails")]
+        public string Clouds {
+            get {
+                return ((string)(this["Clouds"]));
+            }
+            set {
+                this["Clouds"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public string Weather {
+            get {
+                return ((string)(this["Weather"]));
+            }
+            set {
+                this["Weather"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool NatrualAmbientLight {
+            get {
+                return ((bool)(this["NatrualAmbientLight"]));
+            }
+            set {
+                this["NatrualAmbientLight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ArtificialAmbientLight {
+            get {
+                return ((bool)(this["ArtificialAmbientLight"]));
+            }
+            set {
+                this["ArtificialAmbientLight"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int AntiAliasing {
+            get {
+                return ((int)(this["AntiAliasing"]));
+            }
+            set {
+                this["AntiAliasing"] = value;
             }
         }
     }

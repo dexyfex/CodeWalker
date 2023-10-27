@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
@@ -45,6 +48,24 @@ namespace CodeWalker.GameFiles
             for (uint i = 0; i < chars.Length; i++)
             {
                 h += chars[i];
+                h += (h << 10);
+                h ^= (h >> 6);
+            }
+            h += (h << 3);
+            h ^= (h >> 11);
+            h += (h << 15);
+
+            return h;
+        }
+
+        public static uint GenHashLower(string text)
+        {
+            if (text == null) return 0;
+            uint h = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                
+                h += (byte)char.ToLowerInvariant(text[i]);
                 h += (h << 10);
                 h ^= (h >> 6);
             }
@@ -192,59 +213,96 @@ namespace CodeWalker.GameFiles
 
 
 
+    public static class DictionaryExtension
+    {
+        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value)
+        {
+            if (dict.ContainsKey(key))
+            {
+                return false;
+            }
 
+            dict[key] = value;
+            return true;
+        }
+    }
 
 
 
     public static class JenkIndex
     {
-        public static Dictionary<uint, string> Index = new Dictionary<uint, string>();
-        private static object syncRoot = new object();
+        public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(Environment.ProcessorCount, 1500000);
 
         public static void Clear()
         {
-            lock (syncRoot)
-            {
-                Index.Clear();
-            }
+            Index.Clear();
         }
 
         public static bool Ensure(string str)
         {
             uint hash = JenkHash.GenHash(str);
             if (hash == 0) return true;
-            lock (syncRoot)
+            if (Index.ContainsKey(hash))
             {
-                if (!Index.ContainsKey(hash))
-                {
-                    Index.Add(hash, str);
-                    return false;
-                }
+                return true;
             }
-            return true;
+            lock (Index)
+            {
+                Index[hash] = str;
+                return false;
+            }
+        }
+
+        public static bool EnsureLower(string str)
+        {
+            uint hash = JenkHash.GenHashLower(str);
+            if (hash == 0) return true;
+            if (Index.ContainsKey(hash))
+            {
+                return true;
+            }
+
+            Index.TryAdd(hash, str);
+            return false;
+        }
+
+        public static void AddRange(params string[] strings)
+        {
+            foreach(var s in strings)
+            {
+                uint hash = JenkHash.GenHash(s);
+                if (hash == 0) continue;
+
+                Index[hash] = s;
+            }
+        }
+
+        public static void AddRangeLower(params string[] strings)
+        {
+            foreach (var s in strings)
+            {
+                uint hash = JenkHash.GenHashLower(s);
+                if (hash == 0) continue;
+
+                Index[hash] = s;
+            }
         }
 
         public static string GetString(uint hash)
         {
             string res;
-            lock (syncRoot)
+            if (!Index.TryGetValue(hash, out res))
             {
-                if (!Index.TryGetValue(hash, out res))
-                {
-                    res = hash.ToString();
-                }
+                res = hash.ToString();
             }
             return res;
         }
         public static string TryGetString(uint hash)
         {
             string res;
-            lock (syncRoot)
+            if (!Index.TryGetValue(hash, out res))
             {
-                if (!Index.TryGetValue(hash, out res))
-                {
-                    res = string.Empty;
-                }
+                res = string.Empty;
             }
             return res;
         }
@@ -252,10 +310,7 @@ namespace CodeWalker.GameFiles
         public static string[] GetAllStrings()
         {
             string[] res = null;
-            lock (syncRoot)
-            {
-                res = Index.Values.ToArray();
-            }
+            res = Index.Values.ToArray();
             return res;
         }
 

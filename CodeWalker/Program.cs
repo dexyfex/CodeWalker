@@ -1,9 +1,15 @@
-﻿using CodeWalker.Properties;
+﻿using CodeWalker.Forms;
+using CodeWalker.GameFiles;
+using CodeWalker.Properties;
+using CodeWalker.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Shell;
@@ -12,18 +18,23 @@ namespace CodeWalker
 {
     static class Program
     {
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool AllocConsole();
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
         static void Main(string[] args)
         {
-
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            ConsoleWindow.Hide();
             bool menumode = false;
             bool explorermode = false;
             bool projectmode = false;
             bool vehiclesmode = false;
             bool pedsmode = false;
+            string path = null;
             if ((args != null) && (args.Length > 0))
             {
                 foreach (string arg in args)
@@ -49,6 +60,18 @@ namespace CodeWalker
                     {
                         pedsmode = true;
                     }
+                    try
+                    {
+                        if (File.Exists(arg))
+                        {
+                            path = arg;
+                        }
+                    } catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex);
+                        Console.WriteLine(ex);
+                    }
+                    
                 }
             }
 
@@ -88,6 +111,14 @@ namespace CodeWalker
                 else if (pedsmode)
                 {
                     Application.Run(new PedsForm());
+                }
+                else if (path != null)
+                {
+                    var modelForm = new ModelForm();
+                    modelForm.Load += new EventHandler(async (sender, eventArgs) => {
+                        modelForm.ViewModel(path);
+                    });
+                    Application.Run(modelForm);
                 }
                 else
                 {

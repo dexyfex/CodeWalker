@@ -96,7 +96,7 @@ namespace CodeWalker.Rendering
                 Cascades.Add(c);
             }
 
-            DepthRenderRS = DXUtility.CreateRasterizerState(device, FillMode.Solid, CullMode.None, true, false, true, 0, 0.0f, 1.0f);
+            DepthRenderRS = DXUtility.CreateRasterizerState(device, FillMode.Solid, CullMode.None, true, false, Settings.Default.AntiAliasing > 1, 0, 0.0f, 1.0f);
             DepthRenderDS = DXUtility.CreateDepthStencilState(device, true, DepthWriteMask.All);
 
             DepthRenderVP = new ViewportF();

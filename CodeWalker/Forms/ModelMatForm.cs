@@ -226,7 +226,7 @@ namespace CodeWalker.Forms
                 if (ttex == null)//don't do this for embedded textures!
                 {
                     tex.Name = txt;
-                    tex.NameHash = JenkHash.GenHash(txt.ToLowerInvariant());
+                    tex.NameHash = JenkHash.GenHashLower(txt);
                 }
                 else
                 {

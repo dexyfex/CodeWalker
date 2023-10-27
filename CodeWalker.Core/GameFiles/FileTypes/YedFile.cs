@@ -41,21 +41,20 @@ namespace CodeWalker.GameFiles
                 throw new Exception("File entry wasn't a resource! (is it binary data?)");
             }
 
-            ResourceDataReader rd = null;
             try
             {
-                rd = new ResourceDataReader(resentry, data);
+                using var rd = new ResourceDataReader(resentry, data);
+
+                ExpressionDictionary = rd?.ReadBlock<ExpressionDictionary>();
+
+
+                InitDictionaries();
             }
             catch (Exception ex)
             {
                 //data = entry.File.DecompressBytes(data); //??
                 LoadException = ex.ToString();
             }
-
-            ExpressionDictionary = rd?.ReadBlock<ExpressionDictionary>();
-
-
-            InitDictionaries();
         }
 
         public byte[] Save()

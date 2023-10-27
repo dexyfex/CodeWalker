@@ -105,6 +105,20 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.Utils
 {
+    public class AssertionFailedException : Exception
+    {
+        public AssertionFailedException() : base("Assertion failed")
+        {
+        }
+
+        public AssertionFailedException(string message) : base(message)
+        {
+        }
+
+        public AssertionFailedException(string message, Exception inner) : base(message, inner)
+        {
+        }
+    }
 
     public static class DDSIO
     {
@@ -176,6 +190,7 @@ namespace CodeWalker.Utils
                     swaprb = false;
                     break;
                 case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: // TextureFormat.D3DFMT_A8B8G8R8
+                case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_TYPELESS:
                     px = imgdata;
                     break;
                 case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM:       // TextureFormat.D3DFMT_L8
@@ -221,8 +236,8 @@ namespace CodeWalker.Utils
 
 
 
-            MemoryStream ms = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(ms);
+            using MemoryStream ms = new MemoryStream(texture.Data.FullData.Length + 128);
+            using BinaryWriter bw = new BinaryWriter(ms);
 
             int nimages = img.MipMapLevels;
 
@@ -353,8 +368,8 @@ namespace CodeWalker.Utils
                     throw new Exception("Unsupported texture dimension");
             }
 
-
             byte[] buff = ms.GetBuffer();
+
             byte[] outbuf = new byte[ms.Length]; //need to copy to the right size buffer for File.WriteAllBytes().
             Array.Copy(buff, outbuf, outbuf.Length);
 
@@ -544,8 +559,8 @@ namespace CodeWalker.Utils
             int add = 0;
             for (int i = 0; i < img.MipMapLevels; i++)
             {
-                images[i].width = img.Width / div;
-                images[i].height = img.Height / div;
+                images[i].width = Math.Max(img.Width / div, 1);
+                images[i].height = Math.Max(img.Height / div, 1);
                 images[i].format = format; //(DXGI_FORMAT)img.Format;
                 images[i].pixels = buf + add;
 
@@ -773,7 +788,7 @@ namespace CodeWalker.Utils
                         break;
 
                     default:
-                        assert(IsValid(fmt));
+                        assert(IsValid(fmt), $"{fmt} is not a valid texture format");
                         assert(!IsCompressed(fmt) && !IsPacked(fmt) && !IsPlanar(fmt));
                         {
 
@@ -904,11 +919,17 @@ namespace CodeWalker.Utils
                 }
             }
 
-            public static void assert(bool b)
+            public static void assert(bool b, string message = null)
             {
                 if (!b)
                 {
-                    throw new Exception();
+                    if (message is null)
+                    {
+                        throw new AssertionFailedException();
+                    } else
+                    {
+                        throw new AssertionFailedException(message);
+                    }
                 }
             }
 

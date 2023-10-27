@@ -440,6 +440,9 @@ namespace CodeWalker.Rendering
                 case Format.D32_Float:
                     dtexf = Format.R32_Typeless;
                     break;
+                case Format.R8G8B8A8_SNorm:
+                    dtexf = Format.R8G8B8A8_SNorm;
+                    break;
                 case Format.D32_Float_S8X24_UInt:
                     dtexf = Format.R32G8X24_Typeless;//is this right? who uses this anyway??
                     break;

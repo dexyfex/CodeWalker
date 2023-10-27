@@ -88,9 +88,25 @@ namespace CodeWalker.GameFiles
 
         public uint TimeFlags { get; set; }
         public bool[] ActiveHours { get; set; }
-        public string[] ActiveHoursText { get; set; }
+        private readonly Lazy<string[]> _activeHoursText;
+        public string[] ActiveHoursText { get => _activeHoursText.Value; }
         public bool ExtraFlag { get { return ((TimeFlags >> 24) & 1) == 1; } }
 
+        public TimeArchetype()
+        {
+            _activeHoursText = new Lazy<string[]>(() =>
+            {
+                var activeHoursText = new string[24];
+                for (int i = 0; i < ActiveHours.Length; i++)
+                {
+                    var nxth = (i < 23) ? (i + 1) : 0;
+                    var hrs = string.Format("{0:00}:00 - {1:00}:00", i, nxth);
+                    activeHoursText[i] = (hrs + (ActiveHours[i] ? " - On" : " - Off"));
+                }
+
+                return activeHoursText;
+            });
+        }
 
         public void Init(YtypFile ytyp, ref CTimeArchetypeDef arch)
         {
@@ -117,16 +133,11 @@ namespace CodeWalker.GameFiles
             if (ActiveHours == null)
             {
                 ActiveHours = new bool[24];
-                ActiveHoursText = new string[24];
             }
             for (int i = 0; i < 24; i++)
             {
                 bool v = ((TimeFlags >> i) & 1) == 1;
                 ActiveHours[i] = v;
-
-                int nxth = (i < 23) ? (i + 1) : 0;
-                string hrs = string.Format("{0:00}:00 - {1:00}:00", i, nxth);
-                ActiveHoursText[i] = (hrs + (v ? " - On" : " - Off"));
             }
         }
 

@@ -14,6 +14,7 @@ using SharpDX;
 using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using System.Diagnostics;
+using CodeWalker.Properties;
 
 namespace CodeWalker.Rendering
 {
@@ -110,7 +111,7 @@ namespace CodeWalker.Rendering
         public int SSAASampleCount = 1;
 
 
-        public int MSAASampleCount = 4;
+        public int MSAASampleCount = 8;
 
 
 
@@ -460,7 +461,8 @@ namespace CodeWalker.Rendering
 
             foreach (var rll in lodlights)
             {
-                if (rll.PointsBuffer != null)
+                var (pointsIndex, spotsIndex, capsIndex) = rll.UpdateLods(camera.Position);
+                if (rll.PointsBuffer != null && pointsIndex > 0)
                 {
                     context.VertexShader.SetShaderResources(0, rll.PointsBuffer.SRV);
                     context.PixelShader.SetShaderResources(6, rll.PointsBuffer.SRV);
@@ -470,9 +472,10 @@ namespace CodeWalker.Rendering
                     LightPSVars.Vars.LightType = 1;
                     LightPSVars.Update(context);
                     LightPSVars.SetPSCBuffer(context, 0);
-                    LightSphere.DrawInstanced(context, rll.PointsBuffer.StructCount);
+
+                    LightSphere.DrawInstanced(context, pointsIndex + 1);
                 }
-                if (rll.SpotsBuffer != null)
+                if (rll.SpotsBuffer != null && spotsIndex > 0)
                 {
                     context.VertexShader.SetShaderResources(0, rll.SpotsBuffer.SRV);
                     context.PixelShader.SetShaderResources(6, rll.SpotsBuffer.SRV);
@@ -482,9 +485,9 @@ namespace CodeWalker.Rendering
                     LightPSVars.Vars.LightType = 2;
                     LightPSVars.Update(context);
                     LightPSVars.SetPSCBuffer(context, 0);
-                    LightCone.DrawInstanced(context, rll.SpotsBuffer.StructCount);
+                    LightCone.DrawInstanced(context, spotsIndex + 1);
                 }
-                if (rll.CapsBuffer != null)
+                if (rll.CapsBuffer != null && capsIndex > 0)
                 {
                     context.VertexShader.SetShaderResources(0, rll.CapsBuffer.SRV);
                     context.PixelShader.SetShaderResources(6, rll.CapsBuffer.SRV);
@@ -494,7 +497,7 @@ namespace CodeWalker.Rendering
                     LightPSVars.Vars.LightType = 4;
                     LightPSVars.Update(context);
                     LightPSVars.SetPSCBuffer(context, 0);
-                    LightCapsule.DrawInstanced(context, rll.CapsBuffer.StructCount);
+                    LightCapsule.DrawInstanced(context, capsIndex + 1);
                 }
             }
 

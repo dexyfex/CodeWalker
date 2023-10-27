@@ -37,12 +37,12 @@ namespace CodeWalker.Tools
             DataTextBox.SetTabStopWidth(3);
 
 
-            if (RpfMan == null)
+            if (RpfMan == null || !RpfMan.IsInited)
             {
                 Task.Run(() =>
                 {
                     GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
-                    RpfMan = new RpfManager();
+                    RpfMan ??= RpfManager.GetInstance();
                     RpfMan.Init(GTAFolder.CurrentGTAFolder, UpdateStatus, UpdateStatus, false, false);
                     RPFScanComplete();
                 });
@@ -417,17 +417,13 @@ namespace CodeWalker.Tools
                 DateTime starttime = DateTime.Now;
                 int resultcount = 0;
 
-                for (int f = 0; f < scannedFiles.Count; f++)
+                foreach(var rpffile in scannedFiles)
                 {
-                    var rpffile = scannedFiles[f];
                     totfiles += rpffile.TotalFileCount;
                 }
 
-
-                for (int f = 0; f < scannedFiles.Count; f++)
+                foreach(var rpffile in scannedFiles)
                 {
-                    var rpffile = scannedFiles[f];
-
                     foreach (var entry in rpffile.AllEntries)
                     {
                         var duration = DateTime.Now - starttime;
@@ -444,7 +440,7 @@ namespace CodeWalker.Tools
 
                         curfile++;
 
-                        if (fentry.NameLower.EndsWith(".rpf"))
+                        if (fentry.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase))
                         { continue; }
 
                         if (onlyexts != null)
@@ -452,7 +448,7 @@ namespace CodeWalker.Tools
                             bool ignore = true;
                             for (int i = 0; i < onlyexts.Length; i++)
                             {
-                                if (fentry.NameLower.EndsWith(onlyexts[i]))
+                                if (fentry.Name.EndsWith(onlyexts[i], StringComparison.OrdinalIgnoreCase))
                                 {
                                     ignore = false;
                                     break;
@@ -467,7 +463,7 @@ namespace CodeWalker.Tools
                             bool ignore = false;
                             for (int i = 0; i < ignoreexts.Length; i++)
                             {
-                                if (fentry.NameLower.EndsWith(ignoreexts[i]))
+                                if (fentry.Name.EndsWith(ignoreexts[i], StringComparison.OrdinalIgnoreCase))
                                 {
                                     ignore = true;
                                     break;

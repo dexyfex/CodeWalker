@@ -9,6 +9,22 @@ struct VS_INPUT
     float4 Tangent   : TANGENT;
 };
 
+struct PNCTX_OUTPUT
+{
+    float4 Position : SV_POSITION;
+    float3 Normal : NORMAL;
+    float2 Texcoord0 : TEXCOORD0;
+    float2 Texcoord1 : TEXCOORD1;
+    float2 Texcoord2 : TEXCOORD2;
+    float4 Shadows : TEXCOORD3;
+    float4 LightShadow : TEXCOORD4;
+    float4 Colour0 : COLOR0;
+    float4 Colour1 : COLOR1;
+    float4 Tint : COLOR2;
+    float4 Tangent : TEXCOORD5;
+    float4 Bitangent : TEXCOORD6;
+    float3 CamRelPos : TEXCOORD7;
+};
 
 VS_OUTPUT main(VS_INPUT input, uint iid : SV_InstanceID)
 {

@@ -102,7 +102,7 @@ namespace CodeWalker.Project.Panels
                         {
                             ymapname = ymap.Name.ToLowerInvariant();
                         }
-                        if (ymapname.EndsWith(".ymap"))
+                        if (ymapname.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase))
                         {
                             ymapname = ymapname.Substring(0, ymapname.Length - 5);
                         }

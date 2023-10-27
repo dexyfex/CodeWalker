@@ -10,6 +10,7 @@ using System.Xml;
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
 using CodeWalker.World;
+using System.Reflection;
 
 namespace CodeWalker.GameFiles
 {
@@ -1479,22 +1480,29 @@ namespace CodeWalker.GameFiles
 
         public static T ConvertData<T>(byte[] data) where T : struct
         {
-            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var h = handle.AddrOfPinnedObject();
-            var r = Marshal.PtrToStructure<T>(h);
-            handle.Free();
-            return r;
+            MemoryMarshal.TryRead<T>(data.AsSpan(), out T value);
+
+            return value;
+            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //var r = Marshal.PtrToStructure<T>(h);
+            //handle.Free();
+            //return r;
         }
         public static T ConvertData<T>(byte[] data, int offset) where T : struct
         {
-            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var h = handle.AddrOfPinnedObject();
-            var r = Marshal.PtrToStructure<T>(h + offset);
-            handle.Free();
-            return r;
+            MemoryMarshal.TryRead<T>(data.AsSpan(offset), out T value);
+
+            return value;
+            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //var r = Marshal.PtrToStructure<T>(h + offset);
+            //handle.Free();
+            //return r;
         }
-        public static T[] ConvertDataArray<T>(byte[] data, int offset, int count) where T : struct
+        public static Span<T> ConvertDataArray<T>(byte[] data, int offset, int count) where T : struct
         {
+            return MemoryMarshal.Cast<byte, T>(data.AsSpan(offset, count * Marshal.SizeOf(typeof(T))));
             T[] items = new T[count];
             int itemsize = Marshal.SizeOf(typeof(T));
             //for (int i = 0; i < count; i++)
@@ -1520,8 +1528,6 @@ namespace CodeWalker.GameFiles
             { return null; }
 
             T[] items = new T[count];
-            int itemsize = Marshal.SizeOf(typeof(T));
-            int itemsleft = (int)count; //large arrays get split into chunks...
 
             //MetaName blocktype = 0;
             for (int i = 0; i < count; i++)
@@ -1572,13 +1578,18 @@ namespace CodeWalker.GameFiles
                 int blockcount = ptrblock.DataLength / itemsize;
                 int itemcount = blockcount - itemoffset;
                 if (itemcount > itemsleft)
-                { itemcount = itemsleft; } //don't try to read too many items..
-                for (int i = 0; i < itemcount; i++)
                 {
-                    int offset = (itemoffset + i) * itemsize;
-                    int index = curi + i;
-                    items[index] = ConvertData<T>(ptrblock.Data, offset);
-                }
+                    itemcount = itemsleft;
+                } //don't try to read too many items..
+
+
+                ConvertDataArray<T>(ptrblock.Data, itemoffset * Marshal.SizeOf(typeof(T)), itemcount).CopyTo(items.AsSpan(curi));
+                //for (int i = 0; i < itemcount; i++)
+                //{
+                //    int offset = (itemoffset + i) * itemsize;
+                //    int index = curi + i;
+                //    items[index] = ConvertData<T>(ptrblock.Data, offset);
+                //}
                 itemoffset = 0; //start at beginning of next block..
                 curi += itemcount;
                 itemsleft -= itemcount;

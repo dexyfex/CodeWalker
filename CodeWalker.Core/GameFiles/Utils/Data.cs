@@ -26,11 +26,9 @@
 
 using SharpDX;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
@@ -54,9 +52,11 @@ namespace CodeWalker.GameFiles
         String = 9,
     }
 
-    public class DataReader
+    public class DataReader : IDisposable
     {
         private Stream baseStream;
+
+        private readonly byte[] _buffer = new byte[8];
 
         /// <summary>
         /// Gets or sets the endianess of the underlying stream.
@@ -106,15 +106,15 @@ namespace CodeWalker.GameFiles
         /// Reads data from the underlying stream. This is the only method that directly accesses
         /// the data in the underlying stream.
         /// </summary>
-        protected virtual byte[] ReadFromStream(int count, bool ignoreEndianess = false)
+        protected virtual byte[] ReadFromStream(int count, bool ignoreEndianess = false, byte[] buffer = null)
         {
-            var buffer = new byte[count];
+            buffer ??= new byte[count];
             baseStream.Read(buffer, 0, count);
 
             // handle endianess
             if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
             {
-                Array.Reverse(buffer);
+                Array.Reverse(buffer, 0, count);
             }
 
             return buffer;
@@ -123,17 +123,22 @@ namespace CodeWalker.GameFiles
         /// <summary>
         /// Reads a byte.
         /// </summary>
-        public byte ReadByte()
+        public virtual byte ReadByte()
         {
-            return ReadFromStream(1)[0];
+            var result = baseStream.ReadByte();
+            if (result == -1)
+            {
+                throw new InvalidOperationException("Tried to read from stream beyond end!");
+            }
+            return (byte) result;
         }
 
         /// <summary>
         /// Reads a sequence of bytes.
         /// </summary>
-        public byte[] ReadBytes(int count)
+        public byte[] ReadBytes(int count, byte[] buffer = null)
         {
-            return ReadFromStream(count, true);
+            return ReadFromStream(count, true, buffer);
         }
 
         /// <summary>
@@ -141,7 +146,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public short ReadInt16()
         {
-            return BitConverter.ToInt16(ReadFromStream(2), 0);
+            return BitConverter.ToInt16(ReadFromStream(2, buffer: _buffer), 0);
         }
 
         /// <summary>
@@ -149,7 +154,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public int ReadInt32()
         {
-            return BitConverter.ToInt32(ReadFromStream(4), 0);
+            return BitConverter.ToInt32(ReadFromStream(4, buffer: _buffer), 0);
         }
 
         /// <summary>
@@ -157,7 +162,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public long ReadInt64()
         {
-            return BitConverter.ToInt64(ReadFromStream(8), 0);
+            return BitConverter.ToInt64(ReadFromStream(8, buffer: _buffer), 0);
         }
 
         /// <summary>
@@ -165,7 +170,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public ushort ReadUInt16()
         {
-            return BitConverter.ToUInt16(ReadFromStream(2), 0);
+            return BitConverter.ToUInt16(ReadFromStream(2, buffer: _buffer), 0);
         }
 
         /// <summary>
@@ -173,7 +178,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public uint ReadUInt32()
         {
-            return BitConverter.ToUInt32(ReadFromStream(4), 0);
+            return BitConverter.ToUInt32(ReadFromStream(4, buffer: _buffer), 0);
         }
 
         /// <summary>
@@ -181,7 +186,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public ulong ReadUInt64()
         {
-            return BitConverter.ToUInt64(ReadFromStream(8), 0);
+            return BitConverter.ToUInt64(ReadFromStream(8, buffer: _buffer), 0);
         }
 
         /// <summary>
@@ -189,7 +194,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public float ReadSingle()
         {
-            return BitConverter.ToSingle(ReadFromStream(4), 0);
+            return BitConverter.ToSingle(ReadFromStream(4, buffer: _buffer), 0);
         }
 
         /// <summary>
@@ -197,23 +202,51 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public double ReadDouble()
         {
-            return BitConverter.ToDouble(ReadFromStream(8), 0);
+            return BitConverter.ToDouble(ReadFromStream(8, buffer: _buffer), 0);
         }
 
         /// <summary>
         /// Reads a string.
         /// </summary>
-        public string ReadString()
+        unsafe public string ReadString(int maxLength = 1024)
         {
-            var bytes = new List<byte>();
-            var temp = ReadFromStream(1)[0];
-            while (temp != 0)
+            var bytes = stackalloc byte[Math.Min(maxLength, 1024)];
+            var temp = ReadByte();
+            var charsRead = 0;
+            while (temp != 0 && (Length == -1 || Position <= Length))
             {
-                bytes.Add(temp);
-                temp = ReadFromStream(1)[0];
+                if (charsRead > 1023)
+                {
+                    throw new Exception("String too long!");
+                }
+                if (charsRead < maxLength)
+                {
+                    bytes[charsRead] = temp;
+                }
+                temp = ReadByte();
+                charsRead++;
             }
 
-            return Encoding.UTF8.GetString(bytes.ToArray());
+            return Encoding.UTF8.GetString(bytes, Math.Min(charsRead, maxLength));
+        }
+
+        unsafe public string ReadStringLower()
+        {
+            var bytes = stackalloc byte[1024];
+            var temp = ReadByte();
+            var charsRead = 0;
+            while (temp != 0 && (Length == -1 || Position <= Length))
+            {
+                if (charsRead > 1023)
+                {
+                    throw new Exception("String too long!");
+                }
+                bytes[charsRead] = temp;
+                temp = ReadByte();
+                charsRead++;
+            }
+
+            return Encoding.UTF8.GetString(bytes, charsRead);
         }
 
 
@@ -279,12 +312,13 @@ namespace CodeWalker.GameFiles
             }
         }
 
-
-
-
+        public virtual void Dispose()
+        {
+            baseStream?.Dispose();
+        }
     }
 
-    public class DataWriter
+    public class DataWriter : IDisposable
     {
         private Stream baseStream;
 
@@ -476,6 +510,15 @@ namespace CodeWalker.GameFiles
             Write(value.M44);
         }
 
+        public virtual void Dispose()
+        {
+            baseStream.Dispose();
+        }
+
+        public virtual void Close()
+        {
+            baseStream.Close();
+        }
     }
 
 

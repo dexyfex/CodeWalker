@@ -127,7 +127,7 @@ namespace CodeWalker.Rendering
 
 
             VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vdata.ToArray());
-            vbbinding = new VertexBufferBinding(VertexBuffer, 16, 0);
+            vbbinding = new VertexBufferBinding(VertexBuffer, 8, 0);
 
             IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, idata.ToArray());
             indexcount = idata.Count;

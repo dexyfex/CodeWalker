@@ -43,7 +43,7 @@ namespace CodeWalker.GameFiles
                 throw new Exception("File entry wasn't a resource! (is it binary data?)");
             }
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
             DrawableDict = rd.ReadBlock<DrawableDictionary>();
 
@@ -74,6 +74,7 @@ namespace CodeWalker.GameFiles
                 {
                     var drawable = drawables[i];
                     var hash = hashes[i];
+                    drawable.Hash = hash;
                     if ((drawable.Name == null) || (drawable.Name.EndsWith("#dd")))
                     {
                         string hstr = JenkIndex.TryGetString(hash);
@@ -99,6 +100,12 @@ namespace CodeWalker.GameFiles
             byte[] data = ResourceBuilder.Build(DrawableDict, 165); //ydd is type/version 165...
 
             return data;
+        }
+
+        new public long MemoryUsage {
+            get {
+                return DrawableDict.MemoryUsage;
+            }
         }
 
     }

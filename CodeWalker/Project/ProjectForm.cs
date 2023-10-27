@@ -7102,12 +7102,6 @@ namespace CodeWalker.Project
                         var ymap = CurrentProjectFile.YmapFiles[i];
                         if (ymap.Loaded)
                         {
-                            // make sure we're replacing ymaps that have been added by the end-user.
-                            if (ymap.RpfFileEntry.ShortNameHash == 0)
-                            {
-                                ymap.RpfFileEntry.ShortNameHash = JenkHash.GenHash(ymap.RpfFileEntry.GetShortNameLower());
-                            }
-
                             ymaps[ymap.RpfFileEntry.ShortNameHash] = ymap;
                         }
                     }

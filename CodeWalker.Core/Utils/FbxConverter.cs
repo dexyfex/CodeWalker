@@ -781,7 +781,6 @@ namespace CodeWalker
             texParam.Unknown_30h = 1;// 131073;//wtf is this? 2x shorts, 0x00020001
             texParam.Unknown_32h = 2;
             texParam.Name = name;
-            texParam.NameHash = JenkHash.GenHash(name.ToLowerInvariant());
             return texParam;
         }
         private void AddShaderParam(List<ShaderParamNames> paramNames, List<ShaderParameter> paramValues, ShaderParamNames paramName, object paramValue)

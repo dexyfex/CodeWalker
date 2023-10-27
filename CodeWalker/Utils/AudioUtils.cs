@@ -311,10 +311,10 @@ namespace CodeWalker.Utils
                     if (entry is RpfFileEntry)
                     {
                         var fentry = entry as RpfFileEntry;
-                        if (entry.NameLower.EndsWith(".awc"))
+                        if (entry.Name.EndsWith(".awc", StringComparison.OrdinalIgnoreCase))
                         {
-                            var shortname = entry.GetShortNameLower();
-                            var parentname = entry.Parent?.GetShortNameLower() ?? "";
+                            var shortname = entry.ShortName;
+                            var parentname = entry.Parent?.ShortName ?? "";
                             if (string.IsNullOrEmpty(parentname) && (entry.Parent?.File != null))
                             {
                                 parentname = entry.Parent.File.NameLower;
@@ -325,7 +325,7 @@ namespace CodeWalker.Utils
                                 }
                             }
                             var contname = parentname + "/" + shortname;
-                            var hash = JenkHash.GenHash(contname);
+                            var hash = JenkHash.GenHashLower(contname);
                             awcentries[hash] = fentry;
                         }
                     }

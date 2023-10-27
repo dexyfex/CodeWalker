@@ -39,7 +39,7 @@ namespace CodeWalker.GameFiles
                 throw new Exception("File entry wasn't a resource! (is it binary data?)");
             }
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
             //MemoryUsage = 0;
 
@@ -58,6 +58,11 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public void Unload()
+        {
+
+        }
+
         public byte[] Save()
         {
             byte[] data = ResourceBuilder.Build(Drawable, 165); //ydr is type/version 165...
@@ -65,7 +70,13 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-
+        new public long MemoryUsage
+        {
+            get
+            {
+                return Drawable.MemoryUsage;
+            }
+        }
     }
 
 

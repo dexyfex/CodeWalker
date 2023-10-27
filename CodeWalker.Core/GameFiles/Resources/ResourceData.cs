@@ -38,13 +38,16 @@ namespace CodeWalker.GameFiles
     /// <summary>
     /// Represents a resource data reader.
     /// </summary>
-    public class ResourceDataReader : DataReader
+    public class ResourceDataReader : DataReader, IDisposable
     {
         private const long SYSTEM_BASE = 0x50000000;
         private const long GRAPHICS_BASE = 0x60000000;
 
-        private Stream systemStream;
-        private Stream graphicsStream;
+        private readonly Stream systemStream;
+        private readonly Stream graphicsStream;
+
+        private readonly long systemSize = 0;
+        private readonly long graphicsSize = 0;
 
         public RpfResourceFileEntry FileEntry { get; set; }
 
@@ -71,7 +74,7 @@ namespace CodeWalker.GameFiles
         {
             get;
             set;
-        }
+        } = SYSTEM_BASE;
 
         /// <summary>
         /// Initializes a new resource data reader for the specified system- and graphics-stream.
@@ -81,14 +84,16 @@ namespace CodeWalker.GameFiles
         {
             this.systemStream = systemStream;
             this.graphicsStream = graphicsStream;
+            this.systemSize = systemStream.Length;
+            this.graphicsSize = graphicsStream.Length;
         }
 
         public ResourceDataReader(RpfResourceFileEntry resentry, byte[] data, Endianess endianess = Endianess.LittleEndian)
             : base((Stream)null, endianess)
         {
             FileEntry = resentry;
-            var systemSize = resentry.SystemSize;
-            var graphicsSize = resentry.GraphicsSize;
+            this.systemSize = resentry.SystemSize;
+            this.graphicsSize = resentry.GraphicsSize;
 
             //if (data != null)
             //{
@@ -103,9 +108,8 @@ namespace CodeWalker.GameFiles
             //    }
             //}
 
-            this.systemStream = new MemoryStream(data, 0, systemSize);
-            this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
-            Position = 0x50000000;
+            this.systemStream = new MemoryStream(data, 0, (int)systemSize);
+            this.graphicsStream = new MemoryStream(data, (int)systemSize, (int)graphicsSize);
         }
 
         public ResourceDataReader(int systemSize, int graphicsSize, byte[] data, Endianess endianess = Endianess.LittleEndian)
@@ -113,24 +117,21 @@ namespace CodeWalker.GameFiles
         {
             this.systemStream = new MemoryStream(data, 0, systemSize);
             this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
-            Position = 0x50000000;
         }
-
-
 
         /// <summary>
         /// Reads data from the underlying stream. This is the only method that directly accesses
         /// the data in the underlying stream.
         /// </summary>
-        protected override byte[] ReadFromStream(int count, bool ignoreEndianess = false)
+        protected override byte[] ReadFromStream(int count, bool ignoreEndianess = false, byte[] buffer = null)
         {
             if ((Position & SYSTEM_BASE) == SYSTEM_BASE)
             {
                 // read from system stream...
 
-                systemStream.Position = Position & ~0x50000000;
+                systemStream.Position = Position & ~SYSTEM_BASE;
 
-                var buffer = new byte[count];
+                buffer ??= new byte[count];
                 systemStream.Read(buffer, 0, count);
 
                 // handle endianess
@@ -139,17 +140,17 @@ namespace CodeWalker.GameFiles
                     Array.Reverse(buffer);
                 }
 
-                Position = systemStream.Position | 0x50000000;
+                Position = systemStream.Position | SYSTEM_BASE;
                 return buffer;
 
             }
-            if ((Position & GRAPHICS_BASE) == GRAPHICS_BASE)
+            else if ((Position & GRAPHICS_BASE) == GRAPHICS_BASE)
             {
                 // read from graphic stream...
 
-                graphicsStream.Position = Position & ~0x60000000;
+                graphicsStream.Position = Position & ~GRAPHICS_BASE;
 
-                var buffer = new byte[count];
+                buffer ??= new byte[count];
                 graphicsStream.Read(buffer, 0, count);
 
                 // handle endianess
@@ -158,8 +159,40 @@ namespace CodeWalker.GameFiles
                     Array.Reverse(buffer);
                 }
 
-                Position = graphicsStream.Position | 0x60000000;
+                Position = graphicsStream.Position | GRAPHICS_BASE;
                 return buffer;
+            }
+            throw new Exception("illegal position!");
+        }
+
+        public override byte ReadByte()
+        {
+            if ((Position & SYSTEM_BASE) == SYSTEM_BASE)
+            {
+
+
+
+
+                // read from system stream...
+
+                systemStream.Position = Position & ~SYSTEM_BASE;
+
+                var readByte = (byte)systemStream.ReadByte();
+
+                Position = systemStream.Position | SYSTEM_BASE;
+                return readByte;
+
+            }
+            if ((Position & GRAPHICS_BASE) == GRAPHICS_BASE)
+            {
+                // read from graphic stream...
+
+                graphicsStream.Position = Position & ~GRAPHICS_BASE;
+
+                var readByte = (byte)graphicsStream.ReadByte();
+
+                Position = graphicsStream.Position | GRAPHICS_BASE;
+                return readByte;
             }
             throw new Exception("illegal position!");
         }
@@ -447,6 +480,13 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            systemStream?.Dispose();
+            graphicsStream?.Dispose();
+        }
     }
 
 
@@ -454,7 +494,7 @@ namespace CodeWalker.GameFiles
     /// <summary>
     /// Represents a resource data writer.
     /// </summary>
-    public class ResourceDataWriter : DataWriter
+    public class ResourceDataWriter : DataWriter, IDisposable
     {
         private const long SYSTEM_BASE = 0x50000000;
         private const long GRAPHICS_BASE = 0x60000000;
@@ -596,7 +636,13 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public override void Dispose()
+        {
+            base.Dispose();
 
+            systemStream?.Dispose();
+            graphicsStream?.Dispose();
+        }
     }
 
 

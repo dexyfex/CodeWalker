@@ -18,6 +18,9 @@ namespace CodeWalker.Rendering
         private int GeometryCount;
         public int RenderedGeometries;
 
+        private int VerticesCount;
+        public int RenderedVeritices;
+
         private Device Device;
 
         public bool wireframe = Settings.Default.Wireframe;
@@ -148,7 +151,7 @@ namespace CodeWalker.Rendering
                 IsFrontCounterClockwise = true,
                 IsMultisampleEnabled = true,
                 IsScissorEnabled = false,
-                SlopeScaledDepthBias = 0.0f
+                SlopeScaledDepthBias = 0.0f,
             };
             rsSolid = new RasterizerState(device, rsd);
             rsd.FillMode = FillMode.Wireframe;
@@ -157,6 +160,7 @@ namespace CodeWalker.Rendering
             rsWireframeDblSided = new RasterizerState(device, rsd);
             rsd.FillMode = FillMode.Solid;
             rsSolidDblSided = new RasterizerState(device, rsd);
+            rsd.CullMode = CullMode.Back;
 
 
             BlendStateDescription bsd = new BlendStateDescription()
@@ -203,6 +207,7 @@ namespace CodeWalker.Rendering
                     PassOperation = StencilOperation.Zero
                 },
                 IsDepthEnabled = true,
+                
                 IsStencilEnabled = false,
                 StencilReadMask = 0,
                 StencilWriteMask = 0
@@ -406,6 +411,7 @@ namespace CodeWalker.Rendering
         public void RenderQueued(DeviceContext context, Camera camera, Vector4 wind)
         {
             GeometryCount = 0;
+            VerticesCount = 0;
             Camera = camera;
 
 
@@ -662,7 +668,7 @@ namespace CodeWalker.Rendering
 
 
             RenderedGeometries = GeometryCount;
-
+            RenderedVeritices = VerticesCount;
         }
 
         public void RenderFinalPass(DeviceContext context)
@@ -789,6 +795,8 @@ namespace CodeWalker.Rendering
                 var gmodel = geom.Geom.Owner;
                 shader.SetEntityVars(context, ref geom.Inst);
 
+                VerticesCount += geom.Geom.VertexCount;
+
                 if (gmodel != model)
                 {
                     model = gmodel;
@@ -829,6 +837,7 @@ namespace CodeWalker.Rendering
 
             foreach (var geom in batch)
             {
+                VerticesCount += geom.Geom.VertexCount;
                 Basic.RenderBoundGeom(context, geom);
             }
 
@@ -1050,6 +1059,18 @@ namespace CodeWalker.Rendering
         {
             return ShaderFile.ToString() + ": " + ShaderName.ToString();
         }
+
+        public override int GetHashCode()
+        {
+            return ShaderName.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            if (obj is not ShaderKey shaderKey) return false;
+            return shaderKey.ShaderName == ShaderName && shaderKey.ShaderFile == ShaderFile;
+        }
     }
     public class ShaderRenderBucket
     {
@@ -1097,7 +1118,7 @@ namespace CodeWalker.Rendering
             ClothBatches.Clear();
             VehicleBatches.Clear();
 
-            foreach (var kvp in Batches)
+            foreach (var kvp in Batches.Where(p => p.Value.Geometries.Count > 0).OrderBy(p => p.Value.Geometries.Average(p => p.Inst.Distance)))
             {
                 if (kvp.Value.Geometries.Count == 0) continue;
 

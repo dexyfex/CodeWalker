@@ -125,7 +125,7 @@ namespace CodeWalker.Tools
 
 
 
-                RpfManager rpfman = new RpfManager();
+                RpfManager rpfman = RpfManager.GetInstance();
                 rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
 
 

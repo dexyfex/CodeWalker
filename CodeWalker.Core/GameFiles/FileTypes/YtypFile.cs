@@ -208,7 +208,7 @@ namespace CodeWalker.GameFiles
 
 
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
             Meta = rd.ReadBlock<Meta>();
 

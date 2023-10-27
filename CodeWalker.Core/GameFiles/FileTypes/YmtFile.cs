@@ -62,7 +62,7 @@ namespace CodeWalker.GameFiles
             RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
             if (resentry != null)
             {
-                ResourceDataReader rd = new ResourceDataReader(resentry, data);
+                using var rd = new ResourceDataReader(resentry, data);
 
                 Meta = rd.ReadBlock<Meta>();
 

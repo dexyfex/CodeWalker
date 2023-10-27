@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -5331,6 +5332,15 @@ namespace CodeWalker.GameFiles
                 var d = new Drawable();
                 d.LightAttributes = dd.LightAttributes;
                 d.Name = dd.Name;
+                if (d.Hash != 0)
+                {
+                    d.Hash = dd.Hash;
+                }
+                else
+                {
+                    d.Hash = JenkHash.GenHash(dd.Name);
+                }
+                
                 d.Bound = dd.Bound;
                 r = d;
             }
@@ -5383,6 +5393,7 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public string Name { get; set; }
+        public uint Hash { get; set; }
         public Bounds Bound { get; set; }
 
         public string ErrorMessage { get; set; }
@@ -5455,6 +5466,7 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
             YdrXml.StringTag(sb, indent, "Name", YdrXml.XmlEscape(Name));
+            YdrXml.StringTag(sb, indent, "Hash", Hash.ToString());
             base.WriteXml(sb, indent, ddsfolder);
             if (Bound != null)
             {
@@ -5468,6 +5480,10 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node, string ddsfolder)
         {
             Name = Xml.GetChildInnerText(node, "Name");
+            if (uint.TryParse(Xml.GetChildInnerText(node, "Hash"), out var hash))
+            {
+                Hash = hash;
+            }
             base.ReadXml(node, ddsfolder);
             var bnode = node.SelectSingleNode("Bounds");
             if (bnode != null)
@@ -5847,7 +5863,15 @@ namespace CodeWalker.GameFiles
                     var d = new Drawable();
                     d.ReadXml(inode, ddsfolder);
                     drawables.Add(d);
-                    drawablehashes.Add(JenkHash.GenHash(d.Name));//TODO: check this!
+                    if (d.Hash != 0)
+                    {
+                        drawablehashes.Add(d.Hash);
+                    }
+                    else
+                    {
+                        drawablehashes.Add(JenkHash.GenHash(d.Name));//TODO: check this!
+                    }
+                    
                 }
             }
 

@@ -1791,7 +1791,7 @@ namespace CodeWalker.GameFiles
         {
             int datalength = ItemCount * StructureSize;
             byte[] data = reader.ReadBytes(datalength);
-            Items = MetaTypes.ConvertDataArray<T>(data, 0, ItemCount);
+            Items = MetaTypes.ConvertDataArray<T>(data, 0, ItemCount).ToArray();
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)

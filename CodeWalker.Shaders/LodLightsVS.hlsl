@@ -12,6 +12,7 @@ struct LODLight
     float FalloffExponent;
     float InnerAngle; //for cone
     float OuterAngleOrCapExt; //outer angle for cone, cap extent for capsule
+    float Distance;
 };
 
 struct VS_Output

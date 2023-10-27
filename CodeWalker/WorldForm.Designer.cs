@@ -32,6 +32,7 @@ namespace CodeWalker
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorldForm));
+            System.Windows.Forms.Label label34;
             this.StatusStrip = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.MousedLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -136,6 +137,7 @@ namespace CodeWalker
             this.TimedEntitiesCheckBox = new System.Windows.Forms.CheckBox();
             this.FieldOfViewTrackBar = new System.Windows.Forms.TrackBar();
             this.OptionsRenderTabPage = new System.Windows.Forms.TabPage();
+            this.AntiAliasingTrackBar = new System.Windows.Forms.TrackBar();
             this.FarClipUpDown = new System.Windows.Forms.NumericUpDown();
             this.label32 = new System.Windows.Forms.Label();
             this.NearClipUpDown = new System.Windows.Forms.NumericUpDown();
@@ -223,6 +225,7 @@ namespace CodeWalker
             this.ToolsMenuSelectionInfo = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuProjectWindow = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuCutsceneViewer = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolsMenuAudioExplorer = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuWorldSearch = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuBinarySearch = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuJenkGen = new System.Windows.Forms.ToolStripMenuItem();
@@ -310,7 +313,8 @@ namespace CodeWalker
             this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
-            this.ToolsMenuAudioExplorer = new System.Windows.Forms.ToolStripMenuItem();
+            this.AntiAliasingValue = new System.Windows.Forms.Label();
+            label34 = new System.Windows.Forms.Label();
             this.StatusStrip.SuspendLayout();
             this.ToolsPanel.SuspendLayout();
             this.ToolsTabControl.SuspendLayout();
@@ -340,6 +344,7 @@ namespace CodeWalker
             ((System.ComponentModel.ISupportInitialize)(this.CollisionMeshRangeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).BeginInit();
             this.OptionsRenderTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).BeginInit();
             this.OptionsHelpersTabPage.SuspendLayout();
@@ -1686,6 +1691,9 @@ namespace CodeWalker
             // 
             // OptionsRenderTabPage
             // 
+            this.OptionsRenderTabPage.Controls.Add(this.AntiAliasingValue);
+            this.OptionsRenderTabPage.Controls.Add(label34);
+            this.OptionsRenderTabPage.Controls.Add(this.AntiAliasingTrackBar);
             this.OptionsRenderTabPage.Controls.Add(this.FarClipUpDown);
             this.OptionsRenderTabPage.Controls.Add(this.label32);
             this.OptionsRenderTabPage.Controls.Add(this.NearClipUpDown);
@@ -1707,6 +1715,27 @@ namespace CodeWalker
             this.OptionsRenderTabPage.TabIndex = 3;
             this.OptionsRenderTabPage.Text = "Render";
             this.OptionsRenderTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label34
+            // 
+            label34.AutoSize = true;
+            label34.Location = new System.Drawing.Point(7, 253);
+            label34.Name = "label34";
+            label34.Size = new System.Drawing.Size(64, 13);
+            label34.TabIndex = 63;
+            label34.Text = "Anti-Aliasing";
+            // 
+            // AntiAliasingTrackBar
+            // 
+            this.AntiAliasingTrackBar.LargeChange = 1;
+            this.AntiAliasingTrackBar.Location = new System.Drawing.Point(10, 269);
+            this.AntiAliasingTrackBar.Maximum = 8;
+            this.AntiAliasingTrackBar.Minimum = 1;
+            this.AntiAliasingTrackBar.Name = "AntiAliasingTrackBar";
+            this.AntiAliasingTrackBar.Size = new System.Drawing.Size(184, 45);
+            this.AntiAliasingTrackBar.TabIndex = 62;
+            this.AntiAliasingTrackBar.Value = 1;
+            this.AntiAliasingTrackBar.ValueChanged += new System.EventHandler(this.AntiAliasingTrackBar_ValueChanged);
             // 
             // FarClipUpDown
             // 
@@ -2762,12 +2791,12 @@ namespace CodeWalker
             this.ToolsMenuExtractShaders,
             this.ToolsMenuOptions});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(181, 356);
+            this.ToolsMenu.Size = new System.Drawing.Size(170, 334);
             // 
             // ToolsMenuRPFBrowser
             // 
             this.ToolsMenuRPFBrowser.Name = "ToolsMenuRPFBrowser";
-            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuRPFBrowser.Text = "RPF Browser...";
             this.ToolsMenuRPFBrowser.Visible = false;
             this.ToolsMenuRPFBrowser.Click += new System.EventHandler(this.ToolsMenuRPFBrowser_Click);
@@ -2775,14 +2804,14 @@ namespace CodeWalker
             // ToolsMenuRPFExplorer
             // 
             this.ToolsMenuRPFExplorer.Name = "ToolsMenuRPFExplorer";
-            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuRPFExplorer.Text = "RPF Explorer...";
             this.ToolsMenuRPFExplorer.Click += new System.EventHandler(this.ToolsMenuRPFExplorer_Click);
             // 
             // ToolsMenuSelectionInfo
             // 
             this.ToolsMenuSelectionInfo.Name = "ToolsMenuSelectionInfo";
-            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuSelectionInfo.Text = "Selection info...";
             this.ToolsMenuSelectionInfo.Click += new System.EventHandler(this.ToolsMenuSelectionInfo_Click);
             // 
@@ -2790,7 +2819,7 @@ namespace CodeWalker
             // 
             this.ToolsMenuProjectWindow.Enabled = false;
             this.ToolsMenuProjectWindow.Name = "ToolsMenuProjectWindow";
-            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuProjectWindow.Text = "Project window...";
             this.ToolsMenuProjectWindow.Click += new System.EventHandler(this.ToolsMenuProjectWindow_Click);
             // 
@@ -2798,14 +2827,22 @@ namespace CodeWalker
             // 
             this.ToolsMenuCutsceneViewer.Enabled = false;
             this.ToolsMenuCutsceneViewer.Name = "ToolsMenuCutsceneViewer";
-            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuCutsceneViewer.Text = "Cutscene viewer...";
             this.ToolsMenuCutsceneViewer.Click += new System.EventHandler(this.ToolsMenuCutsceneViewer_Click);
+            // 
+            // ToolsMenuAudioExplorer
+            // 
+            this.ToolsMenuAudioExplorer.Enabled = false;
+            this.ToolsMenuAudioExplorer.Name = "ToolsMenuAudioExplorer";
+            this.ToolsMenuAudioExplorer.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuAudioExplorer.Text = "Audio explorer...";
+            this.ToolsMenuAudioExplorer.Click += new System.EventHandler(this.ToolsMenuAudioExplorer_Click);
             // 
             // ToolsMenuWorldSearch
             // 
             this.ToolsMenuWorldSearch.Name = "ToolsMenuWorldSearch";
-            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuWorldSearch.Text = "World search...";
             this.ToolsMenuWorldSearch.Click += new System.EventHandler(this.ToolsMenuWorldSearch_Click);
             // 
@@ -2813,14 +2850,14 @@ namespace CodeWalker
             // 
             this.ToolsMenuBinarySearch.Enabled = false;
             this.ToolsMenuBinarySearch.Name = "ToolsMenuBinarySearch";
-            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuBinarySearch.Text = "Binary search...";
             this.ToolsMenuBinarySearch.Click += new System.EventHandler(this.ToolsMenuBinarySearch_Click);
             // 
             // ToolsMenuJenkGen
             // 
             this.ToolsMenuJenkGen.Name = "ToolsMenuJenkGen";
-            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuJenkGen.Text = "JenkGen...";
             this.ToolsMenuJenkGen.Click += new System.EventHandler(this.ToolsMenuJenkGen_Click);
             // 
@@ -2828,42 +2865,42 @@ namespace CodeWalker
             // 
             this.ToolsMenuJenkInd.Enabled = false;
             this.ToolsMenuJenkInd.Name = "ToolsMenuJenkInd";
-            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuJenkInd.Text = "JenkInd...";
             this.ToolsMenuJenkInd.Click += new System.EventHandler(this.ToolsMenuJenkInd_Click);
             // 
             // ToolsMenuExtractScripts
             // 
             this.ToolsMenuExtractScripts.Name = "ToolsMenuExtractScripts";
-            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuExtractScripts.Text = "Extract scripts...";
             this.ToolsMenuExtractScripts.Click += new System.EventHandler(this.ToolsMenuExtractScripts_Click);
             // 
             // ToolsMenuExtractTextures
             // 
             this.ToolsMenuExtractTextures.Name = "ToolsMenuExtractTextures";
-            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuExtractTextures.Text = "Extract textures...";
             this.ToolsMenuExtractTextures.Click += new System.EventHandler(this.ToolsMenuExtractTextures_Click);
             // 
             // ToolsMenuExtractRawFiles
             // 
             this.ToolsMenuExtractRawFiles.Name = "ToolsMenuExtractRawFiles";
-            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuExtractRawFiles.Text = "Extract raw files...";
             this.ToolsMenuExtractRawFiles.Click += new System.EventHandler(this.ToolsMenuExtractRawFiles_Click);
             // 
             // ToolsMenuExtractShaders
             // 
             this.ToolsMenuExtractShaders.Name = "ToolsMenuExtractShaders";
-            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuExtractShaders.Text = "Extract shaders...";
             this.ToolsMenuExtractShaders.Click += new System.EventHandler(this.ToolsMenuExtractShaders_Click);
             // 
             // ToolsMenuOptions
             // 
             this.ToolsMenuOptions.Name = "ToolsMenuOptions";
-            this.ToolsMenuOptions.Size = new System.Drawing.Size(180, 22);
+            this.ToolsMenuOptions.Size = new System.Drawing.Size(169, 22);
             this.ToolsMenuOptions.Text = "Options...";
             this.ToolsMenuOptions.Click += new System.EventHandler(this.ToolsMenuOptions_Click);
             // 
@@ -3579,7 +3616,7 @@ namespace CodeWalker
             this.SubtitleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.SubtitleLabel.Location = new System.Drawing.Point(455, 555);
             this.SubtitleLabel.Name = "SubtitleLabel";
-            this.SubtitleLabel.Size = new System.Drawing.Size(84, 18);
+            this.SubtitleLabel.Size = new System.Drawing.Size(83, 18);
             this.SubtitleLabel.TabIndex = 8;
             this.SubtitleLabel.Text = "Test Subtitle";
             this.SubtitleLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
@@ -3590,13 +3627,14 @@ namespace CodeWalker
             // 
             this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
             // 
-            // ToolsMenuAudioExplorer
+            // AntiAliasingValue
             // 
-            this.ToolsMenuAudioExplorer.Enabled = false;
-            this.ToolsMenuAudioExplorer.Name = "ToolsMenuAudioExplorer";
-            this.ToolsMenuAudioExplorer.Size = new System.Drawing.Size(180, 22);
-            this.ToolsMenuAudioExplorer.Text = "Audio explorer...";
-            this.ToolsMenuAudioExplorer.Click += new System.EventHandler(this.ToolsMenuAudioExplorer_Click);
+            this.AntiAliasingValue.AutoSize = true;
+            this.AntiAliasingValue.Location = new System.Drawing.Point(147, 253);
+            this.AntiAliasingValue.Name = "AntiAliasingValue";
+            this.AntiAliasingValue.Size = new System.Drawing.Size(13, 13);
+            this.AntiAliasingValue.TabIndex = 64;
+            this.AntiAliasingValue.Text = "1";
             // 
             // WorldForm
             // 
@@ -3662,6 +3700,7 @@ namespace CodeWalker
             ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).EndInit();
             this.OptionsRenderTabPage.ResumeLayout(false);
             this.OptionsRenderTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).EndInit();
             this.OptionsHelpersTabPage.ResumeLayout(false);
@@ -3968,5 +4007,7 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectCalmingQuadButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectWaveQuadButton;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuAudioExplorer;
+        private System.Windows.Forms.TrackBar AntiAliasingTrackBar;
+        private System.Windows.Forms.Label AntiAliasingValue;
     }
 }

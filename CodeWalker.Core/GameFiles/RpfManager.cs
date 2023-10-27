@@ -1,5 +1,8 @@
-﻿using System;
+﻿using CodeWalker.Core.Utils;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,14 +13,19 @@ namespace CodeWalker.GameFiles
 {
     public class RpfManager
     {
+        private static RpfManager _instance = new RpfManager();
+        public static RpfManager GetInstance()
+        {
+            return _instance ??= new RpfManager();
+        }
         //for caching and management of RPF file data.
 
         public string Folder { get; private set; }
         public string[] ExcludePaths { get; set; }
         public bool EnableMods { get; set; }
         public bool BuildExtendedJenkIndex { get; set; } = true;
-        public Action<string> UpdateStatus { get; private set; }
-        public Action<string> ErrorLog { get; private set; }
+        public event Action<string> UpdateStatus;
+        public event Action<string> ErrorLog;
 
         public List<RpfFile> BaseRpfs { get; private set; }
         public List<RpfFile> ModRpfs { get; private set; }
@@ -34,8 +42,9 @@ namespace CodeWalker.GameFiles
 
         public void Init(string folder, Action<string> updateStatus, Action<string> errorLog, bool rootOnly = false, bool buildIndex = true)
         {
-            UpdateStatus = updateStatus;
-            ErrorLog = errorLog;
+            using var _ = new DisposableTimer("RpfManager.Init");
+            UpdateStatus += updateStatus;
+            ErrorLog += errorLog;
 
             string replpath = folder + "\\";
             var sopt = rootOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories;
@@ -52,7 +61,8 @@ namespace CodeWalker.GameFiles
             ModRpfDict = new Dictionary<string, RpfFile>();
             ModEntryDict = new Dictionary<string, RpfEntry>();
 
-            foreach (string rpfpath in allfiles)
+            var rpfs = new ConcurrentBag<RpfFile>();
+            Parallel.ForEach(allfiles, (rpfpath) =>
             {
                 try
                 {
@@ -69,37 +79,66 @@ namespace CodeWalker.GameFiles
                                 break;
                             }
                         }
-                        if (excl) continue; //skip files in exclude paths.
+                        if (excl) return; //skip files in exclude paths.
                     }
 
                     rf.ScanStructure(updateStatus, errorLog);
 
                     if (rf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
                     {
-                        continue;
+                        return;
                     }
 
-                    AddRpfFile(rf, false, false);
+                    rpfs.Add(rf);
                 }
                 catch (Exception ex)
                 {
                     errorLog(rpfpath + ": " + ex.ToString());
                 }
+            });
+
+            var calculateSum = (RpfFile rpf) => { return 0; };
+
+            calculateSum = (RpfFile rpf) =>
+            {
+                return rpf.AllEntries?.Count ?? 0 + rpf.Children?.Sum(calculateSum) ?? 0;
+            };
+
+            var minCapacity = rpfs.Sum(calculateSum);
+            if (minCapacity > AllRpfs.Capacity)
+            {
+                AllRpfs.Capacity = minCapacity;
+            }
+
+            foreach(var rpf in rpfs)
+            {
+                AddRpfFile(rpf, false, false);
             }
 
             if (buildIndex)
             {
-                updateStatus("Building jenkindex...");
-                BuildBaseJenkIndex();
+                updateStatus?.Invoke("Building jenkindex...");
+                Task.Run(() =>
+                {
+                    BuildBaseJenkIndex();
+                    IsInited = true;
+                });
+                updateStatus?.Invoke("Scan complete");
             }
+            else
+            {
+                updateStatus?.Invoke("Scan complete");
+                IsInited = true;
+            }
+            
+            
 
-            updateStatus("Scan complete");
-
-            IsInited = true;
+            
         }
 
         public void Init(List<RpfFile> allRpfs)
         {
+            using var _ = new DisposableTimer("RpfManager.Init");
             //fast init used by RPF explorer's File cache
             AllRpfs = allRpfs;
 
@@ -122,9 +161,11 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            BuildBaseJenkIndex();
-
-            IsInited = true;
+            Task.Run(() =>
+            {
+                BuildBaseJenkIndex();
+                IsInited = true;
+            });
         }
 
 
@@ -182,25 +223,13 @@ namespace CodeWalker.GameFiles
                                 EntryDict[entry.Path] = entry;
                             }
 
-                            if (entry is RpfFileEntry)
-                            {
-                                RpfFileEntry fentry = entry as RpfFileEntry;
-                                entry.NameHash = JenkHash.GenHash(entry.NameLower);
-                                int ind = entry.NameLower.LastIndexOf('.');
-                                entry.ShortNameHash = (ind > 0) ? JenkHash.GenHash(entry.NameLower.Substring(0, ind)) : entry.NameHash;
-                                if (entry.ShortNameHash != 0)
-                                {
-                                    //EntryHashDict[entry.ShortNameHash] = entry;
-                                }
-                            }
-
                         }
                     }
                     catch (Exception ex)
                     {
                         file.LastError = ex.ToString();
                         file.LastException = ex;
-                        ErrorLog(entry.Path + ": " + ex.ToString());
+                        ErrorLog?.Invoke(entry.Path + ": " + ex.ToString());
                     }
                 }
             }
@@ -348,12 +377,12 @@ namespace CodeWalker.GameFiles
 
         public void BuildBaseJenkIndex()
         {
-            JenkIndex.Clear();
-            StringBuilder sb = new StringBuilder();
-            foreach (RpfFile file in AllRpfs)
+            using var _ = new DisposableTimer("BuildBaseJenkIndex");
+            Parallel.ForEach(AllRpfs, new ParallelOptions { MaxDegreeOfParallelism = 4 }, (file) =>
             {
                 try
                 {
+                    StringBuilder sb = new StringBuilder();
                     JenkIndex.Ensure(file.Name);
                     foreach (RpfEntry entry in file.AllEntries)
                     {
@@ -364,6 +393,7 @@ namespace CodeWalker.GameFiles
                         int ind = nlow.LastIndexOf('.');
                         if (ind > 0)
                         {
+                            
                             JenkIndex.Ensure(entry.Name.Substring(0, ind));
                             JenkIndex.Ensure(nlow.Substring(0, ind));
 
@@ -485,11 +515,16 @@ namespace CodeWalker.GameFiles
                     }
 
                 }
-                catch
+                catch(Exception err)
                 {
+                    ErrorLog?.Invoke(err.ToString());
                     //failing silently!! not so good really
                 }
-            }
+            });
+            //foreach (RpfFile file in AllRpfs)
+            //{
+                
+            //}
 
             for (int i = 0; i < 100; i++)
             {

@@ -117,6 +117,7 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     LODLight lodlight = LODLights[iid];
     float3 srpos = lodlight.Position - (camRel + CameraPos.xyz); //light position relative to surface position
     float ldist = length(srpos);
+    
     if (LightType == 4)//capsule
     {
         float3 ext = lodlight.Direction.xyz * lodlight.OuterAngleOrCapExt;
@@ -124,14 +125,17 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
         ldist = lsn.w;
         srpos.xyz = lsn.xyz;
     }
-
-    if (ldist > lodlight.Falloff) return 0; //out of range of the light...
-    if (ldist <= 0) return 0;
+    
+    if (ldist > lodlight.Falloff)
+        return 0; //out of range of the light...
+    if (ldist <= 0)
+        return 0;
     
     float4 rgbi = Unpack4x8UNF(lodlight.Colour).gbar;
     float3 lcol = rgbi.rgb * rgbi.a * 96.0f;
     float3 ldir = srpos / ldist;
     float pclit = saturate(dot(ldir, norm));
+    
     float lamt = 1;
     
     if (LightType == 1)//point (sphere)
@@ -154,7 +158,8 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     
     pclit *= lamt;
     
-    if (pclit <= 0) return 0;
+    if (pclit <= 0)
+        return 0;
     
     float3 refl = GetReflectedDir(camRel, norm);
     float specb = saturate(dot(refl, ldir));
@@ -177,11 +182,14 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
         ldist = lsn.w;
         srpos.xyz = lsn.xyz;
     }
-    if (ldist > InstFalloff) return 0;
-    if (ldist <= 0) return 0;
+    if (ldist > InstFalloff)
+        return 0;
+    if (ldist <= 0)
+        return 0;
     
     float d = dot(srpos, InstCullingPlaneNormal) - InstCullingPlaneOffset;
-    if (d > 0) return 0;
+    if (d > 0)
+        return 0;
     
     float4 rgbi = float4(InstColour, InstIntensity);
     float3 lcol = rgbi.rgb;// * rgbi.a; // * 5.0f;
@@ -198,7 +206,8 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
         float ang = acos(-dot(ldir, InstDirection));
         float iang = InstConeInnerAngle;
         float oang = InstConeOuterAngle;
-        if (ang > oang) return 0;
+        if (ang > oang)
+            return 0;
         lamt *= saturate(1 - ((ang - iang) / (oang - iang)));
         lamt *= GetAttenuation(ldist, InstFalloff, InstFalloffExponent);
     }
@@ -209,7 +218,8 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
     
     pclit *= lamt;
     
-    if (pclit <= 0) return 0;
+    if (pclit <= 0)
+        return 0;
     
     float3 refl = GetReflectedDir(camRel, norm);
     float specb = saturate(dot(refl, ldir));

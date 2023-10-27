@@ -218,12 +218,25 @@ namespace CodeWalker.GameFiles
         public uint Unknown_4Ch { get; set; } // 0x00000000
 
         // reference data
-        public string Name { get; set; }
-        public uint NameHash { get; set; }
+        public string Name { get => name; set
+            {
+                name = value;
+                nameHash = 0;
+            }
+        }
+        public uint NameHash { get
+            {
+                if (nameHash == 0)
+                {
+                    nameHash = JenkHash.GenHashLower(name);
+                }
+                return nameHash;
+            }
+            set => nameHash = value; }
 
         private string_r NameBlock = null;
-
-
+        private uint nameHash;
+        private string name;
 
         public TextureUsage Usage
         {
@@ -280,11 +293,6 @@ namespace CodeWalker.GameFiles
             this.Name = reader.ReadStringAt( //BlockAt<string_r>(
                 this.NamePointer // offset
             );
-
-            if (!string.IsNullOrEmpty(Name))
-            {
-                NameHash = JenkHash.GenHash(Name.ToLowerInvariant());
-            }
 
             //switch (Unknown_32h)
             //{
@@ -405,7 +413,6 @@ namespace CodeWalker.GameFiles
         public virtual void ReadXml(XmlNode node, string ddsfolder)
         {
             Name = Xml.GetChildInnerText(node, "Name");
-            NameHash = JenkHash.GenHash(Name?.ToLowerInvariant());
             Unknown_32h = (ushort)Xml.GetChildUIntAttribute(node, "Unk32", "value");
             Usage = Xml.GetChildEnumInnerText<TextureUsage>(node, "Usage");
             UsageFlags = Xml.GetChildEnumInnerText<TextureUsageFlags>(node, "UsageFlags");

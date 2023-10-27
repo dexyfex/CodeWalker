@@ -84,7 +84,7 @@ namespace CodeWalker.GameFiles
                 throw new Exception("File entry wasn't a resource! (is it binary data?)");
             }
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
 
             NodeDictionary = rd.ReadBlock<NodeDictionary>();
@@ -94,8 +94,6 @@ namespace CodeWalker.GameFiles
             UpdateAllNodePositions();
 
             //links will be populated by the space... maybe move that code here?
-
-
 
             string areaidstr = Name.ToLowerInvariant().Replace("nodes", "").Replace(".ynd", "");
             int areaid = 0;

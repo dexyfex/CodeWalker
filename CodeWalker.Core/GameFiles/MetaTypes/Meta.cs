@@ -1179,6 +1179,29 @@ namespace CodeWalker.GameFiles
         {
             return new MetaHash(v);
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null) return false;
+            if (obj is not MetaHash metaHash) return false;
+
+            return metaHash.Hash == Hash;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)Hash;
+        }
+
+        public static bool operator ==(MetaHash a, MetaHash b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(MetaHash a, MetaHash b)
+        {
+            return !a.Equals(b);
+        }
     }
 
     

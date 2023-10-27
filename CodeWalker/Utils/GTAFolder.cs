@@ -14,8 +14,16 @@ namespace CodeWalker
 {
     public static class GTAFolder
     {
-        public static string CurrentGTAFolder { get; private set; } = Settings.Default.GTAFolder;
+        private static string currentGTAFolder = Settings.Default.GTAFolder;
 
+        public static event Action<string> OnGTAFolderChanged;
+        public static string CurrentGTAFolder { get => currentGTAFolder; private set
+            {
+                if (currentGTAFolder == value) return;
+                currentGTAFolder = value;
+                OnGTAFolderChanged?.Invoke(currentGTAFolder);
+            }
+        }
         public static bool ValidateGTAFolder(string folder, out string failReason)
         {
             failReason = "";

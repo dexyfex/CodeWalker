@@ -30,6 +30,7 @@ namespace CodeWalker
         volatile bool formopen = false;
         volatile bool running = false;
         volatile bool pauserendering = false;
+        public bool Pauserendering { get; set; } = false;
         //volatile bool initialised = false;
 
         Stopwatch frametimer = new Stopwatch();
@@ -163,7 +164,7 @@ namespace CodeWalker
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
             frametimer.Restart();
 
-            if (pauserendering) return;
+            if (Pauserendering) return;
 
             GameFileCache.BeginFrame();
 

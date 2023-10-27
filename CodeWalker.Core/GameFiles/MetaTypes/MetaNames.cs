@@ -10,14 +10,21 @@ namespace CodeWalker.GameFiles
 
     public static class MetaNames
     {
+        public static Dictionary<uint, string> stringCache = new Dictionary<uint, string>();
         public static bool TryGetString(uint h, out string str)
         {
+            if (stringCache.TryGetValue(h, out str))
+            {
+                return str != null;
+            }
             if (Enum.IsDefined(typeof(MetaName), h))
             {
                 str = ((MetaName)h).ToString();
                 if (str.StartsWith("@")) str = str.Substring(1); //mainly to handle the @null entry
+                stringCache.Add(h, str);
                 return true;
             }
+            stringCache.Add(h, str);
             str = null;
             return false;
         }

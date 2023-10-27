@@ -31,6 +31,7 @@ namespace CodeWalker.GameFiles
 
             Loaded = true;
         }
+
         public void Load(byte[] data, RpfFileEntry entry)
         {
             Name = entry.Name;
@@ -43,7 +44,7 @@ namespace CodeWalker.GameFiles
                 throw new Exception("File entry wasn't a resource! (is it binary data?)");
             }
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
 
             TextureDict = rd.ReadBlock<TextureDictionary>();
@@ -64,7 +65,13 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-
+        new public long MemoryUsage
+        {
+            get
+            {
+                return TextureDict.MemoryUsage;
+            }
+        }
     }
 
 

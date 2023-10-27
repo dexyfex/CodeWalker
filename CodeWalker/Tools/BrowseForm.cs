@@ -218,13 +218,13 @@ namespace CodeWalker.Tools
             {
                 if (entry is RpfFileEntry)
                 {
-                    bool show = !entry.NameLower.EndsWith(".rpf"); //rpf entries get their own root node..
+                    bool show = !entry.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase); //rpf entries get their own root node..
                     if (show)
                     {
                         //string text = entry.Path.Substring(file.Path.Length + 1); //includes \ on the end
                         //TreeNode cnode = node.Nodes.Add(text);
                         //cnode.Tag = entry;
-                        TreeNode cnode = AddEntryNode(entry, node);
+                        AddEntryNode(entry, node);
                     }
                 }
             }
@@ -797,7 +797,7 @@ namespace CodeWalker.Tools
                 int max = 500;
                 foreach (RpfFile file in ScannedFiles)
                 {
-                    if (file.Name.ToLowerInvariant().Contains(find))
+                    if (file.NameLower.Contains(find))
                     {
                         AddFileNode(file, null);
                         count++;
@@ -806,10 +806,8 @@ namespace CodeWalker.Tools
                     {
                         if (entry.NameLower.Contains(find))
                         {
-                            if (entry is RpfDirectoryEntry)
+                            if (entry is RpfDirectoryEntry direntry)
                             {
-                                RpfDirectoryEntry direntry = entry as RpfDirectoryEntry;
-
                                 TreeNode node = AddEntryNode(entry, null);
 
                                 foreach (RpfFileEntry cfentry in direntry.Files)
@@ -821,7 +819,7 @@ namespace CodeWalker.Tools
                             }
                             else if (entry is RpfBinaryFileEntry)
                             {
-                                if (entry.NameLower.EndsWith(".rpf", StringComparison.InvariantCultureIgnoreCase)) continue;
+                                if (entry.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase)) continue;
                                 AddEntryNode(entry, null);
                                 count++;
                             }

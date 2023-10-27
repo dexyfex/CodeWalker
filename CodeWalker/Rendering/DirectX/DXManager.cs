@@ -7,12 +7,14 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using Color = SharpDX.Color;
 using Device = SharpDX.Direct3D11.Device;
-using Buffer = SharpDX.Direct3D11.Buffer;
 using DriverType = SharpDX.Direct3D.DriverType;
 using System.Threading;
 using System.Windows.Forms;
 using SharpDX;
 using SharpDX.Direct3D;
+using System.Runtime;
+using CodeWalker.Core.Utils;
+using CodeWalker.Properties;
 
 namespace CodeWalker.Rendering
 {
@@ -32,7 +34,7 @@ namespace CodeWalker.Rendering
         private volatile bool Rendering = false;
         private volatile bool Resizing = false;
         private object syncroot = new object(); //for thread safety
-        public int multisamplecount { get; private set; } = 4; //should be a setting..
+        public int multisamplecount { get; private set; } = Settings.Default.AntiAliasing;
         public int multisamplequality { get; private set; } = 0; //should be a setting...
         public Color clearcolour { get; private set; } = new Color(0.2f, 0.4f, 0.6f, 1.0f); //gross
         private System.Drawing.Size beginSize;
@@ -209,7 +211,6 @@ namespace CodeWalker.Rendering
         {
             if (Resizing) return;
             Monitor.Enter(syncroot);
-
             int width = dxform.Form.ClientSize.Width;
             int height = dxform.Form.ClientSize.Height;
 
@@ -246,6 +247,7 @@ namespace CodeWalker.Rendering
                 Cleanup();
             }
         }
+
         private void Dxform_ClientSizeChanged(object sender, EventArgs e)
         {
             Resize();
@@ -273,21 +275,45 @@ namespace CodeWalker.Rendering
         private void StartRenderLoop()
         {
             Running = true;
-            new Thread(new ThreadStart(RenderLoop)).Start();
+            new Task(RenderLoop, TaskCreationOptions.LongRunning).Start(TaskScheduler.Default);
+            //new Thread(new ThreadStart(RenderLoop)).Start();
         }
         private void RenderLoop()
         {
+            //SharpDX.Configuration.EnableObjectTracking = true;
+            //Task.Run(async () =>
+            //{
+            //    while (true)
+            //    {
+            //        Console.WriteLine(SharpDX.Diagnostics.ObjectTracker.ReportActiveObjects());
+            //        await Task.Delay(5000);
+            //    }
+            //});
+            Thread.CurrentThread.Name = "RenderLoop";
             while (Running)
             {
                 while (Resizing)
                 {
                     swapchain.Present(1, PresentFlags.None); //just flip buffers when resizing; don't draw
                 }
-                while (dxform.Form.WindowState == FormWindowState.Minimized)
+                if (dxform.Form.WindowState == FormWindowState.Minimized)
                 {
-                    Thread.Sleep(10); //don't hog CPU when minimised
-                    if (dxform.Form.IsDisposed) return; //if closed while minimised
+                    dxform.Pauserendering = true;
+
+                    Console.WriteLine("Window is minimized");
+                    dxform.RenderScene(context);
+                    GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+                    while (dxform.Form.WindowState == FormWindowState.Minimized)
+                    {
+                        Thread.Sleep(100); //don't hog CPU when minimised
+                        if (dxform.Form.IsDisposed) return; //if closed while minimised
+                    }
+                    dxform.Pauserendering = false;
+                    Console.WriteLine("Window is maximized");
                 }
+
+                
                 if (Form.ActiveForm == null)
                 {
                     Thread.Sleep(100); //reduce the FPS when the app isn't active (maybe this should be configurable?)
@@ -295,48 +321,54 @@ namespace CodeWalker.Rendering
                 }
 
                 Rendering = true;
-                if(!Monitor.TryEnter(syncroot, 50))
-                {
-                    Thread.Sleep(10); //don't hog CPU when not able to render...
-                    continue;
-                }
-
-                bool ok = true;
                 try
                 {
-                    context.OutputMerger.SetRenderTargets(depthview, targetview);
-                    context.Rasterizer.SetViewport(0, 0, dxform.Form.ClientSize.Width, dxform.Form.ClientSize.Height);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error setting main render target!\n" + ex.ToString());
-                    ok = false;
-                }
-
-                if (ok)
-                {
-                    if (dxform.Form.IsDisposed)
+                    if (!Monitor.TryEnter(syncroot, 50))
                     {
-                        Monitor.Exit(syncroot);
-                        Rendering = false;
-                        return; //the form was closed... stop!!
+                        Console.WriteLine("Failed to get lock for syncroot");
+                        Thread.Sleep(10); //don't hog CPU when not able to render...
+                        continue;
                     }
 
-                    dxform.RenderScene(context);
+                    bool ok = true;
 
                     try
                     {
-                        swapchain.Present(1, PresentFlags.None);
+                        context.OutputMerger.SetRenderTargets(depthview, targetview);
+                        context.Rasterizer.SetViewport(0, 0, dxform.Form.ClientSize.Width, dxform.Form.ClientSize.Height);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error presenting swap chain!\n" + ex.ToString());
+                        MessageBox.Show("Error setting main render target!\n" + ex.ToString());
+                        ok = false;
+                    }
+
+                    if (ok)
+                    {
+                        if (dxform.Form.IsDisposed)
+                        {
+                            Monitor.Exit(syncroot);
+                            Rendering = false;
+                            return; //the form was closed... stop!!
+                        }
+
+                        dxform.RenderScene(context);
+
+                        try
+                        {
+                            swapchain.Present(1, PresentFlags.None);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("Error presenting swap chain!\n" + ex.ToString());
+                        }
                     }
                 }
-
-                Monitor.Exit(syncroot);
-                Rendering = false;
-
+                finally
+                {
+                    Monitor.Exit(syncroot);
+                    Rendering = false;
+                }
             }
         }
 

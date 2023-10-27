@@ -1917,7 +1917,7 @@ namespace CodeWalker.GameFiles
             Buffer.BlockCopy(data, 16, newdata, 0, newlen);
             data = newdata;
 
-            ResourceDataReader rd = new ResourceDataReader(resentry, data);
+            using var rd = new ResourceDataReader(resentry, data);
 
             ClipDict = rd.ReadBlock<ClipDictionary>();
 

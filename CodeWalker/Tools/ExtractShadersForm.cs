@@ -109,8 +109,11 @@ namespace CodeWalker.Tools
 
 
 
-                RpfManager rpfman = new RpfManager();
-                rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
+                RpfManager rpfman = RpfManager.GetInstance();
+                if (!rpfman.IsInited)
+                {
+                    rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
+                }
 
 
                 UpdateExtractStatus("Beginning shader extraction...");

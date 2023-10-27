@@ -17,6 +17,7 @@ using CodeWalker.Rendering;
 using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.Tools;
+using CodeWalker.WinForms;
 
 namespace CodeWalker
 {
@@ -29,7 +30,7 @@ namespace CodeWalker
 
         volatile bool formopen = false;
         volatile bool running = false;
-        volatile bool pauserendering = false;
+        public bool Pauserendering { get; set; }
         volatile bool initialised = false;
 
         Stopwatch frametimer = new Stopwatch();
@@ -262,6 +263,9 @@ namespace CodeWalker
             ViewModeComboBox.SelectedIndex = startupviewmode;
             BoundsStyleComboBox.SelectedIndex = 0; //LoadSettings will handle this
 
+            AntiAliasingValue.Text = Settings.Default.AntiAliasing.ToString();
+            AntiAliasingTrackBar.Value = Settings.Default.AntiAliasing;
+
             SelectionModeComboBox.SelectedIndex = 0; //Entity mode
             ShowSelectedExtensionTab(false);
 
@@ -366,7 +370,10 @@ namespace CodeWalker
 
 
             formopen = true;
-            new Thread(new ThreadStart(ContentThread)).Start();
+
+            new Task(ContentThread, TaskCreationOptions.LongRunning).Start(TaskScheduler.Default);
+            //Task.Run(ContentThread, ContentThread)
+            //new Thread(new ThreadStart(ContentThread)).Start();
 
             frametimer.Start();
         }
@@ -394,13 +401,28 @@ namespace CodeWalker
         public void BuffersResized(int w, int h)
         {
             Renderer.BuffersResized(w, h);
+
+            if (WindowState == FormWindowState.Minimized && gameFileCache.IsInited)
+            {
+                Console.WriteLine("Clearing cache");
+                gameFileCache.Clear();
+                gameFileCache.IsInited = true;
+                GC.Collect();
+            }
         }
         public void RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
+            
+
+            if (elapsed < 0.016666)
+            {
+                Thread.Sleep((int)(0.016666 * elapsed) * 1000);
+            }
+
             frametimer.Restart();
 
-            if (pauserendering) return;
+            if (Pauserendering) return;
 
             GameFileCache.BeginFrame();
 
@@ -4246,6 +4268,8 @@ namespace CodeWalker
 
         private void ContentThread()
         {
+            Thread.CurrentThread.Name = "WorldForm ContentThread";
+            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} {Thread.CurrentThread.Name}");
             //main content loading thread.
             running = true;
 
@@ -4269,7 +4293,12 @@ namespace CodeWalker
                 return;
             }
 
-            gameFileCache.Init(UpdateStatus, LogError);
+            gameFileCache.UpdateStatus += UpdateStatus;
+            gameFileCache.ErrorLog += LogError;
+            if (!gameFileCache.IsInited)
+            {
+                gameFileCache.Init();
+            }
 
             UpdateDlcListComboBox(gameFileCache.DlcNameList);
 
@@ -4285,8 +4314,9 @@ namespace CodeWalker
 
             EnableDLCModsUI();
 
-
-            Task.Run(() => {
+            new Task(() =>
+            {
+                Thread.CurrentThread.Name = "Renderer ContentThread";
                 while (formopen && !IsDisposed) //renderer content loop
                 {
                     bool rcItemsPending = Renderer.ContentThreadProc();
@@ -4296,7 +4326,7 @@ namespace CodeWalker
                         Thread.Sleep(1); //sleep if there's nothing to do
                     }
                 }
-            });
+            }, TaskCreationOptions.LongRunning).Start(TaskScheduler.Default);
 
             while (formopen && !IsDisposed) //main asset loop
             {
@@ -6584,7 +6614,7 @@ namespace CodeWalker
             if (Renderer.Device == null) return; //can't do this with no device
 
             Cursor = Cursors.WaitCursor;
-            pauserendering = true;
+            Pauserendering = true;
 
             lock (Renderer.RenderSyncRoot)
             {
@@ -6599,7 +6629,7 @@ namespace CodeWalker
                 }
             }
 
-            pauserendering = false;
+            Pauserendering = false;
             Cursor = Cursors.Default;
         }
 
@@ -7816,6 +7846,13 @@ namespace CodeWalker
         {
             SubtitleTimer.Enabled = false;
             SubtitleLabel.Visible = false;
+        }
+
+        private void AntiAliasingTrackBar_ValueChanged(object sender, EventArgs e)
+        {
+            Settings.Default.AntiAliasing = AntiAliasingTrackBar.Value;
+            Settings.Default.Save();
+            AntiAliasingValue.Text = Settings.Default.AntiAliasing.ToString();
         }
     }
 

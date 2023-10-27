@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CodeWalker.Utils;
 
 namespace CodeWalker.RPFExplorer
 {
@@ -18,7 +19,7 @@ namespace CodeWalker.RPFExplorer
         static void Main()
         {
             //Process.Start("CodeWalker.exe", "explorer");
-
+            ConsoleWindow.Hide();
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new ExploreForm());

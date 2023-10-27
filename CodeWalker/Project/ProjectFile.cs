@@ -510,13 +510,11 @@ namespace CodeWalker.Project
         }
         public bool RenameYmap(string oldfilename, string newfilename)
         {
-            oldfilename = oldfilename.ToLowerInvariant();
-            newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YmapFilenames.Count; i++)
             {
-                if (YmapFilenames[i]?.ToLowerInvariant() == oldfilename)
+                if (YmapFilenames[i]?.Equals(oldfilename, StringComparison.OrdinalIgnoreCase) ?? false)
                 {
-                    YmapFilenames[i] = newfilename;
+                    YmapFilenames[i] = newfilename.ToLowerInvariant();
                     HasChanged = true;
                     return true;
                 }
@@ -580,13 +578,11 @@ namespace CodeWalker.Project
         }
         public bool RenameYtyp(string oldfilename, string newfilename)
         {
-            oldfilename = oldfilename.ToLowerInvariant();
-            newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YtypFilenames.Count; i++)
             {
-                if (YtypFilenames[i]?.ToLowerInvariant() == oldfilename)
+                if (YtypFilenames[i]?.Equals(oldfilename, StringComparison.OrdinalIgnoreCase) ?? false)
                 {
-                    YtypFilenames[i] = newfilename;
+                    YtypFilenames[i] = newfilename.ToLowerInvariant();
                     HasChanged = true;
                     return true;
                 }
@@ -609,7 +605,7 @@ namespace CodeWalker.Project
         {
             string relpath = GetRelativePath(ybn.FilePath);
             if (string.IsNullOrEmpty(relpath)) relpath = ybn.Name;
-            if (YndFilenames.Contains(relpath)) return false;
+            if (YndFilenames.Contains(relpath, StringComparer.OrdinalIgnoreCase)) return false;
             YbnFilenames.Add(relpath);
             YbnFiles.Add(ybn);
             return true;
@@ -626,10 +622,9 @@ namespace CodeWalker.Project
         public bool ContainsYbn(string filename)
         {
             bool found = false;
-            filename = filename.ToLowerInvariant();
             foreach (var yndfn in YbnFilenames)
             {
-                if (yndfn == filename)
+                if (yndfn.Equals(filename, StringComparison.OrdinalIgnoreCase))
                 {
                     found = true;
                     break;
@@ -651,7 +646,7 @@ namespace CodeWalker.Project
             newfilename = newfilename.ToLowerInvariant();
             for (int i = 0; i < YbnFilenames.Count; i++)
             {
-                if (YbnFilenames[i]?.ToLowerInvariant() == oldfilename)
+                if (YbnFilenames[i]?.Equals(oldfilename, StringComparison.OrdinalIgnoreCase) ?? false)
                 {
                     YbnFilenames[i] = newfilename;
                     HasChanged = true;
@@ -937,7 +932,6 @@ namespace CodeWalker.Project
             RelFile relfile = new RelFile();
             relfile.RpfFileEntry = new RpfResourceFileEntry();
             relfile.RpfFileEntry.Name = Path.GetFileName(filename);
-            relfile.RpfFileEntry.NameHash = JenkHash.GenHash(relfile.RpfFileEntry.Name);
             relfile.FilePath = GetFullFilePath(filename);
             relfile.Name = relfile.RpfFileEntry.Name;
             if (!AddAudioRelFile(relfile)) return null;

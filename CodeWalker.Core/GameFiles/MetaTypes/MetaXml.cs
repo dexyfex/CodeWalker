@@ -1423,7 +1423,7 @@ namespace CodeWalker.GameFiles
                     arrEnum.SwapEnd();
                     var enumArr = PsoTypes.GetUintArray(cont.Pso, arrEnum);
                     var enumDef = cont.GetEnumInfo((MetaName)arrEntry.ReferenceKey);
-                    WriteItemArray(sb, enumArr, indent, ename, "enum", (ie)=> {
+                    WriteItemArray<uint>(sb, enumArr, indent, ename, "enum", (ie)=> {
                         var eval = enumDef?.FindEntry((int)ie);
                         return HashString(eval?.EntryNameHash ?? 0);
                     });
@@ -1945,9 +1945,10 @@ namespace CodeWalker.GameFiles
                 if (lastcol || lastn) sb.AppendLine();
             }
         }
-        public static void WriteRawArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
+
+        public static void WriteRawArray<T>(StringBuilder sb, Span<T> arr, int ind, string name, string typeName, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
         {
-            var aCount = arr?.Length ?? 0;
+            var aCount = arr.Length;
             //var arrRowSize = 10;
             var aind = ind + 1;
             var arrTag = name;// + " itemType=\"" + typeName + "\"";
@@ -1986,15 +1987,25 @@ namespace CodeWalker.GameFiles
                 SelfClosingTag(sb, ind, arrTag);
             }
         }
+
+        public static void WriteRawArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
+        {
+            WriteRawArray<T>(sb, arr.AsSpan(), ind, name, typeName, formatter, arrRowSize);
+        }
         public static void WriteItemArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter) where T : struct
         {
-            var aCount = arr?.Length ?? 0;
+            WriteItemArray<T>(sb, arr.AsSpan(), ind, name, typeName, formatter);
+        }
+
+        public static void WriteItemArray<T>(StringBuilder sb, Span<T> arr, int ind, string name, string typeName, Func<T, string> formatter) where T : struct
+        {
+            var itemCount = arr.Length;
             var arrTag = name;// + " itemType=\"Hash\"";
             var aind = ind + 1;
-            if (aCount > 0)
+            if (itemCount > 0)
             {
                 OpenTag(sb, ind, arrTag);
-                for (int n = 0; n < aCount; n++)
+                for (int n = 0; n < itemCount; n++)
                 {
                     Indent(sb, aind);
                     sb.Append("<Item>");

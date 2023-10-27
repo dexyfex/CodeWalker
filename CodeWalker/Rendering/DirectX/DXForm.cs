@@ -19,7 +19,7 @@ namespace CodeWalker.Rendering
 
         Form Form { get; }
 
-
+        public bool Pauserendering { get; set; }
         void InitScene(Device device);
         void CleanupScene();
         void RenderScene(DeviceContext context);

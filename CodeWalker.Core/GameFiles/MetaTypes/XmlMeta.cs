@@ -243,106 +243,106 @@ namespace CodeWalker.GameFiles
                 default: return "XML";
             }
         }
-        public static MetaFormat GetXMLFormat(string fnamel, out int trimlength)
+        public static MetaFormat GetXMLFormat(string fileName, out int trimlength)
         {
             var mformat = MetaFormat.RSC;
             trimlength = 4;
 
-            if (!fnamel.EndsWith(".xml"))
+            if (!fileName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.XML;//not really correct, but have to return something...
             }
-            if (fnamel.EndsWith(".pso.xml"))
+            if (fileName.EndsWith(".pso.xml"))
             {
                 mformat = MetaFormat.PSO;
                 trimlength = 8;
             }
-            if (fnamel.EndsWith(".rbf.xml"))
+            if (fileName.EndsWith(".rbf.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.RBF;
                 trimlength = 8;
             }
-            if (fnamel.EndsWith(".rel.xml"))
+            if (fileName.EndsWith(".rel.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.AudioRel;
             }
-            if (fnamel.EndsWith(".ynd.xml"))
+            if (fileName.EndsWith(".ynd.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ynd;
             }
-            if (fnamel.EndsWith(".ynv.xml"))
+            if (fileName.EndsWith(".ynv.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ynv;
             }
-            if (fnamel.EndsWith(".ycd.xml"))
+            if (fileName.EndsWith(".ycd.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ycd;
             }
-            if (fnamel.EndsWith(".ybn.xml"))
+            if (fileName.EndsWith(".ybn.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ybn;
             }
-            if (fnamel.EndsWith(".ytd.xml"))
+            if (fileName.EndsWith(".ytd.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ytd;
             }
-            if (fnamel.EndsWith(".ydr.xml"))
+            if (fileName.EndsWith(".ydr.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ydr;
             }
-            if (fnamel.EndsWith(".ydd.xml"))
+            if (fileName.EndsWith(".ydd.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ydd;
             }
-            if (fnamel.EndsWith(".yft.xml"))
+            if (fileName.EndsWith(".yft.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Yft;
             }
-            if (fnamel.EndsWith(".ypt.xml"))
+            if (fileName.EndsWith(".ypt.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ypt;
             }
-            if (fnamel.EndsWith(".yld.xml"))
+            if (fileName.EndsWith(".yld.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Yld;
             }
-            if (fnamel.EndsWith(".yed.xml"))
+            if (fileName.EndsWith(".yed.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Yed;
             }
-            if (fnamel.EndsWith(".ywr.xml"))
+            if (fileName.EndsWith(".ywr.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ywr;
             }
-            if (fnamel.EndsWith(".yvr.xml"))
+            if (fileName.EndsWith(".yvr.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Yvr;
             }
-            if (fnamel.EndsWith(".awc.xml"))
+            if (fileName.EndsWith(".awc.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Awc;
             }
-            if (fnamel.EndsWith(".fxc.xml"))
+            if (fileName.EndsWith(".fxc.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Fxc;
             }
-            if (fnamel.EndsWith("cache_y.dat.xml"))
+            if (fileName.EndsWith("cache_y.dat.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.CacheFile;
             }
-            if (fnamel.EndsWith(".dat.xml") && fnamel.StartsWith("heightmap"))
+            if (fileName.EndsWith(".dat.xml", StringComparison.OrdinalIgnoreCase) && fileName.StartsWith("heightmap", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Heightmap;
             }
-            if (fnamel.EndsWith(".ypdb.xml"))
+            if (fileName.EndsWith(".ypdb.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Ypdb;
             }
-            if (fnamel.EndsWith(".yfd.xml"))
+            if (fileName.EndsWith(".yfd.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Yfd;
             }
-            if (fnamel.EndsWith(".mrf.xml"))
+            if (fileName.EndsWith(".mrf.xml", StringComparison.OrdinalIgnoreCase))
             {
                 mformat = MetaFormat.Mrf;
             }

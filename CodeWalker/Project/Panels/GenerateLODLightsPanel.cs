@@ -264,12 +264,10 @@ namespace CodeWalker.Project.Panels
                 lodymap._CMapData.name = JenkHash.GenHash(lodname);
                 lodymap.RpfFileEntry = new RpfResourceFileEntry();
                 lodymap.RpfFileEntry.Name = lodname + ".ymap";
-                lodymap.RpfFileEntry.NameLower = lodname + ".ymap";
                 distymap.Name = distname;
                 distymap._CMapData.name = JenkHash.GenHash(distname);
                 distymap.RpfFileEntry = new RpfResourceFileEntry();
                 distymap.RpfFileEntry.Name = distname + ".ymap";
-                distymap.RpfFileEntry.NameLower = distname + ".ymap";
 
                 lodymap._CMapData.parent = distymap._CMapData.name;
                 lodymap.Loaded = true;

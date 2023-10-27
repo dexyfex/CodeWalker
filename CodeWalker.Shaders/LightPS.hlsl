@@ -18,7 +18,8 @@ float4 main(VS_Output input) : SV_TARGET
 {
     uint3 ssloc = uint3(input.Pos.xy, 0); //pixel location
     float depth = DepthTex.Load(ssloc).r;
-    if (depth == 0) discard; //no existing pixel rendered here
+    if (depth == 0)
+        discard; //no existing pixel rendered here
     
     float4 diffuse = DiffuseTex.Load(ssloc);
     float4 normal = NormalTex.Load(ssloc);
@@ -31,7 +32,8 @@ float4 main(VS_Output input) : SV_TARGET
     float3 norm = normal.xyz * 2 - 1;
     
     float4 lcol = DeferredLight(camRel, norm, diffuse, specular, irradiance);
-    if (lcol.a <= 0) discard;
+    if (lcol.a <= 0)
+        discard;
 
     return lcol;
 }

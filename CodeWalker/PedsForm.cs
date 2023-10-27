@@ -27,9 +27,10 @@ namespace CodeWalker
         public Renderer Renderer = null;
         public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
 
+        public bool Pauserendering { get; set; }
         volatile bool formopen = false;
         volatile bool running = false;
-        volatile bool pauserendering = false;
+
         //volatile bool initialised = false;
 
         Stopwatch frametimer = new Stopwatch();
@@ -211,7 +212,7 @@ namespace CodeWalker
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
             frametimer.Restart();
 
-            if (pauserendering) return;
+            if (Pauserendering) return;
 
             GameFileCache.BeginFrame();
 

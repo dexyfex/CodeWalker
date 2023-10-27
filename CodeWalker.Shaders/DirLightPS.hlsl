@@ -17,7 +17,8 @@ PS_OUTPUT main(VS_Output input)
 {
     uint3 ssloc = uint3(input.Pos.xy, 0); //pixel location
     float depth = DepthTex.Load(ssloc).r;
-    if (depth == 0) discard; //no existing pixel rendered here
+    if (depth <= 0)
+        discard; //no existing pixel rendered here
     
     float4 diffuse = DiffuseTex.Load(ssloc);
     float4 normal = NormalTex.Load(ssloc);
@@ -29,9 +30,15 @@ PS_OUTPUT main(VS_Output input)
     
     switch (RenderMode)
     {
-        case 5: output.Colour = float4(diffuse.rgb, 1); return output;
-        case 6: output.Colour = float4(normal.rgb, 1); return output;
-        case 7: output.Colour = float4(specular.rgb, 1); return output;
+        case 5:
+            output.Colour = float4(diffuse.rgb, 1);
+            return output;
+        case 6:
+            output.Colour = float4(normal.rgb, 1);
+            return output;
+        case 7:
+            output.Colour = float4(specular.rgb, 1);
+            return output;
     }
     
     float4 spos = float4(input.Screen.xy/input.Screen.w, depth, 1);
