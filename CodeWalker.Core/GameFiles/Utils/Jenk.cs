@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,11 @@ namespace CodeWalker.GameFiles
             HashHex = "0x" + HashUint.ToString("X");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char ToLower(char c)
+        {
+            return (c >= 'A' && c <= 'Z') ? (char)(c - 'A' + 'a') : c;
+        }
 
         public static uint GenHash(string text, JenkHashInputEncoding encoding)
         {
@@ -64,8 +70,47 @@ namespace CodeWalker.GameFiles
             uint h = 0;
             for (int i = 0; i < text.Length; i++)
             {
-                
-                h += (byte)char.ToLowerInvariant(text[i]);
+                h += (byte)ToLower(text[i]);
+                h += (h << 10);
+                h ^= (h >> 6);
+            }
+            h += (h << 3);
+            h ^= (h >> 11);
+            h += (h << 15);
+
+            return h;
+        }
+
+        public static uint GenHashLower(ReadOnlySpan<char> text, ReadOnlySpan<char> str2 = default)
+        {
+            if (text == null) return 0;
+            uint h = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                h += (byte)ToLower(text[i]);
+                h += (h << 10);
+                h ^= (h >> 6);
+            }
+            for (int i = 0; i < str2.Length; i++)
+            {
+                h += (byte)ToLower(str2[i]);
+                h += (h << 10);
+                h ^= (h >> 6);
+            }
+            h += (h << 3);
+            h ^= (h >> 11);
+            h += (h << 15);
+
+            return h;
+        }
+
+        public static uint GenHash(ReadOnlySpan<char> text)
+        {
+            if (text == null) return 0;
+            uint h = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                h += (byte)text[i];
                 h += (h << 10);
                 h ^= (h >> 6);
             }
@@ -231,41 +276,42 @@ namespace CodeWalker.GameFiles
 
     public static class JenkIndex
     {
-        public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(Environment.ProcessorCount, 1500000);
+        public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(32, 1500000);
 
-        public static void Clear()
-        {
-            Index.Clear();
-        }
-
-        public static bool Ensure(string str)
+        public static void Ensure(string str)
         {
             uint hash = JenkHash.GenHash(str);
-            if (hash == 0) return true;
-            if (Index.ContainsKey(hash))
-            {
-                return true;
-            }
-            lock (Index)
-            {
-                Index[hash] = str;
-                return false;
-            }
+            Ensure(str, hash);
         }
 
-        public static bool EnsureLower(string str)
+        public static void Ensure(string str, uint hash)
         {
-            uint hash = JenkHash.GenHashLower(str);
-            if (hash == 0) return true;
+            if (hash == 0) return;
+
             if (Index.ContainsKey(hash))
             {
-                return true;
+                return;
             }
 
             Index.TryAdd(hash, str);
-            return false;
         }
 
+        public static void EnsureLower(string str)
+        {
+            uint hash = JenkHash.GenHashLower(str);
+            Ensure(str, hash);
+        }
+
+        public static void EnsureBoth(string str)
+        {
+            uint hash = JenkHash.GenHash(str);
+            uint hashLower = JenkHash.GenHashLower(str);
+            Ensure(str, hash);
+            if (hash != hashLower)
+            {
+                Ensure(str, hashLower);
+            }
+        }
         public static void AddRange(params string[] strings)
         {
             foreach(var s in strings)
@@ -307,10 +353,9 @@ namespace CodeWalker.GameFiles
             return res;
         }
 
-        public static string[] GetAllStrings()
+        public static ICollection<string> GetAllStrings()
         {
-            string[] res = null;
-            res = Index.Values.ToArray();
+            var res = Index.Values;
             return res;
         }
 

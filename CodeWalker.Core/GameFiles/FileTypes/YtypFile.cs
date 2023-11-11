@@ -288,16 +288,16 @@ namespace CodeWalker.GameFiles
             { }
 
             NameHash = _CMapTypes.name;
-            if ((NameHash == 0) && (entry.NameLower != null))
+            if ((NameHash == 0) && (entry.Name != null))
             {
-                int ind = entry.NameLower.LastIndexOf('.');
+                int ind = entry.Name.LastIndexOf('.');
                 if (ind > 0)
                 {
-                    NameHash = JenkHash.GenHash(entry.NameLower.Substring(0, ind));
+                    NameHash = JenkHash.GenHashLower(entry.Name.AsSpan(0, ind));
                 }
                 else
                 {
-                    NameHash = JenkHash.GenHash(entry.NameLower);
+                    NameHash = JenkHash.GenHashLower(entry.Name);
                 }
             }
 

@@ -1346,7 +1346,7 @@ namespace CodeWalker.GameFiles
 
                 if (ItemDataByteLength != 0)//sometimes this is 0 and UnkUshort3>0, which is weird
                 {
-                    ShatterMapRowOffsets = reader.ReadStructs<ushort>(ItemDataCount);//byte offsets for following array
+                    ShatterMapRowOffsets = reader.ReadStructs<ushort>(ItemDataCount).ToArray();//byte offsets for following array
                     ShatterMap = new WindowShatterMapRow[ItemDataCount];
                     for (int i = 0; i < ItemDataCount; i++)
                     {
@@ -1942,7 +1942,13 @@ namespace CodeWalker.GameFiles
 
         public void BuildOffsets()
         {
-            var offs = new List<WindowOffset>();
+            if (Windows == null)
+            {
+                TotalLength = 16u;
+                WindowOffsets = Array.Empty<WindowOffset>();
+                return;
+            }
+            var offs = new List<WindowOffset>(Windows.Length);
             var bc = 16u;
             if (Windows != null)
             {

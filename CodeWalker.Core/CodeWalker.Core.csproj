@@ -7,11 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AsyncEnumerator" Version="4.0.2" />
+    <PackageReference Include="DirectXTexNet" Version="1.0.1" />
     <PackageReference Include="directxtex_desktop_win10" Version="2023.3.30.1" />
+    <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
     <PackageReference Include="System.Buffers" Version="4.5.1" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
   </ItemGroup>
 
   <ItemGroup>

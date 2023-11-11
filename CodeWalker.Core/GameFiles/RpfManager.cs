@@ -1,4 +1,6 @@
-﻿using CodeWalker.Core.Utils;
+﻿
+
+using CodeWalker.Core.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -56,10 +58,10 @@ namespace CodeWalker.GameFiles
             AllRpfs = new List<RpfFile>();
             DlcNoModRpfs = new List<RpfFile>();
             AllNoModRpfs = new List<RpfFile>();
-            RpfDict = new Dictionary<string, RpfFile>();
-            EntryDict = new Dictionary<string, RpfEntry>();
-            ModRpfDict = new Dictionary<string, RpfFile>();
-            ModEntryDict = new Dictionary<string, RpfEntry>();
+            RpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
+            EntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
+            ModRpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
+            ModEntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
 
             var rpfs = new ConcurrentBag<RpfFile>();
             Parallel.ForEach(allfiles, (rpfpath) =>
@@ -73,7 +75,7 @@ namespace CodeWalker.GameFiles
                         bool excl = false;
                         for (int i = 0; i < ExcludePaths.Length; i++)
                         {
-                            if (rf.Path.StartsWith(ExcludePaths[i]))
+                            if (rf.Path.StartsWith(ExcludePaths[i], StringComparison.OrdinalIgnoreCase))
                             {
                                 excl = true;
                                 break;
@@ -147,10 +149,10 @@ namespace CodeWalker.GameFiles
             DlcRpfs = new List<RpfFile>();
             DlcNoModRpfs = new List<RpfFile>();
             AllNoModRpfs = new List<RpfFile>();
-            RpfDict = new Dictionary<string, RpfFile>();
-            EntryDict = new Dictionary<string, RpfEntry>();
-            ModRpfDict = new Dictionary<string, RpfFile>();
-            ModEntryDict = new Dictionary<string, RpfEntry>();
+            RpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
+            EntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
+            ModRpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
+            ModEntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
             foreach (var rpf in allRpfs)
             {
                 RpfDict[rpf.Path] = rpf;
@@ -171,8 +173,8 @@ namespace CodeWalker.GameFiles
 
         private void AddRpfFile(RpfFile file, bool isdlc, bool ismod)
         {
-            isdlc = isdlc || (file.NameLower == "update.rpf") || (file.NameLower.StartsWith("dlc") && file.NameLower.EndsWith(".rpf"));
-            ismod = ismod || (file.Path.StartsWith("mods\\"));
+            isdlc = isdlc || file.Name.Equals("update.rpf", StringComparison.OrdinalIgnoreCase) || (file.Name.StartsWith("dlc", StringComparison.OrdinalIgnoreCase) && file.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase));
+            ismod = ismod || (file.Path.StartsWith("mods\\", StringComparison.OrdinalIgnoreCase));
 
             if (file.AllEntries != null)
             {
@@ -249,8 +251,7 @@ namespace CodeWalker.GameFiles
 
         public RpfFile FindRpfFile(string path, bool exactPathOnly)
         {
-            RpfFile file = null; //check the dictionary
-
+            RpfFile file;
             if (EnableMods && ModRpfDict.TryGetValue(path, out file))
             {
                 return file;
@@ -261,14 +262,13 @@ namespace CodeWalker.GameFiles
                 return file;
             }
 
-            string lpath = path.ToLowerInvariant(); //try look at names etc
             foreach (RpfFile tfile in AllRpfs)
             {
-                if (!exactPathOnly && tfile.NameLower == lpath)
+                if (!exactPathOnly && tfile.Name.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
                     return tfile;
                 }
-                if (tfile.Path == lpath)
+                if (tfile.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
                     return tfile;
                 }
@@ -281,21 +281,20 @@ namespace CodeWalker.GameFiles
         public RpfEntry GetEntry(string path)
         {
             RpfEntry entry;
-            string pathl = path.ToLowerInvariant();
-            if (EnableMods && ModEntryDict.TryGetValue(pathl, out entry))
+            if (EnableMods && ModEntryDict.TryGetValue(path, out entry))
             {
                 return entry;
             }
-            EntryDict.TryGetValue(pathl, out entry);
+            EntryDict.TryGetValue(path, out entry);
             if (entry == null)
             {
-                pathl = pathl.Replace("/", "\\");
-                pathl = pathl.Replace("common:", "common.rpf");
-                if (EnableMods && ModEntryDict.TryGetValue(pathl, out entry))
+                path = path.Replace("/", "\\");
+                path = path.Replace("common:", "common.rpf");
+                if (EnableMods && ModEntryDict.TryGetValue(path, out entry))
                 {
                     return entry;
                 }
-                EntryDict.TryGetValue(pathl, out entry);
+                EntryDict.TryGetValue(path, out entry);
             }
             return entry;
         }
@@ -357,6 +356,30 @@ namespace CodeWalker.GameFiles
             }
             return file;
         }
+        public async Task<T> GetFileAsync<T>(RpfEntry e) where T : class, PackedFile, new()
+        {
+            try
+            {
+                T file = null;
+                byte[] data = null;
+                RpfFileEntry entry = e as RpfFileEntry;
+                if (entry != null)
+                {
+                    data = await entry.File.ExtractFileAsync(entry).ConfigureAwait(false);
+                }
+                if (data != null)
+                {
+                    file = new T();
+                    file.Load(data, entry);
+                }
+                return file;
+            } catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+
+        }
         public bool LoadFile<T>(T file, RpfEntry e) where T : class, PackedFile
         {
             byte[] data = null;
@@ -367,8 +390,40 @@ namespace CodeWalker.GameFiles
             }
             if (data != null)
             {
-                file.Load(data, entry);
-                return true;
+                try
+                {
+                    file.Load(data, entry);
+                    return true;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Error occured while loading {entry.Name} at {entry.Path}:\n{ex}");
+                    throw;
+                }
+            }
+            return false;
+        }
+
+        public async ValueTask<bool> LoadFileAsync<T>(T file, RpfEntry e) where T : class, PackedFile
+        {
+            byte[] data = null;
+            RpfFileEntry entry = e as RpfFileEntry;
+            if (entry != null)
+            {
+                data = await entry.File.ExtractFileAsync(entry).ConfigureAwait(false);
+            }
+            if (data != null && data.Length > 0)
+            {
+                try
+                {
+                    file.Load(data, entry);
+                    return true;
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Error occured while loading {entry.Name} at {entry.Path}:\n{ex}");
+                    throw;
+                }
             }
             return false;
         }
@@ -386,71 +441,64 @@ namespace CodeWalker.GameFiles
                     JenkIndex.Ensure(file.Name);
                     foreach (RpfEntry entry in file.AllEntries)
                     {
-                        var nlow = entry.NameLower;
-                        if (string.IsNullOrEmpty(nlow)) continue;
+                        var name = entry.Name;
+                        if (string.IsNullOrEmpty(name))
+                            continue;
                         //JenkIndex.Ensure(entry.Name);
                         //JenkIndex.Ensure(nlow);
-                        int ind = nlow.LastIndexOf('.');
-                        if (ind > 0)
-                        {
-                            
-                            JenkIndex.Ensure(entry.Name.Substring(0, ind));
-                            JenkIndex.Ensure(nlow.Substring(0, ind));
+                        var nameWithoutExtension = entry.ShortName;
+                        JenkIndex.EnsureBoth(nameWithoutExtension);
 
-                            //if (ind < entry.Name.Length - 2)
-                            //{
-                            //    JenkIndex.Ensure(entry.Name.Substring(0, ind) + ".#" + entry.Name.Substring(ind + 2));
-                            //    JenkIndex.Ensure(entry.NameLower.Substring(0, ind) + ".#" + entry.NameLower.Substring(ind + 2));
-                            //}
-                        }
-                        else
-                        {
-                            JenkIndex.Ensure(entry.Name);
-                            JenkIndex.Ensure(nlow);
-                        }
+                        //if (ind < entry.Name.Length - 2)
+                        //{
+                        //    JenkIndex.Ensure(entry.Name.Substring(0, ind) + ".#" + entry.Name.Substring(ind + 2));
+                        //    JenkIndex.Ensure(entry.NameLower.Substring(0, ind) + ".#" + entry.NameLower.Substring(ind + 2));
+                        //}
                         if (BuildExtendedJenkIndex)
                         {
-                            if (nlow.EndsWith(".ydr"))// || nlow.EndsWith(".yft")) //do yft's get lods?
+                            if (name.EndsWith(".ydr", StringComparison.OrdinalIgnoreCase))// || nlow.EndsWith(".yft")) //do yft's get lods?
                             {
-                                var sname = nlow.Substring(0, nlow.Length - 4);
-                                JenkIndex.Ensure(sname + "_lod");
-                                JenkIndex.Ensure(sname + "_loda");
-                                JenkIndex.Ensure(sname + "_lodb");
+                                var sname = entry.ShortName;
+                                var nameLod = sname + "_lod";
+                                JenkIndex.EnsureLower(nameLod);
+                                JenkIndex.EnsureLower(nameLod + 'a');
+                                JenkIndex.EnsureLower(nameLod + 'b');
                             }
-                            if (nlow.EndsWith(".ydd"))
+                            else if (name.EndsWith(".ydd", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (nlow.EndsWith("_children.ydd"))
+                                if (name.EndsWith("_children.ydd", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    var strn = nlow.Substring(0, nlow.Length - 13);
-                                    JenkIndex.Ensure(strn);
-                                    JenkIndex.Ensure(strn + "_lod");
-                                    JenkIndex.Ensure(strn + "_loda");
-                                    JenkIndex.Ensure(strn + "_lodb");
+                                    var strn = entry.Name.Substring(0, name.Length - 13);
+                                    JenkIndex.EnsureLower(strn);
+                                    var nameChildrenLod = strn + "_lod";
+                                    JenkIndex.EnsureLower(nameChildrenLod);
+                                    JenkIndex.EnsureLower(nameChildrenLod + 'a');
+                                    JenkIndex.EnsureLower(nameChildrenLod + 'b');
                                 }
-                                var idx = nlow.LastIndexOf('_');
+                                var idx = name.LastIndexOf('_');
                                 if (idx > 0)
                                 {
-                                    var str1 = nlow.Substring(0, idx);
+                                    var str1 = name.Substring(0, idx);
                                     var idx2 = str1.LastIndexOf('_');
                                     if (idx2 > 0)
                                     {
                                         var str2 = str1.Substring(0, idx2);
-                                        JenkIndex.Ensure(str2 + "_lod");
+                                        JenkIndex.EnsureLower(str2 + "_lod");
                                         var maxi = 100;
                                         for (int i = 1; i <= maxi; i++)
                                         {
-                                            var str3 = str2 + "_" + i.ToString().PadLeft(2, '0');
+                                            var str3 = str2 + '_' + i.ToString().PadLeft(2, '0') + "_lod";
                                             //JenkIndex.Ensure(str3);
-                                            JenkIndex.Ensure(str3 + "_lod");
+                                            JenkIndex.EnsureLower(str3);
                                         }
                                     }
                                 }
                             }
-                            if (nlow.EndsWith(".sps"))
+                            else if(name.EndsWith(".sps", StringComparison.OrdinalIgnoreCase))
                             {
-                                JenkIndex.Ensure(nlow);//for shader preset filename hashes!
+                                JenkIndex.EnsureLower(entry.Name);//for shader preset filename hashes!
                             }
-                            if (nlow.EndsWith(".awc")) //create audio container path hashes...
+                            else if(name.EndsWith(".awc", StringComparison.OrdinalIgnoreCase)) //create audio container path hashes...
                             {
                                 string[] parts = entry.Path.Split('\\');
                                 int pl = parts.Length;
@@ -459,21 +507,18 @@ namespace CodeWalker.GameFiles
                                     string fn = parts[pl - 1];
                                     string fd = parts[pl - 2];
                                     string hpath = fn.Substring(0, fn.Length - 4);
-                                    if (fd.EndsWith(".rpf"))
+                                    if (fd.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase))
                                     {
                                         fd = fd.Substring(0, fd.Length - 4);
                                     }
-                                    hpath = fd + "/" + hpath;
-                                    if (parts[pl - 3] != "sfx")
-                                    { }//no hit
+                                    hpath = fd + '/' + hpath;
 
-                                    JenkIndex.Ensure(hpath);
+                                    JenkIndex.EnsureLower(hpath);
                                 }
                             }
-                            if (nlow.EndsWith(".nametable"))
+                            else if(name.EndsWith(".nametable", StringComparison.OrdinalIgnoreCase))
                             {
-                                RpfBinaryFileEntry binfe = entry as RpfBinaryFileEntry;
-                                if (binfe != null)
+                                if (entry is RpfBinaryFileEntry binfe)
                                 {
                                     byte[] data = file.ExtractFile(binfe);
                                     if (data != null)
@@ -487,9 +532,8 @@ namespace CodeWalker.GameFiles
                                                 string str = sb.ToString();
                                                 if (!string.IsNullOrEmpty(str))
                                                 {
-                                                    string strl = str.ToLowerInvariant();
                                                     //JenkIndex.Ensure(str);
-                                                    JenkIndex.Ensure(strl);
+                                                    JenkIndex.EnsureLower(str);
 
                                                     ////DirMod_Sounds_ entries apparently can be used to infer SP audio strings
                                                     ////no luck here yet though
@@ -508,8 +552,6 @@ namespace CodeWalker.GameFiles
                                         }
                                     }
                                 }
-                                else
-                                { }
                             }
                         }
                     }

@@ -24,7 +24,7 @@ namespace CodeWalker.Forms
     {
         public Form Form { get { return this; } } //for DXForm/DXManager use
 
-        private Renderer Renderer = null;
+        public Renderer Renderer { get; set; }
 
 
         volatile bool formopen = false;
@@ -36,6 +36,8 @@ namespace CodeWalker.Forms
         Timecycle timecycle;
         Weather weather;
         Clouds clouds;
+
+        public CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
 
         bool MouseLButtonDown = false;
         bool MouseRButtonDown = false;
@@ -114,7 +116,6 @@ namespace CodeWalker.Forms
         public bool showLightGizmos = true;
         public Skeleton Skeleton = null;
 
-        ExploreForm exploreForm = null;
         RpfFileEntry rpfFileEntry = null;
 
 
@@ -128,16 +129,14 @@ namespace CodeWalker.Forms
 
 
 
-        public ModelForm(ExploreForm ExpForm = null)
+        public ModelForm()
         {
             if (this.DesignMode) return;
             InitializeComponent();
 
-            exploreForm = ExpForm;
+            gameFileCache = GameFileCacheFactory.GetInstance();
 
-            gameFileCache = ExpForm?.GetFileCache() ?? GameFileCacheFactory.Create();
-
-            if (ExpForm == null)
+            if (ExploreForm.Instance == null)
             {
                 gameFileCache.EnableDlc = false;
                 gameFileCache.EnableMods = false;
@@ -163,31 +162,40 @@ namespace CodeWalker.Forms
                     catch(Exception ex)
                     {
                         Console.WriteLine(ex);
-                        throw ex;
+                        throw;
                     }
 
                 });
 
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    while (!IsDisposed) //run the file cache content thread until the form exits.
+                    try
                     {
-                        if (gameFileCache.IsInited)
+                        while (!IsDisposed) //run the file cache content thread until the form exits.
                         {
-                            gameFileCache.BeginFrame();
-
-                            bool fcItemsPending = gameFileCache.ContentThreadProc();
-
-                            if (!fcItemsPending)
+                            if (gameFileCache.IsInited)
                             {
-                                Thread.Sleep(10);
+                                gameFileCache.BeginFrame();
+
+                                bool fcItemsPending = gameFileCache.ContentThreadProc();
+
+                                if (!fcItemsPending)
+                                {
+                                    await Task.Delay(10);
+                                }
+                            }
+                            else
+                            {
+                                await Task.Delay(20);
                             }
                         }
-                        else
-                        {
-                            Thread.Sleep(20);
-                        }
                     }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine($"Exception occurred in gameFileCache ContentThread.\n{ex}");
+                        throw;
+                    }
+                    
                 });
             }
 
@@ -299,7 +307,8 @@ namespace CodeWalker.Forms
 
 
             formopen = true;
-            new Thread(new ThreadStart(ContentThread)).Start();
+
+            Task.Run(ContentThread);
 
             frametimer.Start();
         }
@@ -324,19 +333,26 @@ namespace CodeWalker.Forms
                 Console.WriteLine("Clearing cache");
                 gameFileCache.Clear();
                 gameFileCache.IsInited = true;
-                GC.Collect();
+                //GC.Collect();
             }
             
         }
-        public void RenderScene(DeviceContext context)
+        public async ValueTask RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
             frametimer.Restart();
 
+            if (elapsed < 0.016666)
+            {
+                await Task.Delay((int)(0.016666 * elapsed) * 1000);
+            }
+
             if (Pauserendering) return;
 
             if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
-            { return; } //couldn't get a lock, try again next time
+            {
+                return;
+            } //couldn't get a lock, try again next time
 
             UpdateControlInputs(elapsed);
 
@@ -376,7 +392,7 @@ namespace CodeWalker.Forms
         }
 
 
-        private void ContentThread()
+        private async void ContentThread()
         {
             //main content loading thread.
             //running = true;
@@ -453,7 +469,7 @@ namespace CodeWalker.Forms
 
                 if (!(rcItemsPending)) //gameFileCache.ItemsStillPending || 
                 {
-                    Thread.Sleep(1); //sleep if there's nothing to do
+                    await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
                 }
             }
 
@@ -482,7 +498,7 @@ namespace CodeWalker.Forms
                 List<string> ycdlist = new List<string>();
                 foreach (var ycde in ycds)
                 {
-                    ycdlist.Add(ycde.GetShortName());
+                    ycdlist.Add(ycde.ShortName);
                 }
                 ClipDictComboBox.AutoCompleteCustomSource.AddRange(ycdlist.ToArray());
                 ClipDictComboBox.Text = "";
@@ -703,10 +719,10 @@ namespace CodeWalker.Forms
 
         public void ViewModel(byte[] data, RpfFileEntry e)
         {
-            var nl = e?.NameLower ?? "";
+            var nl = e?.Name ?? "";
             var fe = Path.GetExtension(nl);
             Show();
-            switch (fe)
+            switch (fe.ToLowerInvariant())
             {
                 case ".ydr":
                     var ydr = RpfFile.GetFile<YdrFile>(e, data);
@@ -902,10 +918,10 @@ namespace CodeWalker.Forms
             Yft = yft;
             rpfFileEntry = Yft.RpfFileEntry;
             ModelHash = Yft.RpfFileEntry?.ShortNameHash ?? 0;
-            var namelower = Yft.RpfFileEntry?.ShortName;
-            if (namelower?.EndsWith("_hi", StringComparison.OrdinalIgnoreCase) ?? false)
+            var name = Yft.RpfFileEntry?.ShortName;
+            if (name?.EndsWith("_hi", StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                ModelHash = JenkHash.GenHashLower(namelower.Substring(0, namelower.Length - 3));
+                ModelHash = JenkHash.GenHashLower(name.AsSpan(0, name.Length - 3));
             }
             if (ModelHash != 0)
             {
@@ -1295,7 +1311,7 @@ namespace CodeWalker.Forms
                 {
                     items.Add(kvp);
                 }
-                items.Sort((a, b) => { return a.Value?.Name?.CompareTo(b.Value?.Name ?? "") ?? 0; });
+                items.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Value?.Name, b.Value?.Name));
                 foreach (var kvp in items)
                 {
                     AddDrawableTreeNode(kvp.Value, kvp.Key, check);
@@ -1668,7 +1684,7 @@ namespace CodeWalker.Forms
 
             if (td != null)
             {
-                YtdForm f = new YtdForm(null, this);
+                YtdForm f = new YtdForm(this);
                 f.Show(this);
                 f.LoadTexDict(td, fileName);
             }
@@ -1760,7 +1776,7 @@ namespace CodeWalker.Forms
 
         private void Save(bool saveAs = false)
         {
-            var editMode = exploreForm?.EditMode ?? false;
+            var editMode = ExploreForm.Instance?.EditMode ?? false;
 
             if (string.IsNullOrEmpty(FilePath))
             {
@@ -1857,14 +1873,14 @@ namespace CodeWalker.Forms
 
                 try
                 {
-                    if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return;
+                    if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return;
 
                     var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, fileBytes);
                     if (newentry != rpfFileEntry)
                     { }
                     rpfFileEntry = newentry;
 
-                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                    ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                     StatusLabel.Text = rpfFileEntry.Name + " saved successfully at " + DateTime.Now.ToString();
 
@@ -1889,7 +1905,7 @@ namespace CodeWalker.Forms
 
                     fileName = Path.GetFileName(fn);
 
-                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                    ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                     StatusLabel.Text = fileName + " saved successfully at " + DateTime.Now.ToString();
                 }

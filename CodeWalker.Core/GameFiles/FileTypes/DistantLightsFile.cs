@@ -40,7 +40,7 @@ namespace CodeWalker.GameFiles
                 RpfFileEntry = entry;
                 Name = entry.Name;
 
-                if (!entry.NameLower.EndsWith("_hd.dat"))
+                if (!entry.Name.EndsWith("_hd.dat", StringComparison.OrdinalIgnoreCase))
                 {
                     HD = false;
                     GridSize = 16;

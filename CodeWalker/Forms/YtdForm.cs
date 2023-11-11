@@ -5,10 +5,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -23,13 +25,11 @@ namespace CodeWalker.Forms
         private Texture CurrentTexture = null;
         private float CurrentZoom = 0.0f; //1.0 = 100%, 0.0 = stretch
         private bool Modified = false;
-        private ExploreForm ExploreForm = null;
         private ModelForm ModelForm = null;
 
 
-        public YtdForm(ExploreForm exploreForm = null, ModelForm modelForm = null)
+        public YtdForm(ModelForm modelForm = null)
         {
-            ExploreForm = exploreForm;
             ModelForm = modelForm;
             InitializeComponent();
         }
@@ -155,8 +155,10 @@ namespace CodeWalker.Forms
                 byte[] pixels = DDSIO.GetPixels(tex, cmip);
                 int w = tex.Width >> cmip;
                 int h = tex.Height >> cmip;
-                Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
 
+                //Image bmp = Image.FromStream(new MemoryStream(pixels));
+
+                Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
                 if (pixels != null)
                 {
                     var BoundsRect = new System.Drawing.Rectangle(0, 0, w, h);
@@ -396,7 +398,7 @@ namespace CodeWalker.Forms
             }
             else
             {
-                var cansave = (ExploreForm?.EditMode ?? false);
+                var cansave = (ExploreForm.Instance?.EditMode ?? false);
                 var s = "Save " + FileName;
                 var sas = "Save " + FileName + " As...";
                 FileSaveMenu.Text = s;
@@ -435,7 +437,7 @@ namespace CodeWalker.Forms
         private void SaveYTD(bool saveas = false)
         {
             if (Ytd == null) return;
-            if (!(ExploreForm?.EditMode ?? false))
+            if (!(ExploreForm.Instance?.EditMode ?? false))
             {
                 saveas = true;
             }
@@ -485,18 +487,18 @@ namespace CodeWalker.Forms
             else if (!isinrpf) //save direct to filesystem in RPF explorer
             {
                 File.WriteAllBytes(rpfFileEntry.Path, data);
-                ExploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
             }
             else //save to RPF...
             {
-                if (!(ExploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false))
+                if (!ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))
                 {
                     MessageBox.Show("Unable to save file, RPF encryption needs to be OPEN for this operation!");
                     return;
                 }
 
                 Ytd.RpfFileEntry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
-                ExploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
             }
 
             Modified = false;
@@ -645,6 +647,16 @@ namespace CodeWalker.Forms
         private void SelTextureNameTextBox_TextChanged(object sender, EventArgs e)
         {
             RenameTexture(SelTextureNameTextBox.Text);
+        }
+    }
+
+    public class PixelBox : PictureBox
+    {
+        protected override void OnPaint(PaintEventArgs pe)
+        {
+            pe.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+            pe.Graphics.PixelOffsetMode = PixelOffsetMode.Half;
+            base.OnPaint(pe);
         }
     }
 }

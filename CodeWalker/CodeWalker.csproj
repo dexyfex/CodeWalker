@@ -9,17 +9,23 @@
     <Copyright>dexyfex</Copyright>
     <Company>dexyfex software</Company>
     <Authors>dexyfex</Authors>
-	  <LangVersion>latest</LangVersion>
+	<LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DockPanelSuite.ThemeVS2015" Version="3.0.6" />
+    <PackageReference Include="AsyncEnumerator" Version="4.0.2" />
+    <PackageReference Include="DirectXTexNet" Version="1.0.1" />
+    <PackageReference Include="DockPanelSuite.ThemeVS2015" Version="3.1.0" />
     <PackageReference Include="FCTB" Version="2.16.24" />
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.D3DCompiler" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct2D1" Version="4.2.0" />

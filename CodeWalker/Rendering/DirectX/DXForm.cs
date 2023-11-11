@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,12 +18,14 @@ namespace CodeWalker.Rendering
         //So, i've used an interface instead, since really just some of the form properties
         //and a couple of extra methods (these callbacks) are needed by DXManager.
 
+        public Renderer Renderer { get; set; }
         Form Form { get; }
 
+        public CancellationTokenSource CancellationTokenSource { get; }
         public bool Pauserendering { get; set; }
         void InitScene(Device device);
         void CleanupScene();
-        void RenderScene(DeviceContext context);
+        ValueTask RenderScene(DeviceContext context);
         void BuffersResized(int w, int h);
         bool ConfirmQuit();
     }

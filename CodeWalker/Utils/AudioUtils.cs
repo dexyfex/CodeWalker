@@ -288,15 +288,15 @@ namespace CodeWalker.Utils
                     if (entry is RpfFileEntry)
                     {
                         var fentry = entry as RpfFileEntry;
-                        //if (entry.NameLower.EndsWith(".rel"))
+                        //if (entry.Name.EndsWith(".rel", StringComparison.OrdinalIgnoreCase))
                         //{
                         //    datrels[entry.NameHash] = fentry;
                         //}
-                        if (sounds && entry.NameLower.EndsWith(".dat54.rel"))
+                        if (sounds && entry.Name.EndsWith(".dat54.rel", StringComparison.OrdinalIgnoreCase))
                         {
                             datrelentries[entry.NameHash] = fentry;
                         }
-                        if (game && entry.NameLower.EndsWith(".dat151.rel"))
+                        if (game && entry.Name.EndsWith(".dat151.rel", StringComparison.OrdinalIgnoreCase))
                         {
                             datrelentries[entry.NameHash] = fentry;
                         }
@@ -311,13 +311,13 @@ namespace CodeWalker.Utils
                     if (entry is RpfFileEntry)
                     {
                         var fentry = entry as RpfFileEntry;
-                        if (entry.Name.EndsWith(".awc", StringComparison.OrdinalIgnoreCase))
+                        if (entry.IsExtension(".awc"))
                         {
                             var shortname = entry.ShortName;
                             var parentname = entry.Parent?.ShortName ?? "";
                             if (string.IsNullOrEmpty(parentname) && (entry.Parent?.File != null))
                             {
-                                parentname = entry.Parent.File.NameLower;
+                                parentname = entry.Parent.File.Name;
                                 int ind = parentname.LastIndexOf('.');
                                 if (ind > 0)
                                 {

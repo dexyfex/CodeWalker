@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System;using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -675,6 +674,35 @@ namespace CodeWalker.GameFiles
         {
             return "Array_StructurePointer: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Array_StructurePointer pointer &&
+                   Pointer == pointer.Pointer &&
+                   Count1 == pointer.Count1 &&
+                   Count2 == pointer.Count2 &&
+                   Unk1 == pointer.Unk1;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -1900453823;
+            hashCode = hashCode * -1521134295 + Pointer.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unk1.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(Array_StructurePointer left, Array_StructurePointer right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Array_StructurePointer left, Array_StructurePointer right)
+        {
+            return !(left == right);
+        }
     }
     [TC(typeof(EXP))] public struct Array_Structure //16 bytes - pointer for a structure array
     {
@@ -717,6 +745,37 @@ namespace CodeWalker.GameFiles
         {
             return "Array_Structure: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
         }
+
+        public static bool operator ==(Array_Structure x, Array_Structure y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(Array_Structure x, Array_Structure y)
+        {
+            return !x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null || obj is not Array_Structure arrObj)
+                return false;
+
+            return arrObj.Pointer == this.Pointer
+                && arrObj.Count1 == this.Count1
+                && arrObj.Count2 == this.Count2
+                && arrObj.Unk1 == this.Unk1;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -1900453823;
+            hashCode = hashCode * -1521134295 + Pointer.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unk1.GetHashCode();
+            return hashCode;
+        }
     }
     [TC(typeof(EXP))] public struct Array_uint //16 bytes - pointer for a uint array
     {
@@ -756,6 +815,37 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return "Array_uint: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
+        }
+
+        public static bool operator ==(Array_uint x, Array_uint y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(Array_uint x, Array_uint y)
+        {
+            return !x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null || obj is not Array_uint arrObj)
+                return false;
+
+            return arrObj.Pointer == this.Pointer
+                && arrObj.Count1 == this.Count1
+                && arrObj.Count2 == this.Count2
+                && arrObj.Unk1 == this.Unk1;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -1900453823;
+            hashCode = hashCode * -1521134295 + Pointer.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unk1.GetHashCode();
+            return hashCode;
         }
     }
     [TC(typeof(EXP))] public struct Array_ushort //16 bytes - pointer for a ushort array
@@ -797,6 +887,37 @@ namespace CodeWalker.GameFiles
         {
             return "Array_ushort: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
         }
+
+        public static bool operator ==(Array_ushort x, Array_ushort y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(Array_ushort x, Array_ushort y)
+        {
+            return !x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null || obj is not Array_ushort arrObj)
+                return false;
+
+            return arrObj.Pointer == this.Pointer
+                && arrObj.Count1 == this.Count1
+                && arrObj.Count2 == this.Count2
+                && arrObj.Unk1 == this.Unk1;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -1900453823;
+            hashCode = hashCode * -1521134295 + Pointer.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unk1.GetHashCode();
+            return hashCode;
+        }
     }
     [TC(typeof(EXP))] public struct Array_byte //16 bytes - pointer for a byte array
     {
@@ -835,6 +956,35 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return "Array_byte: " + PointerDataIndex.ToString() + " (" + Count1.ToString() + "/" + Count2.ToString() + ")";
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Array_byte @byte &&
+                   Pointer == @byte.Pointer &&
+                   Count1 == @byte.Count1 &&
+                   Count2 == @byte.Count2 &&
+                   Unk1 == @byte.Unk1;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -1900453823;
+            hashCode = hashCode * -1521134295 + Pointer.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Count2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unk1.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(Array_byte left, Array_byte right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Array_byte left, Array_byte right)
+        {
+            return !(left == right);
         }
     }
     [TC(typeof(EXP))] public struct Array_float //16 bytes - pointer for a float array
@@ -1118,7 +1268,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TC(typeof(EXP))] public struct MetaHash
+    [TC(typeof(EXP))] public struct MetaHash : IEquatable<MetaHash>
     {
         public uint Hash { get; set; }
 
@@ -1180,7 +1330,7 @@ namespace CodeWalker.GameFiles
             return new MetaHash(v);
         }
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             if (obj == null) return false;
             if (obj is not MetaHash metaHash) return false;
@@ -1188,7 +1338,14 @@ namespace CodeWalker.GameFiles
             return metaHash.Hash == Hash;
         }
 
-        public override int GetHashCode()
+        public readonly bool Equals(MetaHash obj)
+        {
+            if (obj == null) return false;
+
+            return obj.Hash == Hash;
+        }
+
+        public override readonly int GetHashCode()
         {
             return (int)Hash;
         }

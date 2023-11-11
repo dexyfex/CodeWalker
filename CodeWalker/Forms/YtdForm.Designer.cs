@@ -61,7 +61,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.SelTextureZoomCombo = new System.Windows.Forms.ComboBox();
             this.SelTexturePanel = new System.Windows.Forms.Panel();
-            this.SelTexturePictureBox = new System.Windows.Forms.PictureBox();
+            this.SelTexturePictureBox = new PixelBox();
             this.SelTextureMipLabel = new System.Windows.Forms.Label();
             this.SelTextureDimensionsLabel = new System.Windows.Forms.Label();
             this.SelTextureMipTrackBar = new System.Windows.Forms.TrackBar();
@@ -436,6 +436,7 @@
             this.SelTexturePictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.SelTexturePictureBox.TabIndex = 45;
             this.SelTexturePictureBox.TabStop = false;
+
             // 
             // SelTextureMipLabel
             // 
@@ -573,7 +574,7 @@
         private System.Windows.Forms.Label SelTextureDimensionsLabel;
         private System.Windows.Forms.TrackBar SelTextureMipTrackBar;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.PictureBox SelTexturePictureBox;
+        private PixelBox SelTexturePictureBox;
         private System.Windows.Forms.TabPage DetailsTabPage;
         private WinForms.PropertyGridFix DetailsPropertyGrid;
         private System.Windows.Forms.ListView TexturesListView;

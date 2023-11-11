@@ -153,19 +153,22 @@ namespace CodeWalker.GameFiles
 
         public Array_Vector3 AddPaddedVector3ArrayPtr(Vector4[] items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_Vector3();
+            if (items == null || items.Length == 0)
+                return new Array_Vector3();
             var ptr = AddItemArray((MetaName)MetaTypeName.VECTOR4, items); //padded to vec4...
             return new Array_Vector3(ptr);
         }
         public Array_uint AddHashArrayPtr(MetaHash[] items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_uint();
+            if (items == null || items.Length == 0)
+                return new Array_uint();
             var ptr = AddItemArray((MetaName)MetaTypeName.HASH, items);
             return new Array_uint(ptr);
         }
         public Array_uint AddUintArrayPtr(uint[] items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_uint();
+            if (items == null || items.Length == 0)
+                return new Array_uint();
             var ptr = AddItemArray((MetaName)MetaTypeName.UINT, items);
             return new Array_uint(ptr);
         }

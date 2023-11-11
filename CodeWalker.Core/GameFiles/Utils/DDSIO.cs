@@ -96,10 +96,12 @@
 
 
 using CodeWalker.GameFiles;
+using DirectXTexNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -122,8 +124,6 @@ namespace CodeWalker.Utils
 
     public static class DDSIO
     {
-
-
         public static byte[] GetPixels(Texture texture, int mip)
         {
             //dexyfex version
@@ -159,54 +159,93 @@ namespace CodeWalker.Utils
 
             bool swaprb = true;
 
-            switch (format)
+            if (DirectXTexNet.TexHelper.Instance.IsCompressed((DirectXTexNet.DXGI_FORMAT)format))
             {
-                // compressed
-                case DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM: // TextureFormat.D3DFMT_DXT1
-                    px = DecompressDxt1(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM: // TextureFormat.D3DFMT_DXT3
-                    px = DecompressDxt3(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM: // TextureFormat.D3DFMT_DXT5
-                    px = DecompressDxt5(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM: // TextureFormat.D3DFMT_ATI1
-                    px = DecompressBC4(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM: // TextureFormat.D3DFMT_ATI2
-                    px = DecompressBC5(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM: // TextureFormat.D3DFMT_BC7
-                    //BC7 TODO!!
-                    break;
-
-                // uncompressed
-                case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: // TextureFormat.D3DFMT_A1R5G5B5
-                    px = ConvertBGR5A1ToRGBA8(imgdata, w, h); //needs testing
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM:       // TextureFormat.D3DFMT_A8
-                    px = ConvertA8ToRGBA8(imgdata, w, h);
-                    swaprb = false;
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: // TextureFormat.D3DFMT_A8B8G8R8
-                case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_TYPELESS:
-                    px = imgdata;
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM:       // TextureFormat.D3DFMT_L8
-                    px = ConvertR8ToRGBA8(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: // TextureFormat.D3DFMT_A8R8G8B8
-                    px = imgdata;
-                    swaprb = false;
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: // TextureFormat.D3DFMT_X8R8G8B8
-                    px = imgdata;
-                    swaprb = false;
-                    break;
-                default:
-                    break; //shouldn't get here...
+                px = Decompress(imgdata, w, h, format);
+            } else
+            {
+                switch (format)
+                {
+                    case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: // TextureFormat.D3DFMT_A1R5G5B5
+                        px = ConvertBGR5A1ToRGBA8(imgdata, w, h); //needs testing
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM:       // TextureFormat.D3DFMT_A8
+                        px = ConvertA8ToRGBA8(imgdata, w, h);
+                        swaprb = false;
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: // TextureFormat.D3DFMT_A8B8G8R8
+                    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_TYPELESS:
+                        px = imgdata;
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM:       // TextureFormat.D3DFMT_L8
+                        px = ConvertR8ToRGBA8(imgdata, w, h);
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: // TextureFormat.D3DFMT_A8R8G8B8
+                        px = imgdata;
+                        swaprb = false;
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: // TextureFormat.D3DFMT_X8R8G8B8
+                        px = imgdata;
+                        swaprb = false;
+                        break;
+                    default:
+                        px = imgdata;
+                        break;
+                }
             }
+
+
+            
+
+            //switch (format)
+            //{
+            //    // compressed
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM: // TextureFormat.D3DFMT_DXT1
+            //        px = DecompressDxt1(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM: // TextureFormat.D3DFMT_DXT3
+            //        px = DecompressDxt3(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM: // TextureFormat.D3DFMT_DXT5
+            //        px = DecompressDxt5(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM: // TextureFormat.D3DFMT_ATI1
+            //        px = Decompress(imgdata, w, h, DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM: // TextureFormat.D3DFMT_ATI2
+            //        px = Decompress(imgdata, w, h, DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM: // TextureFormat.D3DFMT_BC7
+            //        px = Decompress(imgdata, w, h, DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM);
+            //        //BC7 TODO!!
+            //        break;
+
+            //    // uncompressed
+            //    case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: // TextureFormat.D3DFMT_A1R5G5B5
+            //        px = ConvertBGR5A1ToRGBA8(imgdata, w, h); //needs testing
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM:       // TextureFormat.D3DFMT_A8
+            //        px = ConvertA8ToRGBA8(imgdata, w, h);
+            //        swaprb = false;
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: // TextureFormat.D3DFMT_A8B8G8R8
+            //    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_TYPELESS:
+            //        px = imgdata;
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM:       // TextureFormat.D3DFMT_L8
+            //        px = ConvertR8ToRGBA8(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: // TextureFormat.D3DFMT_A8R8G8B8
+            //        px = imgdata;
+            //        swaprb = false;
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: // TextureFormat.D3DFMT_X8R8G8B8
+            //        px = imgdata;
+            //        swaprb = false;
+            //        break;
+            //    default:
+            //        break; //shouldn't get here...
+            //}
 
             if (swaprb && (px != null))
             {
@@ -564,7 +603,10 @@ namespace CodeWalker.Utils
                 images[i].format = format; //(DXGI_FORMAT)img.Format;
                 images[i].pixels = buf + add;
 
-                DXTex.ComputePitch(images[i].format, images[i].width, images[i].height, out images[i].rowPitch, out images[i].slicePitch, 0);
+                DXTex.ComputePitch(images[i].format, images[i].width, images[i].height, out var rowPitch, out var slicePitch, 0);
+                images[i].rowPitch = (int)rowPitch;
+                images[i].slicePitch = (int)slicePitch;
+                //DXTex.ComputePitch(images[i].format, images[i].width, images[i].height, out images[i].rowPitch, out images[i].slicePitch, 0);
 
                 add += images[i].slicePitch;
                 div *= 2;
@@ -2641,6 +2683,48 @@ namespace CodeWalker.Utils
             }
         }
 
+        public static unsafe byte[] Decompress(Byte[] data, int width, int height, DXGI_FORMAT format)
+        {
+            Console.WriteLine(format);
+            Console.WriteLine(width);
+            Console.WriteLine(height);
+
+            long inputRowPitch;
+            long inputSlicePitch;
+            TexHelper.Instance.ComputePitch((DirectXTexNet.DXGI_FORMAT)format, width, height, out inputRowPitch, out inputSlicePitch, DirectXTexNet.CP_FLAGS.NONE);
+
+            DirectXTexNet.DXGI_FORMAT FormatDecompressed;
+
+            if (format.ToString().Contains("SRGB"))
+                FormatDecompressed = DirectXTexNet.DXGI_FORMAT.R8G8B8A8_UNORM_SRGB;
+            else
+                FormatDecompressed = DirectXTexNet.DXGI_FORMAT.R8G8B8A8_UNORM;
+
+            byte* buf;
+            buf = (byte*)Marshal.AllocHGlobal((int)inputSlicePitch);
+            Marshal.Copy(data, 0, (IntPtr)buf, (int)inputSlicePitch);
+
+            DirectXTexNet.Image inputImage = new DirectXTexNet.Image(
+                width, height, (DirectXTexNet.DXGI_FORMAT)format, inputRowPitch,
+                inputSlicePitch, (IntPtr)buf, null);
+
+            DirectXTexNet.TexMetadata texMetadata = new DirectXTexNet.TexMetadata(width, height, 1, 1, 1, 0, 0,
+                (DirectXTexNet.DXGI_FORMAT)format, DirectXTexNet.TEX_DIMENSION.TEXTURE2D);
+
+            ScratchImage scratchImage = TexHelper.Instance.InitializeTemporary(
+                new DirectXTexNet.Image[] { inputImage }, texMetadata, null);
+
+            using (var decomp = scratchImage.Decompress(0, FormatDecompressed))
+            {
+                byte[] result = new byte[4 * width * height];
+                Marshal.Copy(decomp.GetImage(0).Pixels, result, 0, result.Length);
+
+                inputImage = null;
+                scratchImage.Dispose();
+
+                return result;
+            }
+        }
 
         internal static byte[] DecompressBC5(byte[] imageData, int width, int height)
         {

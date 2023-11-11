@@ -277,7 +277,7 @@ namespace CodeWalker.World
             {
                 foreach (var entry in maprpf.AllEntries)
                 {
-                    if (entry.NameLower.EndsWith(".ymap"))
+                    if (entry.IsExtension(".ymap"))
                     {
                         if (!nodedict.ContainsKey(new MetaHash(entry.ShortNameHash)))
                         {
@@ -297,7 +297,7 @@ namespace CodeWalker.World
                             { }
                         }
                     }
-                    if (entry.NameLower.EndsWith(".ybn"))
+                    if (entry.IsExtension(".ybn"))
                     {
                         MetaHash ehash = new MetaHash(entry.ShortNameHash);
                         if (!usedboundsdict.ContainsKey(ehash))
@@ -367,7 +367,7 @@ namespace CodeWalker.World
                 }
                 foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
                 {
-                    if (dlcrpf.Path.StartsWith("x64")) continue; //don't override update.rpf YNDs with x64 ones! *hack
+                    if (dlcrpf.Path.StartsWith("x64", StringComparison.OrdinalIgnoreCase)) continue; //don't override update.rpf YNDs with x64 ones! *hack
                     foreach (var rpffile in dlcrpf.Children)
                     {
                         AddRpfYnds(rpffile, yndentries);
@@ -509,7 +509,7 @@ namespace CodeWalker.World
                 if (entry is RpfFileEntry)
                 {
                     RpfFileEntry fentry = entry as RpfFileEntry;
-                    if (entry.NameLower.EndsWith(".ynd"))
+                    if (entry.IsExtension(".ynd"))
                     {
                         if (yndentries.ContainsKey(entry.NameHash))
                         { }
@@ -809,7 +809,7 @@ namespace CodeWalker.World
                 if (entry is RpfFileEntry)
                 {
                     RpfFileEntry fentry = entry as RpfFileEntry;
-                    if (entry.NameLower.EndsWith(".ynv"))
+                    if (entry.IsExtension(".ynv"))
                     {
                         if (ynventries.ContainsKey(entry.NameHash))
                         { }

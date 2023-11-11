@@ -4719,6 +4719,8 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableBase : ResourceFileBase
     {
+        private DrawableModel[] allModels;
+
         public override long BlockLength
         {
             get { return 168; }
@@ -4800,7 +4802,17 @@ namespace CodeWalker.GameFiles
         public DrawableModelsBlock DrawableModels { get; set; }
 
 
-        public DrawableModel[] AllModels { get; set; }
+        public DrawableModel[] AllModels {
+            get
+            {
+                if (allModels is null)
+                {
+                    BuildAllModels();
+                }
+                return allModels;
+            }
+            set => allModels = value;
+        }
         public Dictionary<ulong, VertexDeclaration> VertexDecls { get; set; }
 
         public object Owner { get; set; }
@@ -4867,7 +4879,7 @@ namespace CodeWalker.GameFiles
             this.DrawableModels = reader.ReadBlockAt<DrawableModelsBlock>((DrawableModelsPointer == 0) ? DrawableModelsHighPointer : DrawableModelsPointer, this);
 
 
-            BuildAllModels();
+            //BuildAllModels();
             BuildVertexDecls();
             AssignGeometryShaders(ShaderGroup);
 
@@ -5185,7 +5197,7 @@ namespace CodeWalker.GameFiles
             }
 
             BuildRenderMasks();
-            BuildAllModels();
+            //BuildAllModels();
             BuildVertexDecls();
 
             FileVFT = 1079456120;
@@ -5236,13 +5248,54 @@ namespace CodeWalker.GameFiles
 
         public void BuildAllModels()
         {
-            var allModels = new List<DrawableModel>();
-            if (DrawableModels?.High != null) allModels.AddRange(DrawableModels.High);
-            if (DrawableModels?.Med != null) allModels.AddRange(DrawableModels.Med);
-            if (DrawableModels?.Low != null) allModels.AddRange(DrawableModels.Low);
-            if (DrawableModels?.VLow != null) allModels.AddRange(DrawableModels.VLow);
-            if (DrawableModels?.Extra != null) allModels.AddRange(DrawableModels.Extra);
-            AllModels = allModels.ToArray();
+            if (DrawableModels is null)
+            {
+                allModels = Array.Empty<DrawableModel>();
+                return;
+            }
+            var length = (DrawableModels.High?.Length ?? 0) + (DrawableModels.Med?.Length ?? 0) + (DrawableModels.Low?.Length ?? 0) + (DrawableModels.VLow?.Length ?? 0);
+            allModels = new DrawableModel[length];
+            var currIndex = 0;
+            if (DrawableModels.High != null)
+            {
+                for (int i = 0; i < DrawableModels.High.Length; i++)
+                {
+                    allModels[currIndex] = DrawableModels.High[i];
+                    currIndex++;
+                }
+            }
+            if (DrawableModels.Med != null)
+            {
+                for (int i = 0; i < DrawableModels.Med.Length; i++)
+                {
+                    allModels[currIndex] = DrawableModels.Med[i];
+                    currIndex++;
+                }
+            }
+            if (DrawableModels.Low != null)
+            {
+                for (int i = 0; i < DrawableModels.Low.Length; i++)
+                {
+                    allModels[currIndex] = DrawableModels.Low[i];
+                    currIndex++;
+                }
+            }
+            if (DrawableModels.VLow != null)
+            {
+                for (int i = 0; i < DrawableModels.VLow.Length; i++)
+                {
+                    allModels[currIndex] = DrawableModels.VLow[i];
+                    currIndex++;
+                }
+            }
+            if (DrawableModels.Extra != null)
+            {
+                for (int i = 0; i < DrawableModels.Extra.Length; i++)
+                {
+                    allModels[currIndex] = DrawableModels.Extra[i];
+                    currIndex++;
+                }
+            }
         }
 
         public void BuildVertexDecls()

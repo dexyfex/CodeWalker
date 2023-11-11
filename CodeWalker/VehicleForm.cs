@@ -24,13 +24,16 @@ namespace CodeWalker
     {
         public Form Form { get { return this; } } //for DXForm/DXManager use
 
-        public Renderer Renderer = null;
+        public Renderer Renderer { get; set; }
         public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
 
         volatile bool formopen = false;
         volatile bool running = false;
         volatile bool pauserendering = false;
         public bool Pauserendering { get; set; } = false;
+
+        public CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
+
         //volatile bool initialised = false;
 
         Stopwatch frametimer = new Stopwatch();
@@ -50,7 +53,7 @@ namespace CodeWalker
         System.Drawing.Point MouseLastPoint;
 
 
-        public GameFileCache GameFileCache { get; } = GameFileCacheFactory.Create();
+        public GameFileCache GameFileCache { get; } = GameFileCacheFactory.GetInstance();
 
 
         InputManager Input = new InputManager();
@@ -141,7 +144,7 @@ namespace CodeWalker
 
 
             formopen = true;
-            new Thread(new ThreadStart(ContentThread)).Start();
+            Task.Run(ContentThread);
 
             frametimer.Start();
 
@@ -159,64 +162,74 @@ namespace CodeWalker
                 count++;
             }
         }
-        public void RenderScene(DeviceContext context)
+        public async ValueTask RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
             frametimer.Restart();
+
+            if (elapsed < 0.016666)
+            {
+                await Task.Delay((int)(0.016666 * elapsed) * 1000);
+            }
 
             if (Pauserendering) return;
 
             GameFileCache.BeginFrame();
 
             if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
-            { return; } //couldn't get a lock, try again next time
+            {
+                return;
+            } //couldn't get a lock, try again next time
+            try
+            {
+                UpdateControlInputs(elapsed);
+                //space.Update(elapsed);
 
-            UpdateControlInputs(elapsed);
-            //space.Update(elapsed);
-
-            Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
-
-
-
-            //UpdateWidgets();
-            //BeginMouseHitTest();
+                Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
 
 
-
-            Renderer.BeginRender(context);
-
-            Renderer.RenderSkyAndClouds();
-
-            Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
+                //UpdateWidgets();
+                //BeginMouseHitTest();
 
 
-            RenderVehicle();
-
-            //UpdateMouseHitsFromRenderer();
-            //RenderSelection();
 
 
-            RenderGrid(context);
+                Renderer.BeginRender(context);
+
+                Renderer.RenderSkyAndClouds();
+
+                Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
 
 
-            Renderer.RenderQueued();
+                RenderVehicle();
 
-            //Renderer.RenderBounds(MapSelectionMode.Entity);
+                //UpdateMouseHitsFromRenderer();
+                //RenderSelection();
 
-            Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
-            //RenderMoused();
+                RenderGrid(context);
 
-            Renderer.RenderFinalPass();
 
-            //RenderMarkers();
-            //RenderWidgets();
+                Renderer.RenderQueued();
 
-            Renderer.EndRender();
+                //Renderer.RenderBounds(MapSelectionMode.Entity);
 
-            Monitor.Exit(Renderer.RenderSyncRoot);
+                Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
+                //RenderMoused();
+
+                Renderer.RenderFinalPass();
+
+                //RenderMarkers();
+                //RenderWidgets();
+
+                Renderer.EndRender();
+            }
+            finally
+            {
+                Monitor.Exit(Renderer.RenderSyncRoot);
+            }
             //UpdateMarkerSelectionPanelInvoke();
         }
         public void BuffersResized(int w, int h)
@@ -318,31 +331,33 @@ namespace CodeWalker
             //UpdateStatus("Ready");
 
 
-            Task.Run(() => {
+            Task.Run(async () => {
                 while (formopen && !IsDisposed) //renderer content loop
                 {
                     bool rcItemsPending = Renderer.ContentThreadProc();
 
                     if (!rcItemsPending)
                     {
-                        Thread.Sleep(1); //sleep if there's nothing to do
+                        await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
                     }
                 }
             });
 
-            while (formopen && !IsDisposed) //main asset loop
+            Task.Run(async () =>
             {
-                bool fcItemsPending = GameFileCache.ContentThreadProc();
-
-                if (!fcItemsPending)
+                while (formopen && !IsDisposed) //main asset loop
                 {
-                    Thread.Sleep(1); //sleep if there's nothing to do
+                    bool fcItemsPending = GameFileCache.ContentThreadProc();
+
+                    if (!fcItemsPending)
+                    {
+                        await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
+                    }
                 }
-            }
 
-            GameFileCache.Clear();
+                running = false;
+            });
 
-            running = false;
         }
 
 

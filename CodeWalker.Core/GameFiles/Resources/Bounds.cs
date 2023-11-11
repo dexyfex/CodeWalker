@@ -5044,8 +5044,8 @@ namespace CodeWalker.GameFiles
                 var line = lines[i];
 
                 if (line[0] == '#') continue;
-                if (line.StartsWith(startLine)) continue;
-                if (line.StartsWith(endLine)) break;
+                if (line.StartsWith(startLine, StringComparison.OrdinalIgnoreCase)) continue;
+                if (line.StartsWith(endLine, StringComparison.OrdinalIgnoreCase)) break;
 
                 string[] parts = line.Split(new[] { '\t', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 

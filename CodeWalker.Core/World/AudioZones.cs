@@ -33,15 +33,23 @@ namespace CodeWalker.World
 
             List<AudioPlacement> placements = new List<AudioPlacement>();
 
-            foreach (var relfile in GameFileCache.AudioDatRelFiles)
+            GameFileCache.AudioDatRelFilesLock.EnterReadLock();
+            try
             {
-                if (relfile == null) continue;
+                foreach (var relfile in GameFileCache.AudioDatRelFiles)
+                {
+                    if (relfile == null) continue;
 
-                placements.Clear();
+                    placements.Clear();
 
-                CreatePlacements(relfile, placements, true);
+                    CreatePlacements(relfile, placements, true);
 
-                PlacementsDict[relfile] = placements.ToArray();
+                    PlacementsDict[relfile] = placements.ToArray();
+                }
+            }
+            finally
+            {
+                GameFileCache.AudioDatRelFilesLock.ExitReadLock();
             }
 
             AllItems.AddRange(Zones);

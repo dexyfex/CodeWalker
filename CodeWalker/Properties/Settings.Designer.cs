@@ -8,6 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+using System;
+using System.Windows.Forms;
+
 namespace CodeWalker.Properties {
     
     

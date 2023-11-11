@@ -1890,7 +1890,7 @@ namespace CodeWalker.GameFiles
             {
                 return 0;
             }
-            if (str.StartsWith("hash_"))
+            if (str.StartsWith("hash_", StringComparison.OrdinalIgnoreCase))
             {
                 return Convert.ToUInt32(str.Substring(5), 16);
             }

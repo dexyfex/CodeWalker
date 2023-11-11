@@ -18,6 +18,8 @@ using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.Tools;
 using CodeWalker.WinForms;
+using CodeWalker.Core.Utils;
+using System.Data;
 
 namespace CodeWalker
 {
@@ -25,7 +27,7 @@ namespace CodeWalker
     {
         public Form Form { get { return this; } } //for DXForm/DXManager use
 
-        public Renderer Renderer = null;
+        public Renderer Renderer { get; set; }
         public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
 
         volatile bool formopen = false;
@@ -47,6 +49,9 @@ namespace CodeWalker
         Watermaps watermaps = new Watermaps();
         AudioZones audiozones = new AudioZones();
 
+        public CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
+        public CancellationToken CancellationToken;
+
         public Space Space { get { return space; } }
 
         bool MouseLButtonDown = false;
@@ -65,8 +70,8 @@ namespace CodeWalker
         Vector3 prevworldpos = new Vector3(0, 0, 100); //also the start pos
 
 
-        public GameFileCache GameFileCache { get { return gameFileCache; } }
-        GameFileCache gameFileCache = GameFileCacheFactory.Create();
+        public GameFileCache GameFileCache { get => gameFileCache; }
+        GameFileCache gameFileCache = GameFileCacheFactory.GetInstance();
 
 
         WorldControlMode ControlMode = WorldControlMode.Free;
@@ -106,11 +111,6 @@ namespace CodeWalker
         bool RenderLocator = false;
         object markersyncroot = new object();
         object markersortedsyncroot = new object();
-
-
-
-        
-
 
 
         bool rendercollisionmeshes = Settings.Default.ShowCollisionMeshes;
@@ -216,6 +216,7 @@ namespace CodeWalker
 
         public WorldForm()
         {
+            CancellationToken = CancellationTokenSource.Token;
             InitializeComponent();
 
             Renderer = new Renderer(this, gameFileCache);
@@ -227,6 +228,11 @@ namespace CodeWalker
             CurMouseHit.WorldForm = this;
             LastMouseHit.WorldForm = this;
             PrevMouseHit.WorldForm = this;
+
+            if (!gameFileCache.IsInited)
+            {
+                Task.Run(() => gameFileCache.Init());
+            }
 
             initedOk = Renderer.Init();
         }
@@ -371,7 +377,7 @@ namespace CodeWalker
 
             formopen = true;
 
-            new Task(ContentThread, TaskCreationOptions.LongRunning).Start(TaskScheduler.Default);
+            Task.Run(ContentThread);
             //Task.Run(ContentThread, ContentThread)
             //new Thread(new ThreadStart(ContentThread)).Start();
 
@@ -379,6 +385,11 @@ namespace CodeWalker
         }
         public void CleanupScene()
         {
+            using var _ = new DisposableTimer("CleanupScene");
+            if (!CancellationTokenSource.IsCancellationRequested)
+            {
+                CancellationTokenSource.Cancel();
+            }
             formopen = false;
 
             Renderer.DeviceDestroyed();
@@ -407,88 +418,94 @@ namespace CodeWalker
                 Console.WriteLine("Clearing cache");
                 gameFileCache.Clear();
                 gameFileCache.IsInited = true;
-                GC.Collect();
+                //GC.Collect();
             }
         }
-        public void RenderScene(DeviceContext context)
+        public async ValueTask RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
-            
+
+            frametimer.Restart();
 
             if (elapsed < 0.016666)
             {
-                Thread.Sleep((int)(0.016666 * elapsed) * 1000);
+                await Task.Delay((int)(0.016666 * elapsed) * 1000, CancellationToken);
             }
-
-            frametimer.Restart();
 
             if (Pauserendering) return;
 
             GameFileCache.BeginFrame();
 
             if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
-            { return; } //couldn't get a lock, try again next time
-
-            UpdateControlInputs(elapsed);
-
-            space.Update(elapsed);
-
-            if (CutsceneForm != null)
             {
-                CutsceneForm.UpdateAnimation(elapsed);
-            }
+                return;
+            } //couldn't get a lock, try again next time
 
-            Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
-
-
-
-            UpdateWidgets();
-
-            BeginMouseHitTest();
-
-
-
-
-            Renderer.BeginRender(context);
-
-            Renderer.RenderSkyAndClouds();
-
-            Renderer.SelectedDrawable = SelectedItem.Drawable;
-
-            if (renderworld)
+            try
             {
-                RenderWorld();
+                UpdateControlInputs(elapsed);
+
+                space.Update(elapsed);
+
+                if (CutsceneForm != null)
+                {
+                    CutsceneForm.UpdateAnimation(elapsed);
+                }
+
+                Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
+
+
+
+                UpdateWidgets();
+
+                BeginMouseHitTest();
+
+
+
+
+                Renderer.BeginRender(context);
+
+                Renderer.RenderSkyAndClouds();
+
+                Renderer.SelectedDrawable = SelectedItem.Drawable;
+
+                if (renderworld)
+                {
+                    RenderWorld();
+                }
+                else if (rendermaps)
+                {
+                    RenderYmaps();
+                }
+                else
+                {
+                    RenderSingleItem();
+                }
+
+                UpdateMouseHits();
+
+                RenderSelection();
+
+                RenderMoused();
+
+                Renderer.RenderQueued();
+
+                Renderer.RenderBounds(SelectionMode);
+
+                Renderer.RenderSelectionGeometry(SelectionMode);
+
+                Renderer.RenderFinalPass();
+
+                RenderMarkers();
+
+                RenderWidgets();
+
+                Renderer.EndRender();
             }
-            else if (rendermaps)
+            finally
             {
-                RenderYmaps();
+                Monitor.Exit(Renderer.RenderSyncRoot);
             }
-            else
-            {
-                RenderSingleItem();
-            }
-
-            UpdateMouseHits();
-
-            RenderSelection();
-
-            RenderMoused();
-
-            Renderer.RenderQueued();
-
-            Renderer.RenderBounds(SelectionMode);
-
-            Renderer.RenderSelectionGeometry(SelectionMode);
-
-            Renderer.RenderFinalPass();
-
-            RenderMarkers();
-
-            RenderWidgets();
-
-            Renderer.EndRender();
-
-            Monitor.Exit(Renderer.RenderSyncRoot);
 
             UpdateMarkerSelectionPanelInvoke();
         }
@@ -725,10 +742,12 @@ namespace CodeWalker
 
             Renderer.RenderWorld(renderworldVisibleYmapDict, spaceEnts);
 
-
-            foreach (var ymap in Renderer.VisibleYmaps)
+            if (MouseSelectEnabled)
             {
-                UpdateMouseHits(ymap);
+                for (int i = 0; i < Renderer.VisibleYmaps.Count; i++)
+                {
+                    UpdateMouseHits(Renderer.VisibleYmaps[i]);
+                }
             }
 
 
@@ -1207,7 +1226,9 @@ namespace CodeWalker
             //immediately render the bounding box of the currently moused entity.
 
             if (!MouseSelectEnabled)
-            { return; }
+            {
+                return;
+            }
 
             PrevMouseHit = LastMouseHit;
             LastMouseHit = CurMouseHit;
@@ -2283,8 +2304,10 @@ namespace CodeWalker
                 {
                     Invoke(new Action(() => { SetControlMode(mode); }));
                 }
-                catch
-                { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
                 return;
             }
 
@@ -4094,21 +4117,29 @@ namespace CodeWalker
 
         private void ShowProjectForm()
         {
-            if (ProjectForm == null)
+            try
             {
-                ProjectForm = new ProjectForm(this);
-                ProjectForm.Show(this);
-                ProjectForm.OnWorldSelectionChanged(SelectedItem); // so that the project form isn't stuck on the welcome window.
-            }
-            else
-            {
-                if (ProjectForm.WindowState == FormWindowState.Minimized)
+                if (ProjectForm == null)
                 {
-                    ProjectForm.WindowState = FormWindowState.Normal;
+                    ProjectForm = new ProjectForm(this);
+                    ProjectForm.Show(this);
+                    ProjectForm.OnWorldSelectionChanged(SelectedItem); // so that the project form isn't stuck on the welcome window.
                 }
-                ProjectForm.Focus();
+                else
+                {
+                    if (ProjectForm.WindowState == FormWindowState.Minimized)
+                    {
+                        ProjectForm.WindowState = FormWindowState.Normal;
+                    }
+                    ProjectForm.Focus();
+                }
+                ToolbarProjectWindowButton.Checked = true;
             }
-            ToolbarProjectWindowButton.Checked = true;
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
         }
         public void OnProjectFormClosed()
         {
@@ -4266,99 +4297,142 @@ namespace CodeWalker
         }
 
 
-        private void ContentThread()
+        private async void ContentThread()
         {
-            Thread.CurrentThread.Name = "WorldForm ContentThread";
-            Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} {Thread.CurrentThread.Name}");
-            //main content loading thread.
-            running = true;
-
-            UpdateStatus("Scanning...");
-
             try
             {
-                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
+                Thread.CurrentThread.Name = "WorldForm ContentThread";
+                Console.WriteLine($"{Thread.CurrentThread.ManagedThreadId} {Thread.CurrentThread.Name}");
+                //main content loading thread.
+                running = true;
 
-                //save the key for later if it's not saved already. not really ideal to have this in this thread
-                if (string.IsNullOrEmpty(Settings.Default.Key) && (GTA5Keys.PC_AES_KEY != null))
+                UpdateStatus("Scanning...");
+
+                try
                 {
-                    Settings.Default.Key = Convert.ToBase64String(GTA5Keys.PC_AES_KEY);
-                    Settings.Default.Save();
-                }
-            }
-            catch
-            {
-                MessageBox.Show("Keys not found! This shouldn't happen.");
-                Close();
-                return;
-            }
+                    GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
 
-            gameFileCache.UpdateStatus += UpdateStatus;
-            gameFileCache.ErrorLog += LogError;
-            if (!gameFileCache.IsInited)
-            {
-                gameFileCache.Init();
-            }
-
-            UpdateDlcListComboBox(gameFileCache.DlcNameList);
-
-            EnableCacheDependentUI();
-
-
-
-            LoadWorld();
-
-
-
-            initialised = true;
-
-            EnableDLCModsUI();
-
-            new Task(() =>
-            {
-                Thread.CurrentThread.Name = "Renderer ContentThread";
-                while (formopen && !IsDisposed) //renderer content loop
-                {
-                    bool rcItemsPending = Renderer.ContentThreadProc();
-
-                    if (!rcItemsPending)
+                    //save the key for later if it's not saved already. not really ideal to have this in this thread
+                    if (string.IsNullOrEmpty(Settings.Default.Key) && (GTA5Keys.PC_AES_KEY != null))
                     {
-                        Thread.Sleep(1); //sleep if there's nothing to do
+                        Settings.Default.Key = Convert.ToBase64String(GTA5Keys.PC_AES_KEY);
+                        Settings.Default.Save();
                     }
                 }
-            }, TaskCreationOptions.LongRunning).Start(TaskScheduler.Default);
-
-            while (formopen && !IsDisposed) //main asset loop
-            {
-                bool fcItemsPending = gameFileCache.ContentThreadProc();
-
-                if (!fcItemsPending)
+                catch
                 {
-                    Thread.Sleep(1); //sleep if there's nothing to do
+                    MessageBox.Show("Keys not found! This shouldn't happen.");
+                    Close();
+                    return;
                 }
+
+                gameFileCache.UpdateStatus += UpdateStatus;
+                gameFileCache.ErrorLog += LogError;
+                while (gameFileCache.IsIniting)
+                {
+                    await Task.Delay(0);
+                }
+                if (!gameFileCache.IsInited)
+                {
+                    gameFileCache.Init();
+                }
+
+                UpdateDlcListComboBox(gameFileCache.DlcNameList);
+
+                EnableCacheDependentUI();
+
+
+
+                LoadWorld();
+
+
+
+                initialised = true;
+
+                EnableDLCModsUI();
+
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        while (formopen && !IsDisposed && !CancellationToken.IsCancellationRequested) //renderer content loop
+                        {
+                            bool rcItemsPending = Renderer.ContentThreadProc();
+
+                            if (!rcItemsPending)
+                            {
+                                await Task.Delay(ActiveForm == null ? 50 : 1, CancellationToken).ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    catch (TaskCanceledException) { }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                    Console.WriteLine("Renderer ContentThread stopped");
+                });
+
+                Task.Run(async () =>
+                {
+                    try
+                    {
+                        while (formopen && !IsDisposed && !CancellationToken.IsCancellationRequested) //main asset loop
+                        {
+                            bool fcItemsPending = gameFileCache.ContentThreadProc();
+
+                            if (!fcItemsPending)
+                            {
+                                await Task.Delay(ActiveForm == null ? 50 : 1, CancellationToken).ConfigureAwait(false);
+                            }
+                        }
+                    }
+                    catch (TaskCanceledException) { }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+                    finally
+                    {
+                        running = false;
+                    }
+
+                    Console.WriteLine("GameFileCache ContentThread stopped");
+                });
             }
-
-            gameFileCache.Clear();
-
-            running = false;
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Exception occured in content thread:\n{ex}");
+            }
         }
 
+        private void doUpdateStatus(string text)
+        {
+            StatusLabel.Text = text;
+        }
 
-
+        private Stopwatch lastStatusUpdate = Stopwatch.StartNew();
+        private TimeSpan updateInterval = TimeSpan.FromSeconds(0.05);
         private void UpdateStatus(string text)
         {
             try
             {
+                var elapsed = lastStatusUpdate.Elapsed;
+                if (elapsed < updateInterval)
+                    return;
+                lastStatusUpdate.Restart();
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateStatus(text); }));
+                    BeginInvoke(new Action(() => { doUpdateStatus(text); }));
                 }
                 else
                 {
-                    StatusLabel.Text = text;
+                    doUpdateStatus(text);
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void UpdateMousedLabel(string text)
         {
@@ -4373,7 +4447,10 @@ namespace CodeWalker
                     MousedLabel.Text = text;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
         private void UpdateWeatherTypesComboBox(Weather weather)
         {
@@ -4399,7 +4476,10 @@ namespace CodeWalker
                     WeatherRegionComboBox.SelectedIndex = Math.Max(WeatherRegionComboBox.FindString(Settings.Default.Region), 0);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
         private void UpdateCloudTypesComboBox(Clouds clouds)
         {
@@ -4427,7 +4507,10 @@ namespace CodeWalker
                     CloudParamComboBox.SelectedIndex = 0;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
         private void UpdateDlcListComboBox(List<string> dlcnames)
         {
@@ -4455,7 +4538,7 @@ namespace CodeWalker
                     }
                 }
             }
-            catch { }
+            catch (Exception ex) { Console.WriteLine(ex); }
         }
 
         private void LogError(string text)
@@ -4469,10 +4552,11 @@ namespace CodeWalker
                 else
                 {
                     ConsoleTextBox.AppendText(text + "\r\n");
+                    Console.WriteLine(text);
                     //MessageBox.Show(text);
                 }
             }
-            catch { }
+            catch (Exception ex) { Console.WriteLine(ex); }
         }
 
 
@@ -4491,7 +4575,7 @@ namespace CodeWalker
                     UpdateMarkerSelectionPanel();
                 }
             }
-            catch { }
+            catch (Exception ex) { Console.WriteLine(ex); }
         }
         private void UpdateMarkerSelectionPanel()
         {
@@ -4904,7 +4988,7 @@ namespace CodeWalker
                     ToolsMenuJenkInd.Enabled = true;
                 }
             }
-            catch { }
+            catch (Exception ex) { Console.WriteLine(ex); }
         }
         private void EnableDLCModsUI()
         {
@@ -4921,7 +5005,7 @@ namespace CodeWalker
                     DlcLevelComboBox.Enabled = true;
                 }
             }
-            catch { }
+            catch (Exception ex) { Console.WriteLine(ex); }
         }
 
 
@@ -5840,7 +5924,7 @@ namespace CodeWalker
                 {
                     BeginInvoke(new Action(() => { ShowSubtitle(text, duration); }));
                 }
-                catch { }
+                catch (Exception ex) { Console.WriteLine(ex); }
                 return;
             }
 
@@ -6867,13 +6951,13 @@ namespace CodeWalker
         private void ToolsMenuRPFBrowser_Click(object sender, EventArgs e)
         {
             BrowseForm f = new BrowseForm();
-            f.Show(this);
+            f.Show();
         }
 
         private void ToolsMenuRPFExplorer_Click(object sender, EventArgs e)
         {
             ExploreForm f = new ExploreForm();
-            f.Show(this);
+            f.Show();
         }
 
         private void ToolsMenuSelectionInfo_Click(object sender, EventArgs e)
@@ -6911,13 +6995,13 @@ namespace CodeWalker
         private void ToolsMenuJenkGen_Click(object sender, EventArgs e)
         {
             JenkGenForm f = new JenkGenForm();
-            f.Show(this);
+            f.Show();
         }
 
         private void ToolsMenuJenkInd_Click(object sender, EventArgs e)
         {
             JenkIndForm f = new JenkIndForm(gameFileCache);
-            f.Show(this);
+            f.Show();
         }
 
         private void ToolsMenuExtractScripts_Click(object sender, EventArgs e)

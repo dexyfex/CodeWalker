@@ -45,16 +45,12 @@ namespace CodeWalker.Forms
         private bool LoadingXml = false;
         private bool DelayHighlight = false;
 
-
-        private ExploreForm exploreForm = null;
         public RpfFileEntry rpfFileEntry { get; private set; } = null;
         private MetaFormat metaFormat = MetaFormat.XML;
 
 
-        public MetaForm(ExploreForm owner)
+        public MetaForm()
         {
-            exploreForm = owner;
-
             InitializeComponent();
         }
 
@@ -417,6 +413,68 @@ namespace CodeWalker.Forms
             }
         }
 
+        public void LoadMeta(PackedFile gameFile)
+        {
+            gameFile = gameFile ?? throw new ArgumentNullException(nameof(gameFile));
+
+            if (gameFile is YmfFile ymfFile)
+            {
+                LoadMeta(ymfFile);
+            }
+            else if (gameFile is MrfFile mrfFile)
+            {
+                LoadMeta(mrfFile);
+            }
+            else if (gameFile is YfdFile yfdFile)
+            {
+                LoadMeta(yfdFile);
+            }
+            else if (gameFile is YpdbFile ypdbFile)
+            {
+                LoadMeta(ypdbFile);
+            }
+            else if (gameFile is HeightmapFile heightmap)
+            {
+                LoadMeta(heightmap);
+            }
+            else if (gameFile is CacheDatFile cacheDatFile)
+            {
+                LoadMeta(cacheDatFile);
+            }
+            else if (gameFile is YedFile yedFile)
+            {
+                LoadMeta(yedFile);
+            }
+            else if (gameFile is YldFile yldFile)
+            {
+                LoadMeta(yldFile);
+            }
+            else if (gameFile is YndFile yndFile)
+            {
+                LoadMeta(yndFile);
+            }
+            else if (gameFile is CutFile cutFile)
+            {
+                LoadMeta(cutFile);
+            }
+            else if (gameFile is JPsoFile jpsoFile)
+            {
+                LoadMeta(jpsoFile);
+            }
+            else if (gameFile is YtypFile ytypFile)
+            {
+                LoadMeta(ytypFile);
+            }
+            else if (gameFile is YmapFile ymapFile)
+            {
+                LoadMeta(ymapFile);
+            }
+            else if (gameFile is YmtFile ymtFile)
+            {
+                LoadMeta(ymtFile);
+            }
+        }
+
 
 
         public bool SaveMeta(XmlDocument doc)
@@ -426,7 +484,7 @@ namespace CodeWalker.Forms
             //otherwise, save the generated file to disk? 
             //(currently just return false and revert to XML file save)
 
-            if (!(exploreForm?.EditMode ?? false)) return false;
+            if (!(ExploreForm.Instance?.EditMode ?? false)) return false;
 
             if(metaFormat == MetaFormat.XML) return false;//what are we even doing here?
 
@@ -466,14 +524,14 @@ namespace CodeWalker.Forms
 
                 try
                 {
-                    if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+                    if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return false;
 
                     var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
                     if (newentry != rpfFileEntry)
                     { }
                     rpfFileEntry = newentry;
 
-                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                    ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                     modified = false;
 
@@ -492,7 +550,7 @@ namespace CodeWalker.Forms
                 {
                     File.WriteAllBytes(rpfFileEntry.Path, data);
 
-                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                    ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                     modified = false;
 

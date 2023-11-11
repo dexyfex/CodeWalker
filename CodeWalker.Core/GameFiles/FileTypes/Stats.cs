@@ -26,16 +26,14 @@ namespace CodeWalker.GameFiles
         public static bool Ensure(string str)
         {
             uint hash = JenkHash.GenHash(str);
-            if (hash == 0) return true;
-            lock (syncRoot)
-            {
-                if (!Index.ContainsKey(hash))
-                {
-                    Index.Add(hash, str);
-                    return false;
-                }
-            }
-            return true;
+            return Ensure(str, hash);
+        }
+
+        public static bool EnsureLower(string str)
+        {
+            uint hash = JenkHash.GenHashLower(str);
+
+            return Ensure(str, hash);
         }
 
         public static bool Ensure(string str, uint hash)

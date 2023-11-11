@@ -1,4 +1,6 @@
-﻿namespace CodeWalker.Tools
+﻿using CodeWalker.Forms;
+
+namespace CodeWalker.Tools
 {
     partial class BrowseForm
     {
@@ -78,7 +80,7 @@
             this.SelTextureMipTrackBar = new System.Windows.Forms.TrackBar();
             this.label4 = new System.Windows.Forms.Label();
             this.SelTextureNameTextBox = new System.Windows.Forms.TextBox();
-            this.SelTexturePictureBox = new System.Windows.Forms.PictureBox();
+            this.SelTexturePictureBox = new PixelBox();
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.TestAllButton = new System.Windows.Forms.Button();

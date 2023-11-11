@@ -108,8 +108,8 @@ namespace CodeWalker.GameFiles
                     if (descriptorIndex == descriptors.Count) // new descriptor + data
                     {
                         var nameLength = reader.ReadInt16();
-                        var nameBytes = reader.ReadBytes(nameLength);
-                        var name = Encoding.ASCII.GetString(nameBytes);
+                        var name = reader.ReadStringLength(nameLength);
+                        //var name = Encoding.ASCII.GetString(nameBytes);
 
                         var descriptor = new RbfEntryDescription();
                         descriptor.Name = name;
@@ -203,8 +203,7 @@ namespace CodeWalker.GameFiles
                 case 0x60:
                     {
                         var valueLength = reader.ReadInt16();
-                        var valueBytes = reader.ReadBytes(valueLength);
-                        var value = Encoding.ASCII.GetString(valueBytes);
+                        var value = reader.ReadStringLength(valueLength);
                         var stringValue = new RbfString();
                         stringValue.Name = descriptor.Name;
                         stringValue.Value = value;

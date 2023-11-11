@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using CodeWalker.GameFiles;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,11 +7,27 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace CodeWalker
 {
     public static class Xml
     {
+        public static void ValidateReaderState(XmlReader reader, string element)
+        {
+            if (reader == null)
+            {
+                throw new ArgumentNullException(nameof(reader));
+            }
+            if (!reader.IsStartElement())
+            {
+                throw new InvalidOperationException($"Expected reader to be at a start element but was at \"{reader.NodeType}\" with name \"{reader.Name}\"");
+            }
+            if (reader.Name != element)
+            {
+                throw new InvalidOperationException($"Expected reader to be at start element of \"{element}\" but was at \"{reader.NodeType}\" with name \"{reader.Name}\"");
+            }
+        }
 
         public static string GetStringAttribute(XmlNode node, string attribute)
         {
@@ -63,6 +80,55 @@ namespace CodeWalker
             if (node == null) return null;
             return node.SelectSingleNode(name)?.InnerText;
         }
+
+        public static string GetChildInnerText(XElement node, string name) {
+            if (node == null) return null;
+            return node.Element(name).Value;
+        }
+
+        public static string GetChildInnerText(XmlReader reader, string name)
+        {
+            ValidateReaderState(reader, name);
+            if (reader.NodeType == XmlNodeType.Element)
+            {
+                if (reader.IsEmptyElement)
+                {
+                    reader.ReadStartElement();
+                    return "";
+                }
+                return reader.ReadElementContentAsString();
+            }
+            else
+            {
+                return reader.ReadContentAsString();
+            }
+        }
+
+        public static bool GetChildBoolInnerText(XElement node, string name)
+        {
+            if (node == null) return false;
+            string val = node.Element(name).Value;
+
+            bool b;
+            bool.TryParse(val, out b);
+
+            return b;
+        }
+
+        public static bool GetChildBoolInnerText(XmlReader reader, string name)
+        {
+            ValidateReaderState(reader, name);
+            if (reader.NodeType == XmlNodeType.Element)
+            {
+                return reader.ReadElementContentAsBoolean();
+            }
+            else
+            {
+                return reader.ReadContentAsBoolean();
+            }
+
+        }
+
         public static bool GetChildBoolInnerText(XmlNode node, string name)
         {
             if (node == null) return false;
@@ -87,6 +153,14 @@ namespace CodeWalker
             FloatUtil.TryParse(val, out f);
             return f;
         }
+
+        public static float GetChildFloatInnerText(XmlReader reader, string name)
+        {
+            ValidateReaderState(reader, name);
+
+            return reader.ReadElementContentAsFloat();
+        }
+
         public static T GetChildEnumInnerText<T>(XmlNode node, string name) where T : struct
         {
             if (node == null) return new T();
@@ -99,7 +173,7 @@ namespace CodeWalker
             {
                 return default(T);
             }
-            if (val.StartsWith("hash_"))
+            if (val.StartsWith("hash_", StringComparison.OrdinalIgnoreCase))
             {
                 //convert hash_12ABC to Unk_12345
                 var substr = val.Substring(5);
@@ -111,7 +185,18 @@ namespace CodeWalker
             return enumval;
         }
 
+        public static bool GetChildBoolAttribute(XmlReader reader, string name, string attribute = "value")
+        {
+            ValidateReaderState(reader, name);
 
+            string val = reader.GetAttribute(attribute);
+
+            bool.TryParse(val, out bool boolval);
+
+            reader.ReadStartElement();
+
+            return boolval;
+        }
         public static bool GetChildBoolAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return false;
@@ -120,6 +205,20 @@ namespace CodeWalker
             bool.TryParse(val, out b);
             return b;
         }
+
+        public static int GetChildIntAttribute(XmlReader reader, string name, string attribute = "value")
+        {
+            ValidateReaderState(reader, name);
+
+            string val = reader.GetAttribute(attribute);
+
+            int.TryParse(val, out var i);
+
+            reader.ReadStartElement();
+
+            return i;
+        }
+
         public static int GetChildIntAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return 0;
@@ -128,12 +227,31 @@ namespace CodeWalker
             int.TryParse(val, out i);
             return i;
         }
+
+        public static uint GetChildUIntAttribute(XmlReader reader, string name, string attribute = "value")
+        {
+            if (reader == null) return 0;
+
+            uint i;
+            string val = reader.GetAttribute(attribute);
+            if (val?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ?? false)
+            {
+                var subs = val.Substring(2);
+                i = Convert.ToUInt32(subs, 16);
+            }
+            else
+            {
+                uint.TryParse(val, out i);
+            }
+            return i;
+        }
+
         public static uint GetChildUIntAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return 0;
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
             uint i;
-            if (val?.StartsWith("0x") ?? false)
+            if (val?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 var subs = val.Substring(2);
                 i = Convert.ToUInt32(subs, 16);
@@ -149,7 +267,7 @@ namespace CodeWalker
             if (node == null) return 0;
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
             ulong i;
-            if (val?.StartsWith("0x") ?? false)
+            if (val?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ?? false)
             {
                 var subs = val.Substring(2);
                 i = Convert.ToUInt64(subs, 16);
@@ -160,6 +278,26 @@ namespace CodeWalker
             }
             return i;
         }
+
+        public static float GetChildFloatAttribute(XmlReader reader, string name, string attribute = "value")
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                ValidateReaderState(reader, name);
+            }
+
+            string val = reader.GetAttribute(attribute);
+
+            FloatUtil.TryParse(val, out float f);
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                reader.ReadStartElement();
+            }
+
+            return f;
+        }
+
         public static float GetChildFloatAttribute(XmlNode node, string name, string attribute = "value")
         {
             if (node == null) return 0;
@@ -174,12 +312,37 @@ namespace CodeWalker
             string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
             return val;
         }
+
+        public static string GetChildStringAttribute(XmlReader reader, string name, string attribute = "value")
+        {
+            ValidateReaderState(reader, name);
+
+            var val = reader.GetAttribute(attribute);
+
+            reader.ReadStartElement();
+
+            return val;
+        }
+
         public static Vector2 GetChildVector2Attributes(XmlNode node, string name, string x = "x", string y = "y")
         {
             float fx = GetChildFloatAttribute(node, name, x);
             float fy = GetChildFloatAttribute(node, name, y);
             return new Vector2(fx, fy);
         }
+
+        public static Vector3 GetChildVector3Attributes(XmlReader reader, string name, string x = "x", string y = "y", string z = "z")
+        {
+            ValidateReaderState(reader, name);
+            float fx = GetChildFloatAttribute(reader, null, x);
+            float fy = GetChildFloatAttribute(reader, null, y);
+            float fz = GetChildFloatAttribute(reader, null, z);
+
+            reader.ReadStartElement();
+
+            return new Vector3(fx, fy, fz);
+        }
+
         public static Vector3 GetChildVector3Attributes(XmlNode node, string name, string x = "x", string y = "y", string z = "z")
         {
             float fx = GetChildFloatAttribute(node, name, x);
@@ -206,6 +369,37 @@ namespace CodeWalker
             XmlElement child = doc.CreateElement(name);
             node.AppendChild(child);
             return child;
+        }
+
+        public static bool IsItemElement(this XmlReader reader)
+        {
+            if (reader.MoveToContent() == XmlNodeType.Element && reader.Name == "Item")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static IEnumerable<XElement> IterateItems(XmlReader reader, string parentElementName)
+        {
+            ValidateReaderState(reader, parentElementName);
+            reader.MoveToContent();
+            if (reader.IsEmptyElement)
+            {
+                // Move past empty element
+                reader.ReadStartElement(parentElementName);
+                yield break;
+            }
+            reader.ReadStartElement(parentElementName);
+            while(reader.IsItemElement())
+            {
+                if (XNode.ReadFrom(reader) is XElement el)
+                {
+                    yield return el;
+                }
+            }
+            reader.ReadEndElement();
         }
         public static XmlElement AddChildWithInnerText(XmlDocument doc, XmlNode node, string name, string innerText)
         {

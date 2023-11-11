@@ -130,7 +130,7 @@ namespace CodeWalker.Tools
                         }
                         try
                         {
-                            if (entry.NameLower.EndsWith(".fxc"))
+                            if (entry.IsExtension(".fxc"))
                             {
                                 UpdateExtractStatus(entry.Path);
                                 FxcFile fxc = rpfman.GetFile<FxcFile>(entry);

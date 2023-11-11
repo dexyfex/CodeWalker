@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodeWalker.Utils;
+using CodeWalker.Core.Utils;
 
 namespace CodeWalker.RPFExplorer
 {
@@ -18,13 +19,31 @@ namespace CodeWalker.RPFExplorer
         [STAThread]
         static void Main()
         {
-            //Process.Start("CodeWalker.exe", "explorer");
-            ConsoleWindow.Hide();
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new ExploreForm());
+            try
+            {
+                if (!NamedPipe.TrySendMessageToOtherProcess("explorer"))
+                {
+                    ConsoleWindow.Hide();
+                    //Process.Start("CodeWalker.exe", "explorer");
+                    Application.EnableVisualStyles();
+                    Application.SetCompatibleTextRenderingDefault(false);
 
-            GTAFolder.UpdateSettings();
+                    var form = new ExploreForm();
+                    var namedPipe = new NamedPipe(form);
+                    namedPipe.Init();
+
+                    Application.Run(form);
+
+                    GTAFolder.UpdateSettings();
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+
+
         }
     }
 }

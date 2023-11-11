@@ -23,7 +23,9 @@
 //shamelessly stolen and mangled
 
 
+using CodeWalker.Utils;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -34,7 +36,6 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
-
     /// <summary>
     /// Represents a resource data reader.
     /// </summary>
@@ -53,8 +54,23 @@ namespace CodeWalker.GameFiles
 
         // this is a dictionary that contains all the resource blocks
         // which were read from this resource reader
-        public Dictionary<long, IResourceBlock> blockPool = new Dictionary<long, IResourceBlock>();
-        public Dictionary<long, object> arrayPool = new Dictionary<long, object>();
+        public Dictionary<long, IResourceBlock> blockPool
+        {
+            get
+            {
+                return _blockPool ??= new Dictionary<long, IResourceBlock>();
+            }
+        }
+        public Dictionary<long, object> arrayPool {
+            get
+            {
+                return _arrayPool ??= new Dictionary<long, object>();
+            }
+        }
+
+        private Dictionary<long, object> _arrayPool;
+        private Dictionary<long, IResourceBlock> _blockPool;
+        private long position = SYSTEM_BASE;
 
         /// <summary>
         /// Gets the length of the underlying stream.
@@ -72,10 +88,22 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override long Position
         {
-            get;
-            set;
-        } = SYSTEM_BASE;
-
+            get => position;
+            set {
+                if ((value & SYSTEM_BASE) == SYSTEM_BASE)
+                {
+                    systemStream.Position = value & ~SYSTEM_BASE;
+                }
+                else if ((value & GRAPHICS_BASE) == GRAPHICS_BASE)
+                {
+                    graphicsStream.Position = value & ~GRAPHICS_BASE;
+                } else
+                {
+                    throw new InvalidOperationException($"Invalid position {position}");
+                }
+                position = value;
+            }
+        }
         /// <summary>
         /// Initializes a new resource data reader for the specified system- and graphics-stream.
         /// </summary>
@@ -108,93 +136,55 @@ namespace CodeWalker.GameFiles
             //    }
             //}
 
-            this.systemStream = new MemoryStream(data, 0, (int)systemSize);
-            this.graphicsStream = new MemoryStream(data, (int)systemSize, (int)graphicsSize);
+            if ((int)systemSize > data.Length)
+            {
+                throw new ArgumentException($"systemSize {systemSize} is larger than data length ({data.Length})", nameof(systemSize));
+            }
+            if ((int)graphicsSize > data.Length)
+            {
+                throw new ArgumentException($"graphicsSize {graphicsSize} is larger than data length ({data.Length})", nameof(graphicsSize));
+            }
+            this.systemStream = Stream.Synchronized(new MemoryStream(data, 0, (int)systemSize));
+            this.graphicsStream = Stream.Synchronized(new MemoryStream(data, (int)systemSize, (int)graphicsSize));
         }
 
         public ResourceDataReader(int systemSize, int graphicsSize, byte[] data, Endianess endianess = Endianess.LittleEndian)
             : base((Stream)null, endianess)
         {
-            this.systemStream = new MemoryStream(data, 0, systemSize);
-            this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
+            this.systemStream = Stream.Synchronized(new MemoryStream(data, 0, systemSize));
+            this.graphicsStream = Stream.Synchronized(new MemoryStream(data, systemSize, graphicsSize));
         }
 
-        /// <summary>
-        /// Reads data from the underlying stream. This is the only method that directly accesses
-        /// the data in the underlying stream.
-        /// </summary>
-        protected override byte[] ReadFromStream(int count, bool ignoreEndianess = false, byte[] buffer = null)
+        public override Stream GetStream()
         {
             if ((Position & SYSTEM_BASE) == SYSTEM_BASE)
             {
-                // read from system stream...
-
-                systemStream.Position = Position & ~SYSTEM_BASE;
-
-                buffer ??= new byte[count];
-                systemStream.Read(buffer, 0, count);
-
-                // handle endianess
-                if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
-                {
-                    Array.Reverse(buffer);
-                }
-
-                Position = systemStream.Position | SYSTEM_BASE;
-                return buffer;
-
+                return systemStream;
             }
             else if ((Position & GRAPHICS_BASE) == GRAPHICS_BASE)
             {
-                // read from graphic stream...
-
-                graphicsStream.Position = Position & ~GRAPHICS_BASE;
-
-                buffer ??= new byte[count];
-                graphicsStream.Read(buffer, 0, count);
-
-                // handle endianess
-                if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
-                {
-                    Array.Reverse(buffer);
-                }
-
-                Position = graphicsStream.Position | GRAPHICS_BASE;
-                return buffer;
+                return graphicsStream;
             }
-            throw new Exception("illegal position!");
+
+            throw new InvalidOperationException("illegal position!");
         }
 
-        public override byte ReadByte()
+        internal override void SetPositionAfterRead(Stream stream)
         {
-            if ((Position & SYSTEM_BASE) == SYSTEM_BASE)
+
+            if (stream == systemStream)
             {
-
-
-
-
-                // read from system stream...
-
-                systemStream.Position = Position & ~SYSTEM_BASE;
-
-                var readByte = (byte)systemStream.ReadByte();
-
-                Position = systemStream.Position | SYSTEM_BASE;
-                return readByte;
-
+                position = systemStream.Position | SYSTEM_BASE;
             }
-            if ((Position & GRAPHICS_BASE) == GRAPHICS_BASE)
+            else if (stream == graphicsStream)
             {
-                // read from graphic stream...
-
-                graphicsStream.Position = Position & ~GRAPHICS_BASE;
-
-                var readByte = (byte)graphicsStream.ReadByte();
-
-                Position = graphicsStream.Position | GRAPHICS_BASE;
-                return readByte;
+                position = graphicsStream.Position | GRAPHICS_BASE;
             }
-            throw new Exception("illegal position!");
+
+            if ((position & SYSTEM_BASE) != SYSTEM_BASE && (position & GRAPHICS_BASE) != GRAPHICS_BASE)
+            {
+                throw new InvalidOperationException($"Invalid position {position}");
+            }
         }
 
         /// <summary>
@@ -233,7 +223,7 @@ namespace CodeWalker.GameFiles
 
             if (result == null)
             {
-                return default(T);
+                return default;
             }
 
             if (usepool)
@@ -279,14 +269,14 @@ namespace CodeWalker.GameFiles
             return items;
         }
 
-
-        public byte[] ReadBytesAt(ulong position, uint count, bool cache = true)
+        internal const int StackallocThreshold = 512;
+        public unsafe byte[] ReadBytesAt(ulong position, uint count, bool cache = true, byte[] buffer = null)
         {
             long pos = (long)position;
             if ((pos <= 0) || (count == 0)) return null;
             var posbackup = Position;
             Position = pos;
-            var result = ReadBytes((int)count);
+            var result = ReadBytes((int)count, buffer);
             Position = posbackup;
             if (cache) arrayPool[(long)position] = result;
             return result;
@@ -296,9 +286,18 @@ namespace CodeWalker.GameFiles
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new ushort[count];
-            var length = count * 2;
-            byte[] data = ReadBytesAt(position, length, false);
-            Buffer.BlockCopy(data, 0, result, 0, (int)length);
+            var length = count * sizeof(ushort);
+            var data = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytesAt(position, length, false, data);
+                Buffer.BlockCopy(data, 0, result, 0, (int)length);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+            }
+
 
             //var posbackup = Position;
             //Position = position;
@@ -317,9 +316,18 @@ namespace CodeWalker.GameFiles
         {
             if ((position <= 0) || (count == 0)) return null;
             var result = new short[count];
-            var length = count * 2;
-            byte[] data = ReadBytesAt(position, length, false);
-            Buffer.BlockCopy(data, 0, result, 0, (int)length);
+            var length = count * sizeof(short);
+            var buffer = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytesAt(position, length, false, buffer);
+                Buffer.BlockCopy(buffer, 0, result, 0, (int)length);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+
 
             if (cache) arrayPool[(long)position] = result;
 
@@ -330,18 +338,17 @@ namespace CodeWalker.GameFiles
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new uint[count];
-            var length = count * 4;
-            byte[] data = ReadBytesAt(position, length, false);
-            Buffer.BlockCopy(data, 0, result, 0, (int)length);
+            var length = count * sizeof(uint);
+            var buffer = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytesAt(position, length, false, buffer);
+                Buffer.BlockCopy(buffer, 0, result, 0, (int)length);
+            } finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
 
-            //var posbackup = Position;
-            //Position = position;
-            //var result = new uint[count];
-            //for (uint i = 0; i < count; i++)
-            //{
-            //    result[i] = ReadUInt32();
-            //}
-            //Position = posbackup;
 
             if (cache) arrayPool[(long)position] = result;
 
@@ -352,18 +359,17 @@ namespace CodeWalker.GameFiles
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new ulong[count];
-            var length = count * 8;
-            byte[] data = ReadBytesAt(position, length, false);
-            Buffer.BlockCopy(data, 0, result, 0, (int)length);
-
-            //var posbackup = Position;
-            //Position = position;
-            //var result = new ulong[count];
-            //for (uint i = 0; i < count; i++)
-            //{
-            //    result[i] = ReadUInt64();
-            //}
-            //Position = posbackup;
+            var length = count * sizeof(ulong);
+            var data = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytesAt(position, length, false, data);
+                Buffer.BlockCopy(data, 0, result, 0, (int)length);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+            }
 
             if (cache) arrayPool[(long)position] = result;
 
@@ -374,88 +380,85 @@ namespace CodeWalker.GameFiles
             if ((position <= 0) || (count == 0)) return null;
 
             var result = new float[count];
-            var length = count * 4;
-            byte[] data = ReadBytesAt(position, length, false);
-            Buffer.BlockCopy(data, 0, result, 0, (int)length);
-
-            //var posbackup = Position;
-            //Position = position;
-            //var result = new float[count];
-            //for (uint i = 0; i < count; i++)
-            //{
-            //    result[i] = ReadSingle();
-            //}
-            //Position = posbackup;
+            var length = count * sizeof(float);
+            var data = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytesAt(position, length, false, data);
+                Buffer.BlockCopy(data, 0, result, 0, (int)length);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+            }
 
             if (cache) arrayPool[(long)position] = result;
 
             return result;
         }
-        public T[] ReadStructsAt<T>(ulong position, uint count, bool cache = true)
+        public T[] ReadStructsAt<T>(ulong position, uint count, bool cache = true) where T : struct
         {
             if ((position <= 0) || (count == 0)) return null;
 
             uint structsize = (uint)Marshal.SizeOf(typeof(T));
             var length = count * structsize;
-            byte[] data = ReadBytesAt(position, length, false);
+            var data = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytesAt(position, length, false, data);
 
-            //var result2 = new T[count];
-            //Buffer.BlockCopy(data, 0, result2, 0, (int)length); //error: "object must be an array of primitives" :(
+                var result = new T[count];
 
-            //var result = new T[count];
-            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //for (uint i = 0; i < count; i++)
-            //{
-            //    result[i] = Marshal.PtrToStructure<T>(h + (int)(i * structsize));
-            //}
-            //handle.Free();
+                var resultSpan = MemoryMarshal.Cast<byte, T>(data.AsSpan(0, (int)length));
+                resultSpan.CopyTo(result);
 
-            var result = new T[count];
-            GCHandle handle = GCHandle.Alloc(result, GCHandleType.Pinned);
-            var h = handle.AddrOfPinnedObject();
-            Marshal.Copy(data, 0, h, (int)length);
-            handle.Free();
+                if (cache) arrayPool[(long)position] = result;
 
-
-            if (cache) arrayPool[(long)position] = result;
-
-            return result;
+                return result;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+            }
         }
-        public T[] ReadStructs<T>(uint count)
+        public T[] ReadStructs<T>(uint count) where T : struct
         {
             uint structsize = (uint)Marshal.SizeOf(typeof(T));
             var result = new T[count];
             var length = count * structsize;
-            byte[] data = ReadBytes((int)length);
+            var data = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytes((int)length, data);
 
-            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //for (uint i = 0; i < count; i++)
-            //{
-            //    result[i] = Marshal.PtrToStructure<T>(h + (int)(i * structsize));
-            //}
-            //handle.Free();
+                var resultSpan = MemoryMarshal.Cast<byte, T>(data.AsSpan(0, (int)length));
+                resultSpan.CopyTo(result);
 
-            GCHandle handle = GCHandle.Alloc(result, GCHandleType.Pinned);
-            var h = handle.AddrOfPinnedObject();
-            Marshal.Copy(data, 0, h, (int)length);
-            handle.Free();
+                return result;
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+            }
 
-
-            return result;
         }
 
         public T ReadStruct<T>() where T : struct
         {
             uint structsize = (uint)Marshal.SizeOf(typeof(T));
             var length = structsize;
-            byte[] data = ReadBytes((int)length);
-            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var h = handle.AddrOfPinnedObject();
-            var result = Marshal.PtrToStructure<T>(h);
-            handle.Free();
-            return result;
+            var data = ArrayPool<byte>.Shared.Rent((int)length);
+            try
+            {
+                ReadBytes((int)length, data);
+                MemoryMarshal.TryRead<T>(data, out var value);
+
+                return value;
+            } finally
+            {
+                ArrayPool<byte>.Shared.Return(data);
+            }
+
         }
 
         public T ReadStructAt<T>(long position) where T : struct
@@ -513,13 +516,22 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        /// <summary>
-        /// Gets or sets the position within the underlying stream.
-        /// </summary>
+        private long position = SYSTEM_BASE;
         public override long Position
         {
-            get;
-            set;
+            get => position;
+            set
+            {
+                if ((value & SYSTEM_BASE) == SYSTEM_BASE)
+                {
+                    systemStream.Position = value & ~SYSTEM_BASE;
+                }
+                else if ((value & GRAPHICS_BASE) == GRAPHICS_BASE)
+                {
+                    graphicsStream.Position = value & ~GRAPHICS_BASE;
+                }
+                position = value;
+            }
         }
 
         /// <summary>
@@ -528,61 +540,33 @@ namespace CodeWalker.GameFiles
         public ResourceDataWriter(Stream systemStream, Stream graphicsStream, Endianess endianess = Endianess.LittleEndian)
             : base((Stream)null, endianess)
         {
-            this.systemStream = systemStream;
-            this.graphicsStream = graphicsStream;
+            this.systemStream = Stream.Synchronized(systemStream);
+            this.graphicsStream = Stream.Synchronized(graphicsStream);
         }
 
-        /// <summary>
-        /// Writes data to the underlying stream. This is the only method that directly accesses
-        /// the data in the underlying stream.
-        /// </summary>
-        protected override void WriteToStream(byte[] value, bool ignoreEndianess = true)
+        internal override Stream GetStream()
         {
             if ((Position & SYSTEM_BASE) == SYSTEM_BASE)
             {
-                // write to system stream...
-
-                systemStream.Position = Position & ~SYSTEM_BASE;
-
-                // handle endianess
-                if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
-                {
-                    var buf = (byte[])value.Clone();
-                    Array.Reverse(buf);
-                    systemStream.Write(buf, 0, buf.Length);
-                }
-                else
-                {
-                    systemStream.Write(value, 0, value.Length);
-                }
-
-                Position = systemStream.Position | 0x50000000;
-                return;
-
+                return systemStream;
             }
-            if ((Position & GRAPHICS_BASE) == GRAPHICS_BASE)
+            else if ((Position & GRAPHICS_BASE) == GRAPHICS_BASE)
             {
-                // write to graphic stream...
-
-                graphicsStream.Position = Position & ~GRAPHICS_BASE;
-
-                // handle endianess
-                if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
-                {
-                    var buf = (byte[])value.Clone();
-                    Array.Reverse(buf);
-                    graphicsStream.Write(buf, 0, buf.Length);
-                }
-                else
-                {
-                    graphicsStream.Write(value, 0, value.Length);
-                }
-
-                Position = graphicsStream.Position | 0x60000000;
-                return;
+                return graphicsStream;
             }
+            throw new InvalidOperationException("illegal position!");
+        }
 
-            throw new Exception("illegal position!");
+        internal override void SetPositionAfterWrite(Stream stream)
+        {
+            if (stream == systemStream)
+            {
+                position = systemStream.Position | SYSTEM_BASE;
+            }
+            else if (stream == graphicsStream)
+            {
+                position = graphicsStream.Position | GRAPHICS_BASE;
+            }
         }
 
         /// <summary>
@@ -599,20 +583,41 @@ namespace CodeWalker.GameFiles
         public void WriteStruct<T>(T val) where T : struct
         {
             int size = Marshal.SizeOf(typeof(T));
-            byte[] arr = new byte[size];
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(val, ptr, true);
-            Marshal.Copy(ptr, arr, 0, size);
-            Marshal.FreeHGlobal(ptr);
+
+            var arr = new byte[size];
+
+            MemoryMarshal.TryWrite(arr, ref val);
+
             Write(arr);
+
+            //byte[] arr = new byte[size];
+            //IntPtr ptr = Marshal.AllocHGlobal(size);
+            //Marshal.StructureToPtr(val, ptr, true);
+            //Marshal.Copy(ptr, arr, 0, size);
+            //Marshal.FreeHGlobal(ptr);
+            //Write(arr);
         }
+
+        public void WriteStructs<T>(Span<T> val) where T : struct
+        {
+            if (val == null) return;
+
+            var bytes = MemoryMarshal.AsBytes(val);
+
+            Write(bytes);
+
+            //foreach (var v in val)
+            //{
+            //    WriteStruct(v);
+            //}
+        }
+
         public void WriteStructs<T>(T[] val) where T : struct
         {
             if (val == null) return;
-            foreach (var v in val)
-            {
-                WriteStruct(v);
-            }
+            var bytes = MemoryMarshal.AsBytes<T>(val);
+
+            Write(bytes);
         }
 
 

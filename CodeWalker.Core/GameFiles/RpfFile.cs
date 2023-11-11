@@ -1,4 +1,5 @@
-﻿using Microsoft.IO;
+﻿using CodeWalker.Core.Utils;
+using Microsoft.IO;
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -20,24 +21,6 @@ namespace CodeWalker.GameFiles
     public class RpfFile
     {
         public string Name { get; set; } //name of this RPF file/package
-
-
-        private string _nameLower;
-        public string NameLower
-        {
-            get
-            {
-                if (_nameLower == null)
-                {
-                    _nameLower = Name.ToLowerInvariant();
-                }
-                return _nameLower;
-            }
-            set
-            {
-                _nameLower = value;
-            }
-        }
         public string Path { get; set; } //path within the RPF structure
         public string FilePath { get; set; } //full file path of the RPF
         public long FileSize { get; set; }
@@ -80,19 +63,48 @@ namespace CodeWalker.GameFiles
         public uint GrandTotalBinaryFileCount { get; set; }
         public long ExtractedByteCount { get; set; }
 
+        static RpfFile()
+        {
+            recyclableMemoryStreamManager.BufferDiscarded += (sender, args) =>
+            {
+                Console.WriteLine($"Buffer Discarded: BufferType: {args.BufferType}; Reason: {args.Reason};");
+            };
+
+            recyclableMemoryStreamManager.StreamDoubleDisposed += (sender, args) =>
+            {
+                Console.WriteLine($"StreamDoubleDisposed: Stack1: {args.DisposeStack1}; Stack2: {args.DisposeStack2};");
+            };
+
+            recyclableMemoryStreamManager.StreamOverCapacity += (sender, args) =>
+            {
+                Console.WriteLine($"StreamOverCapacity: MaximumCapacity is {args.MaximumCapacity / 1024f / 1024f} MB, requisted: {args.RequestedCapacity / 1024f / 1024f:0.##} MB Stack: {args.AllocationStack}");
+            };
+
+            recyclableMemoryStreamManager.StreamFinalized += (sender, args) =>
+            {
+                Console.WriteLine($"StreamFinalized: {args.AllocationStack}");
+            };
+        }
+
+        public RpfFile(FileInfo fileInfo)
+        {
+            Name = fileInfo.Name;
+            FilePath = fileInfo.FullName;
+            FileSize = fileInfo.Length;
+        }
 
         public RpfFile(string fpath, string relpath) //for a ROOT filesystem RPF
         {
             FileInfo fi = new FileInfo(fpath);
             Name = fi.Name;
-            Path = relpath.ToLowerInvariant();
+            Path = relpath;
             FilePath = fpath;
             FileSize = fi.Length;
         }
         public RpfFile(string name, string path, long filesize) //for a child RPF
         {
             Name = name;
-            Path = path.ToLowerInvariant();
+            Path = path;
             FilePath = path;
             FileSize = filesize;
         }
@@ -104,7 +116,7 @@ namespace CodeWalker.GameFiles
             string rel_parent_path = parentFile.Path;
             string full_parent_path = parentFile.FilePath;
 
-            if(rel_parent_path.StartsWith(@"mods\"))
+            if(rel_parent_path.StartsWith(@"mods\", StringComparison.OrdinalIgnoreCase))
             {
                 status = "already in mods folder";
                 return null;
@@ -132,7 +144,7 @@ namespace CodeWalker.GameFiles
 
         public bool IsInModsFolder()
         {
-            return GetTopParent().Path.StartsWith(@"mods\");
+            return GetTopParent().Path.StartsWith(@"mods\", StringComparison.OrdinalIgnoreCase);
         }
 
         public RpfFile GetTopParent()
@@ -169,11 +181,13 @@ namespace CodeWalker.GameFiles
                 throw new Exception("Invalid Resource - not GTAV!");
             }
 
-            byte[] entriesdata = ArrayPool<byte>.Shared.Rent((int)EntryCount * 16);
-            byte[] namesdata = ArrayPool<byte>.Shared.Rent((int)NamesLength);
+            var entriesLength = (int)EntryCount * 16;
+            var namesLength = (int)NamesLength;
+            byte[] entriesdata = ArrayPool<byte>.Shared.Rent(entriesLength);
+            byte[] namesdata = ArrayPool<byte>.Shared.Rent(namesLength);
 
-            br.BaseStream.Read(entriesdata, 0, (int)EntryCount * 16);
-            br.BaseStream.Read(namesdata, 0, (int)NamesLength);
+            br.BaseStream.Read(entriesdata, 0, entriesLength);
+            br.BaseStream.Read(namesdata, 0, namesLength);
 
             switch (Encryption)
             {
@@ -181,22 +195,22 @@ namespace CodeWalker.GameFiles
                 case RpfEncryption.OPEN: //OpenIV style RPF with unencrypted TOC
                     break;
                 case RpfEncryption.AES:
-                    GTACrypto.DecryptAES(entriesdata, (int)EntryCount * 16);
-                    GTACrypto.DecryptAES(namesdata, (int)NamesLength);
+                    GTACrypto.DecryptAES(entriesdata, entriesLength);
+                    GTACrypto.DecryptAES(namesdata, namesLength);
 
                     IsAESEncrypted = true;
                     break;
                 case RpfEncryption.NG:
                 default:
-                    GTACrypto.DecryptNG(entriesdata, Name, (uint)FileSize, 0, (int)EntryCount * 16);
-                    GTACrypto.DecryptNG(namesdata, Name, (uint)FileSize, 0, (int)NamesLength);
+                    GTACrypto.DecryptNG(entriesdata, Name, (uint)FileSize, 0, entriesLength);
+                    GTACrypto.DecryptNG(namesdata, Name, (uint)FileSize, 0, namesLength);
 
                     IsNGEncrypted = true;
                     break;
             }
 
-            using var entriesrdr = new DataReader(new MemoryStream(entriesdata, 0, (int)EntryCount * 16));
-            using var namesrdr = new DataReader(new MemoryStream(namesdata, 0, (int)NamesLength));
+            using var entriesrdr = new DataReader(new MemoryStream(entriesdata, 0, entriesLength));
+            using var namesrdr = new DataReader(new MemoryStream(namesdata, 0, namesLength));
 
 
             AllEntries = new List<RpfEntry>((int)EntryCount);
@@ -245,26 +259,19 @@ namespace CodeWalker.GameFiles
             {
                 namesrdr.Position = entry.NameOffset;
                 entry.Name = namesrdr.ReadString(256);
-                if (entry.Name.Length > 256)
-                {
-                    // long names can freeze the RPFExplorer
-                    entry.Name = entry.Name.Substring(0, 256);
-                }
-
+                JenkIndex.EnsureLower(entry.Name);
                 if (entry is RpfResourceFileEntry rfe)// && string.IsNullOrEmpty(e.Name))
                 {
-                    rfe.IsEncrypted = rfe.Name.EndsWith(".ysc", StringComparison.OrdinalIgnoreCase);//any other way to know..?
+                    rfe.IsEncrypted = rfe.IsExtension(".ysc");//any other way to know..?
                 }
             }
 
             Root = (RpfDirectoryEntry)AllEntries[0];
-            Root.Path = Path.ToLowerInvariant();// + "\\" + Root.Name;
-            var stack = new Stack<RpfDirectoryEntry>();
-            stack.Push(Root);
-            while (stack.Count > 0)
-            {
-                var item = stack.Pop();
+            Root.Path = Path;// + "\\" + Root.Name;
+            //var stack = new Stack<RpfDirectoryEntry>();
 
+            void addSubDirectory(RpfDirectoryEntry item)
+            {
                 int starti = (int)item.EntriesIndex;
                 int endi = (int)(item.EntriesIndex + item.EntriesCount);
 
@@ -274,18 +281,45 @@ namespace CodeWalker.GameFiles
                     e.Parent = item;
                     if (e is RpfDirectoryEntry rde)
                     {
-                        rde.Path = item.Path + "\\" + rde.Name;
+                        rde.Path = item.Path + '\\' + rde.Name;
                         item.Directories.Add(rde);
-                        stack.Push(rde);
+                        addSubDirectory(rde);
                     }
-                    else if (e is RpfFileEntry)
+                    else if (e is RpfFileEntry rfe)
                     {
-                        RpfFileEntry rfe = e as RpfFileEntry;
-                        rfe.Path = item.Path + "\\" + rfe.Name;
+                        rfe.Path = item.Path + '\\' + rfe.Name;
                         item.Files.Add(rfe);
                     }
                 }
             }
+
+            addSubDirectory(Root);
+            //stack.Push(Root);
+            //while (stack.Count > 0)
+            //{
+            //    var item = stack.Pop();
+
+            //    int starti = (int)item.EntriesIndex;
+            //    int endi = (int)(item.EntriesIndex + item.EntriesCount);
+
+            //    for (int i = starti; i < endi; i++)
+            //    {
+            //        RpfEntry e = AllEntries[i];
+            //        e.Parent = item;
+            //        if (e is RpfDirectoryEntry rde)
+            //        {
+            //            rde.Path = item.Path + "\\" + rde.Name;
+            //            item.Directories.Add(rde);
+            //            stack.Push(rde);
+            //        }
+            //        else if (e is RpfFileEntry)
+            //        {
+            //            RpfFileEntry rfe = e as RpfFileEntry;
+            //            rfe.Path = item.Path + "\\" + rfe.Name;
+            //            item.Files.Add(rfe);
+            //        }
+            //    }
+            //}
 
             br.BaseStream.Position = StartPos;
 
@@ -293,10 +327,6 @@ namespace CodeWalker.GameFiles
             ArrayPool<byte>.Shared.Return(entriesdata);
             ArrayPool<byte>.Shared.Return(namesdata);
         }
-
-
-
-
 
         public bool ScanStructure(Action<string> updateStatus, Action<string> errorLog)
         {
@@ -343,7 +373,7 @@ namespace CodeWalker.GameFiles
                     if (entry is RpfBinaryFileEntry binentry)
                     {
                         //search all the sub resources for YSC files. (recurse!)
-                        if (binentry.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase) && binentry.Path.Length < 5000) // a long path is most likely an attempt to crash CW, so skip it
+                        if (binentry.IsExtension(".rpf") && binentry.Path.Length < 5000) // a long path is most likely an attempt to crash CW, so skip it
                         {
                             br.BaseStream.Position = StartPos + ((long)binentry.FileOffset * 512);
 
@@ -424,8 +454,7 @@ namespace CodeWalker.GameFiles
                     long l = binentry.GetFileSize();
 
                     //search all the sub resources for YSC files. (recurse!)
-                    string lname = binentry.NameLower;
-                    if (lname.EndsWith(".rpf"))
+                    if (binentry.IsExtension(".rpf"))
                     {
                         br.BaseStream.Position = StartPos + ((long)binentry.FileOffset * 512);
 
@@ -442,9 +471,7 @@ namespace CodeWalker.GameFiles
 
                     RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
 
-                    string lname = resentry.NameLower;
-
-                    if (lname.EndsWith(".ysc"))
+                    if (resentry.IsExtension(".ysc"))
                     {
                         updateStatus?.Invoke("Extracting " + resentry.Name + "...");
 
@@ -483,7 +510,7 @@ namespace CodeWalker.GameFiles
                                 DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
 
                                 MemoryStream outstr = recyclableMemoryStreamManager.GetStream();
-                                ds.CopyTo(outstr);
+                                ds.CopyToFast(outstr);
                                 byte[] deflated = outstr.GetBuffer();
                                 byte[] outbuf = new byte[outstr.Length]; //need to copy to the right size buffer for File.WriteAllBytes().
                                 Array.Copy(deflated, outbuf, outbuf.Length);
@@ -556,7 +583,8 @@ namespace CodeWalker.GameFiles
         {
             try
             {
-                using (BinaryReader br = new BinaryReader(File.OpenRead(GetPhysicalFilePath())))
+                using var fileStream = new FileStream(GetPhysicalFilePath(), FileMode.Open, FileAccess.Read, FileShare.Read, 4096);
+                using (BinaryReader br = new BinaryReader(fileStream))
                 {
                     if (entry is RpfBinaryFileEntry binaryFileEntry)
                     {
@@ -579,106 +607,230 @@ namespace CodeWalker.GameFiles
                 return null;
             }
         }
+
+        public ValueTask<byte[]> ExtractFileAsync(RpfFileEntry entry)
+        {
+            try
+            {
+                using var fileStream = new FileStream(GetPhysicalFilePath(), FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous);
+                using (BinaryReader br = new BinaryReader(fileStream))
+                {
+                    if (entry is RpfBinaryFileEntry binaryFileEntry)
+                    {
+                        return ExtractFileBinaryAsync(binaryFileEntry, br);
+                    }
+                    else if (entry is RpfResourceFileEntry resourceFileEntry)
+                    {
+                        return ExtractFileResourceAsync(resourceFileEntry, br);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{entry} is not a BinaryFileEntry of ResourceFileEntry");
+                        return new ValueTask<byte[]>();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.ToString();
+                LastException = ex;
+                return new ValueTask<byte[]>();
+            }
+        }
+
+        public async ValueTask<byte[]> ExtractFileBinaryAsync(RpfBinaryFileEntry entry, BinaryReader br)
+        {
+            br.BaseStream.Position = StartPos + ((long)entry.FileOffset * 512);
+
+            long l = entry.GetFileSize();
+
+            if (l <= 0)
+            {
+                return null;
+            }
+
+            uint offset = 0;// 0x10;
+            uint totlen = (uint)l - offset;
+
+            byte[] tbytes = ArrayPool<byte>.Shared.Rent((int)totlen);
+
+            br.BaseStream.Position += offset;
+            await br.ReadAsync(tbytes, 0, (int)totlen).ConfigureAwait(false);
+
+            if (entry.IsEncrypted)
+            {
+                if (IsAESEncrypted)
+                {
+                    GTACrypto.DecryptAES(tbytes, (int)totlen);
+                }
+                else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
+                {
+                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileUncompressedSize, 0, (int)totlen);
+                }
+            }
+
+            byte[] defl;
+            if (entry.FileSize > 0) //apparently this means it's compressed
+            {
+                defl = await DecompressBytesAsync(tbytes).ConfigureAwait(false);
+            }
+            else
+            {
+                defl = new byte[(int)totlen];
+                Array.Copy(tbytes, defl, (int)totlen);
+            }
+
+            ArrayPool<byte>.Shared.Return(tbytes);
+
+            return defl;
+        }
+
         public byte[] ExtractFileBinary(RpfBinaryFileEntry entry, BinaryReader br)
         {
             br.BaseStream.Position = StartPos + ((long)entry.FileOffset * 512);
 
             long l = entry.GetFileSize();
 
-            if (l > 0)
+            if (l <= 0)
             {
-                uint offset = 0;// 0x10;
-                uint totlen = (uint)l - offset;
-
-                byte[] tbytes = new byte[totlen];
-
-                br.BaseStream.Position += offset;
-                br.Read(tbytes, 0, (int)totlen);
-
-                if (entry.IsEncrypted)
-                {
-                    if (IsAESEncrypted)
-                    {
-                        GTACrypto.DecryptAES(tbytes);
-                    }
-                    else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
-                    {
-                        GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileUncompressedSize);
-                    }
-                    //else
-                    //{ }
-                }
-
-                byte[] defl = tbytes;
-
-                if (entry.FileSize > 0) //apparently this means it's compressed
-                {
-                    defl = DecompressBytes(tbytes);
-                }
-                else
-                {
-                }
-
-                return defl;
+                return null;
             }
 
-            return null;
+            uint offset = 0;// 0x10;
+            uint totlen = (uint)l - offset;
+
+            byte[] tbytes = ArrayPool<byte>.Shared.Rent((int)totlen);
+
+            br.BaseStream.Position += offset;
+            br.Read(tbytes, 0, (int)totlen);
+
+            if (entry.IsEncrypted)
+            {
+                if (IsAESEncrypted)
+                {
+                    GTACrypto.DecryptAES(tbytes, (int)totlen);
+                }
+                else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
+                {
+                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileUncompressedSize, 0, (int)totlen);
+                }
+            }
+
+            byte[] defl;
+            if (entry.FileSize > 0) //apparently this means it's compressed
+            {
+                defl = DecompressBytes(tbytes);
+            }
+            else
+            {
+                defl = new byte[(int)totlen];
+                Buffer.BlockCopy(tbytes, 0, defl, 0, (int)totlen);
+            }
+
+            ArrayPool<byte>.Shared.Return(tbytes);
+
+            return defl;
         }
+
+        public async ValueTask<byte[]> ExtractFileResourceAsync(RpfResourceFileEntry entry, BinaryReader br)
+        {
+            br.BaseStream.Position = StartPos + ((long)entry.FileOffset * 512);
+
+            if (entry.FileSize <= 0)
+            {
+                return null;
+            }
+
+            uint offset = 0x10;
+            uint totlen = entry.FileSize - offset;
+
+            byte[] tbytes = ArrayPool<byte>.Shared.Rent((int)totlen);
+
+
+            br.BaseStream.Position += offset;
+
+            await br.ReadAsync(tbytes, 0, (int)totlen);
+            if (entry.IsEncrypted)
+            {
+                if (IsAESEncrypted)
+                {
+                    GTACrypto.DecryptAES(tbytes, (int)totlen);
+                }
+                else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
+                {
+                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileSize, 0, (int)totlen);
+                }
+            }
+
+            byte[] deflated = await DecompressBytesAsync(tbytes);
+
+            byte[] data;
+            if (deflated != null)
+            {
+                data = deflated;
+            }
+            else
+            {
+                entry.FileSize -= offset;
+
+                data = new byte[(int)totlen];
+                Buffer.BlockCopy(tbytes, 0, data, 0, (int)totlen);
+            }
+
+            ArrayPool<byte>.Shared.Return(tbytes);
+
+            return data;
+        }
+
         public byte[] ExtractFileResource(RpfResourceFileEntry entry, BinaryReader br)
         {
             br.BaseStream.Position = StartPos + ((long)entry.FileOffset * 512);
 
-
-            if (entry.FileSize > 0)
+            if (entry.FileSize <= 0)
             {
-                uint offset = 0x10;
-                uint totlen = entry.FileSize - offset;
-
-                byte[] tbytes = new byte[totlen];
-
-
-                br.BaseStream.Position += offset;
-                //byte[] hbytes = br.ReadBytes(16); //what are these 16 bytes actually used for?
-                //if (entry.FileSize > 0xFFFFFF)
-                //{ //(for huge files, the full file size is packed in 4 of these bytes... seriously wtf)
-                //    var filesize = (hbytes[7] << 0) | (hbytes[14] << 8) | (hbytes[5] << 16) | (hbytes[2] << 24);
-                //}
-
-
-                br.Read(tbytes, 0, (int)totlen);
-                if (entry.IsEncrypted)
-                {
-                    if (IsAESEncrypted)
-                    {
-                        GTACrypto.DecryptAES(tbytes);
-                    }
-                    else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
-                    {
-                        GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileSize);
-                    }
-                    //else
-                    //{ }
-                }
-
-                byte[] deflated = DecompressBytes(tbytes);
-
-                byte[] data = null;
-
-                if (deflated != null)
-                {
-                    data = deflated;
-                }
-                else
-                {
-                    entry.FileSize -= offset;
-                    data = tbytes;
-                }
-
-
-                return data;
+                return null;
             }
 
-            return null;
+            uint offset = 0x10;
+            uint totlen = entry.FileSize - offset;
+
+            byte[] tbytes = ArrayPool<byte>.Shared.Rent((int)totlen);
+
+
+            br.BaseStream.Position += offset;
+
+
+            br.Read(tbytes, 0, (int)totlen);
+            if (entry.IsEncrypted)
+            {
+                if (IsAESEncrypted)
+                {
+                    GTACrypto.DecryptAES(tbytes, (int)totlen);
+                }
+                else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
+                {
+                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileSize, 0, (int)totlen);
+                }
+            }
+
+            byte[] deflated = DecompressBytes(tbytes);
+
+            byte[] data;
+            if (deflated != null)
+            {
+                data = deflated;
+            }
+            else
+            {
+                entry.FileSize -= offset;
+
+                data = new byte[(int)totlen];
+                Buffer.BlockCopy(tbytes, 0, data, 0, (int)totlen);
+            }
+
+            ArrayPool<byte>.Shared.Return(tbytes);
+
+            return data;
         }
 
         public static T GetFile<T>(RpfEntry e) where T : class, PackedFile, new()
@@ -892,7 +1044,7 @@ namespace CodeWalker.GameFiles
                         {
                             LastError = string.Empty;
                             LastException = null;
-                            if (!entry.NameLower.EndsWith(".rpf")) //don't try to extract rpf's, they will be done separately..
+                            if (!entry.IsExtension(".rpf")) //don't try to extract rpf's, they will be done separately..
                             {
                                 if (entry is RpfBinaryFileEntry)
                                 {
@@ -1025,29 +1177,25 @@ namespace CodeWalker.GameFiles
 
 
 
-        public static RecyclableMemoryStreamManager recyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
+        public static RecyclableMemoryStreamManager recyclableMemoryStreamManager = new RecyclableMemoryStreamManager(256 * 1024, 1024 * 1024, 128 * 1024 * 1024, false, 256 * 1024 * 100, 1024 * 1024 * 128 * 4);
+
         public byte[] DecompressBytes(byte[] bytes)
         {
             try
             {
-                using (DeflateStream ds = new DeflateStream(new MemoryStream(bytes), CompressionMode.Decompress))
+                using DeflateStream ds = new DeflateStream(new MemoryStream(bytes), CompressionMode.Decompress);
+                using var outstr = recyclableMemoryStreamManager.GetStream("DecompressBytes", bytes.Length);
+
+                ds.CopyToFast(outstr);
+                byte[] outbuf = outstr.ToArray(); //need to copy to the right size buffer for output.
+
+                if (outbuf.Length <= bytes.Length)
                 {
-                    using (var outstr = recyclableMemoryStreamManager.GetStream("DecompressBytes", bytes.Length))
-                    {
-                        ds.CopyTo(outstr);
-                        byte[] deflated = outstr.GetBuffer();
-                        byte[] outbuf = new byte[outstr.Length]; //need to copy to the right size buffer for output.
-                        Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
-
-                        if (outbuf.Length <= bytes.Length)
-                        {
-                            LastError = "Warning: Decompressed data was smaller than compressed data...";
-                            //return null; //could still be OK for tiny things!
-                        }
-
-                        return outbuf;
-                    }
+                    LastError = "Warning: Decompressed data was smaller than compressed data...";
+                    //return null; //could still be OK for tiny things!
                 }
+
+                return outbuf;
             }
             catch (Exception ex)
             {
@@ -1056,6 +1204,39 @@ namespace CodeWalker.GameFiles
                 return null;
             }
         }
+
+        public async Task<byte[]> DecompressBytesAsync(byte[] bytes)
+        {
+            try
+            {
+                using DeflateStream ds = new DeflateStream(new MemoryStream(bytes), CompressionMode.Decompress);
+                using var outstr = recyclableMemoryStreamManager.GetStream("DecompressBytes", bytes.Length);
+
+                await ds.CopyToFastAsync(outstr).ConfigureAwait(false);
+                byte[] outbuf = outstr.ToArray(); //need to copy to the right size buffer for output.
+                //byte[] deflated = outstr.GetBuffer();
+                //Console.WriteLine($"{outstr.Read(outbuf, 0, outbuf.Length)}; {outbuf.Length}");
+                
+                //Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
+
+                //Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
+
+                if (outbuf.Length <= bytes.Length)
+                {
+                    LastError = "Warning: Decompressed data was smaller than compressed data...";
+                    //return null; //could still be OK for tiny things!
+                }
+
+                return outbuf;
+            }
+            catch (Exception ex)
+            {
+                LastError = "Could not decompress.";// ex.ToString();
+                LastException = ex;
+                return null;
+            }
+        }
+
         public static byte[] CompressBytes(byte[] data) //TODO: refactor this with ResourceBuilder.Compress/Decompress
         {
             using (MemoryStream ms = recyclableMemoryStreamManager.GetStream("CompressBytes", data.Length))
@@ -1152,7 +1333,7 @@ namespace CodeWalker.GameFiles
                 Root = new RpfDirectoryEntry();
                 Root.File = this;
                 Root.Name = string.Empty;
-                Root.Path = Path.ToLowerInvariant();
+                Root.Path = Path;
             }
             if (Children == null)
             {
@@ -1517,15 +1698,15 @@ namespace CodeWalker.GameFiles
             //recursively update paths, including in child RPFs.
             if (dir == null)
             {
-                Root.Path = Path.ToLowerInvariant();
+                Root.Path = Path;
                 dir = Root;
             }
             foreach (var file in dir.Files)
             {
-                file.Path = dir.Path + "\\" + file.NameLower;
+                file.Path = dir.Path + "\\" + file.Name;
 
                 RpfBinaryFileEntry binf = file as RpfBinaryFileEntry;
-                if ((binf != null) && file.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase))
+                if ((binf != null) && file.IsExtension(".rpf"))
                 {
                     RpfFile childrpf = FindChildArchive(binf);
                     if (childrpf != null)
@@ -1685,9 +1866,8 @@ namespace CodeWalker.GameFiles
             //create a new directory inside the given parent dir
 
             RpfFile parent = dir.File;
-            string namel = name.ToLowerInvariant();
             string fpath = parent.GetPhysicalFilePath();
-            string rpath = dir.Path + "\\" + namel;
+            string rpath = dir.Path + "\\" + name;
 
             if (!File.Exists(fpath))
             {
@@ -1862,7 +2042,6 @@ namespace CodeWalker.GameFiles
             entry.File = parent;
             entry.Path = rpath;
             entry.Name = name;
-            entry.NameLower = namel;
 
 
 
@@ -2194,6 +2373,9 @@ namespace CodeWalker.GameFiles
         public RpfFile File { get; set; }
         public RpfDirectoryEntry Parent { get; set; }
 
+        public static int ExtensionHits = 0;
+        public static int ExtensionMisses = 0;
+
         public uint NameHash { get
             {
                 if (nameHash == 0 && !string.IsNullOrEmpty(Name))
@@ -2229,19 +2411,38 @@ namespace CodeWalker.GameFiles
                     return;
                 }
                 name = value;
-                nameLower = null;
                 nameHash = 0;
                 shortNameHash = 0;
                 shortName = null;
+                extension = null;
             }
         }
-        public string NameLower
+
+        public string Extension
         {
             get
             {
-                return nameLower ??= Name?.ToLowerInvariant();
+                if (extension == null)
+                {
+                    int length = Name.Length;
+                    for (int i = length; --i >= 0;)
+                    {
+                        char ch = Name[i];
+                        if (ch == '.')
+                        {
+                            extension = Name.Substring(i, length - i).ToLowerInvariant();
+                            break;
+                        }
+                        if (ch == System.IO.Path.DirectorySeparatorChar || ch == System.IO.Path.AltDirectorySeparatorChar)
+                        {
+                            break;
+                        }
+                    }
+                    extension ??= string.Empty;
+                }
+
+                return extension;
             }
-            set { nameLower = value; }
         }
 
         public string ShortName {
@@ -2249,14 +2450,22 @@ namespace CodeWalker.GameFiles
             {
                 if (string.IsNullOrEmpty(shortName) && !string.IsNullOrEmpty(Name))
                 {
-                    int ind = Name.LastIndexOf('.');
-                    if (ind > 0)
+                    int length = Name.Length;
+                    for (int i = length; --i >= 0;)
                     {
-                        shortName = Name.Substring(0, ind);
-                    }
-                    else
-                    {
-                        shortName = Name;
+                        char ch = Name[i];
+                        if (ch == '.')
+                        {
+                            Interlocked.Increment(ref ExtensionHits);
+                            shortName = Name.Substring(0, i);
+                            break;
+                        }
+                        if (ch == System.IO.Path.DirectorySeparatorChar || ch == System.IO.Path.AltDirectorySeparatorChar)
+                        {
+                            Interlocked.Increment(ref ExtensionMisses);
+                            shortName = Name;
+                            break;
+                        }
                     }
                 }
 
@@ -2273,10 +2482,10 @@ namespace CodeWalker.GameFiles
         public uint H1; //first 2 header values from RPF table...
         public uint H2;
         private string name;
-        private string nameLower;
         private uint shortNameHash;
         private uint nameHash;
         private string shortName;
+        private string extension;
 
         public abstract void Read(DataReader reader);
         public abstract void Write(DataWriter writer);
@@ -2286,9 +2495,9 @@ namespace CodeWalker.GameFiles
             return Path;
         }
 
-        public string GetShortName()
+        public bool IsExtension(string ext)
         {
-            return ShortName;
+            return Extension.Equals(ext, StringComparison.Ordinal);
         }
     }
 

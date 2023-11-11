@@ -862,6 +862,7 @@ namespace CodeWalker.GameFiles
                         ChildYmaps[i] = gfc.GetYmap(chash);
                         if (ChildYmaps[i] == null)
                         {
+                            Console.WriteLine($"Couldn't find child ymap! {chash} for {Name}");
                             //couldn't find child ymap..
                         }
                     }
@@ -895,7 +896,10 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < ChildYmaps.Length; i++)
                 {
                     var cmap = ChildYmaps[i];
-                    if (cmap == null) continue; //nothing here..
+                    if (cmap == null)
+                    {
+                        continue; //nothing here..
+                    }
                     //cmap.EnsureChildYmaps();
                     if ((cmap.Loaded) && (!cmap.MergedWithParent))
                     {
@@ -956,7 +960,7 @@ namespace CodeWalker.GameFiles
                         YmapEntityDef p = null;
                         if ((pymap != null) && (pymap.AllEntities != null))
                         {
-                            if ((pind < pymap.AllEntities.Length))
+                            if (pind < pymap.AllEntities.Length)
                             {
                                 p = pymap.AllEntities[pind];
                                 ent.Parent = p;
@@ -964,7 +968,9 @@ namespace CodeWalker.GameFiles
                             }
                         }
                         else
-                        { }//should only happen if parent ymap not loaded yet...
+                        {
+                            Console.WriteLine($"Parent not loaded yet for {pymap.Name}");
+                        }
                     }
                 }
             }
@@ -974,8 +980,6 @@ namespace CodeWalker.GameFiles
                 {
                     LODLights.Init(Parent.DistantLODLights);
                 }
-                else
-                { }
             }
         }
 
@@ -987,8 +991,11 @@ namespace CodeWalker.GameFiles
         {
             //used by the editor to add to the ymap.
 
-            List<YmapEntityDef> allents = new List<YmapEntityDef>();
-            if (AllEntities != null) allents.AddRange(AllEntities);
+            List<YmapEntityDef> allents;
+            if (AllEntities != null)
+                allents = new List<YmapEntityDef>(AllEntities);
+            else
+                allents = new List<YmapEntityDef>();
             ent.Index = allents.Count;
             ent.Ymap = this;
             allents.Add(ent);
@@ -999,8 +1006,11 @@ namespace CodeWalker.GameFiles
             {
                 //root entity, add to roots.
 
-                List<YmapEntityDef> rootents = new List<YmapEntityDef>();
-                if (RootEntities != null) rootents.AddRange(RootEntities);
+                List<YmapEntityDef> rootents;
+                if (RootEntities != null)
+                    rootents = new List<YmapEntityDef>(RootEntities);
+                else
+                    rootents = new List<YmapEntityDef>();
                 rootents.Add(ent);
                 RootEntities = rootents.ToArray();
             }
@@ -1012,7 +1022,8 @@ namespace CodeWalker.GameFiles
         public bool RemoveEntity(YmapEntityDef ent)
         {
             //used by the editor to remove from the ymap.
-            if (ent == null) return false;
+            if (ent == null)
+                return false;
 
             var res = true;
 
@@ -1020,23 +1031,32 @@ namespace CodeWalker.GameFiles
             List<YmapEntityDef> newAllEntities = new List<YmapEntityDef>();
             List<YmapEntityDef> newRootEntities = new List<YmapEntityDef>();
 
-            for (int i = 0; i < AllEntities.Length; i++)
+            if (AllEntities != null)
             {
-                var oent = AllEntities[i];
-                oent.Index = newAllEntities.Count;
-                if (oent != ent) newAllEntities.Add(oent);
-                else if (i != idx)
+                for (int i = 0; i < AllEntities.Length; i++)
                 {
-                    res = false; //indexes didn't match.. this shouldn't happen!
+                    var oent = AllEntities[i];
+                    oent.Index = newAllEntities.Count;
+                    if (oent != ent)
+                    {
+                        newAllEntities.Add(oent);
+                    }
+                    else if (i != idx)
+                    {
+                        res = false; //indexes didn't match.. this shouldn't happen!
+                    }
                 }
             }
-            for (int i = 0; i < RootEntities.Length; i++)
+            if (RootEntities != null)
             {
-                var oent = RootEntities[i];
-                if (oent != ent) newRootEntities.Add(oent);
+                for (int i = 0; i < RootEntities.Length; i++)
+                {
+                    var oent = RootEntities[i];
+                    if (oent != ent) newRootEntities.Add(oent);
+                }
             }
 
-            if ((AllEntities.Length == newAllEntities.Count) || (RootEntities.Length == newRootEntities.Count))
+            if (AllEntities == null || AllEntities.Length == newAllEntities.Count || RootEntities == null || RootEntities.Length == newRootEntities.Count)
             {
                 res = false;
             }
@@ -1055,7 +1075,8 @@ namespace CodeWalker.GameFiles
         public void AddCarGen(YmapCarGen cargen)
         {
             List<YmapCarGen> cargens = new List<YmapCarGen>();
-            if (CarGenerators != null) cargens.AddRange(CarGenerators);
+            if (CarGenerators != null)
+                cargens.AddRange(CarGenerators);
             cargen.Ymap = this;
             cargens.Add(cargen);
             CarGenerators = cargens.ToArray();
@@ -1334,10 +1355,9 @@ namespace CodeWalker.GameFiles
 
         public void SetName(string newname)
         {
-            var newnamel = newname.ToLowerInvariant();
             var newnamex = newname + ".ymap";
-            var newhash = JenkHash.GenHash(newnamel);
-            JenkIndex.Ensure(newnamel);
+            var newhash = JenkHash.GenHashLower(newname);
+            JenkIndex.EnsureLower(newname);
             if (RpfFileEntry != null)
             {
                 RpfFileEntry.Name = newnamex;
@@ -1692,7 +1712,7 @@ namespace CodeWalker.GameFiles
 
         public int Index { get; set; }
         public float Distance { get; set; } //used for rendering
-        public bool IsVisible; //used for rendering
+        public bool IsWithinLodDist; //used for rendering
         public bool ChildrenVisible; //used for rendering
         public bool ChildrenRendered; //used when rendering ymap mode to reduce LOD flashing...
         public YmapEntityDef Parent { get; set; } //for browsing convenience, also used/updated for rendering

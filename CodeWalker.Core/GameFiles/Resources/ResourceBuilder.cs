@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeWalker.Core.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -470,7 +471,7 @@ namespace CodeWalker.GameFiles
             {
                 DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
                 MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream("Decompress", data.Length);
-                ds.CopyTo(outstr);
+                ds.CopyToFast(outstr);
                 return outstr.ToArray();
             }
         }

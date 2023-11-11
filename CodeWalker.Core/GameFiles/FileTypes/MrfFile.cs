@@ -798,9 +798,13 @@ namespace CodeWalker.GameFiles
             {
             }
 
-            protected override void WriteToStream(byte[] value, bool ignoreEndianess = false)
+            protected override void WriteToStream(byte[] value, bool ignoreEndianess = false, int count = -1, int offset = 0)
             {
-                position += value.Length;
+                if (count == -1)
+                {
+                    count = value.Length;
+                }
+                position += count;
                 length = Math.Max(length, position);
             }
         }

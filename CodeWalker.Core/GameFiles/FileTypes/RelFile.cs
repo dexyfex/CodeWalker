@@ -105,7 +105,26 @@ namespace CodeWalker.GameFiles
             RpfFileEntry = entry;
         }
 
-        public void Load(byte[] data, RpfFileEntry entry)
+        public unsafe string ReadString(BinaryReader br, int length, bool ignoreNullTerminator = false)
+        {
+            var bytes = stackalloc char[length];
+            var currentLength = 0;
+            while (currentLength < length)
+            {
+                var c = (char)br.ReadByte();
+                if (c != 0)
+                {
+                    bytes[currentLength] = c;
+                    currentLength++;
+                }
+                else if (!ignoreNullTerminator)
+                    break;
+            }
+
+            return new string(bytes, 0, currentLength);
+        }
+
+        public unsafe void Load(byte[] data, RpfFileEntry entry)
         {
             RawFileData = data;
             if (entry != null)
@@ -114,8 +133,8 @@ namespace CodeWalker.GameFiles
                 Name = entry.Name;
             }
 
-            MemoryStream ms = new MemoryStream(data);
-            BinaryReader br = new BinaryReader(ms);
+            using MemoryStream ms = new MemoryStream(data);
+            using BinaryReader br = new BinaryReader(ms);
             StringBuilder sb = new StringBuilder();
 
             RelType = (RelDatFileType)br.ReadUInt32(); //type
@@ -134,19 +153,25 @@ namespace CodeWalker.GameFiles
                 }
                 NameTableOffsets = ntoffsets;
                 string[] names = new string[NameTableCount];
+                var remainingLength = (int)NameTableLength;
                 for (uint i = 0; i < NameTableCount; i++)
                 {
-                    sb.Clear();
-                    while (true)
+                    int length = 0;
+                    if (i < NameTableCount - 1)
                     {
-                        char c = (char)br.ReadByte();
-                        if (c != 0) sb.Append(c);
-                        else break;
+                        length = (int)(NameTableOffsets[i + 1] - NameTableOffsets[i]);
+                        
                     }
-                    names[i] = sb.ToString();
+                    else
+                    {
+                        length = remainingLength;
+                    }
+                    
+                    names[i] = ReadString(br, length);
 
                     //JenkIndex.Ensure(names[i]); //really need both here..?
-                    JenkIndex.Ensure(names[i].ToLowerInvariant());
+                    JenkIndex.EnsureLower(names[i]);
+                    remainingLength -= length;
                 }
                 NameTable = names;
             }
@@ -164,18 +189,13 @@ namespace CodeWalker.GameFiles
                     for (uint i = 0; i < IndexCount; i++)
                     {
                         byte sl = br.ReadByte();
-                        sb.Clear();
-                        for (int j = 0; j < sl; j++)
-                        {
-                            char c = (char)br.ReadByte();
-                            if (c != 0) sb.Append(c);
-                        }
+                        var str = ReadString(br, (int)sl, true);
                         RelIndexString ristr = new RelIndexString();
-                        ristr.Name = sb.ToString();
+                        ristr.Name = str;
                         ristr.Offset = br.ReadUInt32();
                         ristr.Length = br.ReadUInt32();
                         indexstrs[i] = ristr;
-                        JenkIndex.Ensure(ristr.Name.ToLowerInvariant());
+                        JenkIndex.EnsureLower(ristr.Name);
                     }
                     IndexStrings = indexstrs;
                 }
@@ -235,9 +255,6 @@ namespace CodeWalker.GameFiles
             { }
             //EOF!
 
-            br.Dispose();
-            ms.Dispose();
-
 
             ParseDataBlock();
 
@@ -253,8 +270,8 @@ namespace CodeWalker.GameFiles
 
 
 
-            MemoryStream ms = new MemoryStream(DataBlock);
-            BinaryReader br = new BinaryReader(ms);
+            using MemoryStream ms = new MemoryStream(DataBlock);
+            using BinaryReader br = new BinaryReader(ms);
 
             DataUnkVal = br.ReadUInt32(); //3 bytes used... for? ..version? flags?
             #region DataUnkVal unk values test
@@ -315,12 +332,6 @@ namespace CodeWalker.GameFiles
             RelDatasSorted = reldatas.ToArray();
 
 
-            br.Dispose();
-            ms.Dispose();
-
-
-
-
             RelDataDict.Clear();
             foreach (var reldata in RelDatas)
             {
@@ -328,7 +339,7 @@ namespace CodeWalker.GameFiles
                 {
                     reldata.NameHash = JenkHash.GenHash(reldata.Name); //should this be lower case?
                     JenkIndex.Ensure(reldata.Name);
-                    JenkIndex.Ensure(reldata.Name.ToLowerInvariant()); //which one to use?
+                    JenkIndex.EnsureLower(reldata.Name); //which one to use?
                 }
 
                 //if (reldata.NameHash == 0)
@@ -349,24 +360,10 @@ namespace CodeWalker.GameFiles
                         for (int i = 0; i < snd.ChildSoundsCount; i++)
                         {
                             var audhash = snd.ChildSoundsHashes[i];
-                            RelData auddata = null;
-                            if (RelDataDict.TryGetValue(audhash, out auddata))
+                            if (RelDataDict.TryGetValue(audhash, out var auddata))
                             {
                                 snd.ChildSounds[i] = auddata;
                             }
-                            else
-                            { }
-                        }
-                    }
-                    if (snd.AudioContainers != null)
-                    {
-                        foreach (var cnt in snd.AudioContainers)
-                        {
-                            string cname = JenkIndex.TryGetString(cnt.Hash);
-                            if (!string.IsNullOrEmpty(cname))
-                            { }
-                            else
-                            { }
                         }
                     }
                 }
@@ -385,8 +382,6 @@ namespace CodeWalker.GameFiles
                     {
                         speechDict[speechData.DataOffset] = speechData;
                     }
-                    else
-                    { }
 
                     speechData.Type = Dat4SpeechType.ByteArray;
                     speechData.TypeID = 0; //will be set again after this
@@ -397,32 +392,24 @@ namespace CodeWalker.GameFiles
                     var hashOffset = HashTableOffsets[i];
                     var hash = HashTable[i];
                     var itemOffset = hashOffset - 8;
-                    Dat4SpeechData speechData = null;
-                    speechDict.TryGetValue(itemOffset, out speechData);
-                    if (speechData != null)
+                    if (speechDict.TryGetValue(itemOffset, out var speechData) && speechData != null)
                     {
                         speechData.Type = Dat4SpeechType.Hash;
                         speechData.TypeID = 4;
                         speechData.Hash = hash;
                     }
-                    else
-                    { }
                 }
                 for (uint i = 0; i < PackTableCount; i++)
                 {
                     var packOffset = PackTableOffsets[i];
                     var pack = PackTable[i];
                     var itemOffset = packOffset - 12;
-                    Dat4SpeechData speechData = null;
-                    speechDict.TryGetValue(itemOffset, out speechData);
-                    if (speechData != null)
+                    if (speechDict.TryGetValue(itemOffset, out var speechData) && speechData != null)
                     {
                         speechData.Type = Dat4SpeechType.Container;
                         speechData.TypeID = 8;
                         speechData.ContainerHash = pack;
                     }
-                    else
-                    { }//shouldn't happen!
                 }
 
 
@@ -456,33 +443,31 @@ namespace CodeWalker.GameFiles
             d.Data = data;
 
 
-            using (BinaryReader dbr = new BinaryReader(new MemoryStream(data)))
-            {
-                d.ReadType(dbr);
+            using BinaryReader dbr = new BinaryReader(new MemoryStream(data));
+            d.ReadType(dbr);
 
-                switch (RelType)
-                {
-                    case RelDatFileType.Dat4:   //speech.dat4.rel, audioconfig.dat4.rel
-                        return ReadData4(d, dbr);
-                    case RelDatFileType.Dat10ModularSynth:  //amp.dat10.rel
-                        return ReadData10(d, dbr);
-                    case RelDatFileType.Dat15DynamicMixer:  //mix.dat15.rel
-                        return ReadData15(d, dbr);
-                    case RelDatFileType.Dat16Curves:  //curves.dat16.rel
-                        return ReadData16(d, dbr);
-                    case RelDatFileType.Dat22Categories:  //categories.dat22.rel
-                        return ReadData22(d, dbr);
-                    case RelDatFileType.Dat54DataEntries:  //sounds.dat54.rel
-                        return ReadData54(d, dbr);
-                    case RelDatFileType.Dat149: //game.dat149.rel
-                        return ReadData149(d, dbr);
-                    case RelDatFileType.Dat150: //game.dat150.rel
-                        return ReadData150(d, dbr);
-                    case RelDatFileType.Dat151: //game.dat151.rel
-                        return ReadData151(d, dbr);
-                    default:
-                        return d; //shouldn't get here...
-                }
+            switch (RelType)
+            {
+                case RelDatFileType.Dat4:   //speech.dat4.rel, audioconfig.dat4.rel
+                    return ReadData4(d, dbr);
+                case RelDatFileType.Dat10ModularSynth:  //amp.dat10.rel
+                    return ReadData10(d, dbr);
+                case RelDatFileType.Dat15DynamicMixer:  //mix.dat15.rel
+                    return ReadData15(d, dbr);
+                case RelDatFileType.Dat16Curves:  //curves.dat16.rel
+                    return ReadData16(d, dbr);
+                case RelDatFileType.Dat22Categories:  //categories.dat22.rel
+                    return ReadData22(d, dbr);
+                case RelDatFileType.Dat54DataEntries:  //sounds.dat54.rel
+                    return ReadData54(d, dbr);
+                case RelDatFileType.Dat149: //game.dat149.rel
+                    return ReadData149(d, dbr);
+                case RelDatFileType.Dat150: //game.dat150.rel
+                    return ReadData150(d, dbr);
+                case RelDatFileType.Dat151: //game.dat151.rel
+                    return ReadData151(d, dbr);
+                default:
+                    return d; //shouldn't get here...
             }
         }
 
@@ -25334,7 +25319,7 @@ namespace CodeWalker.GameFiles
             {
                 return 0;
             }
-            if (str.StartsWith("hash_"))
+            if (str.StartsWith("hash_", StringComparison.OrdinalIgnoreCase))
             {
                 return Convert.ToUInt32(str.Substring(5), 16);
             }

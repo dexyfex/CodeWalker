@@ -90,20 +90,31 @@ namespace CodeWalker
         {
             if (bytes == null)
             { return string.Empty; } //file not found..
+            var start = 0;
+            var length = bytes.Length;
             if ((bytes.Length > 3) && (bytes[0] == 0xEF) && (bytes[1] == 0xBB) && (bytes[2] == 0xBF))
             {
-                byte[] newb = new byte[bytes.Length - 3];
-                for (int i = 3; i < bytes.Length; i++)
-                {
-                    newb[i - 3] = bytes[i];
-                }
-                bytes = newb; //trim starting byte order mark
+                start = 3;
+                length = bytes.Length - 3;
             }
-            return Encoding.UTF8.GetString(bytes);
+            return Encoding.UTF8.GetString(bytes, start, length);
         }
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
             return source?.IndexOf(toCheck, comp) >= 0;
+        }
+
+        public static bool EndsWithAny(this string str, params string[] strings)
+        {
+            foreach(var searchString in strings)
+            {
+                if (str.EndsWith(searchString, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
     }
@@ -264,6 +275,12 @@ namespace CodeWalker
         public static uint UpdateBit(uint value, int bit, bool flag)
         {
             if (flag) return SetBit(value, bit);
+
+
+
+
+
+
             else return ClearBit(value, bit);
         }
         public static uint RotateLeft(uint value, int count)
@@ -275,24 +292,4 @@ namespace CodeWalker
             return (value >> count) | (value << (32 - count));
         }
     }
-
-    public static class SpanExtensions
-    {
-        public static int Read(this Stream stream, Span<byte> buffer)
-        {
-            var n = Math.Min(stream.Length - stream.Position, buffer.Length);
-            if (n <= 0)
-                return 0;
-            
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                var result = stream.ReadByte();
-                buffer[i] = (byte)result;
-            }
-
-            return buffer.Length;
-        }
-    }
-
-
 }

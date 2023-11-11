@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Linq;
 using Range = FastColoredTextBoxNS.Range;
+using CodeWalker.Core.Utils;
 
 namespace CodeWalker.Forms
 {
@@ -400,7 +401,7 @@ namespace CodeWalker.Forms
                     {
                         Stream wavStream = audio.GetWavStream();
                         FileStream stream = File.Create(saveFileDialog.FileName);
-                        wavStream.CopyTo(stream);
+                        wavStream.CopyToFast(stream);
                         stream.Close();
                         wavStream.Close();
                     }

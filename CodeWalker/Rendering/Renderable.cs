@@ -10,6 +10,7 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 using CodeWalker.World;
 using SharpDX.Direct3D;
 using SharpDX;
+using System.Threading;
 
 namespace CodeWalker.Rendering
 {
@@ -72,6 +73,12 @@ namespace CodeWalker.Rendering
         public RenderableModel[] LowModels;
         public RenderableModel[] VlowModels;
         public RenderableModel[] AllModels;
+
+        public float LodDistanceHigh;
+        public float LodDistanceMed;
+        public float LodDistanceLow;
+        public float LodDistanceVLow;
+        
         //public Dictionary<uint, Texture> TextureDict { get; private set; }
         //public long EmbeddedTextureSize { get; private set; }
 
@@ -148,6 +155,10 @@ namespace CodeWalker.Rendering
                 curmodel += vlow.Length;
             }
 
+            LodDistanceHigh = drawable.LodDistHigh;
+            LodDistanceMed = drawable.LodDistMed;
+            LodDistanceLow = drawable.LodDistLow;
+            LodDistanceVLow = drawable.LodDistVlow;
 
             //var sg = Drawable.ShaderGroup;
             //if ((sg != null) && (sg.TextureDictionary != null))
@@ -344,6 +355,30 @@ namespace CodeWalker.Rendering
                 rlights[i] = rlight;
             }
             Lights = rlights;
+        }
+
+        public RenderableModel[] GetModels(float distance)
+        {
+            if (distance > LodDistanceVLow)
+            {
+                return Array.Empty<RenderableModel>();
+            }
+            else if (distance > LodDistanceLow)
+            {
+                return VlowModels ?? Array.Empty<RenderableModel>();
+            }
+            else if (distance > LodDistanceMed)
+            {
+                return LowModels ?? Array.Empty<RenderableModel>();
+            }
+            else if (distance > LodDistanceHigh)
+            {
+                return MedModels ?? Array.Empty<RenderableModel>();
+            }
+            else
+            {
+                return HDModels;
+            }
         }
 
         private RenderableModel InitModel(DrawableModel dm)
@@ -723,7 +758,7 @@ namespace CodeWalker.Rendering
             }
             else
             {
-                foreach (var model in HDModels) //TODO: figure out which models/geometries this should be applying to!
+                foreach (var model in AllModels) //TODO: figure out which models/geometries this should be applying to!
                 {
                     if (model == null) continue;
                     foreach (var geom in model.Geometries)

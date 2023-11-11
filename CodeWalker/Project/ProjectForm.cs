@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -124,26 +125,22 @@ namespace CodeWalker.Project
             SetTheme(Settings.Default.ProjectWindowTheme, false);
             ShowDefaultPanels();
 
+            GameFileCache = GameFileCacheFactory.GetInstance();
 
-            if ((WorldForm != null) && (WorldForm.GameFileCache != null))
+            if (!GameFileCache.IsInited)
             {
-                GameFileCache = WorldForm.GameFileCache;
-                RpfMan = GameFileCache.RpfMan;
-            }
-            else
-            {
-                GameFileCache = GameFileCacheFactory.Create();
-                new Thread(new ThreadStart(() =>
+                Task.Run(() =>
                 {
                     GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                     GameFileCache.Init(UpdateStatus, UpdateError);
-                    RpfMan = GameFileCache.RpfMan;
-                })).Start();
+                });
             }
-        }
 
+            RpfMan = GameFileCache.RpfMan;
+        }
         private void UpdateStatus(string text)
         {
+            return;
             try
             {
                 if (InvokeRequired)
@@ -168,6 +165,7 @@ namespace CodeWalker.Project
                 }
                 else
                 {
+                    Console.WriteLine(text);
                     //TODO: error text
                     //ErrorLabel.Text = text;
                 }
@@ -1640,14 +1638,14 @@ namespace CodeWalker.Project
                             }
                             break;
                         case ".dat":
-                            if (fn.StartsWith("trains"))
+                            if (fn.StartsWith("trains", StringComparison.OrdinalIgnoreCase))
                             {
                                 var track = CurrentProjectFile.AddTrainsFile(file);
                                 if (track != null) LoadTrainTrackFromFile(track, file);
                             }
                             break;
                         case ".rel":
-                            if (fn.EndsWith(".dat151.rel"))
+                            if (fn.EndsWith(".dat151.rel", StringComparison.OrdinalIgnoreCase))
                             {
                                 var dat151 = CurrentProjectFile.AddAudioRelFile(file);
                                 if (dat151 != null) LoadAudioRelFromFile(dat151, file);
@@ -6129,7 +6127,7 @@ namespace CodeWalker.Project
                 var delim = line.Contains(",") ? "," : " ";
                 var vals = line.Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries);
                 if (vals.Length < 3) continue;
-                if (vals[0].StartsWith("X")) continue;
+                if (vals[0].StartsWith("X", StringComparison.OrdinalIgnoreCase)) continue;
                 Vector3 pos = Vector3.Zero;
                 float dir = 0;
                 var action = CScenarioChainingEdge__eAction.Move;
@@ -7083,7 +7081,7 @@ namespace CodeWalker.Project
 
 
 
-
+        private DateTime LastProjectCheck = DateTime.MinValue;
         public void GetVisibleYmaps(Camera camera, Dictionary<MetaHash, YmapFile> ymaps)
         {
             if (hidegtavmap)
@@ -7106,10 +7104,16 @@ namespace CodeWalker.Project
                         }
                     }
 
-                    visiblemloentities.Clear();
-                    foreach (var kvp in ymaps)//TODO: improve performance
+                    if (DateTime.Now - LastProjectCheck < TimeSpan.FromSeconds(1))
                     {
-                        var ymap = kvp.Value;
+                        return;
+                    }
+
+                    LastProjectCheck = DateTime.Now;
+
+                    visiblemloentities.Clear();
+                    foreach (var ymap in ymaps.Values)//TODO: improve performance
+                    {
                         if (ymap.AllEntities != null)//THIS IS TERRIBLE! EATING ALL FPS
                         {
                             foreach (var ent in ymap.AllEntities)//WHYYYY - maybe only do this after loading/editing ytyp!
@@ -8664,7 +8668,6 @@ namespace CodeWalker.Project
             track.Name = fname;
             track.FilePath = filename;
             track.RpfFileEntry.Name = fname;
-            track.RpfFileEntry.NameLower = fname.ToLowerInvariant();
 
             if (WorldForm != null)
             {

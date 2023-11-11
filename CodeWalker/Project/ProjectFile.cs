@@ -530,9 +530,9 @@ namespace CodeWalker.Project
             ytyp.RpfFileEntry.Name = Path.GetFileName(filename);
             ytyp.FilePath = GetFullFilePath(filename);
             ytyp.Name = ytyp.RpfFileEntry.Name;
-            JenkIndex.Ensure(ytyp.Name);
-            JenkIndex.Ensure(Path.GetFileNameWithoutExtension(ytyp.Name));
-            JenkIndex.Ensure(filename);
+            JenkIndex.EnsureBoth(ytyp.Name);
+            JenkIndex.EnsureBoth(Path.GetFileNameWithoutExtension(ytyp.Name));
+            JenkIndex.EnsureBoth(filename);
             if (!AddYtypFile(ytyp)) return null;
             return ytyp;
         }

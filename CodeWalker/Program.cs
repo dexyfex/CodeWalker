@@ -1,4 +1,5 @@
-﻿using CodeWalker.Forms;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.Forms;
 using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.Utils;
@@ -10,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Shell;
@@ -29,6 +31,13 @@ namespace CodeWalker
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
             ConsoleWindow.Hide();
+
+            Application.ThreadException += (object sender, ThreadExceptionEventArgs e) =>
+            {
+                Console.WriteLine($"Unhandeled exception occured: {e.Exception}");
+            };
+
+
             bool menumode = false;
             bool explorermode = false;
             bool projectmode = false;
@@ -98,7 +107,13 @@ namespace CodeWalker
                 }
                 else if (explorermode)
                 {
-                    Application.Run(new ExploreForm());
+                    if (!NamedPipe.TrySendMessageToOtherProcess("explorer"))
+                    {
+                        var form = new ExploreForm();
+                        var namedPipe = new NamedPipe(form);
+                        namedPipe.Init();
+                        Application.Run(form);
+                    }
                 }
                 else if (projectmode)
                 {
@@ -114,15 +129,29 @@ namespace CodeWalker
                 }
                 else if (path != null)
                 {
-                    var modelForm = new ModelForm();
-                    modelForm.Load += new EventHandler(async (sender, eventArgs) => {
-                        modelForm.ViewModel(path);
-                    });
-                    Application.Run(modelForm);
+                    if (!NamedPipe.TrySendMessageToOtherProcess($"open-file {path}"))
+                    {
+                        Form form = null;
+                        try
+                        {
+                            form = OpenAnyFile.OpenFilePath(path);
+                        }
+                        catch (NotImplementedException ex)
+                        {
+                            MessageBox.Show("Dit type bestand is op het moment nog niet ondersteund!", ex.ToString());
+                        }
+                        if (form != null)
+                        {
+                            Application.Run(form);
+                        }
+                    }
                 }
                 else
                 {
-                    Application.Run(new WorldForm());
+                    var form = new WorldForm();
+                    var namedPipe = new NamedPipe(form);
+                    namedPipe.Init();
+                    Application.Run(form);
                 }
 #if !DEBUG
             }

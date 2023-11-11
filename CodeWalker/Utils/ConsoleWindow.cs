@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeWalker.World;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -36,8 +37,7 @@ namespace CodeWalker.Utils
             {
                 var logFile = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "log.log");
                 //var streamWriter = File.OpenWrite(logFile);
-                var streamWriter = new StreamWriter(logFile, false);
-                streamWriter.AutoFlush = true;
+                var streamWriter = new StreamWriter(logFile, false, Encoding.UTF8, 1024);
 
                 consoleStream.AddStream(streamWriter);
             }
@@ -116,15 +116,15 @@ namespace CodeWalker.Utils
 
         public override void Write(char ch)
         {
-            foreach (var writer in _writers)
+            for (int i = 0; i < _writers.Count; i++)
             {
                 try
                 {
-                    writer.Write(ch);
+                    _writers[i].Write(ch);
                 }
                 catch (ObjectDisposedException)
                 {
-                    _writers.Remove(writer);
+                    _writers.Remove(_writers[i]);
                     // handle exception here
                 }
                 catch (IOException)
@@ -139,6 +139,54 @@ namespace CodeWalker.Utils
             foreach (var writer in _writers)
             {
                 writer.Write(value);
+            }
+        }
+
+        public override void WriteLine()
+        {
+            base.WriteLine();
+            Flush();
+        }
+
+        public override void WriteLine(string value)
+        {
+            for (int i = 0; i < _writers.Count; i++)
+            {
+                try
+                {
+                    _writers[i].WriteLine(value);
+                    _writers[i].Flush();
+                }
+                catch (ObjectDisposedException)
+                {
+                    _writers.Remove(_writers[i]);
+                    // handle exception here
+                }
+                catch (IOException)
+                {
+                    // handle exception here
+                }
+            }
+        }
+
+        public override void WriteLine(object value)
+        {
+            for (int i = 0; i < _writers.Count; i++)
+            {
+                try
+                {
+                    _writers[i].WriteLine(value);
+                    _writers[i].Flush();
+                }
+                catch (ObjectDisposedException)
+                {
+                    _writers.Remove(_writers[i]);
+                    // handle exception here
+                }
+                catch (IOException)
+                {
+                    // handle exception here
+                }
             }
         }
 

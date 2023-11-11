@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
     Copyright(c) 2015 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy

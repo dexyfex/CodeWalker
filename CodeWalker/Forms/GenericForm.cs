@@ -25,14 +25,11 @@ namespace CodeWalker.Forms
             }
         }
         public string FilePath { get; set; }
-
-        ExploreForm ExploreForm;
         object CurrentFile;
 
 
-        public GenericForm(ExploreForm exploreForm)
+        public GenericForm()
         {
-            ExploreForm = exploreForm;
             InitializeComponent();
         }
 

@@ -1,4 +1,4 @@
-﻿using System;
+﻿          using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +10,7 @@ namespace CodeWalker.GameFiles
     {
         public volatile bool Loaded = false;
         public volatile bool LoadQueued = false;
+        public DateTime LastLoadTime = DateTime.MinValue;
         public RpfFileEntry RpfFileEntry { get; set; }
         public string Name { get; set; }
         public string FilePath { get; set; } //used by the project form.
@@ -91,7 +92,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    public struct GameFileCacheKey
+    public struct GameFileCacheKey : IEquatable<GameFileCacheKey>
     {
         public uint Hash { get; set; }
         public GameFileType Type { get; set; }
@@ -102,11 +103,20 @@ namespace CodeWalker.GameFiles
             Type = type;
         }
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
-            if (obj == null) return false;
-            if (obj is not GameFileCacheKey gameFileCacheKey) return false;
+            if (obj == null)
+                return false;
+            if (obj is not GameFileCacheKey gameFileCacheKey)
+                return false;
             return gameFileCacheKey.Hash == Hash && gameFileCacheKey.Type == Type;
+        }
+
+        public readonly bool Equals(GameFileCacheKey obj)
+        {
+            if (obj == null)
+                return false;
+            return obj.Hash == Hash && obj.Type == Type;
         }
 
         public static bool operator ==(GameFileCacheKey first, GameFileCacheKey second)
@@ -119,12 +129,9 @@ namespace CodeWalker.GameFiles
             return !first.Equals(second);
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return (int)Hash;
         }
     }
-
-
-
 }

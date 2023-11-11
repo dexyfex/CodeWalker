@@ -1,4 +1,6 @@
-﻿using SharpDX;
+﻿
+
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,144 +17,143 @@ namespace CodeWalker.GameFiles
         public static string GetXml(RpfFileEntry e, byte[] data, out string filename, string outputfolder = "")
         {
             var fn = e.Name;
-            var fnl = fn.ToLowerInvariant();
 
             if (!string.IsNullOrEmpty(outputfolder))
             {
-                outputfolder = Path.Combine(outputfolder, e.GetShortName());
+                outputfolder = Path.Combine(outputfolder, e.ShortName);
             }
 
-            if (fnl.EndsWith(".ymt"))
+            if (fn.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase))
             {
                 YmtFile ymt = RpfFile.GetFile<YmtFile>(e, data);
                 return GetXml(ymt, out filename);
             }
-            else if (fnl.EndsWith(".ymf"))
+            else if (fn.EndsWith(".ymf", StringComparison.OrdinalIgnoreCase))
             {
                 YmfFile ymf = RpfFile.GetFile<YmfFile>(e, data);
                 return GetXml(ymf, out filename);
             }
-            else if (fnl.EndsWith(".ymap"))
+            else if (fn.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase))
             {
                 YmapFile ymap = RpfFile.GetFile<YmapFile>(e, data);
                 return GetXml(ymap, out filename);
             }
-            else if (fnl.EndsWith(".ytyp"))
+            else if (fn.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase))
             {
                 YtypFile ytyp = RpfFile.GetFile<YtypFile>(e, data);
                 return GetXml(ytyp, out filename);
             }
-            else if (fnl.EndsWith(".pso"))
+            else if (fn.EndsWith(".pso", StringComparison.OrdinalIgnoreCase))
             {
                 JPsoFile pso = RpfFile.GetFile<JPsoFile>(e, data);
                 return GetXml(pso, out filename);
             }
-            else if (fnl.EndsWith(".cut"))
+            else if (fn.EndsWith(".cut", StringComparison.OrdinalIgnoreCase))
             {
                 CutFile cut = RpfFile.GetFile<CutFile>(e, data);
                 return GetXml(cut, out filename);
             }
-            else if (fnl.EndsWith(".rel"))
+            else if (fn.EndsWith(".rel", StringComparison.OrdinalIgnoreCase))
             {
                 RelFile rel = RpfFile.GetFile<RelFile>(e, data);
                 return GetXml(rel, out filename);
             }
-            else if (fnl.EndsWith(".ynd"))
+            else if (fn.EndsWith(".ynd", StringComparison.OrdinalIgnoreCase))
             {
                 YndFile ynd = RpfFile.GetFile<YndFile>(e, data);
                 return GetXml(ynd, out filename);
             }
-            else if (fnl.EndsWith(".ynv"))
+            else if (fn.EndsWith(".ynv", StringComparison.OrdinalIgnoreCase))
             {
                 YnvFile ynv = RpfFile.GetFile<YnvFile>(e, data);
                 return GetXml(ynv, out filename);
             }
-            else if (fnl.EndsWith(".ycd"))
+            else if (fn.EndsWith(".ycd", StringComparison.OrdinalIgnoreCase))
             {
                 YcdFile ycd = RpfFile.GetFile<YcdFile>(e, data);
                 return GetXml(ycd, out filename);
             }
-            else if (fnl.EndsWith(".ybn"))
+            else if (fn.EndsWith(".ybn", StringComparison.OrdinalIgnoreCase))
             {
                 YbnFile ybn = RpfFile.GetFile<YbnFile>(e, data);
                 return GetXml(ybn, out filename);
             }
-            else if (fnl.EndsWith(".ytd"))
+            else if (fn.EndsWith(".ytd", StringComparison.OrdinalIgnoreCase))
             {
                 YtdFile ytd = RpfFile.GetFile<YtdFile>(e, data);
                 return GetXml(ytd, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".ydr"))
+            else if (fn.EndsWith(".ydr", StringComparison.OrdinalIgnoreCase))
             {
                 YdrFile ydr = RpfFile.GetFile<YdrFile>(e, data);
                 return GetXml(ydr, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".ydd"))
+            else if (fn.EndsWith(".ydd", StringComparison.OrdinalIgnoreCase))
             {
                 YddFile ydd = RpfFile.GetFile<YddFile>(e, data);
                 return GetXml(ydd, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".yft"))
+            else if (fn.EndsWith(".yft", StringComparison.OrdinalIgnoreCase))
             {
                 YftFile yft = RpfFile.GetFile<YftFile>(e, data);
                 return GetXml(yft, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".ypt"))
+            else if (fn.EndsWith(".ypt", StringComparison.OrdinalIgnoreCase))
             {
                 YptFile ypt = RpfFile.GetFile<YptFile>(e, data);
                 return GetXml(ypt, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".yld"))
+            else if (fn.EndsWith(".yld", StringComparison.OrdinalIgnoreCase))
             {
                 YldFile yld = RpfFile.GetFile<YldFile>(e, data);
                 return GetXml(yld, out filename);
             }
-            else if (fnl.EndsWith(".yed"))
+            else if (fn.EndsWith(".yed", StringComparison.OrdinalIgnoreCase))
             {
                 YedFile yed = RpfFile.GetFile<YedFile>(e, data);
                 return GetXml(yed, out filename);
             }
-            else if (fnl.EndsWith(".ywr"))
+            else if (fn.EndsWith(".ywr", StringComparison.OrdinalIgnoreCase))
             {
                 YwrFile ywr = RpfFile.GetFile<YwrFile>(e, data);
                 return GetXml(ywr, out filename);
             }
-            else if (fnl.EndsWith(".yvr"))
+            else if (fn.EndsWith(".yvr", StringComparison.OrdinalIgnoreCase))
             {
                 YvrFile yvr = RpfFile.GetFile<YvrFile>(e, data);
                 return GetXml(yvr, out filename);
             }
-            else if (fnl.EndsWith(".ypdb"))
+            else if (fn.EndsWith(".ypdb", StringComparison.OrdinalIgnoreCase))
             {
                 YpdbFile ypdb = RpfFile.GetFile<YpdbFile>(e, data);
                 return GetXml(ypdb, out filename);
             }
-            else if (fnl.EndsWith(".yfd"))
+            else if (fn.EndsWith(".yfd", StringComparison.OrdinalIgnoreCase))
             {
                 YfdFile yfd = RpfFile.GetFile<YfdFile>(e, data);
                 return GetXml(yfd, out filename);
             }
-            else if (fnl.EndsWith(".awc"))
+            else if (fn.EndsWith(".awc", StringComparison.OrdinalIgnoreCase))
             {
                 AwcFile awc = RpfFile.GetFile<AwcFile>(e, data);
                 return GetXml(awc, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".fxc"))
+            else if (fn.EndsWith(".fxc", StringComparison.OrdinalIgnoreCase))
             {
                 FxcFile fxc = RpfFile.GetFile<FxcFile>(e, data);
                 return GetXml(fxc, out filename, outputfolder);
             }
-            else if (fnl.EndsWith("cache_y.dat"))
+            else if (fn.EndsWith("cache_y.dat", StringComparison.OrdinalIgnoreCase))
             {
                 CacheDatFile cdf = RpfFile.GetFile<CacheDatFile>(e, data);
                 return GetXml(cdf, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".dat") && fnl.StartsWith("heightmap"))
+            else if (fn.EndsWith(".dat", StringComparison.OrdinalIgnoreCase) && fn.StartsWith("heightmap", StringComparison.OrdinalIgnoreCase))
             {
                 HeightmapFile hmf = RpfFile.GetFile<HeightmapFile>(e, data);
                 return GetXml(hmf, out filename, outputfolder);
             }
-            else if (fnl.EndsWith(".mrf"))
+            else if (fn.EndsWith(".mrf", StringComparison.OrdinalIgnoreCase))
             {
                 MrfFile mrf = RpfFile.GetFile<MrfFile>(e, data);
                 return GetXml(mrf, out filename, outputfolder);
@@ -1653,10 +1654,8 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < pso.SchemaSection.Entries.Length; i++)
                 {
                     var entry = pso.SchemaSection.Entries[i];
-                    var enuminfo = entry as PsoEnumInfo;
-                    var structinfo = entry as PsoStructureInfo;
 
-                    if (enuminfo != null)
+                    if (entry is PsoEnumInfo enuminfo)
                     {
                         if (!EnumDict.ContainsKey(enuminfo.IndexInfo.NameHash))
                         {
@@ -1670,7 +1669,7 @@ namespace CodeWalker.GameFiles
                             //}
                         }
                     }
-                    else if (structinfo != null)
+                    else if (entry is PsoStructureInfo structinfo)
                     {
                         if (!StructDict.ContainsKey(structinfo.IndexInfo.NameHash))
                         {
@@ -1691,14 +1690,12 @@ namespace CodeWalker.GameFiles
 
             public PsoStructureInfo GetStructureInfo(MetaName name)
             {
-                PsoStructureInfo i = null;
-                StructDict.TryGetValue(name, out i);
+                StructDict.TryGetValue(name, out PsoStructureInfo i);
                 return i;
             }
             public PsoEnumInfo GetEnumInfo(MetaName name)
             {
-                PsoEnumInfo i = null;
-                EnumDict.TryGetValue(name, out i);
+                EnumDict.TryGetValue(name, out PsoEnumInfo i);
                 return i;
             }
 
@@ -2004,7 +2001,7 @@ namespace CodeWalker.GameFiles
             var aind = ind + 1;
             if (itemCount > 0)
             {
-                OpenTag(sb, ind, arrTag);
+                OpenTag(sb, ind, arrTag, metaName: typeName);
                 for (int n = 0; n < itemCount; n++)
                 {
                     Indent(sb, aind);

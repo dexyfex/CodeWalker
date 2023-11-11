@@ -117,6 +117,24 @@ namespace CodeWalker
             return new Vector2I(a.X - b.X, a.Y - b.Y);
         }
 
+        public static bool operator ==(Vector2I a, Vector2I b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(Vector2I a, Vector2I b)
+        {
+            return !a.Equals(b);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            if (obj is not Vector2I vectorB) return false;
+            
+            return vectorB.X == this.X && vectorB.Y == this.Y;
+        }
+
     }
 
 

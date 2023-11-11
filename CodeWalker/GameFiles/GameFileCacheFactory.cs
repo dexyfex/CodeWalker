@@ -1,6 +1,7 @@
 ﻿
 
 
+
 using CodeWalker.Properties;
 using System;
 using System.Diagnostics;
@@ -11,7 +12,7 @@ namespace CodeWalker.GameFiles
     public static class GameFileCacheFactory
     {
         public static GameFileCache _instance = null;
-        public static GameFileCache Create()
+        public static GameFileCache GetInstance()
         {
             if (_instance == null)
             {

@@ -24,7 +24,7 @@ namespace CodeWalker
     {
         public Form Form { get { return this; } } //for DXForm/DXManager use
 
-        public Renderer Renderer = null;
+        public Renderer Renderer { get; set; }
         public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
 
         public bool Pauserendering { get; set; }
@@ -41,6 +41,8 @@ namespace CodeWalker
 
         Entity camEntity = new Entity();
 
+        public CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
+
 
         bool MouseLButtonDown = false;
         bool MouseRButtonDown = false;
@@ -50,7 +52,7 @@ namespace CodeWalker
         System.Drawing.Point MouseLastPoint;
 
 
-        public GameFileCache GameFileCache { get; } = GameFileCacheFactory.Create();
+        public GameFileCache GameFileCache { get; } = GameFileCacheFactory.GetInstance();
 
 
         InputManager Input = new InputManager();
@@ -189,7 +191,8 @@ namespace CodeWalker
 
 
             formopen = true;
-            new Thread(new ThreadStart(ContentThread)).Start();
+
+            Task.Run(ContentThread);
 
             frametimer.Start();
 
@@ -207,63 +210,75 @@ namespace CodeWalker
                 count++;
             }
         }
-        public void RenderScene(DeviceContext context)
+        public async ValueTask RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
             frametimer.Restart();
+
+            if (elapsed < 0.016666)
+            {
+                await Task.Delay((int)(0.016666 * elapsed) * 1000);
+            }
 
             if (Pauserendering) return;
 
             GameFileCache.BeginFrame();
 
             if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
-            { return; } //couldn't get a lock, try again next time
+            {
+                return;
+            } //couldn't get a lock, try again next time
 
-            UpdateControlInputs(elapsed);
-            //space.Update(elapsed);
+            try
+            {
+                UpdateControlInputs(elapsed);
+                //space.Update(elapsed);
 
-            Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
-
-
-
-            //UpdateWidgets();
-            //BeginMouseHitTest();
-
+                Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
 
 
-            Renderer.BeginRender(context);
-
-            Renderer.RenderSkyAndClouds();
-
-            Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
+                //UpdateWidgets();
+                //BeginMouseHitTest();
 
 
-            Renderer.RenderPed(SelectedPed);
-
-            //UpdateMouseHitsFromRenderer();
-            //RenderSelection();
 
 
-            RenderGrid(context);
+                Renderer.BeginRender(context);
+
+                Renderer.RenderSkyAndClouds();
+
+                Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
 
 
-            Renderer.RenderQueued();
+                Renderer.RenderPed(SelectedPed);
 
-            //Renderer.RenderBounds(MapSelectionMode.Entity);
+                //UpdateMouseHitsFromRenderer();
+                //RenderSelection();
 
-            //Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
-            //RenderMoused();
+                RenderGrid(context);
 
-            Renderer.RenderFinalPass();
 
-            //RenderMarkers();
-            //RenderWidgets();
+                Renderer.RenderQueued();
 
-            Renderer.EndRender();
+                //Renderer.RenderBounds(MapSelectionMode.Entity);
 
-            Monitor.Exit(Renderer.RenderSyncRoot);
+                //Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
+
+                //RenderMoused();
+
+                Renderer.RenderFinalPass();
+
+                //RenderMarkers();
+                //RenderWidgets();
+
+                Renderer.EndRender();
+            }
+            finally
+            {
+                Monitor.Exit(Renderer.RenderSyncRoot);
+            }
 
             //UpdateMarkerSelectionPanelInvoke();
         }
@@ -324,74 +339,89 @@ namespace CodeWalker
 
         private void ContentThread()
         {
-            //main content loading thread.
-            running = true;
-
-            UpdateStatus("Scanning...");
-
             try
             {
-                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
-            }
-            catch
-            {
-                MessageBox.Show("Keys not found! This shouldn't happen.");
-                Close();
-                return;
-            }
+                //main content loading thread.
+                running = true;
 
-            GameFileCache.EnableDlc = true;
-            GameFileCache.EnableMods = true;
-            GameFileCache.LoadPeds = true;
-            GameFileCache.LoadVehicles = false;
-            GameFileCache.LoadArchetypes = false;//to speed things up a little
-            GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
-            GameFileCache.DoFullStringIndex = true;//to get all global text from DLC...
-            GameFileCache.Init(UpdateStatus, LogError);
+                UpdateStatus("Scanning...");
 
-            //UpdateDlcListComboBox(gameFileCache.DlcNameList);
-
-            //EnableCacheDependentUI();
-
-            UpdateGlobalPedsUI();
-
-
-            LoadWorld();
-
-
-
-            //initialised = true;
-
-            //EnableDLCModsUI();
-
-            //UpdateStatus("Ready");
-
-
-            Task.Run(() => {
-                while (formopen && !IsDisposed) //renderer content loop
+                try
                 {
-                    bool rcItemsPending = Renderer.ContentThreadProc();
+                    GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
+                }
+                catch
+                {
+                    MessageBox.Show("Keys not found! This shouldn't happen.");
+                    Close();
+                    return;
+                }
 
-                    if (!rcItemsPending)
+                if (!GameFileCache.IsInited)
+                {
+                    GameFileCache.EnableDlc = true;
+                    GameFileCache.EnableMods = true;
+                    GameFileCache.LoadPeds = true;
+                    GameFileCache.LoadVehicles = false;
+                    GameFileCache.LoadArchetypes = false;//to speed things up a little
+                    GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
+                    GameFileCache.DoFullStringIndex = true;//to get all global text from DLC...
+                    GameFileCache.Init(UpdateStatus, LogError, force: false);
+                }
+
+                //UpdateDlcListComboBox(gameFileCache.DlcNameList);
+
+                //EnableCacheDependentUI();
+
+                UpdateGlobalPedsUI();
+
+
+                LoadWorld();
+
+
+
+                //initialised = true;
+
+                //EnableDLCModsUI();
+
+                //UpdateStatus("Ready");
+
+
+                Task.Run(async () => {
+                    while (formopen && !IsDisposed) //renderer content loop
                     {
-                        Thread.Sleep(1); //sleep if there's nothing to do
+                        bool rcItemsPending = Renderer.ContentThreadProc();
+
+                        if (!rcItemsPending)
+                        {
+                            await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
+                        }
                     }
-                }
-            });
+                });
 
-            while (formopen && !IsDisposed) //main asset loop
-            {
-                bool fcItemsPending = GameFileCache.ContentThreadProc();
-
-                if (!fcItemsPending)
+                Task.Run(async () =>
                 {
-                    Thread.Sleep(1); //sleep if there's nothing to do
-                }
+                    while (formopen && !IsDisposed) //main asset loop
+                    {
+                        bool fcItemsPending = GameFileCache.ContentThreadProc();
+
+                        if (!fcItemsPending)
+                        {
+                            await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
+                        }
+                    }
+
+                    running = false;
+                });
             }
-
-            GameFileCache.Clear();
-
-            running = false;
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Exception occured in PedsForm::ContentThread.\n{ex}");
+            }
+            finally
+            {
+                running = false;
+            }
         }
 
 
@@ -662,7 +692,7 @@ namespace CodeWalker
                 List<string> ycdlist = new List<string>();
                 foreach (var ycde in ycds)
                 {
-                    ycdlist.Add(ycde.GetShortName());
+                    ycdlist.Add(ycde.ShortName);
                 }
                 ClipDictComboBox.AutoCompleteCustomSource.AddRange(ycdlist.ToArray());
                 ClipDictComboBox.Text = "";

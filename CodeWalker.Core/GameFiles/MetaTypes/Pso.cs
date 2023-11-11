@@ -337,8 +337,13 @@ namespace CodeWalker.GameFiles
             var reader = new DataReader(stream, Endianess.BigEndian);
             var identInt = reader.ReadUInt32();
             stream.Position = 0;
-            return ((identInt ) == 1347635534); //"PSIN"
+            return IsPSO(identInt); //"PSIN"
 
+        }
+
+        public static bool IsPSO(uint identInt)
+        {
+            return identInt == 1347635534;
         }
 
         public static bool IsRBF(Stream stream)
@@ -346,7 +351,12 @@ namespace CodeWalker.GameFiles
             var reader = new DataReader(stream, Endianess.BigEndian);
             var identInt = reader.ReadUInt32();
             stream.Position = 0;
-            return ((identInt & 0xFFFFFF00) == 0x52424600);
+            return IsRBF(identInt);
+        }
+
+        public static bool IsRBF(uint identInt)
+        {
+            return (identInt & 0xFFFFFF00) == 0x52424600;
         }
     }
 
@@ -871,15 +881,15 @@ namespace CodeWalker.GameFiles
             foreach (var str in strs)
             {
                 JenkIndex.Ensure(str);
-                JenkIndex.Ensure(str.ToLowerInvariant());
+                JenkIndex.EnsureLower(str);
             }
             Strings = strs.ToArray();
         }
 
         public void Write(DataWriter writer)
         {
-            var strStream = new MemoryStream();
-            var strWriter = new DataWriter(strStream, Endianess.BigEndian);
+            using var strStream = new MemoryStream();
+            using var strWriter = new DataWriter(strStream, Endianess.BigEndian);
             foreach (var str in Strings)
             {
                 strWriter.Write(str);
@@ -926,7 +936,7 @@ namespace CodeWalker.GameFiles
             foreach (var str in strs)
             {
                 JenkIndex.Ensure(str);
-                JenkIndex.Ensure(str.ToLowerInvariant());
+                JenkIndex.EnsureLower(str);
             }
             Strings = strs.ToArray();
         }

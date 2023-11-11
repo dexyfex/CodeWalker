@@ -1438,26 +1438,39 @@ namespace CodeWalker.GameFiles
         public static byte[] ConvertToBytes<T>(T item) where T : struct
         {
             int size = Marshal.SizeOf(typeof(T));
-            int offset = 0;
+            //int offset = 0;
             byte[] arr = new byte[size];
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(item, ptr, true);
-            Marshal.Copy(ptr, arr, 0, size);
-            Marshal.FreeHGlobal(ptr);
-            offset += size;
+            MemoryMarshal.TryWrite(arr.AsSpan(), ref item);
             return arr;
+            //IntPtr ptr = Marshal.AllocHGlobal(size);
+            //Marshal.StructureToPtr(item, ptr, true);
+            //Marshal.Copy(ptr, arr, 0, size);
+            //Marshal.FreeHGlobal(ptr);
+            //offset += size;
+            //return arr;
         }
         public static byte[] ConvertArrayToBytes<T>(params T[] items) where T : struct
         {
             if (items == null) return null;
 
-            var size = Marshal.SizeOf(typeof(T)) * items.Length;
-            var b = new byte[size];
-            GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
-            var h = handle.AddrOfPinnedObject();
-            Marshal.Copy(h, b, 0, size);
-            handle.Free();
-            return b;
+            return MemoryMarshal.AsBytes(items.AsSpan()).ToArray();
+
+            //var size = Marshal.SizeOf(typeof(T)) * items.Length;
+            //var b = new byte[size];
+            //GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //Marshal.Copy(h, b, 0, size);
+            //handle.Free();
+            //return b;
+
+            //var size = Marshal.SizeOf(typeof(T)) * items.Length;
+            //var b = new byte[size];
+            //return MemoryMarshal.AsBytes<T>(items).ToArray();
+            //GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //Marshal.Copy(h, b, 0, size);
+            //handle.Free();
+            //return b;
 
 
             //int size = Marshal.SizeOf(typeof(T));
@@ -1502,20 +1515,33 @@ namespace CodeWalker.GameFiles
         }
         public static Span<T> ConvertDataArray<T>(byte[] data, int offset, int count) where T : struct
         {
+            //T[] items = new T[count];
+            //int itemsize = Marshal.SizeOf(typeof(T));
+            ////for (int i = 0; i < count; i++)
+            ////{
+            ////    int off = offset + i * itemsize;
+            ////    items[i] = ConvertData<T>(data, off);
+            ////}
+            //GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //Marshal.Copy(data, offset, h, itemsize * count);
+            //handle.Free();
+
+            //return items;
             return MemoryMarshal.Cast<byte, T>(data.AsSpan(offset, count * Marshal.SizeOf(typeof(T))));
-            T[] items = new T[count];
-            int itemsize = Marshal.SizeOf(typeof(T));
+            //T[] items = new T[count];
+            //int itemsize = Marshal.SizeOf(typeof(T));
             //for (int i = 0; i < count; i++)
             //{
             //    int off = offset + i * itemsize;
             //    items[i] = ConvertData<T>(data, off);
             //}
-            GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
-            var h = handle.AddrOfPinnedObject();
-            Marshal.Copy(data, offset, h, itemsize * count);
-            handle.Free();
+            //GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            //var h = handle.AddrOfPinnedObject();
+            //Marshal.Copy(data, offset, h, itemsize * count);
+            //handle.Free();
 
-            return items;
+            //return items;
         }
         public static T[] ConvertDataArray<T>(Meta meta, MetaName name, Array_StructurePointer array) where T : struct
         {
@@ -1583,13 +1609,13 @@ namespace CodeWalker.GameFiles
                 } //don't try to read too many items..
 
 
-                ConvertDataArray<T>(ptrblock.Data, itemoffset * Marshal.SizeOf(typeof(T)), itemcount).CopyTo(items.AsSpan(curi));
-                //for (int i = 0; i < itemcount; i++)
-                //{
-                //    int offset = (itemoffset + i) * itemsize;
-                //    int index = curi + i;
-                //    items[index] = ConvertData<T>(ptrblock.Data, offset);
-                //}
+                //ConvertDataArray<T>(ptrblock.Data, itemoffset * Marshal.SizeOf(typeof(T)), itemcount).CopyTo(items.AsSpan(curi));
+                for (int i = 0; i < itemcount; i++)
+                {
+                    int offset = (itemoffset + i) * itemsize;
+                    int index = curi + i;
+                    items[index] = ConvertData<T>(ptrblock.Data, offset);
+                }
                 itemoffset = 0; //start at beginning of next block..
                 curi += itemcount;
                 itemsleft -= itemcount;
@@ -2500,7 +2526,7 @@ namespace CodeWalker.GameFiles
         {
             _Data = data;
             RoomName = MetaTypes.GetString(meta, _Data.name);
-            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects) ?? Array.Empty<uint>();
         }
 
         public override void Load(Meta meta, MetaPOINTER ptr)
@@ -2521,14 +2547,7 @@ namespace CodeWalker.GameFiles
                 _Data.name = new CharPointer();
             }
 
-            if (AttachedObjects != null)
-            {
-                _Data.attachedObjects = mb.AddUintArrayPtr(AttachedObjects);
-            }
-            else
-            {
-                _Data.attachedObjects = new Array_uint();
-            }
+            _Data.attachedObjects = mb.AddUintArrayPtr(AttachedObjects);
 
             mb.AddStructureInfo(MetaName.CMloRoomDef);
             return mb.AddItemPtr(MetaName.CMloRoomDef, _Data);
@@ -4101,6 +4120,61 @@ namespace CodeWalker.GameFiles
                 MaxCellY = (int)Math.Floor(gv.Y);
             }
         }
+
+        public static bool operator ==(rage__spdGrid2D x, rage__spdGrid2D y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(rage__spdGrid2D x, rage__spdGrid2D y)
+        {
+            return x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null || obj is not rage__spdGrid2D arrObj)
+                return false;
+
+            return arrObj.MaxCellX == this.MaxCellX
+                && arrObj.MaxCellY == this.MaxCellY
+                && arrObj.MinCellX == this.MinCellX
+                && arrObj.MinCellY == this.MinCellY
+                && arrObj.CellDimX == this.CellDimX
+                && arrObj.CellDimY == this.CellDimY
+                && arrObj.Unused0 == this.Unused0
+                && arrObj.Unused1 == this.Unused1
+                && arrObj.Unused2 == this.Unused2
+                && arrObj.Unused3 == this.Unused3
+                && arrObj.Unused4 == this.Unused4
+                && arrObj.Unused5 == this.Unused5
+                && arrObj.Unused6 == this.Unused6
+                && arrObj.Unused7 == this.Unused7
+                && arrObj.Unused8 == this.Unused8
+                && arrObj.Unused9 == this.Unused9;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 418850833;
+            hashCode = hashCode * -1521134295 + Unused0.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused2.GetHashCode();
+            hashCode = hashCode * -1521134295 + MinCellX.GetHashCode();
+            hashCode = hashCode * -1521134295 + MaxCellX.GetHashCode();
+            hashCode = hashCode * -1521134295 + MinCellY.GetHashCode();
+            hashCode = hashCode * -1521134295 + MaxCellY.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused3.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused4.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused5.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused6.GetHashCode();
+            hashCode = hashCode * -1521134295 + CellDimX.GetHashCode();
+            hashCode = hashCode * -1521134295 + CellDimY.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused7.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused8.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused9.GetHashCode();
+            return hashCode;
+        }
     }
 
     [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379
@@ -4150,6 +4224,57 @@ namespace CodeWalker.GameFiles
         public Array_ushort Unk_3844724227 { get; set; } //248   248: Array: 0: 3844724227  {0: UnsignedShort: 0: 256}
         public Array_Structure Clusters { get; set; } //264   264: Array: 0: Clusters//3587988394  {0: Structure: CScenarioPointCluster//750308016: 256}
         public CScenarioPointLookUps LookUps { get; set; } //280   280: Structure: CScenarioPointLookUps//3019621867: LookUps//1097626284
+
+        public override bool Equals(object obj)
+        {
+            return obj is CScenarioPointRegion region &&
+                   VersionNumber == region.VersionNumber &&
+                   Unused0 == region.Unused0 &&
+                   EqualityComparer<CScenarioPointContainer>.Default.Equals(Points, region.Points) &&
+                   Unused1 == region.Unused1 &&
+                   Unused2 == region.Unused2 &&
+                   Unused3 == region.Unused3 &&
+                   Unused4 == region.Unused4 &&
+                   EqualityComparer<Array_Structure>.Default.Equals(EntityOverrides, region.EntityOverrides) &&
+                   Unused5 == region.Unused5 &&
+                   Unused6 == region.Unused6 &&
+                   EqualityComparer<CScenarioChainingGraph>.Default.Equals(ChainingGraph, region.ChainingGraph) &&
+                   EqualityComparer<rage__spdGrid2D>.Default.Equals(AccelGrid, region.AccelGrid) &&
+                   EqualityComparer<Array_ushort>.Default.Equals(Unk_3844724227, region.Unk_3844724227) &&
+                   EqualityComparer<Array_Structure>.Default.Equals(Clusters, region.Clusters) &&
+                   EqualityComparer<CScenarioPointLookUps>.Default.Equals(LookUps, region.LookUps);
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 1436693857;
+            hashCode = hashCode * -1521134295 + VersionNumber.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused0.GetHashCode();
+            hashCode = hashCode * -1521134295 + Points.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused3.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused4.GetHashCode();
+            hashCode = hashCode * -1521134295 + EntityOverrides.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused5.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused6.GetHashCode();
+            hashCode = hashCode * -1521134295 + ChainingGraph.GetHashCode();
+            hashCode = hashCode * -1521134295 + AccelGrid.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unk_3844724227.GetHashCode();
+            hashCode = hashCode * -1521134295 + Clusters.GetHashCode();
+            hashCode = hashCode * -1521134295 + LookUps.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(CScenarioPointRegion left, CScenarioPointRegion right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(CScenarioPointRegion left, CScenarioPointRegion right)
+        {
+            return !(left == right);
+        }
     }
     [TC(typeof(EXP))] public class MCScenarioPointRegion : MetaWrapper
     {
@@ -4531,9 +4656,42 @@ namespace CodeWalker.GameFiles
         public uint Unused2 { get; set; }//40
         public uint Unused3 { get; set; }//44
 
+        public override bool Equals(object obj)
+        {
+            return obj is CScenarioPointContainer container &&
+                   EqualityComparer<Array_Structure>.Default.Equals(LoadSavePoints, container.LoadSavePoints) &&
+                   EqualityComparer<Array_Structure>.Default.Equals(MyPoints, container.MyPoints) &&
+                   Unused0 == container.Unused0 &&
+                   Unused1 == container.Unused1 &&
+                   Unused2 == container.Unused2 &&
+                   Unused3 == container.Unused3;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 746587205;
+            hashCode = hashCode * -1521134295 + LoadSavePoints.GetHashCode();
+            hashCode = hashCode * -1521134295 + MyPoints.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused0.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused3.GetHashCode();
+            return hashCode;
+        }
+
         public override string ToString()
         {
             return LoadSavePoints.Count1.ToString() + " LoadSavePoints, " + MyPoints.Count1.ToString() + " MyPoints";
+        }
+
+        public static bool operator ==(CScenarioPointContainer left, CScenarioPointContainer right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(CScenarioPointContainer left, CScenarioPointContainer right)
+        {
+            return !(left == right);
         }
     }
     [TC(typeof(EXP))] public class MCScenarioPointContainer : MetaWrapper
@@ -5031,6 +5189,45 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return Nodes.Count1.ToString() + " Nodes, " + Edges.Count1.ToString() + " Edges, " + Chains.Count1.ToString() + " Chains";
+        }
+
+        public static bool operator !=(CScenarioChainingGraph x, CScenarioChainingGraph y)
+        {
+            return !x.Equals(y);
+        }
+
+        public static bool operator ==(CScenarioChainingGraph x, CScenarioChainingGraph y)
+        {
+            return x.Equals(y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null || obj is not CScenarioChainingGraph arrObj)
+                return false;
+
+            return arrObj.Nodes == this.Nodes
+                && arrObj.Edges == this.Edges
+                && arrObj.Chains == this.Chains;
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -1851298727;
+            hashCode = hashCode * -1521134295 + Nodes.GetHashCode();
+            hashCode = hashCode * -1521134295 + Edges.GetHashCode();
+            hashCode = hashCode * -1521134295 + Chains.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused0.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused1.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused2.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused3.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused4.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused5.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused6.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused7.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused8.GetHashCode();
+            hashCode = hashCode * -1521134295 + Unused9.GetHashCode();
+            return hashCode;
         }
     }
     [TC(typeof(EXP))] public class MCScenarioChainingGraph : MetaWrapper
@@ -5730,6 +5927,39 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             return "CScenarioPointLookUps";
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is CScenarioPointLookUps ups &&
+                   EqualityComparer<Array_uint>.Default.Equals(TypeNames, ups.TypeNames) &&
+                   EqualityComparer<Array_uint>.Default.Equals(PedModelSetNames, ups.PedModelSetNames) &&
+                   EqualityComparer<Array_uint>.Default.Equals(VehicleModelSetNames, ups.VehicleModelSetNames) &&
+                   EqualityComparer<Array_uint>.Default.Equals(GroupNames, ups.GroupNames) &&
+                   EqualityComparer<Array_uint>.Default.Equals(InteriorNames, ups.InteriorNames) &&
+                   EqualityComparer<Array_uint>.Default.Equals(RequiredIMapNames, ups.RequiredIMapNames);
+        }
+
+        public override int GetHashCode()
+        {
+            int hashCode = -153113894;
+            hashCode = hashCode * -1521134295 + TypeNames.GetHashCode();
+            hashCode = hashCode * -1521134295 + PedModelSetNames.GetHashCode();
+            hashCode = hashCode * -1521134295 + VehicleModelSetNames.GetHashCode();
+            hashCode = hashCode * -1521134295 + GroupNames.GetHashCode();
+            hashCode = hashCode * -1521134295 + InteriorNames.GetHashCode();
+            hashCode = hashCode * -1521134295 + RequiredIMapNames.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(CScenarioPointLookUps left, CScenarioPointLookUps right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(CScenarioPointLookUps left, CScenarioPointLookUps right)
+        {
+            return !(left == right);
         }
     }
     [TC(typeof(EXP))] public class MCScenarioPointLookUps : MetaWrapper

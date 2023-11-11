@@ -440,7 +440,7 @@ namespace CodeWalker.Tools
 
                         curfile++;
 
-                        if (fentry.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase))
+                        if (fentry.IsExtension(".rpf"))
                         { continue; }
 
                         if (onlyexts != null)

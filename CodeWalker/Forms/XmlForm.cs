@@ -44,15 +44,11 @@ namespace CodeWalker.Forms
         private bool modified = false;
         private bool LoadingXml = false;
         private bool DelayHighlight = false;
-
-        private ExploreForm exploreForm = null;
         public RpfFileEntry rpfFileEntry { get; private set; } = null;
 
 
-        public XmlForm(ExploreForm owner)
+        public XmlForm()
         {
-            exploreForm = owner;
-
             InitializeComponent();
         }
 
@@ -215,7 +211,7 @@ namespace CodeWalker.Forms
         private bool SaveToRPF(string txt)
         {
 
-            if (!(exploreForm?.EditMode ?? false)) return false;
+            if (!(ExploreForm.Instance?.EditMode ?? false)) return false;
             if (rpfFileEntry?.Parent == null) return false;
 
             byte[] data = null;
@@ -238,14 +234,14 @@ namespace CodeWalker.Forms
 
             try
             {
-                if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+                if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return false;
 
                 var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
                 if (newentry != rpfFileEntry)
                 { }
                 rpfFileEntry = newentry;
 
-                exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                 modified = false;
 

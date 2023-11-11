@@ -41,7 +41,6 @@ namespace CodeWalker.Forms
 
         private bool modified = false;
 
-        private ExploreForm exploreForm = null;
         public RpfFileEntry rpfFileEntry { get; private set; } = null;
 
 
@@ -55,10 +54,8 @@ namespace CodeWalker.Forms
 
 
 
-        public TextForm(ExploreForm owner)
+        public TextForm()
         {
-            exploreForm = owner;
-
             InitializeComponent();
         }
 
@@ -160,15 +157,14 @@ namespace CodeWalker.Forms
             if (!File.Exists(fn)) return; //couldn't find file?
 
 
-            var fnl = fn.ToLowerInvariant();
-            if (fnl.EndsWith(".gxt2"))
+            if (fn.EndsWith(".gxt2", StringComparison.OrdinalIgnoreCase))
             {
                 var gxt = new Gxt2File();
                 gxt.Load(File.ReadAllBytes(fn), null);
                 fileType = TextFileType.GXT2;
                 TextValue = gxt.ToText();
             }
-            else if (fnl.EndsWith(".nametable"))
+            else if (fn.EndsWith(".nametable", StringComparison.OrdinalIgnoreCase))
             {
                 fileType = TextFileType.Nametable;
                 TextValue = File.ReadAllText(fn).Replace('\0', '\n');
@@ -242,7 +238,7 @@ namespace CodeWalker.Forms
         private bool SaveToRPF(string txt)
         {
 
-            if (!(exploreForm?.EditMode ?? false)) return false;
+            if (!(ExploreForm.Instance?.EditMode ?? false)) return false;
             if (rpfFileEntry?.Parent == null) return false;
 
             byte[] data = null;
@@ -287,14 +283,14 @@ namespace CodeWalker.Forms
 
             try
             {
-                if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+                if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return false;
 
                 var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
                 if (newentry != rpfFileEntry)
                 { }
                 rpfFileEntry = newentry;
 
-                exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                 modified = false;
 

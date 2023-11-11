@@ -1186,7 +1186,7 @@ namespace CodeWalker.GameFiles
             SlotGS = br.ReadUInt16(); //6, 5
             SlotHS = br.ReadUInt16(); //6, 5
             Name = FxcFile.ReadString(br); // <fxc name> _locals   //"rage_matrices", "misc_globals", "lighting_globals", "more_stuff"
-            JenkIndex.Ensure(Name?.ToLowerInvariant()); //why not :P
+            JenkIndex.EnsureLower(Name); //why not :P
         }
         public void Write(BinaryWriter bw)
         {

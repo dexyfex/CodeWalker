@@ -1799,7 +1799,6 @@ namespace CodeWalker.World
 
             var noneset = new AmbientModelSet();
             noneset.Name = "NONE";
-            noneset.NameLower = "none";
             noneset.NameHash = JenkHash.GenHash("none");
             sets[noneset.NameHash] = noneset;
 
@@ -1808,10 +1807,10 @@ namespace CodeWalker.World
             {
                 AmbientModelSet set = new AmbientModelSet();
                 set.Load(item);
-                if (!string.IsNullOrEmpty(set.NameLower))
+                if (!string.IsNullOrEmpty(set.Name))
                 {
-                    JenkIndex.Ensure(set.NameLower);
-                    uint hash = JenkHash.GenHash(set.NameLower);
+                    uint hash = JenkHash.GenHashLower(set.Name);
+                    JenkIndex.Ensure(set.Name, hash);
                     sets[hash] = set;
                 }
             }
@@ -1837,11 +1836,12 @@ namespace CodeWalker.World
             {
                 ConditionalAnimsGroup group = new ConditionalAnimsGroup();
                 group.Load(item);
-                if (!string.IsNullOrEmpty(group.NameLower))
+                if (!string.IsNullOrEmpty(group.Name))
                 {
+                    uint hash = JenkHash.GenHashLower(group.Name);
                     JenkIndex.Ensure(group.Name);
-                    JenkIndex.Ensure(group.NameLower);
-                    uint hash = JenkHash.GenHash(group.NameLower);
+                    JenkIndex.Ensure(group.Name, hash);
+                    
                     groups[hash] = group;
                 }
             }
@@ -1903,7 +1903,6 @@ namespace CodeWalker.World
                     string s_hash = hash.ToString("X");
                     ms = new AmbientModelSet();
                     ms.Name = $"UNKNOWN PED MODELSET ({s_hash})";
-                    ms.NameLower = ms.Name.ToLowerInvariant();
                     ms.NameHash = new MetaHash(hash);
                     ms.Models = new AmbientModel[] { };
                     PedModelSets.Add(hash, ms);
@@ -1922,7 +1921,6 @@ namespace CodeWalker.World
                     string s_hash = hash.ToString("X");
                     ms = new AmbientModelSet();
                     ms.Name = $"UNKNOWN VEHICLE MODELSET ({s_hash})";
-                    ms.NameLower = ms.Name.ToLowerInvariant();
                     ms.NameHash = new MetaHash(hash);
                     ms.Models = new AmbientModel[] {};
                     VehicleModelSets.Add(hash, ms);
@@ -2110,7 +2108,6 @@ namespace CodeWalker.World
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AmbientModelSet
     {
         public string Name { get; set; }
-        public string NameLower { get; set; }
         public MetaHash NameHash { get; set; }
         public AmbientModel[] Models { get; set; }
 
@@ -2118,8 +2115,7 @@ namespace CodeWalker.World
         public void Load(XmlNode node)
         {
             Name = Xml.GetChildInnerText(node, "Name");
-            NameLower = Name.ToLowerInvariant();
-            NameHash = JenkHash.GenHash(NameLower);
+            NameHash = JenkHash.GenHashLower(Name);
 
             var models = node.SelectNodes("Models/Item");
             var modellist = new List<AmbientModel>();
@@ -2190,14 +2186,12 @@ namespace CodeWalker.World
     {
         public string OuterXml { get; set; }
         public string Name { get; set; }
-        public string NameLower { get; set; }
 
 
         public void Load(XmlNode node)
         {
             OuterXml = node.OuterXml;
             Name = Xml.GetChildInnerText(node, "Name");
-            NameLower = Name.ToLowerInvariant();
         }
 
         public override string ToString()

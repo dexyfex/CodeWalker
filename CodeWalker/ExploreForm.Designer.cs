@@ -1,4 +1,7 @@
 ﻿using CodeWalker.Core.Utils;
+using System;
+
+using CodeWalker.WinForms;
 
 namespace CodeWalker
 {
@@ -15,11 +18,13 @@ namespace CodeWalker
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            using var _ = new DisposableTimer("ExploreForm Dipose");
+            base.Dispose(disposing);
+            MainListView.Dispose();
             if (disposing && (components != null))
             {
                 components.Dispose();
             }
-            base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
@@ -121,6 +126,7 @@ namespace CodeWalker
             this.ListContextViewHexMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextExportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextExtractShadersMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractUncompressedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractAllMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -990,6 +996,7 @@ namespace CodeWalker
             this.ListContextViewMenu,
             this.ListContextViewHexMenu,
             this.toolStripSeparator2,
+            this.ListContextExtractShadersMenu,
             this.ListContextExportXmlMenu,
             this.ListContextExtractRawMenu,
             this.ListContextExtractUncompressedMenu,
@@ -1047,6 +1054,12 @@ namespace CodeWalker
             this.ListContextExportXmlMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextExportXmlMenu.Text = "Export XML...";
             this.ListContextExportXmlMenu.Click += new System.EventHandler(this.ListContextExportXmlMenu_Click);
+            this.ListContextExtractShadersMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextExportXmlMenu.Image")));
+            this.ListContextExtractShadersMenu.Name = "ListContextExportShadersMenu";
+            this.ListContextExtractShadersMenu.ShortcutKeyDisplayString = "Ctrl+S";
+            this.ListContextExtractShadersMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextExtractShadersMenu.Text = "Export Shaders...";
+            this.ListContextExtractShadersMenu.Click += new System.EventHandler(this.ListContextExportShaders_Click);
             // 
             // ListContextExtractRawMenu
             // 
@@ -1394,6 +1407,7 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem ListContextExportXmlMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextExtractAllMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextExtractShadersMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextImportSeparator;
         private System.Windows.Forms.ToolStripMenuItem ListContextCopyPathMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextEditSeparator;

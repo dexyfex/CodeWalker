@@ -3711,14 +3711,17 @@ namespace CodeWalker.GameFiles
         public ParticleKeyframePropName(uint h) { Hash = h; }
         public ParticleKeyframePropName(string str)
         {
-            var strl = str?.ToLowerInvariant() ?? "";
-            if (strl.StartsWith("hash_"))
+            if (string.IsNullOrEmpty(str))
             {
-                Hash = Convert.ToUInt32(strl.Substring(5), 16);
+                Hash = 0;
+            }
+            else if (str.StartsWith("hash_", StringComparison.OrdinalIgnoreCase))
+            {
+                Hash = Convert.ToUInt32(str.Substring(5), 16);
             }
             else
             {
-                Hash = JenkHash.GenHash(strl);
+                Hash = JenkHash.GenHashLower(str);
             }
         }
 

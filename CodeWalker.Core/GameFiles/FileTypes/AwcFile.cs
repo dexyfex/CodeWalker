@@ -70,10 +70,10 @@ namespace CodeWalker.GameFiles
 
             if (!string.IsNullOrEmpty(Name))
             {
-                var nl = Name.ToLowerInvariant();
+                var nl = Name;
                 var fn = Path.GetFileNameWithoutExtension(nl);
-                JenkIndex.Ensure(fn + "_left");
-                JenkIndex.Ensure(fn + "_right");
+                JenkIndex.EnsureLower(fn + "_left");
+                JenkIndex.EnsureLower(fn + "_right");
             }
 
             if ((data == null) || (data.Length < 8))

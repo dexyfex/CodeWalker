@@ -218,7 +218,7 @@ namespace CodeWalker.Tools
             {
                 if (entry is RpfFileEntry)
                 {
-                    bool show = !entry.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase); //rpf entries get their own root node..
+                    bool show = !entry.IsExtension(".rpf"); //rpf entries get their own root node..
                     if (show)
                     {
                         //string text = entry.Path.Substring(file.Path.Length + 1); //includes \ on the end
@@ -234,14 +234,14 @@ namespace CodeWalker.Tools
             JenkIndex.Ensure(file.Name);
             foreach (RpfEntry entry in file.AllEntries)
             {
-                if (string.IsNullOrEmpty(entry.Name)) continue;
-                JenkIndex.Ensure(entry.Name);
-                JenkIndex.Ensure(entry.NameLower);
-                int ind = entry.Name.LastIndexOf('.');
-                if (ind > 0)
+                if (string.IsNullOrEmpty(entry.Name))
+                    continue;
+
+                JenkIndex.EnsureBoth(entry.Name);
+                var shortName = entry.ShortName;
+                if (shortName != entry.Name)
                 {
-                    JenkIndex.Ensure(entry.Name.Substring(0, ind));
-                    JenkIndex.Ensure(entry.NameLower.Substring(0, ind));
+                    JenkIndex.EnsureBoth(shortName);
                 }
             }
 
@@ -368,43 +368,43 @@ namespace CodeWalker.Tools
             bool istexdict = false;
 
 
-            if (rfe.NameLower.EndsWith(".ymap"))
+            if (rfe.IsExtension(".ymap"))
             {
                 YmapFile ymap = new YmapFile(rfe);
                 ymap.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ymap;
             }
-            else if (rfe.NameLower.EndsWith(".ytyp"))
+            else if (rfe.IsExtension(".ytyp"))
             {
                 YtypFile ytyp = new YtypFile();
                 ytyp.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ytyp;
             }
-            else if (rfe.NameLower.EndsWith(".ymf"))
+            else if (rfe.IsExtension(".ymf"))
             {
                 YmfFile ymf = new YmfFile();
                 ymf.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ymf;
             }
-            else if (rfe.NameLower.EndsWith(".ymt"))
+            else if (rfe.IsExtension(".ymt"))
             {
                 YmtFile ymt = new YmtFile();
                 ymt.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ymt;
             }
-            else if (rfe.NameLower.EndsWith(".ybn"))
+            else if (rfe.IsExtension(".ybn"))
             {
                 YbnFile ybn = new YbnFile();
                 ybn.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ybn;
             }
-            else if (rfe.NameLower.EndsWith(".fxc"))
+            else if (rfe.IsExtension(".fxc"))
             {
                 FxcFile fxc = new FxcFile();
                 fxc.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = fxc;
             }
-            else if (rfe.NameLower.EndsWith(".yft"))
+            else if (rfe.IsExtension(".yft"))
             {
                 YftFile yft = new YftFile();
                 yft.Load(data, rfe);
@@ -416,7 +416,7 @@ namespace CodeWalker.Tools
                     istexdict = true;
                 }
             }
-            else if (rfe.NameLower.EndsWith(".ydr"))
+            else if (rfe.IsExtension(".ydr"))
             {
                 YdrFile ydr = new YdrFile();
                 ydr.Load(data, rfe);
@@ -428,14 +428,14 @@ namespace CodeWalker.Tools
                     istexdict = true;
                 }
             }
-            else if (rfe.NameLower.EndsWith(".ydd"))
+            else if (rfe.IsExtension(".ydd"))
             {
                 YddFile ydd = new YddFile();
                 ydd.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ydd;
                 //todo: show embedded texdicts in ydd's? is this possible?
             }
-            else if (rfe.NameLower.EndsWith(".ytd"))
+            else if (rfe.IsExtension(".ytd"))
             {
                 YtdFile ytd = new YtdFile();
                 ytd.Load(data, rfe);
@@ -443,43 +443,43 @@ namespace CodeWalker.Tools
                 ShowTextures(ytd.TextureDict);
                 istexdict = true;
             }
-            else if (rfe.NameLower.EndsWith(".ycd"))
+            else if (rfe.IsExtension(".ycd"))
             {
                 YcdFile ycd = new YcdFile();
                 ycd.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ycd;
             }
-            else if (rfe.NameLower.EndsWith(".ynd"))
+            else if (rfe.IsExtension(".ynd"))
             {
                 YndFile ynd = new YndFile();
                 ynd.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ynd;
             }
-            else if (rfe.NameLower.EndsWith(".ynv"))
+            else if (rfe.IsExtension(".ynv"))
             {
                 YnvFile ynv = new YnvFile();
                 ynv.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ynv;
             }
-            else if (rfe.NameLower.EndsWith("_cache_y.dat"))
+            else if (rfe.Name.EndsWith("_cache_y.dat", StringComparison.OrdinalIgnoreCase))
             {
                 CacheDatFile cdf = new CacheDatFile();
                 cdf.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = cdf;
             }
-            else if (rfe.NameLower.EndsWith(".rel"))
+            else if (rfe.IsExtension(".rel"))
             {
                 RelFile rel = new RelFile(rfe);
                 rel.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = rel;
             }
-            else if (rfe.NameLower.EndsWith(".gxt2"))
+            else if (rfe.IsExtension(".gxt2"))
             {
                 Gxt2File gxt2 = new Gxt2File();
                 gxt2.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = gxt2;
             }
-            else if (rfe.NameLower.EndsWith(".pso"))
+            else if (rfe.IsExtension(".pso"))
             {
                 JPsoFile pso = new JPsoFile();
                 pso.Load(data, rfe);
@@ -797,14 +797,14 @@ namespace CodeWalker.Tools
                 int max = 500;
                 foreach (RpfFile file in ScannedFiles)
                 {
-                    if (file.NameLower.Contains(find))
+                    if (file.Name.Contains(find, StringComparison.OrdinalIgnoreCase))
                     {
                         AddFileNode(file, null);
                         count++;
                     }
                     foreach (RpfEntry entry in file.AllEntries)
                     {
-                        if (entry.NameLower.Contains(find))
+                        if (entry.Name.Contains(find, StringComparison.OrdinalIgnoreCase))
                         {
                             if (entry is RpfDirectoryEntry direntry)
                             {
@@ -819,7 +819,8 @@ namespace CodeWalker.Tools
                             }
                             else if (entry is RpfBinaryFileEntry)
                             {
-                                if (entry.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase)) continue;
+                                if (entry.IsExtension(".rpf"))
+                                    continue;
                                 AddEntryNode(entry, null);
                                 count++;
                             }
@@ -1079,7 +1080,7 @@ namespace CodeWalker.Tools
 
                         curfile++;
 
-                        if (fentry.NameLower.EndsWith(".rpf"))
+                        if (fentry.IsExtension(".rpf"))
                         { continue; }
 
                         if (ignoreexts != null)
@@ -1087,7 +1088,7 @@ namespace CodeWalker.Tools
                             bool ignore = false;
                             for (int i = 0; i < ignoreexts.Length; i++)
                             {
-                                if (fentry.NameLower.EndsWith(ignoreexts[i]))
+                                if (fentry.Name.EndsWith(ignoreexts[i], StringComparison.OrdinalIgnoreCase))
                                 {
                                     ignore = true;
                                     break;

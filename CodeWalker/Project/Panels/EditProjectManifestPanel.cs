@@ -73,20 +73,19 @@ namespace CodeWalker.Project.Panels
 
             var getYtypName = new Func<YtypFile, string>((ytyp) =>
             {
-                var ytypname = ytyp?.RpfFileEntry?.NameLower;
+                var ytypname = ytyp?.RpfFileEntry?.Name;
                 if (ytyp != null)
                 {
                     if (string.IsNullOrEmpty(ytypname))
                     {
-                        ytypname = ytyp.RpfFileEntry?.Name?.ToLowerInvariant();
-                        if (ytypname == null) ytypname = "";
+                        ytypname = ytyp.RpfFileEntry?.Name ?? string.Empty;
                     }
-                    if (ytypname.EndsWith(".ytyp"))
+                    if (ytypname.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase))
                     {
                         ytypname = ytypname.Substring(0, ytypname.Length - 5);
                     }
                 }
-                return ytypname;
+                return ytypname?.ToLowerInvariant();
             });
 
 
@@ -97,7 +96,7 @@ namespace CodeWalker.Project.Panels
                     sb.AppendLine("  <imapDependencies_2>");
                     foreach (var ymap in CurrentProjectFile.YmapFiles)
                     {
-                        var ymapname = ymap.RpfFileEntry?.NameLower;
+                        var ymapname = ymap.RpfFileEntry?.Name.ToLowerInvariant();
                         if (string.IsNullOrEmpty(ymapname))
                         {
                             ymapname = ymap.Name.ToLowerInvariant();

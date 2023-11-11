@@ -1,4 +1,6 @@
-﻿/*
+﻿
+
+/*
     Copyright(c) 2015 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +31,12 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using CodeWalker.Core.Utils;
+using System.Buffers.Binary;
+using System.Buffers;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace CodeWalker.GameFiles
 {
@@ -98,8 +106,21 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public DataReader(Stream stream, Endianess endianess = Endianess.LittleEndian)
         {
-            this.baseStream = stream;
+            if (stream is not null)
+            {
+                this.baseStream = Stream.Synchronized(stream);
+            }
             this.Endianess = endianess;
+        }
+
+        public virtual Stream GetStream()
+        {
+            return baseStream;
+        }
+
+        internal virtual void SetPositionAfterRead(Stream stream)
+        {
+            return;
         }
 
         /// <summary>
@@ -108,8 +129,17 @@ namespace CodeWalker.GameFiles
         /// </summary>
         protected virtual byte[] ReadFromStream(int count, bool ignoreEndianess = false, byte[] buffer = null)
         {
+            var stream = GetStream();
             buffer ??= new byte[count];
-            baseStream.Read(buffer, 0, count);
+
+            try
+            {
+                stream.Read(buffer, 0, count);
+            }
+            finally
+            {
+                SetPositionAfterRead(stream);
+            }
 
             // handle endianess
             if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
@@ -125,11 +155,22 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public virtual byte ReadByte()
         {
-            var result = baseStream.ReadByte();
+            var stream = GetStream();
+            int result;
+            try
+            {
+                result = stream.ReadByte();
+            }
+            finally
+            {
+                SetPositionAfterRead(stream);
+            }
+            
             if (result == -1)
             {
                 throw new InvalidOperationException("Tried to read from stream beyond end!");
             }
+
             return (byte) result;
         }
 
@@ -208,18 +249,34 @@ namespace CodeWalker.GameFiles
         /// <summary>
         /// Reads a string.
         /// </summary>
+        unsafe public string ReadStringLength(int length)
+        {
+            if (length == 0)
+            {
+                return string.Empty;
+            }
+            var bytes = stackalloc byte[length];
+            for (int i = 0; i < length; i++)
+            {
+                bytes[i] = ReadByte();
+            }
+
+            return new string((sbyte*)bytes, 0, length, Encoding.ASCII);
+            //return Encoding.UTF8.GetString(bytes, Math.Min(charsRead, maxLength));
+        }
+
+        /// <summary>
+        /// Reads a string.
+        /// </summary>
         unsafe public string ReadString(int maxLength = 1024)
         {
             var bytes = stackalloc byte[Math.Min(maxLength, 1024)];
+            var chars = stackalloc char[Math.Min(maxLength, 1024)];
             var temp = ReadByte();
             var charsRead = 0;
             while (temp != 0 && (Length == -1 || Position <= Length))
             {
-                if (charsRead > 1023)
-                {
-                    throw new Exception("String too long!");
-                }
-                if (charsRead < maxLength)
+                if (charsRead < maxLength && charsRead < 1024)
                 {
                     bytes[charsRead] = temp;
                 }
@@ -227,7 +284,10 @@ namespace CodeWalker.GameFiles
                 charsRead++;
             }
 
-            return Encoding.UTF8.GetString(bytes, Math.Min(charsRead, maxLength));
+            var charsCount = Encoding.UTF8.GetChars(bytes, charsRead, chars, Math.Min(maxLength, 1024));
+
+            return new string(chars, 0, charsCount);
+            //return Encoding.UTF8.GetString(bytes, Math.Min(charsRead, maxLength));
         }
 
         unsafe public string ReadStringLower()
@@ -357,12 +417,23 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        internal virtual Stream GetStream()
+        {
+            return baseStream;
+        }
+
+        internal virtual void SetPositionAfterWrite(Stream stream)
+        { }
+
         /// <summary>
         /// Initializes a new data writer for the specified stream.
         /// </summary>
         public DataWriter(Stream stream, Endianess endianess = Endianess.LittleEndian)
         {
-            this.baseStream = stream;
+            if (stream is not null)
+            {
+                this.baseStream = Stream.Synchronized(stream);
+            }
             this.Endianess = endianess;
         }
 
@@ -370,17 +441,65 @@ namespace CodeWalker.GameFiles
         /// Writes data to the underlying stream. This is the only method that directly accesses
         /// the data in the underlying stream.
         /// </summary>
-        protected virtual void WriteToStream(byte[] value, bool ignoreEndianess = false)
+        protected virtual void WriteToStream(byte[] value, bool ignoreEndianess = false, int count = -1, int offset = 0)
         {
+            var stream = GetStream();
+            if (count == -1)
+            {
+                count = value.Length;
+            }
             if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
             {
-                var buffer = (byte[])value.Clone();
-                Array.Reverse(buffer);
-                baseStream.Write(buffer, 0, buffer.Length);
+                var buffer = ArrayPool<byte>.Shared.Rent(count);
+                try
+                {
+                    Array.Copy(value, offset, buffer, 0, count);
+                    Array.Reverse(buffer, 0, count);
+                    stream.Write(buffer, 0, count);
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
             }
             else
             {
-                baseStream.Write(value, 0, value.Length);
+                stream.Write(value, offset, count);
+            }
+            SetPositionAfterWrite(stream);
+        }
+
+        protected virtual void WriteToStream(Span<byte> value, bool ignoreEndianess = false)
+        {
+            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(value.Length);
+            try
+            {
+                value.CopyTo(sharedBuffer);
+                WriteToStream(sharedBuffer, count: value.Length);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(sharedBuffer);
+            }
+        }
+
+        protected virtual void WriteToStream(Memory<byte> buffer, bool ignoreEndianess = false)
+        {
+            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> array))
+            {
+                WriteToStream(array.Array!, offset: array.Offset, count: array.Count);
+                return;
+            }
+
+            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
+            try
+            {
+                buffer.Span.CopyTo(sharedBuffer);
+                WriteToStream(sharedBuffer, count: buffer.Length);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(sharedBuffer);
             }
         }
 
@@ -396,6 +515,16 @@ namespace CodeWalker.GameFiles
         /// Writes a sequence of bytes.
         /// </summary>
         public void Write(byte[] value)
+        {
+            WriteToStream(value, true);
+        }
+
+        public void Write(Span<byte> value)
+        {
+            WriteToStream(value, true);
+        }
+
+        public void Write(Memory<byte> value)
         {
             WriteToStream(value, true);
         }
@@ -512,12 +641,12 @@ namespace CodeWalker.GameFiles
 
         public virtual void Dispose()
         {
-            baseStream.Dispose();
+            baseStream?.Dispose();
         }
 
         public virtual void Close()
         {
-            baseStream.Close();
+            baseStream?.Close();
         }
     }
 

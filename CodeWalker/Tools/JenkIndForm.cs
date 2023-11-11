@@ -36,21 +36,36 @@ namespace CodeWalker.Tools
                 {
                     Task.Run(() =>
                     {
-                        GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
-                        GameFileCache gfc = GameFileCacheFactory.Create();
-                        gfc.DoFullStringIndex = true;
-                        gfc.Init(UpdateStatus, UpdateStatus);
-                        IndexBuildComplete();
+                        try
+                        {
+                            GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
+                            GameFileCache gfc = GameFileCacheFactory.GetInstance();
+                            gfc.DoFullStringIndex = true;
+                            gfc.Init(UpdateStatus, UpdateStatus);
+                            IndexBuildComplete();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                            throw;
+                        }
                     });
                 }
                 else
                 {
-                    Task.Run(() =>
+                    Task.Run(async () =>
                     {
-                        UpdateStatus("Loading strings...");
-                        gameFileCache.DoFullStringIndex = true;
-                        gameFileCache.InitStringDicts();
-                        IndexBuildComplete();
+                        try
+                        {
+                            UpdateStatus("Loading strings...");
+                            gameFileCache.DoFullStringIndex = true;
+                            await gameFileCache.InitStringDictsAsync();
+                            IndexBuildComplete();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
                     });
                 }
             }
@@ -204,7 +219,7 @@ namespace CodeWalker.Tools
             FindHash();
         }
 
-        private void LoadStringsButton_Click(object sender, EventArgs e)
+        private async void LoadStringsButton_Click(object sender, EventArgs e)
         {
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK)
             {
@@ -219,22 +234,29 @@ namespace CodeWalker.Tools
 
             try
             {
-                string txt = File.ReadAllText(file);
-                string[] lines = txt.Split('\n');
-                foreach (string line in lines)
+                using var stream = File.OpenRead(file);
+
+                using var reader = new StreamReader(stream);
+
+                var lineCount = 0;
+
+                while (!reader.EndOfStream)
                 {
-                    string str = line.Trim();
-                    if (str.Length > 2) //remove double quotes from start and end, if both present...
+                    var line = await reader.ReadLineAsync();
+                    line = line.Trim();
+                    if (line.Length > 2) //remove double quotes from start and end, if both present...
                     {
-                        if ((str[0] == '\"') && (str[str.Length - 1] == '\"'))
+                        if ((line[0] == '\"') && (line[line.Length - 1] == '\"'))
                         {
-                            str = str.Substring(1, str.Length - 2);
+                            line = line.Substring(1, line.Length - 2);
                         }
                     }
-                    var hash = JenkHash.GenHash(str);
-                    extraStrings[hash] = str;
+                    var hash = JenkHash.GenHash(line);
+                    extraStrings[hash] = line;
+                    lineCount++;
                 }
-                MessageBox.Show(lines.Length.ToString() + " strings imported successfully.");
+
+                MessageBox.Show($"{lineCount} strings imported successfully.");
             }
             catch
             {
@@ -243,7 +265,7 @@ namespace CodeWalker.Tools
 
         }
 
-        private void SaveStringsButton_Click(object sender, EventArgs e)
+        private async void SaveStringsButton_Click(object sender, EventArgs e)
         {
             if (SaveFileDialog.ShowDialog(this) != DialogResult.OK)
             {
@@ -254,11 +276,22 @@ namespace CodeWalker.Tools
 
             try
             {
-                string[] lines = JenkIndex.GetAllStrings();
+                var lines = JenkIndex.GetAllStrings();
 
-                File.WriteAllLines(file, lines);
+                using var stream = File.OpenWrite(file);
 
-                MessageBox.Show(lines.Length.ToString() + " strings exported successfully.");
+                using var writer = new StreamWriter(stream);
+
+                writer.AutoFlush = false;
+
+                foreach(var line in lines)
+                {
+                    await writer.WriteLineAsync(line);
+                }
+
+                await writer.FlushAsync();
+
+                MessageBox.Show(lines.Count.ToString() + " strings exported successfully.");
             }
             catch
             {

@@ -636,8 +636,8 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            uint format = Convert.ToUInt32(parameters[0]);
-            int Width = Convert.ToInt32(parameters[1]);
+            //uint format = Convert.ToUInt32(parameters[0]);
+            //int Width = Convert.ToInt32(parameters[1]);
             int Height = Convert.ToInt32(parameters[2]);
             int Levels = Convert.ToInt32(parameters[3]);
             int Stride = Convert.ToInt32(parameters[4]);
@@ -646,7 +646,7 @@ namespace CodeWalker.GameFiles
             int length = Stride * Height;
             for (int i = 0; i < Levels; i++)
             {
-                fullLength += length;
+                fullLength += Math.Max(length, 4 * 4);
                 length /= 4;
             }
 

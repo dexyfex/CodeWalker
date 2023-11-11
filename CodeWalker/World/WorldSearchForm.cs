@@ -92,7 +92,7 @@ namespace CodeWalker.World
                                 ArchetypeSearchComplete();
                                 return;
                             }
-                            if (entry.NameLower.EndsWith(".ytyp"))
+                            if (entry.Name.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase))
                             {
                                 ArchetypeSearchUpdateStatus(entry.Path);
 
@@ -334,7 +334,7 @@ namespace CodeWalker.World
                                 EntitySearchComplete();
                                 return;
                             }
-                            if (entry.NameLower.EndsWith(".ymap"))
+                            if (entry.Name.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase))
                             {
                                 EntitySearchUpdateStatus(entry.Path);
 

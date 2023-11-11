@@ -19,7 +19,7 @@ namespace CodeWalker.GameFiles
                 {
                     try
                     {
-                        if (entry.NameLower.EndsWith("cache_y.dat"))// || entry.NameLower.EndsWith("cache_y_bank.dat"))
+                        if (entry.Name.EndsWith("cache_y.dat", StringComparison.OrdinalIgnoreCase))// || entry.NameLower.EndsWith("cache_y_bank.dat"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             var cdfile = RpfMan.GetFile<CacheDatFile>(entry);
@@ -63,7 +63,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                    if (entry.NameLower.EndsWith(".dat") && entry.NameLower.StartsWith("heightmap"))
+                    if (entry.IsExtension(".dat") && entry.Name.StartsWith("heightmap", StringComparison.OrdinalIgnoreCase))
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
                         HeightmapFile hmf = null;
@@ -100,7 +100,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                    if (entry.NameLower.EndsWith(".dat") && entry.NameLower.StartsWith("waterheight"))
+                    if (entry.IsExtension(".dat") && entry.Name.StartsWith("waterheight", StringComparison.OrdinalIgnoreCase))
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
                         WatermapFile wmf = null;
@@ -147,7 +147,7 @@ namespace CodeWalker.GameFiles
                     var rbfe = rfe as RpfBinaryFileEntry;
                     if ((rfe == null) || (rbfe == null)) continue;
 
-                    if (rfe.Name.EndsWith(".rel", StringComparison.OrdinalIgnoreCase))
+                    if (rfe.IsExtension(".rel"))
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
 
@@ -315,8 +315,7 @@ namespace CodeWalker.GameFiles
                 {
                     try
                     {
-                        var n = entry.NameLower;
-                        if (n.EndsWith(".ymt"))
+                        if (entry.IsExtension(".ymt"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             //YmtFile ymtfile = RpfMan.GetFile<YmtFile>(entry);
@@ -324,7 +323,7 @@ namespace CodeWalker.GameFiles
                             //{
                             //}
 
-                            var sn = entry.GetShortName();
+                            var sn = entry.ShortName;
                             uint un;
                             if (uint.TryParse(sn, out un))
                             {
@@ -388,8 +387,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     //{
-                    var n = entry.NameLower;
-                    if (n.EndsWith(".awc"))
+                    if (entry.IsExtension(".awc"))
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
                         var awcfile = RpfMan.GetFile<AwcFile>(entry);
@@ -417,8 +415,8 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        var n = entry.NameLower;
-                        //if (n.EndsWith(".ymap"))
+                        var n = entry.Name;
+                        //if (n.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase))
                         //{
                         //    UpdateStatus?.Invoke(string.Format(entry.Path));
                         //    YmapFile ymapfile = RpfMan.GetFile<YmapFile>(entry);
@@ -427,7 +425,7 @@ namespace CodeWalker.GameFiles
                         //        MetaTypes.EnsureMetaTypes(ymapfile.Meta);
                         //    }
                         //}
-                        //else if (n.EndsWith(".ytyp"))
+                        //else if (n.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase))
                         //{
                         //    UpdateStatus?.Invoke(string.Format(entry.Path));
                         //    YtypFile ytypfile = RpfMan.GetFile<YtypFile>(entry);
@@ -436,7 +434,7 @@ namespace CodeWalker.GameFiles
                         //        MetaTypes.EnsureMetaTypes(ytypfile.Meta);
                         //    }
                         //}
-                        //else if (n.EndsWith(".ymt"))
+                        //else if (n.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase))
                         //{
                         //    UpdateStatus?.Invoke(string.Format(entry.Path));
                         //    YmtFile ymtfile = RpfMan.GetFile<YmtFile>(entry);
@@ -447,7 +445,7 @@ namespace CodeWalker.GameFiles
                         //}
 
 
-                        if (n.EndsWith(".ymap") || n.EndsWith(".ytyp") || n.EndsWith(".ymt"))
+                        if (n.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase) || n.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase) || n.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase))
                         {
                             var rfe = entry as RpfResourceFileEntry;
                             if (rfe == null) continue;
@@ -465,7 +463,7 @@ namespace CodeWalker.GameFiles
 
                             if (xml.Length != xml2.Length)
                             { }
-                            if ((xml != xml2) && (!n.EndsWith("srl.ymt") && !n.StartsWith("des_")))
+                            if ((xml != xml2) && (!n.EndsWith("srl.ymt", StringComparison.OrdinalIgnoreCase) && !n.StartsWith("des_", StringComparison.OrdinalIgnoreCase)))
                             { }
 
                         }
@@ -501,13 +499,13 @@ namespace CodeWalker.GameFiles
                     try
 #endif
                     {
-                        var n = entry.NameLower;
-                        if (!(n.EndsWith(".pso") ||
-                              n.EndsWith(".ymt") ||
-                              n.EndsWith(".ymf") ||
-                              n.EndsWith(".ymap") ||
-                              n.EndsWith(".ytyp") ||
-                              n.EndsWith(".cut")))
+                        var n = entry.Name;
+                        if (!(n.EndsWith(".pso", StringComparison.OrdinalIgnoreCase) ||
+                              n.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase) ||
+                              n.EndsWith(".ymf", StringComparison.OrdinalIgnoreCase) ||
+                              n.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase) ||
+                              n.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase) ||
+                              n.EndsWith(".cut", StringComparison.OrdinalIgnoreCase)))
                             continue; //PSO files seem to only have these extensions
 
                         var fentry = entry as RpfFileEntry;
@@ -597,12 +595,12 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                    var n = entry.NameLower;
-                    if (!(n.EndsWith(".ymt") ||
-                          n.EndsWith(".ymf") ||
-                          n.EndsWith(".ymap") ||
-                          n.EndsWith(".ytyp") ||
-                          n.EndsWith(".cut")))
+                    var n = entry.Name;
+                    if (!(n.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase) ||
+                          n.EndsWith(".ymf", StringComparison.OrdinalIgnoreCase) ||
+                          n.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase) ||
+                          n.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase) ||
+                          n.EndsWith(".cut", StringComparison.OrdinalIgnoreCase)))
                         continue; //PSO files seem to only have these extensions
 
                     var fentry = entry as RpfFileEntry;
@@ -686,7 +684,7 @@ namespace CodeWalker.GameFiles
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
 
-                        if (rfe.NameLower.EndsWith(".cut"))
+                        if (rfe.IsExtension(".cut"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
 
@@ -729,7 +727,7 @@ namespace CodeWalker.GameFiles
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
 
-                        if (rfe.NameLower.EndsWith(".yld"))
+                        if (rfe.IsExtension(".yld"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
 
@@ -769,7 +767,7 @@ namespace CodeWalker.GameFiles
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
 
-                        if (rfe.NameLower.EndsWith(".yed"))
+                        if (rfe.IsExtension(".yed"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
 
@@ -813,7 +811,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     //{
-                    if (entry.NameLower.EndsWith(".ycd"))
+                    if (entry.IsExtension(".ycd"))
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
                         YcdFile ycd1 = RpfMan.GetFile<YcdFile>(entry);
@@ -1084,7 +1082,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        if (entry.NameLower.EndsWith(".ytd"))
+                        if (entry.IsExtension(".ytd"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YtdFile ytdfile = null;
@@ -1103,7 +1101,7 @@ namespace CodeWalker.GameFiles
                                 {
                                     var dds = Utils.DDSIO.GetDDSFile(tex);
                                     var tex2 = Utils.DDSIO.GetTexture(dds);
-                                    if (!tex.Name.StartsWith("script_rt"))
+                                    if (!tex.Name.StartsWith("script_rt", StringComparison.OrdinalIgnoreCase))
                                     {
                                         if (tex.Data?.FullData?.Length != tex2.Data?.FullData?.Length)
                                         { }
@@ -1181,7 +1179,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        if (entry.NameLower.EndsWith(".ybn"))
+                        if (entry.IsExtension(".ybn"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YbnFile ybn = null;
@@ -1353,7 +1351,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        if (entry.NameLower.EndsWith(".ydr"))
+                        if (entry.IsExtension(".ydr"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YdrFile ydr = null;
@@ -1412,7 +1410,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        if (entry.NameLower.EndsWith(".ydd"))
+                        if (entry.IsExtension(".ydd"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YddFile ydd = null;
@@ -1481,7 +1479,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        if (entry.NameLower.EndsWith(".yft"))
+                        if (entry.IsExtension(".yft"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YftFile yft = null;
@@ -1558,7 +1556,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        if (entry.NameLower.EndsWith(".ypt"))
+                        if (entry.IsExtension(".ypt"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YptFile ypt = null;
@@ -1616,7 +1614,7 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     {
-                        if (entry.NameLower.EndsWith(".ynv"))
+                        if (entry.IsExtension(".ynv"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YnvFile ynv = null;
@@ -1697,9 +1695,9 @@ namespace CodeWalker.GameFiles
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
 
-                        if (rfe.NameLower.EndsWith(".yvr"))
+                        if (rfe.IsExtension(".yvr"))
                         {
-                            if (rfe.NameLower == "agencyprep001.yvr") continue; //this file seems corrupted
+                            if (rfe.Name.Equals("agencyprep001.yvr", StringComparison.OrdinalIgnoreCase)) continue; //this file seems corrupted
 
                             UpdateStatus?.Invoke(string.Format(entry.Path));
 
@@ -1745,10 +1743,9 @@ namespace CodeWalker.GameFiles
                     try
 #endif
                     {
-                        var rfe = entry as RpfFileEntry;
-                        if (rfe == null) continue;
+                        if (entry is not RpfFileEntry rfe || rfe == null) continue;
 
-                        if (rfe.NameLower.EndsWith(".ywr"))
+                        if (rfe.IsExtension(".ywr"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
 
@@ -1789,7 +1786,7 @@ namespace CodeWalker.GameFiles
                 {
                     try
                     {
-                        if (entry.NameLower.EndsWith(".ymap"))
+                        if (entry.IsExtension(".ymap"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YmapFile ymapfile = RpfMan.GetFile<YmapFile>(entry);
@@ -1817,7 +1814,7 @@ namespace CodeWalker.GameFiles
 
                     try
                     {
-                        if (rfe.NameLower.EndsWith(".ypdb"))
+                        if (rfe.IsExtension(".ypdb"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YpdbFile ypdb = RpfMan.GetFile<YpdbFile>(entry);
@@ -1866,7 +1863,7 @@ namespace CodeWalker.GameFiles
 
                     try
                     {
-                        if (rfe.NameLower.EndsWith(".yfd"))
+                        if (rfe.IsExtension(".yfd"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             YfdFile yfd = RpfMan.GetFile<YfdFile>(entry);
@@ -1913,7 +1910,7 @@ namespace CodeWalker.GameFiles
                 {
                     try
                     {
-                        if (entry.NameLower.EndsWith(".mrf"))
+                        if (entry.IsExtension(".mrf"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             MrfFile mrffile = RpfMan.GetFile<MrfFile>(entry);
@@ -2083,7 +2080,7 @@ namespace CodeWalker.GameFiles
                 {
                     try
                     {
-                        if (entry.NameLower.EndsWith(".fxc"))
+                        if (entry.IsExtension(".fxc"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
                             var fxcfile = RpfMan.GetFile<FxcFile>(entry);
@@ -2298,7 +2295,7 @@ namespace CodeWalker.GameFiles
                 {
                     try
                     {
-                        if (doydr && entry.NameLower.EndsWith(".ydr"))
+                        if (doydr && entry.IsExtension(".ydr"))
                         {
                             UpdateStatus?.Invoke(entry.Path);
                             YdrFile ydr = RpfMan.GetFile<YdrFile>(entry);
@@ -2327,7 +2324,7 @@ namespace CodeWalker.GameFiles
                                 }
                             }
                         }
-                        else if (doydd & entry.NameLower.EndsWith(".ydd"))
+                        else if (doydd & entry.IsExtension(".ydd"))
                         {
                             UpdateStatus?.Invoke(entry.Path);
                             YddFile ydd = RpfMan.GetFile<YddFile>(entry);
@@ -2359,7 +2356,7 @@ namespace CodeWalker.GameFiles
                                 }
                             }
                         }
-                        else if (doyft && entry.NameLower.EndsWith(".yft"))
+                        else if (doyft && entry.IsExtension(".yft"))
                         {
                             UpdateStatus?.Invoke(entry.Path);
                             YftFile yft = RpfMan.GetFile<YftFile>(entry);

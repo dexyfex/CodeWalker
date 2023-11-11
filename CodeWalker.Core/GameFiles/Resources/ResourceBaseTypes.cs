@@ -761,11 +761,15 @@ namespace CodeWalker.GameFiles
             //TODO: NEEDS TO BE TESTED!!!
             data_items = new T[EntriesCount];
             var posbckp = reader.Position;
-            reader.Position = (long)EntriesPointer;
-            for (int i = 0; i < EntriesCount; i++)
+            if (EntriesCount > 0)
             {
-                data_items[i] = reader.ReadBlock<T>();
+                reader.Position = (long)EntriesPointer;
+                for (int i = 0; i < EntriesCount; i++)
+                {
+                    data_items[i] = reader.ReadBlock<T>();
+                }
             }
+
             reader.Position = posbckp;
 
         }

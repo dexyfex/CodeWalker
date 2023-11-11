@@ -15,11 +15,11 @@ namespace CodeWalker
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             if (disposing && (components != null))
             {
                 components.Dispose();
             }
-            base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
@@ -1112,7 +1112,7 @@ namespace CodeWalker
             | System.Windows.Forms.AnchorStyles.Right)));
             this.SelectionNameTextBox.BackColor = System.Drawing.Color.White;
             this.SelectionNameTextBox.Location = new System.Drawing.Point(3, 66);
-            this.SelectionNameTextBox.Name = "SelectionNameTextBox";
+            this.SelectionNameTextBox.Name = "SelectionNameText";
             this.SelectionNameTextBox.ReadOnly = true;
             this.SelectionNameTextBox.Size = new System.Drawing.Size(199, 20);
             this.SelectionNameTextBox.TabIndex = 26;

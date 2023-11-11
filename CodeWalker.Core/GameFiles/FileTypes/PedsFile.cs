@@ -9,6 +9,7 @@ using System.Xml;
 
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using System.Xml.Linq;
 
 
 namespace CodeWalker.GameFiles
@@ -34,7 +35,7 @@ namespace CodeWalker.GameFiles
 
 
             //can be PSO .ymt or XML .meta
-            MemoryStream ms = new MemoryStream(data);
+            using MemoryStream ms = new MemoryStream(data);
             if (PsoFile.IsPSO(ms))
             {
                 Pso = new PsoFile();
@@ -46,26 +47,28 @@ namespace CodeWalker.GameFiles
                 Xml = TextUtil.GetUTF8Text(data);
             }
 
-            XmlDocument xdoc = new XmlDocument();
-            if (!string.IsNullOrEmpty(Xml))
-            {
-                try
-                {
-                    xdoc.LoadXml(Xml);
-                }
-                catch (Exception ex)
-                {
-                    var msg = ex.Message;
-                }
-            }
-            else
-            { }
+            using var textReader = new StringReader(Xml);
+
+            //XmlDocument xdoc = new XmlDocument();
+            //if (!string.IsNullOrEmpty(Xml))
+            //{
+            //    try
+            //    {
+            //        xdoc.LoadXml(Xml);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        var msg = ex.Message;
+            //    }
+            //}
+
+            using var xmlReader = XmlReader.Create(textReader);
 
 
-            if (xdoc.DocumentElement != null)
-            {
-                InitDataList = new CPedModelInfo__InitDataList(xdoc.DocumentElement);
-            }
+            //if (xdoc.DocumentElement != null)
+            //{
+                InitDataList = new CPedModelInfo__InitDataList(xmlReader);
+            //}
 
 
 
@@ -83,6 +86,87 @@ namespace CodeWalker.GameFiles
         public CPedModelInfo__InitData[] InitDatas { get; set; }
         public CTxdRelationship[] txdRelationships { get; set; }
         public CMultiTxdRelationship[] multiTxdRelationships { get; set; }
+
+        public CPedModelInfo__InitDataList(XmlReader reader)
+        {
+            while (reader.Read())
+            {
+                reader.MoveToContent();
+
+                //var _ = xmlReader.Name switch
+                //{
+                //    "residentTxd" => ResidentTxd = Xml.GetChildInnerText(xmlReader, "residentTxd"),
+                //    "InitDatas" => LoadInitDatas(xmlReader),
+                //    "txdRelationships" => LoadTxdRelationships(xmlReader),
+                //    _ => throw new Exception()
+                //};
+
+                switch (reader.Name)
+                {
+                    case string Name when Name.Equals("residentTxd", StringComparison.OrdinalIgnoreCase):
+                        residentTxd = Xml.GetChildInnerText(reader, "residentTxd");
+                        break;
+                    case string Name when Name.Equals("InitDatas", StringComparison.OrdinalIgnoreCase):
+                        if (reader.IsEmptyElement)
+                        {
+                            reader.ReadStartElement();
+                            break;
+                        }
+                        reader.ReadStartElement();
+                        var initDatasList = new List<CPedModelInfo__InitData>();
+
+                        while (reader.IsItemElement())
+                        {
+                            initDatasList.Add(new CPedModelInfo__InitData(reader));
+                        }
+                        if (initDatasList.Count > 0)
+                        {
+                            InitDatas = initDatasList.ToArray();
+                        }
+                        reader.ReadEndElement();
+                        break;
+                    case string Name when Name.Equals("txdRelationships", StringComparison.OrdinalIgnoreCase):
+                        if (reader.IsEmptyElement)
+                        {
+                            reader.ReadStartElement();
+                            break;
+                        }
+                        reader.ReadStartElement();
+                        var txdRelationshipsList = new List<CTxdRelationship>();
+
+                        while (reader.IsItemElement())
+                        {
+                            txdRelationshipsList.Add(new CTxdRelationship(reader));
+                        }
+                        reader.ReadEndElement();
+                        if (txdRelationshipsList.Count > 0)
+                        {
+                            txdRelationships = txdRelationshipsList.ToArray();
+                        }
+                        break;
+                    case string Name when Name.Equals("multiTxdRelationships", StringComparison.OrdinalIgnoreCase):
+                        if (reader.IsEmptyElement)
+                        {
+                            reader.ReadStartElement();
+                            break;
+                        }
+                        reader.ReadStartElement();
+                        var multiTxdList = new List<CMultiTxdRelationship>();
+                        while (reader.IsItemElement())
+                        {
+                            multiTxdList.Add(new CMultiTxdRelationship(reader));
+                        }
+                        reader.ReadEndElement();
+                        if (multiTxdList.Count > 0)
+                        {
+                            multiTxdRelationships = multiTxdList.ToArray();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
 
         public CPedModelInfo__InitDataList(XmlNode node)
         {
@@ -126,7 +210,6 @@ namespace CodeWalker.GameFiles
                     multiTxdRelationships[i] = new CMultiTxdRelationship(items[i]);
                 }
             }
-
         }
     }
 
@@ -204,6 +287,249 @@ namespace CodeWalker.GameFiles
         public float DefaultRemoveRangeMultiplier { get; set; }
         public bool AllowCloseSpawning { get; set; }
 
+        public CPedModelInfo__InitData(XmlReader reader)
+        {
+            reader.ReadStartElement("Item");
+            while (reader.Name != "Item" && reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "Item")
+                {
+                    reader.ReadEndElement();
+                    return;
+                }
+
+                while (reader.MoveToContent() != XmlNodeType.Element && reader.Read())
+                {
+
+                }
+
+                switch (reader.Name)
+                {
+                    case "Name":
+                        Name = Xml.GetChildInnerText(reader, "Name");
+                        break;
+                    case "PropsName":
+                        PropsName = Xml.GetChildInnerText(reader, "PropsName");
+                        break;
+                    case "ClipDictionaryName":
+                        ClipDictionaryName = Xml.GetChildInnerText(reader, "ClipDictionaryName");
+                        break;
+                    case "BlendShapeFileName":
+                        BlendShapeFileName = Xml.GetChildInnerText(reader, "BlendShapeFileName");
+                        break;
+                    case "ExpressionSetName":
+                        ExpressionSetName = Xml.GetChildInnerText(reader, "ExpressionSetName");
+                        break;
+                    case "ExpressionDictionaryName":
+                        ExpressionDictionaryName = Xml.GetChildInnerText(reader, "ExpressionDictionaryName");
+                        break;
+                    case "ExpressionName":
+                        ExpressionName = Xml.GetChildInnerText(reader, "ExpressionName");
+                        break;
+                    case "Pedtype":
+                        Pedtype = Xml.GetChildInnerText(reader, "Pedtype");
+                        break;
+                    case "MovementClipSet":
+                        MovementClipSet = Xml.GetChildInnerText(reader, "MovementClipSet");
+                        break;
+                    case "MovementClipSets":
+                        var clipSetsList = new List<string>();
+                        foreach(var item in Xml.IterateItems(reader, "MovementClipSets"))
+                        {
+                            clipSetsList.Add(item.Value);
+                        }
+
+                        MovementClipSets = clipSetsList.ToArray();
+                        break;
+                    case "StrafeClipSet":
+                        StrafeClipSet = Xml.GetChildInnerText(reader, "StrafeClipSet");
+                        break;
+                    case "MovementToStrafeClipSet":
+                        MovementToStrafeClipSet = Xml.GetChildInnerText(reader, "MovementToStrafeClipSet");
+                        break;
+                    case "InjuredStrafeClipSet":
+                        InjuredStrafeClipSet = Xml.GetChildInnerText(reader, "InjuredStrafeClipSet");
+                        break;
+                    case "FullBodyDamageClipSet":
+                        FullBodyDamageClipSet = Xml.GetChildInnerText(reader, "FullBodyDamageClipSet");
+                        break;
+                    case "AdditiveDamageClipSet":
+                        AdditiveDamageClipSet = Xml.GetChildInnerText(reader, "AdditiveDamageClipSet");
+                        break;
+                    case "DefaultGestureClipSet":
+                        DefaultGestureClipSet = Xml.GetChildInnerText(reader, "DefaultGestureClipSet");
+                        break;
+                    case "FacialClipsetGroupName":
+                        FacialClipsetGroupName = Xml.GetChildInnerText(reader, "FacialClipsetGroupName");
+                        break;
+                    case "DefaultVisemeClipSet":
+                        DefaultVisemeClipSet = Xml.GetChildInnerText(reader, "DefaultVisemeClipSet");
+                        break;
+                    case "SidestepClipSet":
+                        SidestepClipSet = Xml.GetChildInnerText(reader, "SidestepClipSet");
+                        break;
+                    case "PoseMatcherName":
+                        PoseMatcherName = Xml.GetChildInnerText(reader, "PoseMatcherName");
+                        break;
+                    case "PoseMatcherProneName":
+                        PoseMatcherProneName = Xml.GetChildInnerText(reader, "PoseMatcherProneName");
+                        break;
+                    case "GetupSetHash":
+                        GetupSetHash = Xml.GetChildInnerText(reader, "GetupSetHash");
+                        break;
+                    case "CreatureMetadataName":
+                        CreatureMetadataName = Xml.GetChildInnerText(reader, "CreatureMetadataName");
+                        break;
+                    case "DecisionMakerName":
+                        DecisionMakerName = Xml.GetChildInnerText(reader, "DecisionMakerName");
+                        break;
+                    case "MotionTaskDataSetName":
+                        MotionTaskDataSetName = Xml.GetChildInnerText(reader, "MotionTaskDataSetName");
+                        break;
+                    case "DefaultTaskDataSetName":
+                        DefaultTaskDataSetName = Xml.GetChildInnerText(reader, "DefaultTaskDataSetName");
+                        break;
+                    case "PedCapsuleName":
+                        PedCapsuleName = Xml.GetChildInnerText(reader, "PedCapsuleName");
+                        break;
+                    case "PedLayoutName":
+                        PedLayoutName = Xml.GetChildInnerText(reader, "PedLayoutName");
+                        break;
+                    case "PedComponentSetName":
+                        PedComponentSetName = Xml.GetChildInnerText(reader, "PedComponentSetName");
+                        break;
+                    case "PedComponentClothName":
+                        PedComponentClothName = Xml.GetChildInnerText(reader, "PedComponentClothName");
+                        break;
+                    case "PedIKSettingsName":
+                        PedIKSettingsName = Xml.GetChildInnerText(reader, "PedIKSettingsName");
+                        break;
+                    case "TaskDataName":
+                        TaskDataName = Xml.GetChildInnerText(reader, "TaskDataName");
+                        break;
+                    case "IsStreamedGfx":
+                        IsStreamedGfx = Xml.GetChildBoolAttribute(reader, "IsStreamedGfx", "value");
+                        break;
+                    case "AmbulanceShouldRespondTo":
+                        AmbulanceShouldRespondTo = Xml.GetChildBoolAttribute(reader, "AmbulanceShouldRespondTo", "value");
+                        break;
+                    case "CanRideBikeWithNoHelmet":
+                        CanRideBikeWithNoHelmet = Xml.GetChildBoolAttribute(reader, "CanRideBikeWithNoHelmet", "value");
+                        break;
+                    case "CanSpawnInCar":
+                        CanSpawnInCar = Xml.GetChildBoolAttribute(reader, "CanSpawnInCar", "value");
+                        break;
+                    case "IsHeadBlendPed":
+                        IsHeadBlendPed = Xml.GetChildBoolAttribute(reader, "IsHeadBlendPed", "value");
+                        break;
+                    case "bOnlyBulkyItemVariations":
+                        bOnlyBulkyItemVariations = Xml.GetChildBoolAttribute(reader, "bOnlyBulkyItemVariations", "value");
+                        break;
+                    case "RelationshipGroup":
+                        RelationshipGroup = Xml.GetChildInnerText(reader, "RelationshipGroup");
+                        break;
+                    case "NavCapabilitiesName":
+                        NavCapabilitiesName = Xml.GetChildInnerText(reader, "NavCapabilitiesName");
+                        break;
+                    case "PerceptionInfo":
+                        PerceptionInfo = Xml.GetChildInnerText(reader, "PerceptionInfo");
+                        break;
+                    case "DefaultBrawlingStyle":
+                        DefaultBrawlingStyle = Xml.GetChildInnerText(reader, "DefaultBrawlingStyle");
+                        break;
+                    case "DefaultUnarmedWeapon":
+                        DefaultUnarmedWeapon = Xml.GetChildInnerText(reader, "DefaultUnarmedWeapon");
+                        break;
+                    case "Personality":
+                        Personality = Xml.GetChildInnerText(reader, "Personality");
+                        break;
+                    case "CombatInfo":
+                        CombatInfo = Xml.GetChildInnerText(reader, "CombatInfo");
+                        break;
+                    case "VfxInfoName":
+                        VfxInfoName = Xml.GetChildInnerText(reader, "VfxInfoName");
+                        break;
+                    case "AmbientClipsForFlee":
+                        AmbientClipsForFlee = Xml.GetChildInnerText(reader, "AmbientClipsForFlee");
+                        break;
+                    case "Radio1":
+                        Radio1 = Xml.GetChildInnerText(reader, "Radio1"); // MetaName.ePedRadioGenre
+                        break;
+                    case "Radio2":
+                        Radio2 = Xml.GetChildInnerText(reader, "Radio2"); // MetaName.ePedRadioGenre
+                        break;
+                    case "FUpOffset":
+                        FUpOffset = Xml.GetChildFloatAttribute(reader, "FUpOffset", "value");
+                        break;
+                    case "RUpOffset":
+                        RUpOffset = Xml.GetChildFloatAttribute(reader, "RUpOffset", "value");
+                        break;
+                    case "FFrontOffset":
+                        FFrontOffset = Xml.GetChildFloatAttribute(reader, "FFrontOffset", "value");
+                        break;
+                    case "RFrontOffset":
+                        RFrontOffset = Xml.GetChildFloatAttribute(reader, "RFrontOffset", "value");
+                        break;
+                    case "MinActivationImpulse":
+                        MinActivationImpulse = Xml.GetChildFloatAttribute(reader, "MinActivationImpulse", "value");
+                        break;
+                    case "Stubble":
+                        Stubble = Xml.GetChildFloatAttribute(reader, "Stubble", "value");
+                        break;
+                    case "HDDist":
+                        HDDist = Xml.GetChildFloatAttribute(reader, "HDDist", "value");
+                        break;
+                    case "TargetingThreatModifier":
+                        TargetingThreatModifier = Xml.GetChildFloatAttribute(reader, "TargetingThreatModifier", "value");
+                        break;
+                    case "KilledPerceptionRangeModifer":
+                        KilledPerceptionRangeModifer = Xml.GetChildFloatAttribute(reader, "KilledPerceptionRangeModifer", "value");
+                        break;
+                    case "Sexiness":
+                        Sexiness = Xml.GetChildInnerText(reader, "Sexiness"); // MetaTypeName.ARRAYINFO MetaName.eSexinessFlags
+                        break;
+                    case "Age":
+                        Age = (byte)Xml.GetChildUIntAttribute(reader, "Age", "value");
+                        break;
+                    case "MaxPassengersInCar":
+                        MaxPassengersInCar = (byte)Xml.GetChildUIntAttribute(reader, "MaxPassengersInCar", "value");
+                        break;
+                    case "ExternallyDrivenDOFs":
+                        ExternallyDrivenDOFs = Xml.GetChildInnerText(reader, "ExternallyDrivenDOFs"); // MetaTypeName.ARRAYINFO MetaName.eExternallyDrivenDOFs
+                        break;
+                    case "PedVoiceGroup":
+                        PedVoiceGroup = Xml.GetChildInnerText(reader, "PedVoiceGroup");
+                        break;
+                    case "AnimalAudioObject":
+                        AnimalAudioObject = Xml.GetChildInnerText(reader, "AnimalAudioObject");
+                        break;
+                    case "AbilityType":
+                        AbilityType = Xml.GetChildInnerText(reader, "AbilityType"); // MetaName.SpecialAbilityType
+                        break;
+                    case "ThermalBehaviour":
+                        ThermalBehaviour = Xml.GetChildInnerText(reader, "ThermalBehaviour"); // MetaName.ThermalBehaviour
+                        break;
+                    case "SuperlodType":
+                        SuperlodType = Xml.GetChildInnerText(reader, "SuperlodType"); // MetaName.eSuperlodType
+                        break;
+                    case "ScenarioPopStreamingSlot":
+                        ScenarioPopStreamingSlot = Xml.GetChildInnerText(reader, "ScenarioPopStreamingSlot"); // MetaName.eScenarioPopStreamingSlot
+                        break;
+                    case "DefaultSpawningPreference":
+                        DefaultSpawningPreference = Xml.GetChildInnerText(reader, "DefaultSpawningPreference"); // MetaName.DefaultSpawnPreference
+                        break;
+                    case "DefaultRemoveRangeMultiplier":
+                        DefaultRemoveRangeMultiplier = Xml.GetChildFloatAttribute(reader, "DefaultRemoveRangeMultiplier", "value");
+                        break;
+                    case "AllowCloseSpawning":
+                        AllowCloseSpawning = Xml.GetChildBoolAttribute(reader, "AllowCloseSpawning", "value");
+                        break;
+                    default:
+                        reader.Skip();
+                        break;
+                }
+            }
+        }
 
         public CPedModelInfo__InitData(XmlNode node)
         {
@@ -300,6 +626,25 @@ namespace CodeWalker.GameFiles
         public string parent { get; set; }
         public string child { get; set; }
 
+
+        public CTxdRelationship(XmlReader reader)
+        {
+            if (reader.Name == "parent")
+            {
+                parent = Xml.GetChildInnerText(reader, "parent");
+            } else if (reader.Name == "child")
+            {
+                child = Xml.GetChildInnerText(reader, "child");
+            }
+            if (reader.Name == "parent")
+            {
+                parent = Xml.GetChildInnerText(reader, "parent");
+            }
+            else if (reader.Name == "child")
+            {
+                child = Xml.GetChildInnerText(reader, "child");
+            }
+        }
         public CTxdRelationship(XmlNode node)
         {
             parent = Xml.GetChildInnerText(node, "parent");
@@ -329,6 +674,34 @@ namespace CodeWalker.GameFiles
                     children[i] = items[i].InnerText;
                 }
             }
+        }
+
+        public CMultiTxdRelationship(XmlReader reader)
+        {
+            reader.ReadStartElement("Item");
+            while (reader.MoveToContent() == XmlNodeType.Element && reader.Name != "Item")
+            {
+                switch (reader.Name)
+                {
+                    case "children":
+                        var childrenList = new List<string>();
+                        foreach (var item in Xml.IterateItems(reader, "children"))
+                        {
+                            childrenList.Add(item.Value);
+                        }
+                        if (childrenList.Count > 0)
+                        {
+                            children = childrenList.ToArray();
+                        } 
+                        break;
+                    case "parent":
+                        parent = Xml.GetChildInnerText(reader, "parent");
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Found invalid XML Element \"{reader.Name}\" of type \"{reader.NodeType}\"");
+                }
+            }
+            reader.ReadEndElement();
         }
 
         public override string ToString()

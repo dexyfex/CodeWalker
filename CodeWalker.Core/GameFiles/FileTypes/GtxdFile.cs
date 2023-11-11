@@ -36,7 +36,7 @@ namespace CodeWalker.GameFiles
             FilePath = Name;
 
 
-            if (entry.NameLower.EndsWith(".ymt"))
+            if (entry.Name.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase))
             {
                 MemoryStream ms = new MemoryStream(data);
                 if (RbfFile.IsRBF(ms))
@@ -57,7 +57,7 @@ namespace CodeWalker.GameFiles
                     //not an RBF file...
                 }
             }
-            else if (entry.NameLower.EndsWith(".meta"))
+            else if (entry.Name.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
             {
                 //required for update\x64\dlcpacks\mpheist\dlc.rpf\common\data\gtxd.meta and update\x64\dlcpacks\mpluxe\dlc.rpf\common\data\gtxd.meta
                 string xml = TextUtil.GetUTF8Text(data);

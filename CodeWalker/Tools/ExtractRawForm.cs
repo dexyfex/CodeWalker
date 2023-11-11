@@ -142,11 +142,11 @@ namespace CodeWalker.Tools
                             bool extract = false;
                             if (endswith)
                             {
-                                extract = entry.NameLower.EndsWith(matchstr);
+                                extract = entry.Name.EndsWith(matchstr, StringComparison.OrdinalIgnoreCase);
                             }
                             else
                             {
-                                extract = entry.NameLower.Contains(matchstr);
+                                extract = entry.Name.Contains(matchstr, StringComparison.OrdinalIgnoreCase);
                             }
                             var fentry = entry as RpfFileEntry;
                             if (fentry == null)

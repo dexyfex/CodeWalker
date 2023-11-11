@@ -87,7 +87,6 @@ namespace CodeWalker.GameFiles
         }
 
 
-
         private void NonMetaLoad(byte[] data)
         {
             //non meta not supported yet! but see what's in there...
@@ -103,22 +102,6 @@ namespace CodeWalker.GameFiles
                 Pso.Load(ms);
                 LoadPso();
             }
-            else
-            {
-            }
-
         }
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }

@@ -38,7 +38,7 @@ namespace CodeWalker.World
                 {
                     foreach (var file in dlcrpf.AllEntries)
                     {
-                        if (file.NameLower.EndsWith(".xml") && file.NameLower.StartsWith("timecycle_mods_"))
+                        if (file.IsExtension(".xml") && file.Name.StartsWith("timecycle_mods_", StringComparison.OrdinalIgnoreCase))
                         {
                             LoadXml(rpfman.GetFileXml(file.Path));
                         }

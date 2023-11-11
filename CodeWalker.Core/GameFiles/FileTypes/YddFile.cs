@@ -75,20 +75,17 @@ namespace CodeWalker.GameFiles
                     var drawable = drawables[i];
                     var hash = hashes[i];
                     drawable.Hash = hash;
-                    if ((drawable.Name == null) || (drawable.Name.EndsWith("#dd")))
+                    if (drawable.Name == null || drawable.Name.EndsWith("#dd", StringComparison.OrdinalIgnoreCase))
                     {
                         string hstr = JenkIndex.TryGetString(hash);
                         if (!string.IsNullOrEmpty(hstr))
                         {
                             drawable.Name = hstr;
                         }
-                        else
-                        { }
                     }
                 }
 
                 Drawables = Dict.Values.ToArray();
-
             }
 
             Loaded = true;

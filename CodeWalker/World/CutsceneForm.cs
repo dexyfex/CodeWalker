@@ -301,7 +301,7 @@ namespace CodeWalker.World
             {
                 foreach (var entry in rpf.AllEntries)
                 {
-                    if (entry.NameLower.EndsWith(".cut"))
+                    if (entry.IsExtension(".cut"))
                     {
                         var dditem = new CutsceneDropdownItem();
                         dditem.RpfEntry = entry;

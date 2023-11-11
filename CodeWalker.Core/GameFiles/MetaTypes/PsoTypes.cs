@@ -15819,46 +15819,52 @@ namespace CodeWalker.GameFiles
 
         public static T ConvertDataRaw<T>(byte[] data) where T : struct
         {
-            MemoryMarshal.TryRead<T>(data.AsSpan(), out T value);
-
-            return value;
+            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var h = handle.AddrOfPinnedObject();
+            var r = Marshal.PtrToStructure<T>(h);
+            handle.Free();
+            return r;
         }
+        public static T ConvertDataRawOld<T>(byte[] data, int offset) where T : struct
+        {
+            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var h = handle.AddrOfPinnedObject();
+            var r = Marshal.PtrToStructure<T>(h + offset);
+            handle.Free();
+            return r;
+        }
+
         public static T ConvertDataRaw<T>(byte[] data, int offset) where T : struct
         {
-            MemoryMarshal.TryRead<T>(data.AsSpan(offset), out T value);
-
+            MemoryMarshal.TryRead<T>(data.AsSpan(offset), out var value);
             return value;
-            //return MemoryMarshal.GetReference<T>(data.AsSpan(offset));
-            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //var r = Marshal.PtrToStructure<T>(h + offset);
-            //handle.Free();
-            //return r;
         }
+
         public static T ConvertData<T>(byte[] data, int offset) where T : struct, IPsoSwapEnd
         {
-            MemoryMarshal.TryRead<T>(data.AsSpan(offset), out T value);
-
-            value.SwapEnd();
-
-            return value;
-            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //var r = Marshal.PtrToStructure<T>(h + offset);
-            //handle.Free();
-            //r.SwapEnd();
-            //return r;
+            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var h = handle.AddrOfPinnedObject();
+            var r = Marshal.PtrToStructure<T>(h + offset);
+            handle.Free();
+            r.SwapEnd();
+            return r;
         }
-        public static Span<T>ConvertDataArrayRaw<T>(byte[] data, int offset, int count) where T : struct
+        public static Span<T> ConvertDataArrayRaw<T>(byte[] data, int offset, int count) where T : struct
         {
-            return MemoryMarshal.Cast<byte, T>(data.AsSpan(offset, count * Marshal.SizeOf(typeof(T))));
+            T[] items = new T[count];
+            int itemsize = Marshal.SizeOf(typeof(T));
+            //for (int i = 0; i < count; i++)
+            //{
+            //    int off = offset + i * itemsize;
+            //    items[i] = ConvertDataRaw<T>(data, off);
+            //}
 
-            //GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //Marshal.Copy(data, offset, h, itemsize * count);
-            //handle.Free();
+            GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
+            var h = handle.AddrOfPinnedObject();
+            Marshal.Copy(data, offset, h, itemsize * count);
+            handle.Free();
 
-            //return items;
+            return items;
         }
 
 

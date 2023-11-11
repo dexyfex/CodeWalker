@@ -173,7 +173,7 @@ namespace CodeWalker.Rendering
         public Renderer(DXForm form, GameFileCache cache)
         {
             Form = form;
-            gameFileCache = cache ?? GameFileCacheFactory.Create();
+            gameFileCache = cache ?? GameFileCacheFactory.GetInstance();
             renderableCache = new RenderableCache();
 
             var s = Settings.Default;
@@ -386,8 +386,11 @@ namespace CodeWalker.Rendering
             var ctc = renderableCache.LoadedTextureCount;
             var vr = renderableCache.TotalGraphicsMemoryUse + (shaders != null ? shaders.TotalGraphicsMemoryUse : 0);
             var vram = TextUtil.GetBytesReadable(vr);
-            
-            return $"Drawn: {rgc} geom, Loaded: {crc} dr, {ctc} tx, Vram: {vram}, Fps: {fps}";
+            var cacheUsage = TextUtil.GetBytesReadable(gameFileCache.MemoryUsage);
+            var cacheMax = TextUtil.GetBytesReadable(gameFileCache.MaxMemoryUsage);
+
+
+            return $"Drawn: {rgc} geom, Loaded: {crc} dr, {ctc} tx, Vram: {vram}, Fps: {fps}, Cache: {cacheUsage}/{cacheMax}";
         }
 
 
@@ -1690,7 +1693,7 @@ namespace CodeWalker.Rendering
                 for (int i = 0; i < frag.Layers.Length; i++)
                 {
                     CloudHatFragLayer layer = frag.Layers[i];
-                    uint dhash = JenkHash.GenHash(layer.Filename.ToLowerInvariant());
+                    uint dhash = JenkHash.GenHashLower(layer.Filename);
                     Archetype arch = gameFileCache.GetArchetype(dhash);
                     if (arch == null)
                     { continue; }
@@ -1700,8 +1703,10 @@ namespace CodeWalker.Rendering
                     var drw = gameFileCache.TryGetDrawable(arch);
                     var rnd = TryGetRenderable(arch, drw);
 
-                    if ((rnd == null) || (rnd.IsLoaded == false) || (rnd.AllTexturesLoaded == false))
-                    { continue; }
+                    if (rnd == null || !rnd.IsLoaded || !rnd.AllTexturesLoaded)
+                    {
+                        continue;
+                    }
 
 
                     RenderableInst rinst = new RenderableInst();
@@ -2051,7 +2056,7 @@ namespace CodeWalker.Rendering
 
 
             ent.Distance = dist;
-            ent.IsVisible = (dist <= loddist);
+            ent.IsWithinLodDist = (dist <= loddist);
             ent.ChildrenVisible = (dist <= cloddist) && (ent._CEntityDef.numChildren > 0);
 
 
@@ -2061,7 +2066,7 @@ namespace CodeWalker.Rendering
                 if ((ent._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD) ||
                     (ent._CEntityDef.lodLevel < renderworldMaxLOD))
                 {
-                    ent.IsVisible = false;
+                    ent.IsWithinLodDist = false;
                     ent.ChildrenVisible = false;
                 }
                 if (ent._CEntityDef.lodLevel == renderworldMaxLOD)
@@ -2090,9 +2095,10 @@ namespace CodeWalker.Rendering
         }
         private void RenderWorldRecurseAddEntities(YmapEntityDef ent)
         {
-            bool hide = ent.ChildrenVisible;
-            bool force = (ent.Parent != null) && ent.Parent.ChildrenVisible && !hide;
-            if (force || (ent.IsVisible && !hide))
+            bool childrenVisible = ent.ChildrenVisible;
+            var parentChildrenVisible = ent.Parent?.ChildrenVisible ?? true;
+            bool force = parentChildrenVisible && !childrenVisible;
+            if (force || (ent.IsWithinLodDist && !childrenVisible))
             {
                 if (ent.Archetype != null)
                 {
@@ -2115,7 +2121,7 @@ namespace CodeWalker.Rendering
 
                 }
             }
-            if (ent.IsVisible && ent.ChildrenVisible && (ent.Children != null))
+            if (ent.IsWithinLodDist && ent.ChildrenVisible && (ent.Children != null))
             {
                 for (int i = 0; i < ent.Children.Length; i++)
                 {
@@ -2167,7 +2173,7 @@ namespace CodeWalker.Rendering
                     if (intent?.Archetype == null) continue; //missing archetype...
                     if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
 
-                    intent.IsVisible = true;
+                    intent.IsWithinLodDist = true;
 
                     if (!camera.ViewFrustum.ContainsAABBNoClip(ref intent.BBCenter, ref intent.BBExtent))
                     {
@@ -2192,7 +2198,7 @@ namespace CodeWalker.Rendering
                         if (intent?.Archetype == null) continue; //missing archetype...
                         if (!RenderIsEntityFinalRender(intent)) continue; //proxy or something..
 
-                        intent.IsVisible = true;
+                        intent.IsWithinLodDist = true;
 
                         if (!camera.ViewFrustum.ContainsAABBNoClip(ref intent.BBCenter, ref intent.BBExtent))
                         {
@@ -2390,7 +2396,10 @@ namespace CodeWalker.Rendering
             {
                 var drawable = gameFileCache.TryGetDrawable(arch);
                 rndbl = TryGetRenderable(arch, drawable);
-                ArchetypeRenderables[arch] = rndbl;
+                if (rndbl != null && rndbl.IsLoaded)
+                {
+                    ArchetypeRenderables[arch] = rndbl;
+                }
             }
             if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
             {
@@ -2457,7 +2466,10 @@ namespace CodeWalker.Rendering
         }
         private bool RenderYmapLOD(YmapFile ymap, YmapEntityDef entity)
         {
-            if (!ymap.Loaded) return false;
+            if (!ymap.Loaded)
+            {
+                return false;
+            }
 
             ymap.EnsureChildYmaps(gameFileCache);
 
@@ -3020,32 +3032,34 @@ namespace CodeWalker.Rendering
                 rndbl = TryGetRenderable(arche, drawable);
             }
 
-            if (rndbl != null)
+            if (rndbl == null || !rndbl.IsLoaded)
             {
-                if (animClip != null)
+                return false;
+            }
+
+            if (animClip != null)
+            {
+                rndbl.ClipMapEntry = animClip;
+                rndbl.ClipDict = animClip.Clip?.Ycd;
+                rndbl.HasAnims = true;
+            }
+
+
+            res = RenderRenderable(rndbl, arche, entity);
+
+
+            //fragments have extra drawables! need to render those too... TODO: handle fragments properly...
+            FragDrawable fd = rndbl.Key as FragDrawable;
+            if (fd != null)
+            {
+                var frag = fd.OwnerFragment;
+                if ((frag != null) && (frag.DrawableCloth != null)) //cloth...
                 {
-                    rndbl.ClipMapEntry = animClip;
-                    rndbl.ClipDict = animClip.Clip?.Ycd;
-                    rndbl.HasAnims = true;
-                }
-
-
-                res = RenderRenderable(rndbl, arche, entity);
-
-
-                //fragments have extra drawables! need to render those too... TODO: handle fragments properly...
-                FragDrawable fd = rndbl.Key as FragDrawable;
-                if (fd != null)
-                {
-                    var frag = fd.OwnerFragment;
-                    if ((frag != null) && (frag.DrawableCloth != null)) //cloth...
+                    rndbl = TryGetRenderable(arche, frag.DrawableCloth);
+                    if (rndbl != null && rndbl.IsLoaded)
                     {
-                        rndbl = TryGetRenderable(arche, frag.DrawableCloth);
-                        if (rndbl != null)
-                        {
-                            bool res2 = RenderRenderable(rndbl, arche, entity);
-                            res = res || res2;
-                        }
+                        bool res2 = RenderRenderable(rndbl, arche, entity);
+                        res = res || res2;
                     }
                 }
             }
@@ -3062,7 +3076,7 @@ namespace CodeWalker.Rendering
                 return false;
 
             Renderable rndbl = TryGetRenderable(arche, drawable, txdHash, txdExtra, diffOverride);
-            if (rndbl == null)
+            if (rndbl == null || !rndbl.IsLoaded)
                 return false;
 
             if (animClip != null)
@@ -3243,7 +3257,7 @@ namespace CodeWalker.Rendering
                 rginst.Inst.CastShadow = castshadow;
 
 
-                RenderableModel[] models = isselected ? rndbl.AllModels : rndbl.HDModels;
+                RenderableModel[] models = isselected ? rndbl.HDModels : rndbl.GetModels(distance);
 
                 for (int mi = 0; mi < models.Length; mi++)
                 {
@@ -3568,17 +3582,23 @@ namespace CodeWalker.Rendering
                     MetaHash ahash = arche.Hash;
                     if (ycd.ClipMap.TryGetValue(ahash, out rndbl.ClipMapEntry)) rndbl.HasAnims = true;
 
-                    foreach (var model in rndbl.HDModels)
+                    var models = rndbl.HDModels;
+                    for (int i = 0; i < models.Length; i++)
                     {
-                        if (model == null) continue;
-                        foreach (var geom in model.Geometries)
+                        var model = models[i];
+                        if (models[i] == null)
+                            continue;
+                        for (int j = 0; j < model.Geometries.Length; j++)
                         {
-                            if (geom == null) continue;
+                            var geom = model.Geometries[j];
+                            if (geom == null)
+                                continue;
                             if (geom.globalAnimUVEnable)
                             {
                                 uint cmeindex = geom.DrawableGeom.ShaderID + 1u;
                                 MetaHash cmehash = ahash + cmeindex; //this goes to at least uv5! (from uv0) - see hw1_09.ycd
-                                if (ycd.ClipMap.TryGetValue(cmehash, out geom.ClipMapEntryUV)) rndbl.HasAnims = true;
+                                if (ycd.ClipMap.TryGetValue(cmehash, out geom.ClipMapEntryUV))
+                                    rndbl.HasAnims = true;
                             }
                         }
                     }
@@ -3587,7 +3607,8 @@ namespace CodeWalker.Rendering
 
 
             var extraTexDict = (drawable.Owner as YptFile)?.PtfxList?.TextureDictionary;
-            if (extraTexDict == null) extraTexDict = txdExtra;
+            if (extraTexDict == null)
+                extraTexDict = txdExtra;
 
             bool cacheSD = (rndbl.SDtxds == null);
             bool cacheHD = (renderhdtextures && (rndbl.HDtxds == null));

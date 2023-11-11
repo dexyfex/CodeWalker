@@ -51,8 +51,6 @@ namespace CodeWalker.Forms
         private bool modified = false;
         private bool LoadingXml = false;
         private bool DelayHighlight = false;
-
-        private ExploreForm exploreForm = null;
         public RpfFileEntry rpfFileEntry { get; private set; } = null;
         private MetaFormat metaFormat = MetaFormat.XML;
 
@@ -60,10 +58,8 @@ namespace CodeWalker.Forms
         private Dat10Synth currentSynth = null;
 
 
-        public RelForm(ExploreForm owner)
+        public RelForm()
         {
-            exploreForm = owner;
-
             InitializeComponent();
         }
 
@@ -207,7 +203,7 @@ namespace CodeWalker.Forms
         private bool SaveRel(XmlDocument doc)
         {
 
-            if (!(exploreForm?.EditMode ?? false)) return false;
+            if (!(ExploreForm.Instance?.EditMode ?? false)) return false;
 
             byte[] data = null;
 
@@ -256,14 +252,14 @@ namespace CodeWalker.Forms
 
                 try
                 {
-                    if (!(exploreForm?.EnsureRpfValidEncryption(rpfFileEntry.File) ?? false)) return false;
+                    if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return false;
 
                     var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
                     if (newentry != rpfFileEntry)
                     { }
                     rpfFileEntry = newentry;
 
-                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                    ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                     modified = false;
 
@@ -282,7 +278,7 @@ namespace CodeWalker.Forms
                 {
                     File.WriteAllBytes(rpfFileEntry.Path, data);
 
-                    exploreForm?.RefreshMainListViewInvoke(); //update the file details in explorer...
+                    ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
                     modified = false;
 
@@ -513,7 +509,6 @@ namespace CodeWalker.Forms
 
             bool textsearch = SearchTextRadio.Checked;
             var text = SearchTextBox.Text;
-            var textl = text.ToLowerInvariant();
 
             uint hash = 0;
             uint hashl = 0;
@@ -521,8 +516,8 @@ namespace CodeWalker.Forms
             {
                 hash = JenkHash.GenHash(text);
                 JenkIndex.Ensure(text);
-                hashl = JenkHash.GenHash(textl);
-                JenkIndex.Ensure(textl);
+                hashl = JenkHash.GenHashLower(text);
+                JenkIndex.EnsureLower(text);
             }
             else
             {
@@ -536,8 +531,8 @@ namespace CodeWalker.Forms
             {
                 if (textsearch)
                 {
-                    if (((rd.Name?.Contains(textl, StringComparison.OrdinalIgnoreCase)) ?? false) || (rd.NameHash == hash) || (rd.NameHash == hashl) ||
-                        rd.NameHash.ToString().Contains(textl, StringComparison.OrdinalIgnoreCase))
+                    if (((rd.Name?.Contains(text, StringComparison.OrdinalIgnoreCase)) ?? false) || (rd.NameHash == hash) || (rd.NameHash == hashl) ||
+                        rd.NameHash.ToString().Contains(text, StringComparison.OrdinalIgnoreCase))
                     {
                         results.Add(rd);
                     }

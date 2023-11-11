@@ -393,11 +393,11 @@ namespace CodeWalker.GameFiles
         {
             foreach (var portal in portals)
             {
-                List<uint> newAttachedObjects = new List<uint>();
-                if (portal.AttachedObjects == null)
+                if (portal.AttachedObjects == null || portal.AttachedObjects.Length == 0)
                     continue;
 
-                foreach(var objIndex in portal.AttachedObjects)
+                List<uint> newAttachedObjects = new List<uint>();
+                foreach (var objIndex in portal.AttachedObjects)
                 {
                     if (objIndex == deletedIndex) continue;
                     if (objIndex > deletedIndex)
@@ -411,9 +411,10 @@ namespace CodeWalker.GameFiles
         {
             foreach (var room in rooms)
             {
-                List<uint> newAttachedObjects = new List<uint>();
-                if (room.AttachedObjects == null)
+                if (room.AttachedObjects == null || room.AttachedObjects.Length == 0)
                     continue;
+
+                List<uint> newAttachedObjects = new List<uint>();
                 foreach (var objIndex in room.AttachedObjects)
                 {
                     if (objIndex == deletedIndex) continue;
@@ -532,10 +533,12 @@ namespace CodeWalker.GameFiles
         }
         public MCMloRoomDef GetEntityRoom(MCEntityDef ent)
         {
-            if (rooms == null) return null;
+            if (rooms == null)
+                return null;
 
             int objectIndex = GetEntityObjectIndex(ent);
-            if (objectIndex < 0) return null;
+            if (objectIndex < 0)
+                return null;
 
             for (int i = 0; i < rooms.Length; i++)
             {
@@ -684,10 +687,15 @@ namespace CodeWalker.GameFiles
                 {
                     var ient = Entities[j];
                     var iarch = gfc.GetArchetype(ient._CEntityDef.archetypeName);
-                    ient.SetArchetype(iarch);
 
                     if (iarch == null)
-                    { } //can't find archetype - des stuff eg {des_prologue_door}
+                    {
+                        Console.WriteLine($"Can't find archetype for {ient._CEntityDef.archetypeName}!");
+                    }
+                    else
+                    {
+                        ient.SetArchetype(iarch);
+                    }
                 }
 
                 UpdateBBs(arch);
@@ -708,7 +716,13 @@ namespace CodeWalker.GameFiles
                         ient.SetArchetype(iarch);
 
                         if (iarch == null)
-                        { } //can't find archetype - des stuff eg {des_prologue_door}
+                        {
+                            Console.WriteLine($"Couldn't find archetype {ient._CEntityDef.archetypeName}");
+                        }
+                        else
+                        {
+                            ient.SetArchetype(iarch);
+                        }
                     }
                 }
             }
@@ -729,7 +743,8 @@ namespace CodeWalker.GameFiles
                     for (int j = 0; j < rooms.Length; j++)
                     {
                         var room = rooms[j];
-                        if ((room.AttachedObjects == null) || (room.AttachedObjects.Length == 0)) continue;
+                        if (room.AttachedObjects == null || room.AttachedObjects.Length == 0)
+                            continue;
                         Vector3 min = new Vector3(float.MaxValue);
                         Vector3 max = new Vector3(float.MinValue);
                         for (int k = 0; k < room.AttachedObjects.Length; k++)

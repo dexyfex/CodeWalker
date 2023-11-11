@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace CodeWalker.GameFiles
 
     public static class MetaNames
     {
-        public static Dictionary<uint, string> stringCache = new Dictionary<uint, string>();
+        public static ConcurrentDictionary<uint, string> stringCache = new ConcurrentDictionary<uint, string>();
         public static bool TryGetString(uint h, out string str)
         {
             if (stringCache.TryGetValue(h, out str))
@@ -21,10 +22,10 @@ namespace CodeWalker.GameFiles
             {
                 str = ((MetaName)h).ToString();
                 if (str.StartsWith("@")) str = str.Substring(1); //mainly to handle the @null entry
-                stringCache.Add(h, str);
+                stringCache.TryAdd(h, str);
                 return true;
             }
-            stringCache.Add(h, str);
+            stringCache.TryAdd(h, str);
             str = null;
             return false;
         }

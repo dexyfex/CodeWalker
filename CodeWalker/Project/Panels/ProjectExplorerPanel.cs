@@ -60,8 +60,8 @@ namespace CodeWalker.Project.Panels
 
                     LoadYmapTreeNodes(ymapfile, ymapnode);
 
-                    JenkIndex.Ensure(name);
-                    JenkIndex.Ensure(Path.GetFileNameWithoutExtension(name));
+                    JenkIndex.EnsureBoth(name);
+                    JenkIndex.EnsureBoth(Path.GetFileNameWithoutExtension(name));
                 }
                 ymapsnode.Expand();
             }
@@ -84,8 +84,8 @@ namespace CodeWalker.Project.Panels
 
                     LoadYtypTreeNodes(ytypfile, ytypnode);
 
-                    JenkIndex.Ensure(name);
-                    JenkIndex.Ensure(Path.GetFileNameWithoutExtension(name));
+                    JenkIndex.EnsureBoth(name);
+                    JenkIndex.EnsureBoth(Path.GetFileNameWithoutExtension(name));
                 }
                 ytypsnode.Expand();
             }

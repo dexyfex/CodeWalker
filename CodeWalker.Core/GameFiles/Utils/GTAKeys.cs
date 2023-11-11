@@ -28,6 +28,7 @@
 //shamelessly stolen
 
 using CodeWalker.Core.Properties;
+using CodeWalker.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -297,7 +298,7 @@ namespace CodeWalker.GameFiles
                 {
                     using (MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream())
                     {
-                        ds.CopyTo(outstr);
+                        ds.CopyToFast(outstr);
                         b = outstr.GetBuffer();
                     }
                 }
@@ -1220,7 +1221,7 @@ namespace CodeWalker.GameFiles
             using (var fs = new FileStream(fileName, FileMode.Create))
             {
                 ms.Position = 0;
-                ms.CopyTo(fs);
+                ms.CopyToFast(fs);
             }
             
         }
@@ -1307,7 +1308,7 @@ namespace CodeWalker.GameFiles
             using (var fs = new FileStream(fileName, FileMode.Create))
             {
                 ms.Position = 0;
-                ms.CopyTo(fs);
+                ms.CopyToFast(fs);
             }
         }
 
@@ -1445,7 +1446,7 @@ namespace CodeWalker.GameFiles
             using (var fs = new FileStream(fileName, FileMode.Create))
             {
                 ms.Position = 0;
-                ms.CopyTo(fs);
+                ms.CopyToFast(fs);
             }
         }
     }

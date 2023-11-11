@@ -15,6 +15,7 @@ using SharpDX.Direct3D;
 using System.Runtime;
 using CodeWalker.Core.Utils;
 using CodeWalker.Properties;
+using CodeWalker.GameFiles;
 
 namespace CodeWalker.Rendering
 {
@@ -30,10 +31,14 @@ namespace CodeWalker.Rendering
         public RenderTargetView targetview { get; private set; }
         public DepthStencilView depthview { get; private set; }
 
+        public CancellationToken cancellationToken;
+
         private volatile bool Running = false;
         private volatile bool Rendering = false;
         private volatile bool Resizing = false;
-        private object syncroot = new object(); //for thread safety
+        private SemaphoreSlim semaphore = new SemaphoreSlim(1);
+
+
         public int multisamplecount { get; private set; } = Settings.Default.AntiAliasing;
         public int multisamplequality { get; private set; } = 0; //should be a setting...
         public Color clearcolour { get; private set; } = new Color(0.2f, 0.4f, 0.6f, 1.0f); //gross
@@ -45,6 +50,8 @@ namespace CodeWalker.Rendering
         {
             dxform = form;
             autoStartLoop = autostart;
+
+            cancellationToken = form.CancellationTokenSource.Token;
 
             try
             {
@@ -147,31 +154,38 @@ namespace CodeWalker.Rendering
 
         private void Cleanup()
         {
-            Running = false;
-            int count = 0;
-            while (Rendering && (count < 1000))
+            try
             {
-                Thread.Sleep(1); //try to gracefully exit...
-                count++;
+                using var _ = new DisposableTimer("DXManager Cleanup");
+                Running = false;
+                int count = 0;
+                while (Rendering && (count < 1000))
+                {
+                    Thread.Sleep(1); //try to gracefully exit...
+                    count++;
+                }
+
+                dxform.CleanupScene();
+
+                if (context != null) context.ClearState();
+
+                //dipose of all objects
+                if (depthview != null) depthview.Dispose();
+                if (depthbuffer != null) depthbuffer.Dispose();
+                if (targetview != null) targetview.Dispose();
+                if (backbuffer != null) backbuffer.Dispose();
+                if (swapchain != null) swapchain.Dispose();
+                if (context != null) context.Dispose();
+
+                //var objs = SharpDX.Diagnostics.ObjectTracker.FindActiveObjects();
+
+                if (device != null) device.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
 
-            dxform.CleanupScene();
-
-            if (context != null) context.ClearState();
-
-            //dipose of all objects
-            if (depthview != null) depthview.Dispose();
-            if (depthbuffer != null) depthbuffer.Dispose();
-            if (targetview != null) targetview.Dispose();
-            if (backbuffer != null) backbuffer.Dispose();
-            if (swapchain != null) swapchain.Dispose();
-            if (context != null) context.Dispose();
-
-            //var objs = SharpDX.Diagnostics.ObjectTracker.FindActiveObjects();
-
-            if (device != null) device.Dispose();
-
-            GC.Collect();
         }
         private void CreateRenderBuffers()
         {
@@ -209,19 +223,22 @@ namespace CodeWalker.Rendering
         }
         private void Resize()
         {
+            Console.WriteLine($"Resizing {Resizing}");
             if (Resizing) return;
-            Monitor.Enter(syncroot);
+            semaphore.Wait();
             int width = dxform.Form.ClientSize.Width;
             int height = dxform.Form.ClientSize.Height;
 
             if (targetview != null) targetview.Dispose();
             if (backbuffer != null) backbuffer.Dispose();
 
+
+
             swapchain.ResizeBuffers(1, width, height, Format.Unknown, SwapChainFlags.AllowModeSwitch);
 
             CreateRenderBuffers();
 
-            Monitor.Exit(syncroot);
+            semaphore.Release();
 
             dxform.BuffersResized(width, height);
         }
@@ -244,6 +261,10 @@ namespace CodeWalker.Rendering
             }
             if (!e.Cancel)
             {
+                if (!dxform.CancellationTokenSource.IsCancellationRequested)
+                {
+                    dxform.CancellationTokenSource.Cancel();
+                }
                 Cleanup();
             }
         }
@@ -274,11 +295,38 @@ namespace CodeWalker.Rendering
         }
         private void StartRenderLoop()
         {
+            if (Running)
+            {
+                return;
+            }
+
             Running = true;
-            new Task(RenderLoop, TaskCreationOptions.LongRunning).Start(TaskScheduler.Default);
+
+            Task.Run(RenderLoop);
             //new Thread(new ThreadStart(RenderLoop)).Start();
         }
-        private void RenderLoop()
+
+
+        bool isPointVisibleOnAScreen(Point p)
+        {
+            foreach (Screen s in Screen.AllScreens)
+            {
+                if (p.X < s.Bounds.Right && p.X > s.Bounds.Left && p.Y > s.Bounds.Top && p.Y < s.Bounds.Bottom)
+                    return true;
+            }
+            return false;
+        }
+
+        bool isFormFullyVisible(Form f)
+        {
+            return isPointVisibleOnAScreen(new Point(f.Left, f.Top))
+                && isPointVisibleOnAScreen(new Point(f.Right, f.Top))
+                && isPointVisibleOnAScreen(new Point(f.Left, f.Bottom))
+                && isPointVisibleOnAScreen(new Point(f.Right, f.Bottom));
+        }
+
+        private int inactiveCount = 0;
+        private async Task RenderLoop()
         {
             //SharpDX.Configuration.EnableObjectTracking = true;
             //Task.Run(async () =>
@@ -289,86 +337,130 @@ namespace CodeWalker.Rendering
             //        await Task.Delay(5000);
             //    }
             //});
-            Thread.CurrentThread.Name = "RenderLoop";
-            while (Running)
+
+            try
             {
-                while (Resizing)
+                while (Running)
                 {
-                    swapchain.Present(1, PresentFlags.None); //just flip buffers when resizing; don't draw
-                }
-                if (dxform.Form.WindowState == FormWindowState.Minimized)
-                {
-                    dxform.Pauserendering = true;
-
-                    Console.WriteLine("Window is minimized");
-                    dxform.RenderScene(context);
-                    GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
-                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
-                    while (dxform.Form.WindowState == FormWindowState.Minimized)
+                    while (Resizing)
                     {
-                        Thread.Sleep(100); //don't hog CPU when minimised
-                        if (dxform.Form.IsDisposed) return; //if closed while minimised
+                        swapchain.Present(1, PresentFlags.None); //just flip buffers when resizing; don't draw
                     }
-                    dxform.Pauserendering = false;
-                    Console.WriteLine("Window is maximized");
-                }
+                    if (dxform.Form.WindowState == FormWindowState.Minimized)
+                    {
+                        dxform.Pauserendering = true;
 
-                
-                if (Form.ActiveForm == null)
-                {
-                    Thread.Sleep(100); //reduce the FPS when the app isn't active (maybe this should be configurable?)
-                    if (context.IsDisposed) return; //if form closed while sleeping (eg from rightclick on taskbar)
-                }
+                        Console.WriteLine("Window is minimized");
+                        await dxform.RenderScene(context);
+                        
+                        GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+                        while (dxform.Form.WindowState == FormWindowState.Minimized)
+                        {
+                            await Task.Delay(100, cancellationToken).ConfigureAwait(false); //don't hog CPU when minimised
+                            if (dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested) return; //if closed while minimised
+                        }
+                        dxform.Pauserendering = false;
+                        Console.WriteLine("Window is maximized");
+                    }
 
-                Rendering = true;
-                try
-                {
-                    if (!Monitor.TryEnter(syncroot, 50))
+
+                    if (Form.ActiveForm == null)
+                    {
+                        inactiveCount++;
+                        if (inactiveCount > 100)
+                        {
+                            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+                            GC.Collect();
+                            while (Form.ActiveForm == null)
+                            {
+                                await Task.Delay(100, cancellationToken).ConfigureAwait(false); //reduce the FPS when the app isn't active (maybe this should be configurable?)
+                                if (context.IsDisposed || dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested) return; //if form closed while sleeping (eg from rightclick on taskbar)
+                            }
+                        }
+                        else
+                        {
+                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        inactiveCount = 0;
+                        if (Form.ActiveForm != dxform.Form)
+                        {
+                            await Task.Delay(25, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+
+                    if (context.IsDisposed || dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested) return;
+
+                    Rendering = true;
+
+                    if (!await semaphore.WaitAsync(50, cancellationToken).ConfigureAwait(false))
                     {
                         Console.WriteLine("Failed to get lock for syncroot");
-                        Thread.Sleep(10); //don't hog CPU when not able to render...
+                        await Task.Delay(10, cancellationToken).ConfigureAwait(false); //don't hog CPU when not able to render...
                         continue;
                     }
 
-                    bool ok = true;
+                    if (dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested)
+                    {
+                        Rendering = false;
+                        return;
+                    }
 
                     try
                     {
-                        context.OutputMerger.SetRenderTargets(depthview, targetview);
-                        context.Rasterizer.SetViewport(0, 0, dxform.Form.ClientSize.Width, dxform.Form.ClientSize.Height);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Error setting main render target!\n" + ex.ToString());
-                        ok = false;
-                    }
-
-                    if (ok)
-                    {
-                        if (dxform.Form.IsDisposed)
-                        {
-                            Monitor.Exit(syncroot);
-                            Rendering = false;
-                            return; //the form was closed... stop!!
-                        }
-
-                        dxform.RenderScene(context);
+                        bool ok = true;
 
                         try
                         {
-                            swapchain.Present(1, PresentFlags.None);
+                            context.OutputMerger.SetRenderTargets(depthview, targetview);
+                            context.Rasterizer.SetViewport(0, 0, dxform.Form.ClientSize.Width, dxform.Form.ClientSize.Height);
                         }
                         catch (Exception ex)
                         {
-                            MessageBox.Show("Error presenting swap chain!\n" + ex.ToString());
+                            MessageBox.Show("Error setting main render target!\n" + ex.ToString());
+                            ok = false;
+                        }
+
+                        if (ok)
+                        {
+                            if (dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested)
+                            {
+
+                                Rendering = false;
+                                return; //the form was closed... stop!!
+                            }
+
+                            await dxform.RenderScene(context);
+
+                            try
+                            {
+                                swapchain.Present(1, PresentFlags.None);
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show("Error presenting swap chain!\n" + ex.ToString());
+                            }
                         }
                     }
+                    finally
+                    {
+                        semaphore.Release();
+                        Rendering = false;
+                    }
                 }
-                finally
-                {
-                    Monitor.Exit(syncroot);
-                    Rendering = false;
-                }
+            }
+            catch (TaskCanceledException) { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+            finally
+            {
+                Running = false;
             }
         }
 

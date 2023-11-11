@@ -851,10 +851,11 @@ namespace CodeWalker.Rendering
             if (batch.Renderable.HDModels.Length > 1)
             { }
 
-            foreach (var model in batch.Renderable.HDModels)
+            for(int i = 0; i < batch.Renderable.HDModels.Length; i++)
             {
-                if (model.Geometries.Length > 1)
-                { }
+                var model = batch.Renderable.HDModels[i];
+                if (model.Geometries.Length == 0)
+                    continue;
 
                 Basic.SetModelVars(context, model);
                 foreach (var geom in model.Geometries)
@@ -866,6 +867,7 @@ namespace CodeWalker.Rendering
                     }
                 }
             }
+
         }
 
 
