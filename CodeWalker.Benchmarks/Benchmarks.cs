@@ -2,27 +2,25 @@
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Jobs;
+using CodeWalker.Core.Utils;
 using CodeWalker.GameFiles;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace CodeWalker.Benchmarks
 {
     [MemoryDiagnoser]
-    [Config(typeof(JitsConfig))]
     public class Benchmarks
     {
-        private class JitsConfig : ManualConfig
-        {
-            public JitsConfig()
-            {
-                AddJob(Job.Default.WithJit(Jit.RyuJit).WithPlatform(Platform.X64));
-            }
-        }
-        public static string markup = @"<CVehicleModelInfo__InitDataList>
+        public const string markup = @"<CVehicleModelInfo__InitDataList>
   <residentTxd>vehshare</residentTxd>
   <residentAnims />
   <InitDatas>
@@ -179,22 +177,39 @@ namespace CodeWalker.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
-            data = Encoding.UTF8.GetBytes(markup);
-            fileEntry = RpfFile.CreateFileEntry("kaas.meta", "saak.meta", ref data);
+            data = new byte[2048];
+            var random = new Random(42);
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = (byte)random.Next(byte.MinValue, byte.MaxValue);
+            }
+            GTA5Keys.LoadFromPath("C:\\Program Files\\Rockstar Games\\Grand Theft Auto V", "");
         }
 
-        [Benchmark(Baseline = true)]
-        public void RunLoad()
+        //[Benchmark(Baseline = true)]
+        //public void RunLoad()
+        //{
+        //    var vehiclesFileExpected = new VehiclesFile();
+        //    vehiclesFileExpected.LoadOld(data, fileEntry);
+        //}
+
+        //[Benchmark]
+        //public void RunLoadNew()
+        //{
+        //    var vehiclesFile = new VehiclesFile();
+        //    vehiclesFile.Load(data, fileEntry);
+        //}
+
+        [Benchmark]
+        public void DecryptNGSpan()
         {
-            var vehiclesFileExpected = new VehiclesFile();
-            vehiclesFileExpected.LoadOld(data, fileEntry);
+            GTACrypto.DecryptNG(data.AsSpan(), "kaas", 2048);
         }
 
         [Benchmark]
-        public void RunLoadNew()
+        public void DecryptNG()
         {
-            var vehiclesFile = new VehiclesFile();
-            vehiclesFile.Load(data, fileEntry);
+            GTACrypto.DecryptNG(data, "kaas", 2048);
         }
     }
 }

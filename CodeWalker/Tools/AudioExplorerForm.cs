@@ -14,15 +14,14 @@ namespace CodeWalker.Tools
 {
     public partial class AudioExplorerForm : Form
     {
-        private GameFileCache GameFileCache { get; set; }
+        private static GameFileCache GameFileCache { get => GameFileCacheFactory.Instance; }
 
         private List<string> NameComboItems = new List<string>();
         private Dictionary<string, RelData> NameComboLookup = new Dictionary<string, RelData>();
 
 
-        public AudioExplorerForm(GameFileCache gfc)
+        public AudioExplorerForm()
         {
-            GameFileCache = gfc;
             InitializeComponent();
             LoadDropDowns();
         }

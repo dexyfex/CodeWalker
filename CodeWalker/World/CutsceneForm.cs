@@ -18,7 +18,7 @@ namespace CodeWalker.World
     public partial class CutsceneForm : Form
     {
         private WorldForm WorldForm;
-        private GameFileCache GameFileCache;
+        private GameFileCache GameFileCache => GameFileCacheFactory.Instance;
         private AudioDatabase AudioDatabase;
 
         private Cutscene Cutscene = null;
@@ -43,7 +43,6 @@ namespace CodeWalker.World
         public CutsceneForm(WorldForm worldForm)
         {
             WorldForm = worldForm;
-            GameFileCache = WorldForm.GameFileCache;
             AudioDatabase = new AudioDatabase();
             InitializeComponent();
         }
@@ -105,7 +104,7 @@ namespace CodeWalker.World
         private void SelectCutscene(CutsceneDropdownItem dditem)
         {
             Cursor = Cursors.WaitCursor;
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 CutFile cutFile = null;
                 Cutscene cutscene = null;
@@ -125,7 +124,7 @@ namespace CodeWalker.World
                         GameFileCache.RpfMan.LoadFile(cutFile, entry);
 
                         cutscene = new Cutscene();
-                        cutscene.Init(cutFile, GameFileCache, WorldForm, AudioDatabase);
+                        await cutscene.InitAsync(cutFile, GameFileCache, WorldForm, AudioDatabase);
 
                     }
                 }
@@ -473,7 +472,7 @@ namespace CodeWalker.World
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Cutscene
     {
         public CutFile CutFile { get; set; } = null;
-        private GameFileCache GameFileCache = null;
+        private GameFileCache GameFileCache => GameFileCacheFactory.Instance;
         private WorldForm WorldForm = null;
         private AudioDatabase AudioDB = null;
 
@@ -516,10 +515,9 @@ namespace CodeWalker.World
 
 
 
-        public void Init(CutFile cutFile, GameFileCache gfc, WorldForm wf, AudioDatabase adb)
+        public async ValueTask InitAsync(CutFile cutFile, GameFileCache gfc, WorldForm wf, AudioDatabase adb)
         {
             CutFile = cutFile;
-            GameFileCache = gfc;
             WorldForm = wf;
             AudioDB = adb;
 
@@ -539,7 +537,7 @@ namespace CodeWalker.World
 
 
             LoadYcds();
-            CreateSceneObjects();
+            await CreateSceneObjectsAsync();
             RaiseEvents(0.0f);
         }
 
@@ -1164,9 +1162,9 @@ namespace CodeWalker.World
                 int drbl = args.iDrawable;
                 int texx = args.iTexture;
 
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
-                    cso.Ped.SetComponentDrawable(comp, drbl, 0, texx, GameFileCache);
+                    await cso.Ped.SetComponentDrawableAsync(comp, drbl, 0, texx, GameFileCache);
                 });
             }
 
@@ -1262,7 +1260,7 @@ namespace CodeWalker.World
         }
 
 
-        private void CreateSceneObjects()
+        private async ValueTask CreateSceneObjectsAsync()
         {
             SceneObjects = new Dictionary<int, CutsceneObject>();
 
@@ -1274,7 +1272,7 @@ namespace CodeWalker.World
             foreach (var obj in Objects.Values)
             {
                 var sobj = new CutsceneObject();
-                sobj.Init(obj, GameFileCache, AudioDB);
+                await sobj.InitAsync(obj, GameFileCache, AudioDB);
                 SceneObjects[sobj.ObjectID] = sobj;
 
                 if (sobj.AnimHash != 0)
@@ -1320,7 +1318,7 @@ namespace CodeWalker.World
         public bool Enabled { get; set; } = false;
 
 
-        public void Init(CutObject obj, GameFileCache gfc, AudioDatabase adb)
+        public async ValueTask InitAsync(CutObject obj, GameFileCache gfc, AudioDatabase adb)
         {
             CutObject = obj;
             ObjectID = obj?.iObjectId ?? -1;
@@ -1345,7 +1343,7 @@ namespace CodeWalker.World
             }
             else if (obj is CutPedModelObject ped)
             {
-                InitPed(ped, gfc);
+                await InitPedAsync(ped, gfc);
             }
             else if (obj is CutPropModelObject prop)
             {
@@ -1506,12 +1504,12 @@ namespace CodeWalker.World
 
         }
 
-        private void InitPed(CutPedModelObject ped, GameFileCache gfc)
+        private async ValueTask InitPedAsync(CutPedModelObject ped, GameFileCache gfc)
         {
 
             Ped = new Ped();
-            Ped.Init(ped.StreamingName, gfc);
-            Ped.LoadDefaultComponents(gfc);
+            await Ped.InitAsync(ped.StreamingName, gfc);
+            await Ped.LoadDefaultComponentsAsync(gfc);
 
             //if (ped.StreamingName == JenkHash.GenHash("player_zero"))
             //{

@@ -276,7 +276,8 @@ namespace CodeWalker.GameFiles
 
     public static class JenkIndex
     {
-        public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(32, 1500000);
+        //public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(Environment.ProcessorCount * 2, 2000000);
+        public static Dictionary<uint, string> Index = new Dictionary<uint, string>(2000000);
 
         public static void Ensure(string str)
         {
@@ -293,10 +294,34 @@ namespace CodeWalker.GameFiles
                 return;
             }
 
-            Index.TryAdd(hash, str);
+            lock(Index)
+            {
+                Index[hash] = str;
+            }
+        }
+
+        public static void Ensure(ReadOnlySpan<char> str, uint hash)
+        {
+            if (hash == 0) return;
+
+            if (Index.ContainsKey(hash))
+            {
+                return;
+            }
+
+            lock(Index)
+            {
+                Index[hash] = str.ToString();
+            }
         }
 
         public static void EnsureLower(string str)
+        {
+            uint hash = JenkHash.GenHashLower(str);
+            Ensure(str, hash);
+        }
+
+        public static void EnsureLower(ReadOnlySpan<char> str)
         {
             uint hash = JenkHash.GenHashLower(str);
             Ensure(str, hash);
@@ -312,25 +337,15 @@ namespace CodeWalker.GameFiles
                 Ensure(str, hashLower);
             }
         }
-        public static void AddRange(params string[] strings)
+
+        public static void EnsureBoth(ReadOnlySpan<char> str)
         {
-            foreach(var s in strings)
+            uint hash = JenkHash.GenHash(str);
+            uint hashLower = JenkHash.GenHashLower(str);
+            Ensure(str, hash);
+            if (hash != hashLower)
             {
-                uint hash = JenkHash.GenHash(s);
-                if (hash == 0) continue;
-
-                Index[hash] = s;
-            }
-        }
-
-        public static void AddRangeLower(params string[] strings)
-        {
-            foreach (var s in strings)
-            {
-                uint hash = JenkHash.GenHashLower(s);
-                if (hash == 0) continue;
-
-                Index[hash] = s;
+                Ensure(str, hashLower);
             }
         }
 

@@ -17,6 +17,26 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
+    public struct FileCounts
+    {
+        public uint Rpfs;
+        public uint Files;
+        public uint Folders;
+        public uint Resources;
+        public uint BinaryFiles;
+
+        public static FileCounts operator +(FileCounts a, FileCounts b)
+        {
+            return new FileCounts
+            {
+                Rpfs = a.Rpfs + b.Rpfs,
+                Files = a.Files + b.Files,
+                Folders = a.Folders + b.Folders,
+                Resources = a.Resources + b.Resources,
+                BinaryFiles = a.BinaryFiles + b.BinaryFiles
+            };
+        }
+    }
 
     public class RpfFile
     {
@@ -53,15 +73,6 @@ namespace CodeWalker.GameFiles
 
 
         public uint TotalFileCount { get; set; }
-        public uint TotalFolderCount { get; set; }
-        public uint TotalResourceCount { get; set; }
-        public uint TotalBinaryFileCount { get; set; }
-        public uint GrandTotalRpfCount { get; set; }
-        public uint GrandTotalFileCount { get; set; }
-        public uint GrandTotalFolderCount { get; set; }
-        public uint GrandTotalResourceCount { get; set; }
-        public uint GrandTotalBinaryFileCount { get; set; }
-        public long ExtractedByteCount { get; set; }
 
         static RpfFile()
         {
@@ -163,7 +174,10 @@ namespace CodeWalker.GameFiles
         }
 
 
-
+        private void ThrowInvalidResource()
+        {
+            throw new Exception("Invalid Resource - not GTAV!");
+        }
 
         private void ReadHeader(BinaryReader br)
         {
@@ -178,7 +192,7 @@ namespace CodeWalker.GameFiles
 
             if (Version != 0x52504637)
             {
-                throw new Exception("Invalid Resource - not GTAV!");
+                ThrowInvalidResource();
             }
 
             var entriesLength = (int)EntryCount * 16;
@@ -202,8 +216,8 @@ namespace CodeWalker.GameFiles
                     break;
                 case RpfEncryption.NG:
                 default:
-                    GTACrypto.DecryptNG(entriesdata, Name, (uint)FileSize, 0, entriesLength);
-                    GTACrypto.DecryptNG(namesdata, Name, (uint)FileSize, 0, namesLength);
+                    GTACrypto.DecryptNG(entriesdata.AsSpan(0, entriesLength), Name, (uint)FileSize);
+                    GTACrypto.DecryptNG(namesdata.AsSpan(0, namesLength), Name, (uint)FileSize);
 
                     IsNGEncrypted = true;
                     break;
@@ -215,9 +229,6 @@ namespace CodeWalker.GameFiles
 
             AllEntries = new List<RpfEntry>((int)EntryCount);
             TotalFileCount = 0;
-            TotalFolderCount = 0;
-            TotalResourceCount = 0;
-            TotalBinaryFileCount = 0;
 
             for (uint i = 0; i < EntryCount; i++)
             {
@@ -231,18 +242,15 @@ namespace CodeWalker.GameFiles
                 if (x == 0x7fffff00) //directory entry
                 {
                     e = new RpfDirectoryEntry();
-                    TotalFolderCount++;
                 }
                 else if ((x & 0x80000000) == 0) //binary file entry
                 {
                     e = new RpfBinaryFileEntry();
-                    TotalBinaryFileCount++;
                     TotalFileCount++;
                 }
                 else //assume resource file entry
                 {
                     e = new RpfResourceFileEntry();
-                    TotalResourceCount++;
                     TotalFileCount++;
                 }
 
@@ -328,39 +336,39 @@ namespace CodeWalker.GameFiles
             ArrayPool<byte>.Shared.Return(namesdata);
         }
 
-        public bool ScanStructure(Action<string> updateStatus, Action<string> errorLog)
+        public FileCounts ScanStructure(Action<string> updateStatus, Action<string> errorLog)
         {
 
             using var fileStream = File.OpenRead(FilePath);
             using var br = new BinaryReader(fileStream);
             try
             {
-                return ScanStructure(br, updateStatus, errorLog);
+                return ScanStructure(br, updateStatus, errorLog) ?? default;
             }
             catch (Exception ex)
             {
                 LastError = ex.ToString();
                 LastException = ex;
                 errorLog?.Invoke(FilePath + ": " + LastError);
-                return false;
+                return default;
             }
         }
-        private bool ScanStructure(BinaryReader br, Action<string> updateStatus, Action<string> errorLog)
+        private FileCounts? ScanStructure(BinaryReader br, Action<string> updateStatus, Action<string> errorLog)
         {
-            if (FilePath == "update\\update.rpf\\dlc_patch\\patchday1ng\\x64\\patch\\data\\lang\\chinesesimp.rpf") return false;
+            if (FilePath == "update\\update.rpf\\dlc_patch\\patchday1ng\\x64\\patch\\data\\lang\\chinesesimp.rpf") return null;
             try
             {
                 ReadHeader(br);
             } catch 
             {
-                return false;
+                return null;
             }
 
-            GrandTotalRpfCount = 1; //count this file..
-            GrandTotalFileCount = 1; //start with this one.
-            GrandTotalFolderCount = 0;
-            GrandTotalResourceCount = 0;
-            GrandTotalBinaryFileCount = 0;
+            var fileCounts = new FileCounts
+            {
+                Rpfs = 1,
+                Files = 1
+            };
 
             Children = new List<RpfFile>();
 
@@ -383,32 +391,29 @@ namespace CodeWalker.GameFiles
                             subfile.Parent = this;
                             subfile.ParentFileEntry = binentry;
 
-                            if (subfile.ScanStructure(br, updateStatus, errorLog))
-                            {
-                                GrandTotalRpfCount += subfile.GrandTotalRpfCount;
-                                GrandTotalFileCount += subfile.GrandTotalFileCount;
-                                GrandTotalFolderCount += subfile.GrandTotalFolderCount;
-                                GrandTotalResourceCount += subfile.GrandTotalResourceCount;
-                                GrandTotalBinaryFileCount += subfile.GrandTotalBinaryFileCount;
+                            var result = subfile.ScanStructure(br, updateStatus, errorLog);
 
+                            if (result is not null)
+                            {
+                                fileCounts += result.Value;
                                 Children.Add(subfile);
                             }
                         }
                         else
                         {
                             //binary file that's not an rpf...
-                            GrandTotalBinaryFileCount++;
-                            GrandTotalFileCount++;
+                            fileCounts.BinaryFiles++;
+                            fileCounts.Files++;
                         }
                     }
                     else if (entry is RpfResourceFileEntry)
                     {
-                        GrandTotalResourceCount++;
-                        GrandTotalFileCount++;
+                        fileCounts.Resources++;
+                        fileCounts.Files++;
                     }
                     else if (entry is RpfDirectoryEntry)
                     {
-                        GrandTotalFolderCount++;
+                        fileCounts.Folders++;
                     }
                 }
                 catch (Exception ex)
@@ -416,7 +421,7 @@ namespace CodeWalker.GameFiles
                     errorLog?.Invoke(entry.Path + ": " + ex.ToString());
                 }
             }
-            return true;
+            return fileCounts;
         }
 
 
@@ -500,7 +505,7 @@ namespace CodeWalker.GameFiles
                             }
                             else
                             {
-                                GTACrypto.DecryptNG(tbytes, resentry.Name, resentry.FileSize);
+                                GTACrypto.DecryptNG(tbytes.AsSpan(0, (int)totlen), resentry.Name, resentry.FileSize);
                             }
 
 
@@ -510,10 +515,8 @@ namespace CodeWalker.GameFiles
                                 DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
 
                                 MemoryStream outstr = recyclableMemoryStreamManager.GetStream();
-                                ds.CopyToFast(outstr);
-                                byte[] deflated = outstr.GetBuffer();
-                                byte[] outbuf = new byte[outstr.Length]; //need to copy to the right size buffer for File.WriteAllBytes().
-                                Array.Copy(deflated, outbuf, outbuf.Length);
+                                ds.CopyTo(outstr);
+                                byte[] outbuf = outstr.ToArray();
 
                                 bool pathok = true;
                                 if (File.Exists(ofpath))
@@ -604,11 +607,12 @@ namespace CodeWalker.GameFiles
             {
                 LastError = ex.ToString();
                 LastException = ex;
+                Console.WriteLine(ex);
                 return null;
             }
         }
 
-        public ValueTask<byte[]> ExtractFileAsync(RpfFileEntry entry)
+        public async ValueTask<byte[]> ExtractFileAsync(RpfFileEntry entry)
         {
             try
             {
@@ -617,16 +621,16 @@ namespace CodeWalker.GameFiles
                 {
                     if (entry is RpfBinaryFileEntry binaryFileEntry)
                     {
-                        return ExtractFileBinaryAsync(binaryFileEntry, br);
+                        return await ExtractFileBinaryAsync(binaryFileEntry, br).ConfigureAwait(false);
                     }
                     else if (entry is RpfResourceFileEntry resourceFileEntry)
                     {
-                        return ExtractFileResourceAsync(resourceFileEntry, br);
+                        return await ExtractFileResourceAsync(resourceFileEntry, br).ConfigureAwait(false);
                     }
                     else
                     {
                         Console.WriteLine($"{entry} is not a BinaryFileEntry of ResourceFileEntry");
-                        return new ValueTask<byte[]>();
+                        return null;
                     }
                 }
             }
@@ -634,7 +638,7 @@ namespace CodeWalker.GameFiles
             {
                 LastError = ex.ToString();
                 LastException = ex;
-                return new ValueTask<byte[]>();
+                return null;
             }
         }
 
@@ -665,7 +669,7 @@ namespace CodeWalker.GameFiles
                 }
                 else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
                 {
-                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileUncompressedSize, 0, (int)totlen);
+                    GTACrypto.DecryptNG(tbytes.AsSpan(0, (int)totlen), entry.Name, entry.FileUncompressedSize);
                 }
             }
 
@@ -712,7 +716,7 @@ namespace CodeWalker.GameFiles
                 }
                 else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
                 {
-                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileUncompressedSize, 0, (int)totlen);
+                    GTACrypto.DecryptNG(tbytes.AsSpan(0, (int)totlen), entry.Name, entry.FileUncompressedSize);
                 }
             }
 
@@ -758,7 +762,7 @@ namespace CodeWalker.GameFiles
                 }
                 else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
                 {
-                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileSize, 0, (int)totlen);
+                    GTACrypto.DecryptNG(tbytes.AsSpan(0, (int)totlen), entry.Name, entry.FileSize);
                 }
             }
 
@@ -809,7 +813,7 @@ namespace CodeWalker.GameFiles
                 }
                 else //if (IsNGEncrypted) //assume the archive is set to NG encryption if not AES... (comment: fix for openIV modded files)
                 {
-                    GTACrypto.DecryptNG(tbytes, entry.Name, entry.FileSize, 0, (int)totlen);
+                    GTACrypto.DecryptNG(tbytes.AsSpan(0, (int)totlen), entry.Name, entry.FileSize);
                 }
             }
 
@@ -1033,7 +1037,6 @@ namespace CodeWalker.GameFiles
         public string TestExtractAllFiles()
         {
             StringBuilder sb = new StringBuilder();
-            ExtractedByteCount = 0;
             try
             {
                 using (BinaryReader br = new BinaryReader(File.OpenRead(GetPhysicalFilePath())))
@@ -1068,10 +1071,6 @@ namespace CodeWalker.GameFiles
                                         sb.AppendFormat("{0} : Decompressed output was empty.", entry.Path);
                                         sb.AppendLine();
                                     }
-                                    else
-                                    {
-                                        ExtractedByteCount += data.Length;
-                                    }
                                 }
                                 else if (entry is RpfResourceFileEntry)
                                 {
@@ -1094,10 +1093,6 @@ namespace CodeWalker.GameFiles
                                     {
                                         sb.AppendFormat("{0} : Decompressed output was empty.", entry.Path);
                                         sb.AppendLine();
-                                    }
-                                    else
-                                    {
-                                        ExtractedByteCount += data.Length;
                                     }
                                 }
                             }
@@ -1128,18 +1123,22 @@ namespace CodeWalker.GameFiles
 
         public List<RpfFileEntry> GetFiles(string folder, bool recurse)
         {
+            if (Root == null)
+            {
+                return new List<RpfFileEntry>();
+            }
             List<RpfFileEntry> result = new List<RpfFileEntry>();
-            string[] parts = folder.ToLowerInvariant().Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            //folder.AsSpan().Split
             RpfDirectoryEntry dir = Root;
-            for (int i = 0; i < parts.Length; i++)
+            foreach(var part in folder.EnumerateSplit('\\'))
             {
-                if (dir == null) break;
-                dir = FindSubDirectory(dir, parts[i]);
+                if (part.Length == 0)
+                    continue;
+                dir = FindSubDirectory(dir, part);
             }
-            if (dir != null)
-            {
-                GetFiles(dir, result, recurse);
-            }
+
+            GetFiles(dir, result, recurse);
+
             return result;
         }
         public void GetFiles(RpfDirectoryEntry dir, List<RpfFileEntry> result, bool recurse)
@@ -1167,7 +1166,7 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < dir.Directories.Count; i++)
             {
                 var cdir = dir.Directories[i];
-                if (cdir.Name.ToLowerInvariant() == name)
+                if (cdir.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                 {
                     return cdir;
                 }
@@ -1175,8 +1174,25 @@ namespace CodeWalker.GameFiles
             return null;
         }
 
+        private RpfDirectoryEntry FindSubDirectory(RpfDirectoryEntry dir, ReadOnlySpan<char> name)
+        {
+            if (dir == null) return null;
+            if (dir.Directories == null) return null;
+
+            for (int i = 0; i < dir.Directories.Count; i++)
+            {
+                var cdir = dir.Directories[i];
+                if (cdir.Name.AsSpan() == name || cdir.Name.AsSpan().Equals(name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return cdir;
+                }
+            }
+
+            return null;
+        }
 
 
+        private static readonly Stopwatch compression = new Stopwatch();
         public static RecyclableMemoryStreamManager recyclableMemoryStreamManager = new RecyclableMemoryStreamManager(256 * 1024, 1024 * 1024, 128 * 1024 * 1024, false, 256 * 1024 * 100, 1024 * 1024 * 128 * 4);
 
         public byte[] DecompressBytes(byte[] bytes)
@@ -1186,7 +1202,7 @@ namespace CodeWalker.GameFiles
                 using DeflateStream ds = new DeflateStream(new MemoryStream(bytes), CompressionMode.Decompress);
                 using var outstr = recyclableMemoryStreamManager.GetStream("DecompressBytes", bytes.Length);
 
-                ds.CopyToFast(outstr);
+                ds.CopyTo(outstr, 524288);
                 byte[] outbuf = outstr.ToArray(); //need to copy to the right size buffer for output.
 
                 if (outbuf.Length <= bytes.Length)
@@ -1212,14 +1228,8 @@ namespace CodeWalker.GameFiles
                 using DeflateStream ds = new DeflateStream(new MemoryStream(bytes), CompressionMode.Decompress);
                 using var outstr = recyclableMemoryStreamManager.GetStream("DecompressBytes", bytes.Length);
 
-                await ds.CopyToFastAsync(outstr).ConfigureAwait(false);
+                await ds.CopyToAsync(outstr, 524288).ConfigureAwait(false);
                 byte[] outbuf = outstr.ToArray(); //need to copy to the right size buffer for output.
-                //byte[] deflated = outstr.GetBuffer();
-                //Console.WriteLine($"{outstr.Read(outbuf, 0, outbuf.Length)}; {outbuf.Length}");
-                
-                //Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
-
-                //Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
 
                 if (outbuf.Length <= bytes.Length)
                 {
@@ -1245,9 +1255,7 @@ namespace CodeWalker.GameFiles
                 {
                     ds.Write(data, 0, data.Length);
                     ds.Close();
-                    byte[] deflated = ms.GetBuffer();
-                    byte[] outbuf = new byte[ms.Length]; //need to copy to the right size buffer...
-                    Buffer.BlockCopy(deflated, 0, outbuf, 0, outbuf.Length);
+                    byte[] outbuf = ms.ToArray(); //need to copy to the right size buffer...
                     return outbuf;
                 }
             }
@@ -1377,8 +1385,8 @@ namespace CodeWalker.GameFiles
         }
         private byte[] GetHeaderNamesData()
         {
-            MemoryStream namesstream = new MemoryStream();
-            DataWriter nameswriter = new DataWriter(namesstream);
+            using MemoryStream namesstream = new MemoryStream();
+            using DataWriter nameswriter = new DataWriter(namesstream);
             var namedict = new Dictionary<string, uint>();
             foreach (var entry in AllEntries)
             {
@@ -1395,10 +1403,10 @@ namespace CodeWalker.GameFiles
                     nameswriter.Write(name);
                 }
             }
-            var buf = new byte[namesstream.Length];
+            var buf = new byte[Math.Max(namesstream.Length, 16)];
             namesstream.Position = 0;
-            namesstream.Read(buf, 0, buf.Length);
-            return PadBuffer(buf, 16);
+            namesstream.Read(buf, 0, (int)namesstream.Length);
+            return buf;
         }
         private byte[] GetHeaderEntriesData()
         {
@@ -1418,18 +1426,6 @@ namespace CodeWalker.GameFiles
             uint headerusedbytes = 16 + (EntryCount * 16) + NamesLength;
             uint headerblockcount = GetBlockCount(headerusedbytes);
             return headerblockcount;
-        }
-        private static byte[] PadBuffer(byte[] buf, uint n)//add extra bytes as necessary to nearest n
-        {
-            uint buflen = (uint)buf.Length;
-            uint newlen = PadLength(buflen, n);
-            if (newlen != buflen)
-            {
-                byte[] buf2 = new byte[newlen];
-                Buffer.BlockCopy(buf, 0, buf2, 0, buf.Length);
-                return buf2;
-            }
-            return buf;
         }
         private static uint PadLength(uint l, uint n)//round up to nearest n bytes
         {
@@ -2430,7 +2426,10 @@ namespace CodeWalker.GameFiles
                         char ch = Name[i];
                         if (ch == '.')
                         {
-                            extension = Name.Substring(i, length - i).ToLowerInvariant();
+                            var result = Name.AsSpan(i, length - i);
+                            Span<char> lowered = stackalloc char[result.Length];
+                            result.ToLowerInvariant(lowered);
+                            extension = lowered.ToString();
                             break;
                         }
                         if (ch == System.IO.Path.DirectorySeparatorChar || ch == System.IO.Path.AltDirectorySeparatorChar)
@@ -3006,7 +3005,7 @@ namespace CodeWalker.GameFiles
     {
         public uint Value { get; set; }
         
-        public RpfResourcePage[] Pages
+        public readonly RpfResourcePage[] Pages
         {
             get
             {
@@ -3032,10 +3031,10 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public uint TypeVal { get { return (Value >> 28) & 0xF; } }
-        public uint BaseShift { get { return (Value & 0xF); } }
-        public uint BaseSize { get { return (0x200u << (int)BaseShift); } }
-        public uint[] BaseSizes
+        public readonly uint TypeVal { get { return (Value >> 28) & 0xF; } }
+        public readonly uint BaseShift { get { return (Value & 0xF); } }
+        public readonly uint BaseSize { get { return (0x200u << (int)BaseShift); } }
+        public readonly uint[] BaseSizes
         {
             get
             {
@@ -3054,7 +3053,7 @@ namespace CodeWalker.GameFiles
                 };
             }
         }
-        public uint[] PageCounts
+        public readonly uint[] PageCounts
         {
             get
             {
@@ -3072,7 +3071,7 @@ namespace CodeWalker.GameFiles
                 };
             }
         }
-        public uint[] PageSizes
+        public readonly uint[] PageSizes
         {
             get
             {
@@ -3092,7 +3091,7 @@ namespace CodeWalker.GameFiles
                 };
             }
         }
-        public uint Count
+        public readonly uint Count
         {
             get
             {
@@ -3100,7 +3099,7 @@ namespace CodeWalker.GameFiles
                 return c[0] + c[1] + c[2] + c[3] + c[4] + c[5] + c[6] + c[7] + c[8];
             }
         }
-        public uint Size 
+        public readonly uint Size 
         { 
             get 
             {
@@ -3152,7 +3151,7 @@ namespace CodeWalker.GameFiles
             return new RpfResourcePageFlags(v);
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return "Size: " + Size.ToString() + ", Pages: " + Count.ToString();
         }

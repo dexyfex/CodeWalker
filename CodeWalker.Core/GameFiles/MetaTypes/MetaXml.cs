@@ -2207,12 +2207,7 @@ namespace CodeWalker.GameFiles
         public static string XmlEscape(string unescaped)
         {
             if (unescaped == null) return null;
-            XmlDocument doc = new XmlDocument();
-            XmlNode node = doc.CreateElement("root");
-            node.InnerText = unescaped;
-            var escaped = node.InnerXml.Replace("\"", "&quot;");
-            if (escaped != unescaped)
-            { }
+            var escaped = System.Web.HttpUtility.HtmlEncode(unescaped).Replace("\"", "&quot;");
             return escaped;
         }
 

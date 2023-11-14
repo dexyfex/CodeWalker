@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -16,152 +17,45 @@ namespace CodeWalker.Core.Utils
         {
             return br.BaseStream.ReadAsync(buffer, index, count);
         }
+    }
 
+    public ref struct SpanStream
+    {
+        public Span<byte> Buffer { get; private set; }
+        private int _position;
 
-        public static void CopyToFast(this Stream stream, Stream destination)
+        public SpanStream(Span<byte> buffer)
         {
-            var buffer = ArrayPool<byte>.Shared.Rent(81920);
-            try
-            {
-                int read;
-                while ((read = stream.Read(buffer, 0, buffer.Length)) != 0)
-                    destination.Write(buffer, 0, read);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
+            Buffer = buffer;
+            _position = 0;
         }
 
-        public static async Task CopyToFastAsync(this Stream stream, Stream destination, int bufferSize = 131072, CancellationToken cancellationToken = default)
+        private ReadOnlySpan<byte> InternalRead(int count)
         {
-            var buffer = ArrayPool<byte>.Shared.Rent(bufferSize);
-            try
+            int origPos = _position;
+            int newPos = origPos + count;
+
+            if ((uint)newPos > (uint)Buffer.Length)
             {
-                int bytesRead;
-                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) != 0)
-                {
-                    await destination.WriteAsync(buffer, 0, bytesRead, cancellationToken).ConfigureAwait(false);
-                }
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                throw;
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
+                _position = Buffer.Length;
+                ThrowHelper.ThrowEndOfFileException();
             }
 
+            var span = Buffer.Slice(origPos, count);
+            _position = newPos;
+            return span;
         }
 
-        private static async Task FinishWriteAsync(Task writeTask, byte[] localBuffer)
-        {
-            try
-            {
-                await writeTask.ConfigureAwait(false);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(localBuffer);
-            }
-        }
+        public short ReadInt16() => BinaryPrimitives.ReadInt16LittleEndian(InternalRead(sizeof(short)));
 
-        public static ValueTask WriteAsync(this Stream stream, Memory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> array))
-            {
-                return new ValueTask(stream.WriteAsync(array.Array!, array.Offset, array.Count, cancellationToken));
-            }
+        public ushort ReadUInt16() => BinaryPrimitives.ReadUInt16LittleEndian(InternalRead(sizeof(ushort)));
 
-            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
-            buffer.Span.CopyTo(sharedBuffer);
-            return new ValueTask(FinishWriteAsync(stream.WriteAsync(sharedBuffer, 0, buffer.Length, cancellationToken), sharedBuffer));
-        }
-
-        public static void Write(this Stream stream, ReadOnlySpan<byte> buffer)
-        {
-            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
-            try
-            {
-                buffer.CopyTo(sharedBuffer);
-                stream.Write(sharedBuffer, 0, buffer.Length);
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(sharedBuffer);
-            }
-        }
-
-        public static int Read(this Stream stream, Span<byte> buffer)
-        {
-            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
-            try
-            {
-                int numRead = stream.Read(sharedBuffer, 0, buffer.Length);
-                if ((uint)numRead > (uint)buffer.Length)
-                {
-                    throw new IOException("Stream too long!");
-                }
-
-                new ReadOnlySpan<byte>(sharedBuffer, 0, numRead).CopyTo(buffer);
-                return numRead;
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(sharedBuffer);
-            }
-        }
-
-        public static int Read(this Stream stream, Memory<byte> buffer)
-        {
-            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> array))
-            {
-                return stream.Read(array.Array!, array.Offset, array.Count);
-            }
-
-            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
-            try
-            {
-                int numRead = stream.Read(sharedBuffer, 0, buffer.Length);
-                if ((uint)numRead > (uint)buffer.Length)
-                {
-                    throw new IOException("Stream too long!");
-                }
-
-                new ReadOnlySpan<byte>(sharedBuffer, 0, numRead).CopyTo(buffer.Span);
-                return numRead;
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(sharedBuffer);
-            }
-        }
-
-        public static ValueTask<int> ReadAsync(this Stream stream, Memory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> array))
-            {
-                return new ValueTask<int>(stream.ReadAsync(array.Array!, array.Offset, array.Count, cancellationToken));
-            }
-
-            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(buffer.Length);
-            return FinishReadAsync(stream.ReadAsync(sharedBuffer, 0, buffer.Length, cancellationToken), sharedBuffer, buffer);
-
-            static async ValueTask<int> FinishReadAsync(Task<int> readTask, byte[] localBuffer, Memory<byte> localDestination)
-            {
-                try
-                {
-                    int result = await readTask.ConfigureAwait(false);
-                    new ReadOnlySpan<byte>(localBuffer, 0, result).CopyTo(localDestination.Span);
-                    return result;
-                }
-                finally
-                {
-                    ArrayPool<byte>.Shared.Return(localBuffer);
-                }
-            }
-        }
+        public int ReadInt32() => BinaryPrimitives.ReadInt32LittleEndian(InternalRead(sizeof(int)));
+        public uint ReadUInt32() => BinaryPrimitives.ReadUInt32LittleEndian(InternalRead(sizeof(uint)));
+        public long ReadInt64() => BinaryPrimitives.ReadInt64LittleEndian(InternalRead(sizeof(long)));
+        public ulong ReadUInt64() => BinaryPrimitives.ReadUInt64LittleEndian(InternalRead(sizeof(ulong)));
+        public unsafe Half ReadHalf() => BinaryPrimitives.ReadHalfLittleEndian(InternalRead(sizeof(Half)));
+        public unsafe float ReadSingle() => BinaryPrimitives.ReadSingleLittleEndian(InternalRead(sizeof(float)));
+        public unsafe double ReadDouble() => BinaryPrimitives.ReadDoubleLittleEndian(InternalRead(sizeof(double)));
     }
 }

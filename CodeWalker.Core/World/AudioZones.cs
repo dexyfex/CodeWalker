@@ -33,8 +33,7 @@ namespace CodeWalker.World
 
             List<AudioPlacement> placements = new List<AudioPlacement>();
 
-            GameFileCache.AudioDatRelFilesLock.EnterReadLock();
-            try
+            if (GameFileCache.AudioDatRelFiles != null)
             {
                 foreach (var relfile in GameFileCache.AudioDatRelFiles)
                 {
@@ -46,10 +45,6 @@ namespace CodeWalker.World
 
                     PlacementsDict[relfile] = placements.ToArray();
                 }
-            }
-            finally
-            {
-                GameFileCache.AudioDatRelFilesLock.ExitReadLock();
             }
 
             AllItems.AddRange(Zones);

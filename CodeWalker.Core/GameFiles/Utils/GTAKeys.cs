@@ -34,6 +34,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -69,15 +71,15 @@ namespace CodeWalker.GameFiles
 
 
 
-        public static void Generate(byte[] exeData, Action<string> updateStatus) //Stream exeStr)// 
+        public static void Generate(byte[] exeData, Action<string>? updateStatus) //Stream exeStr)// 
         {
-            var exeStr = new MemoryStream(exeData);
+            var exeStr = Stream.Synchronized(new MemoryStream(exeData));
 
-            updateStatus("Searching for AES key...");
+            updateStatus?.Invoke("Searching for AES key...");
             PC_AES_KEY = HashSearch.SearchHash(exeStr, GTA5KeyHashes.PC_AES_KEY_HASH, 32);
             //updateStatus("aes key found");
 
-            updateStatus("Searching for NG keys...");
+            updateStatus?.Invoke("Searching for NG keys...");
             //PC_NG_KEYS = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_KEY_HASHES, 272);
             var tabs = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_KEY_HASHES, 272);
             PC_NG_KEYS = new uint[tabs.Length][][];
@@ -92,31 +94,21 @@ namespace CodeWalker.GameFiles
             }
             //updateStatus("ng keys found");
 
-            updateStatus("Searching for NG decrypt tables...");
+            updateStatus?.Invoke("Searching for NG decrypt tables...");
             tabs = HashSearch.SearchHashes(exeStr, GTA5KeyHashes.PC_NG_DECRYPT_TABLE_HASHES, 1024);
             //updateStatus("ng decrypt tables found");
 
-            updateStatus("Searching for NG hash lookup tables...");
+            updateStatus?.Invoke("Searching for NG hash lookup tables...");
             // 17 rounds
-            PC_NG_DECRYPT_TABLES = new uint[17][][];
-            for (int i = 0; i < 17; i++)
-            {
-                // 
-                PC_NG_DECRYPT_TABLES[i] = new uint[16][];
-                for (int j = 0; j < 16; j++)
-                {
-                    var buf = tabs[j + 16 * i];
-                    PC_NG_DECRYPT_TABLES[i][j] = new uint[256];
-                    Buffer.BlockCopy(buf, 0, PC_NG_DECRYPT_TABLES[i][j], 0, 1024);
-                }
-            }
+            LoadPCNGDecryptTable(tabs);
 
             PC_LUT = HashSearch.SearchHash(exeStr, GTA5KeyHashes.PC_LUT_HASH, 0x100);
             //updateStatus("ng hash LUTs found");
 
 
 
-            updateStatus("Calculating NG encryption tables...");
+            updateStatus?.Invoke("Calculating NG encryption tables...");
+
             PC_NG_ENCRYPT_TABLES = new uint[17][][];
             for (int i = 0; i < 17; i++)
             {
@@ -142,28 +134,62 @@ namespace CodeWalker.GameFiles
 
 
 
-            updateStatus("Calculating NG encryption tables (1/17)...");
+            updateStatus?.Invoke("Calculating NG encryption tables (1/17)...");
             PC_NG_ENCRYPT_TABLES[0] = RandomGauss.Solve(PC_NG_DECRYPT_TABLES[0]);
             //updateStatus("ng encrypt table 1 of 17 calculated");
 
-            updateStatus("Calculating NG encryption tables (2/17)...");
+            updateStatus?.Invoke("Calculating NG encryption tables (2/17)...");
             PC_NG_ENCRYPT_TABLES[1] = RandomGauss.Solve(PC_NG_DECRYPT_TABLES[1]);
             //updateStatus("ng encrypt table 2 of 17 calculated");
 
             for (int k = 2; k <= 15; k++)
             {
-                updateStatus("Calculating NG encryption tables (" + (k + 1).ToString() + "/17)...");
+                updateStatus?.Invoke("Calculating NG encryption tables (" + (k + 1).ToString() + "/17)...");
                 PC_NG_ENCRYPT_LUTs[k] = LookUpTableGenerator.BuildLUTs2(PC_NG_DECRYPT_TABLES[k]);
                 //updateStatus("ng encrypt table " + (k + 1).ToString() + " of 17 calculated");
             }
 
-            updateStatus("Calculating NG encryption tables (17/17)...");
+            updateStatus?.Invoke("Calculating NG encryption tables (17/17)...");
             PC_NG_ENCRYPT_TABLES[16] = RandomGauss.Solve(PC_NG_DECRYPT_TABLES[16]);
             //updateStatus("ng encrypt table 17 of 17 calculated");
 
-            updateStatus("Complete.");
+            updateStatus?.Invoke("Complete.");
         }
 
+        public static void LoadPCNGDecryptTable(Span<byte> rawFlattenedKey)
+        {
+            PC_NG_DECRYPT_TABLES = new uint[17][][];
+            var flattenedKey = MemoryMarshal.Cast<byte, uint>(rawFlattenedKey);
+            for (int i = 0; i < 17; i++)
+            {
+                PC_NG_DECRYPT_TABLES[i] = new uint[16][];
+                for (int j = 0; j < 16; j++)
+                {
+                    var buf = flattenedKey.Slice(0, 256);
+                    flattenedKey = flattenedKey.Slice(256);
+                    PC_NG_DECRYPT_TABLES[i][j] = new uint[256];
+
+                    buf.CopyTo(PC_NG_DECRYPT_TABLES[i][j].AsSpan());
+                    //Buffer.BlockCopy(buf, 0, PC_NG_DECRYPT_TABLES[i][j], 0, 1024);
+                }
+            }
+        }
+
+        public static void LoadPCNGDecryptTable(byte[][] rawKey)
+        {
+            PC_NG_DECRYPT_TABLES = new uint[17][][];
+            for (int i = 0; i < 17; i++)
+            {
+                // 
+                PC_NG_DECRYPT_TABLES[i] = new uint[16][];
+                for (int j = 0; j < 16; j++)
+                {
+                    var buf = rawKey[j + 16 * i];
+                    PC_NG_DECRYPT_TABLES[i][j] = new uint[256];
+                    Buffer.BlockCopy(buf, 0, PC_NG_DECRYPT_TABLES[i][j], 0, 1024);
+                }
+            }
+        }
 
         public static void GenerateV2(byte[] exeData, Action<string> updateStatus)
         {
@@ -175,10 +201,14 @@ namespace CodeWalker.GameFiles
             updateStatus?.Invoke("Complete.");
         }
 
-
+        private static bool keysLoaded = false;
 
         public static void LoadFromPath(string path = ".\\Keys", string key = null)
         {
+            if (keysLoaded)
+            {
+                return;
+            }
             //PC_AES_KEY = File.ReadAllBytes(path + "\\gtav_aes_key.dat");
             //PC_NG_KEYS = CryptoIO.ReadNgKeys(path + "\\gtav_ng_key.dat");
             //PC_NG_DECRYPT_TABLES = CryptoIO.ReadNgTables(path + "\\gtav_ng_decrypt_tables.dat");
@@ -188,6 +218,7 @@ namespace CodeWalker.GameFiles
 
             //GenerateMagicData(path);
             UseMagicData(path, key);
+            keysLoaded = true;
         }
 
         public static void SaveToPath(string path = ".\\Keys")
@@ -298,7 +329,7 @@ namespace CodeWalker.GameFiles
                 {
                     using (MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream())
                     {
-                        ds.CopyToFast(outstr);
+                        ds.CopyTo(outstr);
                         b = outstr.GetBuffer();
                     }
                 }
@@ -760,11 +791,12 @@ namespace CodeWalker.GameFiles
 
         public static byte[][] SearchHashes(Stream stream, IList<byte[]> hashes, int length = 32)
         {
+            stream = Stream.Synchronized(stream);
             var result = new byte[hashes.Count][];
 
             Parallel.For(0, (stream.Length / BLOCK_LENGTH), (long k) => {
-
                 var hashProvider = new SHA1CryptoServiceProvider();
+                // TODO: Convert to stack alloc when length appropriate (1024 or lower probs)
                 var buffer = new byte[length];
                 for (long i = 0; i < (BLOCK_LENGTH / ALIGN_LENGTH); i++)
                 {
@@ -772,11 +804,9 @@ namespace CodeWalker.GameFiles
                     if (position >= stream.Length)
                         continue;
 
-                    lock (stream)
-                    {
-                        stream.Position = position;
-                        stream.Read(buffer, 0, length);
-                    }
+
+                    stream.Position = position;
+                    stream.Read(buffer, 0, length);
 
                     var hash = hashProvider.ComputeHash(buffer);
                     for (int j = 0; j < hashes.Count; j++)
@@ -852,7 +882,7 @@ namespace CodeWalker.GameFiles
             firstPivot.SetB();
             pivots.Add(firstPivot);
 
-            var buf_encrypted = new byte[16];
+            Span<byte> buf_encrypted = stackalloc byte[16];
             for (int pivotIdx = 1; pivotIdx < 1024; pivotIdx++)
             {
                 while (true)
@@ -1221,7 +1251,7 @@ namespace CodeWalker.GameFiles
             using (var fs = new FileStream(fileName, FileMode.Create))
             {
                 ms.Position = 0;
-                ms.CopyToFast(fs);
+                ms.CopyTo(fs);
             }
             
         }
@@ -1308,7 +1338,7 @@ namespace CodeWalker.GameFiles
             using (var fs = new FileStream(fileName, FileMode.Create))
             {
                 ms.Position = 0;
-                ms.CopyToFast(fs);
+                ms.CopyTo(fs);
             }
         }
 
@@ -1446,7 +1476,7 @@ namespace CodeWalker.GameFiles
             using (var fs = new FileStream(fileName, FileMode.Create))
             {
                 ms.Position = 0;
-                ms.CopyToFast(fs);
+                ms.CopyTo(fs);
             }
         }
     }
@@ -1463,6 +1493,7 @@ namespace CodeWalker.GameFiles
             LUT = GTA5Keys.PC_LUT;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint CalculateHash(string text)
         {
             /*

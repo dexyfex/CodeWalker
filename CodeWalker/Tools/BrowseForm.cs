@@ -43,17 +43,21 @@ namespace CodeWalker.Tools
         private void BrowseForm_Load(object sender, EventArgs e)
         {
             var info = DetailsPropertyGrid.GetType().GetProperty("Controls");
-            var collection = info.GetValue(DetailsPropertyGrid, null) as Control.ControlCollection;
-            foreach (var control in collection)
+            var collection = info?.GetValue(DetailsPropertyGrid, null) as Control.ControlCollection;
+            if (collection is not null)
             {
-                var ctyp = control.GetType();
-                if (ctyp.Name == "PropertyGridView")
+                foreach (var control in collection)
                 {
-                    var prop = ctyp.GetField("labelRatio");
-                    var val = prop.GetValue(control);
-                    prop.SetValue(control, 4.0); //somehow this sets the width of the property grid's label column...
+                    var ctyp = control.GetType();
+                    if (ctyp.Name == "PropertyGridView")
+                    {
+                        var prop = ctyp.GetField("labelRatio");
+                        var val = prop.GetValue(control);
+                        prop.SetValue(control, 4.0); //somehow this sets the width of the property grid's label column...
+                    }
                 }
             }
+
 
             FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
             DataHexLineCombo.Text = "16";
@@ -120,11 +124,7 @@ namespace CodeWalker.Tools
 
                 string[] allfiles = Directory.GetFiles(searchpath, "*.rpf", SearchOption.AllDirectories);
 
-                uint totrpfs = 0;
-                uint totfiles = 0;
-                uint totfolders = 0;
-                uint totresfiles = 0;
-                uint totbinfiles = 0;
+                var counts = new FileCounts();
 
                 foreach (string rpfpath in allfiles)
                 {
@@ -139,22 +139,16 @@ namespace CodeWalker.Tools
 
                     UpdateStatus("Scanning " + rf.Name + "...");
 
-                    rf.ScanStructure(UpdateStatus, UpdateStatus);
-
-                    totrpfs += rf.GrandTotalRpfCount;
-                    totfiles += rf.GrandTotalFileCount;
-                    totfolders += rf.GrandTotalFolderCount;
-                    totresfiles += rf.GrandTotalResourceCount;
-                    totbinfiles += rf.GrandTotalBinaryFileCount;
+                    counts += rf.ScanStructure(UpdateStatus, UpdateStatus);
 
                     AddScannedFile(rf, null, true);
 
                     RootFiles.Add(rf);
                 }
 
-                UpdateStatus(string.Format("Scan complete. {0} RPF files, {1} total files, {2} total folders, {3} resources, {4} binary files.", totrpfs, totfiles, totfolders, totresfiles, totbinfiles));
+                UpdateStatus(string.Format("Scan complete. {0} RPF files, {1} total files, {2} total folders, {3} resources, {4} binary files.", counts.Rpfs, counts.Files, counts.Folders, counts.Resources, counts.BinaryFiles));
                 InProgress = false;
-                TotalFileCount = (int)totfiles;
+                TotalFileCount = (int)counts.Files;
             });
 
         }
@@ -739,12 +733,11 @@ namespace CodeWalker.Tools
                         errcount++;
                     }
 
-                    totbytes += file.ExtractedByteCount;
                     curfile++;
                 }
 
 
-                UpdateStatus("Test complete. " + errcount.ToString() + " problems encountered, " + totbytes.ToString() + " total bytes extracted.");
+                UpdateStatus("Test complete. " + errcount.ToString() + " problems encountered");
                 InProgress = false;
             });
         }

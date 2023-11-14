@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -31,25 +32,30 @@ namespace CodeWalker.GameFiles
         {
             FileEntry = entry;
 
-            MemoryStream ms = new MemoryStream(data);
-            BinaryReader br = new BinaryReader(ms);
+            using MemoryStream ms = new MemoryStream(data);
+            using BinaryReader br = new BinaryReader(ms);
 
-            StringBuilder sb = new StringBuilder();
+            Span<char> charArr = stackalloc char[100];
+            var length = 0;
             for (int i = 0; (i < 100) && (i < data.Length); i++)
             {
                 //read version string.
                 byte b = data[i];
-                if (b == 0) break;
-                sb.Append((char)b);
+                if (b == 0)
+                {
+                    break;
+                }
+
+                charArr[i] = (char)b;
+                length++;
             }
-            Version = sb.ToString().Replace("[VERSION]", "").Replace("\r", "").Replace("\n", "");
-            sb.Clear();
+            Version = new string(charArr.Slice(0, length)).Replace("[VERSION]", "").Replace("\r", "").Replace("\n", "");
+            length = 0;
             int lastn = 0;
             int lspos = 0;
             uint structcount = 0;
             uint modlen;
             bool indates = false;
-            List<string> lines = new List<string>();
             var dates = new List<CacheFileDate>();
             var allMapNodes = new List<MapDataStoreNode>();
             var allCInteriorProxies = new List<CInteriorProxy>();
@@ -62,9 +68,8 @@ namespace CodeWalker.GameFiles
                 if (b == 0xA)
                 {
                     lastn = i;
-                    string line = sb.ToString();
-                    lines.Add(line);
-                    switch (line)
+                    string line = new string(charArr.Slice(0, length));
+                    switch (charArr.Slice(0, length))
                     {
                         case "<fileDates>":
                             indates = true;
@@ -125,11 +130,12 @@ namespace CodeWalker.GameFiles
                             break;
                     }
 
-                    sb.Clear();
+                    length = 0;
                 }
                 else
                 {
-                    sb.Append((char)b);
+                    charArr[length] = (char)b;
+                    length++;
                 }
             }
             FileDates = dates.ToArray();

@@ -11,6 +11,7 @@ using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
 using CodeWalker.World;
 using System.Reflection;
+using System.Threading;
 
 namespace CodeWalker.GameFiles
 {
@@ -1454,40 +1455,13 @@ namespace CodeWalker.GameFiles
             if (items == null) return null;
 
             return MemoryMarshal.AsBytes(items.AsSpan()).ToArray();
+        }
 
-            //var size = Marshal.SizeOf(typeof(T)) * items.Length;
-            //var b = new byte[size];
-            //GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //Marshal.Copy(h, b, 0, size);
-            //handle.Free();
-            //return b;
+        public static Span<byte> ConvertArrayToBytes<T>(Span<T> items) where T : struct
+        {
+            if (items == null) return null;
 
-            //var size = Marshal.SizeOf(typeof(T)) * items.Length;
-            //var b = new byte[size];
-            //return MemoryMarshal.AsBytes<T>(items).ToArray();
-            //GCHandle handle = GCHandle.Alloc(items, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //Marshal.Copy(h, b, 0, size);
-            //handle.Free();
-            //return b;
-
-
-            //int size = Marshal.SizeOf(typeof(T));
-            //int sizetot = size * items.Length;
-            //byte[] arrout = new byte[sizetot];
-            //int offset = 0;
-            //for (int i = 0; i < items.Length; i++)
-            //{
-            //    byte[] arr = new byte[size];
-            //    IntPtr ptr = Marshal.AllocHGlobal(size);
-            //    Marshal.StructureToPtr(items[i], ptr, true);
-            //    Marshal.Copy(ptr, arr, 0, size);
-            //    Marshal.FreeHGlobal(ptr);
-            //    Buffer.BlockCopy(arr, 0, arrout, offset, size);
-            //    offset += size;
-            //}
-            //return arrout;
+            return MemoryMarshal.AsBytes(items);
         }
 
 
@@ -1561,7 +1535,10 @@ namespace CodeWalker.GameFiles
                 var ptr = ptrs[i];
                 var offset = ptr.Offset;
                 var block = meta.GetBlock(ptr.BlockID);
-                if (block == null) continue;
+                if (block == null)
+                {
+                    continue;
+                }
 
                 //if (blocktype == 0)
                 //{ blocktype = block.StructureNameHash; }
@@ -1569,9 +1546,13 @@ namespace CodeWalker.GameFiles
                 //{ } //not all the same type..!
 
                 if (block.StructureNameHash != name)
-                { return null; } //type mismatch - don't return anything...
+                {
+                    return null;
+                } //type mismatch - don't return anything...
                 if ((offset < 0) || (block.Data == null) || (offset >= block.Data.Length))
-                { continue; }
+                {
+                    continue;
+                }
                 items[i] = ConvertData<T>(block.Data, offset);
             }
 
@@ -1583,7 +1564,8 @@ namespace CodeWalker.GameFiles
         }
         public static T[] ConvertDataArray<T>(Meta meta, MetaName name, ulong pointer, uint count) where T : struct
         {
-            if (count == 0) return null;
+            if (count == 0)
+                return null;
 
             T[] items = new T[count];
             int itemsize = Marshal.SizeOf(typeof(T));
@@ -1593,7 +1575,9 @@ namespace CodeWalker.GameFiles
             uint ptroffset = (uint)((pointer >> 12) & 0xFFFFF);
             var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
             if ((ptrblock == null) || (ptrblock.Data == null) || (ptrblock.StructureNameHash != name))
-            { return null; } //no block or wrong block? shouldn't happen!
+            {
+                return null;
+            } //no block or wrong block? shouldn't happen!
 
             int byteoffset = (int)ptroffset;// (ptroffset * 16 + ptrunkval);
             int itemoffset = byteoffset / itemsize;
@@ -1608,25 +1592,30 @@ namespace CodeWalker.GameFiles
                     itemcount = itemsleft;
                 } //don't try to read too many items..
 
-
-                //ConvertDataArray<T>(ptrblock.Data, itemoffset * Marshal.SizeOf(typeof(T)), itemcount).CopyTo(items.AsSpan(curi));
-                for (int i = 0; i < itemcount; i++)
-                {
-                    int offset = (itemoffset + i) * itemsize;
-                    int index = curi + i;
-                    items[index] = ConvertData<T>(ptrblock.Data, offset);
-                }
+                ConvertDataArray<T>(ptrblock.Data, itemoffset * Marshal.SizeOf(typeof(T)), itemcount).CopyTo(items.AsSpan(curi));
+                //for (int i = 0; i < itemcount; i++)
+                //{
+                //    int offset = (itemoffset + i) * itemsize;
+                //    int index = curi + i;
+                //    items[index] = ConvertData<T>(ptrblock.Data, offset);
+                //}
                 itemoffset = 0; //start at beginning of next block..
                 curi += itemcount;
                 itemsleft -= itemcount;
                 if (itemsleft <= 0)
-                { return items; }//all done!
+                {
+                    return items;
+                }//all done!
                 ptrindex++;
                 ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
                 if ((ptrblock == null) || (ptrblock.Data == null))
-                { break; } //not enough items..?
+                {
+                    break;
+                } //not enough items..?
                 if (ptrblock.StructureNameHash != name)
-                { break; } //type mismatch..
+                {
+                    break;
+                } //type mismatch..
             }
 
             return null;

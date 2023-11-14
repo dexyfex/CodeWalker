@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34031.279
@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeWalker.Vehicles", "Code
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeWalker.Test", "CodeWalker.Test\CodeWalker.Test.csproj", "{067FF87E-CA79-4B29-BCF6-11622999EDC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeWalker.Benchmarks", "CodeWalker.Benchmarks\CodeWalker.Benchmarks.csproj", "{EDDA8A8E-5333-4E28-8221-A31E3B70EB7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeWalker.Benchmarks", "CodeWalker.Benchmarks\CodeWalker.Benchmarks.csproj", "{EDDA8A8E-5333-4E28-8221-A31E3B70EB7A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

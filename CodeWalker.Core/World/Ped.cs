@@ -44,13 +44,13 @@ namespace CodeWalker.World
         public YmapEntityDef RenderEntity = new YmapEntityDef(); //placeholder entity object for rendering
 
 
-        public void Init(string name, GameFileCache gfc)
+        public async ValueTask InitAsync(string name, GameFileCache gfc)
         {
             var hash = JenkHash.GenHash(name.ToLowerInvariant());
-            Init(hash, gfc);
+            await InitAsync(hash, gfc);
             Name = name;
         }
-        public void Init(MetaHash pedhash, GameFileCache gfc)
+        public async ValueTask InitAsync(MetaHash pedhash, GameFileCache gfc)
         {
 
             Name = string.Empty;
@@ -106,11 +106,11 @@ namespace CodeWalker.World
             RpfFileEntry clothFile = null;
             if (ClothFilesDict?.TryGetValue(pedhash, out clothFile) ?? false)
             {
-                Yld = gfc.GetFileUncached<YldFile>(clothFile);
+                Yld = await gfc.GetFileUncachedAsync<YldFile>(clothFile);
                 while ((Yld != null) && (!Yld.Loaded))
                 {
-                    Thread.Sleep(1);//kinda hacky
-                    gfc.TryLoadEnqueue(Yld);
+                    await Task.Delay(1);//kinda hacky
+                    await gfc.TryLoadEnqueue(Yld);
                 }
             }
 
@@ -118,27 +118,27 @@ namespace CodeWalker.World
 
             while ((Ydd != null) && (!Ydd.Loaded))
             {
-                Thread.Sleep(1);//kinda hacky
+                await Task.Delay(1);//kinda hacky
                 Ydd = gfc.GetYdd(pedhash);
             }
             while ((Ytd != null) && (!Ytd.Loaded))
             {
-                Thread.Sleep(1);//kinda hacky
+                await Task.Delay(1);//kinda hacky
                 Ytd = gfc.GetYtd(pedhash);
             }
             while ((Ycd != null) && (!Ycd.Loaded))
             {
-                Thread.Sleep(1);//kinda hacky
+                await Task.Delay(1);//kinda hacky
                 Ycd = gfc.GetYcd(ycdhash);
             }
             while ((Yed != null) && (!Yed.Loaded))
             {
-                Thread.Sleep(1);//kinda hacky
+                await Task.Delay(1);//kinda hacky
                 Yed = gfc.GetYed(yedhash);
             }
             while ((Yft != null) && (!Yft.Loaded))
             {
-                Thread.Sleep(1);//kinda hacky
+                await Task.Delay(1);//kinda hacky
                 Yft = gfc.GetYft(pedhash);
             }
 
@@ -150,7 +150,7 @@ namespace CodeWalker.World
             Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
             AnimClip = cme;
 
-            var exprhash = JenkHash.GenHash(initdata.ExpressionName.ToLowerInvariant());
+            var exprhash = JenkHash.GenHashLower(initdata.ExpressionName);
             Expression expr = null;
             Yed?.ExprMap?.TryGetValue(exprhash, out expr);
             Expression = expr;
@@ -163,7 +163,7 @@ namespace CodeWalker.World
 
 
 
-        public void SetComponentDrawable(int index, string name, string tex, GameFileCache gfc)
+        public async ValueTask SetComponentDrawableAsync(int index, string name, string tex, GameFileCache gfc)
         {
             if (string.IsNullOrEmpty(name))
             {
@@ -174,7 +174,7 @@ namespace CodeWalker.World
                 return;
             }
 
-            MetaHash namehash = JenkHash.GenHash(name.ToLowerInvariant());
+            MetaHash namehash = JenkHash.GenHashLower(name);
             Drawable d = null;
             if (Ydd?.Dict != null)
             {
@@ -185,11 +185,11 @@ namespace CodeWalker.World
                 RpfFileEntry file = null;
                 if (DrawableFilesDict.TryGetValue(namehash, out file))
                 {
-                    var ydd = gfc.GetFileUncached<YddFile>(file);
+                    var ydd = await gfc.GetFileUncachedAsync<YddFile>(file);
                     while ((ydd != null) && (!ydd.Loaded))
                     {
-                        Thread.Sleep(1);//kinda hacky
-                        gfc.TryLoadEnqueue(ydd);
+                        await Task.Delay(1);//kinda hacky
+                        await gfc.TryLoadEnqueue(ydd);
                     }
                     if (ydd?.Drawables?.Length > 0)
                     {
@@ -209,11 +209,11 @@ namespace CodeWalker.World
                 RpfFileEntry file = null;
                 if (TextureFilesDict.TryGetValue(texhash, out file))
                 {
-                    var ytd = gfc.GetFileUncached<YtdFile>(file);
+                    var ytd = await gfc.GetFileUncachedAsync<YtdFile>(file);
                     while ((ytd != null) && (!ytd.Loaded))
                     {
-                        Thread.Sleep(1);//kinda hacky
-                        gfc.TryLoadEnqueue(ytd);
+                        await Task.Delay(1);//kinda hacky
+                        await gfc.TryLoadEnqueue(ytd);
                     }
                     if (ytd?.TextureDict?.Textures?.data_items.Length > 0)
                     {
@@ -232,11 +232,11 @@ namespace CodeWalker.World
                 RpfFileEntry file = null;
                 if (ClothFilesDict.TryGetValue(namehash, out file))
                 {
-                    var yld = gfc.GetFileUncached<YldFile>(file);
+                    var yld = await gfc.GetFileUncachedAsync<YldFile>(file);
                     while ((yld != null) && (!yld.Loaded))
                     {
-                        Thread.Sleep(1);//kinda hacky
-                        gfc.TryLoadEnqueue(yld);
+                        await Task.Delay(1);//kinda hacky
+                        await gfc.TryLoadEnqueue(yld);
                     }
                     if (yld?.ClothDictionary?.Clothes?.data_items?.Length > 0)
                     {
@@ -266,7 +266,7 @@ namespace CodeWalker.World
             DrawableNames[index] = name;
         }
 
-        public void SetComponentDrawable(int index, int drawbl, int alt, int tex, GameFileCache gfc)
+        public async ValueTask SetComponentDrawableAsync(int index, int drawbl, int alt, int tex, GameFileCache gfc)
         {
             var vi = Ymt?.VariationInfo;
             if (vi != null)
@@ -279,17 +279,17 @@ namespace CodeWalker.World
                     {
                         var name = item?.GetDrawableName(alt);
                         var texn = item?.GetTextureName(tex);
-                        SetComponentDrawable(index, name, texn, gfc);
+                        await SetComponentDrawableAsync(index, name, texn, gfc);
                     }
                 }
             }
         }
 
-        public void LoadDefaultComponents(GameFileCache gfc)
+        public async ValueTask LoadDefaultComponentsAsync(GameFileCache gfc)
         {
             for (int i = 0; i < 12; i++)
             {
-                SetComponentDrawable(i, 0, 0, 0, gfc);
+                await SetComponentDrawableAsync(i, 0, 0, 0, gfc);
             }
         }
 

@@ -3285,13 +3285,16 @@ namespace CodeWalker.GameFiles
     public class YmapOccludeModel : BasePathData
     {
         public OccludeModel _OccludeModel;
+
         public OccludeModel OccludeModel { get { return _OccludeModel; } set { _OccludeModel = value; } }
 
         public YmapFile Ymap { get; set; }
 
         public byte[] Data { get; set; }
-        public Vector3[] Vertices { get; set; }
-        public byte[] Indices { get; set; }
+        private int vertexCount;
+        private int indicesOffset { get => vertexCount * 12; }
+        public Span<Vector3> Vertices { get => MetaTypes.ConvertDataArray<Vector3>(Data, 0, vertexCount); }
+        public Span<byte> Indices { get => Data.AsSpan(indicesOffset); }
         public int Index { get; set; }
 
         public YmapOccludeModelTriangle[] Triangles { get; set; }
@@ -3321,12 +3324,12 @@ namespace CodeWalker.GameFiles
             var vptr = _OccludeModel.verts;
             var dataSize = _OccludeModel.dataSize;
             var indicesOffset = _OccludeModel.numVertsInBytes;
-            var vertexCount = indicesOffset / 12;
+            vertexCount = indicesOffset / 12;
             var indexCount = (int)(dataSize - indicesOffset);// / 4;
             Data = MetaTypes.GetByteArray(meta, vptr, dataSize);
-            Vertices = MetaTypes.ConvertDataArray<Vector3>(Data, 0, vertexCount).ToArray();
-            Indices = new byte[indexCount];
-            Buffer.BlockCopy(Data, indicesOffset, Indices, 0, indexCount);
+            //Vertices = MetaTypes.ConvertDataArray<Vector3>(Data, 0, vertexCount).ToArray();
+            //Indices = new byte[indexCount];
+            //Buffer.BlockCopy(Data, indicesOffset, Indices, 0, indexCount);
             BuildTriangles();
         }
 
@@ -3362,10 +3365,11 @@ namespace CodeWalker.GameFiles
             //create vertices and indices arrays from Triangles
             if (Triangles == null)
             {
-                Vertices = null;
-                Indices = null;
                 return;
             }
+
+            
+
             var vdict = new Dictionary<Vector3, byte>();
             var verts = new List<Vector3>();
             var inds = new List<byte>();
@@ -3391,21 +3395,40 @@ namespace CodeWalker.GameFiles
                 inds.Add(ensureVert(tri.Corner2));
                 inds.Add(ensureVert(tri.Corner3));
             }
-            Vertices = verts.ToArray();
-            Indices = inds.ToArray();
+
+            var newVertsSize = Vector3.SizeInBytes * verts.Count;
+            var newIndicesSize = Marshal.SizeOf<byte>() * inds.Count;
+
+            if (newVertsSize + newIndicesSize != Data.Length)
+            {
+                Data = new byte[newVertsSize + newIndicesSize];
+            }
+            vertexCount = verts.Count;
+            for (int i = 0; i < verts.Count; i++)
+            {
+                Vertices[i] = verts[i];
+            }
+            for (int i = 0; i < inds.Count; i++)
+            {
+                Indices[i] = inds[i];
+            }
         }
         public void BuildData()
         {
             //create Data from vertices and indices arrays
             if (Vertices == null) return;
             if (Indices == null) return;
-            var dlen = (Vertices.Length * 12) + (Indices.Length * 1);
-            var d = new byte[dlen];
-            var vbytes = MetaTypes.ConvertArrayToBytes(Vertices);
-            var ibytes = Indices;
-            Buffer.BlockCopy(vbytes, 0, d, 0, vbytes.Length);
-            Buffer.BlockCopy(ibytes, 0, d, vbytes.Length, ibytes.Length);
-            Data = d;
+            var dlen = (Vertices.Length * Vector3.SizeInBytes) + (Indices.Length * 1);
+            if (dlen != Data.Length)
+            {
+                throw new InvalidOperationException("Size mismatch in YmapOccludeModel BuildData");
+            }
+            //var d = new byte[dlen];
+            //var vbytes = MetaTypes.ConvertArrayToBytes(Vertices);
+            //var ibytes = Indices;
+            //Buffer.BlockCopy(vbytes, 0, d, 0, vbytes.Length);
+            //Buffer.BlockCopy(ibytes, 0, d, vbytes.Length, ibytes.Length);
+            //Data = d;
             var min = new Vector3(float.MaxValue);
             var max = new Vector3(float.MinValue);
             for (int i = 0; i < Vertices.Length; i++)
@@ -3418,8 +3441,8 @@ namespace CodeWalker.GameFiles
             _OccludeModel.Unused0 = min.X;
             _OccludeModel.Unused1 = max.X;
             _OccludeModel.dataSize = (uint)dlen;
-            _OccludeModel.numVertsInBytes = (ushort)vbytes.Length;
-            _OccludeModel.numTris = (ushort)((ibytes.Length / 3) + 32768);//is this actually a flag lurking..?
+            _OccludeModel.numVertsInBytes = (ushort)(vertexCount * Vector3.SizeInBytes);
+            _OccludeModel.numTris = (ushort)((Indices.Length / 3) + 32768);//is this actually a flag lurking..?
             //_OccludeModel.flags = ...
         }
 
@@ -3462,7 +3485,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Index.ToString() + ": " + (Vertices?.Length ?? 0).ToString() + " vertices, " + (Triangles?.Length ?? 0).ToString() + " triangles";
+            return Index.ToString() + ": " + Vertices.Length.ToString() + " vertices, " + (Triangles?.Length ?? 0).ToString() + " triangles";
         }
     }
 

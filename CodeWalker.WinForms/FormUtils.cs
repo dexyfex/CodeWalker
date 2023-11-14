@@ -249,21 +249,33 @@ namespace CodeWalker
                 ofd.InitialDirectory = fbd.SelectedPath;
 
                 int result = 0;
-                var ns = "System.Windows.Forms";
-                var asmb = Assembly.GetAssembly(typeof(OpenFileDialog));
-                var dialogint = GetType(asmb, ns, "FileDialogNative.IFileDialog");
+                var ns = "MS.Internal.AppModel";
+                var asmb = Assembly.Load("System.Windows.Forms.Primitives");
+                //var asmb = Assembly.LoadWithPartialName("PresentationFramework");
+                var dialogint = asmb.GetType("Interop+Shell32+IFileDialog");
+                //var dialogint = GetType(asmb, ns, "IFileDialog");
                 var dialog = Call(typeof(OpenFileDialog), ofd, "CreateVistaDialog");
                 Call(typeof(OpenFileDialog), ofd, "OnBeforeVistaDialog", dialog);
                 var options = Convert.ToUInt32(Call(typeof(FileDialog), ofd, "GetOptions"));
-                options |= Convert.ToUInt32(GetEnumValue(asmb, ns, "FileDialogNative.FOS", "FOS_PICKFOLDERS"));
+
+                var enumValue = GetEnumValue("System.Windows.Forms.Primitives", "Interop+Shell32+FOS", "PICKFOLDERS");
+                options |= Convert.ToUInt32(enumValue);
+
                 Call(dialogint, dialog, "SetOptions", options);
-                var pfde = New(asmb, ns, "FileDialog.VistaDialogEvents", ofd);
+                dynamic pfde = New("System.Windows.Forms", "System.Windows.Forms.FileDialog+VistaDialogEvents", ofd);
                 var parameters = new object[] { pfde, (uint)0 };
                 Call(dialogint, dialog, "Advise", parameters);
                 var adviseres = Convert.ToUInt32(parameters[1]);
-                try { result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner)); }
-                finally { Call(dialogint, dialog, "Unadvise", adviseres); }
+                try {
+                    result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner));
+                }
+                finally {
+                    //pfde.Dispose();
+                    Call(dialogint, dialog, "Unadvise", adviseres);
+                }
                 GC.KeepAlive(pfde);
+
+                
 
                 fbd.SelectedPath = ofd.FileName;
 
@@ -296,12 +308,33 @@ namespace CodeWalker
             if (mi == null) return null;
             return mi.Invoke(obj, parameters);
         }
+
+        private static object GetEnumValue(string assemblyName, string typeName, string name)
+        {
+            var type = Type.GetType($"{typeName}, {assemblyName}");
+            var fieldInfo = type.GetField(name);
+            return fieldInfo.GetValue(null);
+        }
+
         private static object GetEnumValue(Assembly asmb, string ns, string typeName, string name)
         {
             var type = GetType(asmb, ns, typeName);
             var fieldInfo = type.GetField(name);
             return fieldInfo.GetValue(null);
         }
+
+        private static object New(string assemblyName, string typeName, params object[] parameters)
+        {
+            var type = Type.GetType($"{typeName}, {assemblyName}");
+            var ctorInfos = type.GetConstructors();
+            foreach (ConstructorInfo ci in ctorInfos)
+            {
+                try { return ci.Invoke(parameters); }
+                catch { }
+            }
+            return null;
+        }
+
         private static object New(Assembly asmb, string ns, string name, params object[] parameters)
         {
             var type = GetType(asmb, ns, name);

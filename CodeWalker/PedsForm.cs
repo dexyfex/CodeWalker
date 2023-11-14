@@ -752,7 +752,7 @@ namespace CodeWalker
 
 
 
-        public void LoadPed()
+        public async ValueTask LoadPedAsync()
         {
             var pedname = PedNameComboBox.Text;
             var pedhash = JenkHash.GenHash(pedname.ToLowerInvariant());
@@ -765,7 +765,7 @@ namespace CodeWalker
 
             DetailsPropertyGrid.SelectedObject = null;
 
-            SelectedPed.Init(pedname, GameFileCache);
+            await SelectedPed.InitAsync(pedname, GameFileCache);
 
             LoadModel(SelectedPed.Yft, pedchange);
 
@@ -839,14 +839,14 @@ namespace CodeWalker
             }
         }
 
-        private void SetComponentDrawable(int index, object comboObj)
+        private async ValueTask SetComponentDrawableAsync(int index, object comboObj)
         {
 
             var comboItem = comboObj as ComponentComboItem;
             var name = comboItem?.DrawableName;
             var tex = comboItem?.TextureName;
 
-            SelectedPed.SetComponentDrawable(index, name, tex, GameFileCache);
+            await SelectedPed.SetComponentDrawableAsync(index, name, tex, GameFileCache);
 
             UpdateModelsUI();
         }
@@ -916,9 +916,14 @@ namespace CodeWalker
         private void SelectClip(string name)
         {
             MetaHash cliphash = JenkHash.GenHash(name);
-            ClipMapEntry cme = null;
-            SelectedPed.Ycd?.ClipMap?.TryGetValue(cliphash, out cme);
-            SelectedPed.AnimClip = cme;
+            if (SelectedPed.Ycd?.ClipMap?.TryGetValue(cliphash, out var cme) ?? false)
+            {
+                SelectedPed.AnimClip = cme;
+            }
+            else
+            {
+                SelectedPed.AnimClip = null;
+            }
         }
 
 
@@ -1209,7 +1214,7 @@ namespace CodeWalker
             Input.KeyDown(e, enablemove);
 
             var k = e.KeyCode;
-            var kb = Input.keyBindings;
+            var kb = Input.KeyBindings;
             bool ctrl = Input.CtrlPressed;
             bool shift = Input.ShiftPressed;
 
@@ -1576,71 +1581,71 @@ namespace CodeWalker
 
 
 
-        private void PedNameComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void PedNameComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (!GameFileCache.IsInited) return;
 
-            LoadPed();
+            await LoadPedAsync();
         }
 
-        private void CompHeadComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompHeadComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(0, CompHeadComboBox.SelectedItem);
+            await SetComponentDrawableAsync(0, CompHeadComboBox.SelectedItem);
         }
 
-        private void CompBerdComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompBerdComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(1, CompBerdComboBox.SelectedItem);
+            await SetComponentDrawableAsync(1, CompBerdComboBox.SelectedItem);
         }
 
-        private void CompHairComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompHairComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(2, CompHairComboBox.SelectedItem);
+            await SetComponentDrawableAsync(2, CompHairComboBox.SelectedItem);
         }
 
-        private void CompUpprComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompUpprComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(3, CompUpprComboBox.SelectedItem);
+            await SetComponentDrawableAsync(3, CompUpprComboBox.SelectedItem);
         }
 
-        private void CompLowrComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompLowrComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(4, CompLowrComboBox.SelectedItem);
+            await SetComponentDrawableAsync(4, CompLowrComboBox.SelectedItem);
         }
 
-        private void CompHandComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompHandComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(5, CompHandComboBox.SelectedItem);
+            await SetComponentDrawableAsync(5, CompHandComboBox.SelectedItem);
         }
 
-        private void CompFeetComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompFeetComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(6, CompFeetComboBox.SelectedItem);
+            await SetComponentDrawableAsync(6, CompFeetComboBox.SelectedItem);
         }
 
-        private void CompTeefComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompTeefComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(7, CompTeefComboBox.SelectedItem);
+            await SetComponentDrawableAsync(7, CompTeefComboBox.SelectedItem);
         }
 
-        private void CompAccsComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompAccsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(8, CompAccsComboBox.SelectedItem);
+            await SetComponentDrawableAsync(8, CompAccsComboBox.SelectedItem);
         }
 
-        private void CompTaskComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompTaskComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(9, CompTaskComboBox.SelectedItem);
+            await SetComponentDrawableAsync(9, CompTaskComboBox.SelectedItem);
         }
 
-        private void CompDeclComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompDeclComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(10, CompDeclComboBox.SelectedItem);
+            await SetComponentDrawableAsync(10, CompDeclComboBox.SelectedItem);
         }
 
-        private void CompJbibComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        private async void CompJbibComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetComponentDrawable(11, CompJbibComboBox.SelectedItem);
+            await SetComponentDrawableAsync(11, CompJbibComboBox.SelectedItem);
         }
 
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)

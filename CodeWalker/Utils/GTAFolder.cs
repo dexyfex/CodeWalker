@@ -9,6 +9,7 @@ using CodeWalker.Properties;
 using Microsoft.Win32;
 using CodeWalker.GameFiles;
 using CodeWalker.Utils;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeWalker
 {
@@ -16,7 +17,7 @@ namespace CodeWalker
     {
         private static string currentGTAFolder = Settings.Default.GTAFolder;
 
-        public static event Action<string> OnGTAFolderChanged;
+        public static event Action<string>? OnGTAFolderChanged;
         public static string CurrentGTAFolder { get => currentGTAFolder; private set
             {
                 if (currentGTAFolder == value) return;
@@ -24,9 +25,9 @@ namespace CodeWalker
                 OnGTAFolderChanged?.Invoke(currentGTAFolder);
             }
         }
-        public static bool ValidateGTAFolder(string folder, out string failReason)
+        public static bool ValidateGTAFolder([NotNullWhen(true)] string? folder, out string failReason)
         {
-            failReason = "";
+            failReason = string.Empty;
 
             if(string.IsNullOrWhiteSpace(folder))
             {
@@ -49,7 +50,7 @@ namespace CodeWalker
             return true;
         }
 
-        public static bool ValidateGTAFolder(string folder) => ValidateGTAFolder(folder, out string reason);
+        public static bool ValidateGTAFolder([NotNullWhen(true)] string? folder) => ValidateGTAFolder(folder, out string reason);
 
         public static bool IsCurrentGTAFolderValid() => ValidateGTAFolder(CurrentGTAFolder);
 
@@ -60,11 +61,11 @@ namespace CodeWalker
                 return true;
             }
 
-            string origFolder = CurrentGTAFolder;
-            string folder = CurrentGTAFolder;
+            var origFolder = CurrentGTAFolder;
+            var folder = CurrentGTAFolder;
             SelectFolderForm f = new SelectFolderForm();
 
-            string autoFolder = AutoDetectFolder(out string source);
+            var autoFolder = AutoDetectFolder(out string? source);
             if (autoFolder != null && MessageBox.Show($"Auto-detected game folder \"{autoFolder}\" from {source}.\n\nContinue with auto-detected folder?", "Auto-detected game folder", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
             {
                 f.SelectedFolder = autoFolder;
@@ -76,22 +77,23 @@ namespace CodeWalker
                 folder = f.SelectedFolder;
             }
 
-            string failReason;
-            if(ValidateGTAFolder(folder, out failReason))
+            if (ValidateGTAFolder(folder, out string? failReason))
             {
                 SetGTAFolder(folder);
-                if(folder != origFolder)
+                if (folder != origFolder)
                 {
                     MessageBox.Show($"Successfully changed GTA Folder to \"{folder}\"", "Set GTA Folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 return true;
-            } else
+            }
+            else
             {
                 var tryAgain = MessageBox.Show($"Folder \"{folder}\" is not a valid GTA folder:\n\n{failReason}\n\nDo you want to try choosing a different folder?", "Unable to set GTA Folder", MessageBoxButtons.RetryCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
-                if(tryAgain == DialogResult.Retry)
+                if (tryAgain == DialogResult.Retry)
                 {
                     return UpdateGTAFolder(false);
-                } else
+                }
+                else
                 {
                     return false;
                 }
@@ -123,9 +125,9 @@ namespace CodeWalker
             }
 
             RegistryKey baseKey32 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-            string steamPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\GTAV")?.GetValue("InstallFolderSteam") as string;
-            string retailPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\Grand Theft Auto V")?.GetValue("InstallFolder") as string;
-            string oivPathValue = Registry.CurrentUser.OpenSubKey(@"Software\NewTechnologyStudio\OpenIV.exe\BrowseForFolder")?.GetValue("game_path_Five_pc") as string;
+            string? steamPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\GTAV")?.GetValue("InstallFolderSteam") as string;
+            string? retailPathValue = baseKey32.OpenSubKey(@"Software\Rockstar Games\Grand Theft Auto V")?.GetValue("InstallFolder") as string;
+            string? oivPathValue = Registry.CurrentUser.OpenSubKey(@"Software\NewTechnologyStudio\OpenIV.exe\BrowseForFolder")?.GetValue("game_path_Five_pc") as string;
 
             if(steamPathValue?.EndsWith("\\GTAV") == true)
             {
@@ -150,7 +152,7 @@ namespace CodeWalker
             return matches.Count > 0;
         }
 
-        public static string AutoDetectFolder(out string source)
+        public static string? AutoDetectFolder(out string? source)
         {
             source = null;
 
@@ -164,7 +166,7 @@ namespace CodeWalker
             return null;
         }
 
-        public static string AutoDetectFolder() => AutoDetectFolder(out string _);
+        public static string? AutoDetectFolder() => AutoDetectFolder(out string? _);
 
         public static void UpdateSettings()
         {

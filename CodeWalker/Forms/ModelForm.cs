@@ -100,7 +100,7 @@ namespace CodeWalker.Forms
         List<VertexTypePC> gridVerts = new List<VertexTypePC>();
         object gridSyncRoot = new object();
 
-        GameFileCache gameFileCache = null;
+        GameFileCache gameFileCache => GameFileCacheFactory.Instance;
         Archetype currentArchetype = null;
         bool updateArchetypeStatus = true;
 
@@ -133,8 +133,6 @@ namespace CodeWalker.Forms
         {
             if (this.DesignMode) return;
             InitializeComponent();
-
-            gameFileCache = GameFileCacheFactory.GetInstance();
 
             if (ExploreForm.Instance == null)
             {
@@ -2310,7 +2308,7 @@ namespace CodeWalker.Forms
             Input.KeyDown(e, enablemove);
 
             var k = e.KeyCode;
-            var kb = Input.keyBindings;
+            var kb = Input.KeyBindings;
             bool ctrl = Input.CtrlPressed;
             bool shift = Input.ShiftPressed;
 

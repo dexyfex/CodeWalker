@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace CodeWalker.GameFiles
 {
     public class VehiclesFile : GameFile, PackedFile
     {
-
+        private static XmlNameTable cachedNameTable = new NameTable();
 
         public string ResidentTxd { get; set; }
         public List<VehicleInitData> InitDatas { get; set; }
@@ -69,7 +70,7 @@ namespace CodeWalker.GameFiles
             {
                 using var textReader = new StreamReader(new MemoryStream(data), Encoding.UTF8);
 
-                using var xmlReader = XmlReader.Create(textReader);
+                using var xmlReader = XmlReader.Create(textReader, new XmlReaderSettings { NameTable = cachedNameTable });
 
                 while (xmlReader.Read())
                 {
@@ -838,30 +839,27 @@ namespace CodeWalker.GameFiles
             return GetStringArray(ldastr, delimiter);
         }
 
-        private unsafe float[] GetFloatArray(string ldastr, char delimiter)
+        [SkipLocalsInit]
+        private float[] GetFloatArray(string ldastr, char delimiter)
         {
             var ldarr = ldastr?.Split(delimiter);
             if (ldarr == null) return null;
-            var floats = stackalloc float[ldarr.Length];
+            Span<float> floats = stackalloc float[ldarr.Length];
             var i = 0;
             foreach (var ldstr in ldarr)
             {
                 var ldt = ldstr?.Trim();
-                if (!string.IsNullOrEmpty(ldt))
+                if (!string.IsNullOrEmpty(ldt) && FloatUtil.TryParse(ldt, out var f))
                 {
-                    float f;
-                    if (FloatUtil.TryParse(ldt, out f))
-                    {
-                        floats[i] = f;
-                        i++;
-                    }
+                    floats[i] = f;
+                    i++;
                 }
             }
             if (i == 0) return null;
 
             var result = new float[i];
 
-            Marshal.Copy((IntPtr)floats, result, 0, i);
+            floats.Slice(0, i).CopyTo(result);
 
             return result;
         }

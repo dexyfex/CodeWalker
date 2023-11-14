@@ -471,7 +471,7 @@ namespace CodeWalker.GameFiles
             {
                 DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
                 MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream("Decompress", data.Length);
-                ds.CopyToFast(outstr);
+                ds.CopyTo(outstr, 524288);
                 return outstr.ToArray();
             }
         }

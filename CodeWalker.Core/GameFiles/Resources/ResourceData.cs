@@ -104,11 +104,12 @@ namespace CodeWalker.GameFiles
                 position = value;
             }
         }
+
         /// <summary>
         /// Initializes a new resource data reader for the specified system- and graphics-stream.
         /// </summary>
         public ResourceDataReader(Stream systemStream, Stream graphicsStream, Endianess endianess = Endianess.LittleEndian)
-            : base((Stream)null, endianess)
+            : base(null, endianess)
         {
             this.systemStream = systemStream;
             this.graphicsStream = graphicsStream;
@@ -117,7 +118,7 @@ namespace CodeWalker.GameFiles
         }
 
         public ResourceDataReader(RpfResourceFileEntry resentry, byte[] data, Endianess endianess = Endianess.LittleEndian)
-            : base((Stream)null, endianess)
+            : base(null, endianess)
         {
             FileEntry = resentry;
             this.systemSize = resentry.SystemSize;
@@ -138,21 +139,21 @@ namespace CodeWalker.GameFiles
 
             if ((int)systemSize > data.Length)
             {
-                throw new ArgumentException($"systemSize {systemSize} is larger than data length ({data.Length})", nameof(systemSize));
+                throw new ArgumentException($"systemSize {systemSize} is larger than data length ({data.Length})", nameof(resentry));
             }
             if ((int)graphicsSize > data.Length)
             {
-                throw new ArgumentException($"graphicsSize {graphicsSize} is larger than data length ({data.Length})", nameof(graphicsSize));
+                throw new ArgumentException($"graphicsSize {graphicsSize} is larger than data length ({data.Length})", nameof(resentry));
             }
-            this.systemStream = Stream.Synchronized(new MemoryStream(data, 0, (int)systemSize));
-            this.graphicsStream = Stream.Synchronized(new MemoryStream(data, (int)systemSize, (int)graphicsSize));
+            this.systemStream = new MemoryStream(data, 0, (int)systemSize);
+            this.graphicsStream = new MemoryStream(data, (int)systemSize, (int)graphicsSize);
         }
 
         public ResourceDataReader(int systemSize, int graphicsSize, byte[] data, Endianess endianess = Endianess.LittleEndian)
-            : base((Stream)null, endianess)
+            : base(null, endianess)
         {
-            this.systemStream = Stream.Synchronized(new MemoryStream(data, 0, systemSize));
-            this.graphicsStream = Stream.Synchronized(new MemoryStream(data, systemSize, graphicsSize));
+            this.systemStream = new MemoryStream(data, 0, systemSize);
+            this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
         }
 
         public override Stream GetStream()
@@ -269,7 +270,6 @@ namespace CodeWalker.GameFiles
             return items;
         }
 
-        internal const int StackallocThreshold = 512;
         public unsafe byte[] ReadBytesAt(ulong position, uint count, bool cache = true, byte[] buffer = null)
         {
             long pos = (long)position;
@@ -489,6 +489,7 @@ namespace CodeWalker.GameFiles
 
             systemStream?.Dispose();
             graphicsStream?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 
@@ -647,6 +648,7 @@ namespace CodeWalker.GameFiles
 
             systemStream?.Dispose();
             graphicsStream?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 

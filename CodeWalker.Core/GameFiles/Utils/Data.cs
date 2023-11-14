@@ -42,8 +42,8 @@ namespace CodeWalker.GameFiles
 {
     public enum Endianess
     {
-        LittleEndian,
-        BigEndian
+        LittleEndian = 0,
+        BigEndian = 1,
     }
 
     public enum DataType
@@ -64,16 +64,10 @@ namespace CodeWalker.GameFiles
     {
         private Stream baseStream;
 
-        private readonly byte[] _buffer = new byte[8];
-
         /// <summary>
         /// Gets or sets the endianess of the underlying stream.
         /// </summary>
-        public Endianess Endianess
-        {
-            get;
-            set;
-        }
+        public Endianess Endianess { get; set; } = Endianess.LittleEndian;
 
         /// <summary>
         /// Gets the length of the underlying stream.
@@ -101,15 +95,19 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        /// <summary>
-        /// Initializes a new data reader for the specified stream.
-        /// </summary>
-        public DataReader(Stream stream, Endianess endianess = Endianess.LittleEndian)
+        public DataReader(Stream stream)
         {
             if (stream is not null)
             {
                 this.baseStream = Stream.Synchronized(stream);
             }
+        }
+
+        /// <summary>
+        /// Initializes a new data reader for the specified stream.
+        /// </summary>
+        public DataReader(Stream stream, Endianess endianess) : this(stream)
+        {
             this.Endianess = endianess;
         }
 
@@ -121,6 +119,25 @@ namespace CodeWalker.GameFiles
         internal virtual void SetPositionAfterRead(Stream stream)
         {
             return;
+        }
+
+        protected virtual void ReadFromStream(Span<byte> buffer, bool ignoreEndianess = false)
+        {
+            var stream = GetStream();
+
+            try
+            {
+                stream.Read(buffer);
+            }
+            finally
+            {
+                SetPositionAfterRead(stream);
+            }
+
+            if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
+            {
+                buffer.Reverse();
+            }
         }
 
         /// <summary>
@@ -187,7 +204,17 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public short ReadInt16()
         {
-            return BitConverter.ToInt16(ReadFromStream(2, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(short)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadInt16LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadInt16BigEndian(_buffer);
+            }
         }
 
         /// <summary>
@@ -195,7 +222,17 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public int ReadInt32()
         {
-            return BitConverter.ToInt32(ReadFromStream(4, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(int)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadInt32LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadInt32BigEndian(_buffer);
+            }
         }
 
         /// <summary>
@@ -203,7 +240,17 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public long ReadInt64()
         {
-            return BitConverter.ToInt64(ReadFromStream(8, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(long)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadInt64LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadInt64BigEndian(_buffer);
+            }
         }
 
         /// <summary>
@@ -211,7 +258,17 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public ushort ReadUInt16()
         {
-            return BitConverter.ToUInt16(ReadFromStream(2, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(ushort)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadUInt16LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadUInt16BigEndian(_buffer);
+            }
         }
 
         /// <summary>
@@ -219,7 +276,17 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public uint ReadUInt32()
         {
-            return BitConverter.ToUInt32(ReadFromStream(4, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(uint)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadUInt32LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadUInt32BigEndian(_buffer);
+            }
         }
 
         /// <summary>
@@ -227,7 +294,18 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public ulong ReadUInt64()
         {
-            return BitConverter.ToUInt64(ReadFromStream(8, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(ulong)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadUInt64LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadUInt64BigEndian(_buffer);
+            }
+            //return BitConverter.ToUInt64(ReadFromStream(_buffer), 0);
         }
 
         /// <summary>
@@ -235,7 +313,17 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public float ReadSingle()
         {
-            return BitConverter.ToSingle(ReadFromStream(4, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(float)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadSingleLittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadSingleBigEndian(_buffer);
+            }
         }
 
         /// <summary>
@@ -243,12 +331,23 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public double ReadDouble()
         {
-            return BitConverter.ToDouble(ReadFromStream(8, buffer: _buffer), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(double)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadDoubleLittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadDoubleBigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads a string.
         /// </summary>
+        [SkipLocalsInit]
         unsafe public string ReadStringLength(int length)
         {
             if (length == 0)
@@ -268,45 +367,28 @@ namespace CodeWalker.GameFiles
         /// <summary>
         /// Reads a string.
         /// </summary>
+        [SkipLocalsInit]
         unsafe public string ReadString(int maxLength = 1024)
         {
-            var bytes = stackalloc byte[Math.Min(maxLength, 1024)];
-            var chars = stackalloc char[Math.Min(maxLength, 1024)];
+            Span<byte> bytes = stackalloc byte[Math.Min(maxLength, 1024)];
+            Span<char> chars = stackalloc char[Math.Min(maxLength, 1024)];
             var temp = ReadByte();
-            var charsRead = 0;
-            while (temp != 0 && (Length == -1 || Position <= Length))
+            var bytesRead = 0;
+            var length = Length;
+            while (temp != 0 && (length == -1 || Position <= length))
             {
-                if (charsRead < maxLength && charsRead < 1024)
+                if (bytesRead < maxLength && bytesRead < 1024)
                 {
-                    bytes[charsRead] = temp;
+                    bytes[bytesRead] = temp;
                 }
                 temp = ReadByte();
-                charsRead++;
+                bytesRead++;
             }
 
-            var charsCount = Encoding.UTF8.GetChars(bytes, charsRead, chars, Math.Min(maxLength, 1024));
+            var charsRead = Encoding.UTF8.GetChars(bytes.Slice(0, bytesRead), chars);
 
-            return new string(chars, 0, charsCount);
+            return chars.Slice(0, charsRead).ToString();
             //return Encoding.UTF8.GetString(bytes, Math.Min(charsRead, maxLength));
-        }
-
-        unsafe public string ReadStringLower()
-        {
-            var bytes = stackalloc byte[1024];
-            var temp = ReadByte();
-            var charsRead = 0;
-            while (temp != 0 && (Length == -1 || Position <= Length))
-            {
-                if (charsRead > 1023)
-                {
-                    throw new Exception("String too long!");
-                }
-                bytes[charsRead] = temp;
-                temp = ReadByte();
-                charsRead++;
-            }
-
-            return Encoding.UTF8.GetString(bytes, charsRead);
         }
 
 

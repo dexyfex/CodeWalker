@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
 using System.Xml;
+using System.Runtime.InteropServices;
 
 namespace CodeWalker.GameFiles
 {
@@ -39,12 +40,12 @@ namespace CodeWalker.GameFiles
 
         public Dictionary<uint, AwcStream> StreamDict { get; set; }
 
-
-        static public void Decrypt_RSXXTEA(byte[] data, uint[] key)
+        static public void Decrypt_RSXXTEA(Span<byte> data, uint[] key)
         {
             // Rockstar's modified version of XXTEA
-            uint[] blocks = new uint[data.Length / 4];
-            Buffer.BlockCopy(data, 0, blocks, 0, data.Length);
+            var blocks = MemoryMarshal.Cast<byte, uint>(data);
+            //[] blocks = new uint[data.Length / 4];
+            //Buffer.BlockCopy(data, 0, blocks, 0, data.Length);
 
             int block_count = blocks.Length;
             uint a, b = blocks[0], i;
@@ -60,7 +61,7 @@ namespace CodeWalker.GameFiles
                 i -= 0x9E3779B9;
             } while (i != 0);
 
-            Buffer.BlockCopy(blocks, 0, data, 0, data.Length);
+            //Buffer.BlockCopy(blocks, 0, data, 0, data.Length);
         }
 
         public void Load(byte[] data, RpfFileEntry entry)
@@ -1171,15 +1172,13 @@ namespace CodeWalker.GameFiles
                     for (int b = 0; b < bcount; b++)
                     {
                         int srcoff = b * bsize;
-                        int mcsoff = (b < ocount) ? (int)SeekTableChunk.SeekTable[b] : 0;
-                        int blen = Math.Max(Math.Min(bsize, DataChunk.Data.Length - srcoff), 0);
-                        var bdat = new byte[blen];
-                        Buffer.BlockCopy(DataChunk.Data, srcoff, bdat, 0, blen);
+                        int sampleOffset = (b < ocount) ? (int)SeekTableChunk.SeekTable[b] : 0;
+                        int dataBlockLength = Math.Max(Math.Min(bsize, DataChunk.Data.Length - srcoff), 0);
                         if (Awc.MultiChannelEncryptFlag && !Awc.WholeFileEncrypted)
                         {
-                            AwcFile.Decrypt_RSXXTEA(bdat, GTA5Keys.PC_AWC_KEY);
+                            AwcFile.Decrypt_RSXXTEA(DataChunk.Data.AsSpan(srcoff, dataBlockLength), GTA5Keys.PC_AWC_KEY);
                         }
-                        var blk = new AwcStreamDataBlock(bdat, StreamFormatChunk, endianess, mcsoff);
+                        var blk = new AwcStreamDataBlock(DataChunk.Data, StreamFormatChunk, endianess, sampleOffset, srcoff, dataBlockLength);
                         blist.Add(blk);
                     }
                     StreamBlocks = blist.ToArray();
@@ -2712,19 +2711,20 @@ namespace CodeWalker.GameFiles
 
         public AwcStreamDataBlock()
         { }
-        public AwcStreamDataBlock(byte[] data, AwcStreamFormatChunk channelInfo, Endianess endianess, int sampleOffset)
+        public AwcStreamDataBlock(byte[] data, AwcStreamFormatChunk channelInfo, Endianess endianess, int sampleOffset) : this(data, channelInfo, endianess, sampleOffset, 0, data?.Length ?? 0)
+        { }
+
+        public AwcStreamDataBlock(byte[] data, AwcStreamFormatChunk channelInfo, Endianess endianess, int sampleOffset, int offset, int dataLength)
         {
-            DataLength = data?.Length ?? 0;
+            DataLength = dataLength;
             SampleOffset = sampleOffset;
             ChannelCount = channelInfo?.ChannelCount ?? 0;
             ChannelInfo = channelInfo;
 
-            using (var ms = new MemoryStream(data))
-            {
-                var r = new DataReader(ms, endianess);
-                Read(r);
-            }
+            using var ms = new MemoryStream(data, offset, dataLength);
 
+            var r = new DataReader(ms, endianess);
+            Read(r);
         }
 
         public void Read(DataReader r)
@@ -2744,7 +2744,7 @@ namespace CodeWalker.GameFiles
             }
 
             var padc = (0x800 - (r.Position % 0x800)) % 0x800;
-            var padb = r.ReadBytes((int)padc);
+            r.Position += padc;
 
             foreach (var channel in Channels)
             {

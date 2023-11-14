@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>CWPeds.ico</ApplicationIcon>
     <Copyright>dexyfex</Copyright>
@@ -10,18 +9,13 @@
     <Authors>dexyfex</Authors>
     <AssemblyName>CodeWalker Ped Viewer</AssemblyName>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
-    <PackageReference Include="System.Buffers" Version="4.5.1" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CodeWalker\CodeWalker.csproj" />
   </ItemGroup>
-
 </Project>

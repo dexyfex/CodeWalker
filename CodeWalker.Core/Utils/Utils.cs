@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 using Color = SharpDX.Color;
+using Half = SharpDX.Half;
 
 namespace CodeWalker
 {
@@ -86,22 +87,37 @@ namespace CodeWalker
 
 
 
-        public static string GetUTF8Text(byte[] bytes)
+        public static string GetUTF8Text(Span<byte> bytes)
         {
-            if (bytes == null)
-            { return string.Empty; } //file not found..
-            var start = 0;
-            var length = bytes.Length;
+            if (bytes == null || bytes.Length == 0)
+            {
+                return string.Empty;
+            } //file not found..
             if ((bytes.Length > 3) && (bytes[0] == 0xEF) && (bytes[1] == 0xBB) && (bytes[2] == 0xBF))
             {
-                start = 3;
-                length = bytes.Length - 3;
+                bytes = bytes.Slice(3);
             }
-            return Encoding.UTF8.GetString(bytes, start, length);
+
+            if (bytes.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            return Encoding.UTF8.GetString(bytes);
         }
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
             return source?.IndexOf(toCheck, comp) >= 0;
+        }
+
+        public static bool EndsWithAny(this string str, string searchString)
+        {
+            return str.EndsWith(searchString, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool EndsWithAny(this string str, string searchString, string searchString2)
+        {
+            return str.EndsWith(searchString, StringComparison.OrdinalIgnoreCase) || str.EndsWith(searchString2, StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool EndsWithAny(this string str, params string[] strings)

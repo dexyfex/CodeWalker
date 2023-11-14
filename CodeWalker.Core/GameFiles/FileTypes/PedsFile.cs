@@ -16,6 +16,7 @@ namespace CodeWalker.GameFiles
 {
     [TC(typeof(EXP))] public class PedsFile : GameFile, PackedFile
     {
+        private static XmlNameTable cachedNameTable = new System.Xml.NameTable();
         public PsoFile Pso { get; set; }
         public string Xml { get; set; }
 
@@ -62,7 +63,7 @@ namespace CodeWalker.GameFiles
             //    }
             //}
 
-            using var xmlReader = XmlReader.Create(textReader);
+            using var xmlReader = XmlReader.Create(textReader, new XmlReaderSettings { NameTable = cachedNameTable,  });
 
 
             //if (xdoc.DocumentElement != null)

@@ -86,7 +86,7 @@ namespace CodeWalker.GameFiles
         public MetaHash[] PackTable { get; set; }
 
         public RelData[] RelDatas { get; set; }
-        public RelData[] RelDatasSorted { get; set; }
+        public IEnumerable<RelData> RelDatasSorted { get => RelDatas.OrderBy(p => p.DataOffset); }
         public Dictionary<uint, RelData> RelDataDict { get; set; } = new Dictionary<uint, RelData>();
 
         public bool IsAudioConfig { get; set; }
@@ -311,25 +311,32 @@ namespace CodeWalker.GameFiles
             #endregion
 
 
-            List<RelData> reldatas = new List<RelData>();
             if (IndexHashes != null)
             {
+                var reldatas = new List<RelData>(IndexHashes.Length);
                 foreach (var indexhash in IndexHashes)
                 {
                     reldatas.Add(ReadRelData(br, indexhash));
                 }
+                RelDatas = reldatas.ToArray();
             }
             else if (IndexStrings != null)
             {
+                var reldatas = new List<RelData>(IndexStrings.Length);
                 foreach (var indexstr in IndexStrings)
                 {
                     reldatas.Add(ReadRelData(br, indexstr));
                 }
+                RelDatas = reldatas.ToArray();
+            } else
+            {
+                RelDatas = Array.Empty<RelData>();
             }
-            RelDatas = reldatas.ToArray();
+            
 
-            reldatas.Sort((d1, d2) => d1.DataOffset.CompareTo(d2.DataOffset));
-            RelDatasSorted = reldatas.ToArray();
+            //reldatas.Sort((d1, d2) => d1.DataOffset.CompareTo(d2.DataOffset));
+
+            //RelDatasSorted = reldatas.ToArray();
 
 
             RelDataDict.Clear();
@@ -427,12 +434,14 @@ namespace CodeWalker.GameFiles
         }
         private RelData ReadRelData(BinaryReader br, RelIndexString s)
         {
-            return ReadRelData(br, s.Name, JenkHash.GenHash(s.Name.ToLowerInvariant()), s.Offset, s.Length);
+            return ReadRelData(br, s.Name, JenkHash.GenHashLower(s.Name), s.Offset, s.Length);
         }
         private RelData ReadRelData(BinaryReader br, string name, MetaHash hash, uint offset, uint length)
         {
             br.BaseStream.Position = offset;
+            var oldPosition = br.BaseStream.Position;
             byte[] data = br.ReadBytes((int)length);
+            br.BaseStream.Position = oldPosition;
 
 
             RelData d = new RelData(this); //use this base object to construct the derived one...
@@ -443,29 +452,29 @@ namespace CodeWalker.GameFiles
             d.Data = data;
 
 
-            using BinaryReader dbr = new BinaryReader(new MemoryStream(data));
-            d.ReadType(dbr);
+            //using BinaryReader dbr = new BinaryReader(new MemoryStream(data));
+            d.ReadType(br);
 
             switch (RelType)
             {
                 case RelDatFileType.Dat4:   //speech.dat4.rel, audioconfig.dat4.rel
-                    return ReadData4(d, dbr);
+                    return ReadData4(d, br);
                 case RelDatFileType.Dat10ModularSynth:  //amp.dat10.rel
-                    return ReadData10(d, dbr);
+                    return ReadData10(d, br);
                 case RelDatFileType.Dat15DynamicMixer:  //mix.dat15.rel
-                    return ReadData15(d, dbr);
+                    return ReadData15(d, br);
                 case RelDatFileType.Dat16Curves:  //curves.dat16.rel
-                    return ReadData16(d, dbr);
+                    return ReadData16(d, br);
                 case RelDatFileType.Dat22Categories:  //categories.dat22.rel
-                    return ReadData22(d, dbr);
+                    return ReadData22(d, br);
                 case RelDatFileType.Dat54DataEntries:  //sounds.dat54.rel
-                    return ReadData54(d, dbr);
+                    return ReadData54(d, br);
                 case RelDatFileType.Dat149: //game.dat149.rel
-                    return ReadData149(d, dbr);
+                    return ReadData149(d, br);
                 case RelDatFileType.Dat150: //game.dat150.rel
-                    return ReadData150(d, dbr);
+                    return ReadData150(d, br);
                 case RelDatFileType.Dat151: //game.dat151.rel
-                    return ReadData151(d, dbr);
+                    return ReadData151(d, br);
                 default:
                     return d; //shouldn't get here...
             }
@@ -1034,11 +1043,8 @@ namespace CodeWalker.GameFiles
 
             RelData lastrd = null;//debug
 
-            for (int i = 0; i < RelDatasSorted.Length; i++)
+            foreach(var rd in RelDatasSorted)
             {
-
-                var rd = RelDatasSorted[i];
-
                 switch (RelType)
                 {
                     case RelDatFileType.Dat10ModularSynth:
@@ -1100,12 +1106,16 @@ namespace CodeWalker.GameFiles
 
                 var pos = ms.Position;
                 if ((ms.Position != rd.DataOffset) && (rd.DataOffset != 0))
-                { }
+                {
+                    Console.WriteLine("DataOffset is not same as Position");
+                }
                 rd.DataOffset = (uint)ms.Position;
                 rd.Write(bw);
                 var lengthwritten = ms.Position - pos;
                 if ((lengthwritten != rd.DataLength) && (rd.DataLength != 0))
-                { }
+                {
+                    Console.WriteLine("DataLength not same as bytes written");
+                }
                 rd.DataLength = (uint)lengthwritten;
 
                 lastrd = rd;
@@ -1319,10 +1329,8 @@ namespace CodeWalker.GameFiles
                 foreach (var htoffset in HashTableOffsets)
                 {
                     var dboffset = htoffset - 8;
-                    for (int i = 0; i < RelDatasSorted.Length; i++)
+                    foreach(var rd in RelDatasSorted)
                     {
-                        var rd = RelDatasSorted[i];
-
                         if ((dboffset >= rd.DataOffset) && (dboffset < rd.DataOffset + rd.DataLength))
                         {
                             var rdoffset = rd.DataOffset;
@@ -1355,9 +1363,8 @@ namespace CodeWalker.GameFiles
                 foreach (var wcoffset in PackTableOffsets)
                 {
                     var dboffset = wcoffset - 8;
-                    for (int i = 0; i < RelDatasSorted.Length; i++)
+                    foreach(var rd in RelDatasSorted)
                     {
-                        var rd = RelDatasSorted[i];
                         if ((dboffset >= rd.DataOffset) && (dboffset < rd.DataOffset + rd.DataLength))
                         {
                             var rdoffset = rd.DataOffset;
@@ -1467,8 +1474,8 @@ namespace CodeWalker.GameFiles
 
             //write the file data.
 
-            MemoryStream ms = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(ms);
+            using MemoryStream ms = new MemoryStream();
+            using BinaryWriter bw = new BinaryWriter(ms);
 
 
             bw.Write((uint)RelType);
@@ -1562,22 +1569,17 @@ namespace CodeWalker.GameFiles
         public void AddRelData(RelData d)
         {
             var newRelDatas = new List<RelData>();
-            var newRelDatasSorted = new List<RelData>();
 
             if (RelDatas != null) newRelDatas.AddRange(RelDatas);
-            if (RelDatasSorted != null) newRelDatasSorted.AddRange(RelDatasSorted);
 
             newRelDatas.Add(d);
-            newRelDatasSorted.Add(d);
 
             RelDatas = newRelDatas.ToArray();
-            RelDatasSorted = newRelDatasSorted.ToArray();
             //RelDataDict[d.NameHash] = d;
         }
         public bool RemoveRelData(RelData d)
         {
             var newRelDatas = new List<RelData>();
-            var newRelDatasSorted = new List<RelData>();
 
             if (RelDatas != null)
             {
@@ -1589,21 +1591,10 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
-            if (RelDatasSorted != null)
-            {
-                foreach (var relData in RelDatasSorted)
-                {
-                    if (relData != d)
-                    {
-                        newRelDatasSorted.Add(relData);
-                    }
-                }
-            }
 
             if (newRelDatas.Count < RelDatas.Length)
             {
                 RelDatas = newRelDatas.ToArray();
-                RelDatasSorted = newRelDatasSorted.ToArray();
                 RelDataDict.Remove(d.NameHash);
                 return true;
             }
@@ -3061,8 +3052,6 @@ namespace CodeWalker.GameFiles
             AudioContainers = new[] { ContainerName };
             FileName = br.ReadUInt32();
             WaveSlotIndex = br.ReadByte();
-            if (br.BaseStream.Position < br.BaseStream.Length)
-            { }
         }
         public override void ReadXml(XmlNode node)
         {
@@ -3223,8 +3212,6 @@ namespace CodeWalker.GameFiles
         public Dat54EnvironmentSound(RelData d, BinaryReader br) : base(d, br)
         {
             ChannelID = br.ReadByte();
-            if (br.BaseStream.Position < br.BaseStream.Length)
-            { }
         }
         public override void ReadXml(XmlNode node)
         {
@@ -4630,21 +4617,6 @@ namespace CodeWalker.GameFiles
                 Unk2 = br.ReadUInt32();
                 Unk3 = br.ReadUInt32();
             }
-
-            if (br.BaseStream.Position != br.BaseStream.Length)
-            {
-
-                //var bytes = new List<byte>();
-                //while (br.BaseStream.Position < br.BaseStream.Length)
-                //{
-                //    byte b = br.ReadByte();
-                //    bytes.Add(b);
-                //    if (b != 0)
-                //    { }//no hits here
-                //}
-                ////var bytearr = bytes.ToArray();
-
-            }
         }
         public override void ReadXml(XmlNode node)
         {
@@ -4942,8 +4914,6 @@ namespace CodeWalker.GameFiles
             {
                 SoundHashes[i] = br.ReadUInt32();
             }
-            if (br.BaseStream.Position != br.BaseStream.Length)
-            { }
         }
         public override void ReadXml(XmlNode node)
         {
@@ -5113,7 +5083,7 @@ namespace CodeWalker.GameFiles
         {
             Type = (Dat151RelType)TypeID;
 
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+            br.BaseStream.Position--; //1 byte was read already (TypeID)
 
             NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
         }
@@ -5219,12 +5189,6 @@ namespace CodeWalker.GameFiles
             {
                 EmitterHashes[i] = br.ReadUInt32();
             }
-
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { } //no hits here
-
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -5369,54 +5333,6 @@ namespace CodeWalker.GameFiles
             }
             if (DependentAmbiencesCount != 0)
             { }
-
-
-            #region testing
-
-            var data = this.Data;
-
-
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            {
-                //byte[] remainder = br.ReadBytes((int)bytesleft);
-                //for (int i = 0; i < remainder.Length; i++)
-                //{
-                //    if (remainder[i] != 0)
-                //    { } //no hits here! probably got everything, i'm assuming the block is padded to 0x10 or something.
-                //}
-            }
-
-
-            //RecVec(Pos01);//debug coords output
-            //RecVec(Pos06);
-
-
-            if (Unused01 != 0)
-            { }//no hit
-            if (Unused02 != 0)
-            { }//no hit
-            if (Unused06 != 0)
-            { }//no hit
-            if (Unused07 != 0)
-            { }//no hit
-            if (Shape != 0)
-            { }//eg 1, 2
-            if (Flags1 != 0)
-            { }//no hit
-            if (ActivationZoneAngle > 360)
-            { }//no hit
-            if (PlaybackZoneAngle > 360)
-            { }//no hit
-            if (Unk13 != 0)
-            { }//eg 0xAE64583B, 0x61083310, 0xCAE96294, 0x1C376176
-            if (UnkHash0 != 0)
-            { }
-            if (Scene != 0)
-            { }
-
-            #endregion
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -5882,10 +5798,6 @@ namespace CodeWalker.GameFiles
             //    FoundCoords.Add(FloatUtil.GetVector3String(Position) + ", " + GetNameString());
             //}
 
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-
 
             #endregion
 
@@ -6015,11 +5927,6 @@ namespace CodeWalker.GameFiles
             {
                 ZoneHashes[i] = br.ReadUInt32();
             }
-
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { } //no hits here
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6101,10 +6008,6 @@ namespace CodeWalker.GameFiles
             Unk20 = br.ReadUInt32();//0x05A00000
             Unk21 = br.ReadSingle();
             Unk22 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6218,10 +6121,6 @@ namespace CodeWalker.GameFiles
                 rooms[i] = br.ReadUInt32();
             }
             Rooms = rooms;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6318,10 +6217,6 @@ namespace CodeWalker.GameFiles
             Unk12 = br.ReadSingle();
             Unk13 = br.ReadUInt32();
             SoundSet = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6414,10 +6309,6 @@ namespace CodeWalker.GameFiles
                 tracks[i] = br.ReadUInt32();
             }
             Stations = tracks;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6491,10 +6382,6 @@ namespace CodeWalker.GameFiles
                 tracks[i] = br.ReadUInt32();
             }
             MusicList = tracks;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6613,34 +6500,6 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151HashPair(br);
             }
             this.Tracks = items;
-
-
-
-            if (Unk04 != 0)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk06 != 0)
-            { }
-            if (Unk07 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
-            if (Unk09 != 0)
-            { }
-            if (Unk10 != 0)
-            { }
-            if (Unk11 != 0)
-            { }
-            if (Unk12 != 0)
-            { }
-            if (Unk13 != 0)
-            { }
-
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6749,10 +6608,6 @@ namespace CodeWalker.GameFiles
             {
                 Tracks[i] = new Dat151HashPair(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6812,10 +6667,6 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151WeaponAudioItemItem(br);
             }
             this.Weapons = items;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6954,13 +6805,6 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151StartTrackActionItem(br);
             }
             this.Tracks = items;
-
-            if (Unk1 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7098,13 +6942,6 @@ namespace CodeWalker.GameFiles
             Beat = br.ReadUInt32();
             Unk3 = br.ReadSingle();
             Unk4 = br.ReadInt32();
-
-            if (Unk1 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7175,10 +7012,6 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151MoodItem(br);
             }
             Moods = items;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7337,17 +7170,6 @@ namespace CodeWalker.GameFiles
             Unk4 = br.ReadSingle();
             FadeIn = br.ReadInt32();
             FadeOut = br.ReadInt32();
-
-            if (Unk1 != 0)
-            { }
-            if (this.Bar != 0)
-            { }
-            if (this.Beat != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7418,10 +7240,6 @@ namespace CodeWalker.GameFiles
                 tracks[i] = br.ReadUInt32();
             }
             AudioTracks = tracks;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7490,13 +7308,6 @@ namespace CodeWalker.GameFiles
             Unk6 = br.ReadInt32();
             Unk7 = br.ReadInt32();
             Unk8 = br.ReadInt32();
-
-            if (Unk1 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7577,17 +7388,6 @@ namespace CodeWalker.GameFiles
             Bar = br.ReadUInt32();
             Beat = br.ReadUInt32();
             Unk3 = br.ReadInt32();
-
-            if (Unk1 != 0)
-            { }
-            if (Unk2 != 0)
-            { }
-            if (Unk3 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7651,15 +7451,6 @@ namespace CodeWalker.GameFiles
             Beat = br.ReadUInt32();
             Unk3 = br.ReadSingle();
             Unk4 = br.ReadSingle();
-
-            if (Unk1 != 0)
-            { }
-            if (Unk2 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7726,15 +7517,6 @@ namespace CodeWalker.GameFiles
             Beat = br.ReadUInt32();
             Unk3 = br.ReadSingle();
             Unk4 = br.ReadSingle();
-
-            if (Unk1 != 0)
-            { }
-            if (Unk2 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -7872,10 +7654,6 @@ namespace CodeWalker.GameFiles
                 }
                 Physics = tracks2;
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -8067,10 +7845,6 @@ namespace CodeWalker.GameFiles
         public Dat151DoorModel(RelData d, BinaryReader br) : base(d, br)
         {
             Door = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -8291,25 +8065,6 @@ namespace CodeWalker.GameFiles
             Unk87 = br.ReadInt32();
             Unk88 = br.ReadUInt32();
             Unk89 = br.ReadInt32();
-
-            if (Unk58 != 0)
-            { }
-            if (Unk61 != 0)
-            { }
-            if (Unk62 != 0)
-            { }
-            if (Unk66 != 0)
-            { }
-            if (Unk87 != 0)
-            { }
-            if (Unk89 != 0)
-            { }
-            if (Unk79 != NameHash)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -8749,17 +8504,6 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-
-            if (Flags != 0)
-            { }
-            if (Unk01 != 0)
-            { }
-            if (Unk38 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -8974,10 +8718,6 @@ namespace CodeWalker.GameFiles
             SoundSet = br.ReadUInt32();
             Params = br.ReadUInt32();
             Unk1 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -9031,10 +8771,6 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151AnimalFootstepsListItem(br);
             }
             AnimalFootsteps = items;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -9142,17 +8878,6 @@ namespace CodeWalker.GameFiles
                 tracks[i] = br.ReadUInt32();
             }
             AudioTracks = tracks;
-
-            if (Unk1 != 0)
-            { }
-            if (Unk2 != 0)
-            { }
-            if (Unk5 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -9247,21 +8972,6 @@ namespace CodeWalker.GameFiles
             Unk3 = br.ReadSingle();
             RadioStation = br.ReadUInt32();
             Unk5 = br.ReadInt32();
-
-            if (Unk1 != 0)
-            { }
-            if (Unk2 != 0)
-            { }
-            if (Unk3 != 0)
-            { }
-            if (RadioStation != 0)
-            { }
-            if (Unk5 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -10128,10 +9838,6 @@ namespace CodeWalker.GameFiles
                 points[i] = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             }
             Points = points;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -10222,10 +9928,6 @@ namespace CodeWalker.GameFiles
                 points[i] = new Vector2(br.ReadSingle(), br.ReadSingle());
             }
             Points = points;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -10308,10 +10010,6 @@ namespace CodeWalker.GameFiles
                 shorelines[i] = br.ReadUInt32();
             }
             ShoreLines = shorelines;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -10387,10 +10085,6 @@ namespace CodeWalker.GameFiles
             {
                 Events[i] = new EventData(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -10482,6 +10176,7 @@ namespace CodeWalker.GameFiles
         }
         public Dat151VehicleEngineGranular(RelData d, BinaryReader br) : base(d, br)
         {
+            var basePosition = br.BaseStream.Position;
             Flags = br.ReadUInt32();
             MasterVolume = br.ReadInt32();
             EngineAccel = br.ReadUInt32();
@@ -10597,7 +10292,7 @@ namespace CodeWalker.GameFiles
                     break;
             }
 
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            var bytesleft = d.Data.Length - (br.BaseStream.Position - basePosition);
             switch (bytesleft) //any other way to tell??
             {
                 case 0:
@@ -10620,34 +10315,6 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//no hit here
             }
-
-            if (bytesleft != 0)
-            { }
-
-            if (Unk04 != 0)
-            { }
-            if (Unk09 != 0)
-            { }
-            if (Unk10 != 0)
-            { }
-            if (Unk11 != 0)
-            { }
-            if (Unk12 != 0)
-            { }
-            if (Unk38 != 0)
-            { }
-            if (Unk39 != 0)
-            { }
-            if (Unk47 != 0)
-            { }
-            if (Unk48 != 0)
-            { }
-            if (Unk50 != 0)
-            { }
-            if (Unk51 != 0)
-            { }
-
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -10935,6 +10602,7 @@ namespace CodeWalker.GameFiles
         }
         public Dat151Vehicle(RelData d, BinaryReader br) : base(d, br)
         {
+            var basePosition = br.BaseStream.Position;
             Flags = br.ReadUInt32(); //2432719400   0x91005A28
             Engine = br.ReadUInt32();
             EngineGranular = br.ReadUInt32();
@@ -11000,9 +10668,7 @@ namespace CodeWalker.GameFiles
             Unk61 = br.ReadSingle();
             Unk62 = br.ReadInt32();
 
-
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            var bytesleft = d.Data.Length - (br.BaseStream.Position - basePosition);
             switch (bytesleft) //any other way to tell..?
             {
                 case 0:
@@ -11875,6 +11541,7 @@ namespace CodeWalker.GameFiles
         }
         public Dat151Weapon(RelData d, BinaryReader br) : base(d, br)
         {
+            var basePosition = br.BaseStream.Position;
             Flags = br.ReadUInt32();
             SingleFire = br.ReadUInt32();
             SuppressedFire = br.ReadUInt32();
@@ -11913,7 +11580,7 @@ namespace CodeWalker.GameFiles
 
             Version = 0;
 
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            var bytesleft = d.Data.Length - (br.BaseStream.Position - basePosition);
             switch (bytesleft)
             {
                 case 0:
@@ -11979,13 +11646,6 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-            bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-
-            if (Unk29 != 0)
-            { }//no hit
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -12282,15 +11942,6 @@ namespace CodeWalker.GameFiles
             Unk10 = br.ReadUInt32();//hash
             Unk11 = br.ReadInt32();//0
             Unk12 = br.ReadInt32();//0
-
-            if (Unk11 != 0)
-            { }
-            if (Unk12 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -12436,22 +12087,6 @@ namespace CodeWalker.GameFiles
             }
 
             Unk07 = br.ReadByte();
-            //Items4 = new UnkStruct[Unk07];
-            //for (int i = 0; i < Unk07; i++)
-            //{
-            //    Items4[i] = new UnkStruct(br);
-            //}
-
-
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-            //if (Unk06 != 0)
-            //{ }
-            //if (Unk04 != 0)
-            //{ }
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -12564,10 +12199,6 @@ namespace CodeWalker.GameFiles
             Unk09 = br.ReadUInt32();
             Unk10 = br.ReadInt32();
             Unk11 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -12760,17 +12391,6 @@ namespace CodeWalker.GameFiles
             Unk61 = br.ReadSingle();
             Unk62 = br.ReadUInt32();
             Unk63 = br.ReadUInt32();
-
-            if (Unk15 != 0x6B3DC4A2)
-            { }//no hit
-            if (Unk24 != 0)
-            { }//no hit
-            if (Unk33 != 0)
-            { }//no hit
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -13044,10 +12664,6 @@ namespace CodeWalker.GameFiles
             Bell = br.ReadUInt32();
             Unk16 = br.ReadUInt32();
             Unk17 = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -13233,6 +12849,7 @@ namespace CodeWalker.GameFiles
         }
         public Dat151Aeroplane(RelData d, BinaryReader br) : base(d, br)
         {
+            var basePosition = br.BaseStream.Position;
             Flags = br.ReadUInt32();
             Engine = br.ReadUInt32();
             Exhaust = br.ReadUInt32();
@@ -13323,7 +12940,7 @@ namespace CodeWalker.GameFiles
 
             Version = 0;
 
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            var bytesleft = d.Data.Length - (br.BaseStream.Position - basePosition);
             if (bytesleft == 40)
             {
                 Version = 1;
@@ -13339,11 +12956,6 @@ namespace CodeWalker.GameFiles
                 Unk95 = br.ReadUInt32();
                 Unk96 = br.ReadUInt32();
             }
-
-
-            bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -13792,6 +13404,7 @@ namespace CodeWalker.GameFiles
         }
         public Dat151Helicopter(RelData d, BinaryReader br) : base(d, br)
         {
+            var basePosition = br.BaseStream.Position;
             Flags = br.ReadUInt32();
             MainRotor = br.ReadUInt32();
             TailRotor = br.ReadUInt32();
@@ -13882,20 +13495,9 @@ namespace CodeWalker.GameFiles
             PlayerSwitch = br.ReadUInt32();
             Unk88 = br.ReadUInt32();
 
-
-            if (Unk52 != 0)
-            { }
-            if (Unk53 != 0)
-            { }
-            if (Unk54 != 0)
-            { }
-            if (Unk55 != 0)
-            { }
-
-
             Version = 0;
 
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            var bytesleft = d.Data.Length - (br.BaseStream.Position - basePosition);
             if (bytesleft >= 12)
             {
                 Version = 1;
@@ -13904,10 +13506,6 @@ namespace CodeWalker.GameFiles
                 Unk90 = br.ReadUInt32();
                 StartupBroken = br.ReadUInt32();
             }
-
-            bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -14264,15 +13862,6 @@ namespace CodeWalker.GameFiles
             Unk10 = br.ReadInt32();
             Unk11 = br.ReadUInt32();//0
             Unk12 = br.ReadSingle();
-
-            if (Unk06 != 0)
-            { }
-            if (Unk11 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -14417,13 +14006,6 @@ namespace CodeWalker.GameFiles
             Unk36 = br.ReadUInt32();
             Unk37 = br.ReadUInt32();
             Collision = br.ReadUInt32();
-
-            if (Unk02 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -14682,11 +14264,6 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151AnimalParamsItem(br);
             }
             Params = items;
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -14774,22 +14351,6 @@ namespace CodeWalker.GameFiles
             Unk05 = br.ReadInt16();
             Unk06 = br.ReadUInt32();
             Unk07 = br.ReadInt32();
-
-            if (Unk01 > 0xFFFF)
-            { }
-            if (Unk02 > 0xFFFF)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk06 != 0)
-            { }
-            if (Unk07 != -1)
-            { }
-
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -14873,10 +14434,6 @@ namespace CodeWalker.GameFiles
             Unk16 = br.ReadUInt32();
             Unk17 = br.ReadUInt32();
             Unk18 = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -14989,17 +14546,6 @@ namespace CodeWalker.GameFiles
                 items[i] = new Dat151HashFloat(br);
             }
             Items = items;
-
-            if (Unk06 != 0)
-            { }
-            if (Unk07 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15112,26 +14658,6 @@ namespace CodeWalker.GameFiles
                 Unk16 = br.ReadByte();
                 Unk17 = br.ReadByte();
             }
-
-
-            if (Unk05 > 3)
-            { }
-            if (Unk06 != 0)
-            { }
-            if (Unk07 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
-            if (Unk09 != 0)
-            { }
-            if (Unk11 > 3)
-            { }
-
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15246,23 +14772,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = br.ReadUInt32();
             }
-
-            if (Unk02 != 0)
-            { }
-            if (Unk04 != 0)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk06 != 0)
-            { }
-            if (Unk07 != 3)
-            { }
-            if (Unk08 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15336,10 +14845,6 @@ namespace CodeWalker.GameFiles
             {
                 SpeechContexts[i] = br.ReadUInt32();
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15416,10 +14921,6 @@ namespace CodeWalker.GameFiles
             Unk18 = br.ReadUInt32();
             Unk19 = br.ReadUInt32();
             Unk20 = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15595,10 +15096,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151Unk22Item(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15672,17 +15169,6 @@ namespace CodeWalker.GameFiles
             Unk07 = br.ReadUInt32();
             Unk08 = br.ReadUInt32();//0
             Unk09 = br.ReadSingle();
-
-            if (Unk02 != 0)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
-            
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15745,10 +15231,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151RadioTrackCategoryItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15831,10 +15313,6 @@ namespace CodeWalker.GameFiles
             Unk06 = br.ReadInt32();
             Crime = br.ReadUInt32();
             Unk08 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -15918,21 +15396,6 @@ namespace CodeWalker.GameFiles
             {
                 PedTypes[i] = br.ReadUInt32();
             }
-
-            if (Universal != 0)
-            { }
-            if (Arabic != 0)
-            { }
-            if (Baltic != 0)
-            { }
-            if (Jamaican != 0)
-            { }
-            if (Italian != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16009,10 +15472,6 @@ namespace CodeWalker.GameFiles
         public Dat151PedType(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16050,10 +15509,6 @@ namespace CodeWalker.GameFiles
             {
                 Reports[i] = new Dat151PoliceScannerReportItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16166,25 +15621,6 @@ namespace CodeWalker.GameFiles
             Unk10 = br.ReadUInt32();//0
             Unk11 = br.ReadUInt32();//0
             Unk12 = br.ReadUInt32();//0
-
-            if (Unk01 != 0)
-            { }
-            if (Unk02 != 0)
-            { }
-            if (Unk03 != 0)
-            { }
-            if (Unk04 != 0)
-            { }
-            if (Unk10 != 0)
-            { }
-            if (Unk11 != 0)
-            { }
-            if (Unk12 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16261,10 +15697,6 @@ namespace CodeWalker.GameFiles
             {
                 Locations[i] = br.ReadUInt32();
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16345,10 +15777,6 @@ namespace CodeWalker.GameFiles
             {
                 AmbienceSlots[i] = new Dat151AmbienceSlotMapItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16388,10 +15816,6 @@ namespace CodeWalker.GameFiles
             {
                 AmbienceBanks[i] = new Dat151AmbienceBankMapItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16477,21 +15901,6 @@ namespace CodeWalker.GameFiles
             Unk08 = br.ReadUInt32();//0
             Unk09 = br.ReadUInt32();//0
             Unk10 = br.ReadUInt32();//0
-
-            if (Unk01 != 0)
-            { }
-            if (Unk03 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
-            if (Unk09 != 0)
-            { }
-            if (Unk10 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16558,10 +15967,6 @@ namespace CodeWalker.GameFiles
             Unk03 = br.ReadInt32();
             Unk04 = br.ReadInt32();
             Unk05 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16618,13 +16023,6 @@ namespace CodeWalker.GameFiles
             Unk06 = br.ReadSingle();
             Unk07 = br.ReadSingle();
             Unk08 = br.ReadInt32();
-
-            if (Unk02 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16685,10 +16083,6 @@ namespace CodeWalker.GameFiles
             Knee = br.ReadUInt32();
             Scrape = br.ReadUInt32();
             Hand = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16755,10 +16149,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = br.ReadUInt32();
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16845,10 +16235,6 @@ namespace CodeWalker.GameFiles
             Stem6Volume = br.ReadInt16();
             Stem7Volume = br.ReadInt16();
             Stem8Volume = br.ReadInt16();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16898,10 +16284,6 @@ namespace CodeWalker.GameFiles
         public Dat151MusicBeat(RelData d, BinaryReader br) : base(d, br)
         {
             Unk01 = br.ReadUInt16();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -16932,10 +16314,6 @@ namespace CodeWalker.GameFiles
         {
             Unk01 = br.ReadInt32();
             Unk02 = br.ReadInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -17003,17 +16381,6 @@ namespace CodeWalker.GameFiles
             Unk16 = br.ReadUInt32();
             Unk17 = br.ReadUInt32();
             Unk18 = br.ReadSingle();
-
-            if (ChildSound2 != 0)
-            { }
-            if (ChildSound3 != 0)
-            { }
-            if (ChildSound4 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -17132,15 +16499,6 @@ namespace CodeWalker.GameFiles
             Unk13 = br.ReadUInt32();
             Unk14 = br.ReadUInt32();
             Unk15 = br.ReadUInt32();
-
-            if (Unk10 != 0)
-            { }
-            if (Unk11 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -17283,10 +16641,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151AnimalSoundsItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -17450,10 +16804,6 @@ namespace CodeWalker.GameFiles
             Unk64 = br.ReadUInt32();//0
             Unk65 = br.ReadUInt32();//0
             Rusty = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -17687,13 +17037,6 @@ namespace CodeWalker.GameFiles
         {
             Unk01 = br.ReadUInt32();//0
             Unk02 = br.ReadSingle();
-
-            if (Unk01 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -17807,10 +17150,6 @@ namespace CodeWalker.GameFiles
             {
                 Microphones[i] = new Dat151MicrophoneItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -17877,10 +17216,6 @@ namespace CodeWalker.GameFiles
                     Items2[i] = new Dat151VehicleRecordingItem2(br);
                 }
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18069,10 +17404,6 @@ namespace CodeWalker.GameFiles
             Unk08 = br.ReadUInt32();
             Unk09 = br.ReadUInt32();
             Unk10 = br.ReadInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18160,15 +17491,6 @@ namespace CodeWalker.GameFiles
             Unk12 = br.ReadUInt32();//0
             Unk13 = br.ReadUInt32();
             Unk14 = br.ReadUInt32();
-
-            if (Unk08 != 0)
-            { }
-            if (Unk12 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18253,10 +17575,6 @@ namespace CodeWalker.GameFiles
             Unk02 = br.ReadInt32();
             Unk03 = br.ReadUInt32();
             Unk04 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18470,10 +17788,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151StealthSettingsItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18522,10 +17836,6 @@ namespace CodeWalker.GameFiles
         public Dat151Unk99(RelData d, BinaryReader br) : base(d, br)
         {
             Unk01 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18590,10 +17900,6 @@ namespace CodeWalker.GameFiles
             Unk16 = br.ReadSingle();
             Unk17 = br.ReadSingle();
             Unk18 = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18696,17 +18002,6 @@ namespace CodeWalker.GameFiles
             Unk05 = br.ReadUInt32();//0
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unk06 = br.ReadUInt32();//0
-
-            if (Unk04 != 0)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk06 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18775,13 +18070,6 @@ namespace CodeWalker.GameFiles
             Unk02 = br.ReadInt32();
             Unk03 = br.ReadUInt32();//0
             Unk04 = br.ReadUInt32();
-
-            if (Unk03 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18841,10 +18129,6 @@ namespace CodeWalker.GameFiles
             {
                 Variations[i] = new Dat151ScenarioItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -18938,10 +18222,6 @@ namespace CodeWalker.GameFiles
         public Dat151PortalSettings(RelData d, BinaryReader br) : base(d, br)
         {
             MaxOcclusion = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -19000,10 +18280,6 @@ namespace CodeWalker.GameFiles
             Unk14 = br.ReadInt32();
             Unk15 = br.ReadUInt32();
             Start = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -19115,13 +18391,6 @@ namespace CodeWalker.GameFiles
             Unk16 = br.ReadInt32();
             Unk17 = br.ReadInt32();
             Unk18 = br.ReadInt32();
-
-            if (Unk03 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -19258,16 +18527,8 @@ namespace CodeWalker.GameFiles
             }
 
             var brem = (4 - ((ItemCount + 1) % 4)) % 4;
-            var pads = br.ReadBytes(brem); //read padding bytes
-            foreach (var b in pads)
-            {
-                if (b != 0)
-                { } //just make sure all pad bytes are 0..
-            }
 
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
+            br.BaseStream.Position = br.BaseStream.Position + brem;
         }
         public override void Write(BinaryWriter bw)
         {
@@ -19438,47 +18699,6 @@ namespace CodeWalker.GameFiles
             Unk56 = br.ReadUInt32();//0
             Unk57 = br.ReadInt32();
             Unk58 = br.ReadInt32();
-
-            if (Unk02 != 0)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
-            if (Unk11 != 0)
-            { }
-            if (Unk14 != 0)
-            { }
-            if (Unk17 != 0)
-            { }
-            if (Unk20 != 0)
-            { }
-            if (Unk24 != 0)
-            { }
-            if (Unk27 != 0)
-            { }
-            if (Unk30 != 0)
-            { }
-            if (Unk33 != 0)
-            { }
-            if (Unk36 != 0)
-            { }
-            if (Unk39 != 0)
-            { }
-            if (Unk42 != 0)
-            { }
-            if (Unk45 != 0)
-            { }
-            if (Unk48 != 0)
-            { }
-            if (Unk52 != 0)
-            { }
-            if (Unk56 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -19739,10 +18959,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151WallaSpeechListItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -19870,10 +19086,6 @@ namespace CodeWalker.GameFiles
             Unk40 = br.ReadInt32();
             Unk41 = br.ReadInt32();
             Unk42 = br.ReadInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20067,10 +19279,6 @@ namespace CodeWalker.GameFiles
             Unk19 = br.ReadSingle();
             Unk20 = br.ReadInt32();
             Unk21 = br.ReadInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20188,29 +19396,6 @@ namespace CodeWalker.GameFiles
             Unk10 = br.ReadUInt32();//0
             Unk11 = br.ReadUInt32();//0
             Unk12 = br.ReadSingle();
-
-            if (Unk01 != 0)
-            { }
-            if (Unk03 != 0)
-            { }
-            if (Unk04 != 0)
-            { }
-            if (Unk05 != 0)
-            { }
-            if (Unk06 != 0)
-            { }
-            if (Unk08 != 0)
-            { }
-            if (Unk09 != 0)
-            { }
-            if (Unk10 != 0)
-            { }
-            if (Unk11 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20310,10 +19495,6 @@ namespace CodeWalker.GameFiles
             Unk18 = br.ReadSingle();
             Unk19 = br.ReadInt32();
             Unk20 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20403,10 +19584,6 @@ namespace CodeWalker.GameFiles
             Unk01 = br.ReadUInt32();
             Unk02 = br.ReadUInt32();
             Unk03 = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20451,10 +19628,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151ModelAudioCollisionSettingsOverrideItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20539,12 +19712,6 @@ namespace CodeWalker.GameFiles
             {
                 ItemHashes[i] = br.ReadUInt32();
             }
-
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { } //no hits here
-
-
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20616,7 +19783,7 @@ namespace CodeWalker.GameFiles
         {
             Type = (Dat4ConfigType)TypeID;
 
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+            br.BaseStream.Position--; //1 byte was read already (TypeID)
 
             NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags = br.ReadUInt32();
@@ -20664,10 +19831,6 @@ namespace CodeWalker.GameFiles
         public Dat4ConfigInt(RelData d, BinaryReader br) : base(d, br)
         {
             Value = br.ReadInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20697,10 +19860,6 @@ namespace CodeWalker.GameFiles
         public Dat4ConfigUnsignedInt(RelData d, BinaryReader br) : base(d, br)
         {
             Value = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20730,10 +19889,6 @@ namespace CodeWalker.GameFiles
         public Dat4ConfigFloat(RelData d, BinaryReader br) : base(d, br)
         {
             Value = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20764,10 +19919,6 @@ namespace CodeWalker.GameFiles
         {
             var data = br.ReadBytes(64);
             Value = Encoding.ASCII.GetString(data).Replace("\0", "");
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20806,10 +19957,6 @@ namespace CodeWalker.GameFiles
             br.ReadBytes(8); // alignment padding
             Value = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());//0x10-0x1C
             br.ReadBytes(4); // alignment padding
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20880,9 +20027,6 @@ namespace CodeWalker.GameFiles
             {
                 Variables[i] = new VariableValue(br);
             }
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20927,10 +20071,6 @@ namespace CodeWalker.GameFiles
             StaticBank = br.ReadUInt32();
             MaxDataSize = br.ReadInt32();
             Unk6 = br.ReadInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -20981,9 +20121,6 @@ namespace CodeWalker.GameFiles
             {
                 WaveSlots[i] = br.ReadUInt32();
             }
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -21110,10 +20247,6 @@ namespace CodeWalker.GameFiles
             {
                 hash_EACC7FE3[i] = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -21268,10 +20401,10 @@ namespace CodeWalker.GameFiles
         { }
         public Dat4SpeechData(RelData d, BinaryReader br) : base(d)
         {
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+            br.BaseStream.Position--; //1 byte was read already (TypeID)
 
 
-            if ((TypeID == 4) && (br.BaseStream.Length == 8))
+            if ((TypeID == 4) && (d.Data.Length == 8))
             {
                 NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
                 ContainerHash = br.ReadUInt32();
@@ -21395,7 +20528,7 @@ namespace CodeWalker.GameFiles
         {
             Type = (Dat10RelType)TypeID;
 
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+            br.BaseStream.Position--; //1 byte was read already (TypeID)
 
             NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags = br.ReadUInt32();
@@ -21469,10 +20602,6 @@ namespace CodeWalker.GameFiles
             {
                 Variables[i] = new Dat10SynthPresetVariable(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -21576,13 +20705,6 @@ namespace CodeWalker.GameFiles
             {
                 Variables[i] = new Dat10SynthVariable(br);
             }
-
-            if (d.NameHash == 2095626595)//synth_ambient_aircon_full
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23293,7 +22415,7 @@ namespace CodeWalker.GameFiles
         {
             Type = (Dat15RelType)TypeID;
 
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+            br.BaseStream.Position--; //1 byte was read already (TypeID)
 
             NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags = br.ReadUInt32();
@@ -23344,10 +22466,6 @@ namespace CodeWalker.GameFiles
             {
                 MixCategories[i] = new Dat15PatchItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23505,10 +22623,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151HashPair(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23564,10 +22678,6 @@ namespace CodeWalker.GameFiles
             {
                 PatchGroups[i] = new Dat15SceneItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23658,10 +22768,6 @@ namespace CodeWalker.GameFiles
             ReferenceCount = br.ReadUInt32();
             FadeTime = br.ReadSingle();
             Map = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23708,10 +22814,6 @@ namespace CodeWalker.GameFiles
             {
                 Groups[i] = br.ReadUInt32();
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23759,10 +22861,6 @@ namespace CodeWalker.GameFiles
             ApplyVariable = br.ReadUInt32();
             Duration = br.ReadUInt32();//0
             ModuleTypeSettings = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23819,10 +22917,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = br.ReadSingle();
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23881,10 +22975,6 @@ namespace CodeWalker.GameFiles
             //}
             //if (ItemCount != 2)
             //{ }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23923,10 +23013,6 @@ namespace CodeWalker.GameFiles
         {
             Unk01 = br.ReadByte();
             Unk02 = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -23970,10 +23056,6 @@ namespace CodeWalker.GameFiles
             {
                 Items[i] = new Dat151GroupMapItem(br);
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24089,7 +23171,7 @@ namespace CodeWalker.GameFiles
         {
             Type = (Dat16RelType)TypeID;
 
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+            br.BaseStream.Position--; //1 byte was read already (TypeID)
 
             NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags = br.ReadUInt32();
@@ -24124,10 +23206,6 @@ namespace CodeWalker.GameFiles
             MinInput = br.ReadSingle();
             MaxInput = br.ReadSingle();
             Value = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24174,10 +23252,6 @@ namespace CodeWalker.GameFiles
             Unk04 = br.ReadSingle();
             Unk05 = br.ReadSingle();
             Unk06 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24233,15 +23307,6 @@ namespace CodeWalker.GameFiles
             Unk04 = br.ReadSingle();//0
             Unk05 = br.ReadSingle();
             Unk06 = br.ReadSingle();
-
-            if (Unk03 != 0)
-            { }
-            if (Unk04 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24297,10 +23362,6 @@ namespace CodeWalker.GameFiles
             {
                 Points[i] = new Vector2(br.ReadSingle(), br.ReadSingle());
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24347,10 +23408,6 @@ namespace CodeWalker.GameFiles
             MinInput = br.ReadSingle();
             MaxInput = br.ReadSingle();
             Flip = br.ReadInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24397,10 +23454,6 @@ namespace CodeWalker.GameFiles
             {
                 Values[i] = br.ReadSingle();
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24448,10 +23501,6 @@ namespace CodeWalker.GameFiles
             MaxInput = br.ReadSingle();
             Flip = br.ReadInt32();
             Exponent = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24495,10 +23544,6 @@ namespace CodeWalker.GameFiles
             MinInput = br.ReadSingle();
             MaxInput = br.ReadSingle();
             HorizontalScaling = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24539,10 +23584,6 @@ namespace CodeWalker.GameFiles
             MinInput = br.ReadSingle();
             MaxInput = br.ReadSingle();
             HorizontalScaling = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24591,10 +23632,6 @@ namespace CodeWalker.GameFiles
             Frequency = br.ReadSingle();
             VerticalScaling = br.ReadSingle();
             VerticalOffset = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24647,10 +23684,6 @@ namespace CodeWalker.GameFiles
             MinInput = br.ReadSingle();
             MaxInput = br.ReadSingle();
             HorizontalScaling = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24689,10 +23722,6 @@ namespace CodeWalker.GameFiles
         {
             MinInput = br.ReadSingle();
             MaxInput = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24736,10 +23765,6 @@ namespace CodeWalker.GameFiles
             {
                 Values[i] = br.ReadSingle();
             }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -24800,7 +23825,7 @@ namespace CodeWalker.GameFiles
         {
             Type = (Dat22RelType)TypeID;
 
-            br.BaseStream.Position = 0; //1 byte was read already (TypeID)
+            br.BaseStream.Position--; //1 byte was read already (TypeID)
 
             NameTableOffset = ((br.ReadUInt32() >> 8) & 0xFFFFFF);
             Flags = br.ReadUInt32();
@@ -24873,15 +23898,6 @@ namespace CodeWalker.GameFiles
             {
                 SubCategories[i] = br.ReadUInt32();
             }
-
-            if (LPFCutoffCurve != 1757063444)
-            { }
-            if (HPFCutoffCurve != 741353067)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -25305,7 +24321,6 @@ namespace CodeWalker.GameFiles
                 }
 
                 rel.RelDatas = itemslist.ToArray();//this one will get sorted on save
-                rel.RelDatasSorted = itemslist.ToArray();
             }
 
 

@@ -1041,7 +1041,7 @@ namespace CodeWalker
             Input.KeyDown(e, enablemove);
 
             var k = e.KeyCode;
-            var kb = Input.keyBindings;
+            var kb = Input.KeyBindings;
             bool ctrl = Input.CtrlPressed;
             bool shift = Input.ShiftPressed;
 

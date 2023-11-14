@@ -196,10 +196,6 @@ namespace CodeWalker.GameFiles
                             var rel3 = XmlRel.GetRel(relxml);
                             if (rel3 != null)
                             {
-                                if (rel3.RelDatasSorted?.Length != rel.RelDatasSorted?.Length)
-                                { } //check nothing went missing...
-
-
                                 data = rel3.Save(); //full roundtrip!
                                 if (data != null)
                                 {

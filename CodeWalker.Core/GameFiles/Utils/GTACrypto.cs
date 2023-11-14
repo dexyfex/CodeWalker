@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -59,21 +60,33 @@ namespace CodeWalker.GameFiles
 
         public static byte[] DecryptAESData(byte[] data, byte[] key, int length, int rounds = 1)
         {
-            var rijndael = Rijndael.Create();
-            rijndael.KeySize = 256;
-            rijndael.Key = key;
-            rijndael.BlockSize = 128;
-            rijndael.Mode = CipherMode.ECB;
-            rijndael.Padding = PaddingMode.None;
+            using var aes = Aes.Create();
+            aes.KeySize = 256;
+            aes.Key = key;
+            aes.BlockSize = 128;
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.None;
+            //var rijndael = Rijndael.Create();
+            //rijndael.KeySize = 256;
+            //rijndael.Key = key;
+            //rijndael.BlockSize = 128;
+            //rijndael.Mode = CipherMode.ECB;
+            //rijndael.Padding = PaddingMode.None;
 
             length = length - length % 16;
 
             // decrypt...
             if (length > 0)
             {
-                var decryptor = rijndael.CreateDecryptor();
+                using var decryptorAes = aes.CreateDecryptor();
                 for (var roundIndex = 0; roundIndex < rounds; roundIndex++)
-                    decryptor.TransformBlock(data, 0, length, data, 0);
+                {
+                    decryptorAes.TransformBlock(data, 0, length, data, 0);
+                }
+
+                //var decryptor = rijndael.CreateDecryptor();
+                //for (var roundIndex = 0; roundIndex < rounds; roundIndex++)
+                //    decryptor.TransformBlock(data, 0, length, data, 0);
             }
 
             return data;
@@ -104,7 +117,7 @@ namespace CodeWalker.GameFiles
 
 
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint[][] GetNGKey(string name, uint length)
         {
             uint hash = GTA5Hash.CalculateHash(name);
@@ -112,36 +125,39 @@ namespace CodeWalker.GameFiles
             return GTA5Keys.PC_NG_KEYS[keyidx];
         }
 
-
-        public static byte[] DecryptNG(byte[] data, string name, uint fileSize, int offset = 0, int? length = null)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNG(byte[] data, string name, uint fileSize, int offset = 0, int? length = null)
         {
             var key = GetNGKey(name, fileSize);
-            return DecryptNG(data, key, offset, length);
+            length ??= data.Length;
+            DecryptNG(data.AsSpan(offset, length.Value), key);
         }
 
-        public unsafe static byte[] DecryptNG(byte[] data, uint[][] key, int offset = 0, int? length = null)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNG(Span<byte> data, string name, uint fileSize)
+        {
+            var key = GetNGKey(name, fileSize);
+            DecryptNG(data, key);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe static void DecryptNG(byte[] data, uint[][] key, int offset = 0, int? length = null)
         {
             length ??= data.Length;
-            fixed (byte* bptr = data)
-            {
-                for (int blockIndex = offset * 16; blockIndex < length / 16; blockIndex++)
-                {
-                    DecryptNGBlock(bptr + 16 * blockIndex, key);
-                }
-            }
-
-            return data;
+            DecryptNG(data.AsSpan(offset, length.Value), key);
         }
 
-        public unsafe static void DecryptNGBlock(byte[] data, uint[][] key)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNG(Span<byte> data, uint[][] key)
         {
-            fixed(byte* bptr = data)
+            for (int blockIndex = 0; blockIndex < data.Length / 16; blockIndex++)
             {
-                DecryptNGBlock(data, key);
+                DecryptNGBlock(data.Slice(16 * blockIndex, 16), key);
             }
         }
 
-        public unsafe static void DecryptNGBlock(byte* data, uint[][] key)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNGBlock(Span<byte> data, uint[][] key)
         {
             DecryptNGRoundA(data, key[0], GTA5Keys.PC_NG_DECRYPT_TABLES[0]);
             DecryptNGRoundA(data, key[1], GTA5Keys.PC_NG_DECRYPT_TABLES[1]);
@@ -150,24 +166,8 @@ namespace CodeWalker.GameFiles
             DecryptNGRoundA(data, key[16], GTA5Keys.PC_NG_DECRYPT_TABLES[16]);
         }
 
-        public unsafe static void DecryptNGRoundA(byte[] data, uint[] key, uint[][] table)
-        {
-            fixed(byte* bptr = data)
-            {
-                DecryptNGRoundA(bptr, key, table);
-            }
-        }
-
-        public unsafe static void DecryptNGRoundB(byte[] data, uint[] key, uint[][] table)
-        {
-            fixed (byte* bptr = data)
-            {
-                DecryptNGRoundB(bptr, key, table);
-            }
-        }
-
-        // round 1,2,16
-        public unsafe static void DecryptNGRoundA(byte* data, uint[] key, uint[][] table)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNGRoundA(Span<byte> data, uint[] key, uint[][] table)
         {
             var x1 =
                 table[0][data[0]] ^
@@ -194,14 +194,16 @@ namespace CodeWalker.GameFiles
                 table[15][data[15]] ^
                 key[3];
 
-            *(uint*)data = x1;
-            *(uint*)(data + 4) = x2;
-            *(uint*)(data + 8) = x3;
-            *(uint*)(data + 12) = x4;
+            MemoryMarshal.Write(data.Slice(0, 4), ref x1);
+            MemoryMarshal.Write(data.Slice(4, 4), ref x2);
+            MemoryMarshal.Write(data.Slice(8, 4), ref x3);
+            MemoryMarshal.Write(data.Slice(12, 4), ref x4);
         }
 
         // round 3-15
-        public unsafe static void DecryptNGRoundB(byte* data, uint[] key, uint[][] table)
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe static void DecryptNGRoundB(Span<byte> data, uint[] key, uint[][] table)
         {
             var x1 =
                 table[0][data[0]] ^
@@ -228,13 +230,11 @@ namespace CodeWalker.GameFiles
                 table[12][data[12]] ^
                 key[3];
 
-            *(uint*)data = x1;
-            *(uint*)(data + 4) = x2;
-            *(uint*)(data + 8) = x3;
-            *(uint*)(data + 12) = x4;
+            MemoryMarshal.Write(data.Slice(0, 4), ref x1);
+            MemoryMarshal.Write(data.Slice(4, 4), ref x2);
+            MemoryMarshal.Write(data.Slice(8, 4), ref x3);
+            MemoryMarshal.Write(data.Slice(12, 4), ref x4);
         }
-
-
 
 
 
@@ -396,136 +396,5 @@ namespace CodeWalker.GameFiles
 
 
 
-    }
-
-    public class DecryptNGStream : Stream
-    {
-        public string Name { get; set; }
-
-        private long _length = 0;
-
-        private Stream _baseStream;
-
-        public Stream BaseStream { get => _baseStream; private set => _baseStream = value; }
-
-        public uint[][] Key { get; set; }
-        private long offset = 0;
-
-        public override long Length
-        {
-            get
-            {
-                if (_length != 0) return _length;
-                return _baseStream.Length - offset;
-            }
-        }
-
-        private DecryptNGStream(string name, uint length)
-        {
-            _length = length;
-            Name = name;
-            Key = GTACrypto.GetNGKey(name, length);
-        }
-
-        public DecryptNGStream(byte[] data, string name, uint fileSize) : this(name, fileSize)
-        {
-            BaseStream = new MemoryStream(data);
-        }
-
-        public DecryptNGStream(Stream data, string name, uint fileSize) : this(name, fileSize)
-        {
-            BaseStream = data;
-        }
-
-        public DecryptNGStream(Stream data, string name, uint fileSize, int start, int length = 0): this(data, name, fileSize)
-        {
-            this.offset = start;
-            this._length = length;
-        }
-
-        public override bool CanRead => _baseStream.CanRead;
-
-        public override bool CanSeek => _baseStream.CanSeek;
-
-        public override bool CanWrite => _baseStream.CanWrite;
-
-        public override long Position
-        {
-            get
-            {
-                var position = _baseStream.Position - offset;
-
-                position = position - position % 16;
-                return position + positionInBuffer;
-            }
-            set
-            {
-                positionInBuffer = 0;
-                _baseStream.Position = (value + offset);
-                ReadBlock();
-            }
-        }
-
-        public override void Flush()
-        {
-            return;
-        }
-
-        public void ReadBlock()
-        {
-            _baseStream.Read(_buffer, 0, _buffer.Length);
-        }
-
-        private byte[] _buffer = new byte[16];
-        private byte positionInBuffer = 0;
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            if (positionInBuffer > 0)
-            {
-                var toCopy = (byte)Math.Min(16 - positionInBuffer, count);
-                Array.Copy(_buffer, positionInBuffer, buffer, offset, toCopy);
-                positionInBuffer += toCopy;
-                if (positionInBuffer >= 16)
-                {
-                    positionInBuffer = 0;
-                }
-                offset += toCopy;
-                count -= toCopy;
-            }
-            var i = 0;
-            while (count >= 16)
-            {
-                _baseStream.Read(buffer, offset + i, 16);
-                i += 16;
-            }
-            if (count > 0)
-            {
-                _baseStream.Read(_buffer, 0, 16);
-                GTACrypto.DecryptNG(_buffer, Key, 0, 16);
-                Array.Copy(_buffer, positionInBuffer, buffer, offset + i, count - i);
-                positionInBuffer += (byte)(count - i);
-            }
-            var data = _baseStream.Read(buffer, offset, count);
-
-            GTACrypto.DecryptNG(buffer, Key, offset, count);
-
-            return data;
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            
-            throw new NotImplementedException();
-        }
     }
 }

@@ -17,9 +17,9 @@ namespace CodeWalker.Tools
     {
         Dictionary<uint, string> extraStrings = new Dictionary<uint, string>();
 
+        private static GameFileCache GameFileCache => GameFileCacheFactory.Instance;
 
-
-        public JenkIndForm(GameFileCache gameFileCache = null)
+        public JenkIndForm()
         {
             InitializeComponent();
 
@@ -32,16 +32,15 @@ namespace CodeWalker.Tools
                 MainPanel.Enabled = false;
                 Cursor = Cursors.WaitCursor;
 
-                if ((gameFileCache == null) || (gameFileCache.IsInited == false))
+                if (!GameFileCache.IsInited)
                 {
                     Task.Run(() =>
                     {
                         try
                         {
                             GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
-                            GameFileCache gfc = GameFileCacheFactory.GetInstance();
-                            gfc.DoFullStringIndex = true;
-                            gfc.Init(UpdateStatus, UpdateStatus);
+                            GameFileCache.DoFullStringIndex = true;
+                            GameFileCache.Init(UpdateStatus, UpdateStatus);
                             IndexBuildComplete();
                         }
                         catch (Exception ex)
@@ -58,8 +57,8 @@ namespace CodeWalker.Tools
                         try
                         {
                             UpdateStatus("Loading strings...");
-                            gameFileCache.DoFullStringIndex = true;
-                            await gameFileCache.InitStringDictsAsync();
+                            GameFileCache.DoFullStringIndex = true;
+                            await GameFileCache.InitStringDictsAsync();
                             IndexBuildComplete();
                         }
                         catch (Exception ex)

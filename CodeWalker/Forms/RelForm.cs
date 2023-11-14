@@ -218,7 +218,7 @@ namespace CodeWalker.Forms
                         return false;//what are we even doing here?
                     case MetaFormat.AudioRel:
                         var rel = XmlRel.GetRel(doc);
-                        if ((rel?.RelDatasSorted == null) || (rel.RelDatasSorted.Length == 0))
+                        if ((rel?.RelDatas == null) || (rel.RelDatas.Length == 0))
                         {
                             MessageBox.Show("Schema not supported.", "Cannot import REL XML");
                             return false;

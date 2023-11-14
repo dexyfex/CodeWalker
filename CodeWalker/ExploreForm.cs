@@ -8,7 +8,6 @@ using CodeWalker.Core.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
@@ -19,13 +18,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-using System.Xml.Linq;
 using WeifenLuo.WinFormsUI.Docking;
 using System.Runtime.CompilerServices;
 using static CodeWalker.GameFiles.GameFileCache;
-
-using CodeWalker.WinForms;
-using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeWalker
 {
@@ -34,15 +30,15 @@ namespace CodeWalker
         private volatile bool Ready = false;
         private bool IsInited = false;
 
-        public static ExploreForm Instance;
+        public static ExploreForm? Instance;
 
-        private static Dictionary<string, FileTypeInfo> FileTypes;
+        private static Dictionary<string, FileTypeInfo>? FileTypes;
         private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
 
-        public MainTreeFolder RootFolder;
+        public MainTreeFolder? RootFolder;
         public List<MainTreeFolder> ExtraRootFolders = new List<MainTreeFolder>();
-        public MainTreeFolder CurrentFolder;
-        public List<MainListItem> CurrentFiles;
+        public MainTreeFolder? CurrentFolder;
+        public List<MainListItem>? CurrentFiles;
         private bool FirstRefreshed = false;
         private List<MainListItem> CopiedFiles = new List<MainListItem>();
 
@@ -57,17 +53,17 @@ namespace CodeWalker
         public volatile bool Searching = false;
         private MainTreeFolder SearchResults;
 
-        private List<RpfFile> AllRpfs { get; set; }
-        private GameFileCache FileCache { get; set; }
-        private object FileCacheSyncRoot = new object();
+        private List<RpfFile>? AllRpfs { get; set; }
+        private static GameFileCache FileCache => GameFileCacheFactory.Instance;
+        private readonly object FileCacheSyncRoot = new object();
 
         public bool EditMode { get; private set; } = false;
 
-        public ThemeBase Theme { get; private set; }
+        public ThemeBase? Theme { get; private set; }
 
         public CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
 
-        public static event Action ForceTreeRefresh;
+        public static event Action? ForceTreeRefresh;
 
         static ExploreForm()
         {
@@ -76,8 +72,11 @@ namespace CodeWalker
 
         public ExploreForm()
         {
+            ETWEvents.Log.CreatingForm(nameof(ExploreForm));
             Instance = this;
+            SuspendLayout();
             InitializeComponent();
+            ResumeLayout();
 
             SetTheme(Settings.Default.ExplorerWindowTheme, false);
 
@@ -170,11 +169,13 @@ namespace CodeWalker
                     var folderPath = folder?.Trim();
                     if (!string.IsNullOrEmpty(folderPath))
                     {
-                        var root = new MainTreeFolder();
-                        root.FullPath = folderPath;
-                        root.Path = folderPath;
-                        root.Name = Path.GetFileName(Path.GetDirectoryName(folderPath));
-                        root.IsExtraFolder = true;
+                        var root = new MainTreeFolder
+                        {
+                            FullPath = folderPath,
+                            Path = folderPath,
+                            Name = Path.GetFileName(Path.GetDirectoryName(folderPath)) ?? folderPath,
+                            IsExtraFolder = true
+                        };
                         ExtraRootFolders.Add(root);
                     }
                 }
@@ -185,28 +186,27 @@ namespace CodeWalker
             var extrafolders = new StringBuilder();
             foreach (var folder in ExtraRootFolders)
             {
-                if (extrafolders.Length > 0) extrafolders.Append("\n");
-                extrafolders.Append(folder.FullPath);
+                extrafolders.AppendLine(folder.FullPath);
             }
             Settings.Default.RPFExplorerExtraFolders = extrafolders.ToString();
 
             Settings.Default.Save();
         }
 
+        [MemberNotNull(nameof(FileCache))]
         private void Init()
         {
+            ETWEvents.Log.LoadingForm(nameof(ExploreForm));
             //called from ExploreForm_Load
 
             // This is probably not necessary now that the GTA folder is checked 
             // in the Program.cs when the game is initiated, but we will leave it 
             // here for now to make sure 
-            if(!GTAFolder.UpdateGTAFolder(true))
+            if (!GTAFolder.UpdateGTAFolder(true))
             {
                 Close();
-                return;
+                throw new Exception("No GTA Folder found!");
             }
-
-            FileCache = GameFileCacheFactory.GetInstance();
 
             new Task(async () =>
             {
@@ -271,6 +271,7 @@ namespace CodeWalker
                         {
                             UpdateStatus?.Invoke("Loading file cache...");
                             var allRpfs = AllRpfs;
+
                             FileCache.Init(updateStatus: null, ErrorLog, allRpfs); //inits main dicts and archetypes only...
 
                             UpdateStatus?.Invoke("Loading materials...");
@@ -299,9 +300,10 @@ namespace CodeWalker
             return FileCache; //return it even though it's probably not inited yet..
         }
 
+        [MemberNotNull(nameof(FileTypes))]
         public static void InitFileTypes()
         {
-            FileTypes = new Dictionary<string, FileTypeInfo>(StringComparer.OrdinalIgnoreCase);
+            FileTypes ??= new Dictionary<string, FileTypeInfo>(StringComparer.OrdinalIgnoreCase);
             InitFileType(".rpf", "Rage Package File", 3);
             InitFileType("", "File", 4);
             InitFileType(".dat", "Data File", 4);
@@ -361,15 +363,28 @@ namespace CodeWalker
             InitSubFileType(".dat", "distantlights.dat", "Distant Lights", 6, FileTypeAction.ViewDistantLights);
             InitSubFileType(".dat", "distantlights_hd.dat", "Distant Lights", 6, FileTypeAction.ViewDistantLights);
         }
+
+        [MemberNotNull(nameof(FileTypes))]
+        private static void EnsureFileTypesInitialized()
+        {
+            if (FileTypes is null)
+            {
+                throw new InvalidOperationException($"FileTypes are not initialized yet, please ensure {nameof(InitFileTypes)} is called before using FileTypes");
+            }
+        }
+
         private static void InitFileType(string ext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex, bool xmlConvertible = false)
         {
+            EnsureFileTypesInitialized();
+            FileTypes ??= new Dictionary<string, FileTypeInfo>(StringComparer.OrdinalIgnoreCase);
             var ft = new FileTypeInfo(ext, name, imgidx, defaultAction, xmlConvertible);
             FileTypes[ext] = ft;
         }
+
         private static void InitSubFileType(string ext, string subext, string name, int imgidx, FileTypeAction defaultAction = FileTypeAction.ViewHex, bool xmlConvertible = false)
         {
-            FileTypeInfo pti = null;
-            if (FileTypes.TryGetValue(ext, out pti))
+            EnsureFileTypesInitialized();
+            if (FileTypes.TryGetValue(ext, out var pti))
             {
                 var ft = new FileTypeInfo(subext, name, imgidx, defaultAction, xmlConvertible);
                 pti.AddSubType(ft);
@@ -377,6 +392,7 @@ namespace CodeWalker
         }
         public static FileTypeInfo GetFileType(string fn)
         {
+            EnsureFileTypesInitialized();
             if (fn.IndexOfAny(InvalidFileNameChars) != -1)
             {
                 return FileTypes[""];
@@ -402,7 +418,7 @@ namespace CodeWalker
                 }
                 else
                 {
-                    ft = new FileTypeInfo(ext, ext.Substring(1).ToUpperInvariant() + " File", 4, FileTypeAction.ViewHex, false);
+                    ft = new FileTypeInfo(ext, ext[1..].ToUpperInvariant() + " File", 4, FileTypeAction.ViewHex, false);
                     FileTypes[ft.Extension] = ft; //save it for later!
                     return ft;
                 }
@@ -461,10 +477,11 @@ namespace CodeWalker
         }
 
 
-        public void Navigate(MainTreeFolder f)
+        public void Navigate(MainTreeFolder? f)
         {
             if (!Ready) return;
             if (f == CurrentFolder) return; //already there!
+            ArgumentNullException.ThrowIfNull(f);
             if (f.IsSearchResults)
             {
                 AddMainTreeViewRoot(f); //add the current search result node
@@ -477,8 +494,7 @@ namespace CodeWalker
 
                 foreach (TreeNode tn in MainTreeView.Nodes)
                 {
-                    var tnf = tn.Tag as MainTreeFolder;
-                    if ((tn != sr) && (tnf != null) && (tnf.IsSearchResults))
+                    if ((tn != sr) && (tn.Tag is MainTreeFolder tnf) && (tnf.IsSearchResults))
                     {
                         MainTreeView.Nodes.Remove(tn); //remove existing search result node
                         break;
@@ -494,7 +510,7 @@ namespace CodeWalker
                 hierarchy.Add(pf);
                 pf = pf.Parent;
             }
-            TreeNode n = null;
+            TreeNode? n = null;
             for (int i = hierarchy.Count - 1; i >= 0; i--)
             {
                 n = FindTreeNode(hierarchy[i], n);
@@ -516,9 +532,10 @@ namespace CodeWalker
         {
             if (!Ready) return;
             var pathl = path.Replace('/', '\\');
-            if ((CurrentFolder != null) && (CurrentFolder.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase))) return; //already there
+            if ((CurrentFolder != null) && (CurrentFolder.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase)))
+                return; //already there
             var hierarchy = pathl.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            TreeNode n = MainTreeView.Nodes[0];// FindTreeNode("gta v", null);
+            TreeNode? n = MainTreeView.Nodes[0];// FindTreeNode("gta v", null);
             if (!string.IsNullOrEmpty(path))
             {
                 for (int i = 0; i < hierarchy.Length; i++)
@@ -565,13 +582,13 @@ namespace CodeWalker
             EditModeButton.Enabled = true;
         }
 
-        public void GoUp(MainTreeFolder toFolder = null)
+        public void GoUp(MainTreeFolder? toFolder = null)
         {
             var fld = (toFolder == null) ? CurrentFolder?.Parent : toFolder;
             if (fld == null) return;
             Navigate(fld);
         }
-        public void GoBack(MainTreeFolder toFolder = null)
+        public void GoBack(MainTreeFolder? toFolder = null)
         {
             if (BackSteps.Count == 0) return;
             var s = BackSteps.Pop();
@@ -586,7 +603,7 @@ namespace CodeWalker
             HistoryNavigating = false;
             UpdateHistoryUI();
         }
-        public void GoForward(MainTreeFolder toFolder = null)
+        public void GoForward(MainTreeFolder? toFolder = null)
         {
             if (ForwardSteps.Count == 0) return;
             var s = ForwardSteps.Pop();
@@ -611,6 +628,7 @@ namespace CodeWalker
             {
                 var button = UpButton.DropDownItems.Add(pf.GetToolText());
                 button.Tag = pf;
+
                 button.Click += UpListButton_Click;
                 pf = pf.Parent;
                 if (i >= 10) break;
@@ -709,7 +727,7 @@ namespace CodeWalker
 
         }
 
-        private TreeNode FindTreeNode(MainTreeFolder f, TreeNode parent)
+        private TreeNode? FindTreeNode(MainTreeFolder f, TreeNode? parent)
         {
             var tnc = (parent != null) ? parent.Nodes : MainTreeView.Nodes;
             foreach (TreeNode node in tnc)
@@ -721,7 +739,7 @@ namespace CodeWalker
             }
             return null;
         }
-        private TreeNode FindTreeNode(string text, TreeNode parent)
+        private TreeNode? FindTreeNode(string text, TreeNode? parent)
         {
             var tnc = (parent != null) ? parent.Nodes : MainTreeView.Nodes;
             foreach (TreeNode node in tnc)
@@ -735,7 +753,8 @@ namespace CodeWalker
         }
 
 
-
+        [MemberNotNull(nameof(RootFolder))]
+        [MemberNotNull(nameof(AllRpfs))]
         private async Task RefreshMainTreeView()
         {
             using var _ = new DisposableTimer("RefreshMainTreeView");
@@ -747,15 +766,18 @@ namespace CodeWalker
             UpdateStatus?.Invoke("Scanning...");
 
 
-            var root = new MainTreeFolder();
-            root.FullPath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
-            root.Path = "";
-            root.Name = "GTA V";
+            var root = new MainTreeFolder
+            {
+                FullPath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash(),
+                Path = "",
+                Name = "GTA V"
+            };
             RootFolder = root;
 
-            var tasks = new List<Task<TreeNode>>();
-
-            tasks.Add(Task.Run(() => RefreshMainTreeViewRoot(root, true)));
+            var tasks = new List<Task<TreeNode>>
+            {
+                Task.Run(() => RefreshMainTreeViewRoot(root, true))
+            };
 
 
             var remFolders = new List<MainTreeFolder>();
@@ -791,6 +813,7 @@ namespace CodeWalker
 
             BeginInvoke(() =>
             {
+                SuspendLayout();
                 MainTreeView.BeginUpdate();
                 ClearMainTreeView();
 
@@ -799,6 +822,7 @@ namespace CodeWalker
                 Ready = true;
 
                 MainTreeView.EndUpdate();
+                ResumeLayout();
                 MainTreeViewRefreshComplete();
             });
 
@@ -889,6 +913,7 @@ namespace CodeWalker
 
                             if (rpf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
                             {
+                                Console.WriteLine(rpf.LastException);
                                 return;
                             }
 
@@ -1141,29 +1166,35 @@ namespace CodeWalker
         }
         private MainTreeFolder CreateRpfTreeFolder(RpfFile rpf, string relpath, string fullpath)
         {
-            var node = new MainTreeFolder();
-            node.RpfFile = rpf;
-            node.RpfFolder = rpf.Root;
-            node.Name = rpf.Name;
-            node.Path = relpath;
-            node.FullPath = fullpath;
+            var node = new MainTreeFolder
+            {
+                RpfFile = rpf,
+                RpfFolder = rpf.Root,
+                Name = rpf.Name,
+                Path = relpath,
+                FullPath = fullpath,
+            };
             return node;
         }
         private MainTreeFolder CreateRpfDirTreeFolder(RpfDirectoryEntry dir, string relpath, string fullpath)
         {
-            var node = new MainTreeFolder();
-            node.RpfFolder = dir;
-            node.Name = dir.Name;
-            node.Path = relpath;
-            node.FullPath = fullpath;
+            var node = new MainTreeFolder
+            {
+                RpfFolder = dir,
+                Name = dir.Name,
+                Path = relpath,
+                FullPath = fullpath,
+            };
             return node;
         }
         private MainTreeFolder CreateRootDirTreeFolder(string name, string path, string fullpath)
         {
-            var node = new MainTreeFolder();
-            node.Name = name;
-            node.Path = path;
-            node.FullPath = fullpath;
+            var node = new MainTreeFolder
+            {
+                Name = name,
+                Path = path,
+                FullPath = fullpath,
+            };
             return node;
         }
         private void RenameTreeFolder(MainTreeFolder f, string newname)
@@ -1299,6 +1330,8 @@ namespace CodeWalker
         {
             ForceTreeRefresh?.Invoke();
         }
+
+
         private void RefreshMainListView()
         {
             MainListView.VirtualListSize = 0;
@@ -1377,11 +1410,13 @@ namespace CodeWalker
             SearchGlobalButton.Checked = true;
             SearchFilterButton.Checked = false;
 
-            SearchResults = new MainTreeFolder();
-            SearchResults.Name = "Search Results: " + text;
-            SearchResults.Path = SearchResults.Name;
-            SearchResults.IsSearchResults = true;
-            SearchResults.SearchTerm = text;
+            SearchResults = new MainTreeFolder
+            {
+                Name = "Search Results: " + text,
+                Path = "Search Results: " + text,
+                IsSearchResults = true,
+                SearchTerm = text,
+            };
 
             Navigate(SearchResults);
 
@@ -1389,7 +1424,7 @@ namespace CodeWalker
             MainListView.SetSortIcon(SortColumnIndex, SortDirection);
             MainListView.VirtualListSize = 0;
 
-            CurrentFiles.Clear();
+            CurrentFiles?.Clear();
 
             UpdateStatus?.Invoke("Searching...");
 
@@ -1401,7 +1436,7 @@ namespace CodeWalker
 
             Cursor = Cursors.WaitCursor;
 
-            var resultcount = RootFolder.Search(term, this);
+            var resultcount = RootFolder?.Search(term, this) ?? 0;
 
             foreach(var extraFolder in ExtraRootFolders)
             {
@@ -1436,7 +1471,7 @@ namespace CodeWalker
         }
 
 
-        public void AddSearchResult(MainListItem item)
+        public void AddSearchResult(MainListItem? item)
         {
             if (SearchResults == null) return;
             if (SearchResults.ListItems != CurrentFiles) return;
@@ -2415,8 +2450,8 @@ namespace CodeWalker
 
 
 
-
-            File.WriteAllText(Path.Combine(CurrentFolder.FullPath, "texture_usage.json"), JsonConvert.SerializeObject(textures.Values.OrderBy(p => p.Count), new JsonSerializerSettings { Formatting = Newtonsoft.Json.Formatting.Indented }));
+            
+            File.WriteAllText(Path.Combine(CurrentFolder.FullPath, "texture_usage.json"), System.Text.Json.JsonSerializer.Serialize(textures.Values.OrderBy(p => p.Count), new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 
             var shaders = data.Values.ToList();
             shaders.Sort((a, b) => { return b.GeomCount.CompareTo(a.GeomCount); });
@@ -3691,11 +3726,13 @@ namespace CodeWalker
                 if (folder.FullPath == folderPath) return;
             }
 
-            var root = new MainTreeFolder();
-            root.FullPath = folderPath;
-            root.Path = folderPath;
-            root.Name = Path.GetFileName(Path.GetDirectoryName(folderPath));
-            root.IsExtraFolder = true;
+            var root = new MainTreeFolder
+            {
+                FullPath = folderPath,
+                Path = folderPath,
+                Name = Path.GetFileName(Path.GetDirectoryName(folderPath)),
+                IsExtraFolder = true,
+            };
             ExtraRootFolders.Add(root);
 
             Task.Run(() =>
@@ -4586,13 +4623,13 @@ namespace CodeWalker
 
         private void ToolsBinSearchMenu_Click(object sender, EventArgs e)
         {
-            BinarySearchForm f = new BinarySearchForm(GetFileCache());
+            BinarySearchForm f = new BinarySearchForm();
             f.Show(this);
         }
 
         private void ToolsAudioExplorerMenu_Click(object sender, EventArgs e)
         {
-            AudioExplorerForm f = new AudioExplorerForm(GetFileCache());
+            AudioExplorerForm f = new AudioExplorerForm();
             f.Show(this);
         }
 
@@ -4604,7 +4641,7 @@ namespace CodeWalker
 
         private void ToolsJenkIndMenu_Click(object sender, EventArgs e)
         {
-            JenkIndForm f = new JenkIndForm(GetFileCache());
+            JenkIndForm f = new JenkIndForm();
             f.Show(this);
         }
 
@@ -4632,9 +4669,9 @@ namespace CodeWalker
 
     public class MainTreeFolder
     {
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        private string _nameLower;
+        private string? _nameLower;
         public string NameLower
         {
             get
@@ -4646,20 +4683,20 @@ namespace CodeWalker
                 _nameLower = value;
             }
         }
-        public string Path { get; set; }
-        public string FullPath { get; set; }
-        public RpfFile RpfFile { get; set; }
-        public RpfDirectoryEntry RpfFolder { get; set; }
-        public HashSet<string> Files { get; set; }
+        public required string Path { get; set; }
+        public string? FullPath { get; set; }
+        public RpfFile? RpfFile { get; set; }
+        public RpfDirectoryEntry? RpfFolder { get; set; }
+        public HashSet<string>? Files { get; set; }
         private object filesLock = new object();
-        public MainTreeFolder Parent { get; set; }
-        public List<MainTreeFolder> Children { get; set; }
-        private object childrenLock = new object();
-        public List<MainListItem> ListItems { get; set; }
-        public TreeNode TreeNode { get; set; }
-        public bool IsSearchResults { get; set; }
-        public string SearchTerm { get; set; }
-        public bool IsExtraFolder { get; set; }
+        public MainTreeFolder? Parent { get; set; }
+        public List<MainTreeFolder>? Children { get; set; }
+        private readonly object childrenLock = new object();
+        public List<MainListItem>? ListItems { get; set; }
+        public TreeNode? TreeNode { get; set; }
+        public bool IsSearchResults { get; set; } = false;
+        public string? SearchTerm { get; set; }
+        public bool IsExtraFolder { get; set; } = false;
 
         public void AddFile(string file)
         {

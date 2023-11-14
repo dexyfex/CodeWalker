@@ -8,8 +8,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace CodeWalker.GameFiles
 {
@@ -42,6 +44,9 @@ namespace CodeWalker.GameFiles
 
         public volatile bool IsInited = false;
 
+        private const int DefaultEntryDictCapacity = 354878;
+        private const int DefaultRpfDictCapacity = 4650;
+
         public void Init(string folder, Action<string> updateStatus, Action<string> errorLog, bool rootOnly = false, bool buildIndex = true)
         {
             using var _ = new DisposableTimer("RpfManager.Init");
@@ -52,14 +57,14 @@ namespace CodeWalker.GameFiles
             var sopt = rootOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories;
             string[] allfiles = Directory.GetFiles(folder, "*.rpf", sopt);
 
-            BaseRpfs = new List<RpfFile>();
-            ModRpfs = new List<RpfFile>();
-            DlcRpfs = new List<RpfFile>();
-            AllRpfs = new List<RpfFile>();
-            DlcNoModRpfs = new List<RpfFile>();
-            AllNoModRpfs = new List<RpfFile>();
-            RpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
-            EntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
+            BaseRpfs = new List<RpfFile>(1300);
+            ModRpfs = new List<RpfFile>(0);
+            DlcRpfs = new List<RpfFile>(3500);
+            AllRpfs = new List<RpfFile>(5000);
+            DlcNoModRpfs = new List<RpfFile>(3500);
+            AllNoModRpfs = new List<RpfFile>(5000);
+            RpfDict = new Dictionary<string, RpfFile>(DefaultRpfDictCapacity, StringComparer.OrdinalIgnoreCase);
+            EntryDict = new Dictionary<string, RpfEntry>(DefaultEntryDictCapacity, StringComparer.OrdinalIgnoreCase);
             ModRpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
             ModEntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
 
@@ -88,6 +93,7 @@ namespace CodeWalker.GameFiles
 
                     if (rf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
                     {
+                        Console.WriteLine(rf.LastException);
                         return;
                     }
 
@@ -99,12 +105,10 @@ namespace CodeWalker.GameFiles
                 }
             });
 
-            var calculateSum = (RpfFile rpf) => { return 0; };
-
-            calculateSum = (RpfFile rpf) =>
+            static int calculateSum(RpfFile rpf)
             {
                 return rpf.AllEntries?.Count ?? 0 + rpf.Children?.Sum(calculateSum) ?? 0;
-            };
+            }
 
             var minCapacity = rpfs.Sum(calculateSum);
             if (minCapacity > AllRpfs.Capacity)
@@ -119,23 +123,23 @@ namespace CodeWalker.GameFiles
 
             if (buildIndex)
             {
-                updateStatus?.Invoke("Building jenkindex...");
                 Task.Run(() =>
                 {
+                    updateStatus?.Invoke("Building jenkindex...");
                     BuildBaseJenkIndex();
                     IsInited = true;
+                    updateStatus?.Invoke("Scan complete");
                 });
-                updateStatus?.Invoke("Scan complete");
             }
             else
             {
                 updateStatus?.Invoke("Scan complete");
                 IsInited = true;
             }
-            
-            
 
-            
+
+
+            Console.WriteLine($"AllRpfs: {AllRpfs.Count}; RpfDict: {RpfDict.Count}; EntryDict: {EntryDict.Count}; BaseRpfs: {BaseRpfs.Count}; ModRpfs: {ModRpfs.Count}; DlcRpfs: {DlcRpfs.Count}; DlcNoModRpfs: {DlcNoModRpfs.Count}; AllNoModRpfs: {AllNoModRpfs.Count}; ModRpfDict: {ModRpfDict.Count}; ModEntryDict: {ModEntryDict.Count}");
         }
 
         public void Init(List<RpfFile> allRpfs)
@@ -149,19 +153,22 @@ namespace CodeWalker.GameFiles
             DlcRpfs = new List<RpfFile>();
             DlcNoModRpfs = new List<RpfFile>();
             AllNoModRpfs = new List<RpfFile>();
-            RpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
-            EntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
+            RpfDict = new Dictionary<string, RpfFile>(DefaultRpfDictCapacity, StringComparer.OrdinalIgnoreCase);
+            EntryDict = new Dictionary<string, RpfEntry>(DefaultEntryDictCapacity, StringComparer.OrdinalIgnoreCase);
             ModRpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
             ModEntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
             foreach (var rpf in allRpfs)
             {
                 RpfDict[rpf.Path] = rpf;
-                if (rpf.AllEntries == null) continue;
+                if (rpf.AllEntries == null)
+                    continue;
                 foreach (var entry in rpf.AllEntries)
                 {
                     EntryDict[entry.Path] = entry;
                 }
             }
+
+            Console.WriteLine($"RpfDict: {RpfDict.Count}; EntryDict: {EntryDict.Count}");
 
             Task.Run(() =>
             {
@@ -173,7 +180,10 @@ namespace CodeWalker.GameFiles
 
         private void AddRpfFile(RpfFile file, bool isdlc, bool ismod)
         {
-            isdlc = isdlc || file.Name.Equals("update.rpf", StringComparison.OrdinalIgnoreCase) || (file.Name.StartsWith("dlc", StringComparison.OrdinalIgnoreCase) && file.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase));
+            if (file.AllEntries == null && file.Children == null)
+                return;
+
+            isdlc = isdlc || (file.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase) && (file.Name.StartsWith("dlc", StringComparison.OrdinalIgnoreCase) || file.Name.Equals("update.rpf", StringComparison.OrdinalIgnoreCase)));
             ismod = ismod || (file.Path.StartsWith("mods\\", StringComparison.OrdinalIgnoreCase));
 
             if (file.AllEntries != null)
@@ -313,6 +323,7 @@ namespace CodeWalker.GameFiles
             byte[] bytes = GetFileData(path);
             return TextUtil.GetUTF8Text(bytes);
         }
+
         public XmlDocument GetFileXml(string path)
         {
             XmlDocument doc = new XmlDocument();
@@ -321,6 +332,7 @@ namespace CodeWalker.GameFiles
             {
                 doc.LoadXml(text);
             }
+
             return doc;
         }
 
@@ -373,12 +385,12 @@ namespace CodeWalker.GameFiles
                     file.Load(data, entry);
                 }
                 return file;
-            } catch(Exception ex)
+            }
+            catch(Exception ex)
             {
                 Console.WriteLine(ex);
                 throw;
             }
-
         }
         public bool LoadFile<T>(T file, RpfEntry e) where T : class, PackedFile
         {
@@ -428,12 +440,96 @@ namespace CodeWalker.GameFiles
             return false;
         }
 
+        private ConcurrentDictionary<string, int> counts = new ConcurrentDictionary<string, int>();
+        public void AddAllLods(string name)
+        {
+            var idx = name.LastIndexOf('_');
+            if (idx > 0)
+            {
+                var str1 = name.AsSpan(0, idx);
+                var idx2 = str1.LastIndexOf('_');
+                if (idx2 > 0)
+                {
+                    // Filter some peds and clothing models (ydd's) which don't have LOD hashes we're interested in.
+                    // This saves about 50% of the time it takes to do initial hashing
+                    var str2 = str1.Slice(0, idx2 + 1);
+                    if (str2.Length <= 2)
+                    {
+                        return;
+                    }
+                    switch(str2)
+                    {
+                        case "uppr_":
+                        case "p_":
+                        case "accs_":
+                        case "decl_":
+                        case "berd_":
+                        case "hair_":
+                        case "teef_":
+                        case "lowr_":
+                        case "jbib_":
+                        case "hand_":
+                        case "feet_":
+                        case "task_":
+                        case "head_":
+                        case "s_m_y_":
+                        case "s_m_":
+                        case "s_m_m_":
+                        case "s_f_y_":
+                        case "a_m_y_":
+                        case "ig_":
+                        case "u_m_y_":
+                        case "u_m_m_":
+                        case "u_m_":
+                        case "minimap_":
+                        case "a_":
+                        case "u_f_":
+                        case "csb_":
+                        case "g_m_y_":
+                        case "a_f_m_":
+                        case "a_m_m_":
+                        case "g_m_m_":
+                        case "mp_m_":
+                        case "mp_f_":
+                        case "hand_000_":
+                        case "hand_001_":
+                        case "hair_000_":
+                        case "a_f_y_":
+                            return;
+                        default:
+                            break;
+                    }
+                    Span<char> buff = stackalloc char[str2.Length + 2 + 4];
+                    str2.CopyTo(buff.Slice(0, str2.Length));
+                    "lod".AsSpan().CopyTo(buff.Slice(str2.Length, 3));
+                    //Console.WriteLine(buff.Slice(0, str2.Length + 3).ToString());
+                    JenkIndex.EnsureLower(buff.Slice(0, str2.Length + 3));
+                    var maxi = 99;
 
+                    "00_lod".AsSpan().CopyTo(buff.Slice(str2.Length, 6));
+                    for (int i = 1; i <= maxi; i++)
+                    {
+                        if (i < 10)
+                        {
+                            i.ToString().AsSpan().CopyTo(buff.Slice(str2.Length + 1, 1));
+                        }
+                        else
+                        {
+                            i.ToString().AsSpan().CopyTo(buff.Slice(str2.Length, 2));
+                        }
+
+                        //Console.WriteLine(buff.ToString());
+                        //JenkIndex.Ensure(buff);
+                        JenkIndex.EnsureLower(buff);
+                    }
+                }
+            }
+        }
 
         public void BuildBaseJenkIndex()
         {
             using var _ = new DisposableTimer("BuildBaseJenkIndex");
-            Parallel.ForEach(AllRpfs, new ParallelOptions { MaxDegreeOfParallelism = 4 }, (file) =>
+            Parallel.ForEach(AllRpfs, (file) =>
             {
                 try
                 {
@@ -475,24 +571,26 @@ namespace CodeWalker.GameFiles
                                     JenkIndex.EnsureLower(nameChildrenLod + 'a');
                                     JenkIndex.EnsureLower(nameChildrenLod + 'b');
                                 }
-                                var idx = name.LastIndexOf('_');
-                                if (idx > 0)
-                                {
-                                    var str1 = name.Substring(0, idx);
-                                    var idx2 = str1.LastIndexOf('_');
-                                    if (idx2 > 0)
-                                    {
-                                        var str2 = str1.Substring(0, idx2);
-                                        JenkIndex.EnsureLower(str2 + "_lod");
-                                        var maxi = 100;
-                                        for (int i = 1; i <= maxi; i++)
-                                        {
-                                            var str3 = str2 + '_' + i.ToString().PadLeft(2, '0') + "_lod";
-                                            //JenkIndex.Ensure(str3);
-                                            JenkIndex.EnsureLower(str3);
-                                        }
-                                    }
-                                }
+                                //var idx = name.LastIndexOf('_');
+                                //if (idx > 0)
+                                //{
+                                //    var str1 = name.Substring(0, idx);
+                                //    var idx2 = str1.LastIndexOf('_');
+                                //    if (idx2 > 0)
+                                //    {
+                                //        var str2 = str1.Substring(0, idx2);
+                                //        JenkIndex.EnsureLower(str2 + "_lod");
+                                //        var maxi = 100;
+
+                                //        for (int i = 1; i <= maxi; i++)
+                                //        {
+                                //            var str3 = str2 + '_' + i.ToString().PadLeft(2, '0') + "_lod";
+                                //            //JenkIndex.Ensure(str3);
+                                //            JenkIndex.EnsureLower(str3);
+                                //        }
+                                //    }
+                                //}
+                                AddAllLods(name);
                             }
                             else if(name.EndsWith(".sps", StringComparison.OrdinalIgnoreCase))
                             {
@@ -560,6 +658,7 @@ namespace CodeWalker.GameFiles
                 catch(Exception err)
                 {
                     ErrorLog?.Invoke(err.ToString());
+                    Console.WriteLine(err.ToString());
                     //failing silently!! not so good really
                 }
             });
@@ -572,6 +671,14 @@ namespace CodeWalker.GameFiles
             {
                 JenkIndex.Ensure(i.ToString("00"));
             }
+
+            //Task.Run(() =>
+            //{
+            //    foreach (var count in counts.OrderBy(p => p.Value))
+            //    {
+            //        Console.WriteLine($"{count.Key,30}: {count.Value,3}");
+            //    }
+            //});
         }
 
     }

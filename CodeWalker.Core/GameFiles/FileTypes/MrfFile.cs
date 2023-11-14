@@ -55,7 +55,7 @@ namespace CodeWalker.GameFiles
 
             using (MemoryStream ms = new MemoryStream(data))
             {
-                DataReader r = new DataReader(ms, Endianess.LittleEndian);
+                DataReader r = new DataReader(ms);
 
                 Read(r);
             };

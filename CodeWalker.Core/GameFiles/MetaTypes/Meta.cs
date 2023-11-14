@@ -114,9 +114,6 @@ namespace CodeWalker.GameFiles
                 (ulong)this.NamePointer // offset
             );
 
-            if (!string.IsNullOrEmpty(Name))
-            { }
-
             //Strings = MetaTypes.GetStrings(this);
 
 #if DEBUG
@@ -549,7 +546,7 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.StructureNameHash = (MetaName)reader.ReadInt32();
+          this.StructureNameHash = (MetaName)reader.ReadInt32();
             this.DataLength = reader.ReadInt32();
             this.DataPointer = reader.ReadInt64();
 

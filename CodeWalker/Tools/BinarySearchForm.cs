@@ -18,14 +18,12 @@ namespace CodeWalker.Tools
         private volatile bool InProgress = false;
         private volatile bool AbortOperation = false;
 
-        private GameFileCache FileCache = null;
-        private RpfManager RpfMan = null;
+        private static GameFileCache FileCache => GameFileCacheFactory.Instance;
+        private static RpfManager RpfMan => FileCache.RpfMan;
 
 
-        public BinarySearchForm(GameFileCache cache = null)
+        public BinarySearchForm()
         {
-            FileCache = cache;
-            RpfMan = cache?.RpfMan;
             InitializeComponent();
         }
 
@@ -37,12 +35,11 @@ namespace CodeWalker.Tools
             DataTextBox.SetTabStopWidth(3);
 
 
-            if (RpfMan == null || !RpfMan.IsInited)
+            if (!RpfMan.IsInited)
             {
                 Task.Run(() =>
                 {
                     GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
-                    RpfMan ??= RpfManager.GetInstance();
                     RpfMan.Init(GTAFolder.CurrentGTAFolder, UpdateStatus, UpdateStatus, false, false);
                     RPFScanComplete();
                 });

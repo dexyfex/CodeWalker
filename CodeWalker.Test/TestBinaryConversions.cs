@@ -4,11 +4,13 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace CodeWalker.Test
 {
@@ -122,6 +124,11 @@ namespace CodeWalker.Test
 
     public class TestBinaryConversions
     {
+        private readonly ITestOutputHelper _output;
+        public TestBinaryConversions(ITestOutputHelper testOutputHelper)
+        {
+            _output = testOutputHelper;
+        }
         [Fact]
         public void TestConvertData()
         {
@@ -440,6 +447,88 @@ namespace CodeWalker.Test
             //a.Extensions = MetaTypes.GetExtensions(Meta, basearch.extensions);
 
 
+        }
+    }
+
+    public class TestConvertDataArray
+    {
+        private readonly ITestOutputHelper _output;
+        public TestConvertDataArray(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+        private string GetFilePath(string filename)
+        {
+            // Directory we're looking for.
+            var dirToFind = Path.Combine(@"CodeWalker.Test", "Files");
+
+            // Search up directory tree starting at assembly path looking for 'Images' dir.
+            var searchPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            while (true)
+            {
+                var testPath = Path.Combine(searchPath, dirToFind);
+                if (Directory.Exists(testPath))
+                {
+                    // Found it!
+                    return Path.Combine(testPath, filename);
+                }
+
+                // Move up one directory.
+                var newSearchPath = Path.GetFullPath(Path.Combine(searchPath, ".."));
+                if (newSearchPath == searchPath)
+                {
+                    // Didn't move up, so we're at the root.
+                    throw new FileNotFoundException($"Could not find '{dirToFind}' directory.");
+                }
+                searchPath = newSearchPath;
+            }
+        }
+
+        public string TestData = "AAAAAAAAAAAFAAAAAAAAAAUABQAAAAAAAAAAAAAAAAAAAKDAAACgwAAAAMAAAAAAAACgQAAAoEAAAABAAAAAAAAAgD9kViJCAAAAAGAAAAABAAAAAAAAAP////8AAAAABgAAAAAAAAABAAEAAAAAAAAAAAAAAAAABWAAAAAAAAAKAAoAAAAAAAAAAAAAAAAAgPEnwiB/QcIAcFzBAAAAAADgDsL9ke/BHKgswQAAAAAAAIA/yyTUkwAAAABgAAAAAQAAAAEAAAD/////AAAAAAYAAQAAAAAALgAuAAAAAAA=";
+        [Fact]
+        public void ConvertDataArrayShouldReturnSameAsConvertData()
+        {
+            var data = Convert.FromBase64String(TestData);
+
+            var referenceData = MetaTypes.ConvertData<CMloRoomDef>(data);
+
+            var arrayData = MetaTypes.ConvertDataArray<CMloRoomDef>(data, 0, 2);
+
+            var path = GetFilePath("anwblokaal.ytyp");
+            var bytes = File.ReadAllBytes(path);
+            var entry = RpfFile.CreateFileEntry("anwblokaal.ytyp", path, ref bytes);
+            var ytypFile = RpfFile.GetFile<YtypFile>(entry, bytes);
+
+            var rooms = ytypFile.AllArchetypes
+                .Where(p => p is MloArchetype)
+                .Select(p => p as MloArchetype)
+                .SelectMany(p => p.rooms)
+                .Select(p => p.Data);
+
+            var secondRoom = rooms.Last();
+
+            var arr = new byte[Marshal.SizeOf<CMloRoomDef>() * rooms.Count()];
+            //MemoryMarshal.Write(arr.AsSpan(), ref rooms);
+
+            _output.WriteLine(Convert.ToBase64String(MemoryMarshal.AsBytes(rooms.ToArray().AsSpan())));
+
+            // I know the bbMax values don't really make sense here, seems to be a weird ytyp, but it's mostly about testing the serialization, not about using a 100% correct ytyp
+            // And didn't want to include a ytyp from Rockstar Games since that could cause some legal issues down the road
+            // Another possible solution would be to do abest attempt to find the GTA V installed on the user's computer running the tests and use files from there, but this would add complexity and links which could break tests
+            // However this would be more in the scope of implementation testing as it tests the whole chain including encryption which is not wanted here
+            Assert.Equivalent(new SharpDX.Vector3(-41.98584f, -48.3741455f, -13.7773438f), secondRoom.bbMin);
+            Assert.Equivalent(new SharpDX.Vector3(-35.71875f, -29.9462833f, -10.7910423f), secondRoom.bbMax);
+            Assert.Equivalent(new Array_uint(65542, 46), secondRoom.attachedObjects);
+            Assert.Equal(96u, secondRoom.flags);
+            Assert.Equal(1, secondRoom.floorId);
+            Assert.Equivalent(new CharPointer() { Count1 = 10, Count2 = 10, Pointer = 24581 }, secondRoom.name);
+            Assert.Equal(1u, secondRoom.portalCount);
+            Assert.Equal(2480153803, secondRoom.timecycleName.Hash);
+
+            // First room is limbo, so this check isn't that useful, but just make sure, and the following check will compare the entire array anyways
+            Assert.Equivalent(referenceData, rooms.First());
+
+            Assert.Equivalent(arrayData.ToArray(), rooms);
         }
     }
 }

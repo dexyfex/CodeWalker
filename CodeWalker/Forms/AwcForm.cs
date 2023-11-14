@@ -401,7 +401,7 @@ namespace CodeWalker.Forms
                     {
                         Stream wavStream = audio.GetWavStream();
                         FileStream stream = File.Create(saveFileDialog.FileName);
-                        wavStream.CopyToFast(stream);
+                        wavStream.CopyTo(stream);
                         stream.Close();
                         wavStream.Close();
                     }
