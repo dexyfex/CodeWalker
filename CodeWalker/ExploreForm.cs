@@ -535,13 +535,23 @@ namespace CodeWalker
             if ((CurrentFolder != null) && (CurrentFolder.Path.Equals(path, StringComparison.InvariantCultureIgnoreCase)))
                 return; //already there
             var hierarchy = pathl.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            TreeNode? n = MainTreeView.Nodes[0];// FindTreeNode("gta v", null);
+            TreeNode? n = null;// FindTreeNode("gta v", null);
             if (!string.IsNullOrEmpty(path))
             {
-                for (int i = 0; i < hierarchy.Length; i++)
+                // Loop over all nodes, otherwise RPF's in other folders can't be found
+                foreach(var startNode in MainTreeView.Nodes)
                 {
-                    n = FindTreeNode(hierarchy[i], n);
+                    n = (TreeNode?)startNode;
+                    for (int i = 0; i < hierarchy.Length; i++)
+                    {
+                        n = FindTreeNode(hierarchy[i], n);
+                    }
+                    if (n is not null)
+                    {
+                        break;
+                    }
                 }
+
             }
             if (n != null)
             {
@@ -3888,7 +3898,6 @@ namespace CodeWalker
 
             if (m.Msg == 0x10) // WM_CLOSE
             {
-                ConsoleWindow.Close();
                 CancellationTokenSource.Cancel();
             }
         }
