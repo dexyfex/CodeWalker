@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
 using System.Linq;
+using System.IO;
 using SharpDX;
 using SharpDX.XInput;
 using Device = SharpDX.Direct3D11.Device;
@@ -314,7 +315,7 @@ namespace CodeWalker
 
         private MapIcon AddIcon(string name, string filename, int texw, int texh, float centerx, float centery, float scale)
         {
-            string filepath = "icons\\" + filename;
+            string filepath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "icons", filename);
             try
             {
                 MapIcon mi = new MapIcon(name, filepath, texw, texh, centerx, centery, scale);

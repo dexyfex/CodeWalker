@@ -12,6 +12,7 @@ using CodeWalker.GameFiles;
 using System.IO;
 using SharpDX.DXGI;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -46,8 +47,9 @@ namespace CodeWalker.Rendering
 
         public MarkerShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\MarkerVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\MarkerPS.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "MarkerVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "MarkerPS.cso"));
 
             markervs = new VertexShader(device, vsbytes);
             markerps = new PixelShader(device, psbytes);

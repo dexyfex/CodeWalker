@@ -8,6 +8,7 @@ using CodeWalker.World;
 using SharpDX.Direct3D11;
 using SharpDX;
 using System.IO;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -121,12 +122,13 @@ namespace CodeWalker.Rendering
 
         public WaterShader(Device device)
         {
-            byte[] vsptbytes = File.ReadAllBytes("Shaders\\WaterVS_PT.cso");
-            byte[] vspctbytes = File.ReadAllBytes("Shaders\\WaterVS_PCT.cso");
-            byte[] vspnctbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCT.cso");
-            byte[] vspnctxbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCTX.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\WaterPS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\WaterPS_Deferred.cso");
+            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            byte[] vsptbytes = File.ReadAllBytes(Path.Combine(folder, "WaterVS_PT.cso"));
+            byte[] vspctbytes = File.ReadAllBytes(Path.Combine(folder, "WaterVS_PCT.cso"));
+            byte[] vspnctbytes = File.ReadAllBytes(Path.Combine(folder, "WaterVS_PNCT.cso"));
+            byte[] vspnctxbytes = File.ReadAllBytes(Path.Combine(folder, "WaterVS_PNCTX.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "WaterPS.cso"));
+            byte[] psdefbytes = File.ReadAllBytes(Path.Combine(folder, "WaterPS_Deferred.cso"));
 
 
             vspt = new VertexShader(device, vsptbytes);
