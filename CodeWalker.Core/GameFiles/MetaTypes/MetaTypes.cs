@@ -447,11 +447,11 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.RemoveList, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)896120921, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
+                     new MetaStructureEntryInfo_s(MetaName.PromoteToHDList, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
                      new MetaStructureEntryInfo_s(MetaName.CamPos, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.CamDir, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1762439591, 80, MetaStructureEntryDataType.Array, 0, 8, 0),
+                     new MetaStructureEntryInfo_s(MetaName.CommonAddSets, 80, MetaStructureEntryDataType.Array, 0, 8, 0),
                      new MetaStructureEntryInfo_s(MetaName.Flags, 96, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                     );
                 //case MetaName.CStreamingRequestFrame:
@@ -1057,17 +1057,17 @@ namespace CodeWalker.GameFiles
                     );
                 case MetaName.CComponentInfo:
                     return new MetaStructureInfo(MetaName.CComponentInfo, 3693847250, 512, 48,
-                     new MetaStructureEntryInfo_s((MetaName)802196719, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)4233133352, 4, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedXml_audioID, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedXml_audioID2, 4, MetaStructureEntryDataType.Hash, 0, 0, 0),
                      new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)128864925, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)5),
+                     new MetaStructureEntryInfo_s(MetaName.pedXml_expressionMods, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)5),
                      new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.inclusions, 32, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
                      new MetaStructureEntryInfo_s(MetaName.exclusions, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1613922652, 40, MetaStructureEntryDataType.ShortFlags, 0, 16, MetaName.ePedVarComp),
-                     new MetaStructureEntryInfo_s((MetaName)2114993291, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3509540765, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)4196345791, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.pedXml_vfxComps, 40, MetaStructureEntryDataType.ShortFlags, 0, 16, MetaName.ePedVarComp),
+                     new MetaStructureEntryInfo_s(MetaName.pedXml_flags, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedXml_compIdx, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                     new MetaStructureEntryInfo_s(MetaName.pedXml_drawblIdx, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
                     );
                 case MetaName.CPedPropMetaData:
                     return new MetaStructureInfo(MetaName.CPedPropMetaData, 2029738350, 768, 56,
@@ -1081,7 +1081,7 @@ namespace CodeWalker.GameFiles
                      new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.anchorId, 50, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
                      new MetaStructureEntryInfo_s(MetaName.propId, 51, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2894625425, 52, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                     new MetaStructureEntryInfo_s(MetaName.stickyness, 52, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
                     );
                 case MetaName.CPedPropTexData:
                     return new MetaStructureInfo(MetaName.CPedPropTexData, 2767296137, 512, 12,
@@ -5899,12 +5899,12 @@ namespace CodeWalker.GameFiles
     {
         public Array_uint AddList { get; set; } //0   0: Array: 0: AddList//327274266  {0: Hash: 0: 256}
         public Array_uint RemoveList { get; set; } //16   16: Array: 0: RemoveList//3372321331  {0: Hash: 0: 256}
-        public Array_uint Unk_896120921 { get; set; } //32   32: Array: 0: 896120921  {0: Hash: 0: 256}
+        public Array_uint PromoteToHDList { get; set; } //32   32: Array: 0: 896120921  {0: Hash: 0: 256}
         public Vector3 CamPos { get; set; } //48   48: Float_XYZ: 0: CamPos//357008256
         public float Unused0 { get; set; }//60
         public Vector3 CamDir { get; set; } //64   64: Float_XYZ: 0: CamDir//210316193
         public float Unused1 { get; set; }//76
-        public Array_byte Unk_1762439591 { get; set; } //80   80: Array: 0: 1762439591  {0: UnsignedByte: 0: 256}
+        public Array_byte CommonAddSets { get; set; } //80   80: Array: 0: 1762439591  {0: UnsignedByte: 0: 256}
         public uint Flags { get; set; } //96   96: UnsignedInt: 0: Flags
         public uint Unused2 { get; set; }//100
         public uint Unused3 { get; set; }//104
@@ -6391,9 +6391,9 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public struct CComponentInfo //48 bytes, Key:3693847250  //COMPONENT PEDS 
     {
-        public MetaHash Unk_802196719 { get; set; } //0   0: Hash: 0: 802196719
-        public MetaHash Unk_4233133352 { get; set; } //4   4: Hash: 0: 4233133352
-        public ArrayOfBytes5 Unk_128864925 { get; set; } //8   8: ArrayOfBytes: 5: 128864925
+        public MetaHash pedXml_audioID { get; set; } //0   0: Hash: 0: 802196719
+        public MetaHash pedXml_audioID2 { get; set; } //4   4: Hash: 0: 4233133352
+        public ArrayOfBytes5 pedXml_expressionMods { get; set; } //8   8: ArrayOfBytes: 5: 128864925
         public byte Unused0 { get; set; }//13
         public ushort Unused1 { get; set; }//14
         public uint Unused2 { get; set; }//16
@@ -6402,10 +6402,10 @@ namespace CodeWalker.GameFiles
         public uint flags { get; set; } //28   28: UnsignedInt: 0: flags
         public int inclusions { get; set; } //32   32: IntFlags2: 0: inclusions//2172318933
         public int exclusions { get; set; } //36   36: IntFlags2: 0: exclusions
-        public ePedVarComp Unk_1613922652 { get; set; } //40   40: ShortFlags: ePedVarComp: 1613922652
-        public ushort Unk_2114993291 { get; set; } //42   42: UnsignedShort: 0: 2114993291
-        public byte Unk_3509540765 { get; set; } //44   44: UnsignedByte: 0: 3509540765
-        public byte Unk_4196345791 { get; set; } //45   45: UnsignedByte: 0: 4196345791
+        public ePedVarComp pedXml_vfxComps { get; set; } //40   40: ShortFlags: ePedVarComp: 1613922652
+        public ushort pedXml_flags { get; set; } //42   42: UnsignedShort: 0: 2114993291
+        public byte pedXml_compIdx { get; set; } //44   44: UnsignedByte: 0: 3509540765
+        public byte pedXml_drawblIdx { get; set; } //45   45: UnsignedByte: 0: 4196345791
         public ushort Unused5 { get; set; }//46
     }
     [TC(typeof(EXP))] public class MCComponentInfo : MetaWrapper
@@ -6416,8 +6416,8 @@ namespace CodeWalker.GameFiles
         public CComponentInfo Data { get { return _Data; } }
 
 
-        public int ComponentType { get { return _Data.Unk_3509540765; } }
-        public int ComponentIndex { get { return _Data.Unk_4196345791; } }
+        public int ComponentType { get { return _Data.pedXml_compIdx; } }
+        public int ComponentIndex { get { return _Data.pedXml_drawblIdx; } }
 
         public MCComponentInfo() { }
         public MCComponentInfo(Meta meta, CComponentInfo data, MCPedVariationInfo owner)
@@ -6524,7 +6524,7 @@ namespace CodeWalker.GameFiles
         public ushort flags { get; set; } //48   48: UnsignedShort: 0: flags
         public byte anchorId { get; set; } //50   50: UnsignedByte: 0: anchorId
         public byte propId { get; set; } //51   51: UnsignedByte: 0: propId
-        public byte Unk_2894625425 { get; set; } //52   52: UnsignedByte: 0: 2894625425
+        public byte stickyness { get; set; } //52   52: UnsignedByte: 0: 2894625425
         public byte Unused5 { get; set; }//53
         public ushort Unused6 { get; set; }//54
     }
