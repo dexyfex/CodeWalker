@@ -3191,7 +3191,6 @@ namespace CodeWalker
             var redSizeLabel = addLabel(80, string.Empty);
             var statusLabel = addLabel(110, string.Empty);
             CheckBox recursiveCheckbox = addCheckbox(130, "Recursive", true) as CheckBox;
-            CheckBox encryptionCheckbox = addCheckbox(150, "Fix encryption", true) as CheckBox;
             var progressBar = addCtrl(new ProgressBar() { Left = 30, Top = 180, Width = 370, Height = 20, Minimum = 0, Maximum = 1000, MarqueeAnimationSpeed = 50 }) as ProgressBar;
             var beginButton = addCtrl(new Button() { Text = "Begin Defragment", Left = 30, Top = 210, Width = 120 }) as Button;
             var closeButton = addCtrl(new Button() { Text = "Close", Left = 320, Top = 210, Width = 80 }) as Button;
@@ -3218,7 +3217,7 @@ namespace CodeWalker
                 if (!EnsureRpfValidEncryption(rpf)) return;
                 inProgress = true;
                 enableUi(false);
-                RpfFile.Defragment(rpf, updateProgress, recursiveCheckbox.Checked, encryptionCheckbox.Checked);
+                RpfFile.Defragment(rpf, updateProgress, recursiveCheckbox.Checked);
                 updateProgress("Defragment complete.", 1.0f);
                 enableUi(true);
                 form.Invoke(new Action(() => { updateSizeLabels(false); }));

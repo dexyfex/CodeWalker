@@ -1943,14 +1943,9 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static void Defragment(RpfFile file, Action<string, float> progress = null, bool recursive = true, bool fixEncryption = true)
+        public static void Defragment(RpfFile file, Action<string, float> progress = null, bool recursive = true)
         {
             if (file?.AllEntries == null) return;
-
-            if (file?.Encryption == RpfEncryption.OPEN && fixEncryption == true && GTA5Keys.PC_NG_ENCRYPT_TABLES != null && GTA5Keys.PC_NG_ENCRYPT_LUTs != null)
-            {
-                file.Encryption = RpfEncryption.NG;
-            }
 
             if (recursive)
             {
