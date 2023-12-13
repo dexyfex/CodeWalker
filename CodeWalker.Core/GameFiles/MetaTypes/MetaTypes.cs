@@ -1569,27 +1569,29 @@ namespace CodeWalker.GameFiles
             int curi = 0;
             while (itemsleft > 0)
             {
-                int blockcount = ptrblock.DataLength / itemsize;
-                int itemcount = blockcount - itemoffset;
-                if (itemcount > itemsleft)
-                { itemcount = itemsleft; } //don't try to read too many items..
-                for (int i = 0; i < itemcount; i++)
+                if (ptrblock.StructureNameHash == name)
                 {
-                    int offset = (itemoffset + i) * itemsize;
-                    int index = curi + i;
-                    items[index] = ConvertData<T>(ptrblock.Data, offset);
+                    int blockcount = ptrblock.DataLength / itemsize;
+                    int itemcount = blockcount - itemoffset;
+                    if (itemcount > itemsleft)
+                    { itemcount = itemsleft; } //don't try to read too many items..
+                    for (int i = 0; i < itemcount; i++)
+                    {
+                        int offset = (itemoffset + i) * itemsize;
+                        int index = curi + i;
+                        items[index] = ConvertData<T>(ptrblock.Data, offset);
+                    }
+                    itemoffset = 0; //start at beginning of next block..
+                    curi += itemcount;
+                    itemsleft -= itemcount;
+                    if (itemsleft <= 0)
+                    { return items; }//all done!
                 }
-                itemoffset = 0; //start at beginning of next block..
-                curi += itemcount;
-                itemsleft -= itemcount;
-                if (itemsleft <= 0)
-                { return items; }//all done!
+
                 ptrindex++;
                 ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
                 if ((ptrblock == null) || (ptrblock.Data == null))
                 { break; } //not enough items..?
-                if (ptrblock.StructureNameHash != name)
-                { break; } //type mismatch..
             }
 
             return null;
@@ -1789,11 +1791,11 @@ namespace CodeWalker.GameFiles
             while (currentblock != null)
             {
                 int blockitems = currentblock.DataLength / itemsize;
-                count += blockitems;
+                if (currentblock.StructureNameHash == name) count += blockitems;
+
                 currentblockind++;
                 if (currentblockind >= datablocks.Count) break; //last block, can't go any further
                 currentblock = datablocks[currentblockind];
-                if (currentblock.StructureNameHash != name) break; //not the right block type, can't go further
             }
 
             if (count <= 0)
