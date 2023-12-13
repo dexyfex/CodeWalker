@@ -670,7 +670,22 @@ namespace CodeWalker.Properties {
                 this["DLC"] = value;
             }
         }
-        
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EnableCayoWater
+        {
+            get
+            {
+                return ((bool)(this["EnableCayoWater"]));
+            }
+            set
+            {
+                this["EnableCayoWater"] = value;
+            }
+        }
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>

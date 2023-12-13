@@ -1,4 +1,4 @@
-﻿using CodeWalker.GameFiles;
+using CodeWalker.GameFiles;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,14 @@ namespace CodeWalker.World
 
             var rpfman = gameFileCache.RpfMan;
 
+            var cayoWater = gameFileCache.EnableCayoWater;
+            
             string filename = "common.rpf\\data\\levels\\gta5\\water.xml";
+            
+            if (cayoWater)
+            {
+                filename = "update\\update.rpf\\common\\data\\levels\\gta5\\water_heistisland.xml";
+            }
 
             XmlDocument waterxml = rpfman.GetFileXml(filename);
 

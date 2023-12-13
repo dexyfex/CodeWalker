@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -4242,6 +4242,25 @@ namespace CodeWalker
             });
         }
 
+        private void SetCayoWaterEnabled(bool enable)
+        {
+            if (!initialised) return;
+            Cursor = Cursors.WaitCursor;
+            Task.Run(() =>
+            {
+                lock (Renderer.RenderSyncRoot)
+                {
+                    if (gameFileCache.SetCayoWaterEnabled(enable))
+                    {
+                        LoadWorld();
+                    }
+                }
+                Invoke(new Action(() => {
+                    Cursor = Cursors.Default;
+                }));
+            });
+        }
+
 
         private void ContentThread()
         {
@@ -4283,6 +4302,7 @@ namespace CodeWalker
             initialised = true;
 
             EnableDLCModsUI();
+            EnableCayoWaterUI();
 
 
             Task.Run(() => {
@@ -4690,6 +4710,7 @@ namespace CodeWalker
             
 
             EnableModsCheckBox.Checked = s.EnableMods;
+            EnableCayoWaterCheckBox.Checked = s.EnableCayoWater;
             DlcLevelComboBox.Text = s.DLC;
             gameFileCache.SelectedDlc = s.DLC;
             EnableDlcCheckBox.Checked = !string.IsNullOrEmpty(s.DLC);
@@ -4888,6 +4909,21 @@ namespace CodeWalker
                     EnableDlcCheckBox.Enabled = true;
                     EnableModsCheckBox.Enabled = true;
                     DlcLevelComboBox.Enabled = true;
+                }
+            }
+            catch { }
+        }
+        private void EnableCayoWaterUI()
+        {
+            try
+            {
+                if (InvokeRequired)
+                {
+                    BeginInvoke(new Action(() => { EnableCayoWaterUI(); }));
+                }
+                else
+                {
+                    EnableCayoWaterCheckBox.Enabled = true;
                 }
             }
             catch { }
@@ -7152,6 +7188,18 @@ namespace CodeWalker
             }
 
             SetDlcLevel(DlcLevelComboBox.Text, EnableDlcCheckBox.Checked);
+        }
+
+        private void EnableCayoWaterCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!initialised) return;
+            if (ProjectForm != null)
+            {
+                MessageBox.Show("Please close the Project Window before enabling or disabling Cayo water.");
+                return;
+            }
+
+            SetCayoWaterEnabled(EnableCayoWaterCheckBox.Checked);
         }
 
         private void DlcLevelComboBox_SelectedIndexChanged(object sender, EventArgs e)
