@@ -1436,21 +1436,50 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public long GetDefragmentedFileSize()
+        public long GetDefragmentedFileSize(bool recursive = true)
         {
             //this represents the size the file would be when fully defragmented.
-            uint blockcount = GetHeaderBlockCount();
 
-            foreach (var entry in AllEntries)
+            if (!recursive)
             {
-                var fentry = entry as RpfFileEntry;
-                if (fentry != null)
-                {
-                    blockcount += GetBlockCount(fentry.GetFileSize());
-                }
-            }
+                uint blockcount = GetHeaderBlockCount();
 
-            return (long)blockcount * 512;
+
+                foreach (var entry in AllEntries)
+                {
+                    var fentry = entry as RpfFileEntry;
+                    if (fentry != null)
+                    {
+                        blockcount += GetBlockCount(fentry.GetFileSize());
+                    }
+                }
+
+                return (long)blockcount * 512;
+            }
+            else
+            {
+                uint blockcount = GetHeaderBlockCount();
+                long childRpfsSize = 0;
+
+                foreach (var entry in AllEntries)
+                {
+                    var fentry = entry as RpfFileEntry;
+                    if (fentry != null)
+                    {
+                        var childRpf = this.FindChildArchive(fentry);
+                        if (childRpf == null)
+                        {
+                            blockcount += GetBlockCount(fentry.GetFileSize());
+                        }
+                        else
+                        {
+                            childRpfsSize += childRpf.GetDefragmentedFileSize(true);
+                        }
+                    }
+                }
+
+                return (long)blockcount * 512 + childRpfsSize;
+            }
         }
 
 
@@ -1914,9 +1943,24 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static void Defragment(RpfFile file, Action<string, float> progress = null)
+        public static void Defragment(RpfFile file, Action<string, float> progress = null, bool recursive = true)
         {
             if (file?.AllEntries == null) return;
+
+            if (recursive)
+            {
+                foreach (var entry in file?.AllEntries) 
+                {
+                    if (entry is RpfFileEntry)
+                    {
+                        var childRpf = file.FindChildArchive(entry as RpfFileEntry);
+                        if (childRpf != null)
+                        {
+                            Defragment(childRpf, null, true);
+                        }
+                    }
+                }
+            }
 
             string fpath = file.GetPhysicalFilePath();
             using (var fstream = File.Open(fpath, FileMode.Open, FileAccess.ReadWrite))
