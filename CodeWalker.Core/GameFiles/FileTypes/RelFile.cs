@@ -6082,10 +6082,10 @@ namespace CodeWalker.GameFiles
         public ushort Unk16 { get; set; }
         public MetaHash Alarm { get; set; }
         public MetaHash Unk18 { get; set; }
-        public uint MaxPathDepth { get; set; }
-        public uint SmallReverbSend { get; set; }
-        public uint MediumReverbSend { get; set; }
-        public uint LargeReverbSend { get; set; }
+        public byte MaxPathDepth { get; set; }
+        public byte SmallReverbSend { get; set; }
+        public byte MediumReverbSend { get; set; }
+        public byte LargeReverbSend { get; set; }
         public ushort MinTimeMinutes { get; set; }
         public ushort MaxTimeMinutes { get; set; }
         public float Unk21 { get; set; }
@@ -6210,10 +6210,10 @@ namespace CodeWalker.GameFiles
             Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "Unk16", "value");
             Alarm = XmlRel.GetHash(Xml.GetChildInnerText(node, "Alarm"));
             Unk18 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk18"));
-            MaxPathDepth = Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
-            SmallReverbSend = Xml.GetChildUIntAttribute(node, "SmallReverbSend", "value");
-            MediumReverbSend = Xml.GetChildUIntAttribute(node, "MediumReverbSend", "value");
-            LargeReverbSend = Xml.GetChildUIntAttribute(node, "LargeReverbSend", "value");
+            MaxPathDepth = (byte)Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
+            SmallReverbSend = (byte)Xml.GetChildUIntAttribute(node, "SmallReverbSend", "value");
+            MediumReverbSend = (byte)Xml.GetChildUIntAttribute(node, "MediumReverbSend", "value");
+            LargeReverbSend = (byte)Xml.GetChildUIntAttribute(node, "LargeReverbSend", "value");
             MinTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MinTimeMinutes", "value");
             MaxTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MaxTimeMinutes", "value");
             Unk21 = Xml.GetChildFloatAttribute(node, "Unk21", "value");
