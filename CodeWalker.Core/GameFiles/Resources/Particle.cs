@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -2060,39 +2061,51 @@ namespace CodeWalker.GameFiles
         public ulong EventEmittersPointer { get; set; }
         public ushort EventEmittersCount { get; set; }
         public ushort EventEmittersCapacity { get; set; } = 32; //always 32
+
         public uint Unknown_44h; // 0x00000000
         public ulong UnknownData1Pointer { get; set; }
         public uint Unknown_50h { get; set; } // 0, 0xffffffff
         public uint Unknown_54h { get; set; } // eg. 0x01010200
-        public ulong Unknown_58h; // 0x0000000000000000
-        public ulong Unknown_60h; // 0x0000000000000000
-        public uint Unknown_68h; // 0x00000000
-        public uint Unknown_6Ch { get; set; } = 0x7f800001; // 0x7f800001
-        public float Unknown_70h { get; set; }
-        public float Unknown_74h { get; set; } // 0, 0.1f, 0.25f, 1.0f
-        public float PlaybackDelay { get; set; }
-        public float PlaybackDelayModifier { get; set; }
-        public float PlaybackSpeedScale { get; set; }
-        public float PlaybackSpeedScaleModifier { get; set; }
-        public uint Unknown_88h { get; set; } // eg. 0x01010105
-        public uint Unknown_8Ch { get; set; } // eg. 0x01010002
-        public float CullRadius { get; set; }
-        public float CullDistance { get; set; }
-        public float Unknown_98h { get; set; }
-        public uint Unknown_9Ch { get; set; } = 0x7f800001;// 0x7f800001
-        public float Unknown_A0h { get; set; }
-        public float Unknown_A4h { get; set; }
-        public float Unknown_A8h { get; set; }
-        public float Unknown_ACh { get; set; }
-        public float Unknown_B0h { get; set; }
-        public float Unknown_B4h { get; set; }
-        public float Unknown_B8h { get; set; }
-        public uint Unknown_BCh { get; set; } // eg. 0x00010103
-        public ParticleKeyframeProp KeyframeProp0 { get; set; }
-        public ParticleKeyframeProp KeyframeProp1 { get; set; }
-        public ParticleKeyframeProp KeyframeProp2 { get; set; }
-        public ParticleKeyframeProp KeyframeProp3 { get; set; }
-        public ParticleKeyframeProp KeyframeProp4 { get; set; }
+        public int NumLoops { get; set; }
+        public byte SortEventsByDistance { get; set; }
+        public byte DrawListId { get; set; }
+        public byte IsShortLived { get; set; }
+        public byte HasNoShadows { get; set; }
+        public Vector3 VRandOffsetPos { get; set; }
+        public uint Unknown_6Ch { get; set; } = 0x7f800001; // 4 Bytes 
+        public float PreUpdateTime { get; set; } // float m_preUpdateTime
+        public float PreUpdateTimeInterval { get; set; } // float m_preUpdateTimeInterval
+        public float DurationMin { get; set; } // float m_durationMin
+        public float DurationMax { get; set; } // float m_durationMax
+        public float PlaybackRateScalarMin { get; set; } // float m_playbackRateScalarMin
+        public float PlaybackRateScalarMax { get; set; } // float m_playbackRateScalarMax
+        public byte ViewportCullingMode { get; set; } // unsigned __int8 m_viewportCullingMode;
+        public byte RenderWhenViewportCulled { get; set; } // bool m_renderWhenViewportCulled;
+        public byte UpdateWhenViewportCulled { get; set; } // bool m_updateWhenViewportCulled
+        public byte EmitWhenViewportCulled { get; set; } // bool m_emitWhenViewportCulled;
+        public byte DistanceCullingMode { get; set; } // unsigned __int8 m_distanceCullingMode;
+        public byte RenderWhenDistanceCulled { get; set; } // bool m_renderWhenDistanceCulled;
+        public byte UpdateWhenDistanceCulled { get; set; } // bool m_updateWhenDistanceCulled;
+        public byte EmitWhenDistanceCulled { get; set; } // bool m_emitWhenDistanceCulled;
+        public Vector3 ViewportCullingSphereOffset { get; set; } // Vec3V m_viewportCullingSphereOffset
+        public uint Unknown_9Ch { get; set; } = 0x7f800001; // Unused / Extra ?
+        public float ViewportCullingSphereRadius { get; set; } // float m_viewportCullingSphereRadius;
+        public float DistanceCullingFadeDist { get; set; } // float m_distanceCullingFadeDist;
+        public float DistanceCullingCullDist { get; set; } // float m_distanceCullingCullDist;
+        public float LodEvoDistMin { get; set; } // float m_lodEvoDistMin;
+        public float LodEvoDistMax { get; set; } // float m_lodEvoDistMax;
+        public float ColnRange { get; set; } // float float m_colnRange;
+        public float ColnProbeDist { get; set; } // float m_colnProbeDist;
+        public byte ColnType { get; set; } // unsigned __int8 m_colnType;
+        public byte ShareEntityColn { get; set; } // bool m_shareEntityColn;
+        public byte OnlyUseBVHColn { get; set; } // bool m_onlyUseBVHColn;
+        public byte GameFlags { get; set; } // unsigned __int8 m_gameFlags;
+
+        public ParticleKeyframeProp ColourTintMinKFP { get; set; } // ptxKeyframeProp m_colourTintMinKFP;
+        public ParticleKeyframeProp ColourTintMaxKFP { get; set; } // ptxKeyframeProp m_colourTintMaxKFP;
+        public ParticleKeyframeProp ZoomScalarKFP { get; set; } // ptxKeyframeProp m_zoomScalarKFP;
+        public ParticleKeyframeProp DataSphereKFP { get; set; } // ptxKeyframeProp m_dataSphereKFP;
+        public ParticleKeyframeProp DataCapsuleKFP { get; set; } // ptxKeyframeProp m_dataCapsuleKFP;
         public ulong KeyframePropsPointer { get; set; } //pointer to a list, which is pointing back to above items
         public ushort KeyframePropsCount { get; set; } = 5; //always 5
         public ushort KeyframePropsCapacity { get; set; } = 16; //always 16
@@ -2125,7 +2138,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_1Ch = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
             this.Unknown_28h = reader.ReadUInt64();
-            this.VFT2 = reader.ReadUInt32();
+            this.VFT2 = reader.ReadUInt32();  
             this.Unknown_34h = reader.ReadUInt32();
             this.EventEmittersPointer = reader.ReadUInt64();
             this.EventEmittersCount = reader.ReadUInt16();
@@ -2134,35 +2147,46 @@ namespace CodeWalker.GameFiles
             this.UnknownData1Pointer = reader.ReadUInt64();
             this.Unknown_50h = reader.ReadUInt32();
             this.Unknown_54h = reader.ReadUInt32();
-            this.Unknown_58h = reader.ReadUInt64();
-            this.Unknown_60h = reader.ReadUInt64();
-            this.Unknown_68h = reader.ReadUInt32();
+            this.NumLoops = reader.ReadInt32();
+            this.SortEventsByDistance = reader.ReadByte();
+            this.DrawListId = reader.ReadByte();
+            this.IsShortLived = reader.ReadByte();
+            this.HasNoShadows = reader.ReadByte();
+            this.VRandOffsetPos = reader.ReadVector3();
             this.Unknown_6Ch = reader.ReadUInt32();
-            this.Unknown_70h = reader.ReadSingle();
-            this.Unknown_74h = reader.ReadSingle();
-            this.PlaybackDelay = reader.ReadSingle();
-            this.PlaybackDelayModifier = reader.ReadSingle();
-            this.PlaybackSpeedScale = reader.ReadSingle();
-            this.PlaybackSpeedScaleModifier = reader.ReadSingle();
-            this.Unknown_88h = reader.ReadUInt32();
-            this.Unknown_8Ch = reader.ReadUInt32();
-            this.CullRadius = reader.ReadSingle();
-            this.CullDistance = reader.ReadSingle();
-            this.Unknown_98h = reader.ReadSingle();
+            this.PreUpdateTime = reader.ReadSingle();
+            this.PreUpdateTimeInterval = reader.ReadSingle();
+            this.DurationMin = reader.ReadSingle();
+            this.DurationMax = reader.ReadSingle();
+            this.PlaybackRateScalarMin = reader.ReadSingle();
+            this.PlaybackRateScalarMax = reader.ReadSingle(); 
+            this.ViewportCullingMode = reader.ReadByte();
+            this.RenderWhenViewportCulled = reader.ReadByte();
+            this.UpdateWhenViewportCulled = reader.ReadByte();
+            this.EmitWhenViewportCulled = reader.ReadByte();
+            this.DistanceCullingMode = reader.ReadByte();
+            this.RenderWhenDistanceCulled = reader.ReadByte();
+            this.UpdateWhenDistanceCulled = reader.ReadByte();
+            this.EmitWhenDistanceCulled = reader.ReadByte();
+            this.ViewportCullingSphereOffset = reader.ReadVector3();
             this.Unknown_9Ch = reader.ReadUInt32();
-            this.Unknown_A0h = reader.ReadSingle();
-            this.Unknown_A4h = reader.ReadSingle();
-            this.Unknown_A8h = reader.ReadSingle();
-            this.Unknown_ACh = reader.ReadSingle();
-            this.Unknown_B0h = reader.ReadSingle();
-            this.Unknown_B4h = reader.ReadSingle();
-            this.Unknown_B8h = reader.ReadSingle();
-            this.Unknown_BCh = reader.ReadUInt32();
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
+            this.ViewportCullingSphereRadius = reader.ReadSingle();
+            this.DistanceCullingFadeDist = reader.ReadSingle();
+            this.DistanceCullingCullDist = reader.ReadSingle();
+            this.LodEvoDistMin = reader.ReadSingle();
+            this.LodEvoDistMax = reader.ReadSingle();
+            this.ColnRange = reader.ReadSingle(); 
+            this.ColnProbeDist = reader.ReadSingle();
+            this.ColnType = reader.ReadByte();
+            this.ShareEntityColn = reader.ReadByte();
+            this.OnlyUseBVHColn = reader.ReadByte();
+            this.GameFlags = reader.ReadByte();
+
+            this.ColourTintMinKFP = reader.ReadBlock<ParticleKeyframeProp>();
+            this.ColourTintMaxKFP = reader.ReadBlock<ParticleKeyframeProp>();
+            this.ZoomScalarKFP = reader.ReadBlock<ParticleKeyframeProp>();
+            this.DataSphereKFP = reader.ReadBlock<ParticleKeyframeProp>();
+            this.DataCapsuleKFP = reader.ReadBlock<ParticleKeyframeProp>();
             this.KeyframePropsPointer = reader.ReadUInt64();
             this.KeyframePropsCount = reader.ReadUInt16();
             this.KeyframePropsCapacity = reader.ReadUInt16();
@@ -2524,35 +2548,45 @@ namespace CodeWalker.GameFiles
             writer.Write(this.UnknownData1Pointer);
             writer.Write(this.Unknown_50h);
             writer.Write(this.Unknown_54h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_68h);
+            writer.Write(this.NumLoops);
+            writer.Write(this.SortEventsByDistance);
+            writer.Write(this.DrawListId);
+            writer.Write(this.IsShortLived);
+            writer.Write(this.HasNoShadows);
+            writer.Write(this.VRandOffsetPos);
             writer.Write(this.Unknown_6Ch);
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Unknown_74h);
-            writer.Write(this.PlaybackDelay);
-            writer.Write(this.PlaybackDelayModifier);
-            writer.Write(this.PlaybackSpeedScale);
-            writer.Write(this.PlaybackSpeedScaleModifier);
-            writer.Write(this.Unknown_88h);
-            writer.Write(this.Unknown_8Ch);
-            writer.Write(this.CullRadius);
-            writer.Write(this.CullDistance);
-            writer.Write(this.Unknown_98h);
+            writer.Write(this.PreUpdateTime);
+            writer.Write(this.PreUpdateTimeInterval);
+            writer.Write(this.DurationMin);
+            writer.Write(this.DurationMax);
+            writer.Write(this.PlaybackRateScalarMin);
+            writer.Write(this.PlaybackRateScalarMax);
+            writer.Write(this.ViewportCullingMode);
+            writer.Write(this.RenderWhenViewportCulled);
+            writer.Write(this.UpdateWhenViewportCulled);
+            writer.Write(this.EmitWhenViewportCulled);
+            writer.Write(this.DistanceCullingMode);
+            writer.Write(this.RenderWhenDistanceCulled);
+            writer.Write(this.UpdateWhenDistanceCulled);
+            writer.Write(this.EmitWhenDistanceCulled);
+            writer.Write(this.ViewportCullingSphereOffset);
             writer.Write(this.Unknown_9Ch);
-            writer.Write(this.Unknown_A0h);
-            writer.Write(this.Unknown_A4h);
-            writer.Write(this.Unknown_A8h);
-            writer.Write(this.Unknown_ACh);
-            writer.Write(this.Unknown_B0h);
-            writer.Write(this.Unknown_B4h);
-            writer.Write(this.Unknown_B8h);
-            writer.Write(this.Unknown_BCh);
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.WriteBlock(this.KeyframeProp4);
+            writer.Write(this.ViewportCullingSphereRadius);
+            writer.Write(this.DistanceCullingFadeDist);
+            writer.Write(this.DistanceCullingCullDist);
+            writer.Write(this.LodEvoDistMin);
+            writer.Write(this.LodEvoDistMax);
+            writer.Write(this.ColnRange);
+            writer.Write(this.ColnProbeDist);
+            writer.Write(this.ColnType);
+            writer.Write(this.ShareEntityColn);
+            writer.Write(this.OnlyUseBVHColn);
+            writer.Write(this.GameFlags);
+            writer.WriteBlock(this.ColourTintMinKFP);
+            writer.WriteBlock(this.ColourTintMaxKFP);
+            writer.WriteBlock(this.ZoomScalarKFP);
+            writer.WriteBlock(this.DataSphereKFP);
+            writer.WriteBlock(this.DataCapsuleKFP);
             writer.Write(this.KeyframePropsPointer);
             writer.Write(this.KeyframePropsCount);
             writer.Write(this.KeyframePropsCapacity);
@@ -2569,25 +2603,37 @@ namespace CodeWalker.GameFiles
             YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
             YptXml.ValueTag(sb, indent, "Unknown50", YptXml.UintString(Unknown_50h));
             YptXml.ValueTag(sb, indent, "Unknown54", YptXml.UintString(Unknown_54h));
-            YptXml.ValueTag(sb, indent, "Unknown70", FloatUtil.ToString(Unknown_70h));
-            YptXml.ValueTag(sb, indent, "Unknown74", FloatUtil.ToString(Unknown_74h));
-            YptXml.ValueTag(sb, indent, "PlaybackDelay", FloatUtil.ToString(PlaybackDelay));
-            YptXml.ValueTag(sb, indent, "PlaybackDelayModifier", FloatUtil.ToString(PlaybackDelayModifier));
-            YptXml.ValueTag(sb, indent, "PlaybackSpeedScale", FloatUtil.ToString(PlaybackSpeedScale));
-            YptXml.ValueTag(sb, indent, "PlaybackSpeedScaleModifier", FloatUtil.ToString(PlaybackSpeedScaleModifier));
-            YptXml.ValueTag(sb, indent, "Unknown88", YptXml.UintString(Unknown_88h));
-            YptXml.ValueTag(sb, indent, "Unknown8C", YptXml.UintString(Unknown_8Ch));
-            YptXml.ValueTag(sb, indent, "CullRadius", FloatUtil.ToString(CullRadius));
-            YptXml.ValueTag(sb, indent, "CullDistance", FloatUtil.ToString(CullDistance));
-            YptXml.ValueTag(sb, indent, "Unknown98", FloatUtil.ToString(Unknown_98h));
-            YptXml.ValueTag(sb, indent, "UnknownA0", FloatUtil.ToString(Unknown_A0h));
-            YptXml.ValueTag(sb, indent, "UnknownA4", FloatUtil.ToString(Unknown_A4h));
-            YptXml.ValueTag(sb, indent, "UnknownA8", FloatUtil.ToString(Unknown_A8h));
-            YptXml.ValueTag(sb, indent, "UnknownAC", FloatUtil.ToString(Unknown_ACh));
-            YptXml.ValueTag(sb, indent, "UnknownB0", FloatUtil.ToString(Unknown_B0h));
-            YptXml.ValueTag(sb, indent, "UnknownB4", FloatUtil.ToString(Unknown_B4h));
-            YptXml.ValueTag(sb, indent, "UnknownB8", FloatUtil.ToString(Unknown_B8h));
-            YptXml.ValueTag(sb, indent, "UnknownBC", YptXml.UintString(Unknown_BCh));
+            YptXml.ValueTag(sb, indent, "NumLoops", FloatUtil.ToString(NumLoops));
+            YptXml.ValueTag(sb, indent, "SortEventsByDistance", FloatUtil.ToString(SortEventsByDistance));
+            YptXml.ValueTag(sb, indent, "DrawListId", FloatUtil.ToString(DrawListId));
+            YptXml.ValueTag(sb, indent, "IsShortLived", FloatUtil.ToString(IsShortLived));
+            YptXml.ValueTag(sb, indent, "HasNoShadows", FloatUtil.ToString(HasNoShadows));
+            YftXml.SelfClosingTag(sb, indent, "VRandOffsetPos " + FloatUtil.GetVector3XmlString(VRandOffsetPos));
+            YptXml.ValueTag(sb, indent, "PreUpdateTime", FloatUtil.ToString(PreUpdateTime));
+            YptXml.ValueTag(sb, indent, "PreUpdateTimeInterval", FloatUtil.ToString(PreUpdateTimeInterval));
+            YptXml.ValueTag(sb, indent, "DurationMin", FloatUtil.ToString(DurationMin));
+            YptXml.ValueTag(sb, indent, "DurationMax", FloatUtil.ToString(DurationMax));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMin", FloatUtil.ToString(PlaybackRateScalarMin));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMax", FloatUtil.ToString(PlaybackRateScalarMax));
+            YptXml.ValueTag(sb, indent, "ViewportCullingMode", FloatUtil.ToString(ViewportCullingMode));
+            YptXml.ValueTag(sb, indent, "RenderWhenViewportCulled", FloatUtil.ToString(RenderWhenViewportCulled));
+            YptXml.ValueTag(sb, indent, "UpdateWhenViewportCulled", FloatUtil.ToString(UpdateWhenViewportCulled));
+            YptXml.ValueTag(sb, indent, "EmitWhenViewportCulled", FloatUtil.ToString(EmitWhenViewportCulled));
+            YptXml.ValueTag(sb, indent, "DistanceCullingMode", FloatUtil.ToString(DistanceCullingMode));
+            YptXml.ValueTag(sb, indent, "RenderWhenDistanceCulled", FloatUtil.ToString(RenderWhenDistanceCulled));
+            YptXml.ValueTag(sb, indent, "UpdateWhenDistanceCulled", FloatUtil.ToString(UpdateWhenDistanceCulled));
+            YptXml.ValueTag(sb, indent, "EmitWhenDistanceCulled", FloatUtil.ToString(EmitWhenDistanceCulled));
+            YftXml.SelfClosingTag(sb, indent, "ViewportCullingSphereOffset " + FloatUtil.GetVector3XmlString(ViewportCullingSphereOffset));
+            YptXml.ValueTag(sb, indent, "DistanceCullingFadeDist", FloatUtil.ToString(DistanceCullingFadeDist));
+            YptXml.ValueTag(sb, indent, "DistanceCullingCullDist", FloatUtil.ToString(DistanceCullingCullDist));
+            YptXml.ValueTag(sb, indent, "LodEvoDistMin", FloatUtil.ToString(LodEvoDistMin));
+            YptXml.ValueTag(sb, indent, "LodEvoDistMax", FloatUtil.ToString(LodEvoDistMax));
+            YptXml.ValueTag(sb, indent, "ColnRange", FloatUtil.ToString(ColnRange));
+            YptXml.ValueTag(sb, indent, "ColnProbeDist", FloatUtil.ToString(ColnProbeDist));
+            YptXml.ValueTag(sb, indent, "ColnType", FloatUtil.ToString(ColnType));
+            YptXml.ValueTag(sb, indent, "ShareEntityColn", FloatUtil.ToString(ShareEntityColn));
+            YptXml.ValueTag(sb, indent, "OnlyUseBVHColn", FloatUtil.ToString(OnlyUseBVHColn));
+            YptXml.ValueTag(sb, indent, "GameFlags", FloatUtil.ToString(GameFlags));
             YptXml.ValueTag(sb, indent, "Unknown3A0", YptXml.UintString(Unknown_3A0h));
             if (EventEmitters?.data_items != null)
             {
@@ -2614,25 +2660,38 @@ namespace CodeWalker.GameFiles
             NameHash = JenkHash.GenHash(Name?.Value ?? "");
             Unknown_50h = Xml.GetChildUIntAttribute(node, "Unknown50");
             Unknown_54h = Xml.GetChildUIntAttribute(node, "Unknown54");
-            Unknown_70h = Xml.GetChildFloatAttribute(node, "Unknown70");
-            Unknown_74h = Xml.GetChildFloatAttribute(node, "Unknown74");
-            PlaybackDelay = Xml.GetChildFloatAttribute(node, "PlaybackDelay");
-            PlaybackDelayModifier = Xml.GetChildFloatAttribute(node, "PlaybackDelayModifier");
-            PlaybackSpeedScale = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScale");
-            PlaybackSpeedScaleModifier = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScaleModifier");
-            Unknown_88h = Xml.GetChildUIntAttribute(node, "Unknown88");
-            Unknown_8Ch = Xml.GetChildUIntAttribute(node, "Unknown8C");
-            CullRadius = Xml.GetChildFloatAttribute(node, "CullRadius");
-            CullDistance = Xml.GetChildFloatAttribute(node, "CullDistance");
-            Unknown_98h = Xml.GetChildFloatAttribute(node, "Unknown98");
-            Unknown_A0h = Xml.GetChildFloatAttribute(node, "UnknownA0");
-            Unknown_A4h = Xml.GetChildFloatAttribute(node, "UnknownA4");
-            Unknown_A8h = Xml.GetChildFloatAttribute(node, "UnknownA8");
-            Unknown_ACh = Xml.GetChildFloatAttribute(node, "UnknownAC");
-            Unknown_B0h = Xml.GetChildFloatAttribute(node, "UnknownB0");
-            Unknown_B4h = Xml.GetChildFloatAttribute(node, "UnknownB4");
-            Unknown_B8h = Xml.GetChildFloatAttribute(node, "UnknownB8");
-            Unknown_BCh = Xml.GetChildUIntAttribute(node, "UnknownBC");
+            NumLoops = (int)Xml.GetChildUIntAttribute(node, "NumLoops");
+            SortEventsByDistance = (byte)Xml.GetChildFloatAttribute(node, "SortEventsByDistance");
+            DrawListId = (byte)Xml.GetChildFloatAttribute(node, "DrawListId");
+            IsShortLived = (byte)Xml.GetChildFloatAttribute(node, "IsShortLived");
+            HasNoShadows = (byte)Xml.GetChildFloatAttribute(node, "HasNoShadows");
+            VRandOffsetPos = Xml.GetChildVector3Attributes(node, "VRandOffsetPos");
+            PreUpdateTime = Xml.GetChildFloatAttribute(node, "PreUpdateTime");
+            PreUpdateTimeInterval = Xml.GetChildFloatAttribute(node, "PreUpdateTimeInterval");
+            DurationMin = Xml.GetChildFloatAttribute(node, "DurationMin");
+            DurationMax = Xml.GetChildFloatAttribute(node, "DurationMax");
+            PlaybackRateScalarMin = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMin");
+            PlaybackRateScalarMax = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMax");
+            ViewportCullingMode = (byte)Xml.GetChildFloatAttribute(node, "ViewportCullingMode");
+            RenderWhenViewportCulled = (byte)Xml.GetChildFloatAttribute(node, "RenderWhenViewportCulled");
+            UpdateWhenViewportCulled = (byte)Xml.GetChildFloatAttribute(node, "UpdateWhenViewportCulled");
+            EmitWhenViewportCulled = (byte)Xml.GetChildFloatAttribute(node, "EmitWhenViewportCulled");
+            DistanceCullingMode = (byte)Xml.GetChildFloatAttribute(node, "DistanceCullingMode");
+            RenderWhenDistanceCulled = (byte)Xml.GetChildFloatAttribute(node, "RenderWhenDistanceCulled");
+            UpdateWhenDistanceCulled = (byte)Xml.GetChildFloatAttribute(node, "UpdateWhenDistanceCulled");
+            EmitWhenDistanceCulled = (byte)Xml.GetChildFloatAttribute(node, "EmitWhenDistanceCulled");
+            ViewportCullingSphereOffset = Xml.GetChildVector3Attributes(node, "ViewportCullingSphereOffset");
+            ViewportCullingSphereRadius = Xml.GetChildFloatAttribute(node, "ViewportCullingSphereRadius");
+            DistanceCullingFadeDist = Xml.GetChildFloatAttribute(node, "DistanceCullingFadeDist");
+            DistanceCullingCullDist = Xml.GetChildFloatAttribute(node, "DistanceCullingCullDist");
+            LodEvoDistMin = Xml.GetChildFloatAttribute(node, "LodEvoDistMin");
+            LodEvoDistMax = Xml.GetChildFloatAttribute(node, "LodEvoDistMax");
+            ColnRange = Xml.GetChildFloatAttribute(node, "ColnRange");
+            ColnProbeDist = Xml.GetChildFloatAttribute(node, "ColnProbeDist");
+            ColnType = (byte)Xml.GetChildFloatAttribute(node, "ColnType");
+            ShareEntityColn = (byte)Xml.GetChildFloatAttribute(node, "ShareEntityColn");
+            OnlyUseBVHColn = (byte)Xml.GetChildFloatAttribute(node, "OnlyUseBVHColn");
+            GameFlags = (byte)Xml.GetChildFloatAttribute(node, "GameFlags");
             Unknown_3A0h = Xml.GetChildUIntAttribute(node, "Unknown3A0");
 
             var emlist = XmlMeta.ReadItemArray<ParticleEventEmitter>(node, "EventEmitters")?.ToList() ?? new List<ParticleEventEmitter>();
@@ -2650,11 +2709,11 @@ namespace CodeWalker.GameFiles
 
 
             var kflist = XmlMeta.ReadItemArray<ParticleKeyframeProp>(node, "KeyframeProperties")?.ToList() ?? new List<ParticleKeyframeProp>();
-            KeyframeProp0 = (kflist.Count > 0) ? kflist[0] : new ParticleKeyframeProp();
-            KeyframeProp1 = (kflist.Count > 1) ? kflist[1] : new ParticleKeyframeProp();
-            KeyframeProp2 = (kflist.Count > 2) ? kflist[2] : new ParticleKeyframeProp();
-            KeyframeProp3 = (kflist.Count > 3) ? kflist[3] : new ParticleKeyframeProp();
-            KeyframeProp4 = (kflist.Count > 4) ? kflist[4] : new ParticleKeyframeProp();
+            ColourTintMinKFP = (kflist.Count > 0) ? kflist[0] : new ParticleKeyframeProp();
+            ColourTintMaxKFP = (kflist.Count > 1) ? kflist[1] : new ParticleKeyframeProp();
+            ZoomScalarKFP = (kflist.Count > 2) ? kflist[2] : new ParticleKeyframeProp();
+            DataSphereKFP = (kflist.Count > 3) ? kflist[3] : new ParticleKeyframeProp();
+            DataCapsuleKFP = (kflist.Count > 4) ? kflist[4] : new ParticleKeyframeProp();
             for (int i = kflist.Count; i < 16; i++) kflist.Add(null);
             KeyframeProps = new ResourcePointerArray64<ParticleKeyframeProp>();
             KeyframeProps.data_items = kflist.ToArray();
@@ -2688,11 +2747,11 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(192, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(480, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(624, KeyframeProp3),
-                new Tuple<long, IResourceBlock>(768, KeyframeProp4)
+                new Tuple<long, IResourceBlock>(192, ColourTintMinKFP),
+                new Tuple<long, IResourceBlock>(336, ColourTintMaxKFP),
+                new Tuple<long, IResourceBlock>(480, ZoomScalarKFP),
+                new Tuple<long, IResourceBlock>(624, DataSphereKFP),
+                new Tuple<long, IResourceBlock>(768, DataCapsuleKFP)
             };
         }
 
@@ -2723,12 +2782,12 @@ namespace CodeWalker.GameFiles
         public ulong ParticleRuleNamePointer { get; set; }
         public ulong EmitterRulePointer { get; set; }
         public ulong ParticleRulePointer { get; set; }
-        public float MoveSpeedScale { get; set; }
-        public float MoveSpeedScaleModifier { get; set; }
-        public float ParticleScale { get; set; }
-        public float ParticleScaleModifier { get; set; }
-        public uint Colour1 { get; set; } // eg. 0xfffafafa - colour?
-        public uint Colour2 { get; set; } // eg. 0x5affffff - colour?
+        public float PlaybackRateScalarMin { get; set; }
+        public float PlaybackRateScalarMax { get; set; }
+        public float ZoomScalarMin { get; set; }
+        public float ZoomScalarMax { get; set; }
+        public uint ColourTintMin { get; set; } // eg. 0xfffafafa - colour?
+        public uint ColourTintMax { get; set; } // eg. 0x5affffff - colour?
         public ulong Unknown_68h; // 0x0000000000000000
 
         // reference data
@@ -2755,12 +2814,12 @@ namespace CodeWalker.GameFiles
             this.ParticleRuleNamePointer = reader.ReadUInt64();
             this.EmitterRulePointer = reader.ReadUInt64();
             this.ParticleRulePointer = reader.ReadUInt64();
-            this.MoveSpeedScale = reader.ReadSingle();
-            this.MoveSpeedScaleModifier = reader.ReadSingle();
-            this.ParticleScale = reader.ReadSingle();
-            this.ParticleScaleModifier = reader.ReadSingle();
-            this.Colour1 = reader.ReadUInt32();
-            this.Colour2 = reader.ReadUInt32();
+            this.PlaybackRateScalarMin = reader.ReadSingle();
+            this.PlaybackRateScalarMax = reader.ReadSingle();
+            this.ZoomScalarMin = reader.ReadSingle();
+            this.ZoomScalarMax = reader.ReadSingle();
+            this.ColourTintMin = reader.ReadUInt32();
+            this.ColourTintMax = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt64();
 
             // read reference data
@@ -2828,7 +2887,7 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_28h != 0)
             //{ }//no hit
-            switch (MoveSpeedScale)
+            switch (PlaybackRateScalarMin)
             {
                 case 1.0f:
                 case 2.0f:
@@ -2838,7 +2897,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (MoveSpeedScaleModifier)
+            switch (PlaybackRateScalarMax)
             {
                 case 1.0f:
                 case 2.0f:
@@ -2848,7 +2907,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//and more
             }
-            switch (ParticleScale)
+            switch (ZoomScalarMin)
             {
                 case 1.0f:
                 case 0.5f:
@@ -2859,7 +2918,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (ParticleScaleModifier)
+            switch (ZoomScalarMax)
             {
                 case 1.0f:
                 case 1.2f:
@@ -2869,7 +2928,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Colour1)
+            switch (ColourTintMin)
             {
                 case 0xffffffff:
                 case 0xfffafafa:
@@ -2883,7 +2942,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Colour2)
+            switch (ColourTintMax)
             {
                 case 0xffffffff:
                 case 0xffffefc2:
@@ -2928,26 +2987,24 @@ namespace CodeWalker.GameFiles
             writer.Write(this.ParticleRuleNamePointer);
             writer.Write(this.EmitterRulePointer);
             writer.Write(this.ParticleRulePointer);
-            writer.Write(this.MoveSpeedScale);
-            writer.Write(this.MoveSpeedScaleModifier);
-            writer.Write(this.ParticleScale);
-            writer.Write(this.ParticleScaleModifier);
-            writer.Write(this.Colour1);
-            writer.Write(this.Colour2);
+            writer.Write(this.PlaybackRateScalarMin);
+            writer.Write(this.PlaybackRateScalarMax);
+            writer.Write(this.ZoomScalarMin);
+            writer.Write(this.ZoomScalarMax);
+            writer.Write(this.ColourTintMin);
+            writer.Write(this.ColourTintMax);
             writer.Write(this.Unknown_68h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YptXml.StringTag(sb, indent, "EmitterRule", YptXml.XmlEscape(EmitterRuleName?.Value ?? ""));
             YptXml.StringTag(sb, indent, "ParticleRule", YptXml.XmlEscape(ParticleRuleName?.Value ?? ""));
-            YptXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
-            YptXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
-            YptXml.ValueTag(sb, indent, "MoveSpeedScale", FloatUtil.ToString(MoveSpeedScale));
-            YptXml.ValueTag(sb, indent, "MoveSpeedScaleModifier", FloatUtil.ToString(MoveSpeedScaleModifier));
-            YptXml.ValueTag(sb, indent, "ParticleScale", FloatUtil.ToString(ParticleScale));
-            YptXml.ValueTag(sb, indent, "ParticleScaleModifier", FloatUtil.ToString(ParticleScaleModifier));
-            YptXml.ValueTag(sb, indent, "Colour1", YptXml.UintString(Colour1));
-            YptXml.ValueTag(sb, indent, "Colour2", YptXml.UintString(Colour2));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMin", FloatUtil.ToString(PlaybackRateScalarMin));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMax", FloatUtil.ToString(PlaybackRateScalarMax));
+            YptXml.ValueTag(sb, indent, "ZoomScalarMin", FloatUtil.ToString(ZoomScalarMin));
+            YptXml.ValueTag(sb, indent, "ZoomScalarMax", FloatUtil.ToString(ZoomScalarMax));
+            YptXml.ValueTag(sb, indent, "ColourTintMin", YptXml.UintString(ColourTintMin));
+            YptXml.ValueTag(sb, indent, "ColourTintMax", YptXml.UintString(ColourTintMax));
             if (UnknownData != null)
             {
                 YptXml.OpenTag(sb, indent, "UnknownData");
@@ -2959,14 +3016,12 @@ namespace CodeWalker.GameFiles
         {
             EmitterRuleName = (string_r)Xml.GetChildInnerText(node, "EmitterRule"); if (EmitterRuleName.Value == null) EmitterRuleName = null;
             ParticleRuleName = (string_r)Xml.GetChildInnerText(node, "ParticleRule"); if (ParticleRuleName.Value == null) ParticleRuleName = null;
-            Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10");
-            Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14");
-            MoveSpeedScale = Xml.GetChildFloatAttribute(node, "MoveSpeedScale");
-            MoveSpeedScaleModifier = Xml.GetChildFloatAttribute(node, "MoveSpeedScaleModifier");
-            ParticleScale = Xml.GetChildFloatAttribute(node, "ParticleScale");
-            ParticleScaleModifier = Xml.GetChildFloatAttribute(node, "ParticleScaleModifier");
-            Colour1 = Xml.GetChildUIntAttribute(node, "Colour1");
-            Colour2 = Xml.GetChildUIntAttribute(node, "Colour2");
+            PlaybackRateScalarMin = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMin");
+            PlaybackRateScalarMax = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMax");
+            ZoomScalarMin = Xml.GetChildFloatAttribute(node, "ZoomScalarMin");
+            ZoomScalarMax = Xml.GetChildFloatAttribute(node, "ZoomScalarMax");
+            ColourTintMin = Xml.GetChildUIntAttribute(node, "ColourTintMin");
+            ColourTintMax = Xml.GetChildUIntAttribute(node, "ColourTintMax");
             var udnode = node.SelectSingleNode("UnknownData");
             if (udnode != null)
             {
@@ -3451,7 +3506,7 @@ namespace CodeWalker.GameFiles
         public ushort KeyframePropsCount1 = 10; // 10
         public ushort KeyframePropsCount2 = 10; // 10
         public uint Unknown_624h; // 0x00000000
-        public uint Unknown_628h { get; set; } // 0, 1
+        public uint IsOneShot { get; set; } // 0, 1
         public uint Unknown_62Ch; // 0x00000000
 
         // reference data
@@ -3491,7 +3546,7 @@ namespace CodeWalker.GameFiles
             this.KeyframePropsCount1 = reader.ReadUInt16();
             this.KeyframePropsCount2 = reader.ReadUInt16();
             this.Unknown_624h = reader.ReadUInt32();
-            this.Unknown_628h = reader.ReadUInt32();
+            this.IsOneShot = reader.ReadUInt32();
             this.Unknown_62Ch = reader.ReadUInt32();
 
             // read reference data
@@ -3622,14 +3677,14 @@ namespace CodeWalker.GameFiles
             writer.Write(this.KeyframePropsCount1);
             writer.Write(this.KeyframePropsCount2);
             writer.Write(this.Unknown_624h);
-            writer.Write(this.Unknown_628h);
+            writer.Write(this.IsOneShot);
             writer.Write(this.Unknown_62Ch);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
             YptXml.ValueTag(sb, indent, "Unknown10", Unknown_10h.ToString());
-            YptXml.ValueTag(sb, indent, "Unknown628", Unknown_628h.ToString());
+            YptXml.ValueTag(sb, indent, "IsOneShot", IsOneShot.ToString());
             ParticleDomain.WriteXmlNode(Domain1, sb, indent, "Domain1");
             ParticleDomain.WriteXmlNode(Domain2, sb, indent, "Domain2");
             ParticleDomain.WriteXmlNode(Domain3, sb, indent, "Domain3");
@@ -3643,7 +3698,7 @@ namespace CodeWalker.GameFiles
             Name = (string_r)Xml.GetChildInnerText(node, "Name"); if (Name.Value == null) Name = null;
             NameHash = JenkHash.GenHash(Name?.Value ?? "");
             Unknown_10h = Xml.GetChildUIntAttribute(node, "Unknown10");
-            Unknown_628h = Xml.GetChildUIntAttribute(node, "Unknown628");
+            IsOneShot = Xml.GetChildUIntAttribute(node, "IsOneShot");
             Domain1 = ParticleDomain.ReadXmlNode(node.SelectSingleNode("Domain1")); if (Domain1 != null) Domain1.Index = 0;
             Domain2 = ParticleDomain.ReadXmlNode(node.SelectSingleNode("Domain2")); if (Domain2 != null) Domain2.Index = 1;
             Domain3 = ParticleDomain.ReadXmlNode(node.SelectSingleNode("Domain3")); if (Domain3 != null) Domain3.Index = 2;
