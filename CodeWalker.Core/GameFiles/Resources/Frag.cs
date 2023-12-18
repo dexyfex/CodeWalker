@@ -73,7 +73,7 @@ namespace CodeWalker.GameFiles
         public int Unknown_C0h { get; set; } // 0, 256, 512, 768, 1024, 65280
         public int Unknown_C4h { get; set; } // 1, 3, 65, 67
         public int Unknown_C8h = -1; // -1
-        public float Unknown_CCh { get; set; }
+        public float UnbrokenElasticity { get; set; }
         public float GravityFactor { get; set; }
         public float BuoyancyFactor { get; set; }
         public byte Unknown_D8h; // 0x00
@@ -142,7 +142,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_C0h = reader.ReadInt32();
             this.Unknown_C4h = reader.ReadInt32();
             this.Unknown_C8h = reader.ReadInt32();
-            this.Unknown_CCh = reader.ReadSingle();
+            this.UnbrokenElasticity = reader.ReadSingle();
             this.GravityFactor = reader.ReadSingle();
             this.BuoyancyFactor = reader.ReadSingle();
             this.Unknown_D8h = reader.ReadByte();
@@ -356,7 +356,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_C0h);
             writer.Write(this.Unknown_C4h);
             writer.Write(this.Unknown_C8h);
-            writer.Write(this.Unknown_CCh);
+            writer.Write(this.UnbrokenElasticity);
             writer.Write(this.GravityFactor);
             writer.Write(this.BuoyancyFactor);
             writer.Write(this.Unknown_D8h);
@@ -383,7 +383,7 @@ namespace CodeWalker.GameFiles
             YftXml.ValueTag(sb, indent, "UnknownBC", Unknown_BCh.ToString());
             YftXml.ValueTag(sb, indent, "UnknownC0", Unknown_C0h.ToString());
             YftXml.ValueTag(sb, indent, "UnknownC4", Unknown_C4h.ToString());
-            YftXml.ValueTag(sb, indent, "UnknownCC", FloatUtil.ToString(Unknown_CCh));
+            YftXml.ValueTag(sb, indent, "UnbrokenElasticity", FloatUtil.ToString(UnbrokenElasticity));
             YftXml.ValueTag(sb, indent, "GravityFactor", FloatUtil.ToString(GravityFactor));
             YftXml.ValueTag(sb, indent, "BuoyancyFactor", FloatUtil.ToString(BuoyancyFactor));
             if ((Drawable != null) && (Drawable.OwnerCloth == null))
@@ -461,7 +461,7 @@ namespace CodeWalker.GameFiles
             Unknown_BCh = Xml.GetChildIntAttribute(node, "UnknownBC", "value");
             Unknown_C0h = Xml.GetChildIntAttribute(node, "UnknownC0", "value");
             Unknown_C4h = Xml.GetChildIntAttribute(node, "UnknownC4", "value");
-            Unknown_CCh = Xml.GetChildFloatAttribute(node, "UnknownCC", "value");
+            UnbrokenElasticity = Xml.GetChildFloatAttribute(node, "UnbrokenElasticity", "value");
             GravityFactor = Xml.GetChildFloatAttribute(node, "GravityFactor", "value");
             BuoyancyFactor = Xml.GetChildFloatAttribute(node, "BuoyancyFactor", "value");
             var dnode = node.SelectSingleNode("Drawable");
@@ -1285,8 +1285,8 @@ namespace CodeWalker.GameFiles
             public ushort UnkUshort3; // 0
             public uint UnkUint2; // 0
             public uint UnkUint3; // 0
-            public float UnkFloat17 { get; set; }
-            public float UnkFloat18 { get; set; }
+            public float DataMin { get; set; }
+            public float DataMax { get; set; }
             public ushort UnkUshort4 { get; set; } //0, 1
             public ushort UnkUshort5 { get; set; } //2, 2050
             public float CracksTextureTiling { get; set; } // UV multiplier for the "shattered" cracks texture that is applied when the window is broken
@@ -1335,8 +1335,8 @@ namespace CodeWalker.GameFiles
                 UnkUshort3 = reader.ReadUInt16();//0
                 UnkUint2 = reader.ReadUInt32();//0
                 UnkUint3 = reader.ReadUInt32();//0
-                UnkFloat17 = reader.ReadSingle();
-                UnkFloat18 = reader.ReadSingle();
+                DataMin = reader.ReadSingle();
+                DataMax = reader.ReadSingle();
                 UnkUshort4 = reader.ReadUInt16();//0, 1
                 UnkUshort5 = reader.ReadUInt16();//2, 2050
                 CracksTextureTiling = reader.ReadSingle();
@@ -1460,8 +1460,8 @@ namespace CodeWalker.GameFiles
                 writer.Write(UnkUshort3);
                 writer.Write(UnkUint2);
                 writer.Write(UnkUint3);
-                writer.Write(UnkFloat17);
-                writer.Write(UnkFloat18);
+                writer.Write(DataMin);
+                writer.Write(DataMax);
                 writer.Write(UnkUshort4);
                 writer.Write(UnkUshort5);
                 writer.Write(CracksTextureTiling);
@@ -1492,8 +1492,8 @@ namespace CodeWalker.GameFiles
                 YftXml.OpenTag(sb, indent, "Projection");
                 YftXml.WriteRawArrayContent(sb, Projection.ToArray(), indent + 1, FloatUtil.ToString, 4);
                 YftXml.CloseTag(sb, indent, "Projection");
-                YftXml.ValueTag(sb, indent, "UnkFloat17", FloatUtil.ToString(UnkFloat17));
-                YftXml.ValueTag(sb, indent, "UnkFloat18", FloatUtil.ToString(UnkFloat18));
+                YftXml.ValueTag(sb, indent, "DataMin", FloatUtil.ToString(DataMin));
+                YftXml.ValueTag(sb, indent, "DataMax", FloatUtil.ToString(DataMax));
                 YftXml.ValueTag(sb, indent, "CracksTextureTiling", FloatUtil.ToString(CracksTextureTiling));
                 if (ShatterMap != null)
                 {
@@ -1514,8 +1514,8 @@ namespace CodeWalker.GameFiles
                 UnkUshort4 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort4", "value");
                 UnkUshort5 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort5", "value");
                 Projection = Xml.GetChildMatrix(node, "Projection");
-                UnkFloat17 = Xml.GetChildFloatAttribute(node, "UnkFloat17", "value");
-                UnkFloat18 = Xml.GetChildFloatAttribute(node, "UnkFloat18", "value");
+                DataMin = Xml.GetChildFloatAttribute(node, "DataMin", "value");
+                DataMax = Xml.GetChildFloatAttribute(node, "DataMax", "value");
                 CracksTextureTiling = Xml.GetChildFloatAttribute(node, "CracksTextureTiling", "value");
                 var smnode = node.SelectSingleNode("ShatterMap");
                 if (smnode != null)
