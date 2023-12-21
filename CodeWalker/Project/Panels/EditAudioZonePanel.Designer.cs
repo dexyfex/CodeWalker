@@ -28,65 +28,89 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.Label label18;
+            System.Windows.Forms.Label label27;
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditAudioZonePanel));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.PositioningRotationAngleTextBox = new System.Windows.Forms.TextBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.ActivationZoneRotationAngleTextBox = new System.Windows.Forms.TextBox();
             this.label22 = new System.Windows.Forms.Label();
-            this.UnkBytesTextBox = new System.Windows.Forms.TextBox();
+            this.WindElevationSoundsTextBox = new System.Windows.Forms.TextBox();
+            this.ZoneWaterCalculationTextBox = new System.Windows.Forms.TextBox();
+            this.label17 = new System.Windows.Forms.Label();
+            this.MaxWindInfluenceTextBox = new System.Windows.Forms.TextBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.MinWindInfluenceTextBox = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.PedDensityScalarTextBox = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.label9 = new System.Windows.Forms.Label();
+            this.MaxPedDensityTextBox = new System.Windows.Forms.TextBox();
+            this.MinPedDensityTextBox = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.PedDensityTODTextBox = new System.Windows.Forms.TextBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.BuiltUpFactorTextBox = new System.Windows.Forms.TextBox();
+            this.PositioningSizeScaleTextBox = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.PositioningRotationOffsetTextBox = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.PositioningSizeTextBox = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.ActivationSizeScaleTextBox = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.ActivationRotationOffsetTextBox = new System.Windows.Forms.TextBox();
+            this.ActivationSizeTextBox = new System.Windows.Forms.TextBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.AudioSceneTextBox = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.EnviromentRuleTextBox = new System.Windows.Forms.TextBox();
             this.DeleteButton = new System.Windows.Forms.Button();
             this.AddToProjectButton = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
-            this.Unk13TextBox = new System.Windows.Forms.TextBox();
+            this.RandomRadioSettingsTextBox = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
-            this.DependentAmbiencesTextBox = new CodeWalker.WinForms.TextBoxFix();
+            this.DirAmbiencesTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.label19 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.UnkVec3TextBox = new System.Windows.Forms.TextBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.UnkVec2TextBox = new System.Windows.Forms.TextBox();
-            this.label18 = new System.Windows.Forms.Label();
-            this.UnkVec1TextBox = new System.Windows.Forms.TextBox();
-            this.HashesTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.label14 = new System.Windows.Forms.Label();
-            this.Flags1TextBox = new System.Windows.Forms.TextBox();
+            this.RulesTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.label13 = new System.Windows.Forms.Label();
-            this.Flags0TextBox = new System.Windows.Forms.TextBox();
+            this.FlagsTextBox = new System.Windows.Forms.TextBox();
             this.ShapeComboBox = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.NameTextBox = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.OuterVec3TextBox = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.OuterVec2TextBox = new System.Windows.Forms.TextBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.OuterVec1TextBox = new System.Windows.Forms.TextBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.OuterAngleTextBox = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.OuterSizeTextBox = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
-            this.OuterPosTextBox = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.InnerVec3TextBox = new System.Windows.Forms.TextBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.InnerVec2TextBox = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.InnerVec1TextBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.InnerAngleTextBox = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.InnerSizeTextBox = new System.Windows.Forms.TextBox();
+            this.PositioningCentreTextBox = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
-            this.InnerPosTextBox = new System.Windows.Forms.TextBox();
+            this.ActivationZoneCentreTextBox = new System.Windows.Forms.TextBox();
             this.GoToButton = new System.Windows.Forms.Button();
-            this.label24 = new System.Windows.Forms.Label();
-            this.Hash0TextBox = new System.Windows.Forms.TextBox();
-            this.label25 = new System.Windows.Forms.Label();
-            this.SceneTextBox = new System.Windows.Forms.TextBox();
+            label18 = new System.Windows.Forms.Label();
+            label27 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.Location = new System.Drawing.Point(154, 319);
+            label18.Name = "label18";
+            label18.Size = new System.Drawing.Size(91, 13);
+            label18.TabIndex = 109;
+            label18.Text = "Zone Water Calc:";
+            // 
+            // label27
+            // 
+            label27.AutoSize = true;
+            label27.Location = new System.Drawing.Point(167, 361);
+            label27.Name = "label27";
+            label27.Size = new System.Drawing.Size(81, 13);
+            label27.TabIndex = 115;
+            label27.Text = "Pos. Rot Angle:";
             // 
             // tabControl1
             // 
@@ -102,58 +126,62 @@
             // 
             // tabPage1
             // 
-            this.tabPage1.Controls.Add(this.label25);
-            this.tabPage1.Controls.Add(this.SceneTextBox);
-            this.tabPage1.Controls.Add(this.label24);
-            this.tabPage1.Controls.Add(this.Hash0TextBox);
+            this.tabPage1.Controls.Add(label27);
+            this.tabPage1.Controls.Add(this.PositioningRotationAngleTextBox);
+            this.tabPage1.Controls.Add(this.label26);
+            this.tabPage1.Controls.Add(this.ActivationZoneRotationAngleTextBox);
             this.tabPage1.Controls.Add(this.label22);
-            this.tabPage1.Controls.Add(this.UnkBytesTextBox);
+            this.tabPage1.Controls.Add(this.WindElevationSoundsTextBox);
+            this.tabPage1.Controls.Add(label18);
+            this.tabPage1.Controls.Add(this.ZoneWaterCalculationTextBox);
+            this.tabPage1.Controls.Add(this.label17);
+            this.tabPage1.Controls.Add(this.MaxWindInfluenceTextBox);
+            this.tabPage1.Controls.Add(this.label15);
+            this.tabPage1.Controls.Add(this.MinWindInfluenceTextBox);
+            this.tabPage1.Controls.Add(this.label14);
+            this.tabPage1.Controls.Add(this.PedDensityScalarTextBox);
+            this.tabPage1.Controls.Add(this.label10);
+            this.tabPage1.Controls.Add(this.label9);
+            this.tabPage1.Controls.Add(this.MaxPedDensityTextBox);
+            this.tabPage1.Controls.Add(this.MinPedDensityTextBox);
+            this.tabPage1.Controls.Add(this.label8);
+            this.tabPage1.Controls.Add(this.PedDensityTODTextBox);
+            this.tabPage1.Controls.Add(this.label7);
+            this.tabPage1.Controls.Add(this.BuiltUpFactorTextBox);
+            this.tabPage1.Controls.Add(this.PositioningSizeScaleTextBox);
+            this.tabPage1.Controls.Add(this.label6);
+            this.tabPage1.Controls.Add(this.label5);
+            this.tabPage1.Controls.Add(this.PositioningRotationOffsetTextBox);
+            this.tabPage1.Controls.Add(this.label4);
+            this.tabPage1.Controls.Add(this.PositioningSizeTextBox);
+            this.tabPage1.Controls.Add(this.label3);
+            this.tabPage1.Controls.Add(this.ActivationSizeScaleTextBox);
+            this.tabPage1.Controls.Add(this.label2);
+            this.tabPage1.Controls.Add(this.label1);
+            this.tabPage1.Controls.Add(this.ActivationRotationOffsetTextBox);
+            this.tabPage1.Controls.Add(this.ActivationSizeTextBox);
+            this.tabPage1.Controls.Add(this.label25);
+            this.tabPage1.Controls.Add(this.AudioSceneTextBox);
+            this.tabPage1.Controls.Add(this.label24);
+            this.tabPage1.Controls.Add(this.EnviromentRuleTextBox);
             this.tabPage1.Controls.Add(this.DeleteButton);
             this.tabPage1.Controls.Add(this.AddToProjectButton);
             this.tabPage1.Controls.Add(this.label21);
-            this.tabPage1.Controls.Add(this.Unk13TextBox);
+            this.tabPage1.Controls.Add(this.RandomRadioSettingsTextBox);
             this.tabPage1.Controls.Add(this.label20);
-            this.tabPage1.Controls.Add(this.DependentAmbiencesTextBox);
+            this.tabPage1.Controls.Add(this.DirAmbiencesTextBox);
             this.tabPage1.Controls.Add(this.label19);
-            this.tabPage1.Controls.Add(this.label15);
-            this.tabPage1.Controls.Add(this.UnkVec3TextBox);
-            this.tabPage1.Controls.Add(this.label17);
-            this.tabPage1.Controls.Add(this.UnkVec2TextBox);
-            this.tabPage1.Controls.Add(this.label18);
-            this.tabPage1.Controls.Add(this.UnkVec1TextBox);
-            this.tabPage1.Controls.Add(this.HashesTextBox);
-            this.tabPage1.Controls.Add(this.label14);
-            this.tabPage1.Controls.Add(this.Flags1TextBox);
+            this.tabPage1.Controls.Add(this.RulesTextBox);
             this.tabPage1.Controls.Add(this.label13);
-            this.tabPage1.Controls.Add(this.Flags0TextBox);
+            this.tabPage1.Controls.Add(this.FlagsTextBox);
             this.tabPage1.Controls.Add(this.ShapeComboBox);
             this.tabPage1.Controls.Add(this.label23);
             this.tabPage1.Controls.Add(this.label12);
             this.tabPage1.Controls.Add(this.NameTextBox);
-            this.tabPage1.Controls.Add(this.label6);
-            this.tabPage1.Controls.Add(this.OuterVec3TextBox);
-            this.tabPage1.Controls.Add(this.label7);
-            this.tabPage1.Controls.Add(this.OuterVec2TextBox);
-            this.tabPage1.Controls.Add(this.label8);
-            this.tabPage1.Controls.Add(this.OuterVec1TextBox);
-            this.tabPage1.Controls.Add(this.label9);
-            this.tabPage1.Controls.Add(this.OuterAngleTextBox);
-            this.tabPage1.Controls.Add(this.label10);
-            this.tabPage1.Controls.Add(this.OuterSizeTextBox);
             this.tabPage1.Controls.Add(this.label11);
-            this.tabPage1.Controls.Add(this.OuterPosTextBox);
-            this.tabPage1.Controls.Add(this.label5);
-            this.tabPage1.Controls.Add(this.InnerVec3TextBox);
-            this.tabPage1.Controls.Add(this.label4);
-            this.tabPage1.Controls.Add(this.InnerVec2TextBox);
-            this.tabPage1.Controls.Add(this.label3);
-            this.tabPage1.Controls.Add(this.InnerVec1TextBox);
-            this.tabPage1.Controls.Add(this.label2);
-            this.tabPage1.Controls.Add(this.InnerAngleTextBox);
-            this.tabPage1.Controls.Add(this.label1);
-            this.tabPage1.Controls.Add(this.InnerSizeTextBox);
+            this.tabPage1.Controls.Add(this.PositioningCentreTextBox);
             this.tabPage1.Controls.Add(this.label16);
-            this.tabPage1.Controls.Add(this.InnerPosTextBox);
+            this.tabPage1.Controls.Add(this.ActivationZoneCentreTextBox);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
@@ -162,24 +190,348 @@
             this.tabPage1.Text = "Ambient Zone";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
+            // PositioningRotationAngleTextBox
+            // 
+            this.PositioningRotationAngleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PositioningRotationAngleTextBox.Location = new System.Drawing.Point(266, 358);
+            this.PositioningRotationAngleTextBox.Name = "PositioningRotationAngleTextBox";
+            this.PositioningRotationAngleTextBox.Size = new System.Drawing.Size(55, 20);
+            this.PositioningRotationAngleTextBox.TabIndex = 114;
+            this.PositioningRotationAngleTextBox.TextChanged += new System.EventHandler(this.PositioningRotationAngleTextBox_TextChanged);
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(7, 361);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(87, 13);
+            this.label26.TabIndex = 113;
+            this.label26.Text = "Activ. Rot Angle:";
+            // 
+            // ActivationZoneRotationAngleTextBox
+            // 
+            this.ActivationZoneRotationAngleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ActivationZoneRotationAngleTextBox.Location = new System.Drawing.Point(93, 358);
+            this.ActivationZoneRotationAngleTextBox.Name = "ActivationZoneRotationAngleTextBox";
+            this.ActivationZoneRotationAngleTextBox.Size = new System.Drawing.Size(55, 20);
+            this.ActivationZoneRotationAngleTextBox.TabIndex = 112;
+            this.ActivationZoneRotationAngleTextBox.TextChanged += new System.EventHandler(this.ActivationZoneRotationAngleTextBox_TextChanged);
+            // 
             // label22
             // 
             this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(327, 34);
+            this.label22.Location = new System.Drawing.Point(310, 140);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(58, 13);
-            this.label22.TabIndex = 64;
-            this.label22.Text = "Unk bytes:";
+            this.label22.Size = new System.Drawing.Size(74, 13);
+            this.label22.TabIndex = 111;
+            this.label22.Text = "Wind Sounds:";
             // 
-            // UnkBytesTextBox
+            // WindElevationSoundsTextBox
             // 
-            this.UnkBytesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.UnkBytesTextBox.Location = new System.Drawing.Point(390, 31);
-            this.UnkBytesTextBox.Name = "UnkBytesTextBox";
-            this.UnkBytesTextBox.Size = new System.Drawing.Size(155, 20);
-            this.UnkBytesTextBox.TabIndex = 65;
-            this.UnkBytesTextBox.TextChanged += new System.EventHandler(this.UnkBytesTextBox_TextChanged);
+            this.WindElevationSoundsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.WindElevationSoundsTextBox.Location = new System.Drawing.Point(390, 137);
+            this.WindElevationSoundsTextBox.Name = "WindElevationSoundsTextBox";
+            this.WindElevationSoundsTextBox.Size = new System.Drawing.Size(155, 20);
+            this.WindElevationSoundsTextBox.TabIndex = 110;
+            this.WindElevationSoundsTextBox.TextChanged += new System.EventHandler(this.WindElevationSoundsTextBox_TextChanged);
+            // 
+            // ZoneWaterCalculationTextBox
+            // 
+            this.ZoneWaterCalculationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ZoneWaterCalculationTextBox.Location = new System.Drawing.Point(266, 316);
+            this.ZoneWaterCalculationTextBox.Name = "ZoneWaterCalculationTextBox";
+            this.ZoneWaterCalculationTextBox.Size = new System.Drawing.Size(55, 20);
+            this.ZoneWaterCalculationTextBox.TabIndex = 108;
+            this.ZoneWaterCalculationTextBox.TextChanged += new System.EventHandler(this.ZoneWaterCalculationTextBox_TextChanged);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(167, 398);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(105, 13);
+            this.label17.TabIndex = 107;
+            this.label17.Text = "Max Wind Influence:";
+            // 
+            // MaxWindInfluenceTextBox
+            // 
+            this.MaxWindInfluenceTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MaxWindInfluenceTextBox.Location = new System.Drawing.Point(274, 395);
+            this.MaxWindInfluenceTextBox.Name = "MaxWindInfluenceTextBox";
+            this.MaxWindInfluenceTextBox.Size = new System.Drawing.Size(55, 20);
+            this.MaxWindInfluenceTextBox.TabIndex = 106;
+            this.MaxWindInfluenceTextBox.TextChanged += new System.EventHandler(this.MaxWindInfluenceTextBox_TextChanged);
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(7, 398);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(102, 13);
+            this.label15.TabIndex = 105;
+            this.label15.Text = "Min Wind Influence:";
+            // 
+            // MinWindInfluenceTextBox
+            // 
+            this.MinWindInfluenceTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MinWindInfluenceTextBox.Location = new System.Drawing.Point(106, 395);
+            this.MinWindInfluenceTextBox.Name = "MinWindInfluenceTextBox";
+            this.MinWindInfluenceTextBox.Size = new System.Drawing.Size(55, 20);
+            this.MinWindInfluenceTextBox.TabIndex = 104;
+            this.MinWindInfluenceTextBox.TextChanged += new System.EventHandler(this.MinWindInfluenceTextBox_TextChanged);
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Location = new System.Drawing.Point(154, 293);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(100, 13);
+            this.label14.TabIndex = 103;
+            this.label14.Text = "Ped Density Scalar:";
+            // 
+            // PedDensityScalarTextBox
+            // 
+            this.PedDensityScalarTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PedDensityScalarTextBox.Location = new System.Drawing.Point(266, 290);
+            this.PedDensityScalarTextBox.Name = "PedDensityScalarTextBox";
+            this.PedDensityScalarTextBox.Size = new System.Drawing.Size(55, 20);
+            this.PedDensityScalarTextBox.TabIndex = 102;
+            this.PedDensityScalarTextBox.TextChanged += new System.EventHandler(this.PedDensityScalarTextBox_TextChanged);
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(7, 319);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(90, 13);
+            this.label10.TabIndex = 101;
+            this.label10.Text = "Max Ped Density:";
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(7, 293);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(87, 13);
+            this.label9.TabIndex = 100;
+            this.label9.Text = "Min Ped Density:";
+            // 
+            // MaxPedDensityTextBox
+            // 
+            this.MaxPedDensityTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MaxPedDensityTextBox.Location = new System.Drawing.Point(93, 316);
+            this.MaxPedDensityTextBox.Name = "MaxPedDensityTextBox";
+            this.MaxPedDensityTextBox.Size = new System.Drawing.Size(55, 20);
+            this.MaxPedDensityTextBox.TabIndex = 99;
+            this.MaxPedDensityTextBox.TextChanged += new System.EventHandler(this.MaxPedDensityTextBox_TextChanged);
+            // 
+            // MinPedDensityTextBox
+            // 
+            this.MinPedDensityTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MinPedDensityTextBox.Location = new System.Drawing.Point(93, 290);
+            this.MinPedDensityTextBox.Name = "MinPedDensityTextBox";
+            this.MinPedDensityTextBox.Size = new System.Drawing.Size(55, 20);
+            this.MinPedDensityTextBox.TabIndex = 98;
+            this.MinPedDensityTextBox.TextChanged += new System.EventHandler(this.MinPedDensityTextBox_TextChanged);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(154, 267);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(93, 13);
+            this.label8.TabIndex = 97;
+            this.label8.Text = "Ped Density TOD:";
+            // 
+            // PedDensityTODTextBox
+            // 
+            this.PedDensityTODTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PedDensityTODTextBox.Location = new System.Drawing.Point(266, 264);
+            this.PedDensityTODTextBox.Name = "PedDensityTODTextBox";
+            this.PedDensityTODTextBox.Size = new System.Drawing.Size(55, 20);
+            this.PedDensityTODTextBox.TabIndex = 96;
+            this.PedDensityTODTextBox.TextChanged += new System.EventHandler(this.PedDensityTODTextBox_TextChanged);
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(7, 267);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(80, 13);
+            this.label7.TabIndex = 95;
+            this.label7.Text = "Built Up Factor:";
+            // 
+            // BuiltUpFactorTextBox
+            // 
+            this.BuiltUpFactorTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.BuiltUpFactorTextBox.Location = new System.Drawing.Point(93, 264);
+            this.BuiltUpFactorTextBox.Name = "BuiltUpFactorTextBox";
+            this.BuiltUpFactorTextBox.Size = new System.Drawing.Size(55, 20);
+            this.BuiltUpFactorTextBox.TabIndex = 94;
+            this.BuiltUpFactorTextBox.TextChanged += new System.EventHandler(this.BuiltUpFactorTextBox_TextChanged);
+            // 
+            // PositioningSizeScaleTextBox
+            // 
+            this.PositioningSizeScaleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PositioningSizeScaleTextBox.Location = new System.Drawing.Point(121, 238);
+            this.PositioningSizeScaleTextBox.Name = "PositioningSizeScaleTextBox";
+            this.PositioningSizeScaleTextBox.Size = new System.Drawing.Size(200, 20);
+            this.PositioningSizeScaleTextBox.TabIndex = 93;
+            this.PositioningSizeScaleTextBox.TextChanged += new System.EventHandler(this.PositioningSizeScaleTextBox_TextChanged);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(7, 243);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(114, 13);
+            this.label6.TabIndex = 92;
+            this.label6.Text = "Positioning Size Scale:";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(7, 215);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(112, 13);
+            this.label5.TabIndex = 91;
+            this.label5.Text = "Positioning Rot Offset:";
+            // 
+            // PositioningRotationOffsetTextBox
+            // 
+            this.PositioningRotationOffsetTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PositioningRotationOffsetTextBox.Location = new System.Drawing.Point(121, 212);
+            this.PositioningRotationOffsetTextBox.Name = "PositioningRotationOffsetTextBox";
+            this.PositioningRotationOffsetTextBox.Size = new System.Drawing.Size(200, 20);
+            this.PositioningRotationOffsetTextBox.TabIndex = 90;
+            this.PositioningRotationOffsetTextBox.TextChanged += new System.EventHandler(this.PositioningRotationOffsetTextBox_TextChanged);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(7, 189);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(84, 13);
+            this.label4.TabIndex = 89;
+            this.label4.Text = "Positioning Size:";
+            // 
+            // PositioningSizeTextBox
+            // 
+            this.PositioningSizeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.PositioningSizeTextBox.Location = new System.Drawing.Point(121, 186);
+            this.PositioningSizeTextBox.Name = "PositioningSizeTextBox";
+            this.PositioningSizeTextBox.Size = new System.Drawing.Size(200, 20);
+            this.PositioningSizeTextBox.TabIndex = 88;
+            this.PositioningSizeTextBox.TextChanged += new System.EventHandler(this.PositioningSizeTextBox_TextChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(7, 134);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(110, 13);
+            this.label3.TabIndex = 87;
+            this.label3.Text = "Activation Size Scale:";
+            // 
+            // ActivationSizeScaleTextBox
+            // 
+            this.ActivationSizeScaleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ActivationSizeScaleTextBox.Location = new System.Drawing.Point(121, 134);
+            this.ActivationSizeScaleTextBox.Name = "ActivationSizeScaleTextBox";
+            this.ActivationSizeScaleTextBox.Size = new System.Drawing.Size(172, 20);
+            this.ActivationSizeScaleTextBox.TabIndex = 86;
+            this.ActivationSizeScaleTextBox.TextChanged += new System.EventHandler(this.ActivationSizeScaleTextBox_TextChanged);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(7, 111);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(108, 13);
+            this.label2.TabIndex = 85;
+            this.label2.Text = "Activation Rot Offset:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(7, 85);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(80, 13);
+            this.label1.TabIndex = 84;
+            this.label1.Text = "Activation Size:";
+            // 
+            // ActivationRotationOffsetTextBox
+            // 
+            this.ActivationRotationOffsetTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ActivationRotationOffsetTextBox.Location = new System.Drawing.Point(121, 108);
+            this.ActivationRotationOffsetTextBox.Name = "ActivationRotationOffsetTextBox";
+            this.ActivationRotationOffsetTextBox.Size = new System.Drawing.Size(200, 20);
+            this.ActivationRotationOffsetTextBox.TabIndex = 83;
+            this.ActivationRotationOffsetTextBox.TextChanged += new System.EventHandler(this.ActivationRotationOffsetTextBox_TextChanged);
+            // 
+            // ActivationSizeTextBox
+            // 
+            this.ActivationSizeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ActivationSizeTextBox.Location = new System.Drawing.Point(121, 82);
+            this.ActivationSizeTextBox.Name = "ActivationSizeTextBox";
+            this.ActivationSizeTextBox.Size = new System.Drawing.Size(172, 20);
+            this.ActivationSizeTextBox.TabIndex = 82;
+            this.ActivationSizeTextBox.TextChanged += new System.EventHandler(this.ActivationSizeTextBox_TextChanged);
+            // 
+            // label25
+            // 
+            this.label25.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(313, 58);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(71, 13);
+            this.label25.TabIndex = 74;
+            this.label25.Text = "Audio Scene:";
+            // 
+            // AudioSceneTextBox
+            // 
+            this.AudioSceneTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.AudioSceneTextBox.Location = new System.Drawing.Point(390, 58);
+            this.AudioSceneTextBox.Name = "AudioSceneTextBox";
+            this.AudioSceneTextBox.Size = new System.Drawing.Size(155, 20);
+            this.AudioSceneTextBox.TabIndex = 75;
+            this.AudioSceneTextBox.TextChanged += new System.EventHandler(this.AudioSceneTextBox_TextChanged);
+            // 
+            // label24
+            // 
+            this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(296, 88);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(88, 13);
+            this.label24.TabIndex = 72;
+            this.label24.Text = "Enviroment Rule:";
+            // 
+            // EnviromentRuleTextBox
+            // 
+            this.EnviromentRuleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.EnviromentRuleTextBox.Location = new System.Drawing.Point(390, 85);
+            this.EnviromentRuleTextBox.Name = "EnviromentRuleTextBox";
+            this.EnviromentRuleTextBox.Size = new System.Drawing.Size(155, 20);
+            this.EnviromentRuleTextBox.TabIndex = 73;
+            this.EnviromentRuleTextBox.TextChanged += new System.EventHandler(this.EnviromentRuleTextBox_TextChanged);
             // 
             // DeleteButton
             // 
@@ -207,20 +559,20 @@
             // 
             this.label21.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(340, 106);
+            this.label21.Location = new System.Drawing.Point(268, 36);
             this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(44, 13);
+            this.label21.Size = new System.Drawing.Size(122, 13);
             this.label21.TabIndex = 70;
-            this.label21.Text = "Unk13:";
+            this.label21.Text = "Random Radio Settings:";
             // 
-            // Unk13TextBox
+            // RandomRadioSettingsTextBox
             // 
-            this.Unk13TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Unk13TextBox.Location = new System.Drawing.Point(390, 103);
-            this.Unk13TextBox.Name = "Unk13TextBox";
-            this.Unk13TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Unk13TextBox.TabIndex = 71;
-            this.Unk13TextBox.TextChanged += new System.EventHandler(this.Unk13TextBox_TextChanged);
+            this.RandomRadioSettingsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.RandomRadioSettingsTextBox.Location = new System.Drawing.Point(390, 33);
+            this.RandomRadioSettingsTextBox.Name = "RandomRadioSettingsTextBox";
+            this.RandomRadioSettingsTextBox.Size = new System.Drawing.Size(155, 20);
+            this.RandomRadioSettingsTextBox.TabIndex = 71;
+            this.RandomRadioSettingsTextBox.TextChanged += new System.EventHandler(this.RandomisedRadioSettings_TextChanged);
             // 
             // label20
             // 
@@ -228,21 +580,21 @@
             this.label20.AutoSize = true;
             this.label20.Location = new System.Drawing.Point(340, 303);
             this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(193, 13);
+            this.label20.Size = new System.Drawing.Size(115, 13);
             this.label20.TabIndex = 78;
-            this.label20.Text = "Ext params:   Name (hash), Value (float)";
+            this.label20.Text = "Directional Ambiences:";
             // 
-            // DependentAmbiencesTextBox
+            // DirAmbiencesTextBox
             // 
-            this.DependentAmbiencesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.DependentAmbiencesTextBox.Location = new System.Drawing.Point(335, 319);
-            this.DependentAmbiencesTextBox.Multiline = true;
-            this.DependentAmbiencesTextBox.Name = "DependentAmbiencesTextBox";
-            this.DependentAmbiencesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.DependentAmbiencesTextBox.Size = new System.Drawing.Size(209, 92);
-            this.DependentAmbiencesTextBox.TabIndex = 79;
-            this.DependentAmbiencesTextBox.WordWrap = false;
-            this.DependentAmbiencesTextBox.TextChanged += new System.EventHandler(this.DependentAmbiencesTextBox_TextChanged);
+            this.DirAmbiencesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.DirAmbiencesTextBox.Location = new System.Drawing.Point(335, 319);
+            this.DirAmbiencesTextBox.Multiline = true;
+            this.DirAmbiencesTextBox.Name = "DirAmbiencesTextBox";
+            this.DirAmbiencesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.DirAmbiencesTextBox.Size = new System.Drawing.Size(209, 92);
+            this.DirAmbiencesTextBox.TabIndex = 79;
+            this.DirAmbiencesTextBox.WordWrap = false;
+            this.DirAmbiencesTextBox.TextChanged += new System.EventHandler(this.DirAmbiencesTextBox_TextChanged);
             // 
             // label19
             // 
@@ -250,116 +602,40 @@
             this.label19.AutoSize = true;
             this.label19.Location = new System.Drawing.Point(340, 183);
             this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(46, 13);
+            this.label19.Size = new System.Drawing.Size(37, 13);
             this.label19.TabIndex = 76;
-            this.label19.Text = "Hashes:";
+            this.label19.Text = "Rules:";
             // 
-            // label15
+            // RulesTextBox
             // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(7, 394);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(60, 13);
-            this.label15.TabIndex = 62;
-            this.label15.Text = "Unk vec 3:";
-            // 
-            // UnkVec3TextBox
-            // 
-            this.UnkVec3TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.UnkVec3TextBox.Location = new System.Drawing.Point(84, 391);
-            this.UnkVec3TextBox.Name = "UnkVec3TextBox";
-            this.UnkVec3TextBox.Size = new System.Drawing.Size(237, 20);
-            this.UnkVec3TextBox.TabIndex = 63;
-            this.UnkVec3TextBox.TextChanged += new System.EventHandler(this.UnkVec3TextBox_TextChanged);
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(7, 370);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(60, 13);
-            this.label17.TabIndex = 60;
-            this.label17.Text = "Unk vec 2:";
-            // 
-            // UnkVec2TextBox
-            // 
-            this.UnkVec2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.UnkVec2TextBox.Location = new System.Drawing.Point(84, 367);
-            this.UnkVec2TextBox.Name = "UnkVec2TextBox";
-            this.UnkVec2TextBox.Size = new System.Drawing.Size(237, 20);
-            this.UnkVec2TextBox.TabIndex = 61;
-            this.UnkVec2TextBox.TextChanged += new System.EventHandler(this.UnkVec2TextBox_TextChanged);
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(7, 346);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(60, 13);
-            this.label18.TabIndex = 58;
-            this.label18.Text = "Unk vec 1:";
-            // 
-            // UnkVec1TextBox
-            // 
-            this.UnkVec1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.UnkVec1TextBox.Location = new System.Drawing.Point(84, 343);
-            this.UnkVec1TextBox.Name = "UnkVec1TextBox";
-            this.UnkVec1TextBox.Size = new System.Drawing.Size(237, 20);
-            this.UnkVec1TextBox.TabIndex = 59;
-            this.UnkVec1TextBox.TextChanged += new System.EventHandler(this.UnkVec1TextBox_TextChanged);
-            // 
-            // HashesTextBox
-            // 
-            this.HashesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.HashesTextBox.Location = new System.Drawing.Point(335, 199);
-            this.HashesTextBox.Multiline = true;
-            this.HashesTextBox.Name = "HashesTextBox";
-            this.HashesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.HashesTextBox.Size = new System.Drawing.Size(209, 92);
-            this.HashesTextBox.TabIndex = 77;
-            this.HashesTextBox.WordWrap = false;
-            this.HashesTextBox.TextChanged += new System.EventHandler(this.HashesTextBox_TextChanged);
-            // 
-            // label14
-            // 
-            this.label14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(340, 82);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(44, 13);
-            this.label14.TabIndex = 68;
-            this.label14.Text = "Flags 1:";
-            // 
-            // Flags1TextBox
-            // 
-            this.Flags1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Flags1TextBox.Location = new System.Drawing.Point(390, 79);
-            this.Flags1TextBox.Name = "Flags1TextBox";
-            this.Flags1TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags1TextBox.TabIndex = 69;
-            this.Flags1TextBox.TextChanged += new System.EventHandler(this.Flags1TextBox_TextChanged);
+            this.RulesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.RulesTextBox.Location = new System.Drawing.Point(335, 199);
+            this.RulesTextBox.Multiline = true;
+            this.RulesTextBox.Name = "RulesTextBox";
+            this.RulesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.RulesTextBox.Size = new System.Drawing.Size(209, 92);
+            this.RulesTextBox.TabIndex = 77;
+            this.RulesTextBox.WordWrap = false;
+            this.RulesTextBox.TextChanged += new System.EventHandler(this.RulesTextBox_TextChanged);
             // 
             // label13
             // 
             this.label13.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(340, 58);
+            this.label13.Location = new System.Drawing.Point(340, 114);
             this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(44, 13);
+            this.label13.Size = new System.Drawing.Size(35, 13);
             this.label13.TabIndex = 66;
-            this.label13.Text = "Flags 0:";
+            this.label13.Text = "Flags:";
             // 
-            // Flags0TextBox
+            // FlagsTextBox
             // 
-            this.Flags0TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Flags0TextBox.Location = new System.Drawing.Point(390, 55);
-            this.Flags0TextBox.Name = "Flags0TextBox";
-            this.Flags0TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Flags0TextBox.TabIndex = 67;
-            this.Flags0TextBox.TextChanged += new System.EventHandler(this.Flags0TextBox_TextChanged);
+            this.FlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.FlagsTextBox.Location = new System.Drawing.Point(390, 111);
+            this.FlagsTextBox.Name = "FlagsTextBox";
+            this.FlagsTextBox.Size = new System.Drawing.Size(155, 20);
+            this.FlagsTextBox.TabIndex = 67;
+            this.FlagsTextBox.TextChanged += new System.EventHandler(this.FlagsTextBox_TextChanged);
             // 
             // ShapeComboBox
             // 
@@ -369,9 +645,9 @@
             "Box",
             "Line",
             "Sphere"});
-            this.ShapeComboBox.Location = new System.Drawing.Point(84, 30);
+            this.ShapeComboBox.Location = new System.Drawing.Point(84, 28);
             this.ShapeComboBox.Name = "ShapeComboBox";
-            this.ShapeComboBox.Size = new System.Drawing.Size(151, 21);
+            this.ShapeComboBox.Size = new System.Drawing.Size(178, 21);
             this.ShapeComboBox.TabIndex = 33;
             this.ShapeComboBox.SelectedIndexChanged += new System.EventHandler(this.ShapeComboBox_SelectedIndexChanged);
             // 
@@ -403,233 +679,43 @@
             this.NameTextBox.TabIndex = 30;
             this.NameTextBox.TextChanged += new System.EventHandler(this.NameTextBox_TextChanged);
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(7, 322);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(66, 13);
-            this.label6.TabIndex = 56;
-            this.label6.Text = "Outer vec 3:";
-            // 
-            // OuterVec3TextBox
-            // 
-            this.OuterVec3TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.OuterVec3TextBox.Location = new System.Drawing.Point(84, 319);
-            this.OuterVec3TextBox.Name = "OuterVec3TextBox";
-            this.OuterVec3TextBox.Size = new System.Drawing.Size(237, 20);
-            this.OuterVec3TextBox.TabIndex = 57;
-            this.OuterVec3TextBox.TextChanged += new System.EventHandler(this.OuterVec3TextBox_TextChanged);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(7, 298);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(66, 13);
-            this.label7.TabIndex = 54;
-            this.label7.Text = "Outer vec 2:";
-            // 
-            // OuterVec2TextBox
-            // 
-            this.OuterVec2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.OuterVec2TextBox.Location = new System.Drawing.Point(84, 295);
-            this.OuterVec2TextBox.Name = "OuterVec2TextBox";
-            this.OuterVec2TextBox.Size = new System.Drawing.Size(237, 20);
-            this.OuterVec2TextBox.TabIndex = 55;
-            this.OuterVec2TextBox.TextChanged += new System.EventHandler(this.OuterVec2TextBox_TextChanged);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(7, 274);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(66, 13);
-            this.label8.TabIndex = 52;
-            this.label8.Text = "Outer vec 1:";
-            // 
-            // OuterVec1TextBox
-            // 
-            this.OuterVec1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.OuterVec1TextBox.Location = new System.Drawing.Point(84, 271);
-            this.OuterVec1TextBox.Name = "OuterVec1TextBox";
-            this.OuterVec1TextBox.Size = new System.Drawing.Size(237, 20);
-            this.OuterVec1TextBox.TabIndex = 53;
-            this.OuterVec1TextBox.TextChanged += new System.EventHandler(this.OuterVec1TextBox_TextChanged);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(7, 250);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(65, 13);
-            this.label9.TabIndex = 50;
-            this.label9.Text = "Outer angle:";
-            // 
-            // OuterAngleTextBox
-            // 
-            this.OuterAngleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.OuterAngleTextBox.Location = new System.Drawing.Point(84, 247);
-            this.OuterAngleTextBox.Name = "OuterAngleTextBox";
-            this.OuterAngleTextBox.Size = new System.Drawing.Size(237, 20);
-            this.OuterAngleTextBox.TabIndex = 51;
-            this.OuterAngleTextBox.TextChanged += new System.EventHandler(this.OuterAngleTextBox_TextChanged);
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(7, 226);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(57, 13);
-            this.label10.TabIndex = 48;
-            this.label10.Text = "Outer size:";
-            // 
-            // OuterSizeTextBox
-            // 
-            this.OuterSizeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.OuterSizeTextBox.Location = new System.Drawing.Point(84, 223);
-            this.OuterSizeTextBox.Name = "OuterSizeTextBox";
-            this.OuterSizeTextBox.Size = new System.Drawing.Size(237, 20);
-            this.OuterSizeTextBox.TabIndex = 49;
-            this.OuterSizeTextBox.TextChanged += new System.EventHandler(this.OuterSizeTextBox_TextChanged);
-            // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(7, 202);
+            this.label11.Location = new System.Drawing.Point(7, 163);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(75, 13);
+            this.label11.Size = new System.Drawing.Size(95, 13);
             this.label11.TabIndex = 46;
-            this.label11.Text = "Outer position:";
+            this.label11.Text = "Positioning Centre:";
             // 
-            // OuterPosTextBox
+            // PositioningCentreTextBox
             // 
-            this.OuterPosTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.PositioningCentreTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.OuterPosTextBox.Location = new System.Drawing.Point(84, 199);
-            this.OuterPosTextBox.Name = "OuterPosTextBox";
-            this.OuterPosTextBox.Size = new System.Drawing.Size(237, 20);
-            this.OuterPosTextBox.TabIndex = 47;
-            this.OuterPosTextBox.TextChanged += new System.EventHandler(this.OuterPosTextBox_TextChanged);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(7, 178);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(64, 13);
-            this.label5.TabIndex = 44;
-            this.label5.Text = "Inner vec 3:";
-            // 
-            // InnerVec3TextBox
-            // 
-            this.InnerVec3TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerVec3TextBox.Location = new System.Drawing.Point(84, 175);
-            this.InnerVec3TextBox.Name = "InnerVec3TextBox";
-            this.InnerVec3TextBox.Size = new System.Drawing.Size(237, 20);
-            this.InnerVec3TextBox.TabIndex = 45;
-            this.InnerVec3TextBox.TextChanged += new System.EventHandler(this.InnerVec3TextBox_TextChanged);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(7, 154);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(64, 13);
-            this.label4.TabIndex = 42;
-            this.label4.Text = "Inner vec 2:";
-            // 
-            // InnerVec2TextBox
-            // 
-            this.InnerVec2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerVec2TextBox.Location = new System.Drawing.Point(84, 151);
-            this.InnerVec2TextBox.Name = "InnerVec2TextBox";
-            this.InnerVec2TextBox.Size = new System.Drawing.Size(237, 20);
-            this.InnerVec2TextBox.TabIndex = 43;
-            this.InnerVec2TextBox.TextChanged += new System.EventHandler(this.InnerVec2TextBox_TextChanged);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(7, 130);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(64, 13);
-            this.label3.TabIndex = 40;
-            this.label3.Text = "Inner vec 1:";
-            // 
-            // InnerVec1TextBox
-            // 
-            this.InnerVec1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerVec1TextBox.Location = new System.Drawing.Point(84, 127);
-            this.InnerVec1TextBox.Name = "InnerVec1TextBox";
-            this.InnerVec1TextBox.Size = new System.Drawing.Size(237, 20);
-            this.InnerVec1TextBox.TabIndex = 41;
-            this.InnerVec1TextBox.TextChanged += new System.EventHandler(this.InnerVec1TextBox_TextChanged);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(7, 106);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(63, 13);
-            this.label2.TabIndex = 38;
-            this.label2.Text = "Inner angle:";
-            // 
-            // InnerAngleTextBox
-            // 
-            this.InnerAngleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerAngleTextBox.Location = new System.Drawing.Point(84, 103);
-            this.InnerAngleTextBox.Name = "InnerAngleTextBox";
-            this.InnerAngleTextBox.Size = new System.Drawing.Size(237, 20);
-            this.InnerAngleTextBox.TabIndex = 39;
-            this.InnerAngleTextBox.TextChanged += new System.EventHandler(this.InnerAngleTextBox_TextChanged);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 82);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(55, 13);
-            this.label1.TabIndex = 36;
-            this.label1.Text = "Inner size:";
-            // 
-            // InnerSizeTextBox
-            // 
-            this.InnerSizeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerSizeTextBox.Location = new System.Drawing.Point(84, 79);
-            this.InnerSizeTextBox.Name = "InnerSizeTextBox";
-            this.InnerSizeTextBox.Size = new System.Drawing.Size(237, 20);
-            this.InnerSizeTextBox.TabIndex = 37;
-            this.InnerSizeTextBox.TextChanged += new System.EventHandler(this.InnerSizeTextBox_TextChanged);
+            this.PositioningCentreTextBox.Location = new System.Drawing.Point(121, 160);
+            this.PositioningCentreTextBox.Name = "PositioningCentreTextBox";
+            this.PositioningCentreTextBox.Size = new System.Drawing.Size(200, 20);
+            this.PositioningCentreTextBox.TabIndex = 47;
+            this.PositioningCentreTextBox.TextChanged += new System.EventHandler(this.OuterPosTextBox_TextChanged);
             // 
             // label16
             // 
             this.label16.AutoSize = true;
             this.label16.Location = new System.Drawing.Point(7, 58);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(73, 13);
+            this.label16.Size = new System.Drawing.Size(91, 13);
             this.label16.TabIndex = 34;
-            this.label16.Text = "Inner position:";
+            this.label16.Text = "Activation Centre:";
             // 
-            // InnerPosTextBox
+            // ActivationZoneCentreTextBox
             // 
-            this.InnerPosTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.ActivationZoneCentreTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerPosTextBox.Location = new System.Drawing.Point(84, 55);
-            this.InnerPosTextBox.Name = "InnerPosTextBox";
-            this.InnerPosTextBox.Size = new System.Drawing.Size(237, 20);
-            this.InnerPosTextBox.TabIndex = 35;
-            this.InnerPosTextBox.TextChanged += new System.EventHandler(this.InnerPosTextBox_TextChanged);
+            this.ActivationZoneCentreTextBox.Location = new System.Drawing.Point(121, 55);
+            this.ActivationZoneCentreTextBox.Name = "ActivationZoneCentreTextBox";
+            this.ActivationZoneCentreTextBox.Size = new System.Drawing.Size(186, 20);
+            this.ActivationZoneCentreTextBox.TabIndex = 35;
+            this.ActivationZoneCentreTextBox.TextChanged += new System.EventHandler(this.PositioningCentreTextBoxTextChanged);
             // 
             // GoToButton
             // 
@@ -641,44 +727,6 @@
             this.GoToButton.Text = "Go to";
             this.GoToButton.UseVisualStyleBackColor = true;
             this.GoToButton.Click += new System.EventHandler(this.GoToButton_Click);
-            // 
-            // label24
-            // 
-            this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(340, 130);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(44, 13);
-            this.label24.TabIndex = 72;
-            this.label24.Text = "Hash 0:";
-            // 
-            // Hash0TextBox
-            // 
-            this.Hash0TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Hash0TextBox.Location = new System.Drawing.Point(390, 127);
-            this.Hash0TextBox.Name = "Hash0TextBox";
-            this.Hash0TextBox.Size = new System.Drawing.Size(155, 20);
-            this.Hash0TextBox.TabIndex = 73;
-            this.Hash0TextBox.TextChanged += new System.EventHandler(this.Hash0TextBox_TextChanged);
-            // 
-            // label25
-            // 
-            this.label25.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(340, 154);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(44, 13);
-            this.label25.TabIndex = 74;
-            this.label25.Text = "Hash 1:";
-            // 
-            // SceneTextBox
-            // 
-            this.SceneTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SceneTextBox.Location = new System.Drawing.Point(390, 151);
-            this.SceneTextBox.Name = "SceneTextBox";
-            this.SceneTextBox.Size = new System.Drawing.Size(155, 20);
-            this.SceneTextBox.TabIndex = 75;
-            this.SceneTextBox.TextChanged += new System.EventHandler(this.SceneTextBox_TextChanged);
             // 
             // EditAudioZonePanel
             // 
@@ -701,57 +749,59 @@
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.TextBox InnerPosTextBox;
+        private System.Windows.Forms.TextBox ActivationZoneCentreTextBox;
         private System.Windows.Forms.Button GoToButton;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox InnerSizeTextBox;
-        private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox InnerVec2TextBox;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox InnerVec1TextBox;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox InnerAngleTextBox;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox InnerVec3TextBox;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.TextBox NameTextBox;
-        private System.Windows.Forms.Label label6;
-        private System.Windows.Forms.TextBox OuterVec3TextBox;
-        private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.TextBox OuterVec2TextBox;
-        private System.Windows.Forms.Label label8;
-        private System.Windows.Forms.TextBox OuterVec1TextBox;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.TextBox OuterAngleTextBox;
-        private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.TextBox OuterSizeTextBox;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.TextBox OuterPosTextBox;
+        private System.Windows.Forms.TextBox PositioningCentreTextBox;
         private System.Windows.Forms.ComboBox ShapeComboBox;
         private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.Label label14;
-        private System.Windows.Forms.TextBox Flags1TextBox;
         private System.Windows.Forms.Label label13;
-        private System.Windows.Forms.TextBox Flags0TextBox;
-        private WinForms.TextBoxFix HashesTextBox;
-        private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.TextBox UnkVec3TextBox;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.TextBox UnkVec2TextBox;
-        private System.Windows.Forms.Label label18;
-        private System.Windows.Forms.TextBox UnkVec1TextBox;
+        private System.Windows.Forms.TextBox FlagsTextBox;
+        private WinForms.TextBoxFix RulesTextBox;
         private System.Windows.Forms.Label label20;
-        private WinForms.TextBoxFix DependentAmbiencesTextBox;
+        private WinForms.TextBoxFix DirAmbiencesTextBox;
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.TextBox Unk13TextBox;
+        private System.Windows.Forms.TextBox RandomRadioSettingsTextBox;
         private System.Windows.Forms.Button AddToProjectButton;
         private System.Windows.Forms.Button DeleteButton;
-        private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.TextBox UnkBytesTextBox;
         private System.Windows.Forms.Label label25;
-        private System.Windows.Forms.TextBox SceneTextBox;
+        private System.Windows.Forms.TextBox AudioSceneTextBox;
         private System.Windows.Forms.Label label24;
-        private System.Windows.Forms.TextBox Hash0TextBox;
+        private System.Windows.Forms.TextBox EnviromentRuleTextBox;
+        private System.Windows.Forms.TextBox ActivationSizeTextBox;
+        private System.Windows.Forms.TextBox ActivationRotationOffsetTextBox;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox ActivationSizeScaleTextBox;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox PositioningSizeTextBox;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TextBox PositioningRotationOffsetTextBox;
+        private System.Windows.Forms.TextBox PositioningSizeScaleTextBox;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TextBox BuiltUpFactorTextBox;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox PedDensityTODTextBox;
+        private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TextBox MaxPedDensityTextBox;
+        private System.Windows.Forms.TextBox MinPedDensityTextBox;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox PedDensityScalarTextBox;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.TextBox MinWindInfluenceTextBox;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.TextBox MaxWindInfluenceTextBox;
+        private System.Windows.Forms.TextBox ZoneWaterCalculationTextBox;
+        private System.Windows.Forms.TextBox WindElevationSoundsTextBox;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.TextBox ActivationZoneRotationAngleTextBox;
+        private System.Windows.Forms.TextBox PositioningRotationAngleTextBox;
     }
 }

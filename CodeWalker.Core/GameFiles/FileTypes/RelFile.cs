@@ -5269,66 +5269,86 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData
     {
-        public FlagsUint Flags0 { get; set; }
-        public Dat151ZoneShape Shape { get; set; }
-        public FlagsUint Flags1 { get; set; }
-        public Vector3 ActivationZonePosition { get; set; }
+        public FlagsUint Flags { get; set; }
+        public Dat151ZoneShape Shape { get; set; } // Should be a single byte then 7 bytes of padding
+        public uint Padding00 { get; set; }
+        public Vector3 ActivationZoneCentre { get; set; }
         public float Unused01 { get; set; }
-        public Vector3 ActivationZoneSize { get; set; }
+        public Vector3 ActivationZoneSize { get; set; } 
         public float Unused02 { get; set; }
-        public Vector4 ActivationZoneVec1 { get; set; }
-        public Vector4 ActivationZoneVec2 { get; set; }
-        public uint ActivationZoneAngle { get; set; }
-        public Vector3 ActivationZoneVec3 { get; set; }
-        public Vector3 PlaybackZonePosition { get; set; }
+        public Vector3 ActivationZonePostRotationOffset { get; set; }
+        public uint Padding01 { get; set; }
+        public Vector3 ActivationZoneSizeScale { get; set; }
+        public uint Padding02 { get; set; }
+        public ushort ActivationZoneRotationAngle { get; set; }
+        public ushort Padding03 { get; set; }
+        public uint Padding04 { get; set; }
+        public uint Padding05 { get; set; }
+        public uint Padding06 { get; set; }
+        public Vector3 PositioningZoneCentre { get; set; }
         public float Unused06 { get; set; }
-        public Vector3 PlaybackZoneSize { get; set; }
+        public Vector3 PositioningZoneSize { get; set; }
         public float Unused07 { get; set; }
-        public Vector4 PlaybackZoneVec1 { get; set; }
-        public Vector4 PlaybackZoneVec2 { get; set; }
-        public uint PlaybackZoneAngle { get; set; }
-        public Vector3 PlaybackZoneVec3 { get; set; }
-        public Vector4 UnkVec1 { get; set; }
-        public Vector4 UnkVec2 { get; set; }
-        public MetaHash UnkHash0 { get; set; }
-        public MetaHash Scene { get; set; }
-        public Vector2 UnkVec3 { get; set; }
-        public MetaHash Unk13 { get; set; }
-        public byte Unk14 { get; set; }
-        public byte Unk15 { get; set; }
-        public byte RulesCount { get; set; }
-        public byte Unk16 { get; set; }
+        public Vector3 PositioningZonePostRotationOffset { get; set; }
+        public uint Padding07 { get; set; }
+        public Vector3 PositioningZoneSizeScale { get; set; }
+        public uint Padding08 { get; set; }
+        public ushort PositioningZoneRotationAngle { get; set; }
+        public ushort Padding09 { get; set; }
+        public uint Padding10 { get; set; }
+        public uint Padding11 { get; set; }
+        public uint Padding12 { get; set; }
+        public float BuiltUpFactor { get; set; }
+        public float MinPedDensity { get; set; }
+        public float MaxPedDensity { get; set; }
+        public uint PedDensityTOD { get; set; }
+        public float PedDensityScalar { get; set; }
+        public float MaxWindInfluence { get; set; }
+        public float MinWindInfluence { get; set; }
+        public uint WindElevationSounds { get; set; }
+        public MetaHash EnviromentRule { get; set; }
+        public MetaHash AudioScene { get; set; }
+        public float UnderwaterCreakFactor { get; set; }
+        public MetaHash PedWallaSettings { get; set; }
+        public MetaHash RandomisedRadioSettings { get; set; }
+        public byte NumRulesToPlay { get; set; }
+        public byte ZoneWaterCalculation { get; set; }
+        public byte NumRules { get; set; }
+        public byte Unused11 { get; set; }
         public MetaHash[] Rules { get; set; }
-
-        public uint DependentAmbiencesCount { get; set; }
-        public DependentAmbience[] DependentAmbiences { get; set; }
-        public struct DependentAmbience : IMetaXmlItem
+        public byte NumDirAmbiences { get; set; }
+        public byte Unused12 { get; set; }
+        public byte Unused13 { get; set; }
+        public byte Unused14 { get; set; }
+        public DirAmbience[] DirAmbiences { get; set; }
+        public uint Unused15 { get; set; }
+        public struct DirAmbience : IMetaXmlItem
         {
             public MetaHash Name { get; set; }
-            public float Value { get; set; }
-            public DependentAmbience(BinaryReader br)
+            public float Volume { get; set; }
+            public DirAmbience(BinaryReader br)
             {
                 Name = br.ReadUInt32();
-                Value = br.ReadSingle();
+                Volume = br.ReadSingle();
             }
             public void Write(BinaryWriter bw)
             {
                 bw.Write(Name);
-                bw.Write(Value);
+                bw.Write(Volume);
             }
             public void WriteXml(StringBuilder sb, int indent)
             {
                 RelXml.StringTag(sb, indent, "Name", RelXml.HashString(Name));
-                RelXml.ValueTag(sb, indent, "Value", FloatUtil.ToString(Value));
+                RelXml.ValueTag(sb, indent, "Volume", FloatUtil.ToString(Volume));
             }
             public void ReadXml(XmlNode node)
             {
                 Name = XmlRel.GetHash(Xml.GetChildInnerText(node, "Name"));
-                Value = Xml.GetChildFloatAttribute(node, "Value", "value");
+                Volume = Xml.GetChildFloatAttribute(node, "Volume", "value");
             }
             public override string ToString()
             {
-                return Name.ToString() + ": " + FloatUtil.ToString(Value);
+                return Name.ToString() + ": " + FloatUtil.ToString(Volume);
             }
         }
 
@@ -5341,315 +5361,300 @@ namespace CodeWalker.GameFiles
         }
         public Dat151AmbientZone(RelData d, BinaryReader br) : base(d, br)
         {
-            Flags0 = br.ReadUInt32();
+            Flags = br.ReadUInt32();
             Shape = (Dat151ZoneShape)br.ReadUInt32();
-            Flags1 = br.ReadUInt32();
-            ActivationZonePosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Padding00 = br.ReadUInt32();
+            ActivationZoneCentre = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unused01 = br.ReadSingle();
             ActivationZoneSize = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unused02 = br.ReadSingle();
-            ActivationZoneVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            ActivationZoneVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            ActivationZoneAngle = br.ReadUInt32();//###
-            ActivationZoneVec3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            PlaybackZonePosition = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            ActivationZonePostRotationOffset = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Padding01 = br.ReadUInt32();
+            ActivationZoneSizeScale = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Padding02 = br.ReadUInt32();
+            ActivationZoneRotationAngle = br.ReadUInt16();
+            Padding03 = br.ReadUInt16();
+            Padding04 = br.ReadUInt32();
+            Padding05 = br.ReadUInt32();
+            Padding06 = br.ReadUInt32();
+            PositioningZoneCentre = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unused06 = br.ReadSingle();
-            PlaybackZoneSize = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            PositioningZoneSize = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Unused07 = br.ReadSingle();
-            PlaybackZoneVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            PlaybackZoneVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            PlaybackZoneAngle = br.ReadUInt32();//###
-            PlaybackZoneVec3 = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec1 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkVec2 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            UnkHash0 = br.ReadUInt32();
-            Scene = br.ReadUInt32();
-            UnkVec3 = new Vector2(br.ReadSingle(), br.ReadSingle());
-            Unk13 = br.ReadUInt32();
-            Unk14 = br.ReadByte();
-            Unk15 = br.ReadByte();
-            RulesCount = br.ReadByte();
-            Unk16 = br.ReadByte();
-            Rules = new MetaHash[RulesCount];
-            for (int i = 0; i < RulesCount; i++)
+            PositioningZonePostRotationOffset = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Padding07 = br.ReadUInt32();
+            PositioningZoneSizeScale = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            Padding08 = br.ReadUInt32();
+            PositioningZoneRotationAngle = br.ReadUInt16();
+            Padding09 = br.ReadUInt16();
+            Padding10 = br.ReadUInt32();
+            Padding11 = br.ReadUInt32();
+            Padding12 = br.ReadUInt32();
+            BuiltUpFactor = br.ReadSingle();
+            MinPedDensity = br.ReadSingle();
+            MaxPedDensity = br.ReadSingle();
+            PedDensityTOD = br.ReadUInt32();
+            PedDensityScalar = br.ReadSingle();
+            MaxWindInfluence = br.ReadSingle();
+            MinWindInfluence = br.ReadSingle();
+            WindElevationSounds = br.ReadUInt32();
+            EnviromentRule = br.ReadUInt32();
+            AudioScene = br.ReadUInt32();
+            UnderwaterCreakFactor = br.ReadSingle();
+            PedWallaSettings = br.ReadUInt32();
+            RandomisedRadioSettings = br.ReadUInt32();
+            NumRulesToPlay = br.ReadByte();
+            ZoneWaterCalculation = br.ReadByte();
+            NumRules = br.ReadByte();
+            Unused11 = br.ReadByte();
+
+            Rules = new MetaHash[NumRules];
+            for (int i = 0; i < NumRules; i++)
             {
                 Rules[i] = br.ReadUInt32();
             }
 
-            DependentAmbiencesCount = br.ReadUInt32();
-            DependentAmbiences = new DependentAmbience[DependentAmbiencesCount];
-            for (int i = 0; i < DependentAmbiencesCount; i++)
+            NumDirAmbiences = br.ReadByte();
+            Unused12 = br.ReadByte();
+            Unused13 = br.ReadByte();
+            Unused14 = br.ReadByte();
+
+            DirAmbiences = new DirAmbience[NumDirAmbiences];
+            for (int i = 0; i < NumDirAmbiences; i++)
             {
-                DependentAmbiences[i] = new DependentAmbience(br);
+                DirAmbiences[i] = new DirAmbience(br);
             }
-            if (DependentAmbiencesCount != 0)
+            if (NumDirAmbiences != 0)
             { }
-
-
-            #region testing
-
-            var data = this.Data;
-
-
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            {
-                //byte[] remainder = br.ReadBytes((int)bytesleft);
-                //for (int i = 0; i < remainder.Length; i++)
-                //{
-                //    if (remainder[i] != 0)
-                //    { } //no hits here! probably got everything, i'm assuming the block is padded to 0x10 or something.
-                //}
-            }
-
-
-            //RecVec(Pos01);//debug coords output
-            //RecVec(Pos06);
-
-
-            if (Unused01 != 0)
-            { }//no hit
-            if (Unused02 != 0)
-            { }//no hit
-            if (Unused06 != 0)
-            { }//no hit
-            if (Unused07 != 0)
-            { }//no hit
-            if (Shape != 0)
-            { }//eg 1, 2
-            if (Flags1 != 0)
-            { }//no hit
-            if (ActivationZoneAngle > 360)
-            { }//no hit
-            if (PlaybackZoneAngle > 360)
-            { }//no hit
-            if (Unk13 != 0)
-            { }//eg 0xAE64583B, 0x61083310, 0xCAE96294, 0x1C376176
-            if (UnkHash0 != 0)
-            { }
-            if (Scene != 0)
-            { }
-
-            #endregion
-
         }
         public override void Write(BinaryWriter bw)
         {
-            //base.Write(bw);
             WriteTypeAndOffset(bw);
 
-            bw.Write(Flags0);
+            bw.Write(Flags);
             bw.Write((uint)Shape);
-            bw.Write(Flags1);
-            bw.Write(ActivationZonePosition.X);
-            bw.Write(ActivationZonePosition.Y);
-            bw.Write(ActivationZonePosition.Z);
+            bw.Write(Padding00);
+            bw.Write(ActivationZoneCentre.X);
+            bw.Write(ActivationZoneCentre.Y);
+            bw.Write(ActivationZoneCentre.Z);
             bw.Write(Unused01);
             bw.Write(ActivationZoneSize.X);
             bw.Write(ActivationZoneSize.Y);
             bw.Write(ActivationZoneSize.Z);
             bw.Write(Unused02);
-            bw.Write(ActivationZoneVec1.X);
-            bw.Write(ActivationZoneVec1.Y);
-            bw.Write(ActivationZoneVec1.Z);
-            bw.Write(ActivationZoneVec1.W);
-            bw.Write(ActivationZoneVec2.X);
-            bw.Write(ActivationZoneVec2.Y);
-            bw.Write(ActivationZoneVec2.Z);
-            bw.Write(ActivationZoneVec2.W);
-            bw.Write(ActivationZoneAngle);//###
-            bw.Write(ActivationZoneVec3.X);
-            bw.Write(ActivationZoneVec3.Y);
-            bw.Write(ActivationZoneVec3.Z);
-            bw.Write(PlaybackZonePosition.X);
-            bw.Write(PlaybackZonePosition.Y);
-            bw.Write(PlaybackZonePosition.Z);
+            bw.Write(ActivationZonePostRotationOffset.X);
+            bw.Write(ActivationZonePostRotationOffset.Y);
+            bw.Write(ActivationZonePostRotationOffset.Z);
+            bw.Write(Padding01);
+            bw.Write(ActivationZoneSizeScale.X);
+            bw.Write(ActivationZoneSizeScale.Y);
+            bw.Write(ActivationZoneSizeScale.Z);
+            bw.Write(Padding02);
+            bw.Write(ActivationZoneRotationAngle);
+            bw.Write(Padding03);
+            bw.Write(Padding04);
+            bw.Write(Padding05);
+            bw.Write(Padding06);
+            bw.Write(PositioningZoneCentre.X);
+            bw.Write(PositioningZoneCentre.Y);
+            bw.Write(PositioningZoneCentre.Z);
             bw.Write(Unused06);
-            bw.Write(PlaybackZoneSize.X);
-            bw.Write(PlaybackZoneSize.Y);
-            bw.Write(PlaybackZoneSize.Z);
+            bw.Write(PositioningZoneSize.X);
+            bw.Write(PositioningZoneSize.Y);
+            bw.Write(PositioningZoneSize.Z);
             bw.Write(Unused07);
-            bw.Write(PlaybackZoneVec1.X);
-            bw.Write(PlaybackZoneVec1.Y);
-            bw.Write(PlaybackZoneVec1.Z);
-            bw.Write(PlaybackZoneVec1.W);
-            bw.Write(PlaybackZoneVec2.X);
-            bw.Write(PlaybackZoneVec2.Y);
-            bw.Write(PlaybackZoneVec2.Z);
-            bw.Write(PlaybackZoneVec2.W);
-            bw.Write(PlaybackZoneAngle);//###
-            bw.Write(PlaybackZoneVec3.X);
-            bw.Write(PlaybackZoneVec3.Y);
-            bw.Write(PlaybackZoneVec3.Z);
-            bw.Write(UnkVec1.X);
-            bw.Write(UnkVec1.Y);
-            bw.Write(UnkVec1.Z);
-            bw.Write(UnkVec1.W);
-            bw.Write(UnkVec2.X);
-            bw.Write(UnkVec2.Y);
-            bw.Write(UnkVec2.Z);
-            bw.Write(UnkVec2.W);
-            bw.Write(UnkHash0);
-            bw.Write(Scene);
-            bw.Write(UnkVec3.X);
-            bw.Write(UnkVec3.Y);
-            bw.Write(Unk13);
-            bw.Write(Unk14);
-            bw.Write(Unk15);
-            bw.Write(RulesCount);
-            bw.Write(Unk16);
-            for (int i = 0; i < RulesCount; i++)
+            bw.Write(PositioningZonePostRotationOffset.X);
+            bw.Write(PositioningZonePostRotationOffset.Y);
+            bw.Write(PositioningZonePostRotationOffset.Z);
+            bw.Write(Padding07);
+            bw.Write(PositioningZoneSizeScale.X);
+            bw.Write(PositioningZoneSizeScale.Y);
+            bw.Write(PositioningZoneSizeScale.Z);
+            bw.Write(Padding08);
+            bw.Write(PositioningZoneRotationAngle);
+            bw.Write(Padding09);
+            bw.Write(Padding10);
+            bw.Write(Padding11);
+            bw.Write(Padding12);
+            bw.Write(BuiltUpFactor);
+            bw.Write(MinPedDensity);
+            bw.Write(MaxPedDensity);
+            bw.Write(PedDensityTOD);
+            bw.Write(PedDensityScalar);
+            bw.Write(MaxWindInfluence);
+            bw.Write(MinWindInfluence);
+            bw.Write(WindElevationSounds);
+            bw.Write(EnviromentRule);
+            bw.Write(AudioScene);
+            bw.Write(UnderwaterCreakFactor);
+            bw.Write(PedWallaSettings);
+            bw.Write(RandomisedRadioSettings);
+            bw.Write(NumRulesToPlay);
+            bw.Write(ZoneWaterCalculation); 
+            bw.Write(NumRules);
+            bw.Write(Unused11);
+
+            for (int i = 0; i < NumRules; i++)
             {
                 bw.Write(Rules[i]);
             }
+            bw.Write(NumDirAmbiences);
+            bw.Write(Unused12);
+            bw.Write(Unused13);
+            bw.Write(Unused14);
 
-            bw.Write(DependentAmbiencesCount);
-            for (int i = 0; i < DependentAmbiencesCount; i++)
+            bw.Write(NumDirAmbiences);
+            for (int i = 0; i < NumDirAmbiences; i++)
             {
-                DependentAmbiences[i].Write(bw);
+                DirAmbiences[i].Write(bw);
             }
-            if (DependentAmbiencesCount != 0)
+            if (NumDirAmbiences != 0)
             { }
-
-            while ((bw.BaseStream.Position & 0xF) != 0) bw.Write((byte)0); //pad out to next 16 bytes
-
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Flags0", "0x" + Flags0.Hex);
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
             RelXml.StringTag(sb, indent, "Shape", Shape.ToString());
-            RelXml.ValueTag(sb, indent, "Flags1", "0x" + Flags1.Hex);
-            RelXml.SelfClosingTag(sb, indent, "ActivationZonePosition " + FloatUtil.GetVector3XmlString(ActivationZonePosition));
+            RelXml.SelfClosingTag(sb, indent, "ActivationZoneCentre " + FloatUtil.GetVector3XmlString(ActivationZoneCentre));
             RelXml.SelfClosingTag(sb, indent, "ActivationZoneSize " + FloatUtil.GetVector3XmlString(ActivationZoneSize));
-            RelXml.SelfClosingTag(sb, indent, "ActivationZoneVec1 " + FloatUtil.GetVector4XmlString(ActivationZoneVec1));
-            RelXml.SelfClosingTag(sb, indent, "ActivationZoneVec2 " + FloatUtil.GetVector4XmlString(ActivationZoneVec2));
-            RelXml.ValueTag(sb, indent, "ActivationZoneAngle", ActivationZoneAngle.ToString());
-            RelXml.SelfClosingTag(sb, indent, "ActivationZoneVec3 " + FloatUtil.GetVector3XmlString(ActivationZoneVec3));
-            RelXml.SelfClosingTag(sb, indent, "PlaybackZonePosition " + FloatUtil.GetVector3XmlString(PlaybackZonePosition));
-            RelXml.SelfClosingTag(sb, indent, "PlaybackZoneSize " + FloatUtil.GetVector3XmlString(PlaybackZoneSize));
-            RelXml.SelfClosingTag(sb, indent, "PlaybackZoneVec1 " + FloatUtil.GetVector4XmlString(PlaybackZoneVec1));
-            RelXml.SelfClosingTag(sb, indent, "PlaybackZoneVec2 " + FloatUtil.GetVector4XmlString(PlaybackZoneVec2));
-            RelXml.ValueTag(sb, indent, "PlaybackZoneAngle", PlaybackZoneAngle.ToString());
-            RelXml.SelfClosingTag(sb, indent, "PlaybackZoneVec3 " + FloatUtil.GetVector3XmlString(PlaybackZoneVec3));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec1 " + FloatUtil.GetVector4XmlString(UnkVec1));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec2 " + FloatUtil.GetVector4XmlString(UnkVec2));
-            RelXml.StringTag(sb, indent, "UnkHash0", RelXml.HashString(UnkHash0));
-            RelXml.StringTag(sb, indent, "Scene", RelXml.HashString(Scene));
-            RelXml.SelfClosingTag(sb, indent, "UnkVec3 " + FloatUtil.GetVector2XmlString(UnkVec3));
-            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
-            RelXml.ValueTag(sb, indent, "Unk14", Unk14.ToString());
-            RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
-            RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
+            RelXml.SelfClosingTag(sb, indent, "ActivationZonePostRotationOffset " + FloatUtil.GetVector3XmlString(ActivationZonePostRotationOffset));
+            RelXml.SelfClosingTag(sb, indent, "ActivationZoneSizeScale " + FloatUtil.GetVector3XmlString(ActivationZoneSizeScale));
+            RelXml.ValueTag(sb, indent, "ActivationZoneRotationAngle", ActivationZoneRotationAngle.ToString());
+            RelXml.SelfClosingTag(sb, indent, "PositioningZoneCentre " + FloatUtil.GetVector3XmlString(PositioningZoneCentre));
+            RelXml.SelfClosingTag(sb, indent, "PositioningZoneSize " + FloatUtil.GetVector3XmlString(PositioningZoneSize));
+            RelXml.SelfClosingTag(sb, indent, "PositioningZonePostRotationOffset " + FloatUtil.GetVector3XmlString(PositioningZonePostRotationOffset));
+            RelXml.SelfClosingTag(sb, indent, "PositioningZoneSizeScale " + FloatUtil.GetVector3XmlString(PositioningZoneSizeScale));
+            RelXml.ValueTag(sb, indent, "PositioningZoneRotationAngle", PositioningZoneRotationAngle.ToString());
+            RelXml.ValueTag(sb, indent, "BuiltUpFactor", FloatUtil.ToString(BuiltUpFactor));
+            RelXml.ValueTag(sb, indent, "MinPedDensity", FloatUtil.ToString(MinPedDensity));
+            RelXml.ValueTag(sb, indent, "MaxPedDensity", FloatUtil.ToString(MaxPedDensity));
+            RelXml.ValueTag(sb, indent, "PedDensityTOD", PedDensityTOD.ToString());
+            RelXml.ValueTag(sb, indent, "PedDensityScalar", FloatUtil.ToString(PedDensityScalar));
+            RelXml.ValueTag(sb, indent, "MaxWindInfluence", FloatUtil.ToString(MaxWindInfluence));
+            RelXml.ValueTag(sb, indent, "MinWindInfluence", FloatUtil.ToString(MinWindInfluence));
+            RelXml.ValueTag(sb, indent, "WindElevationSounds", WindElevationSounds.ToString());
+            RelXml.StringTag(sb, indent, "EnviromentRule", RelXml.HashString(EnviromentRule));
+            RelXml.StringTag(sb, indent, "AudioScene", RelXml.HashString(AudioScene));
+            RelXml.StringTag(sb, indent, "RandomisedRadioSettings", RelXml.HashString(RandomisedRadioSettings));
+            RelXml.ValueTag(sb, indent, "NumRulesToPlay", NumRulesToPlay.ToString());
+            RelXml.ValueTag(sb, indent, "ZoneWaterCalculation", ZoneWaterCalculation.ToString());
             RelXml.WriteHashItemArray(sb, Rules, indent, "Rules");
-            RelXml.WriteItemArray(sb, DependentAmbiences, indent, "DependentAmbiences");
+            RelXml.WriteItemArray(sb, DirAmbiences, indent, "DirAmbiences");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags0 = Xml.GetChildUIntAttribute(node, "Flags0", "value");
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Shape = Xml.GetEnumValue<Dat151ZoneShape>(Xml.GetChildInnerText(node, "Shape"));
-            Flags1 = Xml.GetChildUIntAttribute(node, "Flags1", "value");
-            ActivationZonePosition = Xml.GetChildVector3Attributes(node, "ActivationZonePosition");
+            ActivationZoneCentre = Xml.GetChildVector3Attributes(node, "ActivationZoneCentre");
             ActivationZoneSize = Xml.GetChildVector3Attributes(node, "ActivationZoneSize");
-            ActivationZoneVec1 = Xml.GetChildVector4Attributes(node, "ActivationZoneVec1");
-            ActivationZoneVec2 = Xml.GetChildVector4Attributes(node, "ActivationZoneVec2");
-            ActivationZoneAngle = Xml.GetChildUIntAttribute(node, "ActivationZoneAngle", "value");
-            ActivationZoneVec3 = Xml.GetChildVector3Attributes(node, "ActivationZoneVec3");
-            PlaybackZonePosition = Xml.GetChildVector3Attributes(node, "PlaybackZonePosition");
-            PlaybackZoneSize = Xml.GetChildVector3Attributes(node, "PlaybackZoneSize");
-            PlaybackZoneVec1 = Xml.GetChildVector4Attributes(node, "PlaybackZoneVec1");
-            PlaybackZoneVec2 = Xml.GetChildVector4Attributes(node, "PlaybackZoneVec2");
-            PlaybackZoneAngle = Xml.GetChildUIntAttribute(node, "PlaybackZoneAngle", "value");
-            PlaybackZoneVec3 = Xml.GetChildVector3Attributes(node, "PlaybackZoneVec3");
-            UnkVec1 = Xml.GetChildVector4Attributes(node, "UnkVec1");
-            UnkVec2 = Xml.GetChildVector4Attributes(node, "UnkVec2");
-            UnkHash0 = XmlRel.GetHash(Xml.GetChildInnerText(node, "UnkHash0"));
-            Scene = XmlRel.GetHash(Xml.GetChildInnerText(node, "Scene"));
-            UnkVec3 = Xml.GetChildVector2Attributes(node, "UnkVec3");
-            Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
-            Unk14 = (byte)Xml.GetChildUIntAttribute(node, "Unk14", "value");
-            Unk15 = (byte)Xml.GetChildUIntAttribute(node, "Unk15", "value");
-            Unk16 = (byte)Xml.GetChildUIntAttribute(node, "Unk16", "value");
+            ActivationZonePostRotationOffset = Xml.GetChildVector3Attributes(node, "ActivationZonePostRotationOffset");
+            ActivationZoneSizeScale = Xml.GetChildVector3Attributes(node, "ActivationZoneSizeScale");
+            ActivationZoneRotationAngle = (ushort)Xml.GetChildUIntAttribute(node, "ActivationZoneRotationAngle", "value");
+            PositioningZoneCentre = Xml.GetChildVector3Attributes(node, "PositioningZoneCentre");
+            PositioningZoneSize = Xml.GetChildVector3Attributes(node, "PositioningZoneSize");
+            PositioningZonePostRotationOffset = Xml.GetChildVector3Attributes(node, "PositioningZonePostRotationOffset");
+            PositioningZoneSizeScale = Xml.GetChildVector3Attributes(node, "PositioningZoneSizeScale");
+            PositioningZoneRotationAngle = (ushort)Xml.GetChildUIntAttribute(node, "PositioningZoneRotationAngle", "value");
+            BuiltUpFactor = Xml.GetChildFloatAttribute(node, "BuiltUpFactor", "value");
+            MinPedDensity = Xml.GetChildFloatAttribute(node, "MinPedDensity", "value");
+            MaxPedDensity = Xml.GetChildFloatAttribute(node, "MaxPedDensity", "value");
+            PedDensityTOD = Xml.GetChildUIntAttribute(node, "PedDensityTOD", "value");
+            PedDensityScalar = Xml.GetChildFloatAttribute(node, "PedDensityScalar", "value");
+            MaxWindInfluence = Xml.GetChildFloatAttribute(node, "MaxWindInfluence", "value");
+            MinWindInfluence = Xml.GetChildFloatAttribute(node, "MinWindInfluence", "value");
+            WindElevationSounds = Xml.GetChildUIntAttribute(node, "WindElevationSounds", "value");
+            EnviromentRule = XmlRel.GetHash(Xml.GetChildInnerText(node, "EnviromentRule"));
+            AudioScene = XmlRel.GetHash(Xml.GetChildInnerText(node, "AudioScene"));
+            RandomisedRadioSettings = XmlRel.GetHash(Xml.GetChildInnerText(node, "RandomisedRadioSettings"));
+            NumRulesToPlay = (byte)Xml.GetChildUIntAttribute(node, "NumRulesToPlay", "value");
+            ZoneWaterCalculation = (byte)Xml.GetChildUIntAttribute(node, "ZoneWaterCalculation", "value");
             Rules = XmlRel.ReadHashItemArray(node, "Rules");
-            RulesCount = (byte)(Rules?.Length ?? 0);
-            DependentAmbiences = XmlRel.ReadItemArray<DependentAmbience>(node, "DependentAmbiences");
-            DependentAmbiencesCount = (uint)(DependentAmbiences?.Length ?? 0);
+            DirAmbiences = XmlRel.ReadItemArray<DirAmbience>(node, "DirAmbiences");
         }
         public override MetaHash[] GetMixerHashes()
         {
-            return new[] { Scene };
+            return new[] { AudioScene };
         }
         public override MetaHash[] GetGameHashes()
         {
             var list = new List<MetaHash>();
-            list.Add(UnkHash0);
+            list.Add(EnviromentRule);
             if (Rules != null) list.AddRange(Rules);
-            if (DependentAmbiences != null)
+            if (DirAmbiences != null)
             {
-                foreach (var ep in DependentAmbiences) list.Add(ep.Name);
+                foreach (var ep in DirAmbiences) list.Add(ep.Name);
             }
             return list.ToArray();
         }
     }
     [TC(typeof(EXP))] public class Dat151AmbientRule : Dat151RelData
     {
-        public FlagsUint Flags0 { get; set; }
-        public FlagsUint Flags1 { get; set; }
-        public FlagsUint Flags2 { get; set; }
+        public uint Padding01 { get; set; }
+        public uint Padding02 { get; set; }
+        public FlagsUint Flags { get; set; }
         public Vector3 Position { get; set; }
-        public FlagsUint Flags3 { get; set; }    //0
+        public uint Padding03 { get; set; }
         public MetaHash ChildSound { get; set; }
         public MetaHash Category { get; set; }
-        public FlagsUint Flags4 { get; set; }    //0
-        public FlagsUint Flags5 { get; set; }    //0xFFFFFFFF
-        public FlagsUint Flags6 { get; set; }    //0
-        public float Unk01 { get; set; }        //1, 5, 100, ...
-        public float InnerRadius { get; set; }   //inner radius  of volume (playback bound)
-        public float OuterRadius { get; set; }   //outer radius  of volume (activation bound)
-        public ushort StartTime { get; set; }   //time allows to start playing, in mins
-        public ushort EndTime { get; set; }   //time to stop playing, in mins (max 1440)
-        public FlagsUshort Frequency { get; set; }  //0..600
-        public FlagsUshort Unk07 { get; set; }  //0..150
-        public FlagsByte Unk08 { get; set; }    //0,1,2
-        public FlagsByte Unk09 { get; set; }    //0,1,2
-        public FlagsByte Unk10 { get; set; }    //1,2,3,4,8,255
-        public FlagsByte Unk11 { get; set; }    //1,2,3,4,5,6,8,10,255
-        public FlagsByte Unk12 { get; set; }    //0, 50, 80, 100
-        public FlagsByte Unk13 { get; set; }    //1,2,3,5
-        public ushort VariablesCount { get; set; } //0,1,2,4
-        public Variable[] Variables { get; set; }
+        public uint LastPlayTime { get; set; }
+        public int DynamicBankID { get; set; }
+        public uint DynamicSlotType { get; set; }
+        public float Weight { get; set; }
+        public float MinDist { get; set; }   //inner radius  of volume (playback bound)
+        public float MaxDist { get; set; }   //outer radius  of volume (activation bound)
+        public ushort MinTimeMinutes { get; set; }   //time allows to start playing, in mins
+        public ushort MaxTimeMinutes { get; set; }   //time to stop playing, in mins (max 1440)
+        public ushort MinRepeatTime { get; set; }  //0..600
+        public ushort MinRepeatTimeVariance { get; set; }  //0..150
+        public byte SpawnHeight { get; set; }    //0,1,2
+        public byte PositionUsage { get; set; }    //0,1,2
+        public byte MaxLocalInstances { get; set; }    //1,2,3,4,8,255
+        public byte MaxGlobalInstances { get; set; }    //1,2,3,4,5,6,8,10,255
+        public byte BlockabilityFactor { get; set; }    //0, 50, 80, 100
+        public byte MaxPathDepth { get; set; }    //1,2,3,5
+        public ushort NumConditions { get; set; } //0,1,2,4
+        public Condition[] Conditions { get; set; }
 
-        public struct Variable : IMetaXmlItem
+        public struct Condition : IMetaXmlItem
         {
             public MetaHash Name;
             public float Value;
-            public FlagsUint Flags;
-            public Variable(BinaryReader br)
+            public byte ConditionType;
+            public byte BankLoading;
+            public ushort Padding;
+            public Condition(BinaryReader br)
             {
                 Name = br.ReadUInt32();
                 Value = br.ReadSingle();
-                Flags = br.ReadUInt32();
+                ConditionType = br.ReadByte();
+                BankLoading = br.ReadByte();
+                Padding = br.ReadUInt16();
             }
             public void Write(BinaryWriter bw)
             {
                 bw.Write(Name);
                 bw.Write(Value);
-                bw.Write(Flags);
+                bw.Write(ConditionType);
+                bw.Write(BankLoading);
+                bw.Write(Padding);
             }
             public void WriteXml(StringBuilder sb, int indent)
             {
                 RelXml.StringTag(sb, indent, "Name", RelXml.HashString(Name));
                 RelXml.ValueTag(sb, indent, "Value", FloatUtil.ToString(Value));
-                RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+                RelXml.ValueTag(sb, indent, "ConditionType", FloatUtil.ToString(ConditionType));
+                RelXml.ValueTag(sb, indent, "BankLoading", FloatUtil.ToString(BankLoading));
             }
             public void ReadXml(XmlNode node)
             {
                 Name = XmlRel.GetHash(Xml.GetChildInnerText(node, "Name"));
                 Value = Xml.GetChildFloatAttribute(node, "Value", "value");
-                Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+                ConditionType = (byte)Xml.GetChildUIntAttribute(node, "ConditionType", "value");
+                BankLoading = (byte)Xml.GetChildUIntAttribute(node, "BankLoading", "value");
             }
             public override string ToString()
             {
-                return Name.ToString() + ": " + FloatUtil.ToString(Value) + ": " + Flags.ToString();
+                return Name.ToString() + ": " + FloatUtil.ToString(Value) + ": " + ConditionType.ToString();
             }
         }
 
@@ -5661,40 +5666,40 @@ namespace CodeWalker.GameFiles
         }
         public Dat151AmbientRule(RelData d, BinaryReader br) : base(d, br)
         {
-            Flags0 = br.ReadUInt32();
-            Flags1 = br.ReadUInt32();
-            Flags2 = br.ReadUInt32();
+            Padding01 = br.ReadUInt32();
+            Padding02 = br.ReadUInt32();
+            Flags = br.ReadUInt32();
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Flags3 = br.ReadUInt32();    //0
+            Padding03 = br.ReadUInt32();
             ChildSound = br.ReadUInt32();
             Category = br.ReadUInt32();
-            Flags4 = br.ReadUInt32();    //0
-            Flags5 = br.ReadUInt32();    //0xFFFFFFFF
-            Flags6 = br.ReadUInt32();    //0
-            Unk01 = br.ReadSingle();    //1, 5, 100, ...
-            InnerRadius = br.ReadSingle(); //inner radius  of volume (playback bound)
-            OuterRadius = br.ReadSingle(); //outer radius of volume (activation bound)
-            StartTime = br.ReadUInt16(); //time allows to start playing, in mins
-            EndTime = br.ReadUInt16(); //time to stop playing, in mins (max 1440)
-            Frequency = br.ReadUInt16();    //0..600
-            Unk07 = br.ReadUInt16();    //0..150
-            Unk08 = br.ReadByte();      //0,1,2
-            Unk09 = br.ReadByte();      //0,1,2
-            Unk10 = br.ReadByte();      //1,2,3,4,8,255
-            Unk11 = br.ReadByte();      //1,2,3,4,5,6,8,10,255
-            Unk12 = br.ReadByte();      //0, 50, 80, 100
-            Unk13 = br.ReadByte();      //1,2,3,5
-            VariablesCount = br.ReadUInt16();  //0,1,2,4
+            LastPlayTime = br.ReadUInt32();
+            DynamicBankID = br.ReadInt32();
+            DynamicSlotType = br.ReadUInt32();
+            Weight = br.ReadSingle();
+            MinDist = br.ReadSingle(); //inner radius  of volume (playback bound)
+            MaxDist = br.ReadSingle(); //outer radius of volume (activation bound)
+            MinTimeMinutes = br.ReadUInt16(); //time allows to start playing, in mins
+            MaxTimeMinutes = br.ReadUInt16(); //time to stop playing, in mins (max 1440)
+            MinRepeatTime = br.ReadUInt16();
+            MinRepeatTimeVariance = br.ReadUInt16();
+            SpawnHeight = br.ReadByte();
+            PositionUsage = br.ReadByte();
+            MaxLocalInstances = br.ReadByte();
+            MaxGlobalInstances = br.ReadByte();
+            BlockabilityFactor = br.ReadByte();
+            MaxPathDepth = br.ReadByte();
+            NumConditions = br.ReadUInt16();
 
-            if (VariablesCount > 0)
+            if (NumConditions > 0)
             {
-                Variables = new Variable[VariablesCount];
-                for (int i = 0; i < VariablesCount; i++)
+                Conditions = new Condition[NumConditions];
+                for (int i = 0; i < NumConditions; i++)
                 {
-                    Variables[i] = new Variable(br);
+                    Conditions[i] = new Condition(br);
                 }
                 //array seems to be padded to multiples of 16 bytes. (read the rest here)
-                int brem = (16 - ((VariablesCount * 12) % 16)) % 16;
+                int brem = (16 - ((NumConditions * 12) % 16)) % 16;
                 if (brem > 0)
                 {
                     byte[] brema = br.ReadBytes(brem);
@@ -5706,242 +5711,44 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-
-            #region testing
-
-            switch (Frequency.Value)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 11:
-                case 12:
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                case 18:
-                case 20:
-                case 22:
-                case 24:
-                case 25:
-                case 26:
-                case 30:
-                case 32:
-                case 35:
-                case 40:
-                case 45:
-                case 48:
-                case 50:
-                case 51:
-                case 54:
-                case 55:
-                case 57:
-                case 60:
-                case 64:
-                case 65:
-                case 70:
-                case 75:
-                case 80:
-                case 90:
-                case 95:
-                case 97:
-                case 100:
-                case 120:
-                case 125:
-                case 130:
-                case 135:
-                case 140:
-                case 145:
-                case 150:
-                case 160:
-                case 170:
-                case 178:
-                case 180:
-                case 190:
-                case 200:
-                case 220:
-                case 225:
-                case 240:
-                case 245:
-                case 250:
-                case 300:
-                case 350:
-                case 500:
-                case 600:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk07.Value)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                case 8:
-                case 9:
-                case 10:
-                case 12:
-                case 15:
-                case 17:
-                case 20:
-                case 21:
-                case 22:
-                case 25:
-                case 27:
-                case 30:
-                case 32:
-                case 35:
-                case 40:
-                case 50:
-                case 60:
-                case 100:
-                case 150:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk08.Value)
-            {
-                case 0:
-                case 1:
-                case 2:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk09.Value)
-            {
-                case 0:
-                case 1:
-                case 2:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk10.Value)
-            {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 8:
-                case 255:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk11.Value)
-            {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 8:
-                case 10:
-                case 255:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk12.Value)
-            {
-                case 0:
-                case 50:
-                case 80:
-                case 100:
-                    break;
-                default:
-                    break;
-            }
-            switch (Unk13.Value)
-            {
-                case 1:
-                case 2:
-                case 3:
-                case 5:
-                    break;
-                default:
-                    break;
-            }
-            switch (VariablesCount)
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 4:
-                    break;
-                default:
-                    break;
-            }
-
-
-
-            //if ((Position.X != 0) || (Position.Y != 0) || (Position.Z != 0))
-            //{
-            //    FoundCoords.Add(FloatUtil.GetVector3String(Position) + ", " + GetNameString());
-            //}
-
-            long bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
-
-
-            #endregion
-
         }
         public override void Write(BinaryWriter bw)
         {
             //base.Write(bw);
             WriteTypeAndOffset(bw);
 
-            bw.Write(Flags0);
-            bw.Write(Flags1);
-            bw.Write(Flags2);
+            bw.Write(Padding01);
+            bw.Write(Padding02);
+            bw.Write(Flags);
             bw.Write(Position.X);
             bw.Write(Position.Y);
             bw.Write(Position.Z);
-            bw.Write(Flags3);
+            bw.Write(Padding03);
             bw.Write(ChildSound);
             bw.Write(Category);
-            bw.Write(Flags4);
-            bw.Write(Flags5);
-            bw.Write(Flags6);
-            bw.Write(Unk01);
-            bw.Write(InnerRadius);
-            bw.Write(OuterRadius);
-            bw.Write(StartTime);
-            bw.Write(EndTime);
-            bw.Write(Frequency);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
-            bw.Write(Unk10);
-            bw.Write(Unk11);
-            bw.Write(Unk12);
-            bw.Write(Unk13);
-            bw.Write(VariablesCount);
+            bw.Write(LastPlayTime);
+            bw.Write(DynamicBankID);
+            bw.Write(DynamicSlotType);
+            bw.Write(Weight);
+            bw.Write(MinDist);
+            bw.Write(MaxDist);
+            bw.Write(MinTimeMinutes);
+            bw.Write(MaxTimeMinutes);
+            bw.Write(MinRepeatTime);
+            bw.Write(MinRepeatTimeVariance);
+            bw.Write(SpawnHeight);
+            bw.Write(PositionUsage);
+            bw.Write(MaxLocalInstances);
+            bw.Write(MaxGlobalInstances);
+            bw.Write(BlockabilityFactor);
+            bw.Write(MaxPathDepth);
+            bw.Write(NumConditions);
 
-            if (VariablesCount > 0)
+            if (NumConditions > 0)
             {
-                for (int i = 0; i < VariablesCount; i++)
+                for (int i = 0; i < NumConditions; i++)
                 {
-                    Variables[i].Write(bw);
+                    Conditions[i].Write(bw);
                 }
                 //array seems to be padded to multiples of 16 bytes. (write the rest here)
                 while ((bw.BaseStream.Position & 0xF) != 0) bw.Write((byte)0); //pad out to next 16 bytes
@@ -5950,58 +5757,52 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Flags0", "0x" + Flags0.Hex);
-            RelXml.ValueTag(sb, indent, "Flags1", "0x" + Flags1.Hex);
-            RelXml.ValueTag(sb, indent, "Flags2", "0x" + Flags2.Hex);
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
             RelXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
-            RelXml.ValueTag(sb, indent, "Flags3", "0x" + Flags3.Hex);
             RelXml.StringTag(sb, indent, "ChildSound", RelXml.HashString(ChildSound));
             RelXml.StringTag(sb, indent, "Category", RelXml.HashString(Category));
-            RelXml.ValueTag(sb, indent, "Flags4", "0x" + Flags4.Hex);
-            RelXml.ValueTag(sb, indent, "Flags5", "0x" + Flags5.Hex);
-            RelXml.ValueTag(sb, indent, "Flags6", "0x" + Flags6.Hex);
-            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
-            RelXml.ValueTag(sb, indent, "InnerRadius", FloatUtil.ToString(InnerRadius));
-            RelXml.ValueTag(sb, indent, "OuterRadius", FloatUtil.ToString(OuterRadius));
-            RelXml.ValueTag(sb, indent, "StartTime", StartTime.ToString());
-            RelXml.ValueTag(sb, indent, "EndTime", EndTime.ToString());
-            RelXml.ValueTag(sb, indent, "Frequency", Frequency.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk07", Unk07.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk08", Unk08.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk09", Unk09.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk10", Unk10.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk11", Unk11.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk12", Unk12.Value.ToString());
-            RelXml.ValueTag(sb, indent, "Unk13", Unk13.Value.ToString());
-            RelXml.WriteItemArray(sb, Variables, indent, "Variables");
+            RelXml.ValueTag(sb, indent, "LastPlayTime", LastPlayTime.ToString()); ;
+            RelXml.ValueTag(sb, indent, "DynamicBankID", DynamicBankID.ToString());
+            RelXml.ValueTag(sb, indent, "DynamicSlotType", DynamicSlotType.ToString());
+            RelXml.ValueTag(sb, indent, "Weight", FloatUtil.ToString(Weight));
+            RelXml.ValueTag(sb, indent, "MinDist", FloatUtil.ToString(MinDist));
+            RelXml.ValueTag(sb, indent, "MaxDist", FloatUtil.ToString(MaxDist));
+            RelXml.ValueTag(sb, indent, "MinTimeMinutes", MinTimeMinutes.ToString());
+            RelXml.ValueTag(sb, indent, "MaxTimeMinutes", MaxTimeMinutes.ToString());
+            RelXml.ValueTag(sb, indent, "MinRepeatTime", MinRepeatTime.ToString());
+            RelXml.ValueTag(sb, indent, "MinRepeatTimeVariance", MinRepeatTimeVariance.ToString());
+            RelXml.ValueTag(sb, indent, "SpawnHeight", SpawnHeight.ToString());
+            RelXml.ValueTag(sb, indent, "PositionUsage", PositionUsage.ToString());
+            RelXml.ValueTag(sb, indent, "MaxLocalInstances", MaxLocalInstances.ToString());
+            RelXml.ValueTag(sb, indent, "MaxGlobalInstances", MaxGlobalInstances.ToString());
+            RelXml.ValueTag(sb, indent, "BlockabilityFactor", BlockabilityFactor.ToString());
+            RelXml.ValueTag(sb, indent, "MaxPathDepth", MaxPathDepth.ToString());
+            RelXml.WriteItemArray(sb, Conditions, indent, "Conditions");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags0 = Xml.GetChildUIntAttribute(node, "Flags0", "value");
-            Flags1 = Xml.GetChildUIntAttribute(node, "Flags1", "value");
-            Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Position = Xml.GetChildVector3Attributes(node, "Position");
-            Flags3 = Xml.GetChildUIntAttribute(node, "Flags3", "value");
             ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
             Category = XmlRel.GetHash(Xml.GetChildInnerText(node, "Category"));
-            Flags4 = Xml.GetChildUIntAttribute(node, "Flags4", "value");
-            Flags5 = Xml.GetChildUIntAttribute(node, "Flags5", "value");
-            Flags6 = Xml.GetChildUIntAttribute(node, "Flags6", "value");
-            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
-            InnerRadius = Xml.GetChildFloatAttribute(node, "InnerRadius", "value");
-            OuterRadius = Xml.GetChildFloatAttribute(node, "OuterRadius", "value");
-            StartTime = (ushort)Xml.GetChildUIntAttribute(node, "StartTime", "value");
-            EndTime = (ushort)Xml.GetChildUIntAttribute(node, "EndTime", "value");
-            Frequency = (ushort)Xml.GetChildUIntAttribute(node, "Frequency", "value");
-            Unk07 = (ushort)Xml.GetChildUIntAttribute(node, "Unk07", "value");
-            Unk08 = (byte)Xml.GetChildUIntAttribute(node, "Unk08", "value");
-            Unk09 = (byte)Xml.GetChildUIntAttribute(node, "Unk09", "value");
-            Unk10 = (byte)Xml.GetChildUIntAttribute(node, "Unk10", "value");
-            Unk11 = (byte)Xml.GetChildUIntAttribute(node, "Unk11", "value");
-            Unk12 = (byte)Xml.GetChildUIntAttribute(node, "Unk12", "value");
-            Unk13 = (byte)Xml.GetChildUIntAttribute(node, "Unk13", "value");
-            Variables = XmlRel.ReadItemArray<Variable>(node, "Variables");
-            VariablesCount = (ushort)(Variables?.Length ?? 0);
+            LastPlayTime = Xml.GetChildUIntAttribute(node, "LastPlayTime", "value");
+            DynamicBankID = (int)Xml.GetChildUIntAttribute(node, "DynamicBankID", "value");
+            DynamicSlotType = Xml.GetChildUIntAttribute(node, "DynamicSlotType", "value");
+            Weight = Xml.GetChildFloatAttribute(node, "Weight", "value");
+            MinDist = Xml.GetChildFloatAttribute(node, "MinDist", "value");
+            MaxDist = Xml.GetChildFloatAttribute(node, "MaxDist", "value");
+            MinTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MinTimeMinutes", "value");
+            MaxTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MaxTimeMinutes", "value");
+            MinRepeatTime = (ushort)Xml.GetChildUIntAttribute(node, "MinRepeatTime", "value");
+            MinRepeatTimeVariance = (ushort)Xml.GetChildUIntAttribute(node, "MinRepeatTimeVariance", "value");
+            SpawnHeight = (byte)Xml.GetChildUIntAttribute(node, "SpawnHeight", "value");
+            PositionUsage = (byte)Xml.GetChildUIntAttribute(node, "PositionUsage", "value");
+            MaxLocalInstances = (byte)Xml.GetChildUIntAttribute(node, "MaxLocalInstances", "value");
+            MaxGlobalInstances = (byte)Xml.GetChildUIntAttribute(node, "MaxGlobalInstances", "value");
+            BlockabilityFactor = (byte)Xml.GetChildUIntAttribute(node, "BlockabilityFactor", "value");
+            MaxPathDepth = (byte)Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
+            Conditions = XmlRel.ReadItemArray<Condition>(node, "Conditions");
+            NumConditions = (ushort)(Conditions?.Length ?? 0);
         }
         public override MetaHash[] GetCategoryHashes()
         {
@@ -6062,34 +5863,35 @@ namespace CodeWalker.GameFiles
             return ZoneHashes;
         }
     }
-    [TC(typeof(EXP))] public class Dat151StaticEmitter : Dat151RelData
+    [TC(typeof(EXP))]
+    public class Dat151StaticEmitter : Dat151RelData
     {
         public FlagsUint Flags { get; set; }//flags
         public MetaHash ChildSound { get; set; }
         public MetaHash RadioStation { get; set; }
         public Vector3 Position { get; set; }
-        public float Unk06 { get; set; }
-        public float Unk07 { get; set; }
-        public int Unk08 { get; set; }
+        public float MinDistance { get; set; }
+        public float MaxDistance { get; set; }
+        public int EmittedVolume { get; set; }
         public short LPFCutoff { get; set; }
         public short HPFCutoff { get; set; }
-        public int Unk11 { get; set; }
+        public int RolloffFactor { get; set; }
         public MetaHash Interior { get; set; }
         public MetaHash Room { get; set; }
-        public MetaHash Unk13 { get; set; }
-        public float Unk14 { get; set; }
-        public ushort Unk15 { get; set; }
-        public ushort Unk16 { get; set; }
+        public MetaHash RadioStationForScore { get; set; }
+        public float MaxLeakage { get; set; }
+        public ushort MinLeakageDistance { get; set; }
+        public ushort MaxLeakageDistance { get; set; }
         public MetaHash Alarm { get; set; }
-        public MetaHash Unk18 { get; set; }
+        public MetaHash OnBreakOneShot { get; set; }
         public uint MaxPathDepth { get; set; }
         public uint SmallReverbSend { get; set; }
         public uint MediumReverbSend { get; set; }
         public uint LargeReverbSend { get; set; }
         public ushort MinTimeMinutes { get; set; }
         public ushort MaxTimeMinutes { get; set; }
-        public float Unk21 { get; set; }
-        public float Unk22 { get; set; }
+        public float BrokenHealth { get; set; }
+        public float UndamagedHealth { get; set; }
 
         public Dat151StaticEmitter(RelFile rel) : base(rel)
         {
@@ -6102,28 +5904,28 @@ namespace CodeWalker.GameFiles
             ChildSound = br.ReadUInt32();
             RadioStation = br.ReadUInt32();
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk06 = br.ReadSingle();
-            Unk07 = br.ReadSingle();
-            Unk08 = br.ReadInt32();
+            MinDistance = br.ReadSingle();
+            MaxDistance = br.ReadSingle();
+            EmittedVolume = br.ReadInt32();
             LPFCutoff = br.ReadInt16();
             HPFCutoff = br.ReadInt16();
-            Unk11 = br.ReadInt32();
+            RolloffFactor = br.ReadInt32();
             Interior = br.ReadUInt32();
             Room = br.ReadUInt32();
-            Unk13 = br.ReadUInt32();
-            Unk14 = br.ReadSingle();
-            Unk15 = br.ReadUInt16();
-            Unk16 = br.ReadUInt16();
+            RadioStationForScore = br.ReadUInt32();
+            MaxLeakage = br.ReadSingle();
+            MinLeakageDistance = br.ReadUInt16();
+            MaxLeakageDistance = br.ReadUInt16();
             Alarm = br.ReadUInt32();
-            Unk18 = br.ReadUInt32();
+            OnBreakOneShot = br.ReadUInt32();
             MaxPathDepth = br.ReadByte();
             SmallReverbSend = br.ReadByte();
             MediumReverbSend = br.ReadByte();
             LargeReverbSend = br.ReadByte();
             MinTimeMinutes = br.ReadUInt16();
             MaxTimeMinutes = br.ReadUInt16();
-            Unk21 = br.ReadSingle();
-            Unk22 = br.ReadSingle();
+            BrokenHealth = br.ReadSingle();
+            UndamagedHealth = br.ReadSingle();
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -6138,28 +5940,28 @@ namespace CodeWalker.GameFiles
             bw.Write(Position.X);
             bw.Write(Position.Y);
             bw.Write(Position.Z);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
+            bw.Write(MinDistance);
+            bw.Write(MaxDistance);
+            bw.Write(EmittedVolume);
             bw.Write(LPFCutoff);
             bw.Write(HPFCutoff);
-            bw.Write(Unk11);
+            bw.Write(RolloffFactor);
             bw.Write(Interior);
             bw.Write(Room);
-            bw.Write(Unk13);
-            bw.Write(Unk14);
-            bw.Write(Unk15);
-            bw.Write(Unk16);
+            bw.Write(RadioStationForScore);
+            bw.Write(MaxLeakage);
+            bw.Write(MinLeakageDistance);
+            bw.Write(MaxLeakageDistance);
             bw.Write(Alarm);
-            bw.Write(Unk18);
+            bw.Write(OnBreakOneShot);
             bw.Write(MaxPathDepth);
             bw.Write(SmallReverbSend);
             bw.Write(MediumReverbSend);
             bw.Write(LargeReverbSend);
             bw.Write(MinTimeMinutes);
             bw.Write(MaxTimeMinutes);
-            bw.Write(Unk21);
-            bw.Write(Unk22);
+            bw.Write(BrokenHealth);
+            bw.Write(UndamagedHealth);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6167,28 +5969,28 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "ChildSound", RelXml.HashString(ChildSound));
             RelXml.StringTag(sb, indent, "RadioStation", RelXml.HashString(RadioStation));
             RelXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
-            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
-            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
+            RelXml.ValueTag(sb, indent, "MinDistance", FloatUtil.ToString(MinDistance));
+            RelXml.ValueTag(sb, indent, "MaxDistance", FloatUtil.ToString(MaxDistance));
+            RelXml.ValueTag(sb, indent, "EmittedVolume", EmittedVolume.ToString());
             RelXml.ValueTag(sb, indent, "LPFCutoff", LPFCutoff.ToString());
             RelXml.ValueTag(sb, indent, "HPFCutoff", HPFCutoff.ToString());
-            RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
+            RelXml.ValueTag(sb, indent, "RolloffFactor", RolloffFactor.ToString());
             RelXml.StringTag(sb, indent, "Interior", RelXml.HashString(Interior));
             RelXml.StringTag(sb, indent, "Room", RelXml.HashString(Room));
-            RelXml.StringTag(sb, indent, "Unk13", RelXml.HashString(Unk13));
-            RelXml.ValueTag(sb, indent, "Unk14", FloatUtil.ToString(Unk14));
-            RelXml.ValueTag(sb, indent, "Unk15", Unk15.ToString());
-            RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
+            RelXml.StringTag(sb, indent, "RadioStationForScore", RelXml.HashString(RadioStationForScore));
+            RelXml.ValueTag(sb, indent, "MaxLeakage", FloatUtil.ToString(MaxLeakage));
+            RelXml.ValueTag(sb, indent, "MinLeakageDistance", MinLeakageDistance.ToString());
+            RelXml.ValueTag(sb, indent, "MaxLeakageDistance", MaxLeakageDistance.ToString());
             RelXml.StringTag(sb, indent, "Alarm", RelXml.HashString(Alarm));
-            RelXml.StringTag(sb, indent, "Unk18", RelXml.HashString(Unk18));
+            RelXml.StringTag(sb, indent, "OnBreakOneShot", RelXml.HashString(OnBreakOneShot));
             RelXml.ValueTag(sb, indent, "MaxPathDepth", MaxPathDepth.ToString());
             RelXml.ValueTag(sb, indent, "SmallReverbSend", SmallReverbSend.ToString());
             RelXml.ValueTag(sb, indent, "MediumReverbSend", MediumReverbSend.ToString());
             RelXml.ValueTag(sb, indent, "LargeReverbSend", LargeReverbSend.ToString());
             RelXml.ValueTag(sb, indent, "MinTimeMinutes", MinTimeMinutes.ToString());
             RelXml.ValueTag(sb, indent, "MaxTimeMinutes", MaxTimeMinutes.ToString());
-            RelXml.ValueTag(sb, indent, "Unk21", FloatUtil.ToString(Unk21));
-            RelXml.ValueTag(sb, indent, "Unk22", FloatUtil.ToString(Unk22));
+            RelXml.ValueTag(sb, indent, "BrokenHealth", FloatUtil.ToString(BrokenHealth));
+            RelXml.ValueTag(sb, indent, "UndamagedHealth", FloatUtil.ToString(UndamagedHealth));
         }
         public override void ReadXml(XmlNode node)
         {
@@ -6196,32 +5998,32 @@ namespace CodeWalker.GameFiles
             ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
             RadioStation = XmlRel.GetHash(Xml.GetChildInnerText(node, "RadioStation"));
             Position = Xml.GetChildVector3Attributes(node, "Position");
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
-            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
-            Unk08 = Xml.GetChildIntAttribute(node, "Unk08", "value");
+            MinDistance = Xml.GetChildFloatAttribute(node, "MinDistance", "value");
+            MaxDistance = Xml.GetChildFloatAttribute(node, "MaxDistance", "value");
+            EmittedVolume = Xml.GetChildIntAttribute(node, "EmittedVolume", "value");
             LPFCutoff = (short)Xml.GetChildIntAttribute(node, "LPFCutoff", "value");
             HPFCutoff = (short)Xml.GetChildIntAttribute(node, "HPFCutoff", "value");
-            Unk11 = Xml.GetChildIntAttribute(node, "Unk11", "value");
+            RolloffFactor = Xml.GetChildIntAttribute(node, "RolloffFactor", "value");
             Interior = XmlRel.GetHash(Xml.GetChildInnerText(node, "Interior"));
             Room = XmlRel.GetHash(Xml.GetChildInnerText(node, "Room"));
-            Unk13 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk13"));
-            Unk14 = Xml.GetChildFloatAttribute(node, "Unk14", "value");
-            Unk15 = (ushort)Xml.GetChildUIntAttribute(node, "Unk15", "value");
-            Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "Unk16", "value");
+            RadioStationForScore = XmlRel.GetHash(Xml.GetChildInnerText(node, "RadioStationForScore"));
+            MaxLeakage = Xml.GetChildFloatAttribute(node, "MaxLeakage", "value");
+            MinLeakageDistance = (ushort)Xml.GetChildUIntAttribute(node, "MinLeakageDistance", "value");
+            MaxLeakageDistance = (ushort)Xml.GetChildUIntAttribute(node, "MaxLeakageDistance", "value");
             Alarm = XmlRel.GetHash(Xml.GetChildInnerText(node, "Alarm"));
-            Unk18 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk18"));
+            OnBreakOneShot = XmlRel.GetHash(Xml.GetChildInnerText(node, "OnBreakOneShot"));
             MaxPathDepth = Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
             SmallReverbSend = Xml.GetChildUIntAttribute(node, "SmallReverbSend", "value");
             MediumReverbSend = Xml.GetChildUIntAttribute(node, "MediumReverbSend", "value");
             LargeReverbSend = Xml.GetChildUIntAttribute(node, "LargeReverbSend", "value");
             MinTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MinTimeMinutes", "value");
             MaxTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MaxTimeMinutes", "value");
-            Unk21 = Xml.GetChildFloatAttribute(node, "Unk21", "value");
-            Unk22 = Xml.GetChildFloatAttribute(node, "Unk22", "value");
+            BrokenHealth = Xml.GetChildFloatAttribute(node, "BrokenHealth", "value");
+            UndamagedHealth = Xml.GetChildFloatAttribute(node, "UndamagedHealth", "value");
         }
         public override MetaHash[] GetSoundHashes()
         {
-            return new[] { ChildSound, Unk18 };
+            return new[] { ChildSound, OnBreakOneShot };
         }
         public override MetaHash[] GetGameHashes()
         {

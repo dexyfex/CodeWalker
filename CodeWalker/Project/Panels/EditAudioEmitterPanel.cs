@@ -66,10 +66,7 @@ namespace CodeWalker.Project.Panels
                 Unk11UpDown.Value = 0;
                 Unk12UpDown.Value = 0;
                 Unk13UpDown.Value = 0;
-                Flags0TextBox.Text = string.Empty;
-                Flags1TextBox.Text = string.Empty;
                 Flags2TextBox.Text = string.Empty;
-                Flags3TextBox.Text = string.Empty;
                 Flags4TextBox.Text = string.Empty;
                 Flags5TextBox.Text = string.Empty;
                 VariablesTextBox.Text = string.Empty;
@@ -84,38 +81,35 @@ namespace CodeWalker.Project.Panels
                 var e = CurrentEmitter.AudioEmitter;
                 NameTextBox.Text = e.NameHash.ToString();
                 PositionTextBox.Text = FloatUtil.GetVector3String(e.Position);
-                InnerRadiusTextBox.Text = FloatUtil.ToString(e.InnerRadius);
-                OuterRadiusTextBox.Text = FloatUtil.ToString(e.OuterRadius);
+                InnerRadiusTextBox.Text = FloatUtil.ToString(e.MinDist);
+                OuterRadiusTextBox.Text = FloatUtil.ToString(e.MaxDist);
                 ChildSoundTextBox.Text = e.ChildSound.ToString();
                 CategoryTextBox.Text = e.Category.ToString();
-                Unk01TextBox.Text = FloatUtil.ToString(e.Unk01);
-                StartTimeUpDown.Value = e.StartTime;
-                EndTimeUpDown.Value = e.EndTime;
-                FrequencyUpDown.Value = e.Frequency.Value;
-                Unk07UpDown.Value = e.Unk07.Value;
-                Unk08UpDown.Value = e.Unk08.Value;
-                Unk09UpDown.Value = e.Unk09.Value;
-                Unk10UpDown.Value = e.Unk10.Value;
-                Unk11UpDown.Value = e.Unk11.Value;
-                Unk12UpDown.Value = e.Unk12.Value;
-                Unk13UpDown.Value = e.Unk13.Value;
-                Flags0TextBox.Text = e.Flags0.Hex;
-                Flags1TextBox.Text = e.Flags1.Hex;
-                Flags2TextBox.Text = e.Flags2.Hex;
-                Flags3TextBox.Text = e.Flags3.Hex;
-                Flags4TextBox.Text = e.Flags4.Hex;
-                Flags5TextBox.Text = e.Flags5.Hex;
+                Unk01TextBox.Text = FloatUtil.ToString(e.Weight);
+                StartTimeUpDown.Value = e.MinTimeMinutes;
+                EndTimeUpDown.Value = e.MaxTimeMinutes;
+                FrequencyUpDown.Value = e.MinRepeatTime;
+                Unk07UpDown.Value = e.MinRepeatTimeVariance;
+                Unk08UpDown.Value = e.SpawnHeight;
+                Unk09UpDown.Value = e.PositionUsage;
+                Unk10UpDown.Value = e.MaxLocalInstances;
+                Unk11UpDown.Value = e.MaxGlobalInstances;
+                Unk12UpDown.Value = e.BlockabilityFactor;
+                Unk13UpDown.Value = e.MaxPathDepth;
+                Flags2TextBox.Text = e.Flags.Hex;
+                Flags4TextBox.Text = FloatUtil.ToString(e.LastPlayTime);
+                Flags5TextBox.Text = FloatUtil.ToString(e.DynamicBankID);
 
                 StringBuilder sb = new StringBuilder();
-                if (e.Variables != null)
+                if (e.Conditions != null)
                 {
-                    foreach (var extparam in e.Variables)
+                    foreach (var extparam in e.Conditions)
                     {
                         sb.Append(extparam.Name.ToString());
                         sb.Append(", ");
                         sb.Append(FloatUtil.ToString(extparam.Value));
                         sb.Append(", ");
-                        sb.Append(extparam.Flags.ToString());
+                        sb.Append(extparam.ConditionType.ToString());
                         sb.AppendLine();
                     }
                 }
@@ -195,9 +189,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             float rad = FloatUtil.Parse(InnerRadiusTextBox.Text);
-            if (CurrentEmitter.AudioEmitter.InnerRadius != rad)
+            if (CurrentEmitter.AudioEmitter.MinDist != rad)
             {
-                CurrentEmitter.AudioEmitter.InnerRadius = rad;
+                CurrentEmitter.AudioEmitter.MinDist = rad;
 
                 ProjectItemChanged();
             }
@@ -209,9 +203,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             float rad = FloatUtil.Parse(OuterRadiusTextBox.Text);
-            if (CurrentEmitter.AudioEmitter.OuterRadius != rad)
+            if (CurrentEmitter.AudioEmitter.MaxDist != rad)
             {
-                CurrentEmitter.AudioEmitter.OuterRadius = rad;
+                CurrentEmitter.AudioEmitter.MaxDist = rad;
 
                 ProjectItemChanged();
             }
@@ -267,9 +261,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             float unk = FloatUtil.Parse(Unk01TextBox.Text);
-            if (CurrentEmitter.AudioEmitter.Unk01 != unk)
+            if (CurrentEmitter.AudioEmitter.Weight != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk01 = unk;
+                CurrentEmitter.AudioEmitter.Weight = unk;
 
                 ProjectItemChanged();
             }
@@ -281,9 +275,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             ushort unk = (ushort)StartTimeUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.StartTime != unk)
+            if (CurrentEmitter.AudioEmitter.MinTimeMinutes != unk)
             {
-                CurrentEmitter.AudioEmitter.StartTime = unk;
+                CurrentEmitter.AudioEmitter.MinTimeMinutes = unk;
 
                 ProjectItemChanged();
             }
@@ -295,9 +289,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             ushort unk = (ushort)EndTimeUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.EndTime != unk)
+            if (CurrentEmitter.AudioEmitter.MaxTimeMinutes != unk)
             {
-                CurrentEmitter.AudioEmitter.EndTime = unk;
+                CurrentEmitter.AudioEmitter.MaxTimeMinutes = unk;
 
                 ProjectItemChanged();
             }
@@ -309,9 +303,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             ushort unk = (ushort)FrequencyUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Frequency.Value != unk)
+            if (CurrentEmitter.AudioEmitter.MinRepeatTime != unk)
             {
-                CurrentEmitter.AudioEmitter.Frequency = unk;
+                CurrentEmitter.AudioEmitter.MinRepeatTime = unk;
 
                 ProjectItemChanged();
             }
@@ -323,9 +317,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             ushort unk = (ushort)Unk07UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk07.Value != unk)
+            if (CurrentEmitter.AudioEmitter.MinRepeatTimeVariance != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk07 = unk;
+                CurrentEmitter.AudioEmitter.MinRepeatTimeVariance = unk;
 
                 ProjectItemChanged();
             }
@@ -337,9 +331,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             byte unk = (byte)Unk08UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk08.Value != unk)
+            if (CurrentEmitter.AudioEmitter.SpawnHeight != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk08 = unk;
+                CurrentEmitter.AudioEmitter.SpawnHeight = unk;
 
                 ProjectItemChanged();
             }
@@ -351,9 +345,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             byte unk = (byte)Unk09UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk09.Value != unk)
+            if (CurrentEmitter.AudioEmitter.PositionUsage != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk09 = unk;
+                CurrentEmitter.AudioEmitter.PositionUsage = unk;
 
                 ProjectItemChanged();
             }
@@ -365,9 +359,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             byte unk = (byte)Unk10UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk10.Value != unk)
+            if (CurrentEmitter.AudioEmitter.MaxLocalInstances != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk10 = unk;
+                CurrentEmitter.AudioEmitter.MaxLocalInstances = unk;
 
                 ProjectItemChanged();
             }
@@ -379,9 +373,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             byte unk = (byte)Unk11UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk11.Value != unk)
+            if (CurrentEmitter.AudioEmitter.MaxGlobalInstances != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk11 = unk;
+                CurrentEmitter.AudioEmitter.MaxGlobalInstances = unk;
 
                 ProjectItemChanged();
             }
@@ -393,9 +387,9 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             byte unk = (byte)Unk12UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk12.Value != unk)
+            if (CurrentEmitter.AudioEmitter.BlockabilityFactor != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk12 = unk;
+                CurrentEmitter.AudioEmitter.BlockabilityFactor = unk;
 
                 ProjectItemChanged();
             }
@@ -407,45 +401,11 @@ namespace CodeWalker.Project.Panels
             if (CurrentEmitter?.AudioEmitter == null) return;
 
             byte unk = (byte)Unk13UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk13.Value != unk)
+            if (CurrentEmitter.AudioEmitter.MaxPathDepth != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk13 = unk;
+                CurrentEmitter.AudioEmitter.MaxPathDepth = unk;
 
                 ProjectItemChanged();
-            }
-        }
-
-        private void Flags0TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
-
-            uint flags = 0;
-            if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
-            {
-                if (CurrentEmitter.AudioEmitter.Flags0 != flags)
-                {
-                    CurrentEmitter.AudioEmitter.Flags0 = flags;
-
-                    ProjectItemChanged();
-                }
-            }
-        }
-
-        private void Flags1TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
-
-            uint flags = 0;
-            if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
-            {
-                if (CurrentEmitter.AudioEmitter.Flags1 != flags)
-                {
-                    CurrentEmitter.AudioEmitter.Flags1 = flags;
-
-                    ProjectItemChanged();
-                }
             }
         }
 
@@ -457,26 +417,9 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags2 != flags)
+                if (CurrentEmitter.AudioEmitter.Flags != flags)
                 {
-                    CurrentEmitter.AudioEmitter.Flags2 = flags;
-
-                    ProjectItemChanged();
-                }
-            }
-        }
-
-        private void Flags3TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
-
-            uint flags = 0;
-            if (uint.TryParse(Flags3TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
-            {
-                if (CurrentEmitter.AudioEmitter.Flags3 != flags)
-                {
-                    CurrentEmitter.AudioEmitter.Flags3 = flags;
+                    CurrentEmitter.AudioEmitter.Flags = flags;
 
                     ProjectItemChanged();
                 }
@@ -491,9 +434,9 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags4TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags4 != flags)
+                if (CurrentEmitter.AudioEmitter.LastPlayTime != flags)
                 {
-                    CurrentEmitter.AudioEmitter.Flags4 = flags;
+                    CurrentEmitter.AudioEmitter.LastPlayTime = flags;
 
                     ProjectItemChanged();
                 }
@@ -508,9 +451,9 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags5TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags5 != flags)
+                if (CurrentEmitter.AudioEmitter.DynamicBankID != flags)
                 {
-                    CurrentEmitter.AudioEmitter.Flags5 = flags;
+                    CurrentEmitter.AudioEmitter.DynamicBankID = (int)flags;
 
                     ProjectItemChanged();
                 }
@@ -525,13 +468,13 @@ namespace CodeWalker.Project.Panels
             var paramstrs = VariablesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
             {
-                var paramlist = new List<Dat151AmbientRule.Variable>();
+                var paramlist = new List<Dat151AmbientRule.Condition>();
                 foreach (var paramstr in paramstrs)
                 {
                     var paramvals = paramstr.Split(',');
                     if (paramvals?.Length == 3)
                     {
-                        var param = new Dat151AmbientRule.Variable();
+                        var param = new Dat151AmbientRule.Condition();
                         var hashstr = paramvals[0].Trim();
                         var valstr = paramvals[1].Trim();
                         var flgstr = paramvals[2].Trim();
@@ -545,13 +488,13 @@ namespace CodeWalker.Project.Panels
                         uint.TryParse(flgstr, out flags);
                         param.Name = hash;
                         param.Value = FloatUtil.Parse(valstr);
-                        param.Flags = flags;
+                        param.ConditionType = (byte)flags;
                         paramlist.Add(param);
                     }
                 }
 
-                CurrentEmitter.AudioEmitter.Variables = paramlist.ToArray();
-                CurrentEmitter.AudioEmitter.VariablesCount = (ushort)paramlist.Count;
+                CurrentEmitter.AudioEmitter.Conditions = paramlist.ToArray();
+                CurrentEmitter.AudioEmitter.NumConditions = (ushort)paramlist.Count;
 
                 ProjectItemChanged();
             }
@@ -561,7 +504,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentEmitter == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioZone.PlaybackZoneSize);
+            ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioZone.PositioningZoneSize);
         }
 
         private void AddToProjectButton_Click(object sender, EventArgs e)
