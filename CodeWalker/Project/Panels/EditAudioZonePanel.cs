@@ -89,7 +89,7 @@ namespace CodeWalker.Project.Panels
                 ActivationZoneCentreTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneCentre);
                 ActivationSizeTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneSize);
                 ActivationRotationOffsetTextBox.Text = FloatUtil.GetVector3String(z.ActivationZonePostRotationOffset);
-                ActivationRotationOffsetTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneSizeScale);
+                ActivationSizeScaleTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneSizeScale);
 
                 PositioningCentreTextBox.Text = FloatUtil.GetVector3String(z.PositioningZoneCentre);
                 PositioningSizeTextBox.Text = FloatUtil.GetVector3String(z.PositioningZoneSize);
