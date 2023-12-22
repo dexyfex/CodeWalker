@@ -504,7 +504,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentEmitter == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioZone.PositioningZoneSize);
+            ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioEmitter.Position);
         }
 
         private void AddToProjectButton_Click(object sender, EventArgs e)
