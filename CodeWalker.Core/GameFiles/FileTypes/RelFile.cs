@@ -5873,9 +5873,10 @@ namespace CodeWalker.GameFiles
         public float MinDistance { get; set; }
         public float MaxDistance { get; set; }
         public int EmittedVolume { get; set; }
-        public short LPFCutoff { get; set; }
-        public short HPFCutoff { get; set; }
-        public int RolloffFactor { get; set; }
+        public ushort LPFCutoff { get; set; }
+        public ushort HPFCutoff { get; set; }
+        public ushort RolloffFactor { get; set; }
+        public ushort Padding00 { get; set; }
         public MetaHash Interior { get; set; }
         public MetaHash Room { get; set; }
         public MetaHash RadioStationForScore { get; set; }
@@ -5884,10 +5885,10 @@ namespace CodeWalker.GameFiles
         public ushort MaxLeakageDistance { get; set; }
         public MetaHash Alarm { get; set; }
         public MetaHash OnBreakOneShot { get; set; }
-        public uint MaxPathDepth { get; set; }
-        public uint SmallReverbSend { get; set; }
-        public uint MediumReverbSend { get; set; }
-        public uint LargeReverbSend { get; set; }
+        public byte MaxPathDepth { get; set; }
+        public byte SmallReverbSend { get; set; }
+        public byte MediumReverbSend { get; set; }
+        public byte LargeReverbSend { get; set; }
         public ushort MinTimeMinutes { get; set; }
         public ushort MaxTimeMinutes { get; set; }
         public float BrokenHealth { get; set; }
@@ -5900,16 +5901,17 @@ namespace CodeWalker.GameFiles
         }
         public Dat151StaticEmitter(RelData d, BinaryReader br) : base(d, br)
         {
-            Flags = br.ReadUInt32();//flags
+            Flags = br.ReadUInt32();
             ChildSound = br.ReadUInt32();
             RadioStation = br.ReadUInt32();
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             MinDistance = br.ReadSingle();
             MaxDistance = br.ReadSingle();
             EmittedVolume = br.ReadInt32();
-            LPFCutoff = br.ReadInt16();
-            HPFCutoff = br.ReadInt16();
-            RolloffFactor = br.ReadInt32();
+            LPFCutoff = br.ReadUInt16();
+            HPFCutoff = br.ReadUInt16();
+            RolloffFactor = br.ReadUInt16();
+            Padding00 = br.ReadUInt16();
             Interior = br.ReadUInt32();
             Room = br.ReadUInt32();
             RadioStationForScore = br.ReadUInt32();
@@ -5926,15 +5928,11 @@ namespace CodeWalker.GameFiles
             MaxTimeMinutes = br.ReadUInt16();
             BrokenHealth = br.ReadSingle();
             UndamagedHealth = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
-            bw.Write(Flags);//flags
+            bw.Write(Flags);
             bw.Write(ChildSound);
             bw.Write(RadioStation);
             bw.Write(Position.X);
@@ -5946,6 +5944,7 @@ namespace CodeWalker.GameFiles
             bw.Write(LPFCutoff);
             bw.Write(HPFCutoff);
             bw.Write(RolloffFactor);
+            bw.Write(Padding00);
             bw.Write(Interior);
             bw.Write(Room);
             bw.Write(RadioStationForScore);
@@ -6001,9 +6000,9 @@ namespace CodeWalker.GameFiles
             MinDistance = Xml.GetChildFloatAttribute(node, "MinDistance", "value");
             MaxDistance = Xml.GetChildFloatAttribute(node, "MaxDistance", "value");
             EmittedVolume = Xml.GetChildIntAttribute(node, "EmittedVolume", "value");
-            LPFCutoff = (short)Xml.GetChildIntAttribute(node, "LPFCutoff", "value");
-            HPFCutoff = (short)Xml.GetChildIntAttribute(node, "HPFCutoff", "value");
-            RolloffFactor = Xml.GetChildIntAttribute(node, "RolloffFactor", "value");
+            LPFCutoff = (ushort)Xml.GetChildIntAttribute(node, "LPFCutoff", "value");
+            HPFCutoff = (ushort)Xml.GetChildIntAttribute(node, "HPFCutoff", "value");
+            RolloffFactor = (ushort)Xml.GetChildIntAttribute(node, "RolloffFactor", "value");
             Interior = XmlRel.GetHash(Xml.GetChildInnerText(node, "Interior"));
             Room = XmlRel.GetHash(Xml.GetChildInnerText(node, "Room"));
             RadioStationForScore = XmlRel.GetHash(Xml.GetChildInnerText(node, "RadioStationForScore"));
@@ -6012,10 +6011,10 @@ namespace CodeWalker.GameFiles
             MaxLeakageDistance = (ushort)Xml.GetChildUIntAttribute(node, "MaxLeakageDistance", "value");
             Alarm = XmlRel.GetHash(Xml.GetChildInnerText(node, "Alarm"));
             OnBreakOneShot = XmlRel.GetHash(Xml.GetChildInnerText(node, "OnBreakOneShot"));
-            MaxPathDepth = Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
-            SmallReverbSend = Xml.GetChildUIntAttribute(node, "SmallReverbSend", "value");
-            MediumReverbSend = Xml.GetChildUIntAttribute(node, "MediumReverbSend", "value");
-            LargeReverbSend = Xml.GetChildUIntAttribute(node, "LargeReverbSend", "value");
+            MaxPathDepth = (byte)Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
+            SmallReverbSend = (byte)Xml.GetChildUIntAttribute(node, "SmallReverbSend", "value");
+            MediumReverbSend = (byte)Xml.GetChildUIntAttribute(node, "MediumReverbSend", "value");
+            LargeReverbSend = (byte)Xml.GetChildUIntAttribute(node, "LargeReverbSend", "value");
             MinTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MinTimeMinutes", "value");
             MaxTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MaxTimeMinutes", "value");
             BrokenHealth = Xml.GetChildFloatAttribute(node, "BrokenHealth", "value");
