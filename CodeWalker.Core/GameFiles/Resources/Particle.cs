@@ -296,22 +296,22 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var ptr in ParticleRuleDictionary.ParticleRules.data_items)
                 {
-                    if (ptr.Spawner1 != null)
+                    if (ptr.EffectSpawnerAtRatio != null)
                     {
-                        var efrhash = JenkHash.GenHash(ptr.Spawner1.EffectRuleName?.Value ?? "");
+                        var efrhash = JenkHash.GenHash(ptr.EffectSpawnerAtRatio.EffectRuleName?.Value ?? "");
                         if (efrdict.TryGetValue(efrhash, out ParticleEffectRule efr))
                         {
-                            ptr.Spawner1.EffectRule = efr;
+                            ptr.EffectSpawnerAtRatio.EffectRule = efr;
                         }
                         else if (efrhash != 0)
                         { }
                     }
-                    if (ptr.Spawner2 != null)
+                    if (ptr.EffectSpawnerOnCoin != null)
                     {
-                        var efrhash = JenkHash.GenHash(ptr.Spawner2.EffectRuleName?.Value ?? "");
+                        var efrhash = JenkHash.GenHash(ptr.EffectSpawnerOnCoin.EffectRuleName?.Value ?? "");
                         if (efrdict.TryGetValue(efrhash, out ParticleEffectRule efr))
                         {
-                            ptr.Spawner2.EffectRule = efr;
+                            ptr.EffectSpawnerOnCoin.EffectRule = efr;
                         }
                         else if (efrhash != 0)
                         { }
@@ -683,8 +683,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_10h { get; set; }   // 2, 3, 4, 5, 6, 7, 10, 21
         public uint Unknown_14h; //0x00000000
         public ulong Unknown_18h; // 0x0000000000000000
-        public ParticleEffectSpawner Spawner1 { get; set; }
-        public ParticleEffectSpawner Spawner2 { get; set; }
+        public ParticleEffectSpawner EffectSpawnerAtRatio { get; set; }
+        public ParticleEffectSpawner EffectSpawnerOnCoin { get; set; }
         public uint Unknown_100h { get; set; }  // 0, 1, 2
         public uint Unknown_104h { get; set; }  // 0, 1, 7
         public uint Unknown_108h { get; set; }  // 0, 1, 2
@@ -694,14 +694,14 @@ namespace CodeWalker.GameFiles
         public uint Unknown_118h { get; set; } //index/id
         public uint Unknown_11Ch { get; set; } //index/id
         public ulong NamePointer { get; set; }
-        public ResourcePointerList64<ParticleBehaviour> BehaviourList1 { get; set; }
-        public ResourcePointerList64<ParticleBehaviour> BehaviourList2 { get; set; }
-        public ResourcePointerList64<ParticleBehaviour> BehaviourList3 { get; set; }
-        public ResourcePointerList64<ParticleBehaviour> BehaviourList4 { get; set; }
-        public ResourcePointerList64<ParticleBehaviour> BehaviourList5 { get; set; }
+        public ResourcePointerList64<ParticleBehaviour> AllBehaviours { get; set; }
+        public ResourcePointerList64<ParticleBehaviour> InitBehaviours { get; set; }
+        public ResourcePointerList64<ParticleBehaviour> UpdateBehaviours { get; set; }
+        public ResourcePointerList64<ParticleBehaviour> UpdateFinalizeBehaviours { get; set; }
+        public ResourcePointerList64<ParticleBehaviour> DrawBehaviours { get; set; }
         public ulong Unknown_178h; // 0x0000000000000000
         public ulong Unknown_180h; // 0x0000000000000000
-        public ResourceSimpleList64<ParticleRuleUnknownItem> UnknownList1 { get; set; }
+        public ResourceSimpleList64<ParticleRuleUnknownItem> BiasLinks { get; set; }
         public ulong Unknown_198h; // 0x0000000000000000
         public ulong Unknown_1A0h; // 0x0000000000000000
         public ulong Unknown_1A8h; // 0x0000000000000000
@@ -746,8 +746,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_10h = reader.ReadUInt32();
             this.Unknown_14h = reader.ReadUInt32();
             this.Unknown_18h = reader.ReadUInt64();
-            this.Spawner1 = reader.ReadBlock<ParticleEffectSpawner>();
-            this.Spawner2 = reader.ReadBlock<ParticleEffectSpawner>();
+            this.EffectSpawnerAtRatio = reader.ReadBlock<ParticleEffectSpawner>();
+            this.EffectSpawnerOnCoin = reader.ReadBlock<ParticleEffectSpawner>();
             this.Unknown_100h = reader.ReadUInt32();
             this.Unknown_104h = reader.ReadUInt32();
             this.Unknown_108h = reader.ReadUInt32();
@@ -757,14 +757,14 @@ namespace CodeWalker.GameFiles
             this.Unknown_118h = reader.ReadUInt32();
             this.Unknown_11Ch = reader.ReadUInt32();
             this.NamePointer = reader.ReadUInt64();
-            this.BehaviourList1 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList2 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList3 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList4 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList5 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            this.AllBehaviours = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            this.InitBehaviours = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            this.UpdateBehaviours = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            this.UpdateFinalizeBehaviours = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            this.DrawBehaviours = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
             this.Unknown_178h = reader.ReadUInt64();
             this.Unknown_180h = reader.ReadUInt64();
-            this.UnknownList1 = reader.ReadBlock<ResourceSimpleList64<ParticleRuleUnknownItem>>();
+            this.BiasLinks = reader.ReadBlock<ResourceSimpleList64<ParticleRuleUnknownItem>>();
             this.Unknown_198h = reader.ReadUInt64();
             this.Unknown_1A0h = reader.ReadUInt64();
             this.Unknown_1A8h = reader.ReadUInt64();
@@ -1187,8 +1187,8 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_10h);
             writer.Write(this.Unknown_14h);
             writer.Write(this.Unknown_18h);
-            writer.WriteBlock(this.Spawner1);
-            writer.WriteBlock(this.Spawner2);
+            writer.WriteBlock(this.EffectSpawnerAtRatio);
+            writer.WriteBlock(this.EffectSpawnerOnCoin);
             writer.Write(this.Unknown_100h);
             writer.Write(this.Unknown_104h);
             writer.Write(this.Unknown_108h);
@@ -1198,14 +1198,14 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_118h);
             writer.Write(this.Unknown_11Ch);
             writer.Write(this.NamePointer);
-            writer.WriteBlock(this.BehaviourList1);
-            writer.WriteBlock(this.BehaviourList2);
-            writer.WriteBlock(this.BehaviourList3);
-            writer.WriteBlock(this.BehaviourList4);
-            writer.WriteBlock(this.BehaviourList5);
+            writer.WriteBlock(this.AllBehaviours);
+            writer.WriteBlock(this.InitBehaviours);
+            writer.WriteBlock(this.UpdateBehaviours);
+            writer.WriteBlock(this.UpdateFinalizeBehaviours);
+            writer.WriteBlock(this.DrawBehaviours);
             writer.Write(this.Unknown_178h);
             writer.Write(this.Unknown_180h);
-            writer.WriteBlock(this.UnknownList1);
+            writer.WriteBlock(this.BiasLinks);
             writer.Write(this.Unknown_198h);
             writer.Write(this.Unknown_1A0h);
             writer.Write(this.Unknown_1A8h);
@@ -1251,25 +1251,25 @@ namespace CodeWalker.GameFiles
             YptXml.ValueTag(sb, indent, "Unknown1E8", YptXml.UintString(Unknown_1E8h));
             YptXml.ValueTag(sb, indent, "Unknown1EC", Unknown_1ECh.ToString());
             YptXml.ValueTag(sb, indent, "Unknown220", YptXml.UintString(Unknown_220h));
-            if (Spawner1 != null)
+            if (EffectSpawnerAtRatio != null)
             {
-                YptXml.OpenTag(sb, indent, "Spawner1");
-                Spawner1.WriteXml(sb, indent + 1);
-                YptXml.CloseTag(sb, indent, "Spawner1");
+                YptXml.OpenTag(sb, indent, "EffectSpawnerAtRatio");
+                EffectSpawnerAtRatio.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "EffectSpawnerAtRatio");
             }
-            if (Spawner2 != null)
+            if (EffectSpawnerOnCoin != null)
             {
-                YptXml.OpenTag(sb, indent, "Spawner2");
-                Spawner2.WriteXml(sb, indent + 1);
-                YptXml.CloseTag(sb, indent, "Spawner2");
+                YptXml.OpenTag(sb, indent, "EffectSpawnerOnCoin");
+                EffectSpawnerOnCoin.WriteXml(sb, indent + 1);
+                YptXml.CloseTag(sb, indent, "EffectSpawnerOnCoin");
             }
-            if (BehaviourList1?.data_items?.Length > 0)
+            if (AllBehaviours?.data_items?.Length > 0)
             {
-                YptXml.WriteItemArray(sb, BehaviourList1.data_items, indent, "Behaviours");
+                YptXml.WriteItemArray(sb, AllBehaviours.data_items, indent, "AllBehaviours");
             }
-            if (UnknownList1?.data_items?.Length > 0)
+            if (BiasLinks?.data_items?.Length > 0)
             {
-                YptXml.WriteItemArray(sb, UnknownList1.data_items, indent, "UnknownList1");
+                YptXml.WriteItemArray(sb, BiasLinks.data_items, indent, "BiasLinks");
             }
             if (ShaderVars?.data_items?.Length > 0)
             {
@@ -1299,10 +1299,10 @@ namespace CodeWalker.GameFiles
             Unknown_1E8h = Xml.GetChildUIntAttribute(node, "Unknown1E8");
             Unknown_1ECh = Xml.GetChildUIntAttribute(node, "Unknown1EC");
             Unknown_220h = Xml.GetChildUIntAttribute(node, "Unknown220");
-            Spawner1 = new ParticleEffectSpawner();
-            Spawner1.ReadXml(node.SelectSingleNode("Spawner1"));
-            Spawner2 = new ParticleEffectSpawner();
-            Spawner2.ReadXml(node.SelectSingleNode("Spawner2"));
+            EffectSpawnerAtRatio = new ParticleEffectSpawner();
+            EffectSpawnerAtRatio.ReadXml(node.SelectSingleNode("EffectSpawnerAtRatio"));
+            EffectSpawnerOnCoin = new ParticleEffectSpawner();
+            EffectSpawnerOnCoin.ReadXml(node.SelectSingleNode("EffectSpawnerOnCoin"));
 
 
 
@@ -1325,8 +1325,8 @@ namespace CodeWalker.GameFiles
 
 
 
-            UnknownList1 = new ResourceSimpleList64<ParticleRuleUnknownItem>();
-            UnknownList1.data_items = XmlMeta.ReadItemArrayNullable<ParticleRuleUnknownItem>(node, "UnknownList1");
+            BiasLinks = new ResourceSimpleList64<ParticleRuleUnknownItem>();
+            BiasLinks.data_items = XmlMeta.ReadItemArrayNullable<ParticleRuleUnknownItem>(node, "BiasLinks");
 
 
             ResourcePointerList64<ParticleShaderVar> readShaderVars(string name)
@@ -1416,16 +1416,16 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            BehaviourList1 = new ResourcePointerList64<ParticleBehaviour>();
-            BehaviourList1.data_items = blist.ToArray();
-            BehaviourList2 = new ResourcePointerList64<ParticleBehaviour>();
-            BehaviourList2.data_items = blist2.ToArray();
-            BehaviourList3 = new ResourcePointerList64<ParticleBehaviour>();
-            BehaviourList3.data_items = blist3.ToArray();
-            BehaviourList4 = new ResourcePointerList64<ParticleBehaviour>();
-            BehaviourList4.data_items = blist4.ToArray();
-            BehaviourList5 = new ResourcePointerList64<ParticleBehaviour>();
-            BehaviourList5.data_items = blist5.ToArray();
+            AllBehaviours = new ResourcePointerList64<ParticleBehaviour>();
+            AllBehaviours.data_items = blist.ToArray();
+            InitBehaviours = new ResourcePointerList64<ParticleBehaviour>();
+            InitBehaviours.data_items = blist2.ToArray();
+            UpdateBehaviours = new ResourcePointerList64<ParticleBehaviour>();
+            UpdateBehaviours.data_items = blist3.ToArray();
+            UpdateFinalizeBehaviours = new ResourcePointerList64<ParticleBehaviour>();
+            UpdateFinalizeBehaviours.data_items = blist4.ToArray();
+            DrawBehaviours = new ResourcePointerList64<ParticleBehaviour>();
+            DrawBehaviours.data_items = blist5.ToArray();
 
 
         }
@@ -1443,14 +1443,14 @@ namespace CodeWalker.GameFiles
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
             return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(88, Spawner1),
-                new Tuple<long, IResourceBlock>(96, Spawner2),
-                new Tuple<long, IResourceBlock>(0x128, BehaviourList1),
-                new Tuple<long, IResourceBlock>(0x138, BehaviourList2),
-                new Tuple<long, IResourceBlock>(0x148, BehaviourList3),
-                new Tuple<long, IResourceBlock>(0x158, BehaviourList4),
-                new Tuple<long, IResourceBlock>(0x168, BehaviourList5),
-                new Tuple<long, IResourceBlock>(0x188, UnknownList1),
+                new Tuple<long, IResourceBlock>(88, EffectSpawnerAtRatio),
+                new Tuple<long, IResourceBlock>(96, EffectSpawnerOnCoin),
+                new Tuple<long, IResourceBlock>(0x128, AllBehaviours),
+                new Tuple<long, IResourceBlock>(0x138, InitBehaviours),
+                new Tuple<long, IResourceBlock>(0x148, UpdateBehaviours),
+                new Tuple<long, IResourceBlock>(0x158, UpdateFinalizeBehaviours),
+                new Tuple<long, IResourceBlock>(0x168, DrawBehaviours),
+                new Tuple<long, IResourceBlock>(0x188, BiasLinks),
                 new Tuple<long, IResourceBlock>(0x1F0, ShaderVars),
                 new Tuple<long, IResourceBlock>(0x210, Drawables)
             };
@@ -6068,15 +6068,17 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public ParticleKeyframeProp KeyframeProp0 { get; set; }
-        public ulong Unknown_C0h; // 0x0000000000000000
-        public ulong Unknown_C8h; // 0x0000000000000000
-        public float Unknown_D0h { get; set; } // 15.0f, 20.0f, ..., 100.0f
-        public float Unknown_D4h { get; set; } // 30.0f, 50.0f, ..., 200.0f
-        public uint Unknown_D8h { get; set; } // 0, 1, 2
-        public uint Unknown_DCh { get; set; } // 0, 1, 2
-        public uint Unknown_E0h { get; set; } // 0, 1
-        public uint Unknown_E4h; // 0x00000000
-        public ulong Unknown_E8h; // 0x0000000000000000
+        public ulong PGlobalData; // Unused
+        public ulong PWindEval; // Unused
+        public float HighLodRange { get; set; }
+        public float LowLodRange { get; set; }
+        public int HighLodDisturbanceMode { get; set; }
+        public int LowLodDisturbanceMode { get; set; }
+        public byte IgnoreMtxWeight { get; set; }
+        public byte Padding00 { get; set; }
+        public ushort Padding01;
+        public uint Padding02;
+        public ulong Padding03;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -6084,70 +6086,17 @@ namespace CodeWalker.GameFiles
 
             // read structure data
             this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_C0h = reader.ReadUInt64();
-            this.Unknown_C8h = reader.ReadUInt64();
-            this.Unknown_D0h = reader.ReadSingle();
-            this.Unknown_D4h = reader.ReadSingle();
-            this.Unknown_D8h = reader.ReadUInt32();
-            this.Unknown_DCh = reader.ReadUInt32();
-            this.Unknown_E0h = reader.ReadUInt32();
-            this.Unknown_E4h = reader.ReadUInt32();
-            this.Unknown_E8h = reader.ReadUInt64();
-
-            //if (Unknown_C0h != 0)
-            //{ }//no hit
-            //if (Unknown_C8h != 0)
-            //{ }//no hit
-            switch (Unknown_D0h)
-            {
-                case 15.0f:
-                case 20.0f:
-                case 30.0f:
-                case 100.0f:
-                    break;
-                default:
-                    break;//more
-            }
-            switch (Unknown_D4h)
-            {
-                case 30.0f:
-                case 50.0f:
-                case 40.0f:
-                case 200.0f:
-                    break;
-                default:
-                    break;//more
-            }
-            //switch (Unknown_D8h)
-            //{
-            //    case 1:
-            //    case 2:
-            //    case 0:
-            //        break;
-            //    default:
-            //        break;//no hit
-            //}
-            //switch (Unknown_DCh)
-            //{
-            //    case 1:
-            //    case 0:
-            //    case 2:
-            //        break;
-            //    default:
-            //        break;//no hit
-            //}
-            //switch (Unknown_E0h)
-            //{
-            //    case 0:
-            //    case 1:
-            //        break;
-            //    default:
-            //        break;//no hit
-            //}
-            //if (Unknown_E4h != 0)
-            //{ }//no hit
-            //if (Unknown_E8h != 0)
-            //{ }//no hit
+            this.PGlobalData = reader.ReadUInt64();
+            this.PWindEval = reader.ReadUInt64();
+            this.HighLodRange = reader.ReadSingle();
+            this.LowLodRange = reader.ReadSingle();
+            this.HighLodDisturbanceMode = reader.ReadInt32();
+            this.LowLodDisturbanceMode = reader.ReadInt32();
+            this.IgnoreMtxWeight = reader.ReadByte();
+            this.Padding00 = reader.ReadByte();
+            this.Padding01 = reader.ReadUInt16();
+            this.Padding02 = reader.ReadUInt32();
+            this.Padding03 = reader.ReadUInt64();
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -6155,24 +6104,26 @@ namespace CodeWalker.GameFiles
 
             // write structure data
             writer.WriteBlock(this.KeyframeProp0);
-            writer.Write(this.Unknown_C0h);
-            writer.Write(this.Unknown_C8h);
-            writer.Write(this.Unknown_D0h);
-            writer.Write(this.Unknown_D4h);
-            writer.Write(this.Unknown_D8h);
-            writer.Write(this.Unknown_DCh);
-            writer.Write(this.Unknown_E0h);
-            writer.Write(this.Unknown_E4h);
-            writer.Write(this.Unknown_E8h);
+            writer.Write(this.PGlobalData);
+            writer.Write(this.PWindEval);
+            writer.Write(this.HighLodRange);
+            writer.Write(this.LowLodRange);
+            writer.Write(this.HighLodDisturbanceMode);
+            writer.Write(this.LowLodDisturbanceMode);
+            writer.Write(this.IgnoreMtxWeight);
+            writer.Write(this.Padding00);
+            writer.Write(this.Padding01);
+            writer.Write(this.Padding02);
+            writer.Write(this.Padding03);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
-            YptXml.ValueTag(sb, indent, "UnknownD0", FloatUtil.ToString(Unknown_D0h));
-            YptXml.ValueTag(sb, indent, "UnknownD4", FloatUtil.ToString(Unknown_D4h));
-            YptXml.ValueTag(sb, indent, "UnknownD8", Unknown_D8h.ToString());
-            YptXml.ValueTag(sb, indent, "UnknownDC", Unknown_DCh.ToString());
-            YptXml.ValueTag(sb, indent, "UnknownE0", Unknown_E0h.ToString());
+            YptXml.ValueTag(sb, indent, "HighLodRange", FloatUtil.ToString(HighLodRange));
+            YptXml.ValueTag(sb, indent, "LowLodRange", FloatUtil.ToString(LowLodRange));
+            YptXml.ValueTag(sb, indent, "HighLodDisturbanceMode", HighLodDisturbanceMode.ToString());
+            YptXml.ValueTag(sb, indent, "LowLodDisturbanceMode", LowLodDisturbanceMode.ToString());
+            YptXml.ValueTag(sb, indent, "IgnoreMtxWeight", IgnoreMtxWeight.ToString());
             if (KeyframeProp0 != null)
             {
                 YptXml.OpenTag(sb, indent, "KeyframeProperty0");
@@ -6183,11 +6134,11 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
-            Unknown_D0h = Xml.GetChildFloatAttribute(node, "UnknownD0");
-            Unknown_D4h = Xml.GetChildFloatAttribute(node, "UnknownD4");
-            Unknown_D8h = Xml.GetChildUIntAttribute(node, "UnknownD8");
-            Unknown_DCh = Xml.GetChildUIntAttribute(node, "UnknownDC");
-            Unknown_E0h = Xml.GetChildUIntAttribute(node, "UnknownE0");
+            HighLodRange = Xml.GetChildFloatAttribute(node, "UnknownD0");
+            LowLodRange = Xml.GetChildFloatAttribute(node, "UnknownD4");
+            HighLodDisturbanceMode = Xml.GetChildIntAttribute(node, "HighLodDisturbanceMode");
+            LowLodDisturbanceMode = Xml.GetChildIntAttribute(node, "LowLodDisturbanceMode");
+            IgnoreMtxWeight = (byte)Xml.GetChildUIntAttribute(node, "IgnoreMtxWeight");
             KeyframeProp0 = new ParticleKeyframeProp();
             var pnode0 = node.SelectSingleNode("KeyframeProperty0");
             if (pnode0 != null)
