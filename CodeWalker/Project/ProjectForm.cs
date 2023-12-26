@@ -6865,9 +6865,9 @@ namespace CodeWalker.Project
             room.Name = "room1";
             room.NameHash = JenkHash.GenHash(room.Name);
 
-            room.Flags0 = 0xAAAAAAAA;
+            room.Flags = 0xAAAAAAAA;
             room.Sound = (uint)MetaName.null_sound;
-            room.SoundSet = 3565506855;//?
+            room.InteriorWallaSoundSet = 3565506855;//?
 
 
             CurrentAudioFile.AddRelData(room);
