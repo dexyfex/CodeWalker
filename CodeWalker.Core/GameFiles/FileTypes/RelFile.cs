@@ -10512,8 +10512,8 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "UpgradedEngineSynthDef", UpgradedEngineSynthDef.ToString());
             RelXml.ValueTag(sb, indent, "UpgradedEngineSynthPreset", UpgradedEngineSynthPreset.ToString());
             RelXml.ValueTag(sb, indent, "UpgradedExhaustVolumeBoost_PostSubmix", UpgradedExhaustVolumeBoost_PostSubmix.ToString());
-            RelXml.StringTag(sb, indent, "UpgradedExhaustSynthDef", UpgradedExhaustSynthDef.ToString());
-            RelXml.StringTag(sb, indent, "UpgradedExhaustSynthPreset", UpgradedExhaustSynthPreset.ToString());
+            RelXml.StringTag(sb, indent, "UpgradedExhaustSynthDef", FloatUtil.ToString(UpgradedExhaustSynthDef));
+            RelXml.StringTag(sb, indent, "UpgradedExhaustSynthPreset", FloatUtil.ToString(UpgradedExhaustSynthPreset));
             RelXml.StringTag(sb, indent, "DamageSynthHashList", RelXml.HashString(DamageSynthHashList));
             RelXml.StringTag(sb, indent, "UpgradedRevLimiterPop", RelXml.HashString(UpgradedRevLimiterPop));
             RelXml.ValueTag(sb, indent, "EngineIdleVolume_PostSubmix", EngineIdleVolume_PostSubmix.ToString());
@@ -10861,7 +10861,9 @@ namespace CodeWalker.GameFiles
             bw.Write(AdditionalGearChangeSmoothing);
             bw.Write(AdditionalGearChangeSmoothingTime);
             bw.Write(ConvertibleRoofInteriorSoundSet);
+            bw.Write(VehicleRainSoundInterior);
             bw.Write(CabinToneLoop);
+            bw.Write(InteriorViewEngineOpenness);
             bw.Write(JumpLandSoundInterior);
             bw.Write(DamagedJumpLandSoundInterior);
         }
@@ -10943,7 +10945,7 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "ConvertibleRoofInteriorSoundSet", RelXml.HashString(ConvertibleRoofInteriorSoundSet));
             RelXml.StringTag(sb, indent, "VehicleRainSoundInterior", RelXml.HashString(VehicleRainSoundInterior));
             RelXml.StringTag(sb, indent, "CabinToneLoop", RelXml.HashString(CabinToneLoop));
-            RelXml.StringTag(sb, indent, "InteriorViewEngineOpenness", FloatUtil.ToString(InteriorViewEngineOpenness));
+            RelXml.StringTag(sb, indent, "InteriorViewEngineOpenness", InteriorViewEngineOpenness.ToString());
             RelXml.StringTag(sb, indent, "JumpLandSoundInterior", RelXml.HashString(JumpLandSoundInterior));
             RelXml.StringTag(sb, indent, "DamagedJumpLandSoundInterior", RelXml.HashString(DamagedJumpLandSoundInterior));
         }
