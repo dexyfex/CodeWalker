@@ -66,8 +66,8 @@ namespace CodeWalker.Project.Panels
                 NameTextBox.Text = ci.NameHash.ToString();
 
                 FlagsTextBox.Text = ci.Flags.Hex;
-                WallaTextBox.Text = ci.Walla.ToString();
-                TunnelTextBox.Text = ci.Tunnel.ToString();
+                WallaTextBox.Text = ci.InteriorWallaSoundSet.ToString();
+                TunnelTextBox.Text = ci.InteriorReflections.ToString();
 
                 StringBuilder sb = new StringBuilder();
                 if (ci.Rooms != null)
@@ -150,9 +150,9 @@ namespace CodeWalker.Project.Panels
                 JenkIndex.Ensure(name);
             }
 
-            if (CurrentInterior.Walla != hash)
+            if (CurrentInterior.InteriorWallaSoundSet != hash)
             {
-                CurrentInterior.Walla = hash;
+                CurrentInterior.InteriorWallaSoundSet = hash;
 
                 ProjectItemChanged();
             }
@@ -171,9 +171,9 @@ namespace CodeWalker.Project.Panels
                 JenkIndex.Ensure(name);
             }
 
-            if (CurrentInterior.Tunnel != hash)
+            if (CurrentInterior.InteriorReflections != hash)
             {
-                CurrentInterior.Tunnel = hash;
+                CurrentInterior.InteriorReflections = hash;
 
                 ProjectItemChanged();
             }
@@ -200,7 +200,7 @@ namespace CodeWalker.Project.Panels
                 }
 
                 CurrentInterior.Rooms = hashlist.ToArray();
-                CurrentInterior.RoomsCount = (byte)hashlist.Count;
+                CurrentInterior.NumRooms = (byte)hashlist.Count;
 
                 ProjectItemChanged();
             }

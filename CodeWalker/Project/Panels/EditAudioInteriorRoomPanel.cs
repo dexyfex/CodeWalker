@@ -80,7 +80,7 @@ namespace CodeWalker.Project.Panels
                 Unk03TextBox.Text = FloatUtil.ToString(cr.ReverbSmall);
                 ReverbTextBox.Text = FloatUtil.ToString(cr.ReverbMedium);
                 EchoTextBox.Text = FloatUtil.ToString(cr.ReverbLarge);
-                SoundTextBox.Text = cr.Sound.ToString();
+                SoundTextBox.Text = cr.RoomToneSound.ToString();
                 Unk08TextBox.Text = FloatUtil.ToString(cr.ExteriorAudibility);
                 Unk09TextBox.Text = FloatUtil.ToString(cr.RoomOcclusionDamping);
                 Unk10TextBox.Text = FloatUtil.ToString(cr.NonMarkedPortalOcclusion);
@@ -244,9 +244,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Sound != hash)
+            if (CurrentRoom.RoomToneSound != hash)
             {
-                CurrentRoom.Sound = hash;
+                CurrentRoom.RoomToneSound = hash;
 
                 ProjectItemChanged();
             }

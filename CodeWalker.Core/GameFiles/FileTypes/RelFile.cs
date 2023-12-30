@@ -5213,7 +5213,7 @@ namespace CodeWalker.GameFiles
         Line = 2,
     }
 
-    [TC(typeof(EXP))] public class Dat151StaticEmitterList: Dat151RelData
+    [TC(typeof(EXP))] public class Dat151StaticEmitterList: Dat151RelData // rage::StaticEmitterList
     {
         public uint EmitterCount { get; set; }
         public MetaHash[] EmitterHashes { get; set; }
@@ -5264,7 +5264,7 @@ namespace CodeWalker.GameFiles
             return EmitterHashes;
         }
     }
-    [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151AmbientZone : Dat151RelData // rage::AmbientZone
     {
         public FlagsUint Flags { get; set; }
         public Dat151ZoneShape Shape { get; set; } // Should be a single byte then 7 bytes of padding
@@ -5584,7 +5584,7 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TC(typeof(EXP))] public class Dat151AmbientRule : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151AmbientRule : Dat151RelData // rage::AmbientRule
     {
         public uint Padding01 { get; set; }
         public uint Padding02 { get; set; }
@@ -5601,15 +5601,15 @@ namespace CodeWalker.GameFiles
         public float MaxDist { get; set; }   //outer radius  of volume (activation bound)
         public ushort MinTimeMinutes { get; set; }   //time allows to start playing, in mins
         public ushort MaxTimeMinutes { get; set; }   //time to stop playing, in mins (max 1440)
-        public ushort MinRepeatTime { get; set; }  //0..600
-        public ushort MinRepeatTimeVariance { get; set; }  //0..150
-        public byte SpawnHeight { get; set; }    //0,1,2
-        public byte PositionUsage { get; set; }    //0,1,2
-        public byte MaxLocalInstances { get; set; }    //1,2,3,4,8,255
-        public byte MaxGlobalInstances { get; set; }    //1,2,3,4,5,6,8,10,255
-        public byte BlockabilityFactor { get; set; }    //0, 50, 80, 100
-        public byte MaxPathDepth { get; set; }    //1,2,3,5
-        public ushort NumConditions { get; set; } //0,1,2,4
+        public ushort MinRepeatTime { get; set; }
+        public ushort MinRepeatTimeVariance { get; set; }
+        public byte SpawnHeight { get; set; }
+        public byte PositionUsage { get; set; }
+        public byte MaxLocalInstances { get; set; }
+        public byte MaxGlobalInstances { get; set; }
+        public byte BlockabilityFactor { get; set; }
+        public byte MaxPathDepth { get; set; }
+        public ushort NumConditions { get; set; }
         public Condition[] Conditions { get; set; }
 
         public struct Condition : IMetaXmlItem
@@ -5674,10 +5674,10 @@ namespace CodeWalker.GameFiles
             DynamicBankID = br.ReadInt32();
             DynamicSlotType = br.ReadUInt32();
             Weight = br.ReadSingle();
-            MinDist = br.ReadSingle(); //inner radius  of volume (playback bound)
-            MaxDist = br.ReadSingle(); //outer radius of volume (activation bound)
-            MinTimeMinutes = br.ReadUInt16(); //time allows to start playing, in mins
-            MaxTimeMinutes = br.ReadUInt16(); //time to stop playing, in mins (max 1440)
+            MinDist = br.ReadSingle();
+            MaxDist = br.ReadSingle();
+            MinTimeMinutes = br.ReadUInt16();
+            MaxTimeMinutes = br.ReadUInt16();
             MinRepeatTime = br.ReadUInt16();
             MinRepeatTimeVariance = br.ReadUInt16();
             SpawnHeight = br.ReadByte();
@@ -5861,9 +5861,9 @@ namespace CodeWalker.GameFiles
         }
     }
     [TC(typeof(EXP))]
-    public class Dat151StaticEmitter : Dat151RelData
+    public class Dat151StaticEmitter : Dat151RelData // rage::StaticEmitter
     {
-        public FlagsUint Flags { get; set; }//flags
+        public FlagsUint Flags { get; set; }
         public MetaHash ChildSound { get; set; }
         public MetaHash RadioStation { get; set; }
         public Vector3 Position { get; set; }
@@ -6026,12 +6026,12 @@ namespace CodeWalker.GameFiles
             return new[] { RadioStation, Alarm, Interior };
         }
     }
-    [TC(typeof(EXP))] public class Dat151Interior : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151Interior : Dat151RelData // rage::InteriorSettings
     {
         public FlagsUint Flags { get; set; }
-        public MetaHash Walla { get; set; }
-        public MetaHash Tunnel { get; set; }
-        public uint RoomsCount { get; set; }
+        public MetaHash InteriorWallaSoundSet { get; set; }
+        public MetaHash InteriorReflections { get; set; }
+        public uint NumRooms { get; set; }
         public MetaHash[] Rooms { get; set; }
 
         public Dat151Interior(RelFile rel) : base(rel)
@@ -6042,11 +6042,11 @@ namespace CodeWalker.GameFiles
         public Dat151Interior(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
-            Walla = br.ReadUInt32();
-            Tunnel = br.ReadUInt32();
-            RoomsCount = br.ReadUInt32();
-            var rooms = new MetaHash[RoomsCount];
-            for (int i = 0; i < RoomsCount; i++)
+            InteriorWallaSoundSet = br.ReadUInt32();
+            InteriorReflections = br.ReadUInt32();
+            NumRooms = br.ReadUInt32();
+            var rooms = new MetaHash[NumRooms];
+            for (int i = 0; i < NumRooms; i++)
             {
                 rooms[i] = br.ReadUInt32();
             }
@@ -6061,10 +6061,10 @@ namespace CodeWalker.GameFiles
             WriteTypeAndOffset(bw);
 
             bw.Write(Flags);
-            bw.Write(Walla);
-            bw.Write(Tunnel);
-            bw.Write(RoomsCount);
-            for (int i = 0; i < RoomsCount; i++)
+            bw.Write(InteriorWallaSoundSet);
+            bw.Write(InteriorReflections);
+            bw.Write(NumRooms);
+            for (int i = 0; i < NumRooms; i++)
             {
                 bw.Write(Rooms[i]);
             }
@@ -6072,22 +6072,22 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.StringTag(sb, indent, "Walla", RelXml.HashString(Walla));
-            RelXml.StringTag(sb, indent, "Tunnel", RelXml.HashString(Tunnel));
+            RelXml.StringTag(sb, indent, "InteriorWallaSoundSet", RelXml.HashString(InteriorWallaSoundSet));
+            RelXml.StringTag(sb, indent, "InteriorReflections", RelXml.HashString(InteriorReflections));
             RelXml.WriteHashItemArray(sb, Rooms, indent, "Rooms");
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Walla = XmlRel.GetHash(Xml.GetChildInnerText(node, "Walla"));
-            Tunnel = XmlRel.GetHash(Xml.GetChildInnerText(node, "Tunnel"));
+            InteriorWallaSoundSet = XmlRel.GetHash(Xml.GetChildInnerText(node, "InteriorWallaSoundSet"));
+            InteriorReflections = XmlRel.GetHash(Xml.GetChildInnerText(node, "InteriorReflections"));
             Rooms = XmlRel.ReadHashItemArray(node, "Rooms");
-            RoomsCount = (uint)(Rooms?.Length ?? 0);
+            NumRooms = (uint)(Rooms?.Length ?? 0);
         }
         public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
-            for (uint i = 0; i < RoomsCount; i++)
+            for (uint i = 0; i < NumRooms; i++)
             {
                 offsets.Add(16 + i * 4);
             }
@@ -6095,13 +6095,13 @@ namespace CodeWalker.GameFiles
         }
         public override MetaHash[] GetSoundHashes()
         {
-            return new[] { Walla };
+            return new[] { InteriorWallaSoundSet };
         }
 
         public override MetaHash[] GetGameHashes()
         {
             var list = new List<MetaHash>();
-            list.Add(Tunnel);
+            list.Add(InteriorReflections);
             if (Rooms != null)
             {
                 list.AddRange(Rooms);
@@ -6109,7 +6109,7 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TC(typeof(EXP))] public class Dat151InteriorRoom : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151InteriorRoom : Dat151RelData // rage::InteriorRoom
     {
         public FlagsUint Flags { get; set; }
         public MetaHash RoomName { get; set; }
@@ -6120,7 +6120,7 @@ namespace CodeWalker.GameFiles
         public float ReverbSmall { get; set; }
         public float ReverbMedium { get; set; }
         public float ReverbLarge { get; set; }
-        public MetaHash Sound { get; set; }
+        public MetaHash RoomToneSound { get; set; }
         public byte RainType { get; set; }
         public ushort padding03 { get; set; }
         public byte padding04 { get; set; }
@@ -6148,7 +6148,7 @@ namespace CodeWalker.GameFiles
             ReverbSmall = br.ReadSingle();
             ReverbMedium = br.ReadSingle();
             ReverbLarge = br.ReadSingle();
-            Sound = br.ReadUInt32();
+            RoomToneSound = br.ReadUInt32();
             RainType = br.ReadByte();
             padding03 = br.ReadUInt16();
             padding04 = br.ReadByte();
@@ -6159,10 +6159,6 @@ namespace CodeWalker.GameFiles
             DistanceFromPortalFadeDistance = br.ReadSingle();
             WeaponMetrics = br.ReadUInt32();
             InteriorWallaSoundSet = br.ReadUInt32();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -6177,7 +6173,7 @@ namespace CodeWalker.GameFiles
             bw.Write(ReverbSmall);
             bw.Write(ReverbMedium);
             bw.Write(ReverbLarge);
-            bw.Write(Sound);
+            bw.Write(RoomToneSound);
             bw.Write(RainType);
             bw.Write(padding03);
             bw.Write(padding04);
@@ -6198,7 +6194,7 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "ReverbSmall", FloatUtil.ToString(ReverbSmall));
             RelXml.ValueTag(sb, indent, "ReverbMedium", FloatUtil.ToString(ReverbMedium));
             RelXml.ValueTag(sb, indent, "ReverbLarge", FloatUtil.ToString(ReverbLarge));
-            RelXml.StringTag(sb, indent, "Sound", RelXml.HashString(Sound));
+            RelXml.StringTag(sb, indent, "RoomToneSound", RelXml.HashString(RoomToneSound));
             RelXml.ValueTag(sb, indent, "RainType", FloatUtil.ToString(RainType));
             RelXml.ValueTag(sb, indent, "ExteriorAudibility", FloatUtil.ToString(ExteriorAudibility));
             RelXml.ValueTag(sb, indent, "RoomOcclusionDamping", FloatUtil.ToString(RoomOcclusionDamping));
@@ -6217,7 +6213,7 @@ namespace CodeWalker.GameFiles
             ReverbSmall = Xml.GetChildFloatAttribute(node, "ReverbSmall", "value");
             ReverbMedium = Xml.GetChildFloatAttribute(node, "ReverbMedium", "value");
             ReverbLarge = Xml.GetChildFloatAttribute(node, "ReverbLarge", "value");
-            Sound = XmlRel.GetHash(Xml.GetChildInnerText(node, "Sound"));
+            RoomToneSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "RoomToneSound"));
             RainType = (byte)Xml.GetChildUIntAttribute(node, "RainType", "value");
             ExteriorAudibility = Xml.GetChildFloatAttribute(node, "ExteriorAudibility", "value");
             RoomOcclusionDamping = Xml.GetChildFloatAttribute(node, "RoomOcclusionDamping", "value");
@@ -6233,14 +6229,14 @@ namespace CodeWalker.GameFiles
         }
         public override MetaHash[] GetSoundHashes()
         {
-            return new[] { Sound, InteriorWallaSoundSet };
+            return new[] { RoomToneSound, InteriorWallaSoundSet };
         }
         public override MetaHash[] GetGameHashes()
         {
             return new[] { AmbientZone, WeaponMetrics };
         }
     }
-    [TC(typeof(EXP))] public class Dat151RadioStationList : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151RadioStationList : Dat151RelData // rage::RadioStationList
     {
         public uint StationsCount { get; set; }
         public MetaHash[] Stations { get; set; }
@@ -6297,17 +6293,18 @@ namespace CodeWalker.GameFiles
             return Stations;
         }
     }
-    [TC(typeof(EXP))] public class Dat151RadioStation : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151RadioStation : Dat151RelData // rage::RadioStationSettings
     {
-        public FlagsUint Unk00 { get; set; }
-        public uint WheelPosition { get; set; }
-        public uint Unk02 { get; set; }
-        public ushort MusicGenre { get; set; }
+        public FlagsUint Flags { get; set; }
+        public int Order { get; set; }
+        public uint NextStationSettingsPointer { get; set; }
+        public byte MusicGenre { get; set; }
+        public byte AmbientRadioVol { get; set; }
         public string RadioName { get; set; }
-        public ushort Unk04 { get; set; }
+        public ushort padding00 { get; set; }
 
-        public uint MusicListCount { get; set; }
-        public MetaHash[] MusicList { get; set; }
+        public uint NumTrackLists { get; set; }
+        public MetaHash[] TrackList { get; set; }
 
         public Dat151RadioStation(RelFile rel) : base(rel)
         {
@@ -6316,26 +6313,23 @@ namespace CodeWalker.GameFiles
         }
         public Dat151RadioStation(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk00 = br.ReadUInt32();
-            WheelPosition = br.ReadUInt32();
-            Unk02 = br.ReadUInt32();
-            MusicGenre = br.ReadUInt16();
+            Flags = br.ReadUInt32();
+            Order = br.ReadInt32();
+            NextStationSettingsPointer = br.ReadUInt32();
+            MusicGenre = br.ReadByte();
+            AmbientRadioVol = br.ReadByte();
 
             var data = br.ReadBytes(32);
             RadioName = Encoding.ASCII.GetString(data).Replace("\0", "");
 
-            Unk04 = br.ReadUInt16();
-
-            if (Unk04 != 0)
-            { }
-
-            MusicListCount = br.ReadUInt32();
-            var tracks = new MetaHash[MusicListCount];
-            for (int i = 0; i < MusicListCount; i++)
+            padding00 = br.ReadUInt16();
+            NumTrackLists = br.ReadUInt32();
+            var tracks = new MetaHash[NumTrackLists];
+            for (int i = 0; i < NumTrackLists; i++)
             {
                 tracks[i] = br.ReadUInt32();
             }
-            MusicList = tracks;
+            TrackList = tracks;
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
             if (bytesleft != 0)
@@ -6345,10 +6339,11 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk00);
-            bw.Write(WheelPosition);
-            bw.Write(Unk02);
+            bw.Write(Flags);
+            bw.Write(Order);
+            bw.Write(NextStationSettingsPointer);
             bw.Write(MusicGenre);
+            bw.Write(AmbientRadioVol);
 
             byte[] data = new byte[32];
             int len = Math.Min(RadioName?.Length ?? 0, 32);
@@ -6358,39 +6353,37 @@ namespace CodeWalker.GameFiles
             }
             bw.Write(data);
 
-            bw.Write(Unk04);
+            bw.Write(padding00);
 
-            bw.Write(MusicListCount);
-            for (int i = 0; i < MusicListCount; i++)
+            bw.Write(NumTrackLists);
+            for (int i = 0; i < NumTrackLists; i++)
             {
-                bw.Write(MusicList[i]);
+                bw.Write(TrackList[i]);
             }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
-            RelXml.ValueTag(sb, indent, "WheelPosition", WheelPosition.ToString());
-            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.ValueTag(sb, indent, "Order", Order.ToString());
             RelXml.ValueTag(sb, indent, "MusicGenre", MusicGenre.ToString());
+            RelXml.ValueTag(sb, indent, "AmbientRadioVol", AmbientRadioVol.ToString());
             RelXml.StringTag(sb, indent, "RadioName", RadioName);
-            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
-            RelXml.WriteHashItemArray(sb, MusicList, indent, "MusicList");
+            RelXml.WriteHashItemArray(sb, TrackList, indent, "TrackList");
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk00 = Xml.GetChildUIntAttribute(node, "Unk00", "value");
-            WheelPosition = Xml.GetChildUIntAttribute(node, "WheelPosition", "value");
-            Unk02 = Xml.GetChildUIntAttribute(node, "Unk02", "value");
-            MusicGenre = (ushort)Xml.GetChildUIntAttribute(node, "MusicGenre", "value");
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Order = Xml.GetChildIntAttribute(node, "Order", "value");
+            MusicGenre = (byte)Xml.GetChildUIntAttribute(node, "MusicGenre", "value");
+            AmbientRadioVol = (byte)Xml.GetChildUIntAttribute(node, "AmbientRadioVol", "value");
             RadioName = Xml.GetChildInnerText(node, "RadioName");
-            Unk04 = (ushort)Xml.GetChildUIntAttribute(node, "Unk04", "value");
-            MusicList = XmlRel.ReadHashItemArray(node, "MusicList");
-            MusicListCount = (uint)(MusicList?.Length ?? 0);
+            TrackList = XmlRel.ReadHashItemArray(node, "TrackList");
+            NumTrackLists = (uint)(TrackList?.Length ?? 0);
         }
         public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
-            for (uint i = 0; i < MusicListCount; i++)
+            for (uint i = 0; i < NumTrackLists; i++)
             {
                 offsets.Add(52 + i * 4);
             }
@@ -6398,7 +6391,7 @@ namespace CodeWalker.GameFiles
         }
         public override MetaHash[] GetGameHashes()
         {
-            return MusicList;
+            return TrackList;
         }
     }
     [TC(typeof(EXP))] public class Dat151RadioTrack : Dat151RelData //used exclusively for radio stuff, eg music dj lines and idents
