@@ -188,10 +188,10 @@
             this.EntityFlagsCheckedListBox.FormattingEnabled = true;
             this.EntityFlagsCheckedListBox.Items.AddRange(new object[] {
             "1 - Full matrix (rotation)",
-            "2 - Stream low priority",
+            "2 - Stream Low Priority",
             "4 - Disable collision",
             "8 - LOD in parent map",
-            "16 - Adopt me",
+            "16 - LOD Adopt me",
             "32 - Fixed (static entity)",
             "64 - Interior LOD",
             "128 - Unused",
@@ -202,13 +202,13 @@
             "4096 - Unused",
             "8192 - Unused",
             "16384 - Unused",
-            "32768 - Drawable LOD use alt fade (wtf does this mean)?",
+            "32768 - LOD use alt fade",
             "65536 - Underwater",
             "131072 - Doesn\'t touch water",
             "262144 - Doesn\'t spawn peds",
-            "524288 - cast static shadows",
-            "1048576 - cast dynamic shadows",
-            "2097152 - Ignore day night light settings",
+            "524288 - Cast Static Shadows",
+            "1048576 - Cast Dynamic Shadows",
+            "2097152 - Ignore time light settings",
             "4194304 - Don\'t render shadows",
             "8388608 - Only render shadows",
             "16777216 - Don\'t render reflections",
@@ -217,13 +217,14 @@
             "134217728 - Only render water reflections",
             "268435456 - Don\'t render mirror reflections",
             "536870912 - Only render mirror reflections",
-            "1073741824 -",
-            "2147483648 -"});
-            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(348, 113);
+            "1073741824 - Unused",
+            "2147483648 - Unused"});
+            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(332, 113);
             this.EntityFlagsCheckedListBox.Name = "EntityFlagsCheckedListBox";
-            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(201, 349);
+            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(223, 349);
             this.EntityFlagsCheckedListBox.TabIndex = 32;
             this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntityFlagsCheckedListBox_ItemCheck);
+            this.EntityFlagsCheckedListBox.SelectedIndexChanged += new System.EventHandler(this.EntityFlagsCheckedListBox_SelectedIndexChanged);
             // 
             // label13
             // 
