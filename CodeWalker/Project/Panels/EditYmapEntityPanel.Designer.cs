@@ -224,7 +224,6 @@
             this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(223, 349);
             this.EntityFlagsCheckedListBox.TabIndex = 32;
             this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntityFlagsCheckedListBox_ItemCheck);
-            this.EntityFlagsCheckedListBox.SelectedIndexChanged += new System.EventHandler(this.EntityFlagsCheckedListBox_SelectedIndexChanged);
             // 
             // label13
             // 
