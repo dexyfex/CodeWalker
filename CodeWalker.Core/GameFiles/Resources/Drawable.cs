@@ -813,22 +813,22 @@ namespace CodeWalker.GameFiles
         public ulong BoneTagsPointer { get; set; }
         public ushort BoneTagsCapacity { get; set; }
         public ushort BoneTagsCount { get; set; }
-        public FlagsUint Unknown_1Ch { get; set; }
+        public FlagsUint BoneIdTable { get; set; }
         public ulong BonesPointer { get; set; }
         public ulong TransformationsInvertedPointer { get; set; }
         public ulong TransformationsPointer { get; set; }
         public ulong ParentIndicesPointer { get; set; }
         public ulong ChildIndicesPointer { get; set; }
-        public ulong Unknown_48h; // 0x0000000000000000
-        public MetaHash Unknown_50h { get; set; }
-        public MetaHash Unknown_54h { get; set; }
-        public MetaHash Unknown_58h { get; set; }
-        public ushort Unknown_5Ch { get; set; } = 1; // 0x0001
-        public ushort BonesCount { get; set; }
-        public ushort ChildIndicesCount { get; set; }
-        public ushort Unknown_62h; // 0x0000
-        public uint Unknown_64h; // 0x00000000
-        public ulong Unknown_68h; // 0x0000000000000000
+        public ulong Properties; // 0x0000000000000000
+        public MetaHash Signature { get; set; }
+        public MetaHash SignatureNonChiral { get; set; }
+        public MetaHash SignatureComprehensive { get; set; }
+        public ushort RefCount { get; set; } = 1; // 0x0001
+        public ushort NumBones { get; set; }
+        public ushort NumChildCount { get; set; }
+        public ushort Unknown_62h; // 0x0000 Padding
+        public uint Unknown_64h; // 0x00000000  Padding
+        public ulong Unknown_68h; // 0x0000000000000000 Padding
 
         // reference data
         public ResourcePointerArray64<SkeletonBoneTag> BoneTags { get; set; }
@@ -861,30 +861,30 @@ namespace CodeWalker.GameFiles
             this.BoneTagsPointer = reader.ReadUInt64();
             this.BoneTagsCapacity = reader.ReadUInt16();
             this.BoneTagsCount = reader.ReadUInt16();
-            this.Unknown_1Ch = reader.ReadUInt32();
+            this.BoneIdTable = reader.ReadUInt32();
             this.BonesPointer = reader.ReadUInt64();
             this.TransformationsInvertedPointer = reader.ReadUInt64();
             this.TransformationsPointer = reader.ReadUInt64();
             this.ParentIndicesPointer = reader.ReadUInt64();
             this.ChildIndicesPointer = reader.ReadUInt64();
-            this.Unknown_48h = reader.ReadUInt64();
-            this.Unknown_50h = new MetaHash(reader.ReadUInt32());
-            this.Unknown_54h = new MetaHash(reader.ReadUInt32());
-            this.Unknown_58h = new MetaHash(reader.ReadUInt32());
-            this.Unknown_5Ch = reader.ReadUInt16();
-            this.BonesCount = reader.ReadUInt16();
-            this.ChildIndicesCount = reader.ReadUInt16();
+            this.Properties = reader.ReadUInt64();
+            this.Signature = new MetaHash(reader.ReadUInt32());
+            this.SignatureNonChiral = new MetaHash(reader.ReadUInt32());
+            this.SignatureComprehensive = new MetaHash(reader.ReadUInt32());
+            this.RefCount = reader.ReadUInt16();
+            this.NumBones = reader.ReadUInt16();
+            this.NumChildCount = reader.ReadUInt16();
             this.Unknown_62h = reader.ReadUInt16();
             this.Unknown_64h = reader.ReadUInt32();
             this.Unknown_68h = reader.ReadUInt64();
 
             // read reference data
             this.BoneTags = reader.ReadBlockAt<ResourcePointerArray64<SkeletonBoneTag>>(this.BoneTagsPointer, this.BoneTagsCapacity);
-            this.Bones = reader.ReadBlockAt<SkeletonBonesBlock>((this.BonesPointer != 0) ? (BonesPointer - 16) : 0, (uint)this.BonesCount);
-            this.TransformationsInverted = reader.ReadStructsAt<Matrix>(this.TransformationsInvertedPointer, this.BonesCount);
-            this.Transformations = reader.ReadStructsAt<Matrix>(this.TransformationsPointer, this.BonesCount);
-            this.ParentIndices = reader.ReadShortsAt(this.ParentIndicesPointer, this.BonesCount);
-            this.ChildIndices = reader.ReadShortsAt(this.ChildIndicesPointer, this.ChildIndicesCount);
+            this.Bones = reader.ReadBlockAt<SkeletonBonesBlock>((this.BonesPointer != 0) ? (BonesPointer - 16) : 0, (uint)this.NumBones);
+            this.TransformationsInverted = reader.ReadStructsAt<Matrix>(this.TransformationsInvertedPointer, this.NumBones);
+            this.Transformations = reader.ReadStructsAt<Matrix>(this.TransformationsPointer, this.NumBones);
+            this.ParentIndices = reader.ReadShortsAt(this.ParentIndicesPointer, this.NumBones);
+            this.ChildIndices = reader.ReadShortsAt(this.ChildIndicesPointer, this.NumChildCount);
 
 
             AssignBoneParents();
@@ -927,9 +927,9 @@ namespace CodeWalker.GameFiles
             this.TransformationsPointer = (ulong)(this.TransformationsBlock != null ? this.TransformationsBlock.FilePosition : 0);
             this.ParentIndicesPointer = (ulong)(this.ParentIndicesBlock != null ? this.ParentIndicesBlock.FilePosition : 0);
             this.ChildIndicesPointer = (ulong)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.FilePosition : 0);
-            this.BonesCount = (ushort)(this.Bones?.Items != null ? this.Bones.Items.Length : 0);
-            this.ChildIndicesCount = (ushort)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.ItemCount : 0);
-            this.BoneTagsCount = Math.Min(BonesCount, BoneTagsCapacity);
+            this.NumBones = (ushort)(this.Bones?.Items != null ? this.Bones.Items.Length : 0);
+            this.NumChildCount = (ushort)(this.ChildIndicesBlock != null ? this.ChildIndicesBlock.ItemCount : 0);
+            this.BoneTagsCount = Math.Min(NumBones, BoneTagsCapacity);
 
 
             // write structure data
@@ -939,29 +939,29 @@ namespace CodeWalker.GameFiles
             writer.Write(this.BoneTagsPointer);
             writer.Write(this.BoneTagsCapacity);
             writer.Write(this.BoneTagsCount);
-            writer.Write(this.Unknown_1Ch);
+            writer.Write(this.BoneIdTable);
             writer.Write(this.BonesPointer);
             writer.Write(this.TransformationsInvertedPointer);
             writer.Write(this.TransformationsPointer);
             writer.Write(this.ParentIndicesPointer);
             writer.Write(this.ChildIndicesPointer);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_5Ch);
-            writer.Write(this.BonesCount);
-            writer.Write(this.ChildIndicesCount);
+            writer.Write(this.Properties);
+            writer.Write(this.Signature);
+            writer.Write(this.SignatureNonChiral);
+            writer.Write(this.SignatureComprehensive);
+            writer.Write(this.RefCount);
+            writer.Write(this.NumBones);
+            writer.Write(this.NumChildCount);
             writer.Write(this.Unknown_62h);
             writer.Write(this.Unknown_64h);
             writer.Write(this.Unknown_68h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            YdrXml.ValueTag(sb, indent, "Unknown1C", Unknown_1Ch.Value.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown50", Unknown_50h.Hash.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown54", Unknown_54h.Hash.ToString());
-            YdrXml.ValueTag(sb, indent, "Unknown58", Unknown_58h.Hash.ToString());
+            YdrXml.ValueTag(sb, indent, "BoneIdTable", BoneIdTable.Value.ToString());
+            YdrXml.ValueTag(sb, indent, "Signature", Signature.Hash.ToString());
+            YdrXml.ValueTag(sb, indent, "SignatureNonChiral", SignatureNonChiral.Hash.ToString());
+            YdrXml.ValueTag(sb, indent, "SignatureComprehensive", SignatureComprehensive.Hash.ToString());
 
             if (Bones?.Items != null)
             {
@@ -971,10 +971,10 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            Unknown_1Ch = Xml.GetChildUIntAttribute(node, "Unknown1C", "value");
-            Unknown_50h = Xml.GetChildUIntAttribute(node, "Unknown50", "value");
-            Unknown_54h = Xml.GetChildUIntAttribute(node, "Unknown54", "value");
-            Unknown_58h = Xml.GetChildUIntAttribute(node, "Unknown58", "value");
+            BoneIdTable = Xml.GetChildUIntAttribute(node, "BoneIdTable", "value");
+            Signature = Xml.GetChildUIntAttribute(node, "Signature", "value");
+            SignatureNonChiral = Xml.GetChildUIntAttribute(node, "SignatureNonChiral", "value");
+            SignatureComprehensive = Xml.GetChildUIntAttribute(node, "SignatureComprehensive", "value");
 
             var bones = XmlMeta.ReadItemArray<Bone>(node, "Bones");
             if (bones != null)
@@ -1422,12 +1422,12 @@ namespace CodeWalker.GameFiles
 
             skel.BoneTagsCapacity = BoneTagsCapacity;
             skel.BoneTagsCount = BoneTagsCount;
-            skel.Unknown_1Ch = Unknown_1Ch;
-            skel.Unknown_50h = Unknown_50h;
-            skel.Unknown_54h = Unknown_54h;
-            skel.Unknown_58h = Unknown_58h;
-            skel.BonesCount = BonesCount;
-            skel.ChildIndicesCount = ChildIndicesCount;
+            skel.BoneIdTable = BoneIdTable;
+            skel.Signature = Signature;
+            skel.SignatureNonChiral = SignatureNonChiral;
+            skel.SignatureComprehensive = SignatureComprehensive;
+            skel.NumBones = NumBones;
+            skel.NumChildCount = NumChildCount;
 
             if (BoneTags != null)
             {
@@ -1473,7 +1473,7 @@ namespace CodeWalker.GameFiles
                         nb.Flags = ob.Flags;
                         nb.Index = ob.Index;
                         nb.Tag = ob.Tag;
-                        nb.Index2 = ob.Index2;
+                        nb.MirrorIndex = ob.MirrorIndex;
                         nb.Name = ob.Name;
                         nb.AnimRotation = ob.AnimRotation;
                         nb.AnimTranslation = ob.AnimTranslation;
@@ -2030,18 +2030,18 @@ namespace CodeWalker.GameFiles
         // structure data
         public Quaternion Rotation { get; set; }
         public Vector3 Translation { get; set; }
-        public uint Unknown_1Ch; // 0x00000000 RHW?
+        public uint Unknown_1Ch; // 0x00000000 padding 
         public Vector3 Scale { get; set; }
-        public float Unknown_2Ch { get; set; } = 1.0f; // 1.0  RHW?
-        public short NextSiblingIndex { get; set; } //limb end index? IK chain?
+        public float Unknown_2Ch { get; set; } = 1.0f; // 1.0  padding 
+        public short NextSiblingIndex { get; set; }
         public short ParentIndex { get; set; }
-        public uint Unknown_34h; // 0x00000000
+        public uint Unknown_34h; // 0x00000000 padding
         public ulong NamePointer { get; set; }
-        public EBoneFlags Flags { get; set; }
+        public EBoneFlags Flags { get; set; } // Dofs
         public short Index { get; set; }
-        public ushort Tag { get; set; }
-        public short Index2 { get; set; }//always same as Index
-        public ulong Unknown_48h; // 0x0000000000000000
+        public ushort Tag { get; set; } // Bone IDs
+        public short MirrorIndex { get; set; }//always same as Index
+        public ulong Unknown_48h; // 0x0000000000000000 padding
 
         // reference data
         public string Name { get; set; }
@@ -2076,7 +2076,7 @@ namespace CodeWalker.GameFiles
             this.Flags = (EBoneFlags)reader.ReadUInt16();
             this.Index = reader.ReadInt16();
             this.Tag = reader.ReadUInt16();
-            this.Index2 = reader.ReadInt16();
+            this.MirrorIndex = reader.ReadInt16();
             this.Unknown_48h = reader.ReadUInt64();
 
             // read reference data
@@ -2118,7 +2118,7 @@ namespace CodeWalker.GameFiles
             writer.Write((ushort)this.Flags);
             writer.Write(this.Index);
             writer.Write(this.Tag);
-            writer.Write(this.Index2);
+            writer.Write(this.MirrorIndex);
             writer.Write(this.Unknown_48h);
         }
         public void WriteXml(StringBuilder sb, int indent)
@@ -2139,7 +2139,7 @@ namespace CodeWalker.GameFiles
             Name = Xml.GetChildInnerText(node, "Name");
             Tag = (ushort)Xml.GetChildUIntAttribute(node, "Tag", "value");
             Index = (short)Xml.GetChildIntAttribute(node, "Index", "value");
-            Index2 = Index;
+            MirrorIndex = Index;
             ParentIndex = (short)Xml.GetChildIntAttribute(node, "ParentIndex", "value");
             NextSiblingIndex = (short)Xml.GetChildIntAttribute(node, "SiblingIndex", "value");
             Flags = Xml.GetChildEnumInnerText<EBoneFlags>(node, "Flags");

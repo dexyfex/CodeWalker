@@ -73,7 +73,7 @@ namespace CodeWalker.GameFiles
         public int Unknown_C0h { get; set; } // 0, 256, 512, 768, 1024, 65280
         public int Unknown_C4h { get; set; } // 1, 3, 65, 67
         public int Unknown_C8h = -1; // -1
-        public float Unknown_CCh { get; set; }
+        public float UnbrokenElasticity { get; set; }
         public float GravityFactor { get; set; }
         public float BuoyancyFactor { get; set; }
         public byte Unknown_D8h; // 0x00
@@ -142,7 +142,7 @@ namespace CodeWalker.GameFiles
             this.Unknown_C0h = reader.ReadInt32();
             this.Unknown_C4h = reader.ReadInt32();
             this.Unknown_C8h = reader.ReadInt32();
-            this.Unknown_CCh = reader.ReadSingle();
+            this.UnbrokenElasticity = reader.ReadSingle();
             this.GravityFactor = reader.ReadSingle();
             this.BuoyancyFactor = reader.ReadSingle();
             this.Unknown_D8h = reader.ReadByte();
@@ -356,7 +356,7 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_C0h);
             writer.Write(this.Unknown_C4h);
             writer.Write(this.Unknown_C8h);
-            writer.Write(this.Unknown_CCh);
+            writer.Write(this.UnbrokenElasticity);
             writer.Write(this.GravityFactor);
             writer.Write(this.BuoyancyFactor);
             writer.Write(this.Unknown_D8h);
@@ -383,7 +383,7 @@ namespace CodeWalker.GameFiles
             YftXml.ValueTag(sb, indent, "UnknownBC", Unknown_BCh.ToString());
             YftXml.ValueTag(sb, indent, "UnknownC0", Unknown_C0h.ToString());
             YftXml.ValueTag(sb, indent, "UnknownC4", Unknown_C4h.ToString());
-            YftXml.ValueTag(sb, indent, "UnknownCC", FloatUtil.ToString(Unknown_CCh));
+            YftXml.ValueTag(sb, indent, "UnbrokenElasticity", FloatUtil.ToString(UnbrokenElasticity));
             YftXml.ValueTag(sb, indent, "GravityFactor", FloatUtil.ToString(GravityFactor));
             YftXml.ValueTag(sb, indent, "BuoyancyFactor", FloatUtil.ToString(BuoyancyFactor));
             if ((Drawable != null) && (Drawable.OwnerCloth == null))
@@ -461,7 +461,7 @@ namespace CodeWalker.GameFiles
             Unknown_BCh = Xml.GetChildIntAttribute(node, "UnknownBC", "value");
             Unknown_C0h = Xml.GetChildIntAttribute(node, "UnknownC0", "value");
             Unknown_C4h = Xml.GetChildIntAttribute(node, "UnknownC4", "value");
-            Unknown_CCh = Xml.GetChildFloatAttribute(node, "UnknownCC", "value");
+            UnbrokenElasticity = Xml.GetChildFloatAttribute(node, "UnbrokenElasticity", "value");
             GravityFactor = Xml.GetChildFloatAttribute(node, "GravityFactor", "value");
             BuoyancyFactor = Xml.GetChildFloatAttribute(node, "BuoyancyFactor", "value");
             var dnode = node.SelectSingleNode("Drawable");
@@ -1285,8 +1285,8 @@ namespace CodeWalker.GameFiles
             public ushort UnkUshort3; // 0
             public uint UnkUint2; // 0
             public uint UnkUint3; // 0
-            public float UnkFloat17 { get; set; }
-            public float UnkFloat18 { get; set; }
+            public float DataMin { get; set; }
+            public float DataMax { get; set; }
             public ushort UnkUshort4 { get; set; } //0, 1
             public ushort UnkUshort5 { get; set; } //2, 2050
             public float CracksTextureTiling { get; set; } // UV multiplier for the "shattered" cracks texture that is applied when the window is broken
@@ -1335,8 +1335,8 @@ namespace CodeWalker.GameFiles
                 UnkUshort3 = reader.ReadUInt16();//0
                 UnkUint2 = reader.ReadUInt32();//0
                 UnkUint3 = reader.ReadUInt32();//0
-                UnkFloat17 = reader.ReadSingle();
-                UnkFloat18 = reader.ReadSingle();
+                DataMin = reader.ReadSingle();
+                DataMax = reader.ReadSingle();
                 UnkUshort4 = reader.ReadUInt16();//0, 1
                 UnkUshort5 = reader.ReadUInt16();//2, 2050
                 CracksTextureTiling = reader.ReadSingle();
@@ -1460,8 +1460,8 @@ namespace CodeWalker.GameFiles
                 writer.Write(UnkUshort3);
                 writer.Write(UnkUint2);
                 writer.Write(UnkUint3);
-                writer.Write(UnkFloat17);
-                writer.Write(UnkFloat18);
+                writer.Write(DataMin);
+                writer.Write(DataMax);
                 writer.Write(UnkUshort4);
                 writer.Write(UnkUshort5);
                 writer.Write(CracksTextureTiling);
@@ -1492,8 +1492,8 @@ namespace CodeWalker.GameFiles
                 YftXml.OpenTag(sb, indent, "Projection");
                 YftXml.WriteRawArrayContent(sb, Projection.ToArray(), indent + 1, FloatUtil.ToString, 4);
                 YftXml.CloseTag(sb, indent, "Projection");
-                YftXml.ValueTag(sb, indent, "UnkFloat17", FloatUtil.ToString(UnkFloat17));
-                YftXml.ValueTag(sb, indent, "UnkFloat18", FloatUtil.ToString(UnkFloat18));
+                YftXml.ValueTag(sb, indent, "DataMin", FloatUtil.ToString(DataMin));
+                YftXml.ValueTag(sb, indent, "DataMax", FloatUtil.ToString(DataMax));
                 YftXml.ValueTag(sb, indent, "CracksTextureTiling", FloatUtil.ToString(CracksTextureTiling));
                 if (ShatterMap != null)
                 {
@@ -1514,8 +1514,8 @@ namespace CodeWalker.GameFiles
                 UnkUshort4 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort4", "value");
                 UnkUshort5 = (ushort)Xml.GetChildUIntAttribute(node, "UnkUshort5", "value");
                 Projection = Xml.GetChildMatrix(node, "Projection");
-                UnkFloat17 = Xml.GetChildFloatAttribute(node, "UnkFloat17", "value");
-                UnkFloat18 = Xml.GetChildFloatAttribute(node, "UnkFloat18", "value");
+                DataMin = Xml.GetChildFloatAttribute(node, "DataMin", "value");
+                DataMax = Xml.GetChildFloatAttribute(node, "DataMax", "value");
                 CracksTextureTiling = Xml.GetChildFloatAttribute(node, "CracksTextureTiling", "value");
                 var smnode = node.SelectSingleNode("ShatterMap");
                 if (smnode != null)
@@ -2111,16 +2111,16 @@ namespace CodeWalker.GameFiles
         public uint Unknown_04h = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
         public uint Unknown_10h; // 0x00000000
-        public float Unknown_14h { get; set; }
-        public float Unknown_18h { get; set; }
-        public float Unknown_1Ch { get; set; }
+        public float SmallestAngInertia { get; set; }
+        public float LargestAngInertia { get; set; }
+        public float MinMoveForce { get; set; }
         public ulong ArticulatedBodyTypePointer { get; set; }
         public ulong ChildrenUnkFloatsPointer { get; set; }
         public Vector3 PositionOffset { get; set; }
         public uint Unknown_3Ch { get; set; } = 0x7fc00001; // 0x7f800001, 0x7fc00001
-        public Vector3 Unknown_40h { get; set; }
+        public Vector3 OriginalRootCGOffset { get; set; }
         public uint Unknown_4Ch { get; set; } = 0x7fc00001; // 0x7f800001, 0x7fc00001
-        public Vector3 Unknown_50h { get; set; }
+        public Vector3 UnbrokenCGOffset { get; set; }
         public uint Unknown_5Ch = 0x7f800001; // 0x7f800001
         public Vector3 DampingLinearC { get; set; }
         public uint Unknown_6Ch = 0x7f800001; // 0x7f800001
@@ -2186,16 +2186,16 @@ namespace CodeWalker.GameFiles
             this.Unknown_04h = reader.ReadUInt32();
             this.Unknown_08h = reader.ReadUInt64();
             this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadSingle();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadSingle();
+            this.SmallestAngInertia = reader.ReadSingle();
+            this.LargestAngInertia = reader.ReadSingle();
+            this.MinMoveForce = reader.ReadSingle();
             this.ArticulatedBodyTypePointer = reader.ReadUInt64();
             this.ChildrenUnkFloatsPointer = reader.ReadUInt64();
             this.PositionOffset = reader.ReadVector3();
             this.Unknown_3Ch = reader.ReadUInt32();
-            this.Unknown_40h = reader.ReadVector3();
+            this.OriginalRootCGOffset = reader.ReadVector3();
             this.Unknown_4Ch = reader.ReadUInt32();
-            this.Unknown_50h = reader.ReadVector3();
+            this.UnbrokenCGOffset = reader.ReadVector3();
             this.Unknown_5Ch = reader.ReadUInt32();
             this.DampingLinearC = reader.ReadVector3();
             this.Unknown_6Ch = reader.ReadUInt32();
@@ -2393,16 +2393,16 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_04h);
             writer.Write(this.Unknown_08h);
             writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
+            writer.Write(this.SmallestAngInertia);
+            writer.Write(this.LargestAngInertia);
+            writer.Write(this.MinMoveForce);
             writer.Write(this.ArticulatedBodyTypePointer);
             writer.Write(this.ChildrenUnkFloatsPointer);
             writer.Write(this.PositionOffset);
             writer.Write(this.Unknown_3Ch);
-            writer.Write(this.Unknown_40h);
+            writer.Write(this.OriginalRootCGOffset);
             writer.Write(this.Unknown_4Ch);
-            writer.Write(this.Unknown_50h);
+            writer.Write(this.UnbrokenCGOffset);
             writer.Write(this.Unknown_5Ch);
             writer.Write(this.DampingLinearC);
             writer.Write(this.Unknown_6Ch);
@@ -2440,12 +2440,12 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
-            YftXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
-            YftXml.ValueTag(sb, indent, "Unknown18", FloatUtil.ToString(Unknown_18h));
-            YftXml.ValueTag(sb, indent, "Unknown1C", FloatUtil.ToString(Unknown_1Ch));
+            YftXml.ValueTag(sb, indent, "SmallestAngInertia", FloatUtil.ToString(SmallestAngInertia));
+            YftXml.ValueTag(sb, indent, "LargestAngInertia", FloatUtil.ToString(LargestAngInertia));
+            YftXml.ValueTag(sb, indent, "MinMoveForce", FloatUtil.ToString(MinMoveForce));
             YftXml.SelfClosingTag(sb, indent, "PositionOffset " + FloatUtil.GetVector3XmlString(PositionOffset));
-            YftXml.SelfClosingTag(sb, indent, "Unknown40 " + FloatUtil.GetVector3XmlString(Unknown_40h));
-            YftXml.SelfClosingTag(sb, indent, "Unknown50 " + FloatUtil.GetVector3XmlString(Unknown_50h));
+            YftXml.SelfClosingTag(sb, indent, "OriginalRootCGOffset " + FloatUtil.GetVector3XmlString(OriginalRootCGOffset));
+            YftXml.SelfClosingTag(sb, indent, "UnbrokenCGOffset " + FloatUtil.GetVector3XmlString(UnbrokenCGOffset));
             YftXml.SelfClosingTag(sb, indent, "DampingLinearC " + FloatUtil.GetVector3XmlString(DampingLinearC));
             YftXml.SelfClosingTag(sb, indent, "DampingLinearV " + FloatUtil.GetVector3XmlString(DampingLinearV));
             YftXml.SelfClosingTag(sb, indent, "DampingLinearV2 " + FloatUtil.GetVector3XmlString(DampingLinearV2));
@@ -2515,12 +2515,12 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node, string ddsfolder)
         {
-            Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14", "value");
-            Unknown_18h = Xml.GetChildFloatAttribute(node, "Unknown18", "value");
-            Unknown_1Ch = Xml.GetChildFloatAttribute(node, "Unknown1C", "value");
+            SmallestAngInertia = Xml.GetChildFloatAttribute(node, "SmallestAngInertia", "value");
+            LargestAngInertia = Xml.GetChildFloatAttribute(node, "LargestAngInertia", "value");
+            MinMoveForce = Xml.GetChildFloatAttribute(node, "MinMoveForce", "value");
             PositionOffset = Xml.GetChildVector3Attributes(node, "PositionOffset");
-            Unknown_40h = Xml.GetChildVector3Attributes(node, "Unknown40");
-            Unknown_50h = Xml.GetChildVector3Attributes(node, "Unknown50");
+            OriginalRootCGOffset = Xml.GetChildVector3Attributes(node, "OriginalRootCGOffset");
+            UnbrokenCGOffset = Xml.GetChildVector3Attributes(node, "UnbrokenCGOffset");
             DampingLinearC = Xml.GetChildVector3Attributes(node, "DampingLinearC");
             DampingLinearV = Xml.GetChildVector3Attributes(node, "DampingLinearV");
             DampingLinearV2 = Xml.GetChildVector3Attributes(node, "DampingLinearV2");
@@ -2933,26 +2933,26 @@ namespace CodeWalker.GameFiles
 
         // structure data
         public uint VFT { get; set; }
-        public uint Unknown_04h = 1; // 0x00000001
+        public uint DefaultStiffness = 1; // 0x00000001
         public ulong Unknown_08h; // 0x0000000000000000
-        public float Unknown_10h = 0.825f; // 0x3F533333 (0.825f)
+        public float EnforceAccededLimits = 0.825f; // 0x3F533333 (0.825f)
         public byte Unknown_14h; // 0x00
         public FragJointType Type { get; set; }
-        public byte FragIndex1 { get; set; }
-        public byte FragIndex2 { get; set; }
+        public byte ParentLinkIndex { get; set; }
+        public byte ChildLinkIndex { get; set; }
         public ulong Unknown_18h; // 0x0000000000000000
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
             this.VFT = reader.ReadUInt32();
-            this.Unknown_04h = reader.ReadUInt32();
+            this.DefaultStiffness = reader.ReadUInt32();
             this.Unknown_08h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadSingle();
+            this.EnforceAccededLimits = reader.ReadSingle();
             this.Unknown_14h = reader.ReadByte();
             this.Type = (FragJointType)reader.ReadByte();
-            this.FragIndex1 = reader.ReadByte();
-            this.FragIndex2 = reader.ReadByte();
+            this.ParentLinkIndex = reader.ReadByte();
+            this.ChildLinkIndex = reader.ReadByte();
             this.Unknown_18h = reader.ReadUInt64();
 
             //if (Unknown_04h != 1)
@@ -2973,26 +2973,28 @@ namespace CodeWalker.GameFiles
         {
             // write structure data
             writer.Write(this.VFT);
-            writer.Write(this.Unknown_04h);
+            writer.Write(this.DefaultStiffness);
             writer.Write(this.Unknown_08h);
-            writer.Write(this.Unknown_10h);
+            writer.Write(this.EnforceAccededLimits);
             writer.Write(this.Unknown_14h);
             writer.Write((byte)this.Type);
-            writer.Write(this.FragIndex1);
-            writer.Write(this.FragIndex2);
+            writer.Write(this.ParentLinkIndex);
+            writer.Write(this.ChildLinkIndex);
             writer.Write(this.Unknown_18h);
         }
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
-            YftXml.ValueTag(sb, indent, "FragIndex1", FragIndex1.ToString());
-            YftXml.ValueTag(sb, indent, "FragIndex2", FragIndex2.ToString());
-            YftXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
+            YftXml.ValueTag(sb, indent, "ParentLinkIndex", ParentLinkIndex.ToString());
+            YftXml.ValueTag(sb, indent, "ChildLinkIndex", ChildLinkIndex.ToString());
+            YftXml.ValueTag(sb, indent, "EnforceAccededLimits", FloatUtil.ToString(EnforceAccededLimits));
+            YftXml.ValueTag(sb, indent, "DefaultStiffness", DefaultStiffness.ToString());
         }
         public virtual void ReadXml(XmlNode node)
         {
-            FragIndex1 = (byte)Xml.GetChildUIntAttribute(node, "FragIndex1", "value");
-            FragIndex2 = (byte)Xml.GetChildUIntAttribute(node, "FragIndex2", "value");
-            Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10", "value");
+            ParentLinkIndex = (byte)Xml.GetChildUIntAttribute(node, "ParentLinkIndex", "value");
+            ChildLinkIndex = (byte)Xml.GetChildUIntAttribute(node, "ChildLinkIndex", "value");
+            EnforceAccededLimits = Xml.GetChildFloatAttribute(node, "EnforceAccededLimits", "value");
+            DefaultStiffness = Xml.GetChildUIntAttribute(node, "DefaultStiffness", "value");
         }
 
         public static FragPhysJointType Create(FragJointType type)
@@ -3333,10 +3335,10 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_38h; // 0x0000000000000000
         public float Mass { get; set; } //in pounds, of course
         public float MassInv { get; set; } // 1.0 / Mass
-        public float Unknown_48h { get; set; } = 1.0f; // 1.0f
-        public float Unknown_4Ch { get; set; } = 150.0f; // 150.0f
-        public float Unknown_50h { get; set; } = 6.2831855f; // 6.2831855f = 2*pi
-        public float Unknown_54h { get; set; } = 1.0f; // 1.0f
+        public float GravityFactor { get; set; } = 1.0f; // 1.0f
+        public float MaxSpeed { get; set; } = 150.0f; // 150.0f
+        public float MaxAngSpeed { get; set; } = 6.2831855f; // 6.2831855f = 2*pi
+        public float BuoyancyFactor { get; set; } = 1.0f; // 1.0f
         public ulong Unknown_58h; // 0x0000000000000000
         public Vector3 InertiaTensor { get; set; }
         public uint Unknown_6Ch = 0x7fc00001; // 0x7fc00001
@@ -3381,10 +3383,10 @@ namespace CodeWalker.GameFiles
             this.Unknown_38h = reader.ReadUInt64();
             this.Mass = reader.ReadSingle();
             this.MassInv = reader.ReadSingle();
-            this.Unknown_48h = reader.ReadSingle();
-            this.Unknown_4Ch = reader.ReadSingle();
-            this.Unknown_50h = reader.ReadSingle();
-            this.Unknown_54h = reader.ReadSingle();
+            this.GravityFactor = reader.ReadSingle();
+            this.MaxSpeed = reader.ReadSingle();
+            this.MaxAngSpeed = reader.ReadSingle();
+            this.BuoyancyFactor = reader.ReadSingle();
             this.Unknown_58h = reader.ReadUInt64();
             this.InertiaTensor = reader.ReadVector3();
             this.Unknown_6Ch = reader.ReadUInt32();
@@ -3513,10 +3515,10 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_38h);
             writer.Write(this.Mass);
             writer.Write(this.MassInv);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_4Ch);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
+            writer.Write(this.GravityFactor);
+            writer.Write(this.MaxSpeed);
+            writer.Write(this.MaxAngSpeed);
+            writer.Write(this.BuoyancyFactor);
             writer.Write(this.Unknown_58h);
             writer.Write(this.InertiaTensor);
             writer.Write(this.Unknown_6Ch);
@@ -3540,10 +3542,10 @@ namespace CodeWalker.GameFiles
             YftXml.StringTag(sb, indent, "Name", YftXml.XmlEscape(Name));
             YftXml.ValueTag(sb, indent, "Mass", FloatUtil.ToString(Mass));
             YftXml.ValueTag(sb, indent, "MassInv", FloatUtil.ToString(MassInv));
-            YftXml.ValueTag(sb, indent, "Unknown48", FloatUtil.ToString(Unknown_48h));
-            YftXml.ValueTag(sb, indent, "Unknown4C", FloatUtil.ToString(Unknown_4Ch));
-            YftXml.ValueTag(sb, indent, "Unknown50", FloatUtil.ToString(Unknown_50h));
-            YftXml.ValueTag(sb, indent, "Unknown54", FloatUtil.ToString(Unknown_54h));
+            YftXml.ValueTag(sb, indent, "GravityFactor", FloatUtil.ToString(GravityFactor));
+            YftXml.ValueTag(sb, indent, "MaxSpeed", FloatUtil.ToString(MaxSpeed));
+            YftXml.ValueTag(sb, indent, "MaxAngSpeed", FloatUtil.ToString(MaxAngSpeed));
+            YftXml.ValueTag(sb, indent, "BuoyancyFactor", FloatUtil.ToString(BuoyancyFactor));
             YftXml.SelfClosingTag(sb, indent, "InertiaTensor " + FloatUtil.GetVector3XmlString(InertiaTensor));
             YftXml.SelfClosingTag(sb, indent, "InertiaTensorInv " + FloatUtil.GetVector3XmlString(InertiaTensorInv));
             if (Bound != null)
@@ -3556,10 +3558,10 @@ namespace CodeWalker.GameFiles
             Name = Xml.GetChildInnerText(node, "Name");
             Mass = Xml.GetChildFloatAttribute(node, "Mass", "value");
             MassInv = Xml.GetChildFloatAttribute(node, "MassInv", "value");
-            Unknown_48h = Xml.GetChildFloatAttribute(node, "Unknown48", "value");
-            Unknown_4Ch = Xml.GetChildFloatAttribute(node, "Unknown4C", "value");
-            Unknown_50h = Xml.GetChildFloatAttribute(node, "Unknown50", "value");
-            Unknown_54h = Xml.GetChildFloatAttribute(node, "Unknown54", "value");
+            GravityFactor = Xml.GetChildFloatAttribute(node, "GravityFactor", "value");
+            MaxSpeed = Xml.GetChildFloatAttribute(node, "MaxSpeed", "value");
+            MaxAngSpeed = Xml.GetChildFloatAttribute(node, "MaxAngSpeed", "value");
+            BuoyancyFactor = Xml.GetChildFloatAttribute(node, "BuoyancyFactor", "value");
             InertiaTensor = Xml.GetChildVector3Attributes(node, "InertiaTensor");
             InertiaTensorInv = Xml.GetChildVector3Attributes(node, "InertiaTensorInv");
             var bnode = node.SelectSingleNode("Bounds");
@@ -3971,17 +3973,17 @@ namespace CodeWalker.GameFiles
         public byte GlassFlags { get; set; }//flags: 1=?, 2=glass, 4=?, ...
         public float MinDamageForce { get; set; }
         public float DamageHealth { get; set; }
-        public float UnkFloat5C { get; set; }
-        public float UnkFloat60 { get; set; }
-        public float UnkFloat64 { get; set; }
-        public float UnkFloat68 { get; set; }
-        public float UnkFloat6C { get; set; }
-        public float UnkFloat70 { get; set; }
-        public float UnkFloat74 { get; set; }
-        public float UnkFloat78 { get; set; }
+        public float WeaponHealth { get; set; }
+        public float WeaponScale { get; set; }
+        public float VehicleScale { get; set; }
+        public float PedScale { get; set; }
+        public float RagdollScale { get; set; }
+        public float ExplosionScale { get; set; }
+        public float ObjectScale { get; set; }
+        public float PedInvMassScale { get; set; }
         public float Unknown_7Ch; // 0x00000000
         public FragPhysNameStruct_s Name { get; set; }
-        public float UnkFloatA8 { get; set; }
+        public float MeleeScale { get; set; }
         public float Unknown_ACh; // 0x00000000
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -4015,17 +4017,17 @@ namespace CodeWalker.GameFiles
             this.GlassFlags = reader.ReadByte();
             this.MinDamageForce = reader.ReadSingle();
             this.DamageHealth = reader.ReadSingle();
-            this.UnkFloat5C = reader.ReadSingle();
-            this.UnkFloat60 = reader.ReadSingle();
-            this.UnkFloat64 = reader.ReadSingle();
-            this.UnkFloat68 = reader.ReadSingle();
-            this.UnkFloat6C = reader.ReadSingle();
-            this.UnkFloat70 = reader.ReadSingle();
-            this.UnkFloat74 = reader.ReadSingle();
-            this.UnkFloat78 = reader.ReadSingle();
+            this.WeaponHealth = reader.ReadSingle();
+            this.WeaponScale = reader.ReadSingle();
+            this.VehicleScale = reader.ReadSingle();
+            this.PedScale = reader.ReadSingle();
+            this.RagdollScale = reader.ReadSingle();
+            this.ExplosionScale = reader.ReadSingle();
+            this.ObjectScale = reader.ReadSingle();
+            this.PedInvMassScale = reader.ReadSingle();
             this.Unknown_7Ch = reader.ReadSingle();
             this.Name = reader.ReadStruct<FragPhysNameStruct_s>();
-            this.UnkFloatA8 = reader.ReadSingle();
+            this.MeleeScale = reader.ReadSingle();
             this.Unknown_ACh = reader.ReadSingle();
 
             //if (Unknown_00h != 0)
@@ -4138,17 +4140,17 @@ namespace CodeWalker.GameFiles
             writer.Write(GlassFlags);
             writer.Write(MinDamageForce);
             writer.Write(DamageHealth);
-            writer.Write(UnkFloat5C);
-            writer.Write(UnkFloat60);
-            writer.Write(UnkFloat64);
-            writer.Write(UnkFloat68);
-            writer.Write(UnkFloat6C);
-            writer.Write(UnkFloat70);
-            writer.Write(UnkFloat74);
-            writer.Write(UnkFloat78);
+            writer.Write(WeaponHealth);
+            writer.Write(WeaponScale);
+            writer.Write(VehicleScale);
+            writer.Write(PedScale);
+            writer.Write(RagdollScale);
+            writer.Write(ExplosionScale);
+            writer.Write(ObjectScale);
+            writer.Write(PedInvMassScale);
             writer.Write(Unknown_7Ch);
             writer.WriteStruct(Name);
-            writer.Write(UnkFloatA8);
+            writer.Write(MeleeScale);
             writer.Write(Unknown_ACh);
         }
         public void WriteXml(StringBuilder sb, int indent)
@@ -4173,15 +4175,15 @@ namespace CodeWalker.GameFiles
             YftXml.ValueTag(sb, indent, "Mass", FloatUtil.ToString(Mass));
             YftXml.ValueTag(sb, indent, "MinDamageForce", FloatUtil.ToString(MinDamageForce));
             YftXml.ValueTag(sb, indent, "DamageHealth", FloatUtil.ToString(DamageHealth));
-            YftXml.ValueTag(sb, indent, "UnkFloat5C", FloatUtil.ToString(UnkFloat5C));
-            YftXml.ValueTag(sb, indent, "UnkFloat60", FloatUtil.ToString(UnkFloat60));
-            YftXml.ValueTag(sb, indent, "UnkFloat64", FloatUtil.ToString(UnkFloat64));
-            YftXml.ValueTag(sb, indent, "UnkFloat68", FloatUtil.ToString(UnkFloat68));
-            YftXml.ValueTag(sb, indent, "UnkFloat6C", FloatUtil.ToString(UnkFloat6C));
-            YftXml.ValueTag(sb, indent, "UnkFloat70", FloatUtil.ToString(UnkFloat70));
-            YftXml.ValueTag(sb, indent, "UnkFloat74", FloatUtil.ToString(UnkFloat74));
-            YftXml.ValueTag(sb, indent, "UnkFloat78", FloatUtil.ToString(UnkFloat78));
-            YftXml.ValueTag(sb, indent, "UnkFloatA8", FloatUtil.ToString(UnkFloatA8));
+            YftXml.ValueTag(sb, indent, "WeaponHealth", FloatUtil.ToString(WeaponHealth));
+            YftXml.ValueTag(sb, indent, "WeaponScale", FloatUtil.ToString(WeaponScale));
+            YftXml.ValueTag(sb, indent, "VehicleScale", FloatUtil.ToString(VehicleScale));
+            YftXml.ValueTag(sb, indent, "PedScale", FloatUtil.ToString(PedScale));
+            YftXml.ValueTag(sb, indent, "RagdollScale", FloatUtil.ToString(RagdollScale));
+            YftXml.ValueTag(sb, indent, "ExplosionScale", FloatUtil.ToString(ExplosionScale));
+            YftXml.ValueTag(sb, indent, "ObjectScale", FloatUtil.ToString(ObjectScale));
+            YftXml.ValueTag(sb, indent, "PedInvMassScale", FloatUtil.ToString(PedInvMassScale));
+            YftXml.ValueTag(sb, indent, "MeleeScale", FloatUtil.ToString(MeleeScale));
         }
         public void ReadXml(XmlNode node)
         {
@@ -4205,15 +4207,15 @@ namespace CodeWalker.GameFiles
             Mass = Xml.GetChildFloatAttribute(node, "Mass", "value");
             MinDamageForce = Xml.GetChildFloatAttribute(node, "MinDamageForce", "value");
             DamageHealth = Xml.GetChildFloatAttribute(node, "DamageHealth", "value");
-            UnkFloat5C = Xml.GetChildFloatAttribute(node, "UnkFloat5C", "value");
-            UnkFloat60 = Xml.GetChildFloatAttribute(node, "UnkFloat60", "value");
-            UnkFloat64 = Xml.GetChildFloatAttribute(node, "UnkFloat64", "value");
-            UnkFloat68 = Xml.GetChildFloatAttribute(node, "UnkFloat68", "value");
-            UnkFloat6C = Xml.GetChildFloatAttribute(node, "UnkFloat6C", "value");
-            UnkFloat70 = Xml.GetChildFloatAttribute(node, "UnkFloat70", "value");
-            UnkFloat74 = Xml.GetChildFloatAttribute(node, "UnkFloat74", "value");
-            UnkFloat78 = Xml.GetChildFloatAttribute(node, "UnkFloat78", "value");
-            UnkFloatA8 = Xml.GetChildFloatAttribute(node, "UnkFloatA8", "value");
+            WeaponHealth = Xml.GetChildFloatAttribute(node, "WeaponHealth", "value");
+            WeaponScale = Xml.GetChildFloatAttribute(node, "WeaponScale", "value");
+            VehicleScale = Xml.GetChildFloatAttribute(node, "VehicleScale", "value");
+            PedScale = Xml.GetChildFloatAttribute(node, "PedScale", "value");
+            RagdollScale = Xml.GetChildFloatAttribute(node, "RagdollScale", "value");
+            ExplosionScale = Xml.GetChildFloatAttribute(node, "ExplosionScale", "value");
+            ObjectScale = Xml.GetChildFloatAttribute(node, "ObjectScale", "value");
+            PedInvMassScale = Xml.GetChildFloatAttribute(node, "PedInvMassScale", "value");
+            MeleeScale = Xml.GetChildFloatAttribute(node, "MeleeScale", "value");
         }
 
         public override string ToString()
