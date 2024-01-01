@@ -6422,32 +6422,35 @@ namespace CodeWalker.Project
 
             //AA800424 box, line
             //AA800420 sphere
-            zone.Flags0 = cp ? copy.AudioZone.Flags0.Value : 0xAA800424;
-            zone.Flags1 = cp ? copy.AudioZone.Flags1 : 0;
+            zone.Flags = cp ? copy.AudioZone.Flags.Value : 0xAA800424;
             zone.Shape = cp ? copy.AudioZone.Shape : Dat151ZoneShape.Box;
-            zone.PlaybackZoneSize = cp ? copy.AudioZone.PlaybackZoneSize : Vector3.One * 10.0f;
-            zone.PlaybackZoneAngle = cp ? copy.AudioZone.PlaybackZoneAngle : 0;
-            zone.PlaybackZoneVec1 = cp ? copy.AudioZone.PlaybackZoneVec1 : Vector4.Zero;
-            zone.PlaybackZoneVec2 = cp ? copy.AudioZone.PlaybackZoneVec2 : new Vector4(1, 1, 1, 0);
-            zone.PlaybackZoneVec3 = cp ? copy.AudioZone.PlaybackZoneVec3 : Vector3.Zero;
+            zone.PositioningZoneSize = cp ? copy.AudioZone.PositioningZoneSize : Vector3.One * 10.0f;
+            zone.PositioningZoneRotationAngle = (ushort)(cp ? copy.AudioZone.PositioningZoneRotationAngle : 0);
+            zone.PositioningZonePostRotationOffset = cp ? copy.AudioZone.PositioningZonePostRotationOffset : Vector3.Zero;
+            zone.PositioningZoneSizeScale = cp ? copy.AudioZone.PositioningZoneSizeScale : new Vector3(1, 1, 1);
             zone.ActivationZoneSize = cp ? copy.AudioZone.ActivationZoneSize : Vector3.One * 15.0f;
-            zone.ActivationZoneAngle = cp ? copy.AudioZone.ActivationZoneAngle : 0;
-            zone.ActivationZoneVec1 = cp ? copy.AudioZone.ActivationZoneVec1 : Vector4.Zero;
-            zone.ActivationZoneVec2 = cp ? copy.AudioZone.ActivationZoneVec2 : new Vector4(1, 1, 1, 0);
-            zone.ActivationZoneVec3 = cp ? copy.AudioZone.ActivationZoneVec3 : Vector3.Zero;
-            zone.UnkVec1 = cp ? copy.AudioZone.UnkVec1 : new Vector4(0, 0, 1, 0);
-            zone.UnkVec2 = cp ? copy.AudioZone.UnkVec2 : new Vector4(1, -1, -1, 0);
-            zone.UnkHash0 = cp ? copy.AudioZone.UnkHash0 : 0;
-            zone.Scene = cp ? copy.AudioZone.Scene : 0;
-            zone.UnkVec3 = cp ? copy.AudioZone.UnkVec3 : new Vector2(-1, 0);
-            zone.Unk13 = cp ? copy.AudioZone.Unk13 : 0;
-            zone.Unk14 = cp ? copy.AudioZone.Unk14 : (byte)4;
-            zone.Unk15 = cp ? copy.AudioZone.Unk15 : (byte)1;
-            zone.Unk16 = cp ? copy.AudioZone.Unk16 : (byte)0;
-            zone.RulesCount = cp ? copy.AudioZone.RulesCount : (byte)0;
+            zone.ActivationZoneRotationAngle = (ushort)(cp ? copy.AudioZone.ActivationZoneRotationAngle : 0);
+            zone.ActivationZonePostRotationOffset = cp ? copy.AudioZone.ActivationZonePostRotationOffset : Vector3.Zero;
+            zone.ActivationZoneSizeScale = cp ? copy.AudioZone.ActivationZoneSizeScale : new Vector3(1, 1, 1);
+            zone.BuiltUpFactor = cp ? copy.AudioZone.BuiltUpFactor : 0;
+            zone.MinPedDensity = cp ? copy.AudioZone.MinPedDensity : 0;
+            zone.MaxPedDensity = cp ? copy.AudioZone.MaxPedDensity : 0;
+            zone.PedDensityTOD = cp ? copy.AudioZone.PedDensityTOD : 0;
+            zone.PedDensityScalar = cp ? copy.AudioZone.PedDensityScalar : 0;
+            zone.MaxWindInfluence = cp ? copy.AudioZone.MaxWindInfluence : 0;
+            zone.MinWindInfluence = cp ? copy.AudioZone.MinWindInfluence : 0;
+            zone.WindElevationSounds = cp ? copy.AudioZone.WindElevationSounds : 0;
+            zone.EnviromentRule = cp ? copy.AudioZone.EnviromentRule : 0;
+            zone.AudioScene = cp ? copy.AudioZone.AudioScene : 0;
+            zone.UnderwaterCreakFactor = cp ? copy.AudioZone.UnderwaterCreakFactor : 0;
+            zone.PedWallaSettings = cp ? copy.AudioZone.PedWallaSettings : 0;
+            zone.RandomisedRadioSettings = cp ? copy.AudioZone.RandomisedRadioSettings : 0;
+            zone.NumRulesToPlay = cp ? copy.AudioZone.NumRulesToPlay : (byte)4;
+            zone.ZoneWaterCalculation = cp ? copy.AudioZone.ZoneWaterCalculation : (byte)1;
+            zone.NumDirAmbiences = cp ? copy.AudioZone.NumDirAmbiences : (byte)0;
+            zone.NumRules = cp ? copy.AudioZone.NumRules : (byte)0;
             zone.Rules = cp ? copy.AudioZone.Rules : null;
-            zone.DependentAmbiencesCount = cp ? copy.AudioZone.DependentAmbiencesCount : 0;
-            zone.DependentAmbiences = cp ? copy.AudioZone.DependentAmbiences : null;
+            zone.DirAmbiences = cp ? copy.AudioZone.DirAmbiences : null;
             zone.Name = "zone1";
             zone.NameHash = JenkHash.GenHash(zone.Name);
 
@@ -6547,21 +6550,20 @@ namespace CodeWalker.Project
 
             var emitter = new Dat151AmbientRule(CurrentAudioFile);
 
-            emitter.Flags0 = cp ? copy.AudioEmitter.Flags0.Value : 0xAA001100;
-            emitter.Flags5 = cp ? copy.AudioEmitter.Flags5.Value : 0xFFFFFFFF;
-            emitter.InnerRadius = cp ? copy.AudioEmitter.InnerRadius : 0.0f;
-            emitter.OuterRadius = cp ? copy.AudioEmitter.OuterRadius : 20.0f;
-            emitter.Unk01 = cp ? copy.AudioEmitter.Unk01 : 1.0f;
-            emitter.StartTime = cp ? copy.AudioEmitter.StartTime : (ushort)0;
-            emitter.EndTime = cp ? copy.AudioEmitter.EndTime : (ushort)1440;
-            emitter.Frequency = cp ? copy.AudioEmitter.Frequency.Value : (ushort)0;
-            emitter.Unk07 = cp ? copy.AudioEmitter.Unk07.Value : (ushort)0;
-            emitter.Unk08 = cp ? copy.AudioEmitter.Unk08.Value : (byte)0;
-            emitter.Unk09 = cp ? copy.AudioEmitter.Unk09.Value : (byte)1;
-            emitter.Unk10 = cp ? copy.AudioEmitter.Unk10.Value : (byte)1;
-            emitter.Unk11 = cp ? copy.AudioEmitter.Unk11.Value : (byte)1;
-            emitter.Unk12 = cp ? copy.AudioEmitter.Unk12.Value : (byte)100;
-            emitter.Unk13 = cp ? copy.AudioEmitter.Unk13.Value : (byte)3;
+            emitter.DynamicBankID = cp ? copy.AudioEmitter.DynamicBankID : 0;
+            emitter.MinDist = cp ? copy.AudioEmitter.MinDist : 0.0f;
+            emitter.MaxDist = cp ? copy.AudioEmitter.MaxDist : 20.0f;
+            emitter.Weight = cp ? copy.AudioEmitter.Weight : 1.0f;
+            emitter.MinTimeMinutes = cp ? copy.AudioEmitter.MinTimeMinutes : (ushort)0;
+            emitter.MaxTimeMinutes = cp ? copy.AudioEmitter.MaxTimeMinutes : (ushort)1440;
+            emitter.MinRepeatTime = cp ? copy.AudioEmitter.MinRepeatTime : (ushort)0;
+            emitter.MinRepeatTimeVariance = cp ? copy.AudioEmitter.MinRepeatTimeVariance : (ushort)0;
+            emitter.SpawnHeight = cp ? copy.AudioEmitter.SpawnHeight : (byte)0;
+            emitter.PositionUsage = cp ? copy.AudioEmitter.PositionUsage : (byte)1;
+            emitter.MaxLocalInstances = cp ? copy.AudioEmitter.MaxLocalInstances : (byte)1;
+            emitter.MaxGlobalInstances = cp ? copy.AudioEmitter.MaxGlobalInstances : (byte)1;
+            emitter.BlockabilityFactor = cp ? copy.AudioEmitter.BlockabilityFactor : (byte)100;
+            emitter.MaxPathDepth = cp ? copy.AudioEmitter.MaxPathDepth : (byte)3;
 
 
             emitter.Name = "emitter1";
