@@ -6082,8 +6082,12 @@ namespace CodeWalker.GameFiles
         public ushort Unk16 { get; set; }
         public MetaHash Alarm { get; set; }
         public MetaHash Unk18 { get; set; }
-        public FlagsUint Unk19 { get; set; }//very flaggy values, 0x00000003, 0x000A1403, etc
-        public FlagsUint Unk20 { get; set; }//0x05A00000
+        public uint MaxPathDepth { get; set; }
+        public uint SmallReverbSend { get; set; }
+        public uint MediumReverbSend { get; set; }
+        public uint LargeReverbSend { get; set; }
+        public ushort MinTimeMinutes { get; set; }
+        public ushort MaxTimeMinutes { get; set; }
         public float Unk21 { get; set; }
         public float Unk22 { get; set; }
 
@@ -6112,8 +6116,12 @@ namespace CodeWalker.GameFiles
             Unk16 = br.ReadUInt16();
             Alarm = br.ReadUInt32();
             Unk18 = br.ReadUInt32();
-            Unk19 = br.ReadUInt32();
-            Unk20 = br.ReadUInt32();//0x05A00000
+            MaxPathDepth = br.ReadByte();
+            SmallReverbSend = br.ReadByte();
+            MediumReverbSend = br.ReadByte();
+            LargeReverbSend = br.ReadByte();
+            MinTimeMinutes = br.ReadUInt16();
+            MaxTimeMinutes = br.ReadUInt16();
             Unk21 = br.ReadSingle();
             Unk22 = br.ReadSingle();
 
@@ -6144,8 +6152,12 @@ namespace CodeWalker.GameFiles
             bw.Write(Unk16);
             bw.Write(Alarm);
             bw.Write(Unk18);
-            bw.Write(Unk19);
-            bw.Write(Unk20);//0x05A00000
+            bw.Write(MaxPathDepth);
+            bw.Write(SmallReverbSend);
+            bw.Write(MediumReverbSend);
+            bw.Write(LargeReverbSend);
+            bw.Write(MinTimeMinutes);
+            bw.Write(MaxTimeMinutes);
             bw.Write(Unk21);
             bw.Write(Unk22);
         }
@@ -6169,8 +6181,12 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "Unk16", Unk16.ToString());
             RelXml.StringTag(sb, indent, "Alarm", RelXml.HashString(Alarm));
             RelXml.StringTag(sb, indent, "Unk18", RelXml.HashString(Unk18));
-            RelXml.ValueTag(sb, indent, "Unk19", "0x" + Unk19.Hex);
-            RelXml.ValueTag(sb, indent, "Unk20", "0x" + Unk20.Hex);
+            RelXml.ValueTag(sb, indent, "MaxPathDepth", MaxPathDepth.ToString());
+            RelXml.ValueTag(sb, indent, "SmallReverbSend", SmallReverbSend.ToString());
+            RelXml.ValueTag(sb, indent, "MediumReverbSend", MediumReverbSend.ToString());
+            RelXml.ValueTag(sb, indent, "LargeReverbSend", LargeReverbSend.ToString());
+            RelXml.ValueTag(sb, indent, "MinTimeMinutes", MinTimeMinutes.ToString());
+            RelXml.ValueTag(sb, indent, "MaxTimeMinutes", MaxTimeMinutes.ToString());
             RelXml.ValueTag(sb, indent, "Unk21", FloatUtil.ToString(Unk21));
             RelXml.ValueTag(sb, indent, "Unk22", FloatUtil.ToString(Unk22));
         }
@@ -6194,8 +6210,12 @@ namespace CodeWalker.GameFiles
             Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "Unk16", "value");
             Alarm = XmlRel.GetHash(Xml.GetChildInnerText(node, "Alarm"));
             Unk18 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk18"));
-            Unk19 = Xml.GetChildUIntAttribute(node, "Unk19", "value");
-            Unk20 = Xml.GetChildUIntAttribute(node, "Unk20", "value");
+            MaxPathDepth = Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
+            SmallReverbSend = Xml.GetChildUIntAttribute(node, "SmallReverbSend", "value");
+            MediumReverbSend = Xml.GetChildUIntAttribute(node, "MediumReverbSend", "value");
+            LargeReverbSend = Xml.GetChildUIntAttribute(node, "LargeReverbSend", "value");
+            MinTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MinTimeMinutes", "value");
+            MaxTimeMinutes = (ushort)Xml.GetChildUIntAttribute(node, "MaxTimeMinutes", "value");
             Unk21 = Xml.GetChildFloatAttribute(node, "Unk21", "value");
             Unk22 = Xml.GetChildFloatAttribute(node, "Unk22", "value");
         }

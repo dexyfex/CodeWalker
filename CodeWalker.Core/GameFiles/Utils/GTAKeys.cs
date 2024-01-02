@@ -739,7 +739,7 @@ namespace CodeWalker.GameFiles
     public static class HashSearch
     {
         private const long BLOCK_LENGTH = 1048576;
-        private const long ALIGN_LENGTH = 16;
+        private const long ALIGN_LENGTH = 8;
 
         public static byte[] SearchHash(Stream stream, byte[] hash, int length = 32)
         {

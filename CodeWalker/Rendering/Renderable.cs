@@ -531,14 +531,14 @@ namespace CodeWalker.Rendering
 
                 if (Expression?.BoneTracksDict != null)
                 {
-                    var exprbt = new ExpressionBoneTrack() { BoneTag = boneid, Track = track, Flags = boneiditem.Unk0 };
+                    var exprbt = new ExpressionTrack() { BoneId = boneid, Track = track, Flags = boneiditem.Unk0 };
                     var exprbtmap = exprbt;
 
                     if ((track == 24) || (track == 25) || (track == 26))
                     {
                         if (Expression.BoneTracksDict.TryGetValue(exprbt, out exprbtmap))
                         {
-                            boneid = exprbtmap.BoneTag;
+                            boneid = exprbtmap.BoneId;
                         }
                         else
                         { }
