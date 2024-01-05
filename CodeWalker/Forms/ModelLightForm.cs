@@ -1,4 +1,4 @@
-﻿using CodeWalker.GameFiles;
+using CodeWalker.GameFiles;
 using CodeWalker.World;
 using SharpDX;
 using System;
@@ -122,7 +122,8 @@ namespace CodeWalker.Forms
                 ColourBUpDown.Value = 0;
                 IntensityTextBox.Text = "";
                 FlagsTextBox.Text = "";
-                FlashinessUpDown.Value = 0;
+                FlashinessComboBox.SelectedIndex = 0;
+                LightHashUpDown.Value = 0;
                 BoneIDUpDown.Value = 0;
                 GroupIDUpDown.Value = 0;
                 FalloffTextBox.Text = "";
@@ -167,7 +168,9 @@ namespace CodeWalker.Forms
                 ColourLabel.BackColor = System.Drawing.Color.FromArgb(light.ColorR, light.ColorG, light.ColorB);
                 IntensityTextBox.Text = FloatUtil.ToString(light.Intensity);
                 FlagsTextBox.Text = light.Flags.ToString();
-                FlashinessUpDown.Value = light.Flashiness;
+                UpdateFlagsCheckBoxes();
+                FlashinessComboBox.SelectedIndex = light.Flashiness;
+                LightHashUpDown.Value = light.LightHash;
                 BoneIDUpDown.Value = light.BoneId;
                 GroupIDUpDown.Value = light.GroupId;
                 FalloffTextBox.Text = FloatUtil.ToString(light.Falloff);
@@ -195,7 +198,7 @@ namespace CodeWalker.Forms
                 CullingPlaneNormalTextBox.Text = FloatUtil.GetVector3String(light.CullingPlaneNormal);
                 CullingPlaneOffsetTextBox.Text = FloatUtil.ToString(light.CullingPlaneOffset);
                 TimeFlagsTextBox.Text = light.TimeFlags.ToString();
-                UpdateFlagsCheckBoxes();
+                UpdateTimeFlagsCheckBoxes();
                 populatingui = false;
             }
         }
@@ -445,7 +448,7 @@ namespace CodeWalker.Forms
             SelectLightTreeNode(selectedLight);
         }
 
-        private void UpdateFlagsCheckBoxes()
+        private void UpdateTimeFlagsCheckBoxes()
         {
             var l = selectedLight;
             var tfam = (l.TimeFlags >> 0) & 0xFFF;
@@ -457,6 +460,16 @@ namespace CodeWalker.Forms
             for (int i = 0; i < TimeFlagsPMCheckedListBox.Items.Count; i++)
             {
                 TimeFlagsPMCheckedListBox.SetItemCheckState(i, ((tfpm & (1u << i)) > 0) ? CheckState.Checked : CheckState.Unchecked);
+            }
+        }
+
+        private void UpdateFlagsCheckBoxes()
+        {
+            var l = selectedLight;
+            var f = l.Flags;
+            for (int i = 0; i < FlagsCheckedListBox.Items.Count; i++)
+            {
+                FlagsCheckedListBox.SetItemCheckState(i, ((f & (1u << i)) > 0) ? CheckState.Checked : CheckState.Unchecked);
             }
         }
 
@@ -729,27 +742,26 @@ namespace CodeWalker.Forms
             TangentTextBox.Text = FloatUtil.GetVector3String(t);
         }
 
-        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
+        private void FlashinessComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            uint.TryParse(FlagsTextBox.Text, out uint v);
-            if (selectedLight.Flags != v)
-            {
-                selectedLight.Flags = v;
-                UpdateLightParams();
-            }
-
-        }
-
-        private void FlashinessUpDown_ValueChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (selectedLight == null) return;
-            var v = (byte)FlashinessUpDown.Value;
+            var v = (byte)FlashinessComboBox.SelectedIndex;
             if (selectedLight.Flashiness != v)
             {
                 selectedLight.Flashiness = v;
+                UpdateLightParams();
+            }
+        }
+
+        private void LightHash_ValueChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            var v = (byte)LightHashUpDown.Value;
+            if (selectedLight.LightHash != v)
+            {
+                selectedLight.LightHash = v;
                 UpdateLightParams();
             }
         }
@@ -947,7 +959,7 @@ namespace CodeWalker.Forms
                 selectedLight.TimeFlags = v;
             }
             populatingui = true;
-            UpdateFlagsCheckBoxes();
+            UpdateTimeFlagsCheckBoxes();
             populatingui = false;
         }
 
@@ -980,6 +992,34 @@ namespace CodeWalker.Forms
             }
             populatingui = true;
             TimeFlagsTextBox.Text = selectedLight.TimeFlags.ToString();
+            populatingui = false;
+        }
+
+        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            uint.TryParse(FlagsTextBox.Text, out uint v);
+            if (selectedLight.Flags != v)
+            {
+                selectedLight.Flags = v;
+            }
+            populatingui = true;
+            UpdateFlagsCheckBoxes();
+            populatingui = false;
+        }
+
+        private void FlagsCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            var v = GetFlagsFromItemCheck(FlagsCheckedListBox, e);
+            if (selectedLight.Flags != v)
+            {
+                selectedLight.Flags = v;
+            }
+            populatingui = true;
+            FlagsTextBox.Text = selectedLight.Flags.ToString();
             populatingui = false;
         }
 
@@ -1075,11 +1115,6 @@ namespace CodeWalker.Forms
         private void DuplicateLightButton_Click(object sender, EventArgs e)
         {
             DuplicateLight();
-        }
-
-        private void MainSplitContainer_Panel2_Paint(object sender, PaintEventArgs e)
-        {
-
         }
 
         private void newLightToolStripMenuItem_Click(object sender, EventArgs e)
