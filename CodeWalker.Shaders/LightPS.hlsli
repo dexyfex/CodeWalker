@@ -172,7 +172,7 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
     float ldist = length(srpos);
     if (InstType == 4)//capsule
     {
-        float3 ext = InstDirection.xyz * (InstCapsuleExtent.y * 0.5);
+        float3 ext = InstDirection.xyz * (InstCapsuleExtent.x * 0.5);
         float4 lsn = GetLineSegmentNearestPoint(srpos, ext, -ext);
         ldist = lsn.w;
         srpos.xyz = lsn.xyz;
