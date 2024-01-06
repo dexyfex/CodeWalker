@@ -68,38 +68,19 @@
             this.CarFlagsCheckedListBox.CheckOnClick = true;
             this.CarFlagsCheckedListBox.FormattingEnabled = true;
             this.CarFlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - High priority",
-            "2 - Unk02",
+            "1 - Force Spawn",
+            "2 - Ignore Density",
             "4 - Police",
             "8 - Firetruck",
             "16 - Ambulance",
-            "32 - Unk06",
-            "64 - Unk07",
-            "128 - Unk08",
-            "256 - Unk09",
-            "512 - SP Enable",
-            "1024 - MP Enable",
+            "32 - During Day",
+            "64 - At Night",
+            "128 - Align Left",
+            "256 - Align Right",
+            "512 - Single Player",
+            "1024 - Network Player",
             "2048 - Low Priority",
-            "4096 - Unk13",
-            "8192 - Unk14",
-            "16384 - Unk15",
-            "32768 - Unk16",
-            "65536 - Unk17",
-            "131072 - Unk18",
-            "262144 - Unk19",
-            "524288 - Unk20",
-            "1048576 - Unk21",
-            "2097152 - Unk22",
-            "4194304 - Unk23",
-            "8388608 - Unk24",
-            "16777216 - Unk25",
-            "33554432 - Unk26",
-            "67108864 - Unk27",
-            "134217728 - Unk28",
-            "268435456 - Unk29",
-            "536870912 - Unk30",
-            "1073741824 - Unk31",
-            "2147483648 - Unk32"});
+            "4096 - Prevent Entry"});
             this.CarFlagsCheckedListBox.Location = new System.Drawing.Point(345, 112);
             this.CarFlagsCheckedListBox.Name = "CarFlagsCheckedListBox";
             this.CarFlagsCheckedListBox.Size = new System.Drawing.Size(201, 289);

@@ -117,16 +117,16 @@
             this.FlagsCheckedListBox.CheckOnClick = true;
             this.FlagsCheckedListBox.FormattingEnabled = true;
             this.FlagsCheckedListBox.Items.AddRange(new object[] {
-            "1 - Unk01",
-            "2 - Disables wanted level",
-            "4 - Disable exterior shadows",
-            "8 - Unk04",
-            "16 - Unk05",
-            "32 - Reduces vehicle population",
-            "64 - Reduces ped population",
-            "128 - Unk08",
-            "256 - Disable limbo portals",
-            "512 - Unk10"});
+            "1 - Freeze Vehicles",
+            "2 - Freeze Peds",
+            "4 - No Directional Light",
+            "8 - No Exterior Lights",
+            "16 - Force Freeze",
+            "32 - Reduce Cars",
+            "64 - Reduce Peds",
+            "128 - Force Directional Light On",
+            "256 - Dont Render Exterior",
+            "512 - Mirror Potentially Visible"});
             this.FlagsCheckedListBox.Location = new System.Drawing.Point(352, 41);
             this.FlagsCheckedListBox.Name = "FlagsCheckedListBox";
             this.FlagsCheckedListBox.Size = new System.Drawing.Size(201, 154);

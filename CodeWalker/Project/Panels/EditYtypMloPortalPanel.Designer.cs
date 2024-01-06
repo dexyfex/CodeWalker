@@ -181,16 +181,16 @@
             "2 - Link Interiors together",
             "4 - Mirror",
             "8 - Disable Timecycle Modifier",
-            "16 - Unused?",
-            "32 - Use exterior LOD",
+            "16 - Mirror Using Expensive Shaders",
+            "32 - Low LOD Only",
             "64 - Hide when door closed",
-            "128 - Mirror Directional Light",
-            "256 - Mirror exterior portals",
-            "512 - Mirror Portal Traversal",
-            "1024 - Mirror Floor",
-            "2048 - Mirror Floor (Water)",
-            "4096 - Light Bleeding",
-            "8192 - Water extent to horizon"});
+            "128 - Mirror Can See Directional",
+            "256 - Mirror Using Portal Traversal",
+            "512 - Mirror Floor",
+            "1024 - Mirror Can See Exterior View",
+            "2048 - Water Surface",
+            "4096 - Water Surface Extend To Horizon",
+            "8192 - Use Light Bleed"});
             this.FlagsCheckedListBox.Location = new System.Drawing.Point(318, 15);
             this.FlagsCheckedListBox.Name = "FlagsCheckedListBox";
             this.FlagsCheckedListBox.Size = new System.Drawing.Size(184, 214);
