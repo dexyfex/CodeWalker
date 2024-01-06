@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.Windows.Forms;
 using CodeWalker.GameFiles;
@@ -52,6 +52,7 @@ namespace CodeWalker.Project.Panels
                 ArchetypeFlagsTextBox.Text = CurrentArchetype._BaseArchetypeDef.flags.ToString();
                 TextureDictTextBox.Text = CurrentArchetype._BaseArchetypeDef.textureDictionary.ToCleanString();
                 ClipDictionaryTextBox.Text = CurrentArchetype._BaseArchetypeDef.clipDictionary.ToCleanString();
+                DrawableDictionaryTextBox.Text = CurrentArchetype._BaseArchetypeDef.drawableDictionary.ToCleanString();
                 PhysicsDictionaryTextBox.Text = CurrentArchetype._BaseArchetypeDef.physicsDictionary.ToCleanString();
                 AssetTypeComboBox.Text = CurrentArchetype._BaseArchetypeDef.assetType.ToString();
                 BBMinTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bbMin);
@@ -271,6 +272,36 @@ namespace CodeWalker.Project.Panels
             {
                 CurrentArchetype._BaseArchetypeDef.clipDictionary = hash;
                 ProjectForm.SetYtypHasChanged(true);
+            }
+        }
+
+        private void DrawableDictionaryTextBox_TextChanged(object sender, EventArgs e)
+        {
+            // Check that the form is not null before locking...
+            if (ProjectForm == null)
+                return;
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                var hash = 0u;
+                if (!uint.TryParse(DrawableDictionaryTextBox.Text, out hash))//don't re-hash hashes
+                {
+                    hash = JenkHash.GenHash(DrawableDictionaryTextBox.Text);
+                }
+
+                if (CurrentArchetype._BaseArchetypeDef.drawableDictionary != hash)
+                {
+                    var ydd = ProjectForm.GameFileCache.GetYdd(hash);
+                    if (ydd == null)
+                    {
+                        DrawableDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        ProjectForm.SetYtypHasChanged(true);
+                        return;
+                    }
+                    CurrentArchetype._BaseArchetypeDef.drawableDictionary = hash;
+                    ProjectForm.SetYtypHasChanged(true);
+                }
+                DrawableDictHashLabel.Text = "Hash: " + hash.ToString();
             }
         }
 
