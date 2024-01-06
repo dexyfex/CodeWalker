@@ -98,16 +98,16 @@ namespace CodeWalker.Forms
                     int poslim = pos + charsperln;
                     hexb.Clear();
                     texb.Clear();
-                    hexb.AppendFormat("{0:X4}: ", pos);
+                    hexb.Append($"{pos:X4}: ");
                     for (int c = pos; c < poslim; c++)
                     {
                         if (c < data.Length)
                         {
                             byte b = data[c];
-                            hexb.AppendFormat("{0:X2} ", b);
+                            hexb.Append($"{b:X2} ");
                             if (char.IsControl((char)b))
                             {
-                                texb.Append(".");
+                                texb.Append('.');
                             }
                             else
                             {
@@ -117,12 +117,12 @@ namespace CodeWalker.Forms
                         else
                         {
                             hexb.Append("   ");
-                            texb.Append(" ");
+                            texb.Append(' ');
                         }
                     }
 
                     //if (i == selline) selstartc = finb.Length;
-                    finb.AppendLine(hexb.ToString() + "| " + texb.ToString());
+                    finb.AppendLine($"{hexb}| {texb}");
                     //if (i == selline) selendc = finb.Length - 1;
                 }
 

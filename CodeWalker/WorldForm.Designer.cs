@@ -30,3701 +30,3609 @@ namespace CodeWalker
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorldForm));
+            components = new System.ComponentModel.Container();
             System.Windows.Forms.Label label34;
-            this.StatusStrip = new System.Windows.Forms.StatusStrip();
-            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.MousedLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.StatsLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.ModelComboBox = new System.Windows.Forms.ComboBox();
-            this.ToolsPanel = new System.Windows.Forms.Panel();
-            this.ToolsDragPanel = new System.Windows.Forms.Panel();
-            this.AboutButton = new System.Windows.Forms.Button();
-            this.ToolsButton = new System.Windows.Forms.Button();
-            this.ToolsPanelExpandButton = new System.Windows.Forms.Button();
-            this.ToolsTabControl = new System.Windows.Forms.TabControl();
-            this.ViewTabPage = new System.Windows.Forms.TabPage();
-            this.ViewTabControl = new System.Windows.Forms.TabControl();
-            this.ViewWorldTabPage = new System.Windows.Forms.TabPage();
-            this.EnableModsCheckBox = new System.Windows.Forms.CheckBox();
-            this.label30 = new System.Windows.Forms.Label();
-            this.DlcLevelComboBox = new System.Windows.Forms.ComboBox();
-            this.EnableDlcCheckBox = new System.Windows.Forms.CheckBox();
-            this.WorldYmapWeatherFilterCheckBox = new System.Windows.Forms.CheckBox();
-            this.WorldYmapTimeFilterCheckBox = new System.Windows.Forms.CheckBox();
-            this.WorldScriptedYmapsCheckBox = new System.Windows.Forms.CheckBox();
-            this.WorldDetailDistLabel = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
-            this.WorldDetailDistTrackBar = new System.Windows.Forms.TrackBar();
-            this.WorldLodDistLabel = new System.Windows.Forms.Label();
-            this.label16 = new System.Windows.Forms.Label();
-            this.WorldLodDistTrackBar = new System.Windows.Forms.TrackBar();
-            this.label15 = new System.Windows.Forms.Label();
-            this.WorldMaxLodComboBox = new System.Windows.Forms.ComboBox();
-            this.ViewYmapsTabPage = new System.Windows.Forms.TabPage();
-            this.ShowYmapChildrenCheckBox = new System.Windows.Forms.CheckBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.DetailTrackBar = new System.Windows.Forms.TrackBar();
-            this.DynamicLODCheckBox = new System.Windows.Forms.CheckBox();
-            this.YmapsTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.ViewModelTabPage = new System.Windows.Forms.TabPage();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.ViewModeComboBox = new System.Windows.Forms.ComboBox();
-            this.ShowToolbarCheckBox = new System.Windows.Forms.CheckBox();
-            this.MarkersTabPage = new System.Windows.Forms.TabPage();
-            this.label27 = new System.Windows.Forms.Label();
-            this.CameraPositionTextBox = new System.Windows.Forms.TextBox();
-            this.AddSelectionMarkerButton = new System.Windows.Forms.Button();
-            this.AddCurrentPositonMarkerButton = new System.Windows.Forms.Button();
-            this.ResetMarkersButton = new System.Windows.Forms.Button();
-            this.ClearMarkersButton = new System.Windows.Forms.Button();
-            this.GoToButton = new System.Windows.Forms.Button();
-            this.ShowLocatorCheckBox = new System.Windows.Forms.CheckBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.LocateTextBox = new System.Windows.Forms.TextBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.AddMarkersButton = new System.Windows.Forms.Button();
-            this.MultiFindTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.SelectionTabPage = new System.Windows.Forms.TabPage();
-            this.label25 = new System.Windows.Forms.Label();
-            this.SelectionModeComboBox = new System.Windows.Forms.ComboBox();
-            this.SelectionNameTextBox = new System.Windows.Forms.TextBox();
-            this.SelectionTabControl = new System.Windows.Forms.TabControl();
-            this.SelectionEntityTabPage = new System.Windows.Forms.TabPage();
-            this.SelEntityPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
-            this.SelectionArchetypeTabPage = new System.Windows.Forms.TabPage();
-            this.SelArchetypePropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
-            this.SelectionDrawableTabPage = new System.Windows.Forms.TabPage();
-            this.tabControl3 = new System.Windows.Forms.TabControl();
-            this.tabPage11 = new System.Windows.Forms.TabPage();
-            this.SelDrawablePropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
-            this.tabPage12 = new System.Windows.Forms.TabPage();
-            this.SelDrawableModelsTreeView = new CodeWalker.WinForms.TreeViewFix();
-            this.tabPage13 = new System.Windows.Forms.TabPage();
-            this.SelDrawableTexturesTreeView = new CodeWalker.WinForms.TreeViewFix();
-            this.SelectionExtensionTabPage = new System.Windows.Forms.TabPage();
-            this.SelExtensionPropertyGrid = new CodeWalker.WinForms.ReadOnlyPropertyGrid();
-            this.MouseSelectCheckBox = new System.Windows.Forms.CheckBox();
-            this.OptionsTabPage = new System.Windows.Forms.TabPage();
-            this.OptionsTabControl = new System.Windows.Forms.TabControl();
-            this.OptionsGeneralTabPage = new System.Windows.Forms.TabPage();
-            this.CarGeneratorsCheckBox = new System.Windows.Forms.CheckBox();
-            this.RenderEntitiesCheckBox = new System.Windows.Forms.CheckBox();
-            this.AdvancedSettingsButton = new System.Windows.Forms.Button();
-            this.ControlSettingsButton = new System.Windows.Forms.Button();
-            this.MapViewDetailLabel = new System.Windows.Forms.Label();
-            this.label28 = new System.Windows.Forms.Label();
-            this.MapViewDetailTrackBar = new System.Windows.Forms.TrackBar();
-            this.CameraModeComboBox = new System.Windows.Forms.ComboBox();
-            this.label24 = new System.Windows.Forms.Label();
-            this.WaterQuadsCheckBox = new System.Windows.Forms.CheckBox();
-            this.FieldOfViewLabel = new System.Windows.Forms.Label();
-            this.label22 = new System.Windows.Forms.Label();
-            this.TimedEntitiesAlwaysOnCheckBox = new System.Windows.Forms.CheckBox();
-            this.GrassCheckBox = new System.Windows.Forms.CheckBox();
-            this.InteriorsCheckBox = new System.Windows.Forms.CheckBox();
-            this.CollisionMeshLayerDrawableCheckBox = new System.Windows.Forms.CheckBox();
-            this.CollisionMeshLayer2CheckBox = new System.Windows.Forms.CheckBox();
-            this.CollisionMeshLayer1CheckBox = new System.Windows.Forms.CheckBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.CollisionMeshLayer0CheckBox = new System.Windows.Forms.CheckBox();
-            this.label12 = new System.Windows.Forms.Label();
-            this.CollisionMeshRangeTrackBar = new System.Windows.Forms.TrackBar();
-            this.CollisionMeshesCheckBox = new System.Windows.Forms.CheckBox();
-            this.FullScreenCheckBox = new System.Windows.Forms.CheckBox();
-            this.TimedEntitiesCheckBox = new System.Windows.Forms.CheckBox();
-            this.FieldOfViewTrackBar = new System.Windows.Forms.TrackBar();
-            this.OptionsRenderTabPage = new System.Windows.Forms.TabPage();
-            this.AntiAliasingTrackBar = new System.Windows.Forms.TrackBar();
-            this.FarClipUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label32 = new System.Windows.Forms.Label();
-            this.NearClipUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label31 = new System.Windows.Forms.Label();
-            this.HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
-            this.WireframeCheckBox = new System.Windows.Forms.CheckBox();
-            this.RenderModeComboBox = new System.Windows.Forms.ComboBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.TextureSamplerComboBox = new System.Windows.Forms.ComboBox();
-            this.TextureCoordsComboBox = new System.Windows.Forms.ComboBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.AnisotropicFilteringCheckBox = new System.Windows.Forms.CheckBox();
-            this.ProxiesCheckBox = new System.Windows.Forms.CheckBox();
-            this.WaitForChildrenCheckBox = new System.Windows.Forms.CheckBox();
-            this.label14 = new System.Windows.Forms.Label();
-            this.OptionsHelpersTabPage = new System.Windows.Forms.TabPage();
-            this.SnapAngleUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label33 = new System.Windows.Forms.Label();
-            this.SnapGridSizeUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label26 = new System.Windows.Forms.Label();
-            this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
-            this.AudioOuterBoundsCheckBox = new System.Windows.Forms.CheckBox();
-            this.PopZonesCheckBox = new System.Windows.Forms.CheckBox();
-            this.NavMeshesCheckBox = new System.Windows.Forms.CheckBox();
-            this.TrainPathsCheckBox = new System.Windows.Forms.CheckBox();
-            this.PathsDepthClipCheckBox = new System.Windows.Forms.CheckBox();
-            this.PathBoundsCheckBox = new System.Windows.Forms.CheckBox();
-            this.SelectionWidgetCheckBox = new System.Windows.Forms.CheckBox();
-            this.MarkerStyleComboBox = new System.Windows.Forms.ComboBox();
-            this.label4 = new System.Windows.Forms.Label();
-            this.LocatorStyleComboBox = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.MarkerDepthClipCheckBox = new System.Windows.Forms.CheckBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.PathsCheckBox = new System.Windows.Forms.CheckBox();
-            this.SelectionBoundsCheckBox = new System.Windows.Forms.CheckBox();
-            this.BoundsDepthClipCheckBox = new System.Windows.Forms.CheckBox();
-            this.BoundsRangeTrackBar = new System.Windows.Forms.TrackBar();
-            this.BoundsStyleComboBox = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.OptionsLightingTabPage = new System.Windows.Forms.TabPage();
-            this.HDLightsCheckBox = new System.Windows.Forms.CheckBox();
-            this.DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
-            this.WeatherRegionComboBox = new System.Windows.Forms.ComboBox();
-            this.label29 = new System.Windows.Forms.Label();
-            this.CloudParamTrackBar = new System.Windows.Forms.TrackBar();
-            this.CloudParamComboBox = new System.Windows.Forms.ComboBox();
-            this.label23 = new System.Windows.Forms.Label();
-            this.CloudsComboBox = new System.Windows.Forms.ComboBox();
-            this.label21 = new System.Windows.Forms.Label();
-            this.TimeSpeedLabel = new System.Windows.Forms.Label();
-            this.label20 = new System.Windows.Forms.Label();
-            this.TimeSpeedTrackBar = new System.Windows.Forms.TrackBar();
-            this.TimeStartStopButton = new System.Windows.Forms.Button();
-            this.ArtificialAmbientLightCheckBox = new System.Windows.Forms.CheckBox();
-            this.NaturalAmbientLightCheckBox = new System.Windows.Forms.CheckBox();
-            this.LODLightsCheckBox = new System.Windows.Forms.CheckBox();
-            this.HDRRenderingCheckBox = new System.Windows.Forms.CheckBox();
-            this.ControlTimeOfDayCheckBox = new System.Windows.Forms.CheckBox();
-            this.TimeOfDayLabel = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
-            this.TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
-            this.WeatherComboBox = new System.Windows.Forms.ComboBox();
-            this.label17 = new System.Windows.Forms.Label();
-            this.ControlLightDirectionCheckBox = new System.Windows.Forms.CheckBox();
-            this.SkydomeCheckBox = new System.Windows.Forms.CheckBox();
-            this.ShadowsCheckBox = new System.Windows.Forms.CheckBox();
-            this.StatusBarCheckBox = new System.Windows.Forms.CheckBox();
-            this.QuitButton = new System.Windows.Forms.Button();
-            this.ReloadSettingsButton = new System.Windows.Forms.Button();
-            this.SaveSettingsButton = new System.Windows.Forms.Button();
-            this.ReloadShadersButton = new System.Windows.Forms.Button();
-            this.ErrorConsoleCheckBox = new System.Windows.Forms.CheckBox();
-            this.ToolsPanelHideButton = new System.Windows.Forms.Button();
-            this.ToolsPanelShowButton = new System.Windows.Forms.Button();
-            this.ConsolePanel = new System.Windows.Forms.Panel();
-            this.ConsoleTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.StatsUpdateTimer = new System.Windows.Forms.Timer(this.components);
-            this.SelectedMarkerPanel = new System.Windows.Forms.Panel();
-            this.SelectedMarkerPositionTextBox = new System.Windows.Forms.TextBox();
-            this.SelectedMarkerNameTextBox = new System.Windows.Forms.TextBox();
-            this.ToolsMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.ToolsMenuRPFBrowser = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuRPFExplorer = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuSelectionInfo = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuProjectWindow = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuCutsceneViewer = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuAudioExplorer = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuWorldSearch = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuBinarySearch = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuJenkGen = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuJenkInd = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuExtractScripts = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuExtractTextures = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuExtractRawFiles = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuExtractShaders = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolsMenuOptions = new System.Windows.Forms.ToolStripMenuItem();
-            this.Toolbar = new CodeWalker.WinForms.ToolStripFix();
-            this.ToolbarNewButton = new System.Windows.Forms.ToolStripSplitButton();
-            this.ToolbarNewProjectButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarNewYmapButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarNewYtypButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarNewYbnButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarNewYndButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarNewTrainsButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarNewScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenButton = new System.Windows.Forms.ToolStripSplitButton();
-            this.ToolbarOpenProjectButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenFilesButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarOpenFolderButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
-            this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarSelectButton = new CodeWalker.WinForms.ToolStripSplitButtonFix();
-            this.ToolbarSelectEntityButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectEntityExtensionButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectArchetypeExtensionButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectTimeCycleModifierButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectCarGeneratorButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectGrassButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectWaterQuadButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectCalmingQuadButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectWaveQuadButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectCollisionButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectNavMeshButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectPathButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectTrainTrackButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectLodLightsButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectMloInstanceButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectAudioButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarMoveButton = new System.Windows.Forms.ToolStripButton();
-            this.ToolbarRotateButton = new System.Windows.Forms.ToolStripButton();
-            this.ToolbarScaleButton = new System.Windows.Forms.ToolStripButton();
-            this.ToolbarTransformSpaceButton = new System.Windows.Forms.ToolStripSplitButton();
-            this.ToolbarObjectSpaceButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarWorldSpaceButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSnapButton = new CodeWalker.WinForms.ToolStripSplitButtonFix();
-            this.ToolbarSnapToGroundButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSnapToGridButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSnapToGroundGridButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarSnapGridSizeButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnappingButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnappingOffButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping1Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping2Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping5Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping10Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping45Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnapping90Button = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRotationSnappingCustomButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarUndoButton = new System.Windows.Forms.ToolStripSplitButton();
-            this.ToolbarUndoListButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarRedoButton = new System.Windows.Forms.ToolStripSplitButton();
-            this.ToolbarRedoListButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarInfoWindowButton = new System.Windows.Forms.ToolStripButton();
-            this.ToolbarProjectWindowButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarAddItemButton = new System.Windows.Forms.ToolStripButton();
-            this.ToolbarDeleteItemButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarCopyButton = new System.Windows.Forms.ToolStripButton();
-            this.ToolbarPasteButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.ToolbarCameraModeButton = new System.Windows.Forms.ToolStripSplitButton();
-            this.ToolbarCameraPerspectiveButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarPanel = new System.Windows.Forms.Panel();
-            this.SubtitleLabel = new System.Windows.Forms.Label();
-            this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
-            this.AntiAliasingValue = new System.Windows.Forms.Label();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(WorldForm));
+            StatusStrip = new System.Windows.Forms.StatusStrip();
+            StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            MousedLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            StatsLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            ModelComboBox = new System.Windows.Forms.ComboBox();
+            ToolsPanel = new System.Windows.Forms.Panel();
+            ToolsDragPanel = new System.Windows.Forms.Panel();
+            AboutButton = new System.Windows.Forms.Button();
+            ToolsButton = new System.Windows.Forms.Button();
+            ToolsPanelExpandButton = new System.Windows.Forms.Button();
+            ToolsTabControl = new System.Windows.Forms.TabControl();
+            ViewTabPage = new System.Windows.Forms.TabPage();
+            ViewTabControl = new System.Windows.Forms.TabControl();
+            ViewWorldTabPage = new System.Windows.Forms.TabPage();
+            EnableModsCheckBox = new System.Windows.Forms.CheckBox();
+            label30 = new System.Windows.Forms.Label();
+            DlcLevelComboBox = new System.Windows.Forms.ComboBox();
+            EnableDlcCheckBox = new System.Windows.Forms.CheckBox();
+            WorldYmapWeatherFilterCheckBox = new System.Windows.Forms.CheckBox();
+            WorldYmapTimeFilterCheckBox = new System.Windows.Forms.CheckBox();
+            WorldScriptedYmapsCheckBox = new System.Windows.Forms.CheckBox();
+            WorldDetailDistLabel = new System.Windows.Forms.Label();
+            label18 = new System.Windows.Forms.Label();
+            WorldDetailDistTrackBar = new System.Windows.Forms.TrackBar();
+            WorldLodDistLabel = new System.Windows.Forms.Label();
+            label16 = new System.Windows.Forms.Label();
+            WorldLodDistTrackBar = new System.Windows.Forms.TrackBar();
+            label15 = new System.Windows.Forms.Label();
+            WorldMaxLodComboBox = new System.Windows.Forms.ComboBox();
+            ViewYmapsTabPage = new System.Windows.Forms.TabPage();
+            ShowYmapChildrenCheckBox = new System.Windows.Forms.CheckBox();
+            label2 = new System.Windows.Forms.Label();
+            DetailTrackBar = new System.Windows.Forms.TrackBar();
+            DynamicLODCheckBox = new System.Windows.Forms.CheckBox();
+            YmapsTextBox = new TextBoxFix();
+            ViewModelTabPage = new System.Windows.Forms.TabPage();
+            label1 = new System.Windows.Forms.Label();
+            label3 = new System.Windows.Forms.Label();
+            ViewModeComboBox = new System.Windows.Forms.ComboBox();
+            ShowToolbarCheckBox = new System.Windows.Forms.CheckBox();
+            MarkersTabPage = new System.Windows.Forms.TabPage();
+            label27 = new System.Windows.Forms.Label();
+            CameraPositionTextBox = new System.Windows.Forms.TextBox();
+            AddSelectionMarkerButton = new System.Windows.Forms.Button();
+            AddCurrentPositonMarkerButton = new System.Windows.Forms.Button();
+            ResetMarkersButton = new System.Windows.Forms.Button();
+            ClearMarkersButton = new System.Windows.Forms.Button();
+            GoToButton = new System.Windows.Forms.Button();
+            ShowLocatorCheckBox = new System.Windows.Forms.CheckBox();
+            label6 = new System.Windows.Forms.Label();
+            LocateTextBox = new System.Windows.Forms.TextBox();
+            label7 = new System.Windows.Forms.Label();
+            AddMarkersButton = new System.Windows.Forms.Button();
+            MultiFindTextBox = new TextBoxFix();
+            SelectionTabPage = new System.Windows.Forms.TabPage();
+            label25 = new System.Windows.Forms.Label();
+            SelectionModeComboBox = new System.Windows.Forms.ComboBox();
+            SelectionNameTextBox = new System.Windows.Forms.TextBox();
+            SelectionTabControl = new System.Windows.Forms.TabControl();
+            SelectionEntityTabPage = new System.Windows.Forms.TabPage();
+            SelEntityPropertyGrid = new ReadOnlyPropertyGrid();
+            SelectionArchetypeTabPage = new System.Windows.Forms.TabPage();
+            SelArchetypePropertyGrid = new ReadOnlyPropertyGrid();
+            SelectionDrawableTabPage = new System.Windows.Forms.TabPage();
+            tabControl3 = new System.Windows.Forms.TabControl();
+            tabPage11 = new System.Windows.Forms.TabPage();
+            SelDrawablePropertyGrid = new ReadOnlyPropertyGrid();
+            tabPage12 = new System.Windows.Forms.TabPage();
+            SelDrawableModelsTreeView = new TreeViewFix();
+            tabPage13 = new System.Windows.Forms.TabPage();
+            SelDrawableTexturesTreeView = new TreeViewFix();
+            SelectionExtensionTabPage = new System.Windows.Forms.TabPage();
+            SelExtensionPropertyGrid = new ReadOnlyPropertyGrid();
+            MouseSelectCheckBox = new System.Windows.Forms.CheckBox();
+            OptionsTabPage = new System.Windows.Forms.TabPage();
+            OptionsTabControl = new System.Windows.Forms.TabControl();
+            OptionsGeneralTabPage = new System.Windows.Forms.TabPage();
+            CarGeneratorsCheckBox = new System.Windows.Forms.CheckBox();
+            RenderEntitiesCheckBox = new System.Windows.Forms.CheckBox();
+            AdvancedSettingsButton = new System.Windows.Forms.Button();
+            ControlSettingsButton = new System.Windows.Forms.Button();
+            MapViewDetailLabel = new System.Windows.Forms.Label();
+            label28 = new System.Windows.Forms.Label();
+            MapViewDetailTrackBar = new System.Windows.Forms.TrackBar();
+            CameraModeComboBox = new System.Windows.Forms.ComboBox();
+            label24 = new System.Windows.Forms.Label();
+            WaterQuadsCheckBox = new System.Windows.Forms.CheckBox();
+            FieldOfViewLabel = new System.Windows.Forms.Label();
+            label22 = new System.Windows.Forms.Label();
+            TimedEntitiesAlwaysOnCheckBox = new System.Windows.Forms.CheckBox();
+            GrassCheckBox = new System.Windows.Forms.CheckBox();
+            InteriorsCheckBox = new System.Windows.Forms.CheckBox();
+            CollisionMeshLayerDrawableCheckBox = new System.Windows.Forms.CheckBox();
+            CollisionMeshLayer2CheckBox = new System.Windows.Forms.CheckBox();
+            CollisionMeshLayer1CheckBox = new System.Windows.Forms.CheckBox();
+            label13 = new System.Windows.Forms.Label();
+            CollisionMeshLayer0CheckBox = new System.Windows.Forms.CheckBox();
+            label12 = new System.Windows.Forms.Label();
+            CollisionMeshRangeTrackBar = new System.Windows.Forms.TrackBar();
+            CollisionMeshesCheckBox = new System.Windows.Forms.CheckBox();
+            FullScreenCheckBox = new System.Windows.Forms.CheckBox();
+            TimedEntitiesCheckBox = new System.Windows.Forms.CheckBox();
+            FieldOfViewTrackBar = new System.Windows.Forms.TrackBar();
+            OptionsRenderTabPage = new System.Windows.Forms.TabPage();
+            AntiAliasingValue = new System.Windows.Forms.Label();
+            AntiAliasingTrackBar = new System.Windows.Forms.TrackBar();
+            FarClipUpDown = new System.Windows.Forms.NumericUpDown();
+            label32 = new System.Windows.Forms.Label();
+            NearClipUpDown = new System.Windows.Forms.NumericUpDown();
+            label31 = new System.Windows.Forms.Label();
+            HDTexturesCheckBox = new System.Windows.Forms.CheckBox();
+            WireframeCheckBox = new System.Windows.Forms.CheckBox();
+            RenderModeComboBox = new System.Windows.Forms.ComboBox();
+            label11 = new System.Windows.Forms.Label();
+            TextureSamplerComboBox = new System.Windows.Forms.ComboBox();
+            TextureCoordsComboBox = new System.Windows.Forms.ComboBox();
+            label10 = new System.Windows.Forms.Label();
+            AnisotropicFilteringCheckBox = new System.Windows.Forms.CheckBox();
+            ProxiesCheckBox = new System.Windows.Forms.CheckBox();
+            WaitForChildrenCheckBox = new System.Windows.Forms.CheckBox();
+            label14 = new System.Windows.Forms.Label();
+            OptionsHelpersTabPage = new System.Windows.Forms.TabPage();
+            SnapAngleUpDown = new System.Windows.Forms.NumericUpDown();
+            label33 = new System.Windows.Forms.Label();
+            SnapGridSizeUpDown = new System.Windows.Forms.NumericUpDown();
+            label26 = new System.Windows.Forms.Label();
+            SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
+            AudioOuterBoundsCheckBox = new System.Windows.Forms.CheckBox();
+            PopZonesCheckBox = new System.Windows.Forms.CheckBox();
+            NavMeshesCheckBox = new System.Windows.Forms.CheckBox();
+            TrainPathsCheckBox = new System.Windows.Forms.CheckBox();
+            PathsDepthClipCheckBox = new System.Windows.Forms.CheckBox();
+            PathBoundsCheckBox = new System.Windows.Forms.CheckBox();
+            SelectionWidgetCheckBox = new System.Windows.Forms.CheckBox();
+            MarkerStyleComboBox = new System.Windows.Forms.ComboBox();
+            label4 = new System.Windows.Forms.Label();
+            LocatorStyleComboBox = new System.Windows.Forms.ComboBox();
+            label5 = new System.Windows.Forms.Label();
+            MarkerDepthClipCheckBox = new System.Windows.Forms.CheckBox();
+            label9 = new System.Windows.Forms.Label();
+            PathsCheckBox = new System.Windows.Forms.CheckBox();
+            SelectionBoundsCheckBox = new System.Windows.Forms.CheckBox();
+            BoundsDepthClipCheckBox = new System.Windows.Forms.CheckBox();
+            BoundsRangeTrackBar = new System.Windows.Forms.TrackBar();
+            BoundsStyleComboBox = new System.Windows.Forms.ComboBox();
+            label8 = new System.Windows.Forms.Label();
+            OptionsLightingTabPage = new System.Windows.Forms.TabPage();
+            HDLightsCheckBox = new System.Windows.Forms.CheckBox();
+            DeferredShadingCheckBox = new System.Windows.Forms.CheckBox();
+            WeatherRegionComboBox = new System.Windows.Forms.ComboBox();
+            label29 = new System.Windows.Forms.Label();
+            CloudParamTrackBar = new System.Windows.Forms.TrackBar();
+            CloudParamComboBox = new System.Windows.Forms.ComboBox();
+            label23 = new System.Windows.Forms.Label();
+            CloudsComboBox = new System.Windows.Forms.ComboBox();
+            label21 = new System.Windows.Forms.Label();
+            TimeSpeedLabel = new System.Windows.Forms.Label();
+            label20 = new System.Windows.Forms.Label();
+            TimeSpeedTrackBar = new System.Windows.Forms.TrackBar();
+            TimeStartStopButton = new System.Windows.Forms.Button();
+            ArtificialAmbientLightCheckBox = new System.Windows.Forms.CheckBox();
+            NaturalAmbientLightCheckBox = new System.Windows.Forms.CheckBox();
+            LODLightsCheckBox = new System.Windows.Forms.CheckBox();
+            HDRRenderingCheckBox = new System.Windows.Forms.CheckBox();
+            ControlTimeOfDayCheckBox = new System.Windows.Forms.CheckBox();
+            TimeOfDayLabel = new System.Windows.Forms.Label();
+            label19 = new System.Windows.Forms.Label();
+            TimeOfDayTrackBar = new System.Windows.Forms.TrackBar();
+            WeatherComboBox = new System.Windows.Forms.ComboBox();
+            label17 = new System.Windows.Forms.Label();
+            ControlLightDirectionCheckBox = new System.Windows.Forms.CheckBox();
+            SkydomeCheckBox = new System.Windows.Forms.CheckBox();
+            ShadowsCheckBox = new System.Windows.Forms.CheckBox();
+            StatusBarCheckBox = new System.Windows.Forms.CheckBox();
+            QuitButton = new System.Windows.Forms.Button();
+            ReloadSettingsButton = new System.Windows.Forms.Button();
+            SaveSettingsButton = new System.Windows.Forms.Button();
+            ReloadShadersButton = new System.Windows.Forms.Button();
+            ErrorConsoleCheckBox = new System.Windows.Forms.CheckBox();
+            ToolsPanelHideButton = new System.Windows.Forms.Button();
+            ToolsPanelShowButton = new System.Windows.Forms.Button();
+            ConsolePanel = new System.Windows.Forms.Panel();
+            ConsoleTextBox = new TextBoxFix();
+            StatsUpdateTimer = new System.Windows.Forms.Timer(components);
+            SelectedMarkerPanel = new System.Windows.Forms.Panel();
+            SelectedMarkerPositionTextBox = new System.Windows.Forms.TextBox();
+            SelectedMarkerNameTextBox = new System.Windows.Forms.TextBox();
+            ToolsMenu = new System.Windows.Forms.ContextMenuStrip(components);
+            ToolsMenuRPFBrowser = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuRPFExplorer = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuSelectionInfo = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuProjectWindow = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuCutsceneViewer = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuAudioExplorer = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuWorldSearch = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuBinarySearch = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuJenkGen = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuJenkInd = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuExtractScripts = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuExtractTextures = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuExtractRawFiles = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuExtractShaders = new System.Windows.Forms.ToolStripMenuItem();
+            ToolsMenuOptions = new System.Windows.Forms.ToolStripMenuItem();
+            Toolbar = new ToolStripFix();
+            ToolbarNewButton = new System.Windows.Forms.ToolStripSplitButton();
+            ToolbarNewProjectButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarNewYmapButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarNewYtypButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarNewYbnButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarNewYndButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarNewTrainsButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarNewScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarOpenButton = new System.Windows.Forms.ToolStripSplitButton();
+            ToolbarOpenProjectButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarOpenFilesButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarOpenFolderButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSaveButton = new System.Windows.Forms.ToolStripButton();
+            ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            ToolbarSelectButton = new ToolStripSplitButtonFix();
+            ToolbarSelectEntityButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectEntityExtensionButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectArchetypeExtensionButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectTimeCycleModifierButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectCarGeneratorButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectGrassButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectWaterQuadButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectCalmingQuadButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectWaveQuadButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectCollisionButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectNavMeshButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectPathButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectTrainTrackButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectLodLightsButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectMloInstanceButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectScenarioButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectAudioButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSelectOcclusionButton = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            ToolbarMoveButton = new System.Windows.Forms.ToolStripButton();
+            ToolbarRotateButton = new System.Windows.Forms.ToolStripButton();
+            ToolbarScaleButton = new System.Windows.Forms.ToolStripButton();
+            ToolbarTransformSpaceButton = new System.Windows.Forms.ToolStripSplitButton();
+            ToolbarObjectSpaceButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarWorldSpaceButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSnapButton = new ToolStripSplitButtonFix();
+            ToolbarSnapToGroundButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSnapToGridButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSnapToGroundGridButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarSnapGridSizeButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnappingButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnappingOffButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnapping1Button = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnapping2Button = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnapping5Button = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnapping10Button = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnapping45Button = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnapping90Button = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRotationSnappingCustomButton = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            ToolbarUndoButton = new System.Windows.Forms.ToolStripSplitButton();
+            ToolbarUndoListButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarRedoButton = new System.Windows.Forms.ToolStripSplitButton();
+            ToolbarRedoListButton = new System.Windows.Forms.ToolStripMenuItem();
+            toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            ToolbarInfoWindowButton = new System.Windows.Forms.ToolStripButton();
+            ToolbarProjectWindowButton = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            ToolbarAddItemButton = new System.Windows.Forms.ToolStripButton();
+            ToolbarDeleteItemButton = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            ToolbarCopyButton = new System.Windows.Forms.ToolStripButton();
+            ToolbarPasteButton = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            ToolbarCameraModeButton = new System.Windows.Forms.ToolStripSplitButton();
+            ToolbarCameraPerspectiveButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
+            ToolbarPanel = new System.Windows.Forms.Panel();
+            SubtitleLabel = new System.Windows.Forms.Label();
+            SubtitleTimer = new System.Windows.Forms.Timer(components);
             label34 = new System.Windows.Forms.Label();
-            this.StatusStrip.SuspendLayout();
-            this.ToolsPanel.SuspendLayout();
-            this.ToolsTabControl.SuspendLayout();
-            this.ViewTabPage.SuspendLayout();
-            this.ViewTabControl.SuspendLayout();
-            this.ViewWorldTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.WorldDetailDistTrackBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.WorldLodDistTrackBar)).BeginInit();
-            this.ViewYmapsTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.DetailTrackBar)).BeginInit();
-            this.ViewModelTabPage.SuspendLayout();
-            this.MarkersTabPage.SuspendLayout();
-            this.SelectionTabPage.SuspendLayout();
-            this.SelectionTabControl.SuspendLayout();
-            this.SelectionEntityTabPage.SuspendLayout();
-            this.SelectionArchetypeTabPage.SuspendLayout();
-            this.SelectionDrawableTabPage.SuspendLayout();
-            this.tabControl3.SuspendLayout();
-            this.tabPage11.SuspendLayout();
-            this.tabPage12.SuspendLayout();
-            this.tabPage13.SuspendLayout();
-            this.SelectionExtensionTabPage.SuspendLayout();
-            this.OptionsTabPage.SuspendLayout();
-            this.OptionsTabControl.SuspendLayout();
-            this.OptionsGeneralTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.MapViewDetailTrackBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.CollisionMeshRangeTrackBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).BeginInit();
-            this.OptionsRenderTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingTrackBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).BeginInit();
-            this.OptionsHelpersTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).BeginInit();
-            this.OptionsLightingTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.CloudParamTrackBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TimeSpeedTrackBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
-            this.ConsolePanel.SuspendLayout();
-            this.SelectedMarkerPanel.SuspendLayout();
-            this.ToolsMenu.SuspendLayout();
-            this.Toolbar.SuspendLayout();
-            this.ToolbarPanel.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // StatusStrip
-            // 
-            this.StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.StatusLabel,
-            this.MousedLabel,
-            this.StatsLabel});
-            this.StatusStrip.Location = new System.Drawing.Point(0, 689);
-            this.StatusStrip.Name = "StatusStrip";
-            this.StatusStrip.Size = new System.Drawing.Size(984, 22);
-            this.StatusStrip.TabIndex = 0;
-            this.StatusStrip.Text = "statusStrip1";
-            // 
-            // StatusLabel
-            // 
-            this.StatusLabel.BackColor = System.Drawing.SystemColors.Control;
-            this.StatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(878, 17);
-            this.StatusLabel.Spring = true;
-            this.StatusLabel.Text = "Initialising";
-            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // MousedLabel
-            // 
-            this.MousedLabel.BackColor = System.Drawing.SystemColors.Control;
-            this.MousedLabel.Name = "MousedLabel";
-            this.MousedLabel.Size = new System.Drawing.Size(16, 17);
-            this.MousedLabel.Text = "   ";
-            // 
-            // StatsLabel
-            // 
-            this.StatsLabel.BackColor = System.Drawing.SystemColors.Control;
-            this.StatsLabel.DoubleClickEnabled = true;
-            this.StatsLabel.Name = "StatsLabel";
-            this.StatsLabel.Size = new System.Drawing.Size(75, 17);
-            this.StatsLabel.Text = "0 geometries";
-            this.StatsLabel.DoubleClick += new System.EventHandler(this.StatsLabel_DoubleClick);
-            // 
-            // ModelComboBox
-            // 
-            this.ModelComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ModelComboBox.FormattingEnabled = true;
-            this.ModelComboBox.Items.AddRange(new object[] {
-            "dt1_lod_slod3",
-            "dt1_tc_dufo_core",
-            "dt1_tc_ufocore",
-            "ex_office_citymodel_01",
-            "id1_30_build3_dtl2",
-            "imp_prop_ship_01a",
-            "prop_alien_egg_01",
-            "prop_fruit_stand_02",
-            "prop_fruit_stand_03",
-            "dune",
-            "dune2",
-            "dune2_hi",
-            "adder",
-            "adder_hi",
-            "kuruma2",
-            "kuruma2_hi",
-            "infernus",
-            "infernus_hi",
-            "buzzard",
-            "buzzard_hi",
-            "rhino",
-            "rhino_hi",
-            "lazer",
-            "lazer_hi",
-            "duster",
-            "duster_hi",
-            "marquis",
-            "marquis_hi",
-            "submersible",
-            "submersible_hi",
-            "cargobob",
-            "cargobob_hi",
-            "sanchez",
-            "sanchez_hi"});
-            this.ModelComboBox.Location = new System.Drawing.Point(44, 7);
-            this.ModelComboBox.Name = "ModelComboBox";
-            this.ModelComboBox.Size = new System.Drawing.Size(150, 21);
-            this.ModelComboBox.TabIndex = 11;
-            this.ModelComboBox.SelectedIndexChanged += new System.EventHandler(this.ModelComboBox_SelectedIndexChanged);
-            this.ModelComboBox.TextUpdate += new System.EventHandler(this.ModelComboBox_TextUpdate);
-            // 
-            // ToolsPanel
-            // 
-            this.ToolsPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ToolsPanel.BackColor = System.Drawing.SystemColors.ControlDark;
-            this.ToolsPanel.Controls.Add(this.ToolsDragPanel);
-            this.ToolsPanel.Controls.Add(this.AboutButton);
-            this.ToolsPanel.Controls.Add(this.ToolsButton);
-            this.ToolsPanel.Controls.Add(this.ToolsPanelExpandButton);
-            this.ToolsPanel.Controls.Add(this.ToolsTabControl);
-            this.ToolsPanel.Controls.Add(this.ToolsPanelHideButton);
-            this.ToolsPanel.Location = new System.Drawing.Point(754, 12);
-            this.ToolsPanel.Name = "ToolsPanel";
-            this.ToolsPanel.Size = new System.Drawing.Size(218, 665);
-            this.ToolsPanel.TabIndex = 2;
-            this.ToolsPanel.Visible = false;
-            // 
-            // ToolsDragPanel
-            // 
-            this.ToolsDragPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.ToolsDragPanel.Cursor = System.Windows.Forms.Cursors.VSplit;
-            this.ToolsDragPanel.Location = new System.Drawing.Point(0, 0);
-            this.ToolsDragPanel.Name = "ToolsDragPanel";
-            this.ToolsDragPanel.Size = new System.Drawing.Size(4, 665);
-            this.ToolsDragPanel.TabIndex = 16;
-            this.ToolsDragPanel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.ToolsDragPanel_MouseDown);
-            this.ToolsDragPanel.MouseMove += new System.Windows.Forms.MouseEventHandler(this.ToolsDragPanel_MouseMove);
-            this.ToolsDragPanel.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ToolsDragPanel_MouseUp);
-            // 
-            // AboutButton
-            // 
-            this.AboutButton.Location = new System.Drawing.Point(64, 3);
-            this.AboutButton.Name = "AboutButton";
-            this.AboutButton.Size = new System.Drawing.Size(55, 23);
-            this.AboutButton.TabIndex = 15;
-            this.AboutButton.Text = "About...";
-            this.AboutButton.UseVisualStyleBackColor = true;
-            this.AboutButton.Click += new System.EventHandler(this.AboutButton_Click);
-            // 
-            // ToolsButton
-            // 
-            this.ToolsButton.Location = new System.Drawing.Point(3, 3);
-            this.ToolsButton.Name = "ToolsButton";
-            this.ToolsButton.Size = new System.Drawing.Size(55, 23);
-            this.ToolsButton.TabIndex = 14;
-            this.ToolsButton.Text = "Tools...";
-            this.ToolsButton.UseVisualStyleBackColor = true;
-            this.ToolsButton.Click += new System.EventHandler(this.ToolsButton_Click);
-            // 
-            // ToolsPanelExpandButton
-            // 
-            this.ToolsPanelExpandButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ToolsPanelExpandButton.Location = new System.Drawing.Point(149, 3);
-            this.ToolsPanelExpandButton.Name = "ToolsPanelExpandButton";
-            this.ToolsPanelExpandButton.Size = new System.Drawing.Size(30, 23);
-            this.ToolsPanelExpandButton.TabIndex = 13;
-            this.ToolsPanelExpandButton.Text = "<<";
-            this.ToolsPanelExpandButton.UseVisualStyleBackColor = true;
-            this.ToolsPanelExpandButton.Click += new System.EventHandler(this.ToolsPanelExpandButton_Click);
-            // 
-            // ToolsTabControl
-            // 
-            this.ToolsTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ToolsTabControl.Controls.Add(this.ViewTabPage);
-            this.ToolsTabControl.Controls.Add(this.MarkersTabPage);
-            this.ToolsTabControl.Controls.Add(this.SelectionTabPage);
-            this.ToolsTabControl.Controls.Add(this.OptionsTabPage);
-            this.ToolsTabControl.Location = new System.Drawing.Point(3, 30);
-            this.ToolsTabControl.Name = "ToolsTabControl";
-            this.ToolsTabControl.SelectedIndex = 0;
-            this.ToolsTabControl.Size = new System.Drawing.Size(213, 632);
-            this.ToolsTabControl.TabIndex = 12;
-            // 
-            // ViewTabPage
-            // 
-            this.ViewTabPage.Controls.Add(this.ViewTabControl);
-            this.ViewTabPage.Controls.Add(this.label3);
-            this.ViewTabPage.Controls.Add(this.ViewModeComboBox);
-            this.ViewTabPage.Controls.Add(this.ShowToolbarCheckBox);
-            this.ViewTabPage.Location = new System.Drawing.Point(4, 22);
-            this.ViewTabPage.Name = "ViewTabPage";
-            this.ViewTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ViewTabPage.Size = new System.Drawing.Size(205, 606);
-            this.ViewTabPage.TabIndex = 0;
-            this.ViewTabPage.Text = "View";
-            this.ViewTabPage.UseVisualStyleBackColor = true;
-            // 
-            // ViewTabControl
-            // 
-            this.ViewTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ViewTabControl.Controls.Add(this.ViewWorldTabPage);
-            this.ViewTabControl.Controls.Add(this.ViewYmapsTabPage);
-            this.ViewTabControl.Controls.Add(this.ViewModelTabPage);
-            this.ViewTabControl.Location = new System.Drawing.Point(0, 32);
-            this.ViewTabControl.Name = "ViewTabControl";
-            this.ViewTabControl.SelectedIndex = 0;
-            this.ViewTabControl.Size = new System.Drawing.Size(202, 548);
-            this.ViewTabControl.TabIndex = 12;
-            // 
-            // ViewWorldTabPage
-            // 
-            this.ViewWorldTabPage.Controls.Add(this.EnableModsCheckBox);
-            this.ViewWorldTabPage.Controls.Add(this.label30);
-            this.ViewWorldTabPage.Controls.Add(this.DlcLevelComboBox);
-            this.ViewWorldTabPage.Controls.Add(this.EnableDlcCheckBox);
-            this.ViewWorldTabPage.Controls.Add(this.WorldYmapWeatherFilterCheckBox);
-            this.ViewWorldTabPage.Controls.Add(this.WorldYmapTimeFilterCheckBox);
-            this.ViewWorldTabPage.Controls.Add(this.WorldScriptedYmapsCheckBox);
-            this.ViewWorldTabPage.Controls.Add(this.WorldDetailDistLabel);
-            this.ViewWorldTabPage.Controls.Add(this.label18);
-            this.ViewWorldTabPage.Controls.Add(this.WorldDetailDistTrackBar);
-            this.ViewWorldTabPage.Controls.Add(this.WorldLodDistLabel);
-            this.ViewWorldTabPage.Controls.Add(this.label16);
-            this.ViewWorldTabPage.Controls.Add(this.WorldLodDistTrackBar);
-            this.ViewWorldTabPage.Controls.Add(this.label15);
-            this.ViewWorldTabPage.Controls.Add(this.WorldMaxLodComboBox);
-            this.ViewWorldTabPage.Location = new System.Drawing.Point(4, 22);
-            this.ViewWorldTabPage.Name = "ViewWorldTabPage";
-            this.ViewWorldTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ViewWorldTabPage.Size = new System.Drawing.Size(194, 522);
-            this.ViewWorldTabPage.TabIndex = 0;
-            this.ViewWorldTabPage.Text = "World";
-            this.ViewWorldTabPage.UseVisualStyleBackColor = true;
-            // 
-            // EnableModsCheckBox
-            // 
-            this.EnableModsCheckBox.AutoSize = true;
-            this.EnableModsCheckBox.Enabled = false;
-            this.EnableModsCheckBox.Location = new System.Drawing.Point(6, 280);
-            this.EnableModsCheckBox.Name = "EnableModsCheckBox";
-            this.EnableModsCheckBox.Size = new System.Drawing.Size(88, 17);
-            this.EnableModsCheckBox.TabIndex = 68;
-            this.EnableModsCheckBox.Text = "Enable Mods";
-            this.EnableModsCheckBox.UseVisualStyleBackColor = true;
-            this.EnableModsCheckBox.CheckedChanged += new System.EventHandler(this.EnableModsCheckBox_CheckedChanged);
-            // 
-            // label30
-            // 
-            this.label30.AutoSize = true;
-            this.label30.Location = new System.Drawing.Point(1, 337);
-            this.label30.Name = "label30";
-            this.label30.Size = new System.Drawing.Size(60, 13);
-            this.label30.TabIndex = 70;
-            this.label30.Text = "DLC Level:";
-            // 
-            // DlcLevelComboBox
-            // 
-            this.DlcLevelComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.DlcLevelComboBox.Enabled = false;
-            this.DlcLevelComboBox.FormattingEnabled = true;
-            this.DlcLevelComboBox.Items.AddRange(new object[] {
-            "<Loading...>"});
-            this.DlcLevelComboBox.Location = new System.Drawing.Point(62, 334);
-            this.DlcLevelComboBox.Name = "DlcLevelComboBox";
-            this.DlcLevelComboBox.Size = new System.Drawing.Size(126, 21);
-            this.DlcLevelComboBox.TabIndex = 70;
-            this.DlcLevelComboBox.SelectedIndexChanged += new System.EventHandler(this.DlcLevelComboBox_SelectedIndexChanged);
-            this.DlcLevelComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.DlcLevelComboBox_KeyPress);
-            // 
-            // EnableDlcCheckBox
-            // 
-            this.EnableDlcCheckBox.AutoSize = true;
-            this.EnableDlcCheckBox.Enabled = false;
-            this.EnableDlcCheckBox.Location = new System.Drawing.Point(6, 311);
-            this.EnableDlcCheckBox.Name = "EnableDlcCheckBox";
-            this.EnableDlcCheckBox.Size = new System.Drawing.Size(83, 17);
-            this.EnableDlcCheckBox.TabIndex = 69;
-            this.EnableDlcCheckBox.Text = "Enable DLC";
-            this.EnableDlcCheckBox.UseVisualStyleBackColor = true;
-            this.EnableDlcCheckBox.CheckedChanged += new System.EventHandler(this.EnableDlcCheckBox_CheckedChanged);
-            // 
-            // WorldYmapWeatherFilterCheckBox
-            // 
-            this.WorldYmapWeatherFilterCheckBox.AutoSize = true;
-            this.WorldYmapWeatherFilterCheckBox.Checked = true;
-            this.WorldYmapWeatherFilterCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WorldYmapWeatherFilterCheckBox.Location = new System.Drawing.Point(6, 237);
-            this.WorldYmapWeatherFilterCheckBox.Name = "WorldYmapWeatherFilterCheckBox";
-            this.WorldYmapWeatherFilterCheckBox.Size = new System.Drawing.Size(136, 17);
-            this.WorldYmapWeatherFilterCheckBox.TabIndex = 67;
-            this.WorldYmapWeatherFilterCheckBox.Text = "Filter ymaps by weather";
-            this.WorldYmapWeatherFilterCheckBox.UseVisualStyleBackColor = true;
-            this.WorldYmapWeatherFilterCheckBox.CheckedChanged += new System.EventHandler(this.WorldYmapWeatherFilterCheckBox_CheckedChanged);
-            // 
-            // WorldYmapTimeFilterCheckBox
-            // 
-            this.WorldYmapTimeFilterCheckBox.AutoSize = true;
-            this.WorldYmapTimeFilterCheckBox.Checked = true;
-            this.WorldYmapTimeFilterCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WorldYmapTimeFilterCheckBox.Location = new System.Drawing.Point(6, 214);
-            this.WorldYmapTimeFilterCheckBox.Name = "WorldYmapTimeFilterCheckBox";
-            this.WorldYmapTimeFilterCheckBox.Size = new System.Drawing.Size(149, 17);
-            this.WorldYmapTimeFilterCheckBox.TabIndex = 66;
-            this.WorldYmapTimeFilterCheckBox.Text = "Filter ymaps by time of day";
-            this.WorldYmapTimeFilterCheckBox.UseVisualStyleBackColor = true;
-            this.WorldYmapTimeFilterCheckBox.CheckedChanged += new System.EventHandler(this.WorldYmapTimeFilterCheckBox_CheckedChanged);
-            // 
-            // WorldScriptedYmapsCheckBox
-            // 
-            this.WorldScriptedYmapsCheckBox.AutoSize = true;
-            this.WorldScriptedYmapsCheckBox.Checked = true;
-            this.WorldScriptedYmapsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WorldScriptedYmapsCheckBox.Location = new System.Drawing.Point(6, 182);
-            this.WorldScriptedYmapsCheckBox.Name = "WorldScriptedYmapsCheckBox";
-            this.WorldScriptedYmapsCheckBox.Size = new System.Drawing.Size(126, 17);
-            this.WorldScriptedYmapsCheckBox.TabIndex = 65;
-            this.WorldScriptedYmapsCheckBox.Text = "Show scripted ymaps";
-            this.WorldScriptedYmapsCheckBox.UseVisualStyleBackColor = true;
-            this.WorldScriptedYmapsCheckBox.CheckedChanged += new System.EventHandler(this.WorldScriptedYmapsCheckBox_CheckedChanged);
-            // 
-            // WorldDetailDistLabel
-            // 
-            this.WorldDetailDistLabel.AutoSize = true;
-            this.WorldDetailDistLabel.Location = new System.Drawing.Point(87, 94);
-            this.WorldDetailDistLabel.Name = "WorldDetailDistLabel";
-            this.WorldDetailDistLabel.Size = new System.Drawing.Size(22, 13);
-            this.WorldDetailDistLabel.TabIndex = 64;
-            this.WorldDetailDistLabel.Text = "1.0";
-            // 
-            // label18
-            // 
-            this.label18.AutoSize = true;
-            this.label18.Location = new System.Drawing.Point(1, 94);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(80, 13);
-            this.label18.TabIndex = 63;
-            this.label18.Text = "Detail distance:";
-            // 
-            // WorldDetailDistTrackBar
-            // 
-            this.WorldDetailDistTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.WorldDetailDistTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.WorldDetailDistTrackBar.LargeChange = 10;
-            this.WorldDetailDistTrackBar.Location = new System.Drawing.Point(6, 110);
-            this.WorldDetailDistTrackBar.Maximum = 50;
-            this.WorldDetailDistTrackBar.Name = "WorldDetailDistTrackBar";
-            this.WorldDetailDistTrackBar.Size = new System.Drawing.Size(182, 45);
-            this.WorldDetailDistTrackBar.TabIndex = 62;
-            this.WorldDetailDistTrackBar.TickFrequency = 2;
-            this.WorldDetailDistTrackBar.Value = 10;
-            this.WorldDetailDistTrackBar.Scroll += new System.EventHandler(this.WorldDetailDistTrackBar_Scroll);
-            // 
-            // WorldLodDistLabel
-            // 
-            this.WorldLodDistLabel.AutoSize = true;
-            this.WorldLodDistLabel.Location = new System.Drawing.Point(82, 39);
-            this.WorldLodDistLabel.Name = "WorldLodDistLabel";
-            this.WorldLodDistLabel.Size = new System.Drawing.Size(22, 13);
-            this.WorldLodDistLabel.TabIndex = 61;
-            this.WorldLodDistLabel.Text = "1.0";
-            this.WorldLodDistLabel.Visible = false;
-            // 
-            // label16
-            // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(1, 39);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(75, 13);
-            this.label16.TabIndex = 60;
-            this.label16.Text = "LOD distance:";
-            this.label16.Visible = false;
-            // 
-            // WorldLodDistTrackBar
-            // 
-            this.WorldLodDistTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.WorldLodDistTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.WorldLodDistTrackBar.LargeChange = 10;
-            this.WorldLodDistTrackBar.Location = new System.Drawing.Point(6, 55);
-            this.WorldLodDistTrackBar.Maximum = 30;
-            this.WorldLodDistTrackBar.Name = "WorldLodDistTrackBar";
-            this.WorldLodDistTrackBar.Size = new System.Drawing.Size(182, 45);
-            this.WorldLodDistTrackBar.TabIndex = 59;
-            this.WorldLodDistTrackBar.TickFrequency = 2;
-            this.WorldLodDistTrackBar.Value = 10;
-            this.WorldLodDistTrackBar.Visible = false;
-            this.WorldLodDistTrackBar.Scroll += new System.EventHandler(this.WorldLodDistTrackBar_Scroll);
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(1, 9);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(55, 13);
-            this.label15.TabIndex = 58;
-            this.label15.Text = "Max LOD:";
-            // 
-            // WorldMaxLodComboBox
-            // 
-            this.WorldMaxLodComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.WorldMaxLodComboBox.FormattingEnabled = true;
-            this.WorldMaxLodComboBox.Items.AddRange(new object[] {
-            "ORPHANHD",
-            "HD",
-            "LOD",
-            "SLOD1",
-            "SLOD2",
-            "SLOD3",
-            "SLOD4"});
-            this.WorldMaxLodComboBox.Location = new System.Drawing.Point(62, 6);
-            this.WorldMaxLodComboBox.Name = "WorldMaxLodComboBox";
-            this.WorldMaxLodComboBox.Size = new System.Drawing.Size(126, 21);
-            this.WorldMaxLodComboBox.TabIndex = 57;
-            this.WorldMaxLodComboBox.SelectedIndexChanged += new System.EventHandler(this.WorldMaxLodComboBox_SelectedIndexChanged);
-            this.WorldMaxLodComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.WorldMaxLodComboBox_KeyPress);
-            // 
-            // ViewYmapsTabPage
-            // 
-            this.ViewYmapsTabPage.Controls.Add(this.ShowYmapChildrenCheckBox);
-            this.ViewYmapsTabPage.Controls.Add(this.label2);
-            this.ViewYmapsTabPage.Controls.Add(this.DetailTrackBar);
-            this.ViewYmapsTabPage.Controls.Add(this.DynamicLODCheckBox);
-            this.ViewYmapsTabPage.Controls.Add(this.YmapsTextBox);
-            this.ViewYmapsTabPage.Location = new System.Drawing.Point(4, 22);
-            this.ViewYmapsTabPage.Name = "ViewYmapsTabPage";
-            this.ViewYmapsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.ViewYmapsTabPage.Size = new System.Drawing.Size(194, 522);
-            this.ViewYmapsTabPage.TabIndex = 1;
-            this.ViewYmapsTabPage.Text = "Ymaps";
-            this.ViewYmapsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // ShowYmapChildrenCheckBox
-            // 
-            this.ShowYmapChildrenCheckBox.AutoSize = true;
-            this.ShowYmapChildrenCheckBox.Enabled = false;
-            this.ShowYmapChildrenCheckBox.Location = new System.Drawing.Point(6, 59);
-            this.ShowYmapChildrenCheckBox.Name = "ShowYmapChildrenCheckBox";
-            this.ShowYmapChildrenCheckBox.Size = new System.Drawing.Size(93, 17);
-            this.ShowYmapChildrenCheckBox.TabIndex = 35;
-            this.ShowYmapChildrenCheckBox.Text = "Show children";
-            this.ShowYmapChildrenCheckBox.UseVisualStyleBackColor = true;
-            this.ShowYmapChildrenCheckBox.CheckedChanged += new System.EventHandler(this.ShowYmapChildrenCheckBox_CheckedChanged);
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 88);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(77, 13);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Ymaps to load:";
-            // 
-            // DetailTrackBar
-            // 
-            this.DetailTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.DetailTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.DetailTrackBar.Location = new System.Drawing.Point(6, 24);
-            this.DetailTrackBar.Maximum = 20;
-            this.DetailTrackBar.Name = "DetailTrackBar";
-            this.DetailTrackBar.Size = new System.Drawing.Size(182, 45);
-            this.DetailTrackBar.TabIndex = 34;
-            this.DetailTrackBar.Value = 5;
-            this.DetailTrackBar.Scroll += new System.EventHandler(this.DetailTrackBar_Scroll);
-            // 
-            // DynamicLODCheckBox
-            // 
-            this.DynamicLODCheckBox.AutoSize = true;
-            this.DynamicLODCheckBox.Checked = true;
-            this.DynamicLODCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.DynamicLODCheckBox.Location = new System.Drawing.Point(6, 6);
-            this.DynamicLODCheckBox.Name = "DynamicLODCheckBox";
-            this.DynamicLODCheckBox.Size = new System.Drawing.Size(92, 17);
-            this.DynamicLODCheckBox.TabIndex = 33;
-            this.DynamicLODCheckBox.Text = "Dynamic LOD";
-            this.DynamicLODCheckBox.UseVisualStyleBackColor = true;
-            this.DynamicLODCheckBox.CheckedChanged += new System.EventHandler(this.DynamicLODCheckBox_CheckedChanged);
-            // 
-            // YmapsTextBox
-            // 
-            this.YmapsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.YmapsTextBox.Location = new System.Drawing.Point(0, 104);
-            this.YmapsTextBox.Multiline = true;
-            this.YmapsTextBox.Name = "YmapsTextBox";
-            this.YmapsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.YmapsTextBox.Size = new System.Drawing.Size(194, 418);
-            this.YmapsTextBox.TabIndex = 36;
-            this.YmapsTextBox.Text = resources.GetString("YmapsTextBox.Text");
-            this.YmapsTextBox.TextChanged += new System.EventHandler(this.YmapsTextBox_TextChanged);
-            // 
-            // ViewModelTabPage
-            // 
-            this.ViewModelTabPage.Controls.Add(this.label1);
-            this.ViewModelTabPage.Controls.Add(this.ModelComboBox);
-            this.ViewModelTabPage.Location = new System.Drawing.Point(4, 22);
-            this.ViewModelTabPage.Name = "ViewModelTabPage";
-            this.ViewModelTabPage.Size = new System.Drawing.Size(194, 522);
-            this.ViewModelTabPage.TabIndex = 2;
-            this.ViewModelTabPage.Text = "Model";
-            this.ViewModelTabPage.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(-1, 10);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(39, 13);
-            this.label1.TabIndex = 5;
-            this.label1.Text = "Model:";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 8);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(37, 13);
-            this.label3.TabIndex = 11;
-            this.label3.Text = "Mode:";
-            // 
-            // ViewModeComboBox
-            // 
-            this.ViewModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ViewModeComboBox.FormattingEnabled = true;
-            this.ViewModeComboBox.Items.AddRange(new object[] {
-            "World view",
-            "Ymap view",
-            "Model view"});
-            this.ViewModeComboBox.Location = new System.Drawing.Point(48, 5);
-            this.ViewModeComboBox.Name = "ViewModeComboBox";
-            this.ViewModeComboBox.Size = new System.Drawing.Size(111, 21);
-            this.ViewModeComboBox.TabIndex = 10;
-            this.ViewModeComboBox.SelectedIndexChanged += new System.EventHandler(this.ViewModeComboBox_SelectedIndexChanged);
-            this.ViewModeComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ViewModeComboBox_KeyPress);
-            // 
-            // ShowToolbarCheckBox
-            // 
-            this.ShowToolbarCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ShowToolbarCheckBox.AutoSize = true;
-            this.ShowToolbarCheckBox.Location = new System.Drawing.Point(10, 586);
-            this.ShowToolbarCheckBox.Name = "ShowToolbarCheckBox";
-            this.ShowToolbarCheckBox.Size = new System.Drawing.Size(108, 17);
-            this.ShowToolbarCheckBox.TabIndex = 47;
-            this.ShowToolbarCheckBox.Text = "Show Toolbar (T)";
-            this.ShowToolbarCheckBox.UseVisualStyleBackColor = true;
-            this.ShowToolbarCheckBox.CheckedChanged += new System.EventHandler(this.ShowToolbarCheckBox_CheckedChanged);
-            // 
-            // MarkersTabPage
-            // 
-            this.MarkersTabPage.Controls.Add(this.label27);
-            this.MarkersTabPage.Controls.Add(this.CameraPositionTextBox);
-            this.MarkersTabPage.Controls.Add(this.AddSelectionMarkerButton);
-            this.MarkersTabPage.Controls.Add(this.AddCurrentPositonMarkerButton);
-            this.MarkersTabPage.Controls.Add(this.ResetMarkersButton);
-            this.MarkersTabPage.Controls.Add(this.ClearMarkersButton);
-            this.MarkersTabPage.Controls.Add(this.GoToButton);
-            this.MarkersTabPage.Controls.Add(this.ShowLocatorCheckBox);
-            this.MarkersTabPage.Controls.Add(this.label6);
-            this.MarkersTabPage.Controls.Add(this.LocateTextBox);
-            this.MarkersTabPage.Controls.Add(this.label7);
-            this.MarkersTabPage.Controls.Add(this.AddMarkersButton);
-            this.MarkersTabPage.Controls.Add(this.MultiFindTextBox);
-            this.MarkersTabPage.Location = new System.Drawing.Point(4, 22);
-            this.MarkersTabPage.Name = "MarkersTabPage";
-            this.MarkersTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.MarkersTabPage.Size = new System.Drawing.Size(205, 606);
-            this.MarkersTabPage.TabIndex = 1;
-            this.MarkersTabPage.Text = "Markers";
-            this.MarkersTabPage.UseVisualStyleBackColor = true;
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(-2, 50);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(121, 13);
-            this.label27.TabIndex = 22;
-            this.label27.Text = "Current camera position:";
-            // 
-            // CameraPositionTextBox
-            // 
-            this.CameraPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CameraPositionTextBox.Location = new System.Drawing.Point(0, 67);
-            this.CameraPositionTextBox.Name = "CameraPositionTextBox";
-            this.CameraPositionTextBox.Size = new System.Drawing.Size(205, 20);
-            this.CameraPositionTextBox.TabIndex = 16;
-            this.CameraPositionTextBox.Text = "0, 0, 0";
-            // 
-            // AddSelectionMarkerButton
-            // 
-            this.AddSelectionMarkerButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.AddSelectionMarkerButton.Location = new System.Drawing.Point(0, 536);
-            this.AddSelectionMarkerButton.Name = "AddSelectionMarkerButton";
-            this.AddSelectionMarkerButton.Size = new System.Drawing.Size(97, 23);
-            this.AddSelectionMarkerButton.TabIndex = 22;
-            this.AddSelectionMarkerButton.Text = "Add selection";
-            this.AddSelectionMarkerButton.UseVisualStyleBackColor = true;
-            this.AddSelectionMarkerButton.Click += new System.EventHandler(this.AddSelectionMarkerButton_Click);
-            // 
-            // AddCurrentPositonMarkerButton
-            // 
-            this.AddCurrentPositonMarkerButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.AddCurrentPositonMarkerButton.Location = new System.Drawing.Point(0, 507);
-            this.AddCurrentPositonMarkerButton.Name = "AddCurrentPositonMarkerButton";
-            this.AddCurrentPositonMarkerButton.Size = new System.Drawing.Size(97, 23);
-            this.AddCurrentPositonMarkerButton.TabIndex = 20;
-            this.AddCurrentPositonMarkerButton.Text = "Add current pos";
-            this.AddCurrentPositonMarkerButton.UseVisualStyleBackColor = true;
-            this.AddCurrentPositonMarkerButton.Click += new System.EventHandler(this.AddCurrentPositonMarkerButton_Click);
-            // 
-            // ResetMarkersButton
-            // 
-            this.ResetMarkersButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ResetMarkersButton.Location = new System.Drawing.Point(108, 507);
-            this.ResetMarkersButton.Name = "ResetMarkersButton";
-            this.ResetMarkersButton.Size = new System.Drawing.Size(97, 23);
-            this.ResetMarkersButton.TabIndex = 21;
-            this.ResetMarkersButton.Text = "Default markers";
-            this.ResetMarkersButton.UseVisualStyleBackColor = true;
-            this.ResetMarkersButton.Click += new System.EventHandler(this.ResetMarkersButton_Click);
-            // 
-            // ClearMarkersButton
-            // 
-            this.ClearMarkersButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.ClearMarkersButton.Location = new System.Drawing.Point(108, 478);
-            this.ClearMarkersButton.Name = "ClearMarkersButton";
-            this.ClearMarkersButton.Size = new System.Drawing.Size(97, 23);
-            this.ClearMarkersButton.TabIndex = 19;
-            this.ClearMarkersButton.Text = "Clear markers";
-            this.ClearMarkersButton.UseVisualStyleBackColor = true;
-            this.ClearMarkersButton.Click += new System.EventHandler(this.ClearMarkersButton_Click);
-            // 
-            // GoToButton
-            // 
-            this.GoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.GoToButton.Location = new System.Drawing.Point(162, 24);
-            this.GoToButton.Name = "GoToButton";
-            this.GoToButton.Size = new System.Drawing.Size(43, 22);
-            this.GoToButton.TabIndex = 15;
-            this.GoToButton.Text = "Go to";
-            this.GoToButton.UseVisualStyleBackColor = true;
-            this.GoToButton.Click += new System.EventHandler(this.GoToButton_Click);
-            // 
-            // ShowLocatorCheckBox
-            // 
-            this.ShowLocatorCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ShowLocatorCheckBox.AutoSize = true;
-            this.ShowLocatorCheckBox.Location = new System.Drawing.Point(101, 8);
-            this.ShowLocatorCheckBox.Name = "ShowLocatorCheckBox";
-            this.ShowLocatorCheckBox.Size = new System.Drawing.Size(88, 17);
-            this.ShowLocatorCheckBox.TabIndex = 13;
-            this.ShowLocatorCheckBox.Text = "Show marker";
-            this.ShowLocatorCheckBox.UseVisualStyleBackColor = true;
-            this.ShowLocatorCheckBox.CheckedChanged += new System.EventHandler(this.ShowLocatorCheckBox_CheckedChanged);
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(-2, 8);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(79, 13);
-            this.label6.TabIndex = 13;
-            this.label6.Text = "Locate: X, Y, Z";
-            // 
-            // LocateTextBox
-            // 
-            this.LocateTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.LocateTextBox.Location = new System.Drawing.Point(0, 25);
-            this.LocateTextBox.Name = "LocateTextBox";
-            this.LocateTextBox.Size = new System.Drawing.Size(156, 20);
-            this.LocateTextBox.TabIndex = 14;
-            this.LocateTextBox.Text = "0, 0, 0";
-            this.LocateTextBox.TextChanged += new System.EventHandler(this.LocateTextBox_TextChanged);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(-2, 101);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(122, 13);
-            this.label7.TabIndex = 11;
-            this.label7.Text = "Multi-find: X, Y, Z, Name";
-            // 
-            // AddMarkersButton
-            // 
-            this.AddMarkersButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.AddMarkersButton.Location = new System.Drawing.Point(0, 478);
-            this.AddMarkersButton.Name = "AddMarkersButton";
-            this.AddMarkersButton.Size = new System.Drawing.Size(97, 23);
-            this.AddMarkersButton.TabIndex = 18;
-            this.AddMarkersButton.Text = "Add markers";
-            this.AddMarkersButton.UseVisualStyleBackColor = true;
-            this.AddMarkersButton.Click += new System.EventHandler(this.AddMarkersButton_Click);
-            // 
-            // MultiFindTextBox
-            // 
-            this.MultiFindTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.MultiFindTextBox.Location = new System.Drawing.Point(0, 117);
-            this.MultiFindTextBox.MaxLength = 1048576;
-            this.MultiFindTextBox.Multiline = true;
-            this.MultiFindTextBox.Name = "MultiFindTextBox";
-            this.MultiFindTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.MultiFindTextBox.Size = new System.Drawing.Size(205, 355);
-            this.MultiFindTextBox.TabIndex = 17;
-            // 
-            // SelectionTabPage
-            // 
-            this.SelectionTabPage.Controls.Add(this.label25);
-            this.SelectionTabPage.Controls.Add(this.SelectionModeComboBox);
-            this.SelectionTabPage.Controls.Add(this.SelectionNameTextBox);
-            this.SelectionTabPage.Controls.Add(this.SelectionTabControl);
-            this.SelectionTabPage.Controls.Add(this.MouseSelectCheckBox);
-            this.SelectionTabPage.Location = new System.Drawing.Point(4, 22);
-            this.SelectionTabPage.Name = "SelectionTabPage";
-            this.SelectionTabPage.Size = new System.Drawing.Size(205, 606);
-            this.SelectionTabPage.TabIndex = 2;
-            this.SelectionTabPage.Text = "Selection";
-            this.SelectionTabPage.UseVisualStyleBackColor = true;
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(6, 33);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(37, 13);
-            this.label25.TabIndex = 28;
-            this.label25.Text = "Mode:";
-            // 
-            // SelectionModeComboBox
-            // 
-            this.SelectionModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.SelectionModeComboBox.FormattingEnabled = true;
-            this.SelectionModeComboBox.Items.AddRange(new object[] {
-            "Entity",
-            "Entity Extension",
-            "Archetype Extension",
-            "Time Cycle Modifier",
-            "Car Generator",
-            "Grass",
-            "Water Quad",
-            "Water Calming Quad",
-            "Water Wave Quad",
-            "Collision",
-            "Nav Mesh",
-            "Path",
-            "Train Track",
-            "Lod Lights",
-            "Mlo Instance",
-            "Scenario",
-            "Audio",
-            "Occlusion"});
-            this.SelectionModeComboBox.Location = new System.Drawing.Point(51, 30);
-            this.SelectionModeComboBox.Name = "SelectionModeComboBox";
-            this.SelectionModeComboBox.Size = new System.Drawing.Size(121, 21);
-            this.SelectionModeComboBox.TabIndex = 23;
-            this.SelectionModeComboBox.SelectedIndexChanged += new System.EventHandler(this.SelectionModeComboBox_SelectedIndexChanged);
-            this.SelectionModeComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SelectionModeComboBox_KeyPress);
-            // 
-            // SelectionNameTextBox
-            // 
-            this.SelectionNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelectionNameTextBox.BackColor = System.Drawing.Color.White;
-            this.SelectionNameTextBox.Location = new System.Drawing.Point(3, 66);
-            this.SelectionNameTextBox.Name = "SelectionNameText";
-            this.SelectionNameTextBox.ReadOnly = true;
-            this.SelectionNameTextBox.Size = new System.Drawing.Size(199, 20);
-            this.SelectionNameTextBox.TabIndex = 26;
-            this.SelectionNameTextBox.Text = "Nothing selected";
-            // 
-            // SelectionTabControl
-            // 
-            this.SelectionTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelectionTabControl.Controls.Add(this.SelectionEntityTabPage);
-            this.SelectionTabControl.Controls.Add(this.SelectionArchetypeTabPage);
-            this.SelectionTabControl.Controls.Add(this.SelectionDrawableTabPage);
-            this.SelectionTabControl.Controls.Add(this.SelectionExtensionTabPage);
-            this.SelectionTabControl.Location = new System.Drawing.Point(0, 95);
-            this.SelectionTabControl.Margin = new System.Windows.Forms.Padding(0);
-            this.SelectionTabControl.Name = "SelectionTabControl";
-            this.SelectionTabControl.SelectedIndex = 0;
-            this.SelectionTabControl.Size = new System.Drawing.Size(205, 511);
-            this.SelectionTabControl.TabIndex = 28;
-            // 
-            // SelectionEntityTabPage
-            // 
-            this.SelectionEntityTabPage.Controls.Add(this.SelEntityPropertyGrid);
-            this.SelectionEntityTabPage.Location = new System.Drawing.Point(4, 22);
-            this.SelectionEntityTabPage.Name = "SelectionEntityTabPage";
-            this.SelectionEntityTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.SelectionEntityTabPage.Size = new System.Drawing.Size(197, 485);
-            this.SelectionEntityTabPage.TabIndex = 0;
-            this.SelectionEntityTabPage.Text = "Entity";
-            this.SelectionEntityTabPage.UseVisualStyleBackColor = true;
-            // 
-            // SelEntityPropertyGrid
-            // 
-            this.SelEntityPropertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelEntityPropertyGrid.HelpVisible = false;
-            this.SelEntityPropertyGrid.Location = new System.Drawing.Point(0, 6);
-            this.SelEntityPropertyGrid.Name = "SelEntityPropertyGrid";
-            this.SelEntityPropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-            this.SelEntityPropertyGrid.ReadOnly = true;
-            this.SelEntityPropertyGrid.Size = new System.Drawing.Size(197, 476);
-            this.SelEntityPropertyGrid.TabIndex = 35;
-            this.SelEntityPropertyGrid.ToolbarVisible = false;
-            // 
-            // SelectionArchetypeTabPage
-            // 
-            this.SelectionArchetypeTabPage.Controls.Add(this.SelArchetypePropertyGrid);
-            this.SelectionArchetypeTabPage.Location = new System.Drawing.Point(4, 22);
-            this.SelectionArchetypeTabPage.Name = "SelectionArchetypeTabPage";
-            this.SelectionArchetypeTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.SelectionArchetypeTabPage.Size = new System.Drawing.Size(197, 485);
-            this.SelectionArchetypeTabPage.TabIndex = 1;
-            this.SelectionArchetypeTabPage.Text = "Archetype";
-            this.SelectionArchetypeTabPage.UseVisualStyleBackColor = true;
-            // 
-            // SelArchetypePropertyGrid
-            // 
-            this.SelArchetypePropertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelArchetypePropertyGrid.HelpVisible = false;
-            this.SelArchetypePropertyGrid.Location = new System.Drawing.Point(0, 6);
-            this.SelArchetypePropertyGrid.Name = "SelArchetypePropertyGrid";
-            this.SelArchetypePropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-            this.SelArchetypePropertyGrid.ReadOnly = true;
-            this.SelArchetypePropertyGrid.Size = new System.Drawing.Size(197, 476);
-            this.SelArchetypePropertyGrid.TabIndex = 36;
-            this.SelArchetypePropertyGrid.ToolbarVisible = false;
-            // 
-            // SelectionDrawableTabPage
-            // 
-            this.SelectionDrawableTabPage.Controls.Add(this.tabControl3);
-            this.SelectionDrawableTabPage.Location = new System.Drawing.Point(4, 22);
-            this.SelectionDrawableTabPage.Margin = new System.Windows.Forms.Padding(0);
-            this.SelectionDrawableTabPage.Name = "SelectionDrawableTabPage";
-            this.SelectionDrawableTabPage.Size = new System.Drawing.Size(197, 485);
-            this.SelectionDrawableTabPage.TabIndex = 2;
-            this.SelectionDrawableTabPage.Text = "Drawable";
-            this.SelectionDrawableTabPage.UseVisualStyleBackColor = true;
-            // 
-            // tabControl3
-            // 
-            this.tabControl3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tabControl3.Controls.Add(this.tabPage11);
-            this.tabControl3.Controls.Add(this.tabPage12);
-            this.tabControl3.Controls.Add(this.tabPage13);
-            this.tabControl3.Location = new System.Drawing.Point(-4, 7);
-            this.tabControl3.Name = "tabControl3";
-            this.tabControl3.SelectedIndex = 0;
-            this.tabControl3.Size = new System.Drawing.Size(205, 478);
-            this.tabControl3.TabIndex = 28;
-            // 
-            // tabPage11
-            // 
-            this.tabPage11.Controls.Add(this.SelDrawablePropertyGrid);
-            this.tabPage11.Location = new System.Drawing.Point(4, 22);
-            this.tabPage11.Margin = new System.Windows.Forms.Padding(0);
-            this.tabPage11.Name = "tabPage11";
-            this.tabPage11.Size = new System.Drawing.Size(197, 452);
-            this.tabPage11.TabIndex = 0;
-            this.tabPage11.Text = "Info";
-            this.tabPage11.UseVisualStyleBackColor = true;
-            // 
-            // SelDrawablePropertyGrid
-            // 
-            this.SelDrawablePropertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelDrawablePropertyGrid.HelpVisible = false;
-            this.SelDrawablePropertyGrid.Location = new System.Drawing.Point(0, 0);
-            this.SelDrawablePropertyGrid.Name = "SelDrawablePropertyGrid";
-            this.SelDrawablePropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-            this.SelDrawablePropertyGrid.ReadOnly = true;
-            this.SelDrawablePropertyGrid.Size = new System.Drawing.Size(197, 452);
-            this.SelDrawablePropertyGrid.TabIndex = 37;
-            this.SelDrawablePropertyGrid.ToolbarVisible = false;
-            // 
-            // tabPage12
-            // 
-            this.tabPage12.Controls.Add(this.SelDrawableModelsTreeView);
-            this.tabPage12.Location = new System.Drawing.Point(4, 22);
-            this.tabPage12.Name = "tabPage12";
-            this.tabPage12.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage12.Size = new System.Drawing.Size(197, 452);
-            this.tabPage12.TabIndex = 1;
-            this.tabPage12.Text = "Models";
-            this.tabPage12.UseVisualStyleBackColor = true;
-            // 
-            // SelDrawableModelsTreeView
-            // 
-            this.SelDrawableModelsTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelDrawableModelsTreeView.CheckBoxes = true;
-            this.SelDrawableModelsTreeView.Location = new System.Drawing.Point(0, 0);
-            this.SelDrawableModelsTreeView.Name = "SelDrawableModelsTreeView";
-            this.SelDrawableModelsTreeView.ShowRootLines = false;
-            this.SelDrawableModelsTreeView.Size = new System.Drawing.Size(197, 452);
-            this.SelDrawableModelsTreeView.TabIndex = 39;
-            this.SelDrawableModelsTreeView.AfterCheck += new System.Windows.Forms.TreeViewEventHandler(this.SelDrawableModelsTreeView_AfterCheck);
-            this.SelDrawableModelsTreeView.NodeMouseDoubleClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.SelDrawableModelsTreeView_NodeMouseDoubleClick);
-            this.SelDrawableModelsTreeView.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SelDrawableModelsTreeView_KeyPress);
-            // 
-            // tabPage13
-            // 
-            this.tabPage13.Controls.Add(this.SelDrawableTexturesTreeView);
-            this.tabPage13.Location = new System.Drawing.Point(4, 22);
-            this.tabPage13.Name = "tabPage13";
-            this.tabPage13.Size = new System.Drawing.Size(197, 452);
-            this.tabPage13.TabIndex = 2;
-            this.tabPage13.Text = "Textures";
-            this.tabPage13.UseVisualStyleBackColor = true;
-            // 
-            // SelDrawableTexturesTreeView
-            // 
-            this.SelDrawableTexturesTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelDrawableTexturesTreeView.Location = new System.Drawing.Point(0, 0);
-            this.SelDrawableTexturesTreeView.Name = "SelDrawableTexturesTreeView";
-            this.SelDrawableTexturesTreeView.ShowRootLines = false;
-            this.SelDrawableTexturesTreeView.Size = new System.Drawing.Size(197, 452);
-            this.SelDrawableTexturesTreeView.TabIndex = 40;
-            // 
-            // SelectionExtensionTabPage
-            // 
-            this.SelectionExtensionTabPage.Controls.Add(this.SelExtensionPropertyGrid);
-            this.SelectionExtensionTabPage.Location = new System.Drawing.Point(4, 22);
-            this.SelectionExtensionTabPage.Name = "SelectionExtensionTabPage";
-            this.SelectionExtensionTabPage.Size = new System.Drawing.Size(197, 485);
-            this.SelectionExtensionTabPage.TabIndex = 3;
-            this.SelectionExtensionTabPage.Text = "Ext";
-            this.SelectionExtensionTabPage.UseVisualStyleBackColor = true;
-            // 
-            // SelExtensionPropertyGrid
-            // 
-            this.SelExtensionPropertyGrid.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelExtensionPropertyGrid.HelpVisible = false;
-            this.SelExtensionPropertyGrid.Location = new System.Drawing.Point(0, 6);
-            this.SelExtensionPropertyGrid.Name = "SelExtensionPropertyGrid";
-            this.SelExtensionPropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
-            this.SelExtensionPropertyGrid.ReadOnly = true;
-            this.SelExtensionPropertyGrid.Size = new System.Drawing.Size(197, 476);
-            this.SelExtensionPropertyGrid.TabIndex = 36;
-            this.SelExtensionPropertyGrid.ToolbarVisible = false;
-            // 
-            // MouseSelectCheckBox
-            // 
-            this.MouseSelectCheckBox.AutoSize = true;
-            this.MouseSelectCheckBox.Location = new System.Drawing.Point(8, 7);
-            this.MouseSelectCheckBox.Name = "MouseSelectCheckBox";
-            this.MouseSelectCheckBox.Size = new System.Drawing.Size(143, 17);
-            this.MouseSelectCheckBox.TabIndex = 22;
-            this.MouseSelectCheckBox.Text = "Mouse select (right click)";
-            this.MouseSelectCheckBox.UseVisualStyleBackColor = true;
-            this.MouseSelectCheckBox.CheckedChanged += new System.EventHandler(this.MouseSelectCheckBox_CheckedChanged);
-            // 
-            // OptionsTabPage
-            // 
-            this.OptionsTabPage.Controls.Add(this.OptionsTabControl);
-            this.OptionsTabPage.Controls.Add(this.StatusBarCheckBox);
-            this.OptionsTabPage.Controls.Add(this.QuitButton);
-            this.OptionsTabPage.Controls.Add(this.ReloadSettingsButton);
-            this.OptionsTabPage.Controls.Add(this.SaveSettingsButton);
-            this.OptionsTabPage.Controls.Add(this.ReloadShadersButton);
-            this.OptionsTabPage.Controls.Add(this.ErrorConsoleCheckBox);
-            this.OptionsTabPage.Location = new System.Drawing.Point(4, 22);
-            this.OptionsTabPage.Name = "OptionsTabPage";
-            this.OptionsTabPage.Size = new System.Drawing.Size(205, 606);
-            this.OptionsTabPage.TabIndex = 3;
-            this.OptionsTabPage.Text = "Options";
-            this.OptionsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // OptionsTabControl
-            // 
-            this.OptionsTabControl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.OptionsTabControl.Controls.Add(this.OptionsGeneralTabPage);
-            this.OptionsTabControl.Controls.Add(this.OptionsRenderTabPage);
-            this.OptionsTabControl.Controls.Add(this.OptionsHelpersTabPage);
-            this.OptionsTabControl.Controls.Add(this.OptionsLightingTabPage);
-            this.OptionsTabControl.Location = new System.Drawing.Point(0, 3);
-            this.OptionsTabControl.Name = "OptionsTabControl";
-            this.OptionsTabControl.SelectedIndex = 0;
-            this.OptionsTabControl.Size = new System.Drawing.Size(208, 508);
-            this.OptionsTabControl.TabIndex = 50;
-            // 
-            // OptionsGeneralTabPage
-            // 
-            this.OptionsGeneralTabPage.Controls.Add(this.CarGeneratorsCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.RenderEntitiesCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.AdvancedSettingsButton);
-            this.OptionsGeneralTabPage.Controls.Add(this.ControlSettingsButton);
-            this.OptionsGeneralTabPage.Controls.Add(this.MapViewDetailLabel);
-            this.OptionsGeneralTabPage.Controls.Add(this.label28);
-            this.OptionsGeneralTabPage.Controls.Add(this.MapViewDetailTrackBar);
-            this.OptionsGeneralTabPage.Controls.Add(this.CameraModeComboBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.label24);
-            this.OptionsGeneralTabPage.Controls.Add(this.WaterQuadsCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.FieldOfViewLabel);
-            this.OptionsGeneralTabPage.Controls.Add(this.label22);
-            this.OptionsGeneralTabPage.Controls.Add(this.TimedEntitiesAlwaysOnCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.GrassCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.InteriorsCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayerDrawableCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayer2CheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayer1CheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.label13);
-            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshLayer0CheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.label12);
-            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshRangeTrackBar);
-            this.OptionsGeneralTabPage.Controls.Add(this.CollisionMeshesCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.FullScreenCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.TimedEntitiesCheckBox);
-            this.OptionsGeneralTabPage.Controls.Add(this.FieldOfViewTrackBar);
-            this.OptionsGeneralTabPage.Location = new System.Drawing.Point(4, 22);
-            this.OptionsGeneralTabPage.Name = "OptionsGeneralTabPage";
-            this.OptionsGeneralTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.OptionsGeneralTabPage.Size = new System.Drawing.Size(200, 482);
-            this.OptionsGeneralTabPage.TabIndex = 0;
-            this.OptionsGeneralTabPage.Text = "General";
-            this.OptionsGeneralTabPage.UseVisualStyleBackColor = true;
-            // 
-            // CarGeneratorsCheckBox
-            // 
-            this.CarGeneratorsCheckBox.AutoSize = true;
-            this.CarGeneratorsCheckBox.Location = new System.Drawing.Point(10, 72);
-            this.CarGeneratorsCheckBox.Name = "CarGeneratorsCheckBox";
-            this.CarGeneratorsCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.CarGeneratorsCheckBox.TabIndex = 31;
-            this.CarGeneratorsCheckBox.Text = "Show car generators";
-            this.CarGeneratorsCheckBox.UseVisualStyleBackColor = true;
-            this.CarGeneratorsCheckBox.CheckedChanged += new System.EventHandler(this.CarGeneratorsCheckBox_CheckedChanged);
-            // 
-            // RenderEntitiesCheckBox
-            // 
-            this.RenderEntitiesCheckBox.AutoSize = true;
-            this.RenderEntitiesCheckBox.Checked = true;
-            this.RenderEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.RenderEntitiesCheckBox.Location = new System.Drawing.Point(10, 30);
-            this.RenderEntitiesCheckBox.Name = "RenderEntitiesCheckBox";
-            this.RenderEntitiesCheckBox.Size = new System.Drawing.Size(89, 17);
-            this.RenderEntitiesCheckBox.TabIndex = 29;
-            this.RenderEntitiesCheckBox.Text = "Show entities";
-            this.RenderEntitiesCheckBox.UseVisualStyleBackColor = true;
-            this.RenderEntitiesCheckBox.CheckedChanged += new System.EventHandler(this.RenderEntitiesCheckBox_CheckedChanged);
-            // 
-            // AdvancedSettingsButton
-            // 
-            this.AdvancedSettingsButton.Location = new System.Drawing.Point(101, 456);
-            this.AdvancedSettingsButton.Name = "AdvancedSettingsButton";
-            this.AdvancedSettingsButton.Size = new System.Drawing.Size(93, 23);
-            this.AdvancedSettingsButton.TabIndex = 46;
-            this.AdvancedSettingsButton.Text = "Advanced...";
-            this.AdvancedSettingsButton.UseVisualStyleBackColor = true;
-            this.AdvancedSettingsButton.Click += new System.EventHandler(this.AdvancedSettingsButton_Click);
-            // 
-            // ControlSettingsButton
-            // 
-            this.ControlSettingsButton.Location = new System.Drawing.Point(2, 456);
-            this.ControlSettingsButton.Name = "ControlSettingsButton";
-            this.ControlSettingsButton.Size = new System.Drawing.Size(93, 23);
-            this.ControlSettingsButton.TabIndex = 45;
-            this.ControlSettingsButton.Text = "Controls...";
-            this.ControlSettingsButton.UseVisualStyleBackColor = true;
-            this.ControlSettingsButton.Click += new System.EventHandler(this.ControlSettingsButton_Click);
-            // 
-            // MapViewDetailLabel
-            // 
-            this.MapViewDetailLabel.AutoSize = true;
-            this.MapViewDetailLabel.Location = new System.Drawing.Point(94, 391);
-            this.MapViewDetailLabel.Name = "MapViewDetailLabel";
-            this.MapViewDetailLabel.Size = new System.Drawing.Size(22, 13);
-            this.MapViewDetailLabel.TabIndex = 66;
-            this.MapViewDetailLabel.Text = "1.0";
-            // 
-            // label28
-            // 
-            this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(4, 391);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(84, 13);
-            this.label28.TabIndex = 65;
-            this.label28.Text = "Map view detail:";
-            // 
-            // MapViewDetailTrackBar
-            // 
-            this.MapViewDetailTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.MapViewDetailTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.MapViewDetailTrackBar.Enabled = false;
-            this.MapViewDetailTrackBar.LargeChange = 1;
-            this.MapViewDetailTrackBar.Location = new System.Drawing.Point(6, 407);
-            this.MapViewDetailTrackBar.Maximum = 30;
-            this.MapViewDetailTrackBar.Minimum = 2;
-            this.MapViewDetailTrackBar.Name = "MapViewDetailTrackBar";
-            this.MapViewDetailTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.MapViewDetailTrackBar.TabIndex = 44;
-            this.MapViewDetailTrackBar.TickFrequency = 2;
-            this.MapViewDetailTrackBar.Value = 10;
-            this.MapViewDetailTrackBar.Scroll += new System.EventHandler(this.MapViewDetailTrackBar_Scroll);
-            // 
-            // CameraModeComboBox
-            // 
-            this.CameraModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CameraModeComboBox.FormattingEnabled = true;
-            this.CameraModeComboBox.Items.AddRange(new object[] {
-            "Perspective",
-            "Orthographic",
-            "2D Map"});
-            this.CameraModeComboBox.Location = new System.Drawing.Point(82, 305);
-            this.CameraModeComboBox.Name = "CameraModeComboBox";
-            this.CameraModeComboBox.Size = new System.Drawing.Size(112, 21);
-            this.CameraModeComboBox.TabIndex = 42;
-            this.CameraModeComboBox.SelectedIndexChanged += new System.EventHandler(this.CameraModeComboBox_SelectedIndexChanged);
-            this.CameraModeComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CameraModeComboBox_KeyPress);
-            // 
-            // label24
-            // 
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(4, 308);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(75, 13);
-            this.label24.TabIndex = 63;
-            this.label24.Text = "Camera mode:";
-            // 
-            // WaterQuadsCheckBox
-            // 
-            this.WaterQuadsCheckBox.AutoSize = true;
-            this.WaterQuadsCheckBox.Checked = true;
-            this.WaterQuadsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WaterQuadsCheckBox.Location = new System.Drawing.Point(10, 135);
-            this.WaterQuadsCheckBox.Name = "WaterQuadsCheckBox";
-            this.WaterQuadsCheckBox.Size = new System.Drawing.Size(114, 17);
-            this.WaterQuadsCheckBox.TabIndex = 35;
-            this.WaterQuadsCheckBox.Text = "Show water quads";
-            this.WaterQuadsCheckBox.UseVisualStyleBackColor = true;
-            this.WaterQuadsCheckBox.CheckedChanged += new System.EventHandler(this.WaterQuadsCheckBox_CheckedChanged);
-            // 
-            // FieldOfViewLabel
-            // 
-            this.FieldOfViewLabel.AutoSize = true;
-            this.FieldOfViewLabel.Location = new System.Drawing.Point(79, 335);
-            this.FieldOfViewLabel.Name = "FieldOfViewLabel";
-            this.FieldOfViewLabel.Size = new System.Drawing.Size(22, 13);
-            this.FieldOfViewLabel.TabIndex = 59;
-            this.FieldOfViewLabel.Text = "1.0";
-            // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(4, 335);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(69, 13);
-            this.label22.TabIndex = 58;
-            this.label22.Text = "Field of view:";
-            // 
-            // TimedEntitiesAlwaysOnCheckBox
-            // 
-            this.TimedEntitiesAlwaysOnCheckBox.AutoSize = true;
-            this.TimedEntitiesAlwaysOnCheckBox.Location = new System.Drawing.Point(131, 93);
-            this.TimedEntitiesAlwaysOnCheckBox.Name = "TimedEntitiesAlwaysOnCheckBox";
-            this.TimedEntitiesAlwaysOnCheckBox.Size = new System.Drawing.Size(58, 17);
-            this.TimedEntitiesAlwaysOnCheckBox.TabIndex = 33;
-            this.TimedEntitiesAlwaysOnCheckBox.Text = "always";
-            this.TimedEntitiesAlwaysOnCheckBox.UseVisualStyleBackColor = true;
-            this.TimedEntitiesAlwaysOnCheckBox.CheckedChanged += new System.EventHandler(this.TimedEntitiesAlwaysOnCheckBox_CheckedChanged);
-            // 
-            // GrassCheckBox
-            // 
-            this.GrassCheckBox.AutoSize = true;
-            this.GrassCheckBox.Checked = true;
-            this.GrassCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.GrassCheckBox.Location = new System.Drawing.Point(10, 51);
-            this.GrassCheckBox.Name = "GrassCheckBox";
-            this.GrassCheckBox.Size = new System.Drawing.Size(81, 17);
-            this.GrassCheckBox.TabIndex = 30;
-            this.GrassCheckBox.Text = "Show grass";
-            this.GrassCheckBox.UseVisualStyleBackColor = true;
-            this.GrassCheckBox.CheckedChanged += new System.EventHandler(this.GrassCheckBox_CheckedChanged);
-            // 
-            // InteriorsCheckBox
-            // 
-            this.InteriorsCheckBox.AutoSize = true;
-            this.InteriorsCheckBox.Checked = true;
-            this.InteriorsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.InteriorsCheckBox.Location = new System.Drawing.Point(10, 114);
-            this.InteriorsCheckBox.Name = "InteriorsCheckBox";
-            this.InteriorsCheckBox.Size = new System.Drawing.Size(92, 17);
-            this.InteriorsCheckBox.TabIndex = 34;
-            this.InteriorsCheckBox.Text = "Show interiors";
-            this.InteriorsCheckBox.UseVisualStyleBackColor = true;
-            this.InteriorsCheckBox.CheckedChanged += new System.EventHandler(this.InteriorsCheckBox_CheckedChanged);
-            // 
-            // CollisionMeshLayerDrawableCheckBox
-            // 
-            this.CollisionMeshLayerDrawableCheckBox.AutoSize = true;
-            this.CollisionMeshLayerDrawableCheckBox.Checked = true;
-            this.CollisionMeshLayerDrawableCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayerDrawableCheckBox.Location = new System.Drawing.Point(118, 262);
-            this.CollisionMeshLayerDrawableCheckBox.Name = "CollisionMeshLayerDrawableCheckBox";
-            this.CollisionMeshLayerDrawableCheckBox.Size = new System.Drawing.Size(71, 17);
-            this.CollisionMeshLayerDrawableCheckBox.TabIndex = 41;
-            this.CollisionMeshLayerDrawableCheckBox.Text = "Drawable";
-            this.CollisionMeshLayerDrawableCheckBox.UseVisualStyleBackColor = true;
-            this.CollisionMeshLayerDrawableCheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayerDrawableCheckBox_CheckedChanged);
-            // 
-            // CollisionMeshLayer2CheckBox
-            // 
-            this.CollisionMeshLayer2CheckBox.AutoSize = true;
-            this.CollisionMeshLayer2CheckBox.Checked = true;
-            this.CollisionMeshLayer2CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayer2CheckBox.Location = new System.Drawing.Point(82, 262);
-            this.CollisionMeshLayer2CheckBox.Name = "CollisionMeshLayer2CheckBox";
-            this.CollisionMeshLayer2CheckBox.Size = new System.Drawing.Size(32, 17);
-            this.CollisionMeshLayer2CheckBox.TabIndex = 40;
-            this.CollisionMeshLayer2CheckBox.Text = "2";
-            this.CollisionMeshLayer2CheckBox.UseVisualStyleBackColor = true;
-            this.CollisionMeshLayer2CheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayer2CheckBox_CheckedChanged);
-            // 
-            // CollisionMeshLayer1CheckBox
-            // 
-            this.CollisionMeshLayer1CheckBox.AutoSize = true;
-            this.CollisionMeshLayer1CheckBox.Checked = true;
-            this.CollisionMeshLayer1CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayer1CheckBox.Location = new System.Drawing.Point(46, 262);
-            this.CollisionMeshLayer1CheckBox.Name = "CollisionMeshLayer1CheckBox";
-            this.CollisionMeshLayer1CheckBox.Size = new System.Drawing.Size(32, 17);
-            this.CollisionMeshLayer1CheckBox.TabIndex = 39;
-            this.CollisionMeshLayer1CheckBox.Text = "1";
-            this.CollisionMeshLayer1CheckBox.UseVisualStyleBackColor = true;
-            this.CollisionMeshLayer1CheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayer1CheckBox_CheckedChanged);
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(4, 244);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(106, 13);
-            this.label13.TabIndex = 54;
-            this.label13.Text = "Collision mesh layers:";
-            // 
-            // CollisionMeshLayer0CheckBox
-            // 
-            this.CollisionMeshLayer0CheckBox.AutoSize = true;
-            this.CollisionMeshLayer0CheckBox.Checked = true;
-            this.CollisionMeshLayer0CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.CollisionMeshLayer0CheckBox.Location = new System.Drawing.Point(10, 262);
-            this.CollisionMeshLayer0CheckBox.Name = "CollisionMeshLayer0CheckBox";
-            this.CollisionMeshLayer0CheckBox.Size = new System.Drawing.Size(32, 17);
-            this.CollisionMeshLayer0CheckBox.TabIndex = 38;
-            this.CollisionMeshLayer0CheckBox.Text = "0";
-            this.CollisionMeshLayer0CheckBox.UseVisualStyleBackColor = true;
-            this.CollisionMeshLayer0CheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshLayer0CheckBox_CheckedChanged);
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(4, 193);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(129, 13);
-            this.label12.TabIndex = 51;
-            this.label12.Text = "Collision/nav mesh range:";
-            // 
-            // CollisionMeshRangeTrackBar
-            // 
-            this.CollisionMeshRangeTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CollisionMeshRangeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CollisionMeshRangeTrackBar.LargeChange = 1;
-            this.CollisionMeshRangeTrackBar.Location = new System.Drawing.Point(6, 209);
-            this.CollisionMeshRangeTrackBar.Maximum = 15;
-            this.CollisionMeshRangeTrackBar.Minimum = 1;
-            this.CollisionMeshRangeTrackBar.Name = "CollisionMeshRangeTrackBar";
-            this.CollisionMeshRangeTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.CollisionMeshRangeTrackBar.TabIndex = 37;
-            this.CollisionMeshRangeTrackBar.Value = 6;
-            this.CollisionMeshRangeTrackBar.Scroll += new System.EventHandler(this.CollisionMeshRangeTrackBar_Scroll);
-            // 
-            // CollisionMeshesCheckBox
-            // 
-            this.CollisionMeshesCheckBox.AutoSize = true;
-            this.CollisionMeshesCheckBox.Location = new System.Drawing.Point(10, 171);
-            this.CollisionMeshesCheckBox.Name = "CollisionMeshesCheckBox";
-            this.CollisionMeshesCheckBox.Size = new System.Drawing.Size(132, 17);
-            this.CollisionMeshesCheckBox.TabIndex = 36;
-            this.CollisionMeshesCheckBox.Text = "Show collision meshes";
-            this.CollisionMeshesCheckBox.UseVisualStyleBackColor = true;
-            this.CollisionMeshesCheckBox.CheckedChanged += new System.EventHandler(this.CollisionMeshesCheckBox_CheckedChanged);
-            // 
-            // FullScreenCheckBox
-            // 
-            this.FullScreenCheckBox.AutoSize = true;
-            this.FullScreenCheckBox.Location = new System.Drawing.Point(10, 9);
-            this.FullScreenCheckBox.Name = "FullScreenCheckBox";
-            this.FullScreenCheckBox.Size = new System.Drawing.Size(173, 17);
-            this.FullScreenCheckBox.TabIndex = 28;
-            this.FullScreenCheckBox.Text = "Full screen (borderless window)";
-            this.FullScreenCheckBox.UseVisualStyleBackColor = true;
-            this.FullScreenCheckBox.CheckedChanged += new System.EventHandler(this.FullScreenCheckBox_CheckedChanged);
-            // 
-            // TimedEntitiesCheckBox
-            // 
-            this.TimedEntitiesCheckBox.AutoSize = true;
-            this.TimedEntitiesCheckBox.Checked = true;
-            this.TimedEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.TimedEntitiesCheckBox.Location = new System.Drawing.Point(10, 93);
-            this.TimedEntitiesCheckBox.Name = "TimedEntitiesCheckBox";
-            this.TimedEntitiesCheckBox.Size = new System.Drawing.Size(117, 17);
-            this.TimedEntitiesCheckBox.TabIndex = 32;
-            this.TimedEntitiesCheckBox.Text = "Show timed entities";
-            this.TimedEntitiesCheckBox.UseVisualStyleBackColor = true;
-            this.TimedEntitiesCheckBox.CheckedChanged += new System.EventHandler(this.TimedEntitiesCheckBox_CheckedChanged);
-            // 
-            // FieldOfViewTrackBar
-            // 
-            this.FieldOfViewTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.FieldOfViewTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.FieldOfViewTrackBar.LargeChange = 1;
-            this.FieldOfViewTrackBar.Location = new System.Drawing.Point(6, 351);
-            this.FieldOfViewTrackBar.Maximum = 200;
-            this.FieldOfViewTrackBar.Minimum = 10;
-            this.FieldOfViewTrackBar.Name = "FieldOfViewTrackBar";
-            this.FieldOfViewTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.FieldOfViewTrackBar.TabIndex = 43;
-            this.FieldOfViewTrackBar.TickFrequency = 10;
-            this.FieldOfViewTrackBar.Value = 100;
-            this.FieldOfViewTrackBar.Scroll += new System.EventHandler(this.FieldOfViewTrackBar_Scroll);
-            // 
-            // OptionsRenderTabPage
-            // 
-            this.OptionsRenderTabPage.Controls.Add(this.AntiAliasingValue);
-            this.OptionsRenderTabPage.Controls.Add(label34);
-            this.OptionsRenderTabPage.Controls.Add(this.AntiAliasingTrackBar);
-            this.OptionsRenderTabPage.Controls.Add(this.FarClipUpDown);
-            this.OptionsRenderTabPage.Controls.Add(this.label32);
-            this.OptionsRenderTabPage.Controls.Add(this.NearClipUpDown);
-            this.OptionsRenderTabPage.Controls.Add(this.label31);
-            this.OptionsRenderTabPage.Controls.Add(this.HDTexturesCheckBox);
-            this.OptionsRenderTabPage.Controls.Add(this.WireframeCheckBox);
-            this.OptionsRenderTabPage.Controls.Add(this.RenderModeComboBox);
-            this.OptionsRenderTabPage.Controls.Add(this.label11);
-            this.OptionsRenderTabPage.Controls.Add(this.TextureSamplerComboBox);
-            this.OptionsRenderTabPage.Controls.Add(this.TextureCoordsComboBox);
-            this.OptionsRenderTabPage.Controls.Add(this.label10);
-            this.OptionsRenderTabPage.Controls.Add(this.AnisotropicFilteringCheckBox);
-            this.OptionsRenderTabPage.Controls.Add(this.ProxiesCheckBox);
-            this.OptionsRenderTabPage.Controls.Add(this.WaitForChildrenCheckBox);
-            this.OptionsRenderTabPage.Controls.Add(this.label14);
-            this.OptionsRenderTabPage.Location = new System.Drawing.Point(4, 22);
-            this.OptionsRenderTabPage.Name = "OptionsRenderTabPage";
-            this.OptionsRenderTabPage.Size = new System.Drawing.Size(200, 482);
-            this.OptionsRenderTabPage.TabIndex = 3;
-            this.OptionsRenderTabPage.Text = "Render";
-            this.OptionsRenderTabPage.UseVisualStyleBackColor = true;
+            StatusStrip.SuspendLayout();
+            ToolsPanel.SuspendLayout();
+            ToolsTabControl.SuspendLayout();
+            ViewTabPage.SuspendLayout();
+            ViewTabControl.SuspendLayout();
+            ViewWorldTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)WorldDetailDistTrackBar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)WorldLodDistTrackBar).BeginInit();
+            ViewYmapsTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)DetailTrackBar).BeginInit();
+            ViewModelTabPage.SuspendLayout();
+            MarkersTabPage.SuspendLayout();
+            SelectionTabPage.SuspendLayout();
+            SelectionTabControl.SuspendLayout();
+            SelectionEntityTabPage.SuspendLayout();
+            SelectionArchetypeTabPage.SuspendLayout();
+            SelectionDrawableTabPage.SuspendLayout();
+            tabControl3.SuspendLayout();
+            tabPage11.SuspendLayout();
+            tabPage12.SuspendLayout();
+            tabPage13.SuspendLayout();
+            SelectionExtensionTabPage.SuspendLayout();
+            OptionsTabPage.SuspendLayout();
+            OptionsTabControl.SuspendLayout();
+            OptionsGeneralTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)MapViewDetailTrackBar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)CollisionMeshRangeTrackBar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)FieldOfViewTrackBar).BeginInit();
+            OptionsRenderTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)AntiAliasingTrackBar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)FarClipUpDown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)NearClipUpDown).BeginInit();
+            OptionsHelpersTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)SnapAngleUpDown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)SnapGridSizeUpDown).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)BoundsRangeTrackBar).BeginInit();
+            OptionsLightingTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)CloudParamTrackBar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)TimeSpeedTrackBar).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)TimeOfDayTrackBar).BeginInit();
+            ConsolePanel.SuspendLayout();
+            SelectedMarkerPanel.SuspendLayout();
+            ToolsMenu.SuspendLayout();
+            Toolbar.SuspendLayout();
+            ToolbarPanel.SuspendLayout();
+            SuspendLayout();
             // 
             // label34
             // 
             label34.AutoSize = true;
-            label34.Location = new System.Drawing.Point(7, 253);
+            label34.Location = new System.Drawing.Point(8, 292);
+            label34.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label34.Name = "label34";
-            label34.Size = new System.Drawing.Size(64, 13);
+            label34.Size = new System.Drawing.Size(76, 15);
             label34.TabIndex = 63;
             label34.Text = "Anti-Aliasing";
             // 
-            // AntiAliasingTrackBar
-            // 
-            this.AntiAliasingTrackBar.LargeChange = 1;
-            this.AntiAliasingTrackBar.Location = new System.Drawing.Point(10, 269);
-            this.AntiAliasingTrackBar.Maximum = 8;
-            this.AntiAliasingTrackBar.Minimum = 1;
-            this.AntiAliasingTrackBar.Name = "AntiAliasingTrackBar";
-            this.AntiAliasingTrackBar.Size = new System.Drawing.Size(184, 45);
-            this.AntiAliasingTrackBar.TabIndex = 62;
-            this.AntiAliasingTrackBar.Value = 1;
-            this.AntiAliasingTrackBar.ValueChanged += new System.EventHandler(this.AntiAliasingTrackBar_ValueChanged);
-            // 
-            // FarClipUpDown
-            // 
-            this.FarClipUpDown.Increment = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.Location = new System.Drawing.Point(80, 346);
-            this.FarClipUpDown.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.Minimum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.Name = "FarClipUpDown";
-            this.FarClipUpDown.Size = new System.Drawing.Size(114, 20);
-            this.FarClipUpDown.TabIndex = 61;
-            this.FarClipUpDown.Value = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.FarClipUpDown.ValueChanged += new System.EventHandler(this.FarClipUpDown_ValueChanged);
-            // 
-            // label32
-            // 
-            this.label32.AutoSize = true;
-            this.label32.Location = new System.Drawing.Point(4, 348);
-            this.label32.Name = "label32";
-            this.label32.Size = new System.Drawing.Size(45, 13);
-            this.label32.TabIndex = 60;
-            this.label32.Text = "Far Clip:";
-            // 
-            // NearClipUpDown
-            // 
-            this.NearClipUpDown.DecimalPlaces = 3;
-            this.NearClipUpDown.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            65536});
-            this.NearClipUpDown.Location = new System.Drawing.Point(80, 320);
-            this.NearClipUpDown.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.NearClipUpDown.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            196608});
-            this.NearClipUpDown.Name = "NearClipUpDown";
-            this.NearClipUpDown.Size = new System.Drawing.Size(114, 20);
-            this.NearClipUpDown.TabIndex = 59;
-            this.NearClipUpDown.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.NearClipUpDown.ValueChanged += new System.EventHandler(this.NearClipUpDown_ValueChanged);
-            // 
-            // label31
-            // 
-            this.label31.AutoSize = true;
-            this.label31.Location = new System.Drawing.Point(4, 322);
-            this.label31.Name = "label31";
-            this.label31.Size = new System.Drawing.Size(53, 13);
-            this.label31.TabIndex = 58;
-            this.label31.Text = "Near Clip:";
-            // 
-            // HDTexturesCheckBox
-            // 
-            this.HDTexturesCheckBox.AutoSize = true;
-            this.HDTexturesCheckBox.Checked = true;
-            this.HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDTexturesCheckBox.Location = new System.Drawing.Point(10, 231);
-            this.HDTexturesCheckBox.Name = "HDTexturesCheckBox";
-            this.HDTexturesCheckBox.Size = new System.Drawing.Size(82, 17);
-            this.HDTexturesCheckBox.TabIndex = 57;
-            this.HDTexturesCheckBox.Text = "HD textures";
-            this.HDTexturesCheckBox.UseVisualStyleBackColor = true;
-            this.HDTexturesCheckBox.CheckedChanged += new System.EventHandler(this.HDTexturesCheckBox_CheckedChanged);
-            // 
-            // WireframeCheckBox
-            // 
-            this.WireframeCheckBox.AutoSize = true;
-            this.WireframeCheckBox.Location = new System.Drawing.Point(10, 115);
-            this.WireframeCheckBox.Name = "WireframeCheckBox";
-            this.WireframeCheckBox.Size = new System.Drawing.Size(74, 17);
-            this.WireframeCheckBox.TabIndex = 49;
-            this.WireframeCheckBox.Text = "Wireframe";
-            this.WireframeCheckBox.UseVisualStyleBackColor = true;
-            this.WireframeCheckBox.CheckedChanged += new System.EventHandler(this.WireframeCheckBox_CheckedChanged);
-            // 
-            // RenderModeComboBox
-            // 
-            this.RenderModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.RenderModeComboBox.FormattingEnabled = true;
-            this.RenderModeComboBox.Items.AddRange(new object[] {
-            "Default",
-            "Single texture",
-            "Vertex normals",
-            "Vertex tangents",
-            "Vertex colour 1",
-            "Vertex colour 2",
-            "Texture coord 1",
-            "Texture coord 2",
-            "Texture coord 3"});
-            this.RenderModeComboBox.Location = new System.Drawing.Point(80, 16);
-            this.RenderModeComboBox.Name = "RenderModeComboBox";
-            this.RenderModeComboBox.Size = new System.Drawing.Size(114, 21);
-            this.RenderModeComboBox.TabIndex = 46;
-            this.RenderModeComboBox.SelectedIndexChanged += new System.EventHandler(this.RenderModeComboBox_SelectedIndexChanged);
-            this.RenderModeComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.RenderModeComboBox_KeyPress);
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(4, 46);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(67, 13);
-            this.label11.TabIndex = 50;
-            this.label11.Text = "Tex sampler:";
-            // 
-            // TextureSamplerComboBox
-            // 
-            this.TextureSamplerComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.TextureSamplerComboBox.Enabled = false;
-            this.TextureSamplerComboBox.FormattingEnabled = true;
-            this.TextureSamplerComboBox.Location = new System.Drawing.Point(80, 43);
-            this.TextureSamplerComboBox.Name = "TextureSamplerComboBox";
-            this.TextureSamplerComboBox.Size = new System.Drawing.Size(114, 21);
-            this.TextureSamplerComboBox.TabIndex = 47;
-            this.TextureSamplerComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureSamplerComboBox_SelectedIndexChanged);
-            this.TextureSamplerComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TextureSamplerComboBox_KeyPress);
-            // 
-            // TextureCoordsComboBox
-            // 
-            this.TextureCoordsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.TextureCoordsComboBox.Enabled = false;
-            this.TextureCoordsComboBox.FormattingEnabled = true;
-            this.TextureCoordsComboBox.Items.AddRange(new object[] {
-            "Texture coord 1",
-            "Texture coord 2",
-            "Texture coord 3"});
-            this.TextureCoordsComboBox.Location = new System.Drawing.Point(80, 70);
-            this.TextureCoordsComboBox.Name = "TextureCoordsComboBox";
-            this.TextureCoordsComboBox.Size = new System.Drawing.Size(114, 21);
-            this.TextureCoordsComboBox.TabIndex = 48;
-            this.TextureCoordsComboBox.SelectedIndexChanged += new System.EventHandler(this.TextureCoordsComboBox_SelectedIndexChanged);
-            this.TextureCoordsComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.TextureCoordsComboBox_KeyPress);
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(4, 19);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(74, 13);
-            this.label10.TabIndex = 48;
-            this.label10.Text = "Render mode:";
-            // 
-            // AnisotropicFilteringCheckBox
-            // 
-            this.AnisotropicFilteringCheckBox.AutoSize = true;
-            this.AnisotropicFilteringCheckBox.Checked = true;
-            this.AnisotropicFilteringCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AnisotropicFilteringCheckBox.Location = new System.Drawing.Point(10, 138);
-            this.AnisotropicFilteringCheckBox.Name = "AnisotropicFilteringCheckBox";
-            this.AnisotropicFilteringCheckBox.Size = new System.Drawing.Size(114, 17);
-            this.AnisotropicFilteringCheckBox.TabIndex = 50;
-            this.AnisotropicFilteringCheckBox.Text = "Anisotropic filtering";
-            this.AnisotropicFilteringCheckBox.UseVisualStyleBackColor = true;
-            this.AnisotropicFilteringCheckBox.CheckedChanged += new System.EventHandler(this.AnisotropicFilteringCheckBox_CheckedChanged);
-            // 
-            // ProxiesCheckBox
-            // 
-            this.ProxiesCheckBox.AutoSize = true;
-            this.ProxiesCheckBox.Location = new System.Drawing.Point(10, 199);
-            this.ProxiesCheckBox.Name = "ProxiesCheckBox";
-            this.ProxiesCheckBox.Size = new System.Drawing.Size(89, 17);
-            this.ProxiesCheckBox.TabIndex = 52;
-            this.ProxiesCheckBox.Text = "Show proxies";
-            this.ProxiesCheckBox.UseVisualStyleBackColor = true;
-            this.ProxiesCheckBox.CheckedChanged += new System.EventHandler(this.ProxiesCheckBox_CheckedChanged);
-            // 
-            // WaitForChildrenCheckBox
-            // 
-            this.WaitForChildrenCheckBox.AutoSize = true;
-            this.WaitForChildrenCheckBox.Checked = true;
-            this.WaitForChildrenCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.WaitForChildrenCheckBox.Location = new System.Drawing.Point(10, 161);
-            this.WaitForChildrenCheckBox.Name = "WaitForChildrenCheckBox";
-            this.WaitForChildrenCheckBox.Size = new System.Drawing.Size(138, 17);
-            this.WaitForChildrenCheckBox.TabIndex = 51;
-            this.WaitForChildrenCheckBox.Text = "Wait for children to load";
-            this.WaitForChildrenCheckBox.UseVisualStyleBackColor = true;
-            this.WaitForChildrenCheckBox.CheckedChanged += new System.EventHandler(this.WaitForChildrenCheckBox_CheckedChanged);
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(4, 73);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(63, 13);
-            this.label14.TabIndex = 56;
-            this.label14.Text = "Tex coords:";
-            // 
-            // OptionsHelpersTabPage
-            // 
-            this.OptionsHelpersTabPage.Controls.Add(this.SnapAngleUpDown);
-            this.OptionsHelpersTabPage.Controls.Add(this.label33);
-            this.OptionsHelpersTabPage.Controls.Add(this.SnapGridSizeUpDown);
-            this.OptionsHelpersTabPage.Controls.Add(this.label26);
-            this.OptionsHelpersTabPage.Controls.Add(this.SkeletonsCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.AudioOuterBoundsCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.PopZonesCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.NavMeshesCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.TrainPathsCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.PathsDepthClipCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.PathBoundsCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.SelectionWidgetCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.MarkerStyleComboBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.label4);
-            this.OptionsHelpersTabPage.Controls.Add(this.LocatorStyleComboBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.label5);
-            this.OptionsHelpersTabPage.Controls.Add(this.MarkerDepthClipCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.label9);
-            this.OptionsHelpersTabPage.Controls.Add(this.PathsCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.SelectionBoundsCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.BoundsDepthClipCheckBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.BoundsRangeTrackBar);
-            this.OptionsHelpersTabPage.Controls.Add(this.BoundsStyleComboBox);
-            this.OptionsHelpersTabPage.Controls.Add(this.label8);
-            this.OptionsHelpersTabPage.Location = new System.Drawing.Point(4, 22);
-            this.OptionsHelpersTabPage.Name = "OptionsHelpersTabPage";
-            this.OptionsHelpersTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.OptionsHelpersTabPage.Size = new System.Drawing.Size(200, 482);
-            this.OptionsHelpersTabPage.TabIndex = 1;
-            this.OptionsHelpersTabPage.Text = "Helpers";
-            this.OptionsHelpersTabPage.UseVisualStyleBackColor = true;
-            // 
-            // SnapAngleUpDown
-            // 
-            this.SnapAngleUpDown.DecimalPlaces = 1;
-            this.SnapAngleUpDown.Location = new System.Drawing.Point(98, 279);
-            this.SnapAngleUpDown.Maximum = new decimal(new int[] {
-            180,
-            0,
-            0,
-            0});
-            this.SnapAngleUpDown.Name = "SnapAngleUpDown";
-            this.SnapAngleUpDown.Size = new System.Drawing.Size(96, 20);
-            this.SnapAngleUpDown.TabIndex = 32;
-            this.SnapAngleUpDown.Value = new decimal(new int[] {
-            50,
-            0,
-            0,
-            65536});
-            this.SnapAngleUpDown.ValueChanged += new System.EventHandler(this.SnapAngleUpDown_ValueChanged);
-            // 
-            // label33
-            // 
-            this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(4, 281);
-            this.label33.Name = "label33";
-            this.label33.Size = new System.Drawing.Size(91, 13);
-            this.label33.TabIndex = 31;
-            this.label33.Text = "Snap angle (deg):";
-            // 
-            // SnapGridSizeUpDown
-            // 
-            this.SnapGridSizeUpDown.DecimalPlaces = 2;
-            this.SnapGridSizeUpDown.Location = new System.Drawing.Point(98, 253);
-            this.SnapGridSizeUpDown.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.SnapGridSizeUpDown.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            this.SnapGridSizeUpDown.Name = "SnapGridSizeUpDown";
-            this.SnapGridSizeUpDown.Size = new System.Drawing.Size(96, 20);
-            this.SnapGridSizeUpDown.TabIndex = 30;
-            this.SnapGridSizeUpDown.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            131072});
-            this.SnapGridSizeUpDown.ValueChanged += new System.EventHandler(this.SnapGridSizeUpDown_ValueChanged);
-            // 
-            // label26
-            // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(4, 255);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(76, 13);
-            this.label26.TabIndex = 29;
-            this.label26.Text = "Snap grid size:";
-            // 
-            // SkeletonsCheckBox
-            // 
-            this.SkeletonsCheckBox.AutoSize = true;
-            this.SkeletonsCheckBox.Location = new System.Drawing.Point(10, 411);
-            this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
-            this.SkeletonsCheckBox.Size = new System.Drawing.Size(101, 17);
-            this.SkeletonsCheckBox.TabIndex = 38;
-            this.SkeletonsCheckBox.Text = "Show skeletons";
-            this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
-            this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
-            // 
-            // AudioOuterBoundsCheckBox
-            // 
-            this.AudioOuterBoundsCheckBox.AutoSize = true;
-            this.AudioOuterBoundsCheckBox.Checked = true;
-            this.AudioOuterBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(10, 457);
-            this.AudioOuterBoundsCheckBox.Name = "AudioOuterBoundsCheckBox";
-            this.AudioOuterBoundsCheckBox.Size = new System.Drawing.Size(147, 17);
-            this.AudioOuterBoundsCheckBox.TabIndex = 40;
-            this.AudioOuterBoundsCheckBox.Text = "Show audio outer bounds";
-            this.AudioOuterBoundsCheckBox.UseVisualStyleBackColor = true;
-            this.AudioOuterBoundsCheckBox.CheckedChanged += new System.EventHandler(this.AudioOuterBoundsCheckBox_CheckedChanged);
-            // 
-            // PopZonesCheckBox
-            // 
-            this.PopZonesCheckBox.AutoSize = true;
-            this.PopZonesCheckBox.Location = new System.Drawing.Point(10, 388);
-            this.PopZonesCheckBox.Name = "PopZonesCheckBox";
-            this.PopZonesCheckBox.Size = new System.Drawing.Size(136, 17);
-            this.PopZonesCheckBox.TabIndex = 37;
-            this.PopZonesCheckBox.Text = "Show population zones";
-            this.PopZonesCheckBox.UseVisualStyleBackColor = true;
-            this.PopZonesCheckBox.CheckedChanged += new System.EventHandler(this.PopZonesCheckBox_CheckedChanged);
-            // 
-            // NavMeshesCheckBox
-            // 
-            this.NavMeshesCheckBox.AutoSize = true;
-            this.NavMeshesCheckBox.Location = new System.Drawing.Point(10, 365);
-            this.NavMeshesCheckBox.Name = "NavMeshesCheckBox";
-            this.NavMeshesCheckBox.Size = new System.Drawing.Size(113, 17);
-            this.NavMeshesCheckBox.TabIndex = 36;
-            this.NavMeshesCheckBox.Text = "Show nav meshes";
-            this.NavMeshesCheckBox.UseVisualStyleBackColor = true;
-            this.NavMeshesCheckBox.CheckedChanged += new System.EventHandler(this.NavMeshesCheckBox_CheckedChanged);
-            // 
-            // TrainPathsCheckBox
-            // 
-            this.TrainPathsCheckBox.AutoSize = true;
-            this.TrainPathsCheckBox.Location = new System.Drawing.Point(10, 342);
-            this.TrainPathsCheckBox.Name = "TrainPathsCheckBox";
-            this.TrainPathsCheckBox.Size = new System.Drawing.Size(105, 17);
-            this.TrainPathsCheckBox.TabIndex = 35;
-            this.TrainPathsCheckBox.Text = "Show train paths";
-            this.TrainPathsCheckBox.UseVisualStyleBackColor = true;
-            this.TrainPathsCheckBox.CheckedChanged += new System.EventHandler(this.TrainPathsCheckBox_CheckedChanged);
-            // 
-            // PathsDepthClipCheckBox
-            // 
-            this.PathsDepthClipCheckBox.AutoSize = true;
-            this.PathsDepthClipCheckBox.Checked = true;
-            this.PathsDepthClipCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 434);
-            this.PathsDepthClipCheckBox.Name = "PathsDepthClipCheckBox";
-            this.PathsDepthClipCheckBox.Size = new System.Drawing.Size(102, 17);
-            this.PathsDepthClipCheckBox.TabIndex = 39;
-            this.PathsDepthClipCheckBox.Text = "Paths depth clip";
-            this.PathsDepthClipCheckBox.UseVisualStyleBackColor = true;
-            this.PathsDepthClipCheckBox.CheckedChanged += new System.EventHandler(this.PathsDepthClipCheckBox_CheckedChanged);
-            // 
-            // PathBoundsCheckBox
-            // 
-            this.PathBoundsCheckBox.AutoSize = true;
-            this.PathBoundsCheckBox.Checked = true;
-            this.PathBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.PathBoundsCheckBox.Location = new System.Drawing.Point(98, 319);
-            this.PathBoundsCheckBox.Name = "PathBoundsCheckBox";
-            this.PathBoundsCheckBox.Size = new System.Drawing.Size(86, 17);
-            this.PathBoundsCheckBox.TabIndex = 34;
-            this.PathBoundsCheckBox.Text = "Path bounds";
-            this.PathBoundsCheckBox.UseVisualStyleBackColor = true;
-            this.PathBoundsCheckBox.CheckedChanged += new System.EventHandler(this.PathBoundsCheckBox_CheckedChanged);
-            // 
-            // SelectionWidgetCheckBox
-            // 
-            this.SelectionWidgetCheckBox.AutoSize = true;
-            this.SelectionWidgetCheckBox.Checked = true;
-            this.SelectionWidgetCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.SelectionWidgetCheckBox.Location = new System.Drawing.Point(10, 231);
-            this.SelectionWidgetCheckBox.Name = "SelectionWidgetCheckBox";
-            this.SelectionWidgetCheckBox.Size = new System.Drawing.Size(87, 17);
-            this.SelectionWidgetCheckBox.TabIndex = 28;
-            this.SelectionWidgetCheckBox.Text = "Show widget";
-            this.SelectionWidgetCheckBox.UseVisualStyleBackColor = true;
-            this.SelectionWidgetCheckBox.CheckedChanged += new System.EventHandler(this.SelectionWidgetCheckBox_CheckedChanged);
-            // 
-            // MarkerStyleComboBox
-            // 
-            this.MarkerStyleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.MarkerStyleComboBox.FormattingEnabled = true;
-            this.MarkerStyleComboBox.Location = new System.Drawing.Point(80, 6);
-            this.MarkerStyleComboBox.Name = "MarkerStyleComboBox";
-            this.MarkerStyleComboBox.Size = new System.Drawing.Size(114, 21);
-            this.MarkerStyleComboBox.TabIndex = 18;
-            this.MarkerStyleComboBox.SelectedIndexChanged += new System.EventHandler(this.MarkerStyleComboBox_SelectedIndexChanged);
-            this.MarkerStyleComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MarkerStyleComboBox_KeyPress);
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(4, 9);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(67, 13);
-            this.label4.TabIndex = 17;
-            this.label4.Text = "Marker style:";
-            // 
-            // LocatorStyleComboBox
-            // 
-            this.LocatorStyleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.LocatorStyleComboBox.FormattingEnabled = true;
-            this.LocatorStyleComboBox.Location = new System.Drawing.Point(80, 33);
-            this.LocatorStyleComboBox.Name = "LocatorStyleComboBox";
-            this.LocatorStyleComboBox.Size = new System.Drawing.Size(114, 21);
-            this.LocatorStyleComboBox.TabIndex = 20;
-            this.LocatorStyleComboBox.SelectedIndexChanged += new System.EventHandler(this.LocatorStyleComboBox_SelectedIndexChanged);
-            this.LocatorStyleComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LocatorStyleComboBox_KeyPress);
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(4, 36);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(70, 13);
-            this.label5.TabIndex = 19;
-            this.label5.Text = "Locator style:";
-            // 
-            // MarkerDepthClipCheckBox
-            // 
-            this.MarkerDepthClipCheckBox.AutoSize = true;
-            this.MarkerDepthClipCheckBox.Location = new System.Drawing.Point(10, 60);
-            this.MarkerDepthClipCheckBox.Name = "MarkerDepthClipCheckBox";
-            this.MarkerDepthClipCheckBox.Size = new System.Drawing.Size(108, 17);
-            this.MarkerDepthClipCheckBox.TabIndex = 21;
-            this.MarkerDepthClipCheckBox.Text = "Marker depth clip";
-            this.MarkerDepthClipCheckBox.UseVisualStyleBackColor = true;
-            this.MarkerDepthClipCheckBox.Visible = false;
-            this.MarkerDepthClipCheckBox.CheckedChanged += new System.EventHandler(this.MarkerDepthClipCheckBox_CheckedChanged);
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(4, 136);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(76, 13);
-            this.label9.TabIndex = 25;
-            this.label9.Text = "Bounds range:";
-            // 
-            // PathsCheckBox
-            // 
-            this.PathsCheckBox.AutoSize = true;
-            this.PathsCheckBox.Location = new System.Drawing.Point(10, 319);
-            this.PathsCheckBox.Name = "PathsCheckBox";
-            this.PathsCheckBox.Size = new System.Drawing.Size(82, 17);
-            this.PathsCheckBox.TabIndex = 33;
-            this.PathsCheckBox.Text = "Show paths";
-            this.PathsCheckBox.UseVisualStyleBackColor = true;
-            this.PathsCheckBox.CheckedChanged += new System.EventHandler(this.PathsCheckBox_CheckedChanged);
-            // 
-            // SelectionBoundsCheckBox
-            // 
-            this.SelectionBoundsCheckBox.AutoSize = true;
-            this.SelectionBoundsCheckBox.Checked = true;
-            this.SelectionBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.SelectionBoundsCheckBox.Location = new System.Drawing.Point(10, 194);
-            this.SelectionBoundsCheckBox.Name = "SelectionBoundsCheckBox";
-            this.SelectionBoundsCheckBox.Size = new System.Drawing.Size(136, 17);
-            this.SelectionBoundsCheckBox.TabIndex = 27;
-            this.SelectionBoundsCheckBox.Text = "Show selection bounds";
-            this.SelectionBoundsCheckBox.UseVisualStyleBackColor = true;
-            this.SelectionBoundsCheckBox.CheckedChanged += new System.EventHandler(this.SelectionBoundsCheckBox_CheckedChanged);
-            // 
-            // BoundsDepthClipCheckBox
-            // 
-            this.BoundsDepthClipCheckBox.AutoSize = true;
-            this.BoundsDepthClipCheckBox.Checked = true;
-            this.BoundsDepthClipCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.BoundsDepthClipCheckBox.Location = new System.Drawing.Point(10, 114);
-            this.BoundsDepthClipCheckBox.Name = "BoundsDepthClipCheckBox";
-            this.BoundsDepthClipCheckBox.Size = new System.Drawing.Size(111, 17);
-            this.BoundsDepthClipCheckBox.TabIndex = 24;
-            this.BoundsDepthClipCheckBox.Text = "Bounds depth clip";
-            this.BoundsDepthClipCheckBox.UseVisualStyleBackColor = true;
-            this.BoundsDepthClipCheckBox.CheckedChanged += new System.EventHandler(this.BoundsDepthClipCheckBox_CheckedChanged);
-            // 
-            // BoundsRangeTrackBar
-            // 
-            this.BoundsRangeTrackBar.AutoSize = false;
-            this.BoundsRangeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.BoundsRangeTrackBar.LargeChange = 10;
-            this.BoundsRangeTrackBar.Location = new System.Drawing.Point(6, 152);
-            this.BoundsRangeTrackBar.Maximum = 100;
-            this.BoundsRangeTrackBar.Minimum = 1;
-            this.BoundsRangeTrackBar.Name = "BoundsRangeTrackBar";
-            this.BoundsRangeTrackBar.Size = new System.Drawing.Size(188, 33);
-            this.BoundsRangeTrackBar.TabIndex = 26;
-            this.BoundsRangeTrackBar.TickFrequency = 10;
-            this.BoundsRangeTrackBar.Value = 100;
-            this.BoundsRangeTrackBar.Scroll += new System.EventHandler(this.BoundsRangeTrackBar_Scroll);
-            // 
-            // BoundsStyleComboBox
-            // 
-            this.BoundsStyleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.BoundsStyleComboBox.FormattingEnabled = true;
-            this.BoundsStyleComboBox.Items.AddRange(new object[] {
-            "None",
-            "Boxes",
-            "Spheres"});
-            this.BoundsStyleComboBox.Location = new System.Drawing.Point(80, 87);
-            this.BoundsStyleComboBox.Name = "BoundsStyleComboBox";
-            this.BoundsStyleComboBox.Size = new System.Drawing.Size(114, 21);
-            this.BoundsStyleComboBox.TabIndex = 23;
-            this.BoundsStyleComboBox.SelectedIndexChanged += new System.EventHandler(this.BoundsStyleComboBox_SelectedIndexChanged);
-            this.BoundsStyleComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.BoundsStyleComboBox_KeyPress);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(4, 90);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(70, 13);
-            this.label8.TabIndex = 22;
-            this.label8.Text = "Bounds style:";
-            // 
-            // OptionsLightingTabPage
-            // 
-            this.OptionsLightingTabPage.Controls.Add(this.HDLightsCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.DeferredShadingCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.WeatherRegionComboBox);
-            this.OptionsLightingTabPage.Controls.Add(this.label29);
-            this.OptionsLightingTabPage.Controls.Add(this.CloudParamTrackBar);
-            this.OptionsLightingTabPage.Controls.Add(this.CloudParamComboBox);
-            this.OptionsLightingTabPage.Controls.Add(this.label23);
-            this.OptionsLightingTabPage.Controls.Add(this.CloudsComboBox);
-            this.OptionsLightingTabPage.Controls.Add(this.label21);
-            this.OptionsLightingTabPage.Controls.Add(this.TimeSpeedLabel);
-            this.OptionsLightingTabPage.Controls.Add(this.label20);
-            this.OptionsLightingTabPage.Controls.Add(this.TimeSpeedTrackBar);
-            this.OptionsLightingTabPage.Controls.Add(this.TimeStartStopButton);
-            this.OptionsLightingTabPage.Controls.Add(this.ArtificialAmbientLightCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.NaturalAmbientLightCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.LODLightsCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.HDRRenderingCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.ControlTimeOfDayCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.TimeOfDayLabel);
-            this.OptionsLightingTabPage.Controls.Add(this.label19);
-            this.OptionsLightingTabPage.Controls.Add(this.TimeOfDayTrackBar);
-            this.OptionsLightingTabPage.Controls.Add(this.WeatherComboBox);
-            this.OptionsLightingTabPage.Controls.Add(this.label17);
-            this.OptionsLightingTabPage.Controls.Add(this.ControlLightDirectionCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.SkydomeCheckBox);
-            this.OptionsLightingTabPage.Controls.Add(this.ShadowsCheckBox);
-            this.OptionsLightingTabPage.Location = new System.Drawing.Point(4, 22);
-            this.OptionsLightingTabPage.Name = "OptionsLightingTabPage";
-            this.OptionsLightingTabPage.Size = new System.Drawing.Size(200, 482);
-            this.OptionsLightingTabPage.TabIndex = 2;
-            this.OptionsLightingTabPage.Text = "Lighting";
-            this.OptionsLightingTabPage.UseVisualStyleBackColor = true;
-            // 
-            // HDLightsCheckBox
-            // 
-            this.HDLightsCheckBox.AutoSize = true;
-            this.HDLightsCheckBox.Checked = true;
-            this.HDLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDLightsCheckBox.Location = new System.Drawing.Point(10, 93);
-            this.HDLightsCheckBox.Name = "HDLightsCheckBox";
-            this.HDLightsCheckBox.Size = new System.Drawing.Size(69, 17);
-            this.HDLightsCheckBox.TabIndex = 34;
-            this.HDLightsCheckBox.Text = "HD lights";
-            this.HDLightsCheckBox.UseVisualStyleBackColor = true;
-            this.HDLightsCheckBox.CheckedChanged += new System.EventHandler(this.HDLightsCheckBox_CheckedChanged);
-            // 
-            // DeferredShadingCheckBox
-            // 
-            this.DeferredShadingCheckBox.AutoSize = true;
-            this.DeferredShadingCheckBox.Checked = true;
-            this.DeferredShadingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.DeferredShadingCheckBox.Location = new System.Drawing.Point(10, 5);
-            this.DeferredShadingCheckBox.Name = "DeferredShadingCheckBox";
-            this.DeferredShadingCheckBox.Size = new System.Drawing.Size(107, 17);
-            this.DeferredShadingCheckBox.TabIndex = 30;
-            this.DeferredShadingCheckBox.Text = "Deferred shading";
-            this.DeferredShadingCheckBox.UseVisualStyleBackColor = true;
-            this.DeferredShadingCheckBox.CheckedChanged += new System.EventHandler(this.DeferredShadingCheckBox_CheckedChanged);
-            // 
-            // WeatherRegionComboBox
-            // 
-            this.WeatherRegionComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.WeatherRegionComboBox.FormattingEnabled = true;
-            this.WeatherRegionComboBox.Items.AddRange(new object[] {
-            "GLOBAL",
-            "URBAN"});
-            this.WeatherRegionComboBox.Location = new System.Drawing.Point(61, 355);
-            this.WeatherRegionComboBox.Name = "WeatherRegionComboBox";
-            this.WeatherRegionComboBox.Size = new System.Drawing.Size(133, 21);
-            this.WeatherRegionComboBox.TabIndex = 50;
-            this.WeatherRegionComboBox.SelectedIndexChanged += new System.EventHandler(this.WeatherRegionComboBox_SelectedIndexChanged);
-            this.WeatherRegionComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.WeatherRegionComboBox_KeyPress);
-            // 
-            // label29
-            // 
-            this.label29.AutoSize = true;
-            this.label29.Location = new System.Drawing.Point(4, 358);
-            this.label29.Name = "label29";
-            this.label29.Size = new System.Drawing.Size(44, 13);
-            this.label29.TabIndex = 49;
-            this.label29.Text = "Region:";
-            // 
-            // CloudParamTrackBar
-            // 
-            this.CloudParamTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.CloudParamTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.CloudParamTrackBar.LargeChange = 10;
-            this.CloudParamTrackBar.Location = new System.Drawing.Point(6, 436);
-            this.CloudParamTrackBar.Maximum = 200;
-            this.CloudParamTrackBar.Name = "CloudParamTrackBar";
-            this.CloudParamTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.CloudParamTrackBar.TabIndex = 55;
-            this.CloudParamTrackBar.TickFrequency = 10;
-            this.CloudParamTrackBar.Value = 100;
-            this.CloudParamTrackBar.Scroll += new System.EventHandler(this.CloudParamTrackBar_Scroll);
-            // 
-            // CloudParamComboBox
-            // 
-            this.CloudParamComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CloudParamComboBox.FormattingEnabled = true;
-            this.CloudParamComboBox.Items.AddRange(new object[] {
-            "<Loading...>"});
-            this.CloudParamComboBox.Location = new System.Drawing.Point(78, 409);
-            this.CloudParamComboBox.Name = "CloudParamComboBox";
-            this.CloudParamComboBox.Size = new System.Drawing.Size(116, 21);
-            this.CloudParamComboBox.TabIndex = 54;
-            this.CloudParamComboBox.SelectedIndexChanged += new System.EventHandler(this.CloudParamComboBox_SelectedIndexChanged);
-            this.CloudParamComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CloudParamComboBox_KeyPress);
-            // 
-            // label23
-            // 
-            this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(4, 412);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(69, 13);
-            this.label23.TabIndex = 53;
-            this.label23.Text = "Cloud param:";
-            // 
-            // CloudsComboBox
-            // 
-            this.CloudsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CloudsComboBox.FormattingEnabled = true;
-            this.CloudsComboBox.Items.AddRange(new object[] {
-            "<Loading...>"});
-            this.CloudsComboBox.Location = new System.Drawing.Point(61, 382);
-            this.CloudsComboBox.Name = "CloudsComboBox";
-            this.CloudsComboBox.Size = new System.Drawing.Size(133, 21);
-            this.CloudsComboBox.TabIndex = 52;
-            this.CloudsComboBox.SelectedIndexChanged += new System.EventHandler(this.CloudsComboBox_SelectedIndexChanged);
-            this.CloudsComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CloudsComboBox_KeyPress);
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(4, 385);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(42, 13);
-            this.label21.TabIndex = 51;
-            this.label21.Text = "Clouds:";
-            // 
-            // TimeSpeedLabel
-            // 
-            this.TimeSpeedLabel.AutoSize = true;
-            this.TimeSpeedLabel.Location = new System.Drawing.Point(78, 263);
-            this.TimeSpeedLabel.Name = "TimeSpeedLabel";
-            this.TimeSpeedLabel.Size = new System.Drawing.Size(63, 13);
-            this.TimeSpeedLabel.TabIndex = 44;
-            this.TimeSpeedLabel.Text = "0.5 min/sec";
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(3, 263);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(65, 13);
-            this.label20.TabIndex = 43;
-            this.label20.Text = "Time speed:";
-            // 
-            // TimeSpeedTrackBar
-            // 
-            this.TimeSpeedTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.TimeSpeedTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.TimeSpeedTrackBar.Location = new System.Drawing.Point(61, 279);
-            this.TimeSpeedTrackBar.Maximum = 100;
-            this.TimeSpeedTrackBar.Minimum = 40;
-            this.TimeSpeedTrackBar.Name = "TimeSpeedTrackBar";
-            this.TimeSpeedTrackBar.Size = new System.Drawing.Size(133, 45);
-            this.TimeSpeedTrackBar.TabIndex = 46;
-            this.TimeSpeedTrackBar.TickFrequency = 5;
-            this.TimeSpeedTrackBar.Value = 50;
-            this.TimeSpeedTrackBar.Scroll += new System.EventHandler(this.TimeSpeedTrackBar_Scroll);
-            // 
-            // TimeStartStopButton
-            // 
-            this.TimeStartStopButton.Location = new System.Drawing.Point(10, 279);
-            this.TimeStartStopButton.Name = "TimeStartStopButton";
-            this.TimeStartStopButton.Size = new System.Drawing.Size(45, 23);
-            this.TimeStartStopButton.TabIndex = 45;
-            this.TimeStartStopButton.Text = "Start";
-            this.TimeStartStopButton.UseVisualStyleBackColor = true;
-            this.TimeStartStopButton.Click += new System.EventHandler(this.TimeStartStopButton_Click);
-            // 
-            // ArtificialAmbientLightCheckBox
-            // 
-            this.ArtificialAmbientLightCheckBox.AutoSize = true;
-            this.ArtificialAmbientLightCheckBox.Checked = true;
-            this.ArtificialAmbientLightCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ArtificialAmbientLightCheckBox.Location = new System.Drawing.Point(10, 137);
-            this.ArtificialAmbientLightCheckBox.Name = "ArtificialAmbientLightCheckBox";
-            this.ArtificialAmbientLightCheckBox.Size = new System.Drawing.Size(124, 17);
-            this.ArtificialAmbientLightCheckBox.TabIndex = 37;
-            this.ArtificialAmbientLightCheckBox.Text = "Artificial ambient light";
-            this.ArtificialAmbientLightCheckBox.UseVisualStyleBackColor = true;
-            this.ArtificialAmbientLightCheckBox.CheckedChanged += new System.EventHandler(this.ArtificialAmbientLightCheckBox_CheckedChanged);
-            // 
-            // NaturalAmbientLightCheckBox
-            // 
-            this.NaturalAmbientLightCheckBox.AutoSize = true;
-            this.NaturalAmbientLightCheckBox.Checked = true;
-            this.NaturalAmbientLightCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.NaturalAmbientLightCheckBox.Location = new System.Drawing.Point(10, 115);
-            this.NaturalAmbientLightCheckBox.Name = "NaturalAmbientLightCheckBox";
-            this.NaturalAmbientLightCheckBox.Size = new System.Drawing.Size(122, 17);
-            this.NaturalAmbientLightCheckBox.TabIndex = 36;
-            this.NaturalAmbientLightCheckBox.Text = "Natural ambient light";
-            this.NaturalAmbientLightCheckBox.UseVisualStyleBackColor = true;
-            this.NaturalAmbientLightCheckBox.CheckedChanged += new System.EventHandler(this.NaturalAmbientLightCheckBox_CheckedChanged);
-            // 
-            // LODLightsCheckBox
-            // 
-            this.LODLightsCheckBox.AutoSize = true;
-            this.LODLightsCheckBox.Checked = true;
-            this.LODLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.LODLightsCheckBox.Location = new System.Drawing.Point(89, 93);
-            this.LODLightsCheckBox.Name = "LODLightsCheckBox";
-            this.LODLightsCheckBox.Size = new System.Drawing.Size(75, 17);
-            this.LODLightsCheckBox.TabIndex = 35;
-            this.LODLightsCheckBox.Text = "LOD lights";
-            this.LODLightsCheckBox.UseVisualStyleBackColor = true;
-            this.LODLightsCheckBox.CheckedChanged += new System.EventHandler(this.LODLightsCheckBox_CheckedChanged);
-            // 
-            // HDRRenderingCheckBox
-            // 
-            this.HDRRenderingCheckBox.AutoSize = true;
-            this.HDRRenderingCheckBox.Checked = true;
-            this.HDRRenderingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.HDRRenderingCheckBox.Location = new System.Drawing.Point(10, 27);
-            this.HDRRenderingCheckBox.Name = "HDRRenderingCheckBox";
-            this.HDRRenderingCheckBox.Size = new System.Drawing.Size(97, 17);
-            this.HDRRenderingCheckBox.TabIndex = 31;
-            this.HDRRenderingCheckBox.Text = "HDR rendering";
-            this.HDRRenderingCheckBox.UseVisualStyleBackColor = true;
-            this.HDRRenderingCheckBox.CheckedChanged += new System.EventHandler(this.HDRRenderingCheckBox_CheckedChanged);
-            // 
-            // ControlTimeOfDayCheckBox
-            // 
-            this.ControlTimeOfDayCheckBox.AutoSize = true;
-            this.ControlTimeOfDayCheckBox.Checked = true;
-            this.ControlTimeOfDayCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ControlTimeOfDayCheckBox.Location = new System.Drawing.Point(10, 181);
-            this.ControlTimeOfDayCheckBox.Name = "ControlTimeOfDayCheckBox";
-            this.ControlTimeOfDayCheckBox.Size = new System.Drawing.Size(166, 17);
-            this.ControlTimeOfDayCheckBox.TabIndex = 39;
-            this.ControlTimeOfDayCheckBox.Text = "Control time of day (right-drag)";
-            this.ControlTimeOfDayCheckBox.UseVisualStyleBackColor = true;
-            this.ControlTimeOfDayCheckBox.CheckedChanged += new System.EventHandler(this.ControlTimeOfDayCheckBox_CheckedChanged);
-            // 
-            // TimeOfDayLabel
-            // 
-            this.TimeOfDayLabel.AutoSize = true;
-            this.TimeOfDayLabel.Location = new System.Drawing.Point(75, 208);
-            this.TimeOfDayLabel.Name = "TimeOfDayLabel";
-            this.TimeOfDayLabel.Size = new System.Drawing.Size(34, 13);
-            this.TimeOfDayLabel.TabIndex = 41;
-            this.TimeOfDayLabel.Text = "12:00";
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(4, 208);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(65, 13);
-            this.label19.TabIndex = 40;
-            this.label19.Text = "Time of day:";
-            // 
-            // TimeOfDayTrackBar
-            // 
-            this.TimeOfDayTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.TimeOfDayTrackBar.LargeChange = 60;
-            this.TimeOfDayTrackBar.Location = new System.Drawing.Point(6, 224);
-            this.TimeOfDayTrackBar.Maximum = 1440;
-            this.TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
-            this.TimeOfDayTrackBar.Size = new System.Drawing.Size(188, 45);
-            this.TimeOfDayTrackBar.TabIndex = 42;
-            this.TimeOfDayTrackBar.TickFrequency = 60;
-            this.TimeOfDayTrackBar.Value = 720;
-            this.TimeOfDayTrackBar.Scroll += new System.EventHandler(this.TimeOfDayTrackBar_Scroll);
-            // 
-            // WeatherComboBox
-            // 
-            this.WeatherComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.WeatherComboBox.FormattingEnabled = true;
-            this.WeatherComboBox.Items.AddRange(new object[] {
-            "<Loading...>"});
-            this.WeatherComboBox.Location = new System.Drawing.Point(61, 328);
-            this.WeatherComboBox.Name = "WeatherComboBox";
-            this.WeatherComboBox.Size = new System.Drawing.Size(133, 21);
-            this.WeatherComboBox.TabIndex = 48;
-            this.WeatherComboBox.SelectedIndexChanged += new System.EventHandler(this.WeatherComboBox_SelectedIndexChanged);
-            this.WeatherComboBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.WeatherComboBox_KeyPress);
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(4, 331);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(51, 13);
-            this.label17.TabIndex = 47;
-            this.label17.Text = "Weather:";
-            // 
-            // ControlLightDirectionCheckBox
-            // 
-            this.ControlLightDirectionCheckBox.AutoSize = true;
-            this.ControlLightDirectionCheckBox.Location = new System.Drawing.Point(10, 159);
-            this.ControlLightDirectionCheckBox.Name = "ControlLightDirectionCheckBox";
-            this.ControlLightDirectionCheckBox.Size = new System.Drawing.Size(177, 17);
-            this.ControlLightDirectionCheckBox.TabIndex = 38;
-            this.ControlLightDirectionCheckBox.Text = "Control light direction (right-drag)";
-            this.ControlLightDirectionCheckBox.UseVisualStyleBackColor = true;
-            this.ControlLightDirectionCheckBox.CheckedChanged += new System.EventHandler(this.ControlLightDirectionCheckBox_CheckedChanged);
-            // 
-            // SkydomeCheckBox
-            // 
-            this.SkydomeCheckBox.AutoSize = true;
-            this.SkydomeCheckBox.Checked = true;
-            this.SkydomeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.SkydomeCheckBox.Location = new System.Drawing.Point(10, 71);
-            this.SkydomeCheckBox.Name = "SkydomeCheckBox";
-            this.SkydomeCheckBox.Size = new System.Drawing.Size(70, 17);
-            this.SkydomeCheckBox.TabIndex = 33;
-            this.SkydomeCheckBox.Text = "Skydome";
-            this.SkydomeCheckBox.UseVisualStyleBackColor = true;
-            this.SkydomeCheckBox.CheckedChanged += new System.EventHandler(this.SkydomeCheckbox_CheckedChanged);
-            // 
-            // ShadowsCheckBox
-            // 
-            this.ShadowsCheckBox.AutoSize = true;
-            this.ShadowsCheckBox.Location = new System.Drawing.Point(10, 49);
-            this.ShadowsCheckBox.Name = "ShadowsCheckBox";
-            this.ShadowsCheckBox.Size = new System.Drawing.Size(70, 17);
-            this.ShadowsCheckBox.TabIndex = 32;
-            this.ShadowsCheckBox.Text = "Shadows";
-            this.ShadowsCheckBox.UseVisualStyleBackColor = true;
-            this.ShadowsCheckBox.CheckedChanged += new System.EventHandler(this.ShadowsCheckBox_CheckedChanged);
-            // 
-            // StatusBarCheckBox
-            // 
-            this.StatusBarCheckBox.AutoSize = true;
-            this.StatusBarCheckBox.Checked = true;
-            this.StatusBarCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.StatusBarCheckBox.Location = new System.Drawing.Point(119, 517);
-            this.StatusBarCheckBox.Name = "StatusBarCheckBox";
-            this.StatusBarCheckBox.Size = new System.Drawing.Size(74, 17);
-            this.StatusBarCheckBox.TabIndex = 145;
-            this.StatusBarCheckBox.Text = "Status bar";
-            this.StatusBarCheckBox.UseVisualStyleBackColor = true;
-            this.StatusBarCheckBox.CheckedChanged += new System.EventHandler(this.StatusBarCheckBox_CheckedChanged);
-            // 
-            // QuitButton
-            // 
-            this.QuitButton.Location = new System.Drawing.Point(105, 569);
-            this.QuitButton.Name = "QuitButton";
-            this.QuitButton.Size = new System.Drawing.Size(93, 23);
-            this.QuitButton.TabIndex = 149;
-            this.QuitButton.Text = "Quit";
-            this.QuitButton.UseVisualStyleBackColor = true;
-            this.QuitButton.Click += new System.EventHandler(this.QuitButton_Click);
-            // 
-            // ReloadSettingsButton
-            // 
-            this.ReloadSettingsButton.Enabled = false;
-            this.ReloadSettingsButton.Location = new System.Drawing.Point(6, 540);
-            this.ReloadSettingsButton.Name = "ReloadSettingsButton";
-            this.ReloadSettingsButton.Size = new System.Drawing.Size(93, 23);
-            this.ReloadSettingsButton.TabIndex = 146;
-            this.ReloadSettingsButton.Text = "Reload settings";
-            this.ReloadSettingsButton.UseVisualStyleBackColor = true;
-            this.ReloadSettingsButton.Visible = false;
-            this.ReloadSettingsButton.Click += new System.EventHandler(this.ReloadSettingsButton_Click);
-            // 
-            // SaveSettingsButton
-            // 
-            this.SaveSettingsButton.Location = new System.Drawing.Point(105, 540);
-            this.SaveSettingsButton.Name = "SaveSettingsButton";
-            this.SaveSettingsButton.Size = new System.Drawing.Size(93, 23);
-            this.SaveSettingsButton.TabIndex = 147;
-            this.SaveSettingsButton.Text = "Save settings";
-            this.SaveSettingsButton.UseVisualStyleBackColor = true;
-            this.SaveSettingsButton.Click += new System.EventHandler(this.SaveSettingsButton_Click);
-            // 
-            // ReloadShadersButton
-            // 
-            this.ReloadShadersButton.Location = new System.Drawing.Point(6, 569);
-            this.ReloadShadersButton.Name = "ReloadShadersButton";
-            this.ReloadShadersButton.Size = new System.Drawing.Size(93, 23);
-            this.ReloadShadersButton.TabIndex = 148;
-            this.ReloadShadersButton.Text = "Reload shaders";
-            this.ReloadShadersButton.UseVisualStyleBackColor = true;
-            this.ReloadShadersButton.Click += new System.EventHandler(this.ReloadShadersButton_Click);
-            // 
-            // ErrorConsoleCheckBox
-            // 
-            this.ErrorConsoleCheckBox.AutoSize = true;
-            this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(14, 517);
-            this.ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
-            this.ErrorConsoleCheckBox.Size = new System.Drawing.Size(88, 17);
-            this.ErrorConsoleCheckBox.TabIndex = 144;
-            this.ErrorConsoleCheckBox.Text = "Error console";
-            this.ErrorConsoleCheckBox.UseVisualStyleBackColor = true;
-            this.ErrorConsoleCheckBox.CheckedChanged += new System.EventHandler(this.ErrorConsoleCheckBox_CheckedChanged);
-            // 
-            // ToolsPanelHideButton
-            // 
-            this.ToolsPanelHideButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ToolsPanelHideButton.Location = new System.Drawing.Point(185, 3);
-            this.ToolsPanelHideButton.Name = "ToolsPanelHideButton";
-            this.ToolsPanelHideButton.Size = new System.Drawing.Size(30, 23);
-            this.ToolsPanelHideButton.TabIndex = 4;
-            this.ToolsPanelHideButton.Text = ">>";
-            this.ToolsPanelHideButton.UseVisualStyleBackColor = true;
-            this.ToolsPanelHideButton.Click += new System.EventHandler(this.ToolsPanelHideButton_Click);
-            // 
-            // ToolsPanelShowButton
-            // 
-            this.ToolsPanelShowButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ToolsPanelShowButton.Location = new System.Drawing.Point(939, 15);
-            this.ToolsPanelShowButton.Name = "ToolsPanelShowButton";
-            this.ToolsPanelShowButton.Size = new System.Drawing.Size(30, 23);
-            this.ToolsPanelShowButton.TabIndex = 0;
-            this.ToolsPanelShowButton.Text = "<<";
-            this.ToolsPanelShowButton.UseVisualStyleBackColor = true;
-            this.ToolsPanelShowButton.Click += new System.EventHandler(this.ToolsPanelShowButton_Click);
-            // 
-            // ConsolePanel
-            // 
-            this.ConsolePanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConsolePanel.BackColor = System.Drawing.SystemColors.Control;
-            this.ConsolePanel.Controls.Add(this.ConsoleTextBox);
-            this.ConsolePanel.Location = new System.Drawing.Point(12, 576);
-            this.ConsolePanel.Name = "ConsolePanel";
-            this.ConsolePanel.Size = new System.Drawing.Size(736, 101);
-            this.ConsolePanel.TabIndex = 3;
-            this.ConsolePanel.Visible = false;
-            // 
-            // ConsoleTextBox
-            // 
-            this.ConsoleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConsoleTextBox.Location = new System.Drawing.Point(3, 3);
-            this.ConsoleTextBox.Multiline = true;
-            this.ConsoleTextBox.Name = "ConsoleTextBox";
-            this.ConsoleTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.ConsoleTextBox.Size = new System.Drawing.Size(730, 95);
-            this.ConsoleTextBox.TabIndex = 0;
-            // 
-            // StatsUpdateTimer
-            // 
-            this.StatsUpdateTimer.Enabled = true;
-            this.StatsUpdateTimer.Interval = 500;
-            this.StatsUpdateTimer.Tick += new System.EventHandler(this.StatsUpdateTimer_Tick);
-            // 
-            // SelectedMarkerPanel
-            // 
-            this.SelectedMarkerPanel.BackColor = System.Drawing.Color.White;
-            this.SelectedMarkerPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.SelectedMarkerPanel.Controls.Add(this.SelectedMarkerPositionTextBox);
-            this.SelectedMarkerPanel.Controls.Add(this.SelectedMarkerNameTextBox);
-            this.SelectedMarkerPanel.Location = new System.Drawing.Point(12, 64);
-            this.SelectedMarkerPanel.Name = "SelectedMarkerPanel";
-            this.SelectedMarkerPanel.Size = new System.Drawing.Size(180, 42);
-            this.SelectedMarkerPanel.TabIndex = 5;
-            this.SelectedMarkerPanel.Visible = false;
-            // 
-            // SelectedMarkerPositionTextBox
-            // 
-            this.SelectedMarkerPositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelectedMarkerPositionTextBox.BackColor = System.Drawing.Color.White;
-            this.SelectedMarkerPositionTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.SelectedMarkerPositionTextBox.Location = new System.Drawing.Point(3, 22);
-            this.SelectedMarkerPositionTextBox.Name = "SelectedMarkerPositionTextBox";
-            this.SelectedMarkerPositionTextBox.ReadOnly = true;
-            this.SelectedMarkerPositionTextBox.Size = new System.Drawing.Size(172, 13);
-            this.SelectedMarkerPositionTextBox.TabIndex = 1;
-            // 
-            // SelectedMarkerNameTextBox
-            // 
-            this.SelectedMarkerNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.SelectedMarkerNameTextBox.BackColor = System.Drawing.Color.White;
-            this.SelectedMarkerNameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.SelectedMarkerNameTextBox.Location = new System.Drawing.Point(3, 3);
-            this.SelectedMarkerNameTextBox.Name = "SelectedMarkerNameTextBox";
-            this.SelectedMarkerNameTextBox.ReadOnly = true;
-            this.SelectedMarkerNameTextBox.Size = new System.Drawing.Size(172, 13);
-            this.SelectedMarkerNameTextBox.TabIndex = 0;
-            // 
-            // ToolsMenu
-            // 
-            this.ToolsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolsMenuRPFBrowser,
-            this.ToolsMenuRPFExplorer,
-            this.ToolsMenuSelectionInfo,
-            this.ToolsMenuProjectWindow,
-            this.ToolsMenuCutsceneViewer,
-            this.ToolsMenuAudioExplorer,
-            this.ToolsMenuWorldSearch,
-            this.ToolsMenuBinarySearch,
-            this.ToolsMenuJenkGen,
-            this.ToolsMenuJenkInd,
-            this.ToolsMenuExtractScripts,
-            this.ToolsMenuExtractTextures,
-            this.ToolsMenuExtractRawFiles,
-            this.ToolsMenuExtractShaders,
-            this.ToolsMenuOptions});
-            this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(170, 334);
-            // 
-            // ToolsMenuRPFBrowser
-            // 
-            this.ToolsMenuRPFBrowser.Name = "ToolsMenuRPFBrowser";
-            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuRPFBrowser.Text = "RPF Browser...";
-            this.ToolsMenuRPFBrowser.Visible = false;
-            this.ToolsMenuRPFBrowser.Click += new System.EventHandler(this.ToolsMenuRPFBrowser_Click);
-            // 
-            // ToolsMenuRPFExplorer
-            // 
-            this.ToolsMenuRPFExplorer.Name = "ToolsMenuRPFExplorer";
-            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuRPFExplorer.Text = "RPF Explorer...";
-            this.ToolsMenuRPFExplorer.Click += new System.EventHandler(this.ToolsMenuRPFExplorer_Click);
-            // 
-            // ToolsMenuSelectionInfo
-            // 
-            this.ToolsMenuSelectionInfo.Name = "ToolsMenuSelectionInfo";
-            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuSelectionInfo.Text = "Selection info...";
-            this.ToolsMenuSelectionInfo.Click += new System.EventHandler(this.ToolsMenuSelectionInfo_Click);
-            // 
-            // ToolsMenuProjectWindow
-            // 
-            this.ToolsMenuProjectWindow.Enabled = false;
-            this.ToolsMenuProjectWindow.Name = "ToolsMenuProjectWindow";
-            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuProjectWindow.Text = "Project window...";
-            this.ToolsMenuProjectWindow.Click += new System.EventHandler(this.ToolsMenuProjectWindow_Click);
-            // 
-            // ToolsMenuCutsceneViewer
-            // 
-            this.ToolsMenuCutsceneViewer.Enabled = false;
-            this.ToolsMenuCutsceneViewer.Name = "ToolsMenuCutsceneViewer";
-            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuCutsceneViewer.Text = "Cutscene viewer...";
-            this.ToolsMenuCutsceneViewer.Click += new System.EventHandler(this.ToolsMenuCutsceneViewer_Click);
-            // 
-            // ToolsMenuAudioExplorer
-            // 
-            this.ToolsMenuAudioExplorer.Enabled = false;
-            this.ToolsMenuAudioExplorer.Name = "ToolsMenuAudioExplorer";
-            this.ToolsMenuAudioExplorer.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuAudioExplorer.Text = "Audio explorer...";
-            this.ToolsMenuAudioExplorer.Click += new System.EventHandler(this.ToolsMenuAudioExplorer_Click);
-            // 
-            // ToolsMenuWorldSearch
-            // 
-            this.ToolsMenuWorldSearch.Name = "ToolsMenuWorldSearch";
-            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuWorldSearch.Text = "World search...";
-            this.ToolsMenuWorldSearch.Click += new System.EventHandler(this.ToolsMenuWorldSearch_Click);
-            // 
-            // ToolsMenuBinarySearch
-            // 
-            this.ToolsMenuBinarySearch.Enabled = false;
-            this.ToolsMenuBinarySearch.Name = "ToolsMenuBinarySearch";
-            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuBinarySearch.Text = "Binary search...";
-            this.ToolsMenuBinarySearch.Click += new System.EventHandler(this.ToolsMenuBinarySearch_Click);
-            // 
-            // ToolsMenuJenkGen
-            // 
-            this.ToolsMenuJenkGen.Name = "ToolsMenuJenkGen";
-            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuJenkGen.Text = "JenkGen...";
-            this.ToolsMenuJenkGen.Click += new System.EventHandler(this.ToolsMenuJenkGen_Click);
-            // 
-            // ToolsMenuJenkInd
-            // 
-            this.ToolsMenuJenkInd.Enabled = false;
-            this.ToolsMenuJenkInd.Name = "ToolsMenuJenkInd";
-            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuJenkInd.Text = "JenkInd...";
-            this.ToolsMenuJenkInd.Click += new System.EventHandler(this.ToolsMenuJenkInd_Click);
-            // 
-            // ToolsMenuExtractScripts
-            // 
-            this.ToolsMenuExtractScripts.Name = "ToolsMenuExtractScripts";
-            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuExtractScripts.Text = "Extract scripts...";
-            this.ToolsMenuExtractScripts.Click += new System.EventHandler(this.ToolsMenuExtractScripts_Click);
-            // 
-            // ToolsMenuExtractTextures
-            // 
-            this.ToolsMenuExtractTextures.Name = "ToolsMenuExtractTextures";
-            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuExtractTextures.Text = "Extract textures...";
-            this.ToolsMenuExtractTextures.Click += new System.EventHandler(this.ToolsMenuExtractTextures_Click);
-            // 
-            // ToolsMenuExtractRawFiles
-            // 
-            this.ToolsMenuExtractRawFiles.Name = "ToolsMenuExtractRawFiles";
-            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuExtractRawFiles.Text = "Extract raw files...";
-            this.ToolsMenuExtractRawFiles.Click += new System.EventHandler(this.ToolsMenuExtractRawFiles_Click);
-            // 
-            // ToolsMenuExtractShaders
-            // 
-            this.ToolsMenuExtractShaders.Name = "ToolsMenuExtractShaders";
-            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuExtractShaders.Text = "Extract shaders...";
-            this.ToolsMenuExtractShaders.Click += new System.EventHandler(this.ToolsMenuExtractShaders_Click);
-            // 
-            // ToolsMenuOptions
-            // 
-            this.ToolsMenuOptions.Name = "ToolsMenuOptions";
-            this.ToolsMenuOptions.Size = new System.Drawing.Size(169, 22);
-            this.ToolsMenuOptions.Text = "Options...";
-            this.ToolsMenuOptions.Click += new System.EventHandler(this.ToolsMenuOptions_Click);
-            // 
-            // Toolbar
-            // 
-            this.Toolbar.Dock = System.Windows.Forms.DockStyle.None;
-            this.Toolbar.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.Toolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarNewButton,
-            this.ToolbarOpenButton,
-            this.ToolbarSaveButton,
-            this.ToolbarSaveAllButton,
-            this.toolStripSeparator5,
-            this.ToolbarSelectButton,
-            this.toolStripSeparator1,
-            this.ToolbarMoveButton,
-            this.ToolbarRotateButton,
-            this.ToolbarScaleButton,
-            this.ToolbarTransformSpaceButton,
-            this.ToolbarSnapButton,
-            this.toolStripSeparator2,
-            this.ToolbarUndoButton,
-            this.ToolbarRedoButton,
-            this.toolStripSeparator3,
-            this.ToolbarInfoWindowButton,
-            this.ToolbarProjectWindowButton,
-            this.toolStripSeparator4,
-            this.ToolbarAddItemButton,
-            this.ToolbarDeleteItemButton,
-            this.toolStripSeparator6,
-            this.ToolbarCopyButton,
-            this.ToolbarPasteButton,
-            this.toolStripSeparator7,
-            this.ToolbarCameraModeButton});
-            this.Toolbar.Location = new System.Drawing.Point(1, 0);
-            this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(554, 25);
-            this.Toolbar.TabIndex = 6;
-            this.Toolbar.Text = "toolStrip1";
-            // 
-            // ToolbarNewButton
-            // 
-            this.ToolbarNewButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarNewButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarNewProjectButton,
-            this.ToolbarNewYmapButton,
-            this.ToolbarNewYtypButton,
-            this.ToolbarNewYbnButton,
-            this.ToolbarNewYndButton,
-            this.ToolbarNewTrainsButton,
-            this.ToolbarNewScenarioButton});
-            this.ToolbarNewButton.Enabled = false;
-            this.ToolbarNewButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarNewButton.Image")));
-            this.ToolbarNewButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarNewButton.Name = "ToolbarNewButton";
-            this.ToolbarNewButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarNewButton.Text = "New...";
-            this.ToolbarNewButton.ToolTipText = "New... (Ctrl+N)";
-            this.ToolbarNewButton.ButtonClick += new System.EventHandler(this.ToolbarNewButton_ButtonClick);
-            // 
-            // ToolbarNewProjectButton
-            // 
-            this.ToolbarNewProjectButton.Name = "ToolbarNewProjectButton";
-            this.ToolbarNewProjectButton.Size = new System.Drawing.Size(167, 22);
-            this.ToolbarNewProjectButton.Text = "New Project";
-            this.ToolbarNewProjectButton.Click += new System.EventHandler(this.ToolbarNewProjectButton_Click);
-            // 
-            // ToolbarNewYmapButton
-            // 
-            this.ToolbarNewYmapButton.Name = "ToolbarNewYmapButton";
-            this.ToolbarNewYmapButton.Size = new System.Drawing.Size(167, 22);
-            this.ToolbarNewYmapButton.Text = "New Ymap File";
-            this.ToolbarNewYmapButton.Click += new System.EventHandler(this.ToolbarNewYmapButton_Click);
-            // 
-            // ToolbarNewYtypButton
-            // 
-            this.ToolbarNewYtypButton.Name = "ToolbarNewYtypButton";
-            this.ToolbarNewYtypButton.Size = new System.Drawing.Size(167, 22);
-            this.ToolbarNewYtypButton.Text = "New Ytyp File";
-            this.ToolbarNewYtypButton.Click += new System.EventHandler(this.ToolbarNewYtypButton_Click);
-            // 
-            // ToolbarNewYbnButton
-            // 
-            this.ToolbarNewYbnButton.Name = "ToolbarNewYbnButton";
-            this.ToolbarNewYbnButton.Size = new System.Drawing.Size(167, 22);
-            this.ToolbarNewYbnButton.Text = "New Ybn File";
-            this.ToolbarNewYbnButton.Click += new System.EventHandler(this.ToolbarNewYbnButton_Click);
-            // 
-            // ToolbarNewYndButton
-            // 
-            this.ToolbarNewYndButton.Name = "ToolbarNewYndButton";
-            this.ToolbarNewYndButton.Size = new System.Drawing.Size(167, 22);
-            this.ToolbarNewYndButton.Text = "New Ynd File";
-            this.ToolbarNewYndButton.Click += new System.EventHandler(this.ToolbarNewYndButton_Click);
-            // 
-            // ToolbarNewTrainsButton
-            // 
-            this.ToolbarNewTrainsButton.Name = "ToolbarNewTrainsButton";
-            this.ToolbarNewTrainsButton.Size = new System.Drawing.Size(167, 22);
-            this.ToolbarNewTrainsButton.Text = "New Trains File";
-            this.ToolbarNewTrainsButton.Click += new System.EventHandler(this.ToolbarNewTrainsButton_Click);
-            // 
-            // ToolbarNewScenarioButton
-            // 
-            this.ToolbarNewScenarioButton.Name = "ToolbarNewScenarioButton";
-            this.ToolbarNewScenarioButton.Size = new System.Drawing.Size(167, 22);
-            this.ToolbarNewScenarioButton.Text = "New Scenario File";
-            this.ToolbarNewScenarioButton.Click += new System.EventHandler(this.ToolbarNewScenarioButton_Click);
-            // 
-            // ToolbarOpenButton
-            // 
-            this.ToolbarOpenButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarOpenButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarOpenProjectButton,
-            this.ToolbarOpenFilesButton,
-            this.ToolbarOpenFolderButton});
-            this.ToolbarOpenButton.Enabled = false;
-            this.ToolbarOpenButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarOpenButton.Image")));
-            this.ToolbarOpenButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarOpenButton.Name = "ToolbarOpenButton";
-            this.ToolbarOpenButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarOpenButton.Text = "Open...";
-            this.ToolbarOpenButton.ToolTipText = "Open... (Ctrl+O)";
-            this.ToolbarOpenButton.ButtonClick += new System.EventHandler(this.ToolbarOpenButton_ButtonClick);
-            // 
-            // ToolbarOpenProjectButton
-            // 
-            this.ToolbarOpenProjectButton.Name = "ToolbarOpenProjectButton";
-            this.ToolbarOpenProjectButton.Size = new System.Drawing.Size(152, 22);
-            this.ToolbarOpenProjectButton.Text = "Open Project...";
-            this.ToolbarOpenProjectButton.Click += new System.EventHandler(this.ToolbarOpenProjectButton_Click);
-            // 
-            // ToolbarOpenFilesButton
-            // 
-            this.ToolbarOpenFilesButton.Name = "ToolbarOpenFilesButton";
-            this.ToolbarOpenFilesButton.Size = new System.Drawing.Size(152, 22);
-            this.ToolbarOpenFilesButton.Text = "Open Files...";
-            this.ToolbarOpenFilesButton.Click += new System.EventHandler(this.ToolbarOpenFilesButton_Click);
-            // 
-            // ToolbarOpenFolderButton
-            // 
-            this.ToolbarOpenFolderButton.Name = "ToolbarOpenFolderButton";
-            this.ToolbarOpenFolderButton.Size = new System.Drawing.Size(152, 22);
-            this.ToolbarOpenFolderButton.Text = "Open Folder...";
-            this.ToolbarOpenFolderButton.Click += new System.EventHandler(this.ToolbarOpenFolderButton_Click);
-            // 
-            // ToolbarSaveButton
-            // 
-            this.ToolbarSaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarSaveButton.Enabled = false;
-            this.ToolbarSaveButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSaveButton.Image")));
-            this.ToolbarSaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarSaveButton.Name = "ToolbarSaveButton";
-            this.ToolbarSaveButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarSaveButton.Text = "Save";
-            this.ToolbarSaveButton.ToolTipText = "Save (Ctrl+S)";
-            this.ToolbarSaveButton.Click += new System.EventHandler(this.ToolbarSaveButton_Click);
-            // 
-            // ToolbarSaveAllButton
-            // 
-            this.ToolbarSaveAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarSaveAllButton.Enabled = false;
-            this.ToolbarSaveAllButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSaveAllButton.Image")));
-            this.ToolbarSaveAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarSaveAllButton.Name = "ToolbarSaveAllButton";
-            this.ToolbarSaveAllButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarSaveAllButton.Text = "Save All";
-            this.ToolbarSaveAllButton.ToolTipText = "Save All (Ctrl+Shift+S)";
-            this.ToolbarSaveAllButton.Click += new System.EventHandler(this.ToolbarSaveAllButton_Click);
-            // 
-            // toolStripSeparator5
-            // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolbarSelectButton
-            // 
-            this.ToolbarSelectButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarSelectButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarSelectEntityButton,
-            this.ToolbarSelectEntityExtensionButton,
-            this.ToolbarSelectArchetypeExtensionButton,
-            this.ToolbarSelectTimeCycleModifierButton,
-            this.ToolbarSelectCarGeneratorButton,
-            this.ToolbarSelectGrassButton,
-            this.ToolbarSelectWaterQuadButton,
-            this.ToolbarSelectCalmingQuadButton,
-            this.ToolbarSelectWaveQuadButton,
-            this.ToolbarSelectCollisionButton,
-            this.ToolbarSelectNavMeshButton,
-            this.ToolbarSelectPathButton,
-            this.ToolbarSelectTrainTrackButton,
-            this.ToolbarSelectLodLightsButton,
-            this.ToolbarSelectMloInstanceButton,
-            this.ToolbarSelectScenarioButton,
-            this.ToolbarSelectAudioButton,
-            this.ToolbarSelectOcclusionButton});
-            this.ToolbarSelectButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSelectButton.Image")));
-            this.ToolbarSelectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarSelectButton.Name = "ToolbarSelectButton";
-            this.ToolbarSelectButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarSelectButton.Text = "Select objects / Exit edit mode";
-            this.ToolbarSelectButton.ToolTipText = "Select objects / Exit edit mode (C, Q)";
-            this.ToolbarSelectButton.ButtonClick += new System.EventHandler(this.ToolbarSelectButton_ButtonClick);
-            // 
-            // ToolbarSelectEntityButton
-            // 
-            this.ToolbarSelectEntityButton.Checked = true;
-            this.ToolbarSelectEntityButton.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ToolbarSelectEntityButton.Name = "ToolbarSelectEntityButton";
-            this.ToolbarSelectEntityButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectEntityButton.Text = "Entity";
-            this.ToolbarSelectEntityButton.Click += new System.EventHandler(this.ToolbarSelectEntityButton_Click);
-            // 
-            // ToolbarSelectEntityExtensionButton
-            // 
-            this.ToolbarSelectEntityExtensionButton.Name = "ToolbarSelectEntityExtensionButton";
-            this.ToolbarSelectEntityExtensionButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectEntityExtensionButton.Text = "Entity Extension";
-            this.ToolbarSelectEntityExtensionButton.Click += new System.EventHandler(this.ToolbarSelectEntityExtensionButton_Click);
-            // 
-            // ToolbarSelectArchetypeExtensionButton
-            // 
-            this.ToolbarSelectArchetypeExtensionButton.Name = "ToolbarSelectArchetypeExtensionButton";
-            this.ToolbarSelectArchetypeExtensionButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectArchetypeExtensionButton.Text = "Archetype Extension";
-            this.ToolbarSelectArchetypeExtensionButton.Click += new System.EventHandler(this.ToolbarSelectArchetypeExtensionButton_Click);
-            // 
-            // ToolbarSelectTimeCycleModifierButton
-            // 
-            this.ToolbarSelectTimeCycleModifierButton.Name = "ToolbarSelectTimeCycleModifierButton";
-            this.ToolbarSelectTimeCycleModifierButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectTimeCycleModifierButton.Text = "Time Cycle Modifier";
-            this.ToolbarSelectTimeCycleModifierButton.Click += new System.EventHandler(this.ToolbarSelectTimeCycleModifierButton_Click);
-            // 
-            // ToolbarSelectCarGeneratorButton
-            // 
-            this.ToolbarSelectCarGeneratorButton.Name = "ToolbarSelectCarGeneratorButton";
-            this.ToolbarSelectCarGeneratorButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectCarGeneratorButton.Text = "Car Generator";
-            this.ToolbarSelectCarGeneratorButton.Click += new System.EventHandler(this.ToolbarSelectCarGeneratorButton_Click);
-            // 
-            // ToolbarSelectGrassButton
-            // 
-            this.ToolbarSelectGrassButton.Name = "ToolbarSelectGrassButton";
-            this.ToolbarSelectGrassButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectGrassButton.Text = "Grass";
-            this.ToolbarSelectGrassButton.Click += new System.EventHandler(this.ToolbarSelectGrassButton_Click);
-            // 
-            // ToolbarSelectWaterQuadButton
-            // 
-            this.ToolbarSelectWaterQuadButton.Name = "ToolbarSelectWaterQuadButton";
-            this.ToolbarSelectWaterQuadButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectWaterQuadButton.Text = "Water Quad";
-            this.ToolbarSelectWaterQuadButton.Click += new System.EventHandler(this.ToolbarSelectWaterQuadButton_Click);
-            // 
-            // ToolbarSelectCalmingQuadButton
-            // 
-            this.ToolbarSelectCalmingQuadButton.Name = "ToolbarSelectCalmingQuadButton";
-            this.ToolbarSelectCalmingQuadButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectCalmingQuadButton.Text = "Water Calming Quad";
-            this.ToolbarSelectCalmingQuadButton.Click += new System.EventHandler(this.ToolbarSelectCalmingQuadButton_Click);
-            // 
-            // ToolbarSelectWaveQuadButton
-            // 
-            this.ToolbarSelectWaveQuadButton.Name = "ToolbarSelectWaveQuadButton";
-            this.ToolbarSelectWaveQuadButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectWaveQuadButton.Text = "Water Wave Quad";
-            this.ToolbarSelectWaveQuadButton.Click += new System.EventHandler(this.ToolbarSelectWaveQuadButton_Click);
-            // 
-            // ToolbarSelectCollisionButton
-            // 
-            this.ToolbarSelectCollisionButton.Name = "ToolbarSelectCollisionButton";
-            this.ToolbarSelectCollisionButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectCollisionButton.Text = "Collision";
-            this.ToolbarSelectCollisionButton.Click += new System.EventHandler(this.ToolbarSelectCollisionButton_Click);
-            // 
-            // ToolbarSelectNavMeshButton
-            // 
-            this.ToolbarSelectNavMeshButton.Name = "ToolbarSelectNavMeshButton";
-            this.ToolbarSelectNavMeshButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectNavMeshButton.Text = "Nav Mesh";
-            this.ToolbarSelectNavMeshButton.Click += new System.EventHandler(this.ToolbarSelectNavMeshButton_Click);
-            // 
-            // ToolbarSelectPathButton
-            // 
-            this.ToolbarSelectPathButton.Name = "ToolbarSelectPathButton";
-            this.ToolbarSelectPathButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectPathButton.Text = "Traffic Path";
-            this.ToolbarSelectPathButton.Click += new System.EventHandler(this.ToolbarSelectPathButton_Click);
-            // 
-            // ToolbarSelectTrainTrackButton
-            // 
-            this.ToolbarSelectTrainTrackButton.Name = "ToolbarSelectTrainTrackButton";
-            this.ToolbarSelectTrainTrackButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectTrainTrackButton.Text = "Train Track";
-            this.ToolbarSelectTrainTrackButton.Click += new System.EventHandler(this.ToolbarSelectTrainTrackButton_Click);
-            // 
-            // ToolbarSelectLodLightsButton
-            // 
-            this.ToolbarSelectLodLightsButton.Name = "ToolbarSelectLodLightsButton";
-            this.ToolbarSelectLodLightsButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectLodLightsButton.Text = "Lod Lights";
-            this.ToolbarSelectLodLightsButton.Click += new System.EventHandler(this.ToolbarSelectLodLightsButton_Click);
-            // 
-            // ToolbarSelectMloInstanceButton
-            // 
-            this.ToolbarSelectMloInstanceButton.Name = "ToolbarSelectMloInstanceButton";
-            this.ToolbarSelectMloInstanceButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectMloInstanceButton.Text = "Interior Instance";
-            this.ToolbarSelectMloInstanceButton.Click += new System.EventHandler(this.ToolbarSelectMloInstanceButton_Click);
-            // 
-            // ToolbarSelectScenarioButton
-            // 
-            this.ToolbarSelectScenarioButton.Name = "ToolbarSelectScenarioButton";
-            this.ToolbarSelectScenarioButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectScenarioButton.Text = "Scenario";
-            this.ToolbarSelectScenarioButton.Click += new System.EventHandler(this.ToolbarSelectScenarioButton_Click);
-            // 
-            // ToolbarSelectAudioButton
-            // 
-            this.ToolbarSelectAudioButton.Name = "ToolbarSelectAudioButton";
-            this.ToolbarSelectAudioButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectAudioButton.Text = "Audio";
-            this.ToolbarSelectAudioButton.Click += new System.EventHandler(this.ToolbarSelectAudioButton_Click);
-            // 
-            // ToolbarSelectOcclusionButton
-            // 
-            this.ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
-            this.ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(185, 22);
-            this.ToolbarSelectOcclusionButton.Text = "Occlusion";
-            this.ToolbarSelectOcclusionButton.Click += new System.EventHandler(this.ToolbarSelectOcclusionButton_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolbarMoveButton
-            // 
-            this.ToolbarMoveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarMoveButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarMoveButton.Image")));
-            this.ToolbarMoveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarMoveButton.Name = "ToolbarMoveButton";
-            this.ToolbarMoveButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarMoveButton.Text = "Move";
-            this.ToolbarMoveButton.ToolTipText = "Move (W)";
-            this.ToolbarMoveButton.Click += new System.EventHandler(this.ToolbarMoveButton_Click);
-            // 
-            // ToolbarRotateButton
-            // 
-            this.ToolbarRotateButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarRotateButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarRotateButton.Image")));
-            this.ToolbarRotateButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarRotateButton.Name = "ToolbarRotateButton";
-            this.ToolbarRotateButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarRotateButton.Text = "Rotate";
-            this.ToolbarRotateButton.ToolTipText = "Rotate (E)";
-            this.ToolbarRotateButton.Click += new System.EventHandler(this.ToolbarRotateButton_Click);
-            // 
-            // ToolbarScaleButton
-            // 
-            this.ToolbarScaleButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarScaleButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarScaleButton.Image")));
-            this.ToolbarScaleButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarScaleButton.Name = "ToolbarScaleButton";
-            this.ToolbarScaleButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarScaleButton.Text = "Scale";
-            this.ToolbarScaleButton.ToolTipText = "Scale (R)";
-            this.ToolbarScaleButton.Click += new System.EventHandler(this.ToolbarScaleButton_Click);
-            // 
-            // ToolbarTransformSpaceButton
-            // 
-            this.ToolbarTransformSpaceButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarTransformSpaceButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarObjectSpaceButton,
-            this.ToolbarWorldSpaceButton});
-            this.ToolbarTransformSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarTransformSpaceButton.Image")));
-            this.ToolbarTransformSpaceButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarTransformSpaceButton.Name = "ToolbarTransformSpaceButton";
-            this.ToolbarTransformSpaceButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarTransformSpaceButton.Text = "Toggle transform space";
-            this.ToolbarTransformSpaceButton.ButtonClick += new System.EventHandler(this.ToolbarTransformSpaceButton_ButtonClick);
-            // 
-            // ToolbarObjectSpaceButton
-            // 
-            this.ToolbarObjectSpaceButton.Checked = true;
-            this.ToolbarObjectSpaceButton.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ToolbarObjectSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarObjectSpaceButton.Image")));
-            this.ToolbarObjectSpaceButton.Name = "ToolbarObjectSpaceButton";
-            this.ToolbarObjectSpaceButton.Size = new System.Drawing.Size(142, 22);
-            this.ToolbarObjectSpaceButton.Text = "Object space";
-            this.ToolbarObjectSpaceButton.Click += new System.EventHandler(this.ToolbarObjectSpaceButton_Click);
-            // 
-            // ToolbarWorldSpaceButton
-            // 
-            this.ToolbarWorldSpaceButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarWorldSpaceButton.Image")));
-            this.ToolbarWorldSpaceButton.Name = "ToolbarWorldSpaceButton";
-            this.ToolbarWorldSpaceButton.Size = new System.Drawing.Size(142, 22);
-            this.ToolbarWorldSpaceButton.Text = "World space";
-            this.ToolbarWorldSpaceButton.Click += new System.EventHandler(this.ToolbarWorldSpaceButton_Click);
-            // 
-            // ToolbarSnapButton
-            // 
-            this.ToolbarSnapButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarSnapButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarSnapToGroundButton,
-            this.ToolbarSnapToGridButton,
-            this.ToolbarSnapToGroundGridButton,
-            this.ToolbarSnapGridSizeButton,
-            this.ToolbarRotationSnappingButton});
-            this.ToolbarSnapButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapButton.Image")));
-            this.ToolbarSnapButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarSnapButton.Name = "ToolbarSnapButton";
-            this.ToolbarSnapButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarSnapButton.Text = "Snap to Ground";
-            this.ToolbarSnapButton.ToolTipText = "Snap to Ground";
-            this.ToolbarSnapButton.ButtonClick += new System.EventHandler(this.ToolbarSnapButton_ButtonClick);
-            // 
-            // ToolbarSnapToGroundButton
-            // 
-            this.ToolbarSnapToGroundButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundButton.Image")));
-            this.ToolbarSnapToGroundButton.Name = "ToolbarSnapToGroundButton";
-            this.ToolbarSnapToGroundButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapToGroundButton.Text = "Snap to Ground";
-            this.ToolbarSnapToGroundButton.Click += new System.EventHandler(this.ToolbarSnapToGroundButton_Click);
-            // 
-            // ToolbarSnapToGridButton
-            // 
-            this.ToolbarSnapToGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGridButton.Image")));
-            this.ToolbarSnapToGridButton.Name = "ToolbarSnapToGridButton";
-            this.ToolbarSnapToGridButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapToGridButton.Text = "Snap to Grid";
-            this.ToolbarSnapToGridButton.Click += new System.EventHandler(this.ToolbarSnapToGridButton_Click);
-            // 
-            // ToolbarSnapToGroundGridButton
-            // 
-            this.ToolbarSnapToGroundGridButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapToGroundGridButton.Image")));
-            this.ToolbarSnapToGroundGridButton.Name = "ToolbarSnapToGroundGridButton";
-            this.ToolbarSnapToGroundGridButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapToGroundGridButton.Text = "Snap to Grid and Ground";
-            this.ToolbarSnapToGroundGridButton.Click += new System.EventHandler(this.ToolbarSnapToGroundGridButton_Click);
-            // 
-            // ToolbarSnapGridSizeButton
-            // 
-            this.ToolbarSnapGridSizeButton.Name = "ToolbarSnapGridSizeButton";
-            this.ToolbarSnapGridSizeButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarSnapGridSizeButton.Text = "Grid Size...";
-            this.ToolbarSnapGridSizeButton.Click += new System.EventHandler(this.ToolbarSnapGridSizeButton_Click);
-            // 
-            // ToolbarRotationSnappingButton
-            // 
-            this.ToolbarRotationSnappingButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarRotationSnappingOffButton,
-            this.ToolbarRotationSnapping1Button,
-            this.ToolbarRotationSnapping2Button,
-            this.ToolbarRotationSnapping5Button,
-            this.ToolbarRotationSnapping10Button,
-            this.ToolbarRotationSnapping45Button,
-            this.ToolbarRotationSnapping90Button,
-            this.ToolbarRotationSnappingCustomButton});
-            this.ToolbarRotationSnappingButton.Name = "ToolbarRotationSnappingButton";
-            this.ToolbarRotationSnappingButton.Size = new System.Drawing.Size(205, 22);
-            this.ToolbarRotationSnappingButton.Text = "Rotation Snapping";
-            // 
-            // ToolbarRotationSnappingOffButton
-            // 
-            this.ToolbarRotationSnappingOffButton.Name = "ToolbarRotationSnappingOffButton";
-            this.ToolbarRotationSnappingOffButton.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnappingOffButton.Text = "Off";
-            this.ToolbarRotationSnappingOffButton.Click += new System.EventHandler(this.ToolbarRotationSnappingOffButton_Click);
-            // 
-            // ToolbarRotationSnapping1Button
-            // 
-            this.ToolbarRotationSnapping1Button.Name = "ToolbarRotationSnapping1Button";
-            this.ToolbarRotationSnapping1Button.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnapping1Button.Text = "1 Degree";
-            this.ToolbarRotationSnapping1Button.Click += new System.EventHandler(this.ToolbarRotationSnapping1Button_Click);
-            // 
-            // ToolbarRotationSnapping2Button
-            // 
-            this.ToolbarRotationSnapping2Button.Name = "ToolbarRotationSnapping2Button";
-            this.ToolbarRotationSnapping2Button.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnapping2Button.Text = "2 Degrees";
-            this.ToolbarRotationSnapping2Button.Click += new System.EventHandler(this.ToolbarRotationSnapping2Button_Click);
-            // 
-            // ToolbarRotationSnapping5Button
-            // 
-            this.ToolbarRotationSnapping5Button.Checked = true;
-            this.ToolbarRotationSnapping5Button.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ToolbarRotationSnapping5Button.Name = "ToolbarRotationSnapping5Button";
-            this.ToolbarRotationSnapping5Button.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnapping5Button.Text = "5 Degrees";
-            this.ToolbarRotationSnapping5Button.Click += new System.EventHandler(this.ToolbarRotationSnapping5Button_Click);
-            // 
-            // ToolbarRotationSnapping10Button
-            // 
-            this.ToolbarRotationSnapping10Button.Name = "ToolbarRotationSnapping10Button";
-            this.ToolbarRotationSnapping10Button.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnapping10Button.Text = "10 Degrees";
-            this.ToolbarRotationSnapping10Button.Click += new System.EventHandler(this.ToolbarRotationSnapping10Button_Click);
-            // 
-            // ToolbarRotationSnapping45Button
-            // 
-            this.ToolbarRotationSnapping45Button.Name = "ToolbarRotationSnapping45Button";
-            this.ToolbarRotationSnapping45Button.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnapping45Button.Text = "45 Degrees";
-            this.ToolbarRotationSnapping45Button.Click += new System.EventHandler(this.ToolbarRotationSnapping45Button_Click);
-            // 
-            // ToolbarRotationSnapping90Button
-            // 
-            this.ToolbarRotationSnapping90Button.Name = "ToolbarRotationSnapping90Button";
-            this.ToolbarRotationSnapping90Button.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnapping90Button.Text = "90 Degrees";
-            this.ToolbarRotationSnapping90Button.Click += new System.EventHandler(this.ToolbarRotationSnapping90Button_Click);
-            // 
-            // ToolbarRotationSnappingCustomButton
-            // 
-            this.ToolbarRotationSnappingCustomButton.Name = "ToolbarRotationSnappingCustomButton";
-            this.ToolbarRotationSnappingCustomButton.Size = new System.Drawing.Size(131, 22);
-            this.ToolbarRotationSnappingCustomButton.Text = "Custom...";
-            this.ToolbarRotationSnappingCustomButton.Click += new System.EventHandler(this.ToolbarRotationSnappingCustomButton_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolbarUndoButton
-            // 
-            this.ToolbarUndoButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarUndoButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarUndoListButton});
-            this.ToolbarUndoButton.Enabled = false;
-            this.ToolbarUndoButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarUndoButton.Image")));
-            this.ToolbarUndoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarUndoButton.Name = "ToolbarUndoButton";
-            this.ToolbarUndoButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarUndoButton.Text = "Undo";
-            this.ToolbarUndoButton.ButtonClick += new System.EventHandler(this.ToolbarUndoButton_ButtonClick);
-            // 
-            // ToolbarUndoListButton
-            // 
-            this.ToolbarUndoListButton.Name = "ToolbarUndoListButton";
-            this.ToolbarUndoListButton.Size = new System.Drawing.Size(121, 22);
-            this.ToolbarUndoListButton.Text = "Undo list";
-            this.ToolbarUndoListButton.Click += new System.EventHandler(this.ToolbarUndoListButton_Click);
-            // 
-            // ToolbarRedoButton
-            // 
-            this.ToolbarRedoButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarRedoButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarRedoListButton});
-            this.ToolbarRedoButton.Enabled = false;
-            this.ToolbarRedoButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarRedoButton.Image")));
-            this.ToolbarRedoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarRedoButton.Name = "ToolbarRedoButton";
-            this.ToolbarRedoButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarRedoButton.Text = "Redo";
-            this.ToolbarRedoButton.ButtonClick += new System.EventHandler(this.ToolbarRedoButton_ButtonClick);
-            // 
-            // ToolbarRedoListButton
-            // 
-            this.ToolbarRedoListButton.Name = "ToolbarRedoListButton";
-            this.ToolbarRedoListButton.Size = new System.Drawing.Size(119, 22);
-            this.ToolbarRedoListButton.Text = "Redo list";
-            this.ToolbarRedoListButton.Click += new System.EventHandler(this.ToolbarRedoListButton_Click);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolbarInfoWindowButton
-            // 
-            this.ToolbarInfoWindowButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarInfoWindowButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarInfoWindowButton.Image")));
-            this.ToolbarInfoWindowButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarInfoWindowButton.Name = "ToolbarInfoWindowButton";
-            this.ToolbarInfoWindowButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarInfoWindowButton.Text = "Selection info window";
-            this.ToolbarInfoWindowButton.Click += new System.EventHandler(this.ToolbarInfoWindowButton_Click);
-            // 
-            // ToolbarProjectWindowButton
-            // 
-            this.ToolbarProjectWindowButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarProjectWindowButton.Enabled = false;
-            this.ToolbarProjectWindowButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarProjectWindowButton.Image")));
-            this.ToolbarProjectWindowButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarProjectWindowButton.Name = "ToolbarProjectWindowButton";
-            this.ToolbarProjectWindowButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarProjectWindowButton.Text = "Project window";
-            this.ToolbarProjectWindowButton.Click += new System.EventHandler(this.ToolbarProjectWindowButton_Click);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolbarAddItemButton
-            // 
-            this.ToolbarAddItemButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarAddItemButton.Enabled = false;
-            this.ToolbarAddItemButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarAddItemButton.Image")));
-            this.ToolbarAddItemButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarAddItemButton.Name = "ToolbarAddItemButton";
-            this.ToolbarAddItemButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarAddItemButton.Text = "Add entity";
-            this.ToolbarAddItemButton.Click += new System.EventHandler(this.ToolbarAddItemButton_Click);
-            // 
-            // ToolbarDeleteItemButton
-            // 
-            this.ToolbarDeleteItemButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarDeleteItemButton.Enabled = false;
-            this.ToolbarDeleteItemButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarDeleteItemButton.Image")));
-            this.ToolbarDeleteItemButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarDeleteItemButton.Name = "ToolbarDeleteItemButton";
-            this.ToolbarDeleteItemButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarDeleteItemButton.Text = "Delete entity";
-            this.ToolbarDeleteItemButton.Click += new System.EventHandler(this.ToolbarDeleteItemButton_Click);
-            // 
-            // toolStripSeparator6
-            // 
-            this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolbarCopyButton
-            // 
-            this.ToolbarCopyButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarCopyButton.Enabled = false;
-            this.ToolbarCopyButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarCopyButton.Image")));
-            this.ToolbarCopyButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarCopyButton.Name = "ToolbarCopyButton";
-            this.ToolbarCopyButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarCopyButton.Text = "Copy";
-            this.ToolbarCopyButton.ToolTipText = "Copy (Ctrl+C)";
-            this.ToolbarCopyButton.Click += new System.EventHandler(this.ToolbarCopyButton_Click);
-            // 
-            // ToolbarPasteButton
-            // 
-            this.ToolbarPasteButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarPasteButton.Enabled = false;
-            this.ToolbarPasteButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarPasteButton.Image")));
-            this.ToolbarPasteButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarPasteButton.Name = "ToolbarPasteButton";
-            this.ToolbarPasteButton.Size = new System.Drawing.Size(23, 22);
-            this.ToolbarPasteButton.Text = "Paste";
-            this.ToolbarPasteButton.ToolTipText = "Paste (Ctrl+V)";
-            this.ToolbarPasteButton.Click += new System.EventHandler(this.ToolbarPasteButton_Click);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
-            // 
-            // ToolbarCameraModeButton
-            // 
-            this.ToolbarCameraModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ToolbarCameraModeButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ToolbarCameraPerspectiveButton,
-            this.ToolbarCameraMapViewButton,
-            this.ToolbarCameraOrthographicButton});
-            this.ToolbarCameraModeButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarCameraModeButton.Image")));
-            this.ToolbarCameraModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ToolbarCameraModeButton.Name = "ToolbarCameraModeButton";
-            this.ToolbarCameraModeButton.Size = new System.Drawing.Size(32, 22);
-            this.ToolbarCameraModeButton.Text = "Camera Mode";
-            this.ToolbarCameraModeButton.ButtonClick += new System.EventHandler(this.ToolbarCameraModeButton_ButtonClick);
-            // 
-            // ToolbarCameraPerspectiveButton
-            // 
-            this.ToolbarCameraPerspectiveButton.Checked = true;
-            this.ToolbarCameraPerspectiveButton.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ToolbarCameraPerspectiveButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarCameraPerspectiveButton.Image")));
-            this.ToolbarCameraPerspectiveButton.Name = "ToolbarCameraPerspectiveButton";
-            this.ToolbarCameraPerspectiveButton.Size = new System.Drawing.Size(145, 22);
-            this.ToolbarCameraPerspectiveButton.Text = "Perspective";
-            this.ToolbarCameraPerspectiveButton.Click += new System.EventHandler(this.ToolbarCameraPerspectiveButton_Click);
-            // 
-            // ToolbarCameraMapViewButton
-            // 
-            this.ToolbarCameraMapViewButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarCameraMapViewButton.Image")));
-            this.ToolbarCameraMapViewButton.Name = "ToolbarCameraMapViewButton";
-            this.ToolbarCameraMapViewButton.Size = new System.Drawing.Size(145, 22);
-            this.ToolbarCameraMapViewButton.Text = "Map View";
-            this.ToolbarCameraMapViewButton.Click += new System.EventHandler(this.ToolbarCameraMapViewButton_Click);
-            // 
-            // ToolbarCameraOrthographicButton
-            // 
-            this.ToolbarCameraOrthographicButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarCameraOrthographicButton.Image")));
-            this.ToolbarCameraOrthographicButton.Name = "ToolbarCameraOrthographicButton";
-            this.ToolbarCameraOrthographicButton.Size = new System.Drawing.Size(145, 22);
-            this.ToolbarCameraOrthographicButton.Text = "Orthographic";
-            this.ToolbarCameraOrthographicButton.Click += new System.EventHandler(this.ToolbarCameraOrthographicButton_Click);
-            // 
-            // ToolbarPanel
-            // 
-            this.ToolbarPanel.BackColor = System.Drawing.SystemColors.Control;
-            this.ToolbarPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ToolbarPanel.Controls.Add(this.Toolbar);
-            this.ToolbarPanel.Location = new System.Drawing.Point(12, 12);
-            this.ToolbarPanel.Name = "ToolbarPanel";
-            this.ToolbarPanel.Size = new System.Drawing.Size(557, 26);
-            this.ToolbarPanel.TabIndex = 7;
-            this.ToolbarPanel.Visible = false;
-            // 
-            // SubtitleLabel
-            // 
-            this.SubtitleLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.SubtitleLabel.AutoSize = true;
-            this.SubtitleLabel.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.SubtitleLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.SubtitleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SubtitleLabel.Location = new System.Drawing.Point(455, 555);
-            this.SubtitleLabel.Name = "SubtitleLabel";
-            this.SubtitleLabel.Size = new System.Drawing.Size(83, 18);
-            this.SubtitleLabel.TabIndex = 8;
-            this.SubtitleLabel.Text = "Test Subtitle";
-            this.SubtitleLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            this.SubtitleLabel.Visible = false;
-            this.SubtitleLabel.SizeChanged += new System.EventHandler(this.SubtitleLabel_SizeChanged);
-            // 
-            // SubtitleTimer
-            // 
-            this.SubtitleTimer.Tick += new System.EventHandler(this.SubtitleTimer_Tick);
+            // StatusStrip
+            // 
+            StatusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { StatusLabel, MousedLabel, StatsLabel });
+            StatusStrip.Location = new System.Drawing.Point(0, 798);
+            StatusStrip.Name = "StatusStrip";
+            StatusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 16, 0);
+            StatusStrip.Size = new System.Drawing.Size(1148, 22);
+            StatusStrip.TabIndex = 0;
+            StatusStrip.Text = "statusStrip1";
+            // 
+            // StatusLabel
+            // 
+            StatusLabel.BackColor = System.Drawing.SystemColors.Control;
+            StatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            StatusLabel.Name = "StatusLabel";
+            StatusLabel.Size = new System.Drawing.Size(1040, 17);
+            StatusLabel.Spring = true;
+            StatusLabel.Text = "Initialising";
+            StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // MousedLabel
+            // 
+            MousedLabel.BackColor = System.Drawing.SystemColors.Control;
+            MousedLabel.Name = "MousedLabel";
+            MousedLabel.Size = new System.Drawing.Size(16, 17);
+            MousedLabel.Text = "   ";
+            // 
+            // StatsLabel
+            // 
+            StatsLabel.BackColor = System.Drawing.SystemColors.Control;
+            StatsLabel.DoubleClickEnabled = true;
+            StatsLabel.Name = "StatsLabel";
+            StatsLabel.Size = new System.Drawing.Size(75, 17);
+            StatsLabel.Text = "0 geometries";
+            StatsLabel.DoubleClick += StatsLabel_DoubleClick;
+            // 
+            // ModelComboBox
+            // 
+            ModelComboBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            ModelComboBox.FormattingEnabled = true;
+            ModelComboBox.Items.AddRange(new object[] { "dt1_lod_slod3", "dt1_tc_dufo_core", "dt1_tc_ufocore", "ex_office_citymodel_01", "id1_30_build3_dtl2", "imp_prop_ship_01a", "prop_alien_egg_01", "prop_fruit_stand_02", "prop_fruit_stand_03", "dune", "dune2", "dune2_hi", "adder", "adder_hi", "kuruma2", "kuruma2_hi", "infernus", "infernus_hi", "buzzard", "buzzard_hi", "rhino", "rhino_hi", "lazer", "lazer_hi", "duster", "duster_hi", "marquis", "marquis_hi", "submersible", "submersible_hi", "cargobob", "cargobob_hi", "sanchez", "sanchez_hi" });
+            ModelComboBox.Location = new System.Drawing.Point(51, 8);
+            ModelComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ModelComboBox.Name = "ModelComboBox";
+            ModelComboBox.Size = new System.Drawing.Size(174, 23);
+            ModelComboBox.TabIndex = 11;
+            ModelComboBox.SelectedIndexChanged += ModelComboBox_SelectedIndexChanged;
+            ModelComboBox.TextUpdate += ModelComboBox_TextUpdate;
+            // 
+            // ToolsPanel
+            // 
+            ToolsPanel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            ToolsPanel.BackColor = System.Drawing.SystemColors.ControlDark;
+            ToolsPanel.Controls.Add(ToolsDragPanel);
+            ToolsPanel.Controls.Add(AboutButton);
+            ToolsPanel.Controls.Add(ToolsButton);
+            ToolsPanel.Controls.Add(ToolsPanelExpandButton);
+            ToolsPanel.Controls.Add(ToolsTabControl);
+            ToolsPanel.Controls.Add(ToolsPanelHideButton);
+            ToolsPanel.Location = new System.Drawing.Point(880, 14);
+            ToolsPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolsPanel.Name = "ToolsPanel";
+            ToolsPanel.Size = new System.Drawing.Size(254, 767);
+            ToolsPanel.TabIndex = 2;
+            ToolsPanel.Visible = false;
+            // 
+            // ToolsDragPanel
+            // 
+            ToolsDragPanel.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            ToolsDragPanel.Cursor = System.Windows.Forms.Cursors.VSplit;
+            ToolsDragPanel.Location = new System.Drawing.Point(0, 0);
+            ToolsDragPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolsDragPanel.Name = "ToolsDragPanel";
+            ToolsDragPanel.Size = new System.Drawing.Size(5, 767);
+            ToolsDragPanel.TabIndex = 16;
+            ToolsDragPanel.MouseDown += ToolsDragPanel_MouseDown;
+            ToolsDragPanel.MouseMove += ToolsDragPanel_MouseMove;
+            ToolsDragPanel.MouseUp += ToolsDragPanel_MouseUp;
+            // 
+            // AboutButton
+            // 
+            AboutButton.Location = new System.Drawing.Point(75, 3);
+            AboutButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AboutButton.Name = "AboutButton";
+            AboutButton.Size = new System.Drawing.Size(64, 27);
+            AboutButton.TabIndex = 15;
+            AboutButton.Text = "About...";
+            AboutButton.UseVisualStyleBackColor = true;
+            AboutButton.Click += AboutButton_Click;
+            // 
+            // ToolsButton
+            // 
+            ToolsButton.Location = new System.Drawing.Point(4, 3);
+            ToolsButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolsButton.Name = "ToolsButton";
+            ToolsButton.Size = new System.Drawing.Size(64, 27);
+            ToolsButton.TabIndex = 14;
+            ToolsButton.Text = "Tools...";
+            ToolsButton.UseVisualStyleBackColor = true;
+            ToolsButton.Click += ToolsButton_Click;
+            // 
+            // ToolsPanelExpandButton
+            // 
+            ToolsPanelExpandButton.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            ToolsPanelExpandButton.Location = new System.Drawing.Point(174, 3);
+            ToolsPanelExpandButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolsPanelExpandButton.Name = "ToolsPanelExpandButton";
+            ToolsPanelExpandButton.Size = new System.Drawing.Size(35, 27);
+            ToolsPanelExpandButton.TabIndex = 13;
+            ToolsPanelExpandButton.Text = "<<";
+            ToolsPanelExpandButton.UseVisualStyleBackColor = true;
+            ToolsPanelExpandButton.Click += ToolsPanelExpandButton_Click;
+            // 
+            // ToolsTabControl
+            // 
+            ToolsTabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            ToolsTabControl.Controls.Add(ViewTabPage);
+            ToolsTabControl.Controls.Add(MarkersTabPage);
+            ToolsTabControl.Controls.Add(SelectionTabPage);
+            ToolsTabControl.Controls.Add(OptionsTabPage);
+            ToolsTabControl.Location = new System.Drawing.Point(4, 35);
+            ToolsTabControl.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolsTabControl.Name = "ToolsTabControl";
+            ToolsTabControl.SelectedIndex = 0;
+            ToolsTabControl.Size = new System.Drawing.Size(248, 729);
+            ToolsTabControl.TabIndex = 12;
+            // 
+            // ViewTabPage
+            // 
+            ViewTabPage.Controls.Add(ViewTabControl);
+            ViewTabPage.Controls.Add(label3);
+            ViewTabPage.Controls.Add(ViewModeComboBox);
+            ViewTabPage.Controls.Add(ShowToolbarCheckBox);
+            ViewTabPage.Location = new System.Drawing.Point(4, 24);
+            ViewTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewTabPage.Name = "ViewTabPage";
+            ViewTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewTabPage.Size = new System.Drawing.Size(240, 701);
+            ViewTabPage.TabIndex = 0;
+            ViewTabPage.Text = "View";
+            ViewTabPage.UseVisualStyleBackColor = true;
+            // 
+            // ViewTabControl
+            // 
+            ViewTabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            ViewTabControl.Controls.Add(ViewWorldTabPage);
+            ViewTabControl.Controls.Add(ViewYmapsTabPage);
+            ViewTabControl.Controls.Add(ViewModelTabPage);
+            ViewTabControl.Location = new System.Drawing.Point(0, 37);
+            ViewTabControl.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewTabControl.Name = "ViewTabControl";
+            ViewTabControl.SelectedIndex = 0;
+            ViewTabControl.Size = new System.Drawing.Size(236, 632);
+            ViewTabControl.TabIndex = 12;
+            // 
+            // ViewWorldTabPage
+            // 
+            ViewWorldTabPage.Controls.Add(EnableModsCheckBox);
+            ViewWorldTabPage.Controls.Add(label30);
+            ViewWorldTabPage.Controls.Add(DlcLevelComboBox);
+            ViewWorldTabPage.Controls.Add(EnableDlcCheckBox);
+            ViewWorldTabPage.Controls.Add(WorldYmapWeatherFilterCheckBox);
+            ViewWorldTabPage.Controls.Add(WorldYmapTimeFilterCheckBox);
+            ViewWorldTabPage.Controls.Add(WorldScriptedYmapsCheckBox);
+            ViewWorldTabPage.Controls.Add(WorldDetailDistLabel);
+            ViewWorldTabPage.Controls.Add(label18);
+            ViewWorldTabPage.Controls.Add(WorldDetailDistTrackBar);
+            ViewWorldTabPage.Controls.Add(WorldLodDistLabel);
+            ViewWorldTabPage.Controls.Add(label16);
+            ViewWorldTabPage.Controls.Add(WorldLodDistTrackBar);
+            ViewWorldTabPage.Controls.Add(label15);
+            ViewWorldTabPage.Controls.Add(WorldMaxLodComboBox);
+            ViewWorldTabPage.Location = new System.Drawing.Point(4, 24);
+            ViewWorldTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewWorldTabPage.Name = "ViewWorldTabPage";
+            ViewWorldTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewWorldTabPage.Size = new System.Drawing.Size(228, 604);
+            ViewWorldTabPage.TabIndex = 0;
+            ViewWorldTabPage.Text = "World";
+            ViewWorldTabPage.UseVisualStyleBackColor = true;
+            // 
+            // EnableModsCheckBox
+            // 
+            EnableModsCheckBox.AutoSize = true;
+            EnableModsCheckBox.Enabled = false;
+            EnableModsCheckBox.Location = new System.Drawing.Point(7, 323);
+            EnableModsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            EnableModsCheckBox.Name = "EnableModsCheckBox";
+            EnableModsCheckBox.Size = new System.Drawing.Size(94, 19);
+            EnableModsCheckBox.TabIndex = 68;
+            EnableModsCheckBox.Text = "Enable Mods";
+            EnableModsCheckBox.UseVisualStyleBackColor = true;
+            EnableModsCheckBox.CheckedChanged += EnableModsCheckBox_CheckedChanged;
+            // 
+            // label30
+            // 
+            label30.AutoSize = true;
+            label30.Location = new System.Drawing.Point(1, 389);
+            label30.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label30.Name = "label30";
+            label30.Size = new System.Drawing.Size(62, 15);
+            label30.TabIndex = 70;
+            label30.Text = "DLC Level:";
+            // 
+            // DlcLevelComboBox
+            // 
+            DlcLevelComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            DlcLevelComboBox.Enabled = false;
+            DlcLevelComboBox.FormattingEnabled = true;
+            DlcLevelComboBox.Items.AddRange(new object[] { "<Loading...>" });
+            DlcLevelComboBox.Location = new System.Drawing.Point(72, 385);
+            DlcLevelComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            DlcLevelComboBox.Name = "DlcLevelComboBox";
+            DlcLevelComboBox.Size = new System.Drawing.Size(146, 23);
+            DlcLevelComboBox.TabIndex = 70;
+            DlcLevelComboBox.SelectedIndexChanged += DlcLevelComboBox_SelectedIndexChanged;
+            DlcLevelComboBox.KeyPress += DlcLevelComboBox_KeyPress;
+            // 
+            // EnableDlcCheckBox
+            // 
+            EnableDlcCheckBox.AutoSize = true;
+            EnableDlcCheckBox.Enabled = false;
+            EnableDlcCheckBox.Location = new System.Drawing.Point(7, 359);
+            EnableDlcCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            EnableDlcCheckBox.Name = "EnableDlcCheckBox";
+            EnableDlcCheckBox.Size = new System.Drawing.Size(86, 19);
+            EnableDlcCheckBox.TabIndex = 69;
+            EnableDlcCheckBox.Text = "Enable DLC";
+            EnableDlcCheckBox.UseVisualStyleBackColor = true;
+            EnableDlcCheckBox.CheckedChanged += EnableDlcCheckBox_CheckedChanged;
+            // 
+            // WorldYmapWeatherFilterCheckBox
+            // 
+            WorldYmapWeatherFilterCheckBox.AutoSize = true;
+            WorldYmapWeatherFilterCheckBox.Checked = true;
+            WorldYmapWeatherFilterCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            WorldYmapWeatherFilterCheckBox.Location = new System.Drawing.Point(7, 273);
+            WorldYmapWeatherFilterCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WorldYmapWeatherFilterCheckBox.Name = "WorldYmapWeatherFilterCheckBox";
+            WorldYmapWeatherFilterCheckBox.Size = new System.Drawing.Size(151, 19);
+            WorldYmapWeatherFilterCheckBox.TabIndex = 67;
+            WorldYmapWeatherFilterCheckBox.Text = "Filter ymaps by weather";
+            WorldYmapWeatherFilterCheckBox.UseVisualStyleBackColor = true;
+            WorldYmapWeatherFilterCheckBox.CheckedChanged += WorldYmapWeatherFilterCheckBox_CheckedChanged;
+            // 
+            // WorldYmapTimeFilterCheckBox
+            // 
+            WorldYmapTimeFilterCheckBox.AutoSize = true;
+            WorldYmapTimeFilterCheckBox.Checked = true;
+            WorldYmapTimeFilterCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            WorldYmapTimeFilterCheckBox.Location = new System.Drawing.Point(7, 247);
+            WorldYmapTimeFilterCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WorldYmapTimeFilterCheckBox.Name = "WorldYmapTimeFilterCheckBox";
+            WorldYmapTimeFilterCheckBox.Size = new System.Drawing.Size(169, 19);
+            WorldYmapTimeFilterCheckBox.TabIndex = 66;
+            WorldYmapTimeFilterCheckBox.Text = "Filter ymaps by time of day";
+            WorldYmapTimeFilterCheckBox.UseVisualStyleBackColor = true;
+            WorldYmapTimeFilterCheckBox.CheckedChanged += WorldYmapTimeFilterCheckBox_CheckedChanged;
+            // 
+            // WorldScriptedYmapsCheckBox
+            // 
+            WorldScriptedYmapsCheckBox.AutoSize = true;
+            WorldScriptedYmapsCheckBox.Checked = true;
+            WorldScriptedYmapsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            WorldScriptedYmapsCheckBox.Location = new System.Drawing.Point(7, 210);
+            WorldScriptedYmapsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WorldScriptedYmapsCheckBox.Name = "WorldScriptedYmapsCheckBox";
+            WorldScriptedYmapsCheckBox.Size = new System.Drawing.Size(138, 19);
+            WorldScriptedYmapsCheckBox.TabIndex = 65;
+            WorldScriptedYmapsCheckBox.Text = "Show scripted ymaps";
+            WorldScriptedYmapsCheckBox.UseVisualStyleBackColor = true;
+            WorldScriptedYmapsCheckBox.CheckedChanged += WorldScriptedYmapsCheckBox_CheckedChanged;
+            // 
+            // WorldDetailDistLabel
+            // 
+            WorldDetailDistLabel.AutoSize = true;
+            WorldDetailDistLabel.Location = new System.Drawing.Point(102, 108);
+            WorldDetailDistLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            WorldDetailDistLabel.Name = "WorldDetailDistLabel";
+            WorldDetailDistLabel.Size = new System.Drawing.Size(22, 15);
+            WorldDetailDistLabel.TabIndex = 64;
+            WorldDetailDistLabel.Text = "1.0";
+            // 
+            // label18
+            // 
+            label18.AutoSize = true;
+            label18.Location = new System.Drawing.Point(1, 108);
+            label18.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label18.Name = "label18";
+            label18.Size = new System.Drawing.Size(87, 15);
+            label18.TabIndex = 63;
+            label18.Text = "Detail distance:";
+            // 
+            // WorldDetailDistTrackBar
+            // 
+            WorldDetailDistTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            WorldDetailDistTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            WorldDetailDistTrackBar.LargeChange = 10;
+            WorldDetailDistTrackBar.Location = new System.Drawing.Point(7, 127);
+            WorldDetailDistTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WorldDetailDistTrackBar.Maximum = 50;
+            WorldDetailDistTrackBar.Name = "WorldDetailDistTrackBar";
+            WorldDetailDistTrackBar.Size = new System.Drawing.Size(212, 45);
+            WorldDetailDistTrackBar.TabIndex = 62;
+            WorldDetailDistTrackBar.TickFrequency = 2;
+            WorldDetailDistTrackBar.Value = 10;
+            WorldDetailDistTrackBar.Scroll += WorldDetailDistTrackBar_Scroll;
+            // 
+            // WorldLodDistLabel
+            // 
+            WorldLodDistLabel.AutoSize = true;
+            WorldLodDistLabel.Location = new System.Drawing.Point(96, 45);
+            WorldLodDistLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            WorldLodDistLabel.Name = "WorldLodDistLabel";
+            WorldLodDistLabel.Size = new System.Drawing.Size(22, 15);
+            WorldLodDistLabel.TabIndex = 61;
+            WorldLodDistLabel.Text = "1.0";
+            WorldLodDistLabel.Visible = false;
+            // 
+            // label16
+            // 
+            label16.AutoSize = true;
+            label16.Location = new System.Drawing.Point(1, 45);
+            label16.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label16.Name = "label16";
+            label16.Size = new System.Drawing.Size(80, 15);
+            label16.TabIndex = 60;
+            label16.Text = "LOD distance:";
+            label16.Visible = false;
+            // 
+            // WorldLodDistTrackBar
+            // 
+            WorldLodDistTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            WorldLodDistTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            WorldLodDistTrackBar.LargeChange = 10;
+            WorldLodDistTrackBar.Location = new System.Drawing.Point(7, 63);
+            WorldLodDistTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WorldLodDistTrackBar.Maximum = 30;
+            WorldLodDistTrackBar.Name = "WorldLodDistTrackBar";
+            WorldLodDistTrackBar.Size = new System.Drawing.Size(212, 45);
+            WorldLodDistTrackBar.TabIndex = 59;
+            WorldLodDistTrackBar.TickFrequency = 2;
+            WorldLodDistTrackBar.Value = 10;
+            WorldLodDistTrackBar.Visible = false;
+            WorldLodDistTrackBar.Scroll += WorldLodDistTrackBar_Scroll;
+            // 
+            // label15
+            // 
+            label15.AutoSize = true;
+            label15.Location = new System.Drawing.Point(1, 10);
+            label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label15.Name = "label15";
+            label15.Size = new System.Drawing.Size(59, 15);
+            label15.TabIndex = 58;
+            label15.Text = "Max LOD:";
+            // 
+            // WorldMaxLodComboBox
+            // 
+            WorldMaxLodComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            WorldMaxLodComboBox.FormattingEnabled = true;
+            WorldMaxLodComboBox.Items.AddRange(new object[] { "ORPHANHD", "HD", "LOD", "SLOD1", "SLOD2", "SLOD3", "SLOD4" });
+            WorldMaxLodComboBox.Location = new System.Drawing.Point(72, 7);
+            WorldMaxLodComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WorldMaxLodComboBox.Name = "WorldMaxLodComboBox";
+            WorldMaxLodComboBox.Size = new System.Drawing.Size(146, 23);
+            WorldMaxLodComboBox.TabIndex = 57;
+            WorldMaxLodComboBox.SelectedIndexChanged += WorldMaxLodComboBox_SelectedIndexChanged;
+            WorldMaxLodComboBox.KeyPress += WorldMaxLodComboBox_KeyPress;
+            // 
+            // ViewYmapsTabPage
+            // 
+            ViewYmapsTabPage.Controls.Add(ShowYmapChildrenCheckBox);
+            ViewYmapsTabPage.Controls.Add(label2);
+            ViewYmapsTabPage.Controls.Add(DetailTrackBar);
+            ViewYmapsTabPage.Controls.Add(DynamicLODCheckBox);
+            ViewYmapsTabPage.Controls.Add(YmapsTextBox);
+            ViewYmapsTabPage.Location = new System.Drawing.Point(4, 24);
+            ViewYmapsTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewYmapsTabPage.Name = "ViewYmapsTabPage";
+            ViewYmapsTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewYmapsTabPage.Size = new System.Drawing.Size(228, 604);
+            ViewYmapsTabPage.TabIndex = 1;
+            ViewYmapsTabPage.Text = "Ymaps";
+            ViewYmapsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // ShowYmapChildrenCheckBox
+            // 
+            ShowYmapChildrenCheckBox.AutoSize = true;
+            ShowYmapChildrenCheckBox.Enabled = false;
+            ShowYmapChildrenCheckBox.Location = new System.Drawing.Point(7, 68);
+            ShowYmapChildrenCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ShowYmapChildrenCheckBox.Name = "ShowYmapChildrenCheckBox";
+            ShowYmapChildrenCheckBox.Size = new System.Drawing.Size(101, 19);
+            ShowYmapChildrenCheckBox.TabIndex = 35;
+            ShowYmapChildrenCheckBox.Text = "Show children";
+            ShowYmapChildrenCheckBox.UseVisualStyleBackColor = true;
+            ShowYmapChildrenCheckBox.CheckedChanged += ShowYmapChildrenCheckBox_CheckedChanged;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(4, 102);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(85, 15);
+            label2.TabIndex = 8;
+            label2.Text = "Ymaps to load:";
+            // 
+            // DetailTrackBar
+            // 
+            DetailTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            DetailTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            DetailTrackBar.Location = new System.Drawing.Point(7, 28);
+            DetailTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            DetailTrackBar.Maximum = 20;
+            DetailTrackBar.Name = "DetailTrackBar";
+            DetailTrackBar.Size = new System.Drawing.Size(212, 45);
+            DetailTrackBar.TabIndex = 34;
+            DetailTrackBar.Value = 5;
+            DetailTrackBar.Scroll += DetailTrackBar_Scroll;
+            // 
+            // DynamicLODCheckBox
+            // 
+            DynamicLODCheckBox.AutoSize = true;
+            DynamicLODCheckBox.Checked = true;
+            DynamicLODCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            DynamicLODCheckBox.Location = new System.Drawing.Point(7, 7);
+            DynamicLODCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            DynamicLODCheckBox.Name = "DynamicLODCheckBox";
+            DynamicLODCheckBox.Size = new System.Drawing.Size(99, 19);
+            DynamicLODCheckBox.TabIndex = 33;
+            DynamicLODCheckBox.Text = "Dynamic LOD";
+            DynamicLODCheckBox.UseVisualStyleBackColor = true;
+            DynamicLODCheckBox.CheckedChanged += DynamicLODCheckBox_CheckedChanged;
+            // 
+            // YmapsTextBox
+            // 
+            YmapsTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            YmapsTextBox.Location = new System.Drawing.Point(0, 120);
+            YmapsTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            YmapsTextBox.Multiline = true;
+            YmapsTextBox.Name = "YmapsTextBox";
+            YmapsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            YmapsTextBox.Size = new System.Drawing.Size(226, 479);
+            YmapsTextBox.TabIndex = 36;
+            YmapsTextBox.Text = resources.GetString("YmapsTextBox.Text");
+            YmapsTextBox.TextChanged += YmapsTextBox_TextChanged;
+            // 
+            // ViewModelTabPage
+            // 
+            ViewModelTabPage.Controls.Add(label1);
+            ViewModelTabPage.Controls.Add(ModelComboBox);
+            ViewModelTabPage.Location = new System.Drawing.Point(4, 24);
+            ViewModelTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewModelTabPage.Name = "ViewModelTabPage";
+            ViewModelTabPage.Size = new System.Drawing.Size(228, 604);
+            ViewModelTabPage.TabIndex = 2;
+            ViewModelTabPage.Text = "Model";
+            ViewModelTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new System.Drawing.Point(-1, 12);
+            label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label1.Name = "label1";
+            label1.Size = new System.Drawing.Size(44, 15);
+            label1.TabIndex = 5;
+            label1.Text = "Model:";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Location = new System.Drawing.Point(4, 9);
+            label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label3.Name = "label3";
+            label3.Size = new System.Drawing.Size(41, 15);
+            label3.TabIndex = 11;
+            label3.Text = "Mode:";
+            // 
+            // ViewModeComboBox
+            // 
+            ViewModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            ViewModeComboBox.FormattingEnabled = true;
+            ViewModeComboBox.Items.AddRange(new object[] { "World view", "Ymap view", "Model view" });
+            ViewModeComboBox.Location = new System.Drawing.Point(56, 6);
+            ViewModeComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ViewModeComboBox.Name = "ViewModeComboBox";
+            ViewModeComboBox.Size = new System.Drawing.Size(129, 23);
+            ViewModeComboBox.TabIndex = 10;
+            ViewModeComboBox.SelectedIndexChanged += ViewModeComboBox_SelectedIndexChanged;
+            ViewModeComboBox.KeyPress += ViewModeComboBox_KeyPress;
+            // 
+            // ShowToolbarCheckBox
+            // 
+            ShowToolbarCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            ShowToolbarCheckBox.AutoSize = true;
+            ShowToolbarCheckBox.Location = new System.Drawing.Point(12, 677);
+            ShowToolbarCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ShowToolbarCheckBox.Name = "ShowToolbarCheckBox";
+            ShowToolbarCheckBox.Size = new System.Drawing.Size(114, 19);
+            ShowToolbarCheckBox.TabIndex = 47;
+            ShowToolbarCheckBox.Text = "Show Toolbar (T)";
+            ShowToolbarCheckBox.UseVisualStyleBackColor = true;
+            ShowToolbarCheckBox.CheckedChanged += ShowToolbarCheckBox_CheckedChanged;
+            // 
+            // MarkersTabPage
+            // 
+            MarkersTabPage.Controls.Add(label27);
+            MarkersTabPage.Controls.Add(CameraPositionTextBox);
+            MarkersTabPage.Controls.Add(AddSelectionMarkerButton);
+            MarkersTabPage.Controls.Add(AddCurrentPositonMarkerButton);
+            MarkersTabPage.Controls.Add(ResetMarkersButton);
+            MarkersTabPage.Controls.Add(ClearMarkersButton);
+            MarkersTabPage.Controls.Add(GoToButton);
+            MarkersTabPage.Controls.Add(ShowLocatorCheckBox);
+            MarkersTabPage.Controls.Add(label6);
+            MarkersTabPage.Controls.Add(LocateTextBox);
+            MarkersTabPage.Controls.Add(label7);
+            MarkersTabPage.Controls.Add(AddMarkersButton);
+            MarkersTabPage.Controls.Add(MultiFindTextBox);
+            MarkersTabPage.Location = new System.Drawing.Point(4, 24);
+            MarkersTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MarkersTabPage.Name = "MarkersTabPage";
+            MarkersTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MarkersTabPage.Size = new System.Drawing.Size(240, 701);
+            MarkersTabPage.TabIndex = 1;
+            MarkersTabPage.Text = "Markers";
+            MarkersTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label27
+            // 
+            label27.AutoSize = true;
+            label27.Location = new System.Drawing.Point(-2, 58);
+            label27.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label27.Name = "label27";
+            label27.Size = new System.Drawing.Size(138, 15);
+            label27.TabIndex = 22;
+            label27.Text = "Current camera position:";
+            // 
+            // CameraPositionTextBox
+            // 
+            CameraPositionTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            CameraPositionTextBox.Location = new System.Drawing.Point(0, 77);
+            CameraPositionTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CameraPositionTextBox.Name = "CameraPositionTextBox";
+            CameraPositionTextBox.Size = new System.Drawing.Size(238, 23);
+            CameraPositionTextBox.TabIndex = 16;
+            CameraPositionTextBox.Text = "0, 0, 0";
+            // 
+            // AddSelectionMarkerButton
+            // 
+            AddSelectionMarkerButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            AddSelectionMarkerButton.Location = new System.Drawing.Point(0, 618);
+            AddSelectionMarkerButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AddSelectionMarkerButton.Name = "AddSelectionMarkerButton";
+            AddSelectionMarkerButton.Size = new System.Drawing.Size(113, 27);
+            AddSelectionMarkerButton.TabIndex = 22;
+            AddSelectionMarkerButton.Text = "Add selection";
+            AddSelectionMarkerButton.UseVisualStyleBackColor = true;
+            AddSelectionMarkerButton.Click += AddSelectionMarkerButton_Click;
+            // 
+            // AddCurrentPositonMarkerButton
+            // 
+            AddCurrentPositonMarkerButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            AddCurrentPositonMarkerButton.Location = new System.Drawing.Point(0, 585);
+            AddCurrentPositonMarkerButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AddCurrentPositonMarkerButton.Name = "AddCurrentPositonMarkerButton";
+            AddCurrentPositonMarkerButton.Size = new System.Drawing.Size(113, 27);
+            AddCurrentPositonMarkerButton.TabIndex = 20;
+            AddCurrentPositonMarkerButton.Text = "Add current pos";
+            AddCurrentPositonMarkerButton.UseVisualStyleBackColor = true;
+            AddCurrentPositonMarkerButton.Click += AddCurrentPositonMarkerButton_Click;
+            // 
+            // ResetMarkersButton
+            // 
+            ResetMarkersButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            ResetMarkersButton.Location = new System.Drawing.Point(126, 585);
+            ResetMarkersButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ResetMarkersButton.Name = "ResetMarkersButton";
+            ResetMarkersButton.Size = new System.Drawing.Size(113, 27);
+            ResetMarkersButton.TabIndex = 21;
+            ResetMarkersButton.Text = "Default markers";
+            ResetMarkersButton.UseVisualStyleBackColor = true;
+            ResetMarkersButton.Click += ResetMarkersButton_Click;
+            // 
+            // ClearMarkersButton
+            // 
+            ClearMarkersButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            ClearMarkersButton.Location = new System.Drawing.Point(126, 552);
+            ClearMarkersButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ClearMarkersButton.Name = "ClearMarkersButton";
+            ClearMarkersButton.Size = new System.Drawing.Size(113, 27);
+            ClearMarkersButton.TabIndex = 19;
+            ClearMarkersButton.Text = "Clear markers";
+            ClearMarkersButton.UseVisualStyleBackColor = true;
+            ClearMarkersButton.Click += ClearMarkersButton_Click;
+            // 
+            // GoToButton
+            // 
+            GoToButton.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            GoToButton.Location = new System.Drawing.Point(189, 28);
+            GoToButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            GoToButton.Name = "GoToButton";
+            GoToButton.Size = new System.Drawing.Size(50, 25);
+            GoToButton.TabIndex = 15;
+            GoToButton.Text = "Go to";
+            GoToButton.UseVisualStyleBackColor = true;
+            GoToButton.Click += GoToButton_Click;
+            // 
+            // ShowLocatorCheckBox
+            // 
+            ShowLocatorCheckBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            ShowLocatorCheckBox.AutoSize = true;
+            ShowLocatorCheckBox.Location = new System.Drawing.Point(126, 9);
+            ShowLocatorCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ShowLocatorCheckBox.Name = "ShowLocatorCheckBox";
+            ShowLocatorCheckBox.Size = new System.Drawing.Size(95, 19);
+            ShowLocatorCheckBox.TabIndex = 13;
+            ShowLocatorCheckBox.Text = "Show marker";
+            ShowLocatorCheckBox.UseVisualStyleBackColor = true;
+            ShowLocatorCheckBox.CheckedChanged += ShowLocatorCheckBox_CheckedChanged;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new System.Drawing.Point(-2, 9);
+            label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label6.Name = "label6";
+            label6.Size = new System.Drawing.Size(81, 15);
+            label6.TabIndex = 13;
+            label6.Text = "Locate: X, Y, Z";
+            // 
+            // LocateTextBox
+            // 
+            LocateTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            LocateTextBox.Location = new System.Drawing.Point(0, 29);
+            LocateTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            LocateTextBox.Name = "LocateTextBox";
+            LocateTextBox.Size = new System.Drawing.Size(181, 23);
+            LocateTextBox.TabIndex = 14;
+            LocateTextBox.Text = "0, 0, 0";
+            LocateTextBox.TextChanged += LocateTextBox_TextChanged;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new System.Drawing.Point(-2, 117);
+            label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label7.Name = "label7";
+            label7.Size = new System.Drawing.Size(138, 15);
+            label7.TabIndex = 11;
+            label7.Text = "Multi-find: X, Y, Z, Name";
+            // 
+            // AddMarkersButton
+            // 
+            AddMarkersButton.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            AddMarkersButton.Location = new System.Drawing.Point(0, 552);
+            AddMarkersButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AddMarkersButton.Name = "AddMarkersButton";
+            AddMarkersButton.Size = new System.Drawing.Size(113, 27);
+            AddMarkersButton.TabIndex = 18;
+            AddMarkersButton.Text = "Add markers";
+            AddMarkersButton.UseVisualStyleBackColor = true;
+            AddMarkersButton.Click += AddMarkersButton_Click;
+            // 
+            // MultiFindTextBox
+            // 
+            MultiFindTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            MultiFindTextBox.Location = new System.Drawing.Point(0, 135);
+            MultiFindTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MultiFindTextBox.MaxLength = 1048576;
+            MultiFindTextBox.Multiline = true;
+            MultiFindTextBox.Name = "MultiFindTextBox";
+            MultiFindTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            MultiFindTextBox.Size = new System.Drawing.Size(238, 409);
+            MultiFindTextBox.TabIndex = 17;
+            // 
+            // SelectionTabPage
+            // 
+            SelectionTabPage.Controls.Add(label25);
+            SelectionTabPage.Controls.Add(SelectionModeComboBox);
+            SelectionTabPage.Controls.Add(SelectionNameTextBox);
+            SelectionTabPage.Controls.Add(SelectionTabControl);
+            SelectionTabPage.Controls.Add(MouseSelectCheckBox);
+            SelectionTabPage.Location = new System.Drawing.Point(4, 24);
+            SelectionTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionTabPage.Name = "SelectionTabPage";
+            SelectionTabPage.Size = new System.Drawing.Size(240, 701);
+            SelectionTabPage.TabIndex = 2;
+            SelectionTabPage.Text = "Selection";
+            SelectionTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label25
+            // 
+            label25.AutoSize = true;
+            label25.Location = new System.Drawing.Point(7, 38);
+            label25.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label25.Name = "label25";
+            label25.Size = new System.Drawing.Size(41, 15);
+            label25.TabIndex = 28;
+            label25.Text = "Mode:";
+            // 
+            // SelectionModeComboBox
+            // 
+            SelectionModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            SelectionModeComboBox.FormattingEnabled = true;
+            SelectionModeComboBox.Items.AddRange(new object[] { "Entity", "Entity Extension", "Archetype Extension", "Time Cycle Modifier", "Car Generator", "Grass", "Water Quad", "Water Calming Quad", "Water Wave Quad", "Collision", "Nav Mesh", "Path", "Train Track", "Lod Lights", "Mlo Instance", "Scenario", "Audio", "Occlusion" });
+            SelectionModeComboBox.Location = new System.Drawing.Point(59, 35);
+            SelectionModeComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionModeComboBox.Name = "SelectionModeComboBox";
+            SelectionModeComboBox.Size = new System.Drawing.Size(140, 23);
+            SelectionModeComboBox.TabIndex = 23;
+            SelectionModeComboBox.SelectedIndexChanged += SelectionModeComboBox_SelectedIndexChanged;
+            SelectionModeComboBox.KeyPress += SelectionModeComboBox_KeyPress;
+            // 
+            // SelectionNameTextBox
+            // 
+            SelectionNameTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelectionNameTextBox.BackColor = System.Drawing.Color.White;
+            SelectionNameTextBox.Location = new System.Drawing.Point(4, 76);
+            SelectionNameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionNameTextBox.Name = "SelectionNameTextBox";
+            SelectionNameTextBox.ReadOnly = true;
+            SelectionNameTextBox.Size = new System.Drawing.Size(231, 23);
+            SelectionNameTextBox.TabIndex = 26;
+            SelectionNameTextBox.Text = "Nothing selected";
+            // 
+            // SelectionTabControl
+            // 
+            SelectionTabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelectionTabControl.Controls.Add(SelectionEntityTabPage);
+            SelectionTabControl.Controls.Add(SelectionArchetypeTabPage);
+            SelectionTabControl.Controls.Add(SelectionDrawableTabPage);
+            SelectionTabControl.Controls.Add(SelectionExtensionTabPage);
+            SelectionTabControl.Location = new System.Drawing.Point(0, 110);
+            SelectionTabControl.Margin = new System.Windows.Forms.Padding(0);
+            SelectionTabControl.Name = "SelectionTabControl";
+            SelectionTabControl.SelectedIndex = 0;
+            SelectionTabControl.Size = new System.Drawing.Size(239, 590);
+            SelectionTabControl.TabIndex = 28;
+            // 
+            // SelectionEntityTabPage
+            // 
+            SelectionEntityTabPage.Controls.Add(SelEntityPropertyGrid);
+            SelectionEntityTabPage.Location = new System.Drawing.Point(4, 24);
+            SelectionEntityTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionEntityTabPage.Name = "SelectionEntityTabPage";
+            SelectionEntityTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionEntityTabPage.Size = new System.Drawing.Size(231, 562);
+            SelectionEntityTabPage.TabIndex = 0;
+            SelectionEntityTabPage.Text = "Entity";
+            SelectionEntityTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SelEntityPropertyGrid
+            // 
+            SelEntityPropertyGrid.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelEntityPropertyGrid.HelpVisible = false;
+            SelEntityPropertyGrid.Location = new System.Drawing.Point(0, 7);
+            SelEntityPropertyGrid.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelEntityPropertyGrid.Name = "SelEntityPropertyGrid";
+            SelEntityPropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
+            SelEntityPropertyGrid.ReadOnly = true;
+            SelEntityPropertyGrid.Size = new System.Drawing.Size(230, 547);
+            SelEntityPropertyGrid.TabIndex = 35;
+            SelEntityPropertyGrid.ToolbarVisible = false;
+            // 
+            // SelectionArchetypeTabPage
+            // 
+            SelectionArchetypeTabPage.Controls.Add(SelArchetypePropertyGrid);
+            SelectionArchetypeTabPage.Location = new System.Drawing.Point(4, 24);
+            SelectionArchetypeTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionArchetypeTabPage.Name = "SelectionArchetypeTabPage";
+            SelectionArchetypeTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionArchetypeTabPage.Size = new System.Drawing.Size(231, 562);
+            SelectionArchetypeTabPage.TabIndex = 1;
+            SelectionArchetypeTabPage.Text = "Archetype";
+            SelectionArchetypeTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SelArchetypePropertyGrid
+            // 
+            SelArchetypePropertyGrid.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelArchetypePropertyGrid.HelpVisible = false;
+            SelArchetypePropertyGrid.Location = new System.Drawing.Point(0, 7);
+            SelArchetypePropertyGrid.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelArchetypePropertyGrid.Name = "SelArchetypePropertyGrid";
+            SelArchetypePropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
+            SelArchetypePropertyGrid.ReadOnly = true;
+            SelArchetypePropertyGrid.Size = new System.Drawing.Size(230, 547);
+            SelArchetypePropertyGrid.TabIndex = 36;
+            SelArchetypePropertyGrid.ToolbarVisible = false;
+            // 
+            // SelectionDrawableTabPage
+            // 
+            SelectionDrawableTabPage.Controls.Add(tabControl3);
+            SelectionDrawableTabPage.Location = new System.Drawing.Point(4, 24);
+            SelectionDrawableTabPage.Margin = new System.Windows.Forms.Padding(0);
+            SelectionDrawableTabPage.Name = "SelectionDrawableTabPage";
+            SelectionDrawableTabPage.Size = new System.Drawing.Size(231, 562);
+            SelectionDrawableTabPage.TabIndex = 2;
+            SelectionDrawableTabPage.Text = "Drawable";
+            SelectionDrawableTabPage.UseVisualStyleBackColor = true;
+            // 
+            // tabControl3
+            // 
+            tabControl3.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            tabControl3.Controls.Add(tabPage11);
+            tabControl3.Controls.Add(tabPage12);
+            tabControl3.Controls.Add(tabPage13);
+            tabControl3.Location = new System.Drawing.Point(-5, 8);
+            tabControl3.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabControl3.Name = "tabControl3";
+            tabControl3.SelectedIndex = 0;
+            tabControl3.Size = new System.Drawing.Size(239, 549);
+            tabControl3.TabIndex = 28;
+            // 
+            // tabPage11
+            // 
+            tabPage11.Controls.Add(SelDrawablePropertyGrid);
+            tabPage11.Location = new System.Drawing.Point(4, 24);
+            tabPage11.Margin = new System.Windows.Forms.Padding(0);
+            tabPage11.Name = "tabPage11";
+            tabPage11.Size = new System.Drawing.Size(231, 521);
+            tabPage11.TabIndex = 0;
+            tabPage11.Text = "Info";
+            tabPage11.UseVisualStyleBackColor = true;
+            // 
+            // SelDrawablePropertyGrid
+            // 
+            SelDrawablePropertyGrid.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelDrawablePropertyGrid.HelpVisible = false;
+            SelDrawablePropertyGrid.Location = new System.Drawing.Point(0, 0);
+            SelDrawablePropertyGrid.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelDrawablePropertyGrid.Name = "SelDrawablePropertyGrid";
+            SelDrawablePropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
+            SelDrawablePropertyGrid.ReadOnly = true;
+            SelDrawablePropertyGrid.Size = new System.Drawing.Size(230, 517);
+            SelDrawablePropertyGrid.TabIndex = 37;
+            SelDrawablePropertyGrid.ToolbarVisible = false;
+            // 
+            // tabPage12
+            // 
+            tabPage12.Controls.Add(SelDrawableModelsTreeView);
+            tabPage12.Location = new System.Drawing.Point(4, 24);
+            tabPage12.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPage12.Name = "tabPage12";
+            tabPage12.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPage12.Size = new System.Drawing.Size(231, 521);
+            tabPage12.TabIndex = 1;
+            tabPage12.Text = "Models";
+            tabPage12.UseVisualStyleBackColor = true;
+            // 
+            // SelDrawableModelsTreeView
+            // 
+            SelDrawableModelsTreeView.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelDrawableModelsTreeView.CheckBoxes = true;
+            SelDrawableModelsTreeView.Location = new System.Drawing.Point(0, 0);
+            SelDrawableModelsTreeView.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelDrawableModelsTreeView.Name = "SelDrawableModelsTreeView";
+            SelDrawableModelsTreeView.ShowRootLines = false;
+            SelDrawableModelsTreeView.Size = new System.Drawing.Size(229, 519);
+            SelDrawableModelsTreeView.TabIndex = 39;
+            SelDrawableModelsTreeView.AfterCheck += SelDrawableModelsTreeView_AfterCheck;
+            SelDrawableModelsTreeView.NodeMouseDoubleClick += SelDrawableModelsTreeView_NodeMouseDoubleClick;
+            SelDrawableModelsTreeView.KeyPress += SelDrawableModelsTreeView_KeyPress;
+            // 
+            // tabPage13
+            // 
+            tabPage13.Controls.Add(SelDrawableTexturesTreeView);
+            tabPage13.Location = new System.Drawing.Point(4, 24);
+            tabPage13.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPage13.Name = "tabPage13";
+            tabPage13.Size = new System.Drawing.Size(231, 521);
+            tabPage13.TabIndex = 2;
+            tabPage13.Text = "Textures";
+            tabPage13.UseVisualStyleBackColor = true;
+            // 
+            // SelDrawableTexturesTreeView
+            // 
+            SelDrawableTexturesTreeView.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelDrawableTexturesTreeView.Location = new System.Drawing.Point(0, 0);
+            SelDrawableTexturesTreeView.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelDrawableTexturesTreeView.Name = "SelDrawableTexturesTreeView";
+            SelDrawableTexturesTreeView.ShowRootLines = false;
+            SelDrawableTexturesTreeView.Size = new System.Drawing.Size(229, 519);
+            SelDrawableTexturesTreeView.TabIndex = 40;
+            // 
+            // SelectionExtensionTabPage
+            // 
+            SelectionExtensionTabPage.Controls.Add(SelExtensionPropertyGrid);
+            SelectionExtensionTabPage.Location = new System.Drawing.Point(4, 24);
+            SelectionExtensionTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionExtensionTabPage.Name = "SelectionExtensionTabPage";
+            SelectionExtensionTabPage.Size = new System.Drawing.Size(231, 562);
+            SelectionExtensionTabPage.TabIndex = 3;
+            SelectionExtensionTabPage.Text = "Ext";
+            SelectionExtensionTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SelExtensionPropertyGrid
+            // 
+            SelExtensionPropertyGrid.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelExtensionPropertyGrid.HelpVisible = false;
+            SelExtensionPropertyGrid.Location = new System.Drawing.Point(0, 7);
+            SelExtensionPropertyGrid.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelExtensionPropertyGrid.Name = "SelExtensionPropertyGrid";
+            SelExtensionPropertyGrid.PropertySort = System.Windows.Forms.PropertySort.NoSort;
+            SelExtensionPropertyGrid.ReadOnly = true;
+            SelExtensionPropertyGrid.Size = new System.Drawing.Size(230, 547);
+            SelExtensionPropertyGrid.TabIndex = 36;
+            SelExtensionPropertyGrid.ToolbarVisible = false;
+            // 
+            // MouseSelectCheckBox
+            // 
+            MouseSelectCheckBox.AutoSize = true;
+            MouseSelectCheckBox.Location = new System.Drawing.Point(9, 8);
+            MouseSelectCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MouseSelectCheckBox.Name = "MouseSelectCheckBox";
+            MouseSelectCheckBox.Size = new System.Drawing.Size(158, 19);
+            MouseSelectCheckBox.TabIndex = 22;
+            MouseSelectCheckBox.Text = "Mouse select (right click)";
+            MouseSelectCheckBox.UseVisualStyleBackColor = true;
+            MouseSelectCheckBox.CheckedChanged += MouseSelectCheckBox_CheckedChanged;
+            // 
+            // OptionsTabPage
+            // 
+            OptionsTabPage.Controls.Add(OptionsTabControl);
+            OptionsTabPage.Controls.Add(StatusBarCheckBox);
+            OptionsTabPage.Controls.Add(QuitButton);
+            OptionsTabPage.Controls.Add(ReloadSettingsButton);
+            OptionsTabPage.Controls.Add(SaveSettingsButton);
+            OptionsTabPage.Controls.Add(ReloadShadersButton);
+            OptionsTabPage.Controls.Add(ErrorConsoleCheckBox);
+            OptionsTabPage.Location = new System.Drawing.Point(4, 24);
+            OptionsTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsTabPage.Name = "OptionsTabPage";
+            OptionsTabPage.Size = new System.Drawing.Size(240, 701);
+            OptionsTabPage.TabIndex = 3;
+            OptionsTabPage.Text = "Options";
+            OptionsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // OptionsTabControl
+            // 
+            OptionsTabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            OptionsTabControl.Controls.Add(OptionsGeneralTabPage);
+            OptionsTabControl.Controls.Add(OptionsRenderTabPage);
+            OptionsTabControl.Controls.Add(OptionsHelpersTabPage);
+            OptionsTabControl.Controls.Add(OptionsLightingTabPage);
+            OptionsTabControl.Location = new System.Drawing.Point(0, 3);
+            OptionsTabControl.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsTabControl.Name = "OptionsTabControl";
+            OptionsTabControl.SelectedIndex = 0;
+            OptionsTabControl.Size = new System.Drawing.Size(243, 586);
+            OptionsTabControl.TabIndex = 50;
+            // 
+            // OptionsGeneralTabPage
+            // 
+            OptionsGeneralTabPage.Controls.Add(CarGeneratorsCheckBox);
+            OptionsGeneralTabPage.Controls.Add(RenderEntitiesCheckBox);
+            OptionsGeneralTabPage.Controls.Add(AdvancedSettingsButton);
+            OptionsGeneralTabPage.Controls.Add(ControlSettingsButton);
+            OptionsGeneralTabPage.Controls.Add(MapViewDetailLabel);
+            OptionsGeneralTabPage.Controls.Add(label28);
+            OptionsGeneralTabPage.Controls.Add(MapViewDetailTrackBar);
+            OptionsGeneralTabPage.Controls.Add(CameraModeComboBox);
+            OptionsGeneralTabPage.Controls.Add(label24);
+            OptionsGeneralTabPage.Controls.Add(WaterQuadsCheckBox);
+            OptionsGeneralTabPage.Controls.Add(FieldOfViewLabel);
+            OptionsGeneralTabPage.Controls.Add(label22);
+            OptionsGeneralTabPage.Controls.Add(TimedEntitiesAlwaysOnCheckBox);
+            OptionsGeneralTabPage.Controls.Add(GrassCheckBox);
+            OptionsGeneralTabPage.Controls.Add(InteriorsCheckBox);
+            OptionsGeneralTabPage.Controls.Add(CollisionMeshLayerDrawableCheckBox);
+            OptionsGeneralTabPage.Controls.Add(CollisionMeshLayer2CheckBox);
+            OptionsGeneralTabPage.Controls.Add(CollisionMeshLayer1CheckBox);
+            OptionsGeneralTabPage.Controls.Add(label13);
+            OptionsGeneralTabPage.Controls.Add(CollisionMeshLayer0CheckBox);
+            OptionsGeneralTabPage.Controls.Add(label12);
+            OptionsGeneralTabPage.Controls.Add(CollisionMeshRangeTrackBar);
+            OptionsGeneralTabPage.Controls.Add(CollisionMeshesCheckBox);
+            OptionsGeneralTabPage.Controls.Add(FullScreenCheckBox);
+            OptionsGeneralTabPage.Controls.Add(TimedEntitiesCheckBox);
+            OptionsGeneralTabPage.Controls.Add(FieldOfViewTrackBar);
+            OptionsGeneralTabPage.Location = new System.Drawing.Point(4, 24);
+            OptionsGeneralTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsGeneralTabPage.Name = "OptionsGeneralTabPage";
+            OptionsGeneralTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsGeneralTabPage.Size = new System.Drawing.Size(235, 558);
+            OptionsGeneralTabPage.TabIndex = 0;
+            OptionsGeneralTabPage.Text = "General";
+            OptionsGeneralTabPage.UseVisualStyleBackColor = true;
+            // 
+            // CarGeneratorsCheckBox
+            // 
+            CarGeneratorsCheckBox.AutoSize = true;
+            CarGeneratorsCheckBox.Location = new System.Drawing.Point(12, 83);
+            CarGeneratorsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CarGeneratorsCheckBox.Name = "CarGeneratorsCheckBox";
+            CarGeneratorsCheckBox.Size = new System.Drawing.Size(133, 19);
+            CarGeneratorsCheckBox.TabIndex = 31;
+            CarGeneratorsCheckBox.Text = "Show car generators";
+            CarGeneratorsCheckBox.UseVisualStyleBackColor = true;
+            CarGeneratorsCheckBox.CheckedChanged += CarGeneratorsCheckBox_CheckedChanged;
+            // 
+            // RenderEntitiesCheckBox
+            // 
+            RenderEntitiesCheckBox.AutoSize = true;
+            RenderEntitiesCheckBox.Checked = true;
+            RenderEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            RenderEntitiesCheckBox.Location = new System.Drawing.Point(12, 35);
+            RenderEntitiesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            RenderEntitiesCheckBox.Name = "RenderEntitiesCheckBox";
+            RenderEntitiesCheckBox.Size = new System.Drawing.Size(96, 19);
+            RenderEntitiesCheckBox.TabIndex = 29;
+            RenderEntitiesCheckBox.Text = "Show entities";
+            RenderEntitiesCheckBox.UseVisualStyleBackColor = true;
+            RenderEntitiesCheckBox.CheckedChanged += RenderEntitiesCheckBox_CheckedChanged;
+            // 
+            // AdvancedSettingsButton
+            // 
+            AdvancedSettingsButton.Location = new System.Drawing.Point(118, 526);
+            AdvancedSettingsButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AdvancedSettingsButton.Name = "AdvancedSettingsButton";
+            AdvancedSettingsButton.Size = new System.Drawing.Size(108, 27);
+            AdvancedSettingsButton.TabIndex = 46;
+            AdvancedSettingsButton.Text = "Advanced...";
+            AdvancedSettingsButton.UseVisualStyleBackColor = true;
+            AdvancedSettingsButton.Click += AdvancedSettingsButton_Click;
+            // 
+            // ControlSettingsButton
+            // 
+            ControlSettingsButton.Location = new System.Drawing.Point(2, 526);
+            ControlSettingsButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ControlSettingsButton.Name = "ControlSettingsButton";
+            ControlSettingsButton.Size = new System.Drawing.Size(108, 27);
+            ControlSettingsButton.TabIndex = 45;
+            ControlSettingsButton.Text = "Controls...";
+            ControlSettingsButton.UseVisualStyleBackColor = true;
+            ControlSettingsButton.Click += ControlSettingsButton_Click;
+            // 
+            // MapViewDetailLabel
+            // 
+            MapViewDetailLabel.AutoSize = true;
+            MapViewDetailLabel.Location = new System.Drawing.Point(110, 451);
+            MapViewDetailLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            MapViewDetailLabel.Name = "MapViewDetailLabel";
+            MapViewDetailLabel.Size = new System.Drawing.Size(22, 15);
+            MapViewDetailLabel.TabIndex = 66;
+            MapViewDetailLabel.Text = "1.0";
+            // 
+            // label28
+            // 
+            label28.AutoSize = true;
+            label28.Location = new System.Drawing.Point(5, 451);
+            label28.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label28.Name = "label28";
+            label28.Size = new System.Drawing.Size(93, 15);
+            label28.TabIndex = 65;
+            label28.Text = "Map view detail:";
+            // 
+            // MapViewDetailTrackBar
+            // 
+            MapViewDetailTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            MapViewDetailTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            MapViewDetailTrackBar.Enabled = false;
+            MapViewDetailTrackBar.LargeChange = 1;
+            MapViewDetailTrackBar.Location = new System.Drawing.Point(7, 470);
+            MapViewDetailTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MapViewDetailTrackBar.Maximum = 30;
+            MapViewDetailTrackBar.Minimum = 2;
+            MapViewDetailTrackBar.Name = "MapViewDetailTrackBar";
+            MapViewDetailTrackBar.Size = new System.Drawing.Size(219, 45);
+            MapViewDetailTrackBar.TabIndex = 44;
+            MapViewDetailTrackBar.TickFrequency = 2;
+            MapViewDetailTrackBar.Value = 10;
+            MapViewDetailTrackBar.Scroll += MapViewDetailTrackBar_Scroll;
+            // 
+            // CameraModeComboBox
+            // 
+            CameraModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            CameraModeComboBox.FormattingEnabled = true;
+            CameraModeComboBox.Items.AddRange(new object[] { "Perspective", "Orthographic", "2D Map" });
+            CameraModeComboBox.Location = new System.Drawing.Point(96, 352);
+            CameraModeComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CameraModeComboBox.Name = "CameraModeComboBox";
+            CameraModeComboBox.Size = new System.Drawing.Size(130, 23);
+            CameraModeComboBox.TabIndex = 42;
+            CameraModeComboBox.SelectedIndexChanged += CameraModeComboBox_SelectedIndexChanged;
+            CameraModeComboBox.KeyPress += CameraModeComboBox_KeyPress;
+            // 
+            // label24
+            // 
+            label24.AutoSize = true;
+            label24.Location = new System.Drawing.Point(5, 355);
+            label24.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label24.Name = "label24";
+            label24.Size = new System.Drawing.Size(85, 15);
+            label24.TabIndex = 63;
+            label24.Text = "Camera mode:";
+            // 
+            // WaterQuadsCheckBox
+            // 
+            WaterQuadsCheckBox.AutoSize = true;
+            WaterQuadsCheckBox.Checked = true;
+            WaterQuadsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            WaterQuadsCheckBox.Location = new System.Drawing.Point(12, 156);
+            WaterQuadsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WaterQuadsCheckBox.Name = "WaterQuadsCheckBox";
+            WaterQuadsCheckBox.Size = new System.Drawing.Size(122, 19);
+            WaterQuadsCheckBox.TabIndex = 35;
+            WaterQuadsCheckBox.Text = "Show water quads";
+            WaterQuadsCheckBox.UseVisualStyleBackColor = true;
+            WaterQuadsCheckBox.CheckedChanged += WaterQuadsCheckBox_CheckedChanged;
+            // 
+            // FieldOfViewLabel
+            // 
+            FieldOfViewLabel.AutoSize = true;
+            FieldOfViewLabel.Location = new System.Drawing.Point(92, 387);
+            FieldOfViewLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            FieldOfViewLabel.Name = "FieldOfViewLabel";
+            FieldOfViewLabel.Size = new System.Drawing.Size(22, 15);
+            FieldOfViewLabel.TabIndex = 59;
+            FieldOfViewLabel.Text = "1.0";
+            // 
+            // label22
+            // 
+            label22.AutoSize = true;
+            label22.Location = new System.Drawing.Point(5, 387);
+            label22.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label22.Name = "label22";
+            label22.Size = new System.Drawing.Size(76, 15);
+            label22.TabIndex = 58;
+            label22.Text = "Field of view:";
+            // 
+            // TimedEntitiesAlwaysOnCheckBox
+            // 
+            TimedEntitiesAlwaysOnCheckBox.AutoSize = true;
+            TimedEntitiesAlwaysOnCheckBox.Location = new System.Drawing.Point(153, 107);
+            TimedEntitiesAlwaysOnCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TimedEntitiesAlwaysOnCheckBox.Name = "TimedEntitiesAlwaysOnCheckBox";
+            TimedEntitiesAlwaysOnCheckBox.Size = new System.Drawing.Size(61, 19);
+            TimedEntitiesAlwaysOnCheckBox.TabIndex = 33;
+            TimedEntitiesAlwaysOnCheckBox.Text = "always";
+            TimedEntitiesAlwaysOnCheckBox.UseVisualStyleBackColor = true;
+            TimedEntitiesAlwaysOnCheckBox.CheckedChanged += TimedEntitiesAlwaysOnCheckBox_CheckedChanged;
+            // 
+            // GrassCheckBox
+            // 
+            GrassCheckBox.AutoSize = true;
+            GrassCheckBox.Checked = true;
+            GrassCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            GrassCheckBox.Location = new System.Drawing.Point(12, 59);
+            GrassCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            GrassCheckBox.Name = "GrassCheckBox";
+            GrassCheckBox.Size = new System.Drawing.Size(85, 19);
+            GrassCheckBox.TabIndex = 30;
+            GrassCheckBox.Text = "Show grass";
+            GrassCheckBox.UseVisualStyleBackColor = true;
+            GrassCheckBox.CheckedChanged += GrassCheckBox_CheckedChanged;
+            // 
+            // InteriorsCheckBox
+            // 
+            InteriorsCheckBox.AutoSize = true;
+            InteriorsCheckBox.Checked = true;
+            InteriorsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            InteriorsCheckBox.Location = new System.Drawing.Point(12, 132);
+            InteriorsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            InteriorsCheckBox.Name = "InteriorsCheckBox";
+            InteriorsCheckBox.Size = new System.Drawing.Size(101, 19);
+            InteriorsCheckBox.TabIndex = 34;
+            InteriorsCheckBox.Text = "Show interiors";
+            InteriorsCheckBox.UseVisualStyleBackColor = true;
+            InteriorsCheckBox.CheckedChanged += InteriorsCheckBox_CheckedChanged;
+            // 
+            // CollisionMeshLayerDrawableCheckBox
+            // 
+            CollisionMeshLayerDrawableCheckBox.AutoSize = true;
+            CollisionMeshLayerDrawableCheckBox.Checked = true;
+            CollisionMeshLayerDrawableCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            CollisionMeshLayerDrawableCheckBox.Location = new System.Drawing.Point(138, 302);
+            CollisionMeshLayerDrawableCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CollisionMeshLayerDrawableCheckBox.Name = "CollisionMeshLayerDrawableCheckBox";
+            CollisionMeshLayerDrawableCheckBox.Size = new System.Drawing.Size(75, 19);
+            CollisionMeshLayerDrawableCheckBox.TabIndex = 41;
+            CollisionMeshLayerDrawableCheckBox.Text = "Drawable";
+            CollisionMeshLayerDrawableCheckBox.UseVisualStyleBackColor = true;
+            CollisionMeshLayerDrawableCheckBox.CheckedChanged += CollisionMeshLayerDrawableCheckBox_CheckedChanged;
+            // 
+            // CollisionMeshLayer2CheckBox
+            // 
+            CollisionMeshLayer2CheckBox.AutoSize = true;
+            CollisionMeshLayer2CheckBox.Checked = true;
+            CollisionMeshLayer2CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            CollisionMeshLayer2CheckBox.Location = new System.Drawing.Point(96, 302);
+            CollisionMeshLayer2CheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CollisionMeshLayer2CheckBox.Name = "CollisionMeshLayer2CheckBox";
+            CollisionMeshLayer2CheckBox.Size = new System.Drawing.Size(32, 19);
+            CollisionMeshLayer2CheckBox.TabIndex = 40;
+            CollisionMeshLayer2CheckBox.Text = "2";
+            CollisionMeshLayer2CheckBox.UseVisualStyleBackColor = true;
+            CollisionMeshLayer2CheckBox.CheckedChanged += CollisionMeshLayer2CheckBox_CheckedChanged;
+            // 
+            // CollisionMeshLayer1CheckBox
+            // 
+            CollisionMeshLayer1CheckBox.AutoSize = true;
+            CollisionMeshLayer1CheckBox.Checked = true;
+            CollisionMeshLayer1CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            CollisionMeshLayer1CheckBox.Location = new System.Drawing.Point(54, 302);
+            CollisionMeshLayer1CheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CollisionMeshLayer1CheckBox.Name = "CollisionMeshLayer1CheckBox";
+            CollisionMeshLayer1CheckBox.Size = new System.Drawing.Size(32, 19);
+            CollisionMeshLayer1CheckBox.TabIndex = 39;
+            CollisionMeshLayer1CheckBox.Text = "1";
+            CollisionMeshLayer1CheckBox.UseVisualStyleBackColor = true;
+            CollisionMeshLayer1CheckBox.CheckedChanged += CollisionMeshLayer1CheckBox_CheckedChanged;
+            // 
+            // label13
+            // 
+            label13.AutoSize = true;
+            label13.Location = new System.Drawing.Point(5, 282);
+            label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label13.Name = "label13";
+            label13.Size = new System.Drawing.Size(121, 15);
+            label13.TabIndex = 54;
+            label13.Text = "Collision mesh layers:";
+            // 
+            // CollisionMeshLayer0CheckBox
+            // 
+            CollisionMeshLayer0CheckBox.AutoSize = true;
+            CollisionMeshLayer0CheckBox.Checked = true;
+            CollisionMeshLayer0CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            CollisionMeshLayer0CheckBox.Location = new System.Drawing.Point(12, 302);
+            CollisionMeshLayer0CheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CollisionMeshLayer0CheckBox.Name = "CollisionMeshLayer0CheckBox";
+            CollisionMeshLayer0CheckBox.Size = new System.Drawing.Size(32, 19);
+            CollisionMeshLayer0CheckBox.TabIndex = 38;
+            CollisionMeshLayer0CheckBox.Text = "0";
+            CollisionMeshLayer0CheckBox.UseVisualStyleBackColor = true;
+            CollisionMeshLayer0CheckBox.CheckedChanged += CollisionMeshLayer0CheckBox_CheckedChanged;
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Location = new System.Drawing.Point(5, 223);
+            label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label12.Name = "label12";
+            label12.Size = new System.Drawing.Size(145, 15);
+            label12.TabIndex = 51;
+            label12.Text = "Collision/nav mesh range:";
+            // 
+            // CollisionMeshRangeTrackBar
+            // 
+            CollisionMeshRangeTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            CollisionMeshRangeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            CollisionMeshRangeTrackBar.LargeChange = 1;
+            CollisionMeshRangeTrackBar.Location = new System.Drawing.Point(7, 241);
+            CollisionMeshRangeTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CollisionMeshRangeTrackBar.Maximum = 15;
+            CollisionMeshRangeTrackBar.Minimum = 1;
+            CollisionMeshRangeTrackBar.Name = "CollisionMeshRangeTrackBar";
+            CollisionMeshRangeTrackBar.Size = new System.Drawing.Size(219, 45);
+            CollisionMeshRangeTrackBar.TabIndex = 37;
+            CollisionMeshRangeTrackBar.Value = 6;
+            CollisionMeshRangeTrackBar.Scroll += CollisionMeshRangeTrackBar_Scroll;
+            // 
+            // CollisionMeshesCheckBox
+            // 
+            CollisionMeshesCheckBox.AutoSize = true;
+            CollisionMeshesCheckBox.Location = new System.Drawing.Point(12, 197);
+            CollisionMeshesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CollisionMeshesCheckBox.Name = "CollisionMeshesCheckBox";
+            CollisionMeshesCheckBox.Size = new System.Drawing.Size(145, 19);
+            CollisionMeshesCheckBox.TabIndex = 36;
+            CollisionMeshesCheckBox.Text = "Show collision meshes";
+            CollisionMeshesCheckBox.UseVisualStyleBackColor = true;
+            CollisionMeshesCheckBox.CheckedChanged += CollisionMeshesCheckBox_CheckedChanged;
+            // 
+            // FullScreenCheckBox
+            // 
+            FullScreenCheckBox.AutoSize = true;
+            FullScreenCheckBox.Location = new System.Drawing.Point(12, 10);
+            FullScreenCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            FullScreenCheckBox.Name = "FullScreenCheckBox";
+            FullScreenCheckBox.Size = new System.Drawing.Size(192, 19);
+            FullScreenCheckBox.TabIndex = 28;
+            FullScreenCheckBox.Text = "Full screen (borderless window)";
+            FullScreenCheckBox.UseVisualStyleBackColor = true;
+            FullScreenCheckBox.CheckedChanged += FullScreenCheckBox_CheckedChanged;
+            // 
+            // TimedEntitiesCheckBox
+            // 
+            TimedEntitiesCheckBox.AutoSize = true;
+            TimedEntitiesCheckBox.Checked = true;
+            TimedEntitiesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            TimedEntitiesCheckBox.Location = new System.Drawing.Point(12, 107);
+            TimedEntitiesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TimedEntitiesCheckBox.Name = "TimedEntitiesCheckBox";
+            TimedEntitiesCheckBox.Size = new System.Drawing.Size(130, 19);
+            TimedEntitiesCheckBox.TabIndex = 32;
+            TimedEntitiesCheckBox.Text = "Show timed entities";
+            TimedEntitiesCheckBox.UseVisualStyleBackColor = true;
+            TimedEntitiesCheckBox.CheckedChanged += TimedEntitiesCheckBox_CheckedChanged;
+            // 
+            // FieldOfViewTrackBar
+            // 
+            FieldOfViewTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            FieldOfViewTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            FieldOfViewTrackBar.LargeChange = 1;
+            FieldOfViewTrackBar.Location = new System.Drawing.Point(7, 405);
+            FieldOfViewTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            FieldOfViewTrackBar.Maximum = 200;
+            FieldOfViewTrackBar.Minimum = 10;
+            FieldOfViewTrackBar.Name = "FieldOfViewTrackBar";
+            FieldOfViewTrackBar.Size = new System.Drawing.Size(219, 45);
+            FieldOfViewTrackBar.TabIndex = 43;
+            FieldOfViewTrackBar.TickFrequency = 10;
+            FieldOfViewTrackBar.Value = 100;
+            FieldOfViewTrackBar.Scroll += FieldOfViewTrackBar_Scroll;
+            // 
+            // OptionsRenderTabPage
+            // 
+            OptionsRenderTabPage.Controls.Add(AntiAliasingValue);
+            OptionsRenderTabPage.Controls.Add(label34);
+            OptionsRenderTabPage.Controls.Add(AntiAliasingTrackBar);
+            OptionsRenderTabPage.Controls.Add(FarClipUpDown);
+            OptionsRenderTabPage.Controls.Add(label32);
+            OptionsRenderTabPage.Controls.Add(NearClipUpDown);
+            OptionsRenderTabPage.Controls.Add(label31);
+            OptionsRenderTabPage.Controls.Add(HDTexturesCheckBox);
+            OptionsRenderTabPage.Controls.Add(WireframeCheckBox);
+            OptionsRenderTabPage.Controls.Add(RenderModeComboBox);
+            OptionsRenderTabPage.Controls.Add(label11);
+            OptionsRenderTabPage.Controls.Add(TextureSamplerComboBox);
+            OptionsRenderTabPage.Controls.Add(TextureCoordsComboBox);
+            OptionsRenderTabPage.Controls.Add(label10);
+            OptionsRenderTabPage.Controls.Add(AnisotropicFilteringCheckBox);
+            OptionsRenderTabPage.Controls.Add(ProxiesCheckBox);
+            OptionsRenderTabPage.Controls.Add(WaitForChildrenCheckBox);
+            OptionsRenderTabPage.Controls.Add(label14);
+            OptionsRenderTabPage.Location = new System.Drawing.Point(4, 24);
+            OptionsRenderTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsRenderTabPage.Name = "OptionsRenderTabPage";
+            OptionsRenderTabPage.Size = new System.Drawing.Size(235, 558);
+            OptionsRenderTabPage.TabIndex = 3;
+            OptionsRenderTabPage.Text = "Render";
+            OptionsRenderTabPage.UseVisualStyleBackColor = true;
             // 
             // AntiAliasingValue
             // 
-            this.AntiAliasingValue.AutoSize = true;
-            this.AntiAliasingValue.Location = new System.Drawing.Point(147, 253);
-            this.AntiAliasingValue.Name = "AntiAliasingValue";
-            this.AntiAliasingValue.Size = new System.Drawing.Size(13, 13);
-            this.AntiAliasingValue.TabIndex = 64;
-            this.AntiAliasingValue.Text = "1";
+            AntiAliasingValue.AutoSize = true;
+            AntiAliasingValue.Location = new System.Drawing.Point(172, 292);
+            AntiAliasingValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            AntiAliasingValue.Name = "AntiAliasingValue";
+            AntiAliasingValue.Size = new System.Drawing.Size(13, 15);
+            AntiAliasingValue.TabIndex = 64;
+            AntiAliasingValue.Text = "1";
+            // 
+            // AntiAliasingTrackBar
+            // 
+            AntiAliasingTrackBar.LargeChange = 1;
+            AntiAliasingTrackBar.Location = new System.Drawing.Point(12, 310);
+            AntiAliasingTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AntiAliasingTrackBar.Maximum = 8;
+            AntiAliasingTrackBar.Minimum = 1;
+            AntiAliasingTrackBar.Name = "AntiAliasingTrackBar";
+            AntiAliasingTrackBar.Size = new System.Drawing.Size(215, 45);
+            AntiAliasingTrackBar.TabIndex = 62;
+            AntiAliasingTrackBar.Value = 1;
+            AntiAliasingTrackBar.ValueChanged += AntiAliasingTrackBar_ValueChanged;
+            // 
+            // FarClipUpDown
+            // 
+            FarClipUpDown.Increment = new decimal(new int[] { 100, 0, 0, 0 });
+            FarClipUpDown.Location = new System.Drawing.Point(93, 399);
+            FarClipUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            FarClipUpDown.Maximum = new decimal(new int[] { 100000, 0, 0, 0 });
+            FarClipUpDown.Minimum = new decimal(new int[] { 100, 0, 0, 0 });
+            FarClipUpDown.Name = "FarClipUpDown";
+            FarClipUpDown.Size = new System.Drawing.Size(133, 23);
+            FarClipUpDown.TabIndex = 61;
+            FarClipUpDown.Value = new decimal(new int[] { 100000, 0, 0, 0 });
+            FarClipUpDown.ValueChanged += FarClipUpDown_ValueChanged;
+            // 
+            // label32
+            // 
+            label32.AutoSize = true;
+            label32.Location = new System.Drawing.Point(5, 402);
+            label32.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label32.Name = "label32";
+            label32.Size = new System.Drawing.Size(50, 15);
+            label32.TabIndex = 60;
+            label32.Text = "Far Clip:";
+            // 
+            // NearClipUpDown
+            // 
+            NearClipUpDown.DecimalPlaces = 3;
+            NearClipUpDown.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
+            NearClipUpDown.Location = new System.Drawing.Point(93, 369);
+            NearClipUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            NearClipUpDown.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
+            NearClipUpDown.Minimum = new decimal(new int[] { 1, 0, 0, 196608 });
+            NearClipUpDown.Name = "NearClipUpDown";
+            NearClipUpDown.Size = new System.Drawing.Size(133, 23);
+            NearClipUpDown.TabIndex = 59;
+            NearClipUpDown.Value = new decimal(new int[] { 1, 0, 0, 131072 });
+            NearClipUpDown.ValueChanged += NearClipUpDown_ValueChanged;
+            // 
+            // label31
+            // 
+            label31.AutoSize = true;
+            label31.Location = new System.Drawing.Point(5, 372);
+            label31.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label31.Name = "label31";
+            label31.Size = new System.Drawing.Size(59, 15);
+            label31.TabIndex = 58;
+            label31.Text = "Near Clip:";
+            // 
+            // HDTexturesCheckBox
+            // 
+            HDTexturesCheckBox.AutoSize = true;
+            HDTexturesCheckBox.Checked = true;
+            HDTexturesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            HDTexturesCheckBox.Location = new System.Drawing.Point(12, 267);
+            HDTexturesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            HDTexturesCheckBox.Name = "HDTexturesCheckBox";
+            HDTexturesCheckBox.Size = new System.Drawing.Size(88, 19);
+            HDTexturesCheckBox.TabIndex = 57;
+            HDTexturesCheckBox.Text = "HD textures";
+            HDTexturesCheckBox.UseVisualStyleBackColor = true;
+            HDTexturesCheckBox.CheckedChanged += HDTexturesCheckBox_CheckedChanged;
+            // 
+            // WireframeCheckBox
+            // 
+            WireframeCheckBox.AutoSize = true;
+            WireframeCheckBox.Location = new System.Drawing.Point(12, 133);
+            WireframeCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WireframeCheckBox.Name = "WireframeCheckBox";
+            WireframeCheckBox.Size = new System.Drawing.Size(81, 19);
+            WireframeCheckBox.TabIndex = 49;
+            WireframeCheckBox.Text = "Wireframe";
+            WireframeCheckBox.UseVisualStyleBackColor = true;
+            WireframeCheckBox.CheckedChanged += WireframeCheckBox_CheckedChanged;
+            // 
+            // RenderModeComboBox
+            // 
+            RenderModeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            RenderModeComboBox.FormattingEnabled = true;
+            RenderModeComboBox.Items.AddRange(new object[] { "Default", "Single texture", "Vertex normals", "Vertex tangents", "Vertex colour 1", "Vertex colour 2", "Texture coord 1", "Texture coord 2", "Texture coord 3" });
+            RenderModeComboBox.Location = new System.Drawing.Point(93, 18);
+            RenderModeComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            RenderModeComboBox.Name = "RenderModeComboBox";
+            RenderModeComboBox.Size = new System.Drawing.Size(132, 23);
+            RenderModeComboBox.TabIndex = 46;
+            RenderModeComboBox.SelectedIndexChanged += RenderModeComboBox_SelectedIndexChanged;
+            RenderModeComboBox.KeyPress += RenderModeComboBox_KeyPress;
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Location = new System.Drawing.Point(5, 53);
+            label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label11.Name = "label11";
+            label11.Size = new System.Drawing.Size(72, 15);
+            label11.TabIndex = 50;
+            label11.Text = "Tex sampler:";
+            // 
+            // TextureSamplerComboBox
+            // 
+            TextureSamplerComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            TextureSamplerComboBox.Enabled = false;
+            TextureSamplerComboBox.FormattingEnabled = true;
+            TextureSamplerComboBox.Location = new System.Drawing.Point(93, 50);
+            TextureSamplerComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TextureSamplerComboBox.Name = "TextureSamplerComboBox";
+            TextureSamplerComboBox.Size = new System.Drawing.Size(132, 23);
+            TextureSamplerComboBox.TabIndex = 47;
+            TextureSamplerComboBox.SelectedIndexChanged += TextureSamplerComboBox_SelectedIndexChanged;
+            TextureSamplerComboBox.KeyPress += TextureSamplerComboBox_KeyPress;
+            // 
+            // TextureCoordsComboBox
+            // 
+            TextureCoordsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            TextureCoordsComboBox.Enabled = false;
+            TextureCoordsComboBox.FormattingEnabled = true;
+            TextureCoordsComboBox.Items.AddRange(new object[] { "Texture coord 1", "Texture coord 2", "Texture coord 3" });
+            TextureCoordsComboBox.Location = new System.Drawing.Point(93, 81);
+            TextureCoordsComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TextureCoordsComboBox.Name = "TextureCoordsComboBox";
+            TextureCoordsComboBox.Size = new System.Drawing.Size(132, 23);
+            TextureCoordsComboBox.TabIndex = 48;
+            TextureCoordsComboBox.SelectedIndexChanged += TextureCoordsComboBox_SelectedIndexChanged;
+            TextureCoordsComboBox.KeyPress += TextureCoordsComboBox_KeyPress;
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Location = new System.Drawing.Point(5, 22);
+            label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label10.Name = "label10";
+            label10.Size = new System.Drawing.Size(81, 15);
+            label10.TabIndex = 48;
+            label10.Text = "Render mode:";
+            // 
+            // AnisotropicFilteringCheckBox
+            // 
+            AnisotropicFilteringCheckBox.AutoSize = true;
+            AnisotropicFilteringCheckBox.Checked = true;
+            AnisotropicFilteringCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            AnisotropicFilteringCheckBox.Location = new System.Drawing.Point(12, 159);
+            AnisotropicFilteringCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AnisotropicFilteringCheckBox.Name = "AnisotropicFilteringCheckBox";
+            AnisotropicFilteringCheckBox.Size = new System.Drawing.Size(131, 19);
+            AnisotropicFilteringCheckBox.TabIndex = 50;
+            AnisotropicFilteringCheckBox.Text = "Anisotropic filtering";
+            AnisotropicFilteringCheckBox.UseVisualStyleBackColor = true;
+            AnisotropicFilteringCheckBox.CheckedChanged += AnisotropicFilteringCheckBox_CheckedChanged;
+            // 
+            // ProxiesCheckBox
+            // 
+            ProxiesCheckBox.AutoSize = true;
+            ProxiesCheckBox.Location = new System.Drawing.Point(12, 230);
+            ProxiesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ProxiesCheckBox.Name = "ProxiesCheckBox";
+            ProxiesCheckBox.Size = new System.Drawing.Size(96, 19);
+            ProxiesCheckBox.TabIndex = 52;
+            ProxiesCheckBox.Text = "Show proxies";
+            ProxiesCheckBox.UseVisualStyleBackColor = true;
+            ProxiesCheckBox.CheckedChanged += ProxiesCheckBox_CheckedChanged;
+            // 
+            // WaitForChildrenCheckBox
+            // 
+            WaitForChildrenCheckBox.AutoSize = true;
+            WaitForChildrenCheckBox.Checked = true;
+            WaitForChildrenCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            WaitForChildrenCheckBox.Location = new System.Drawing.Point(12, 186);
+            WaitForChildrenCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WaitForChildrenCheckBox.Name = "WaitForChildrenCheckBox";
+            WaitForChildrenCheckBox.Size = new System.Drawing.Size(154, 19);
+            WaitForChildrenCheckBox.TabIndex = 51;
+            WaitForChildrenCheckBox.Text = "Wait for children to load";
+            WaitForChildrenCheckBox.UseVisualStyleBackColor = true;
+            WaitForChildrenCheckBox.CheckedChanged += WaitForChildrenCheckBox_CheckedChanged;
+            // 
+            // label14
+            // 
+            label14.AutoSize = true;
+            label14.Location = new System.Drawing.Point(5, 84);
+            label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label14.Name = "label14";
+            label14.Size = new System.Drawing.Size(66, 15);
+            label14.TabIndex = 56;
+            label14.Text = "Tex coords:";
+            // 
+            // OptionsHelpersTabPage
+            // 
+            OptionsHelpersTabPage.Controls.Add(SnapAngleUpDown);
+            OptionsHelpersTabPage.Controls.Add(label33);
+            OptionsHelpersTabPage.Controls.Add(SnapGridSizeUpDown);
+            OptionsHelpersTabPage.Controls.Add(label26);
+            OptionsHelpersTabPage.Controls.Add(SkeletonsCheckBox);
+            OptionsHelpersTabPage.Controls.Add(AudioOuterBoundsCheckBox);
+            OptionsHelpersTabPage.Controls.Add(PopZonesCheckBox);
+            OptionsHelpersTabPage.Controls.Add(NavMeshesCheckBox);
+            OptionsHelpersTabPage.Controls.Add(TrainPathsCheckBox);
+            OptionsHelpersTabPage.Controls.Add(PathsDepthClipCheckBox);
+            OptionsHelpersTabPage.Controls.Add(PathBoundsCheckBox);
+            OptionsHelpersTabPage.Controls.Add(SelectionWidgetCheckBox);
+            OptionsHelpersTabPage.Controls.Add(MarkerStyleComboBox);
+            OptionsHelpersTabPage.Controls.Add(label4);
+            OptionsHelpersTabPage.Controls.Add(LocatorStyleComboBox);
+            OptionsHelpersTabPage.Controls.Add(label5);
+            OptionsHelpersTabPage.Controls.Add(MarkerDepthClipCheckBox);
+            OptionsHelpersTabPage.Controls.Add(label9);
+            OptionsHelpersTabPage.Controls.Add(PathsCheckBox);
+            OptionsHelpersTabPage.Controls.Add(SelectionBoundsCheckBox);
+            OptionsHelpersTabPage.Controls.Add(BoundsDepthClipCheckBox);
+            OptionsHelpersTabPage.Controls.Add(BoundsRangeTrackBar);
+            OptionsHelpersTabPage.Controls.Add(BoundsStyleComboBox);
+            OptionsHelpersTabPage.Controls.Add(label8);
+            OptionsHelpersTabPage.Location = new System.Drawing.Point(4, 24);
+            OptionsHelpersTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsHelpersTabPage.Name = "OptionsHelpersTabPage";
+            OptionsHelpersTabPage.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsHelpersTabPage.Size = new System.Drawing.Size(235, 558);
+            OptionsHelpersTabPage.TabIndex = 1;
+            OptionsHelpersTabPage.Text = "Helpers";
+            OptionsHelpersTabPage.UseVisualStyleBackColor = true;
+            // 
+            // SnapAngleUpDown
+            // 
+            SnapAngleUpDown.DecimalPlaces = 1;
+            SnapAngleUpDown.Location = new System.Drawing.Point(114, 322);
+            SnapAngleUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SnapAngleUpDown.Maximum = new decimal(new int[] { 180, 0, 0, 0 });
+            SnapAngleUpDown.Name = "SnapAngleUpDown";
+            SnapAngleUpDown.Size = new System.Drawing.Size(112, 23);
+            SnapAngleUpDown.TabIndex = 32;
+            SnapAngleUpDown.Value = new decimal(new int[] { 50, 0, 0, 65536 });
+            SnapAngleUpDown.ValueChanged += SnapAngleUpDown_ValueChanged;
+            // 
+            // label33
+            // 
+            label33.AutoSize = true;
+            label33.Location = new System.Drawing.Point(5, 324);
+            label33.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label33.Name = "label33";
+            label33.Size = new System.Drawing.Size(99, 15);
+            label33.TabIndex = 31;
+            label33.Text = "Snap angle (deg):";
+            // 
+            // SnapGridSizeUpDown
+            // 
+            SnapGridSizeUpDown.DecimalPlaces = 2;
+            SnapGridSizeUpDown.Location = new System.Drawing.Point(114, 292);
+            SnapGridSizeUpDown.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SnapGridSizeUpDown.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            SnapGridSizeUpDown.Minimum = new decimal(new int[] { 1, 0, 0, 131072 });
+            SnapGridSizeUpDown.Name = "SnapGridSizeUpDown";
+            SnapGridSizeUpDown.Size = new System.Drawing.Size(112, 23);
+            SnapGridSizeUpDown.TabIndex = 30;
+            SnapGridSizeUpDown.Value = new decimal(new int[] { 100, 0, 0, 131072 });
+            SnapGridSizeUpDown.ValueChanged += SnapGridSizeUpDown_ValueChanged;
+            // 
+            // label26
+            // 
+            label26.AutoSize = true;
+            label26.Location = new System.Drawing.Point(5, 294);
+            label26.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label26.Name = "label26";
+            label26.Size = new System.Drawing.Size(82, 15);
+            label26.TabIndex = 29;
+            label26.Text = "Snap grid size:";
+            // 
+            // SkeletonsCheckBox
+            // 
+            SkeletonsCheckBox.AutoSize = true;
+            SkeletonsCheckBox.Location = new System.Drawing.Point(12, 474);
+            SkeletonsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SkeletonsCheckBox.Name = "SkeletonsCheckBox";
+            SkeletonsCheckBox.Size = new System.Drawing.Size(107, 19);
+            SkeletonsCheckBox.TabIndex = 38;
+            SkeletonsCheckBox.Text = "Show skeletons";
+            SkeletonsCheckBox.UseVisualStyleBackColor = true;
+            SkeletonsCheckBox.CheckedChanged += SkeletonsCheckBox_CheckedChanged;
+            // 
+            // AudioOuterBoundsCheckBox
+            // 
+            AudioOuterBoundsCheckBox.AutoSize = true;
+            AudioOuterBoundsCheckBox.Checked = true;
+            AudioOuterBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(12, 527);
+            AudioOuterBoundsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            AudioOuterBoundsCheckBox.Name = "AudioOuterBoundsCheckBox";
+            AudioOuterBoundsCheckBox.Size = new System.Drawing.Size(162, 19);
+            AudioOuterBoundsCheckBox.TabIndex = 40;
+            AudioOuterBoundsCheckBox.Text = "Show audio outer bounds";
+            AudioOuterBoundsCheckBox.UseVisualStyleBackColor = true;
+            AudioOuterBoundsCheckBox.CheckedChanged += AudioOuterBoundsCheckBox_CheckedChanged;
+            // 
+            // PopZonesCheckBox
+            // 
+            PopZonesCheckBox.AutoSize = true;
+            PopZonesCheckBox.Location = new System.Drawing.Point(12, 448);
+            PopZonesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            PopZonesCheckBox.Name = "PopZonesCheckBox";
+            PopZonesCheckBox.Size = new System.Drawing.Size(149, 19);
+            PopZonesCheckBox.TabIndex = 37;
+            PopZonesCheckBox.Text = "Show population zones";
+            PopZonesCheckBox.UseVisualStyleBackColor = true;
+            PopZonesCheckBox.CheckedChanged += PopZonesCheckBox_CheckedChanged;
+            // 
+            // NavMeshesCheckBox
+            // 
+            NavMeshesCheckBox.AutoSize = true;
+            NavMeshesCheckBox.Location = new System.Drawing.Point(12, 421);
+            NavMeshesCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            NavMeshesCheckBox.Name = "NavMeshesCheckBox";
+            NavMeshesCheckBox.Size = new System.Drawing.Size(120, 19);
+            NavMeshesCheckBox.TabIndex = 36;
+            NavMeshesCheckBox.Text = "Show nav meshes";
+            NavMeshesCheckBox.UseVisualStyleBackColor = true;
+            NavMeshesCheckBox.CheckedChanged += NavMeshesCheckBox_CheckedChanged;
+            // 
+            // TrainPathsCheckBox
+            // 
+            TrainPathsCheckBox.AutoSize = true;
+            TrainPathsCheckBox.Location = new System.Drawing.Point(12, 395);
+            TrainPathsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TrainPathsCheckBox.Name = "TrainPathsCheckBox";
+            TrainPathsCheckBox.Size = new System.Drawing.Size(114, 19);
+            TrainPathsCheckBox.TabIndex = 35;
+            TrainPathsCheckBox.Text = "Show train paths";
+            TrainPathsCheckBox.UseVisualStyleBackColor = true;
+            TrainPathsCheckBox.CheckedChanged += TrainPathsCheckBox_CheckedChanged;
+            // 
+            // PathsDepthClipCheckBox
+            // 
+            PathsDepthClipCheckBox.AutoSize = true;
+            PathsDepthClipCheckBox.Checked = true;
+            PathsDepthClipCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            PathsDepthClipCheckBox.Location = new System.Drawing.Point(12, 501);
+            PathsDepthClipCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            PathsDepthClipCheckBox.Name = "PathsDepthClipCheckBox";
+            PathsDepthClipCheckBox.Size = new System.Drawing.Size(111, 19);
+            PathsDepthClipCheckBox.TabIndex = 39;
+            PathsDepthClipCheckBox.Text = "Paths depth clip";
+            PathsDepthClipCheckBox.UseVisualStyleBackColor = true;
+            PathsDepthClipCheckBox.CheckedChanged += PathsDepthClipCheckBox_CheckedChanged;
+            // 
+            // PathBoundsCheckBox
+            // 
+            PathBoundsCheckBox.AutoSize = true;
+            PathBoundsCheckBox.Checked = true;
+            PathBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            PathBoundsCheckBox.Location = new System.Drawing.Point(114, 368);
+            PathBoundsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            PathBoundsCheckBox.Name = "PathBoundsCheckBox";
+            PathBoundsCheckBox.Size = new System.Drawing.Size(93, 19);
+            PathBoundsCheckBox.TabIndex = 34;
+            PathBoundsCheckBox.Text = "Path bounds";
+            PathBoundsCheckBox.UseVisualStyleBackColor = true;
+            PathBoundsCheckBox.CheckedChanged += PathBoundsCheckBox_CheckedChanged;
+            // 
+            // SelectionWidgetCheckBox
+            // 
+            SelectionWidgetCheckBox.AutoSize = true;
+            SelectionWidgetCheckBox.Checked = true;
+            SelectionWidgetCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            SelectionWidgetCheckBox.Location = new System.Drawing.Point(12, 267);
+            SelectionWidgetCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionWidgetCheckBox.Name = "SelectionWidgetCheckBox";
+            SelectionWidgetCheckBox.Size = new System.Drawing.Size(94, 19);
+            SelectionWidgetCheckBox.TabIndex = 28;
+            SelectionWidgetCheckBox.Text = "Show widget";
+            SelectionWidgetCheckBox.UseVisualStyleBackColor = true;
+            SelectionWidgetCheckBox.CheckedChanged += SelectionWidgetCheckBox_CheckedChanged;
+            // 
+            // MarkerStyleComboBox
+            // 
+            MarkerStyleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            MarkerStyleComboBox.FormattingEnabled = true;
+            MarkerStyleComboBox.Location = new System.Drawing.Point(93, 7);
+            MarkerStyleComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MarkerStyleComboBox.Name = "MarkerStyleComboBox";
+            MarkerStyleComboBox.Size = new System.Drawing.Size(132, 23);
+            MarkerStyleComboBox.TabIndex = 18;
+            MarkerStyleComboBox.SelectedIndexChanged += MarkerStyleComboBox_SelectedIndexChanged;
+            MarkerStyleComboBox.KeyPress += MarkerStyleComboBox_KeyPress;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new System.Drawing.Point(5, 10);
+            label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label4.Name = "label4";
+            label4.Size = new System.Drawing.Size(74, 15);
+            label4.TabIndex = 17;
+            label4.Text = "Marker style:";
+            // 
+            // LocatorStyleComboBox
+            // 
+            LocatorStyleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            LocatorStyleComboBox.FormattingEnabled = true;
+            LocatorStyleComboBox.Location = new System.Drawing.Point(93, 38);
+            LocatorStyleComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            LocatorStyleComboBox.Name = "LocatorStyleComboBox";
+            LocatorStyleComboBox.Size = new System.Drawing.Size(132, 23);
+            LocatorStyleComboBox.TabIndex = 20;
+            LocatorStyleComboBox.SelectedIndexChanged += LocatorStyleComboBox_SelectedIndexChanged;
+            LocatorStyleComboBox.KeyPress += LocatorStyleComboBox_KeyPress;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Location = new System.Drawing.Point(5, 42);
+            label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label5.Name = "label5";
+            label5.Size = new System.Drawing.Size(77, 15);
+            label5.TabIndex = 19;
+            label5.Text = "Locator style:";
+            // 
+            // MarkerDepthClipCheckBox
+            // 
+            MarkerDepthClipCheckBox.AutoSize = true;
+            MarkerDepthClipCheckBox.Location = new System.Drawing.Point(12, 69);
+            MarkerDepthClipCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MarkerDepthClipCheckBox.Name = "MarkerDepthClipCheckBox";
+            MarkerDepthClipCheckBox.Size = new System.Drawing.Size(119, 19);
+            MarkerDepthClipCheckBox.TabIndex = 21;
+            MarkerDepthClipCheckBox.Text = "Marker depth clip";
+            MarkerDepthClipCheckBox.UseVisualStyleBackColor = true;
+            MarkerDepthClipCheckBox.Visible = false;
+            MarkerDepthClipCheckBox.CheckedChanged += MarkerDepthClipCheckBox_CheckedChanged;
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Location = new System.Drawing.Point(5, 157);
+            label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label9.Name = "label9";
+            label9.Size = new System.Drawing.Size(83, 15);
+            label9.TabIndex = 25;
+            label9.Text = "Bounds range:";
+            // 
+            // PathsCheckBox
+            // 
+            PathsCheckBox.AutoSize = true;
+            PathsCheckBox.Location = new System.Drawing.Point(12, 368);
+            PathsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            PathsCheckBox.Name = "PathsCheckBox";
+            PathsCheckBox.Size = new System.Drawing.Size(87, 19);
+            PathsCheckBox.TabIndex = 33;
+            PathsCheckBox.Text = "Show paths";
+            PathsCheckBox.UseVisualStyleBackColor = true;
+            PathsCheckBox.CheckedChanged += PathsCheckBox_CheckedChanged;
+            // 
+            // SelectionBoundsCheckBox
+            // 
+            SelectionBoundsCheckBox.AutoSize = true;
+            SelectionBoundsCheckBox.Checked = true;
+            SelectionBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            SelectionBoundsCheckBox.Location = new System.Drawing.Point(12, 224);
+            SelectionBoundsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectionBoundsCheckBox.Name = "SelectionBoundsCheckBox";
+            SelectionBoundsCheckBox.Size = new System.Drawing.Size(148, 19);
+            SelectionBoundsCheckBox.TabIndex = 27;
+            SelectionBoundsCheckBox.Text = "Show selection bounds";
+            SelectionBoundsCheckBox.UseVisualStyleBackColor = true;
+            SelectionBoundsCheckBox.CheckedChanged += SelectionBoundsCheckBox_CheckedChanged;
+            // 
+            // BoundsDepthClipCheckBox
+            // 
+            BoundsDepthClipCheckBox.AutoSize = true;
+            BoundsDepthClipCheckBox.Checked = true;
+            BoundsDepthClipCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            BoundsDepthClipCheckBox.Location = new System.Drawing.Point(12, 132);
+            BoundsDepthClipCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            BoundsDepthClipCheckBox.Name = "BoundsDepthClipCheckBox";
+            BoundsDepthClipCheckBox.Size = new System.Drawing.Size(122, 19);
+            BoundsDepthClipCheckBox.TabIndex = 24;
+            BoundsDepthClipCheckBox.Text = "Bounds depth clip";
+            BoundsDepthClipCheckBox.UseVisualStyleBackColor = true;
+            BoundsDepthClipCheckBox.CheckedChanged += BoundsDepthClipCheckBox_CheckedChanged;
+            // 
+            // BoundsRangeTrackBar
+            // 
+            BoundsRangeTrackBar.AutoSize = false;
+            BoundsRangeTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            BoundsRangeTrackBar.LargeChange = 10;
+            BoundsRangeTrackBar.Location = new System.Drawing.Point(7, 175);
+            BoundsRangeTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            BoundsRangeTrackBar.Maximum = 100;
+            BoundsRangeTrackBar.Minimum = 1;
+            BoundsRangeTrackBar.Name = "BoundsRangeTrackBar";
+            BoundsRangeTrackBar.Size = new System.Drawing.Size(219, 38);
+            BoundsRangeTrackBar.TabIndex = 26;
+            BoundsRangeTrackBar.TickFrequency = 10;
+            BoundsRangeTrackBar.Value = 100;
+            BoundsRangeTrackBar.Scroll += BoundsRangeTrackBar_Scroll;
+            // 
+            // BoundsStyleComboBox
+            // 
+            BoundsStyleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            BoundsStyleComboBox.FormattingEnabled = true;
+            BoundsStyleComboBox.Items.AddRange(new object[] { "None", "Boxes", "Spheres" });
+            BoundsStyleComboBox.Location = new System.Drawing.Point(93, 100);
+            BoundsStyleComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            BoundsStyleComboBox.Name = "BoundsStyleComboBox";
+            BoundsStyleComboBox.Size = new System.Drawing.Size(132, 23);
+            BoundsStyleComboBox.TabIndex = 23;
+            BoundsStyleComboBox.SelectedIndexChanged += BoundsStyleComboBox_SelectedIndexChanged;
+            BoundsStyleComboBox.KeyPress += BoundsStyleComboBox_KeyPress;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Location = new System.Drawing.Point(5, 104);
+            label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label8.Name = "label8";
+            label8.Size = new System.Drawing.Size(77, 15);
+            label8.TabIndex = 22;
+            label8.Text = "Bounds style:";
+            // 
+            // OptionsLightingTabPage
+            // 
+            OptionsLightingTabPage.Controls.Add(HDLightsCheckBox);
+            OptionsLightingTabPage.Controls.Add(DeferredShadingCheckBox);
+            OptionsLightingTabPage.Controls.Add(WeatherRegionComboBox);
+            OptionsLightingTabPage.Controls.Add(label29);
+            OptionsLightingTabPage.Controls.Add(CloudParamTrackBar);
+            OptionsLightingTabPage.Controls.Add(CloudParamComboBox);
+            OptionsLightingTabPage.Controls.Add(label23);
+            OptionsLightingTabPage.Controls.Add(CloudsComboBox);
+            OptionsLightingTabPage.Controls.Add(label21);
+            OptionsLightingTabPage.Controls.Add(TimeSpeedLabel);
+            OptionsLightingTabPage.Controls.Add(label20);
+            OptionsLightingTabPage.Controls.Add(TimeSpeedTrackBar);
+            OptionsLightingTabPage.Controls.Add(TimeStartStopButton);
+            OptionsLightingTabPage.Controls.Add(ArtificialAmbientLightCheckBox);
+            OptionsLightingTabPage.Controls.Add(NaturalAmbientLightCheckBox);
+            OptionsLightingTabPage.Controls.Add(LODLightsCheckBox);
+            OptionsLightingTabPage.Controls.Add(HDRRenderingCheckBox);
+            OptionsLightingTabPage.Controls.Add(ControlTimeOfDayCheckBox);
+            OptionsLightingTabPage.Controls.Add(TimeOfDayLabel);
+            OptionsLightingTabPage.Controls.Add(label19);
+            OptionsLightingTabPage.Controls.Add(TimeOfDayTrackBar);
+            OptionsLightingTabPage.Controls.Add(WeatherComboBox);
+            OptionsLightingTabPage.Controls.Add(label17);
+            OptionsLightingTabPage.Controls.Add(ControlLightDirectionCheckBox);
+            OptionsLightingTabPage.Controls.Add(SkydomeCheckBox);
+            OptionsLightingTabPage.Controls.Add(ShadowsCheckBox);
+            OptionsLightingTabPage.Location = new System.Drawing.Point(4, 24);
+            OptionsLightingTabPage.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            OptionsLightingTabPage.Name = "OptionsLightingTabPage";
+            OptionsLightingTabPage.Size = new System.Drawing.Size(235, 558);
+            OptionsLightingTabPage.TabIndex = 2;
+            OptionsLightingTabPage.Text = "Lighting";
+            OptionsLightingTabPage.UseVisualStyleBackColor = true;
+            // 
+            // HDLightsCheckBox
+            // 
+            HDLightsCheckBox.AutoSize = true;
+            HDLightsCheckBox.Checked = true;
+            HDLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            HDLightsCheckBox.Location = new System.Drawing.Point(12, 107);
+            HDLightsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            HDLightsCheckBox.Name = "HDLightsCheckBox";
+            HDLightsCheckBox.Size = new System.Drawing.Size(75, 19);
+            HDLightsCheckBox.TabIndex = 34;
+            HDLightsCheckBox.Text = "HD lights";
+            HDLightsCheckBox.UseVisualStyleBackColor = true;
+            HDLightsCheckBox.CheckedChanged += HDLightsCheckBox_CheckedChanged;
+            // 
+            // DeferredShadingCheckBox
+            // 
+            DeferredShadingCheckBox.AutoSize = true;
+            DeferredShadingCheckBox.Checked = true;
+            DeferredShadingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            DeferredShadingCheckBox.Location = new System.Drawing.Point(12, 6);
+            DeferredShadingCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            DeferredShadingCheckBox.Name = "DeferredShadingCheckBox";
+            DeferredShadingCheckBox.Size = new System.Drawing.Size(116, 19);
+            DeferredShadingCheckBox.TabIndex = 30;
+            DeferredShadingCheckBox.Text = "Deferred shading";
+            DeferredShadingCheckBox.UseVisualStyleBackColor = true;
+            DeferredShadingCheckBox.CheckedChanged += DeferredShadingCheckBox_CheckedChanged;
+            // 
+            // WeatherRegionComboBox
+            // 
+            WeatherRegionComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            WeatherRegionComboBox.FormattingEnabled = true;
+            WeatherRegionComboBox.Items.AddRange(new object[] { "GLOBAL", "URBAN" });
+            WeatherRegionComboBox.Location = new System.Drawing.Point(71, 410);
+            WeatherRegionComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WeatherRegionComboBox.Name = "WeatherRegionComboBox";
+            WeatherRegionComboBox.Size = new System.Drawing.Size(154, 23);
+            WeatherRegionComboBox.TabIndex = 50;
+            WeatherRegionComboBox.SelectedIndexChanged += WeatherRegionComboBox_SelectedIndexChanged;
+            WeatherRegionComboBox.KeyPress += WeatherRegionComboBox_KeyPress;
+            // 
+            // label29
+            // 
+            label29.AutoSize = true;
+            label29.Location = new System.Drawing.Point(5, 413);
+            label29.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label29.Name = "label29";
+            label29.Size = new System.Drawing.Size(47, 15);
+            label29.TabIndex = 49;
+            label29.Text = "Region:";
+            // 
+            // CloudParamTrackBar
+            // 
+            CloudParamTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            CloudParamTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            CloudParamTrackBar.LargeChange = 10;
+            CloudParamTrackBar.Location = new System.Drawing.Point(7, 503);
+            CloudParamTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CloudParamTrackBar.Maximum = 200;
+            CloudParamTrackBar.Name = "CloudParamTrackBar";
+            CloudParamTrackBar.Size = new System.Drawing.Size(219, 45);
+            CloudParamTrackBar.TabIndex = 55;
+            CloudParamTrackBar.TickFrequency = 10;
+            CloudParamTrackBar.Value = 100;
+            CloudParamTrackBar.Scroll += CloudParamTrackBar_Scroll;
+            // 
+            // CloudParamComboBox
+            // 
+            CloudParamComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            CloudParamComboBox.FormattingEnabled = true;
+            CloudParamComboBox.Items.AddRange(new object[] { "<Loading...>" });
+            CloudParamComboBox.Location = new System.Drawing.Point(91, 472);
+            CloudParamComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CloudParamComboBox.Name = "CloudParamComboBox";
+            CloudParamComboBox.Size = new System.Drawing.Size(135, 23);
+            CloudParamComboBox.TabIndex = 54;
+            CloudParamComboBox.SelectedIndexChanged += CloudParamComboBox_SelectedIndexChanged;
+            CloudParamComboBox.KeyPress += CloudParamComboBox_KeyPress;
+            // 
+            // label23
+            // 
+            label23.AutoSize = true;
+            label23.Location = new System.Drawing.Point(5, 475);
+            label23.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label23.Name = "label23";
+            label23.Size = new System.Drawing.Size(79, 15);
+            label23.TabIndex = 53;
+            label23.Text = "Cloud param:";
+            // 
+            // CloudsComboBox
+            // 
+            CloudsComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            CloudsComboBox.FormattingEnabled = true;
+            CloudsComboBox.Items.AddRange(new object[] { "<Loading...>" });
+            CloudsComboBox.Location = new System.Drawing.Point(71, 441);
+            CloudsComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            CloudsComboBox.Name = "CloudsComboBox";
+            CloudsComboBox.Size = new System.Drawing.Size(154, 23);
+            CloudsComboBox.TabIndex = 52;
+            CloudsComboBox.SelectedIndexChanged += CloudsComboBox_SelectedIndexChanged;
+            CloudsComboBox.KeyPress += CloudsComboBox_KeyPress;
+            // 
+            // label21
+            // 
+            label21.AutoSize = true;
+            label21.Location = new System.Drawing.Point(5, 444);
+            label21.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label21.Name = "label21";
+            label21.Size = new System.Drawing.Size(47, 15);
+            label21.TabIndex = 51;
+            label21.Text = "Clouds:";
+            // 
+            // TimeSpeedLabel
+            // 
+            TimeSpeedLabel.AutoSize = true;
+            TimeSpeedLabel.Location = new System.Drawing.Point(91, 303);
+            TimeSpeedLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            TimeSpeedLabel.Name = "TimeSpeedLabel";
+            TimeSpeedLabel.Size = new System.Drawing.Size(68, 15);
+            TimeSpeedLabel.TabIndex = 44;
+            TimeSpeedLabel.Text = "0.5 min/sec";
+            // 
+            // label20
+            // 
+            label20.AutoSize = true;
+            label20.Location = new System.Drawing.Point(4, 303);
+            label20.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label20.Name = "label20";
+            label20.Size = new System.Drawing.Size(70, 15);
+            label20.TabIndex = 43;
+            label20.Text = "Time speed:";
+            // 
+            // TimeSpeedTrackBar
+            // 
+            TimeSpeedTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            TimeSpeedTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            TimeSpeedTrackBar.Location = new System.Drawing.Point(71, 322);
+            TimeSpeedTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TimeSpeedTrackBar.Maximum = 100;
+            TimeSpeedTrackBar.Minimum = 40;
+            TimeSpeedTrackBar.Name = "TimeSpeedTrackBar";
+            TimeSpeedTrackBar.Size = new System.Drawing.Size(155, 45);
+            TimeSpeedTrackBar.TabIndex = 46;
+            TimeSpeedTrackBar.TickFrequency = 5;
+            TimeSpeedTrackBar.Value = 50;
+            TimeSpeedTrackBar.Scroll += TimeSpeedTrackBar_Scroll;
+            // 
+            // TimeStartStopButton
+            // 
+            TimeStartStopButton.Location = new System.Drawing.Point(12, 322);
+            TimeStartStopButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TimeStartStopButton.Name = "TimeStartStopButton";
+            TimeStartStopButton.Size = new System.Drawing.Size(52, 27);
+            TimeStartStopButton.TabIndex = 45;
+            TimeStartStopButton.Text = "Start";
+            TimeStartStopButton.UseVisualStyleBackColor = true;
+            TimeStartStopButton.Click += TimeStartStopButton_Click;
+            // 
+            // ArtificialAmbientLightCheckBox
+            // 
+            ArtificialAmbientLightCheckBox.AutoSize = true;
+            ArtificialAmbientLightCheckBox.Checked = true;
+            ArtificialAmbientLightCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            ArtificialAmbientLightCheckBox.Location = new System.Drawing.Point(12, 158);
+            ArtificialAmbientLightCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ArtificialAmbientLightCheckBox.Name = "ArtificialAmbientLightCheckBox";
+            ArtificialAmbientLightCheckBox.Size = new System.Drawing.Size(144, 19);
+            ArtificialAmbientLightCheckBox.TabIndex = 37;
+            ArtificialAmbientLightCheckBox.Text = "Artificial ambient light";
+            ArtificialAmbientLightCheckBox.UseVisualStyleBackColor = true;
+            ArtificialAmbientLightCheckBox.CheckedChanged += ArtificialAmbientLightCheckBox_CheckedChanged;
+            // 
+            // NaturalAmbientLightCheckBox
+            // 
+            NaturalAmbientLightCheckBox.AutoSize = true;
+            NaturalAmbientLightCheckBox.Checked = true;
+            NaturalAmbientLightCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            NaturalAmbientLightCheckBox.Location = new System.Drawing.Point(12, 133);
+            NaturalAmbientLightCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            NaturalAmbientLightCheckBox.Name = "NaturalAmbientLightCheckBox";
+            NaturalAmbientLightCheckBox.Size = new System.Drawing.Size(139, 19);
+            NaturalAmbientLightCheckBox.TabIndex = 36;
+            NaturalAmbientLightCheckBox.Text = "Natural ambient light";
+            NaturalAmbientLightCheckBox.UseVisualStyleBackColor = true;
+            NaturalAmbientLightCheckBox.CheckedChanged += NaturalAmbientLightCheckBox_CheckedChanged;
+            // 
+            // LODLightsCheckBox
+            // 
+            LODLightsCheckBox.AutoSize = true;
+            LODLightsCheckBox.Checked = true;
+            LODLightsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            LODLightsCheckBox.Location = new System.Drawing.Point(104, 107);
+            LODLightsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            LODLightsCheckBox.Name = "LODLightsCheckBox";
+            LODLightsCheckBox.Size = new System.Drawing.Size(81, 19);
+            LODLightsCheckBox.TabIndex = 35;
+            LODLightsCheckBox.Text = "LOD lights";
+            LODLightsCheckBox.UseVisualStyleBackColor = true;
+            LODLightsCheckBox.CheckedChanged += LODLightsCheckBox_CheckedChanged;
+            // 
+            // HDRRenderingCheckBox
+            // 
+            HDRRenderingCheckBox.AutoSize = true;
+            HDRRenderingCheckBox.Checked = true;
+            HDRRenderingCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            HDRRenderingCheckBox.Location = new System.Drawing.Point(12, 31);
+            HDRRenderingCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            HDRRenderingCheckBox.Name = "HDRRenderingCheckBox";
+            HDRRenderingCheckBox.Size = new System.Drawing.Size(104, 19);
+            HDRRenderingCheckBox.TabIndex = 31;
+            HDRRenderingCheckBox.Text = "HDR rendering";
+            HDRRenderingCheckBox.UseVisualStyleBackColor = true;
+            HDRRenderingCheckBox.CheckedChanged += HDRRenderingCheckBox_CheckedChanged;
+            // 
+            // ControlTimeOfDayCheckBox
+            // 
+            ControlTimeOfDayCheckBox.AutoSize = true;
+            ControlTimeOfDayCheckBox.Checked = true;
+            ControlTimeOfDayCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            ControlTimeOfDayCheckBox.Location = new System.Drawing.Point(12, 209);
+            ControlTimeOfDayCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ControlTimeOfDayCheckBox.Name = "ControlTimeOfDayCheckBox";
+            ControlTimeOfDayCheckBox.Size = new System.Drawing.Size(194, 19);
+            ControlTimeOfDayCheckBox.TabIndex = 39;
+            ControlTimeOfDayCheckBox.Text = "Control time of day (right-drag)";
+            ControlTimeOfDayCheckBox.UseVisualStyleBackColor = true;
+            ControlTimeOfDayCheckBox.CheckedChanged += ControlTimeOfDayCheckBox_CheckedChanged;
+            // 
+            // TimeOfDayLabel
+            // 
+            TimeOfDayLabel.AutoSize = true;
+            TimeOfDayLabel.Location = new System.Drawing.Point(88, 240);
+            TimeOfDayLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            TimeOfDayLabel.Name = "TimeOfDayLabel";
+            TimeOfDayLabel.Size = new System.Drawing.Size(34, 15);
+            TimeOfDayLabel.TabIndex = 41;
+            TimeOfDayLabel.Text = "12:00";
+            // 
+            // label19
+            // 
+            label19.AutoSize = true;
+            label19.Location = new System.Drawing.Point(5, 240);
+            label19.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label19.Name = "label19";
+            label19.Size = new System.Drawing.Size(72, 15);
+            label19.TabIndex = 40;
+            label19.Text = "Time of day:";
+            // 
+            // TimeOfDayTrackBar
+            // 
+            TimeOfDayTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            TimeOfDayTrackBar.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            TimeOfDayTrackBar.LargeChange = 60;
+            TimeOfDayTrackBar.Location = new System.Drawing.Point(7, 258);
+            TimeOfDayTrackBar.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            TimeOfDayTrackBar.Maximum = 1440;
+            TimeOfDayTrackBar.Name = "TimeOfDayTrackBar";
+            TimeOfDayTrackBar.Size = new System.Drawing.Size(219, 45);
+            TimeOfDayTrackBar.TabIndex = 42;
+            TimeOfDayTrackBar.TickFrequency = 60;
+            TimeOfDayTrackBar.Value = 720;
+            TimeOfDayTrackBar.Scroll += TimeOfDayTrackBar_Scroll;
+            // 
+            // WeatherComboBox
+            // 
+            WeatherComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            WeatherComboBox.FormattingEnabled = true;
+            WeatherComboBox.Items.AddRange(new object[] { "<Loading...>" });
+            WeatherComboBox.Location = new System.Drawing.Point(71, 378);
+            WeatherComboBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            WeatherComboBox.Name = "WeatherComboBox";
+            WeatherComboBox.Size = new System.Drawing.Size(154, 23);
+            WeatherComboBox.TabIndex = 48;
+            WeatherComboBox.SelectedIndexChanged += WeatherComboBox_SelectedIndexChanged;
+            WeatherComboBox.KeyPress += WeatherComboBox_KeyPress;
+            // 
+            // label17
+            // 
+            label17.AutoSize = true;
+            label17.Location = new System.Drawing.Point(5, 382);
+            label17.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label17.Name = "label17";
+            label17.Size = new System.Drawing.Size(54, 15);
+            label17.TabIndex = 47;
+            label17.Text = "Weather:";
+            // 
+            // ControlLightDirectionCheckBox
+            // 
+            ControlLightDirectionCheckBox.AutoSize = true;
+            ControlLightDirectionCheckBox.Location = new System.Drawing.Point(12, 183);
+            ControlLightDirectionCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ControlLightDirectionCheckBox.Name = "ControlLightDirectionCheckBox";
+            ControlLightDirectionCheckBox.Size = new System.Drawing.Size(208, 19);
+            ControlLightDirectionCheckBox.TabIndex = 38;
+            ControlLightDirectionCheckBox.Text = "Control light direction (right-drag)";
+            ControlLightDirectionCheckBox.UseVisualStyleBackColor = true;
+            ControlLightDirectionCheckBox.CheckedChanged += ControlLightDirectionCheckBox_CheckedChanged;
+            // 
+            // SkydomeCheckBox
+            // 
+            SkydomeCheckBox.AutoSize = true;
+            SkydomeCheckBox.Checked = true;
+            SkydomeCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            SkydomeCheckBox.Location = new System.Drawing.Point(12, 82);
+            SkydomeCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SkydomeCheckBox.Name = "SkydomeCheckBox";
+            SkydomeCheckBox.Size = new System.Drawing.Size(75, 19);
+            SkydomeCheckBox.TabIndex = 33;
+            SkydomeCheckBox.Text = "Skydome";
+            SkydomeCheckBox.UseVisualStyleBackColor = true;
+            SkydomeCheckBox.CheckedChanged += SkydomeCheckbox_CheckedChanged;
+            // 
+            // ShadowsCheckBox
+            // 
+            ShadowsCheckBox.AutoSize = true;
+            ShadowsCheckBox.Location = new System.Drawing.Point(12, 57);
+            ShadowsCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ShadowsCheckBox.Name = "ShadowsCheckBox";
+            ShadowsCheckBox.Size = new System.Drawing.Size(73, 19);
+            ShadowsCheckBox.TabIndex = 32;
+            ShadowsCheckBox.Text = "Shadows";
+            ShadowsCheckBox.UseVisualStyleBackColor = true;
+            ShadowsCheckBox.CheckedChanged += ShadowsCheckBox_CheckedChanged;
+            // 
+            // StatusBarCheckBox
+            // 
+            StatusBarCheckBox.AutoSize = true;
+            StatusBarCheckBox.Checked = true;
+            StatusBarCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            StatusBarCheckBox.Location = new System.Drawing.Point(139, 597);
+            StatusBarCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            StatusBarCheckBox.Name = "StatusBarCheckBox";
+            StatusBarCheckBox.Size = new System.Drawing.Size(78, 19);
+            StatusBarCheckBox.TabIndex = 145;
+            StatusBarCheckBox.Text = "Status bar";
+            StatusBarCheckBox.UseVisualStyleBackColor = true;
+            StatusBarCheckBox.CheckedChanged += StatusBarCheckBox_CheckedChanged;
+            // 
+            // QuitButton
+            // 
+            QuitButton.Location = new System.Drawing.Point(122, 657);
+            QuitButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            QuitButton.Name = "QuitButton";
+            QuitButton.Size = new System.Drawing.Size(108, 27);
+            QuitButton.TabIndex = 149;
+            QuitButton.Text = "Quit";
+            QuitButton.UseVisualStyleBackColor = true;
+            QuitButton.Click += QuitButton_Click;
+            // 
+            // ReloadSettingsButton
+            // 
+            ReloadSettingsButton.Enabled = false;
+            ReloadSettingsButton.Location = new System.Drawing.Point(7, 623);
+            ReloadSettingsButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ReloadSettingsButton.Name = "ReloadSettingsButton";
+            ReloadSettingsButton.Size = new System.Drawing.Size(108, 27);
+            ReloadSettingsButton.TabIndex = 146;
+            ReloadSettingsButton.Text = "Reload settings";
+            ReloadSettingsButton.UseVisualStyleBackColor = true;
+            ReloadSettingsButton.Visible = false;
+            ReloadSettingsButton.Click += ReloadSettingsButton_Click;
+            // 
+            // SaveSettingsButton
+            // 
+            SaveSettingsButton.Location = new System.Drawing.Point(122, 623);
+            SaveSettingsButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SaveSettingsButton.Name = "SaveSettingsButton";
+            SaveSettingsButton.Size = new System.Drawing.Size(108, 27);
+            SaveSettingsButton.TabIndex = 147;
+            SaveSettingsButton.Text = "Save settings";
+            SaveSettingsButton.UseVisualStyleBackColor = true;
+            SaveSettingsButton.Click += SaveSettingsButton_Click;
+            // 
+            // ReloadShadersButton
+            // 
+            ReloadShadersButton.Location = new System.Drawing.Point(7, 657);
+            ReloadShadersButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ReloadShadersButton.Name = "ReloadShadersButton";
+            ReloadShadersButton.Size = new System.Drawing.Size(108, 27);
+            ReloadShadersButton.TabIndex = 148;
+            ReloadShadersButton.Text = "Reload shaders";
+            ReloadShadersButton.UseVisualStyleBackColor = true;
+            ReloadShadersButton.Click += ReloadShadersButton_Click;
+            // 
+            // ErrorConsoleCheckBox
+            // 
+            ErrorConsoleCheckBox.AutoSize = true;
+            ErrorConsoleCheckBox.Location = new System.Drawing.Point(16, 597);
+            ErrorConsoleCheckBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
+            ErrorConsoleCheckBox.Size = new System.Drawing.Size(95, 19);
+            ErrorConsoleCheckBox.TabIndex = 144;
+            ErrorConsoleCheckBox.Text = "Error console";
+            ErrorConsoleCheckBox.UseVisualStyleBackColor = true;
+            ErrorConsoleCheckBox.CheckedChanged += ErrorConsoleCheckBox_CheckedChanged;
+            // 
+            // ToolsPanelHideButton
+            // 
+            ToolsPanelHideButton.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            ToolsPanelHideButton.Location = new System.Drawing.Point(216, 3);
+            ToolsPanelHideButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolsPanelHideButton.Name = "ToolsPanelHideButton";
+            ToolsPanelHideButton.Size = new System.Drawing.Size(35, 27);
+            ToolsPanelHideButton.TabIndex = 4;
+            ToolsPanelHideButton.Text = ">>";
+            ToolsPanelHideButton.UseVisualStyleBackColor = true;
+            ToolsPanelHideButton.Click += ToolsPanelHideButton_Click;
+            // 
+            // ToolsPanelShowButton
+            // 
+            ToolsPanelShowButton.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right;
+            ToolsPanelShowButton.Location = new System.Drawing.Point(1096, 17);
+            ToolsPanelShowButton.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolsPanelShowButton.Name = "ToolsPanelShowButton";
+            ToolsPanelShowButton.Size = new System.Drawing.Size(35, 27);
+            ToolsPanelShowButton.TabIndex = 0;
+            ToolsPanelShowButton.Text = "<<";
+            ToolsPanelShowButton.UseVisualStyleBackColor = true;
+            ToolsPanelShowButton.Click += ToolsPanelShowButton_Click;
+            // 
+            // ConsolePanel
+            // 
+            ConsolePanel.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            ConsolePanel.BackColor = System.Drawing.SystemColors.Control;
+            ConsolePanel.Controls.Add(ConsoleTextBox);
+            ConsolePanel.Location = new System.Drawing.Point(14, 665);
+            ConsolePanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ConsolePanel.Name = "ConsolePanel";
+            ConsolePanel.Size = new System.Drawing.Size(859, 117);
+            ConsolePanel.TabIndex = 3;
+            ConsolePanel.Visible = false;
+            // 
+            // ConsoleTextBox
+            // 
+            ConsoleTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            ConsoleTextBox.Location = new System.Drawing.Point(4, 3);
+            ConsoleTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ConsoleTextBox.Multiline = true;
+            ConsoleTextBox.Name = "ConsoleTextBox";
+            ConsoleTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            ConsoleTextBox.Size = new System.Drawing.Size(851, 109);
+            ConsoleTextBox.TabIndex = 0;
+            // 
+            // StatsUpdateTimer
+            // 
+            StatsUpdateTimer.Enabled = true;
+            StatsUpdateTimer.Interval = 500;
+            StatsUpdateTimer.Tick += StatsUpdateTimer_Tick;
+            // 
+            // SelectedMarkerPanel
+            // 
+            SelectedMarkerPanel.BackColor = System.Drawing.Color.White;
+            SelectedMarkerPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            SelectedMarkerPanel.Controls.Add(SelectedMarkerPositionTextBox);
+            SelectedMarkerPanel.Controls.Add(SelectedMarkerNameTextBox);
+            SelectedMarkerPanel.Location = new System.Drawing.Point(14, 74);
+            SelectedMarkerPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectedMarkerPanel.Name = "SelectedMarkerPanel";
+            SelectedMarkerPanel.Size = new System.Drawing.Size(210, 48);
+            SelectedMarkerPanel.TabIndex = 5;
+            SelectedMarkerPanel.Visible = false;
+            // 
+            // SelectedMarkerPositionTextBox
+            // 
+            SelectedMarkerPositionTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelectedMarkerPositionTextBox.BackColor = System.Drawing.Color.White;
+            SelectedMarkerPositionTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            SelectedMarkerPositionTextBox.Location = new System.Drawing.Point(4, 25);
+            SelectedMarkerPositionTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectedMarkerPositionTextBox.Name = "SelectedMarkerPositionTextBox";
+            SelectedMarkerPositionTextBox.ReadOnly = true;
+            SelectedMarkerPositionTextBox.Size = new System.Drawing.Size(201, 16);
+            SelectedMarkerPositionTextBox.TabIndex = 1;
+            // 
+            // SelectedMarkerNameTextBox
+            // 
+            SelectedMarkerNameTextBox.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            SelectedMarkerNameTextBox.BackColor = System.Drawing.Color.White;
+            SelectedMarkerNameTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            SelectedMarkerNameTextBox.Location = new System.Drawing.Point(4, 3);
+            SelectedMarkerNameTextBox.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            SelectedMarkerNameTextBox.Name = "SelectedMarkerNameTextBox";
+            SelectedMarkerNameTextBox.ReadOnly = true;
+            SelectedMarkerNameTextBox.Size = new System.Drawing.Size(201, 16);
+            SelectedMarkerNameTextBox.TabIndex = 0;
+            // 
+            // ToolsMenu
+            // 
+            ToolsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolsMenuRPFBrowser, ToolsMenuRPFExplorer, ToolsMenuSelectionInfo, ToolsMenuProjectWindow, ToolsMenuCutsceneViewer, ToolsMenuAudioExplorer, ToolsMenuWorldSearch, ToolsMenuBinarySearch, ToolsMenuJenkGen, ToolsMenuJenkInd, ToolsMenuExtractScripts, ToolsMenuExtractTextures, ToolsMenuExtractRawFiles, ToolsMenuExtractShaders, ToolsMenuOptions });
+            ToolsMenu.Name = "ToolsMenu";
+            ToolsMenu.Size = new System.Drawing.Size(170, 334);
+            // 
+            // ToolsMenuRPFBrowser
+            // 
+            ToolsMenuRPFBrowser.Name = "ToolsMenuRPFBrowser";
+            ToolsMenuRPFBrowser.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuRPFBrowser.Text = "RPF Browser...";
+            ToolsMenuRPFBrowser.Visible = false;
+            ToolsMenuRPFBrowser.Click += ToolsMenuRPFBrowser_Click;
+            // 
+            // ToolsMenuRPFExplorer
+            // 
+            ToolsMenuRPFExplorer.Name = "ToolsMenuRPFExplorer";
+            ToolsMenuRPFExplorer.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuRPFExplorer.Text = "RPF Explorer...";
+            ToolsMenuRPFExplorer.Click += ToolsMenuRPFExplorer_Click;
+            // 
+            // ToolsMenuSelectionInfo
+            // 
+            ToolsMenuSelectionInfo.Name = "ToolsMenuSelectionInfo";
+            ToolsMenuSelectionInfo.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuSelectionInfo.Text = "Selection info...";
+            ToolsMenuSelectionInfo.Click += ToolsMenuSelectionInfo_Click;
+            // 
+            // ToolsMenuProjectWindow
+            // 
+            ToolsMenuProjectWindow.Enabled = false;
+            ToolsMenuProjectWindow.Name = "ToolsMenuProjectWindow";
+            ToolsMenuProjectWindow.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuProjectWindow.Text = "Project window...";
+            ToolsMenuProjectWindow.Click += ToolsMenuProjectWindow_Click;
+            // 
+            // ToolsMenuCutsceneViewer
+            // 
+            ToolsMenuCutsceneViewer.Enabled = false;
+            ToolsMenuCutsceneViewer.Name = "ToolsMenuCutsceneViewer";
+            ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuCutsceneViewer.Text = "Cutscene viewer...";
+            ToolsMenuCutsceneViewer.Click += ToolsMenuCutsceneViewer_Click;
+            // 
+            // ToolsMenuAudioExplorer
+            // 
+            ToolsMenuAudioExplorer.Enabled = false;
+            ToolsMenuAudioExplorer.Name = "ToolsMenuAudioExplorer";
+            ToolsMenuAudioExplorer.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuAudioExplorer.Text = "Audio explorer...";
+            ToolsMenuAudioExplorer.Click += ToolsMenuAudioExplorer_Click;
+            // 
+            // ToolsMenuWorldSearch
+            // 
+            ToolsMenuWorldSearch.Name = "ToolsMenuWorldSearch";
+            ToolsMenuWorldSearch.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuWorldSearch.Text = "World search...";
+            ToolsMenuWorldSearch.Click += ToolsMenuWorldSearch_Click;
+            // 
+            // ToolsMenuBinarySearch
+            // 
+            ToolsMenuBinarySearch.Enabled = false;
+            ToolsMenuBinarySearch.Name = "ToolsMenuBinarySearch";
+            ToolsMenuBinarySearch.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuBinarySearch.Text = "Binary search...";
+            ToolsMenuBinarySearch.Click += ToolsMenuBinarySearch_Click;
+            // 
+            // ToolsMenuJenkGen
+            // 
+            ToolsMenuJenkGen.Name = "ToolsMenuJenkGen";
+            ToolsMenuJenkGen.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuJenkGen.Text = "JenkGen...";
+            ToolsMenuJenkGen.Click += ToolsMenuJenkGen_Click;
+            // 
+            // ToolsMenuJenkInd
+            // 
+            ToolsMenuJenkInd.Enabled = false;
+            ToolsMenuJenkInd.Name = "ToolsMenuJenkInd";
+            ToolsMenuJenkInd.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuJenkInd.Text = "JenkInd...";
+            ToolsMenuJenkInd.Click += ToolsMenuJenkInd_Click;
+            // 
+            // ToolsMenuExtractScripts
+            // 
+            ToolsMenuExtractScripts.Name = "ToolsMenuExtractScripts";
+            ToolsMenuExtractScripts.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuExtractScripts.Text = "Extract scripts...";
+            ToolsMenuExtractScripts.Click += ToolsMenuExtractScripts_Click;
+            // 
+            // ToolsMenuExtractTextures
+            // 
+            ToolsMenuExtractTextures.Name = "ToolsMenuExtractTextures";
+            ToolsMenuExtractTextures.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuExtractTextures.Text = "Extract textures...";
+            ToolsMenuExtractTextures.Click += ToolsMenuExtractTextures_Click;
+            // 
+            // ToolsMenuExtractRawFiles
+            // 
+            ToolsMenuExtractRawFiles.Name = "ToolsMenuExtractRawFiles";
+            ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuExtractRawFiles.Text = "Extract raw files...";
+            ToolsMenuExtractRawFiles.Click += ToolsMenuExtractRawFiles_Click;
+            // 
+            // ToolsMenuExtractShaders
+            // 
+            ToolsMenuExtractShaders.Name = "ToolsMenuExtractShaders";
+            ToolsMenuExtractShaders.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuExtractShaders.Text = "Extract shaders...";
+            ToolsMenuExtractShaders.Click += ToolsMenuExtractShaders_Click;
+            // 
+            // ToolsMenuOptions
+            // 
+            ToolsMenuOptions.Name = "ToolsMenuOptions";
+            ToolsMenuOptions.Size = new System.Drawing.Size(169, 22);
+            ToolsMenuOptions.Text = "Options...";
+            ToolsMenuOptions.Click += ToolsMenuOptions_Click;
+            // 
+            // Toolbar
+            // 
+            Toolbar.Dock = System.Windows.Forms.DockStyle.None;
+            Toolbar.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            Toolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarNewButton, ToolbarOpenButton, ToolbarSaveButton, ToolbarSaveAllButton, toolStripSeparator5, ToolbarSelectButton, toolStripSeparator1, ToolbarMoveButton, ToolbarRotateButton, ToolbarScaleButton, ToolbarTransformSpaceButton, ToolbarSnapButton, toolStripSeparator2, ToolbarUndoButton, ToolbarRedoButton, toolStripSeparator3, ToolbarInfoWindowButton, ToolbarProjectWindowButton, toolStripSeparator4, ToolbarAddItemButton, ToolbarDeleteItemButton, toolStripSeparator6, ToolbarCopyButton, ToolbarPasteButton, toolStripSeparator7, ToolbarCameraModeButton });
+            Toolbar.Location = new System.Drawing.Point(1, 0);
+            Toolbar.Name = "Toolbar";
+            Toolbar.Size = new System.Drawing.Size(554, 25);
+            Toolbar.TabIndex = 6;
+            Toolbar.Text = "toolStrip1";
+            // 
+            // ToolbarNewButton
+            // 
+            ToolbarNewButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarNewButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarNewProjectButton, ToolbarNewYmapButton, ToolbarNewYtypButton, ToolbarNewYbnButton, ToolbarNewYndButton, ToolbarNewTrainsButton, ToolbarNewScenarioButton });
+            ToolbarNewButton.Enabled = false;
+            ToolbarNewButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarNewButton.Image");
+            ToolbarNewButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarNewButton.Name = "ToolbarNewButton";
+            ToolbarNewButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarNewButton.Text = "New...";
+            ToolbarNewButton.ToolTipText = "New... (Ctrl+N)";
+            ToolbarNewButton.ButtonClick += ToolbarNewButton_ButtonClick;
+            // 
+            // ToolbarNewProjectButton
+            // 
+            ToolbarNewProjectButton.Name = "ToolbarNewProjectButton";
+            ToolbarNewProjectButton.Size = new System.Drawing.Size(167, 22);
+            ToolbarNewProjectButton.Text = "New Project";
+            ToolbarNewProjectButton.Click += ToolbarNewProjectButton_Click;
+            // 
+            // ToolbarNewYmapButton
+            // 
+            ToolbarNewYmapButton.Name = "ToolbarNewYmapButton";
+            ToolbarNewYmapButton.Size = new System.Drawing.Size(167, 22);
+            ToolbarNewYmapButton.Text = "New Ymap File";
+            ToolbarNewYmapButton.Click += ToolbarNewYmapButton_Click;
+            // 
+            // ToolbarNewYtypButton
+            // 
+            ToolbarNewYtypButton.Name = "ToolbarNewYtypButton";
+            ToolbarNewYtypButton.Size = new System.Drawing.Size(167, 22);
+            ToolbarNewYtypButton.Text = "New Ytyp File";
+            ToolbarNewYtypButton.Click += ToolbarNewYtypButton_Click;
+            // 
+            // ToolbarNewYbnButton
+            // 
+            ToolbarNewYbnButton.Name = "ToolbarNewYbnButton";
+            ToolbarNewYbnButton.Size = new System.Drawing.Size(167, 22);
+            ToolbarNewYbnButton.Text = "New Ybn File";
+            ToolbarNewYbnButton.Click += ToolbarNewYbnButton_Click;
+            // 
+            // ToolbarNewYndButton
+            // 
+            ToolbarNewYndButton.Name = "ToolbarNewYndButton";
+            ToolbarNewYndButton.Size = new System.Drawing.Size(167, 22);
+            ToolbarNewYndButton.Text = "New Ynd File";
+            ToolbarNewYndButton.Click += ToolbarNewYndButton_Click;
+            // 
+            // ToolbarNewTrainsButton
+            // 
+            ToolbarNewTrainsButton.Name = "ToolbarNewTrainsButton";
+            ToolbarNewTrainsButton.Size = new System.Drawing.Size(167, 22);
+            ToolbarNewTrainsButton.Text = "New Trains File";
+            ToolbarNewTrainsButton.Click += ToolbarNewTrainsButton_Click;
+            // 
+            // ToolbarNewScenarioButton
+            // 
+            ToolbarNewScenarioButton.Name = "ToolbarNewScenarioButton";
+            ToolbarNewScenarioButton.Size = new System.Drawing.Size(167, 22);
+            ToolbarNewScenarioButton.Text = "New Scenario File";
+            ToolbarNewScenarioButton.Click += ToolbarNewScenarioButton_Click;
+            // 
+            // ToolbarOpenButton
+            // 
+            ToolbarOpenButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarOpenButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarOpenProjectButton, ToolbarOpenFilesButton, ToolbarOpenFolderButton });
+            ToolbarOpenButton.Enabled = false;
+            ToolbarOpenButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarOpenButton.Image");
+            ToolbarOpenButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarOpenButton.Name = "ToolbarOpenButton";
+            ToolbarOpenButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarOpenButton.Text = "Open...";
+            ToolbarOpenButton.ToolTipText = "Open... (Ctrl+O)";
+            ToolbarOpenButton.ButtonClick += ToolbarOpenButton_ButtonClick;
+            // 
+            // ToolbarOpenProjectButton
+            // 
+            ToolbarOpenProjectButton.Name = "ToolbarOpenProjectButton";
+            ToolbarOpenProjectButton.Size = new System.Drawing.Size(152, 22);
+            ToolbarOpenProjectButton.Text = "Open Project...";
+            ToolbarOpenProjectButton.Click += ToolbarOpenProjectButton_Click;
+            // 
+            // ToolbarOpenFilesButton
+            // 
+            ToolbarOpenFilesButton.Name = "ToolbarOpenFilesButton";
+            ToolbarOpenFilesButton.Size = new System.Drawing.Size(152, 22);
+            ToolbarOpenFilesButton.Text = "Open Files...";
+            ToolbarOpenFilesButton.Click += ToolbarOpenFilesButton_Click;
+            // 
+            // ToolbarOpenFolderButton
+            // 
+            ToolbarOpenFolderButton.Name = "ToolbarOpenFolderButton";
+            ToolbarOpenFolderButton.Size = new System.Drawing.Size(152, 22);
+            ToolbarOpenFolderButton.Text = "Open Folder...";
+            ToolbarOpenFolderButton.Click += ToolbarOpenFolderButton_Click;
+            // 
+            // ToolbarSaveButton
+            // 
+            ToolbarSaveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarSaveButton.Enabled = false;
+            ToolbarSaveButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarSaveButton.Image");
+            ToolbarSaveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarSaveButton.Name = "ToolbarSaveButton";
+            ToolbarSaveButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarSaveButton.Text = "Save";
+            ToolbarSaveButton.ToolTipText = "Save (Ctrl+S)";
+            ToolbarSaveButton.Click += ToolbarSaveButton_Click;
+            // 
+            // ToolbarSaveAllButton
+            // 
+            ToolbarSaveAllButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarSaveAllButton.Enabled = false;
+            ToolbarSaveAllButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarSaveAllButton.Image");
+            ToolbarSaveAllButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarSaveAllButton.Name = "ToolbarSaveAllButton";
+            ToolbarSaveAllButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarSaveAllButton.Text = "Save All";
+            ToolbarSaveAllButton.ToolTipText = "Save All (Ctrl+Shift+S)";
+            ToolbarSaveAllButton.Click += ToolbarSaveAllButton_Click;
+            // 
+            // toolStripSeparator5
+            // 
+            toolStripSeparator5.Name = "toolStripSeparator5";
+            toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarSelectButton
+            // 
+            ToolbarSelectButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarSelectButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarSelectEntityButton, ToolbarSelectEntityExtensionButton, ToolbarSelectArchetypeExtensionButton, ToolbarSelectTimeCycleModifierButton, ToolbarSelectCarGeneratorButton, ToolbarSelectGrassButton, ToolbarSelectWaterQuadButton, ToolbarSelectCalmingQuadButton, ToolbarSelectWaveQuadButton, ToolbarSelectCollisionButton, ToolbarSelectNavMeshButton, ToolbarSelectPathButton, ToolbarSelectTrainTrackButton, ToolbarSelectLodLightsButton, ToolbarSelectMloInstanceButton, ToolbarSelectScenarioButton, ToolbarSelectAudioButton, ToolbarSelectOcclusionButton });
+            ToolbarSelectButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarSelectButton.Image");
+            ToolbarSelectButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarSelectButton.Name = "ToolbarSelectButton";
+            ToolbarSelectButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarSelectButton.Text = "Select objects / Exit edit mode";
+            ToolbarSelectButton.ToolTipText = "Select objects / Exit edit mode (C, Q)";
+            ToolbarSelectButton.ButtonClick += ToolbarSelectButton_ButtonClick;
+            // 
+            // ToolbarSelectEntityButton
+            // 
+            ToolbarSelectEntityButton.Checked = true;
+            ToolbarSelectEntityButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            ToolbarSelectEntityButton.Name = "ToolbarSelectEntityButton";
+            ToolbarSelectEntityButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectEntityButton.Text = "Entity";
+            ToolbarSelectEntityButton.Click += ToolbarSelectEntityButton_Click;
+            // 
+            // ToolbarSelectEntityExtensionButton
+            // 
+            ToolbarSelectEntityExtensionButton.Name = "ToolbarSelectEntityExtensionButton";
+            ToolbarSelectEntityExtensionButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectEntityExtensionButton.Text = "Entity Extension";
+            ToolbarSelectEntityExtensionButton.Click += ToolbarSelectEntityExtensionButton_Click;
+            // 
+            // ToolbarSelectArchetypeExtensionButton
+            // 
+            ToolbarSelectArchetypeExtensionButton.Name = "ToolbarSelectArchetypeExtensionButton";
+            ToolbarSelectArchetypeExtensionButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectArchetypeExtensionButton.Text = "Archetype Extension";
+            ToolbarSelectArchetypeExtensionButton.Click += ToolbarSelectArchetypeExtensionButton_Click;
+            // 
+            // ToolbarSelectTimeCycleModifierButton
+            // 
+            ToolbarSelectTimeCycleModifierButton.Name = "ToolbarSelectTimeCycleModifierButton";
+            ToolbarSelectTimeCycleModifierButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectTimeCycleModifierButton.Text = "Time Cycle Modifier";
+            ToolbarSelectTimeCycleModifierButton.Click += ToolbarSelectTimeCycleModifierButton_Click;
+            // 
+            // ToolbarSelectCarGeneratorButton
+            // 
+            ToolbarSelectCarGeneratorButton.Name = "ToolbarSelectCarGeneratorButton";
+            ToolbarSelectCarGeneratorButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectCarGeneratorButton.Text = "Car Generator";
+            ToolbarSelectCarGeneratorButton.Click += ToolbarSelectCarGeneratorButton_Click;
+            // 
+            // ToolbarSelectGrassButton
+            // 
+            ToolbarSelectGrassButton.Name = "ToolbarSelectGrassButton";
+            ToolbarSelectGrassButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectGrassButton.Text = "Grass";
+            ToolbarSelectGrassButton.Click += ToolbarSelectGrassButton_Click;
+            // 
+            // ToolbarSelectWaterQuadButton
+            // 
+            ToolbarSelectWaterQuadButton.Name = "ToolbarSelectWaterQuadButton";
+            ToolbarSelectWaterQuadButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectWaterQuadButton.Text = "Water Quad";
+            ToolbarSelectWaterQuadButton.Click += ToolbarSelectWaterQuadButton_Click;
+            // 
+            // ToolbarSelectCalmingQuadButton
+            // 
+            ToolbarSelectCalmingQuadButton.Name = "ToolbarSelectCalmingQuadButton";
+            ToolbarSelectCalmingQuadButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectCalmingQuadButton.Text = "Water Calming Quad";
+            ToolbarSelectCalmingQuadButton.Click += ToolbarSelectCalmingQuadButton_Click;
+            // 
+            // ToolbarSelectWaveQuadButton
+            // 
+            ToolbarSelectWaveQuadButton.Name = "ToolbarSelectWaveQuadButton";
+            ToolbarSelectWaveQuadButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectWaveQuadButton.Text = "Water Wave Quad";
+            ToolbarSelectWaveQuadButton.Click += ToolbarSelectWaveQuadButton_Click;
+            // 
+            // ToolbarSelectCollisionButton
+            // 
+            ToolbarSelectCollisionButton.Name = "ToolbarSelectCollisionButton";
+            ToolbarSelectCollisionButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectCollisionButton.Text = "Collision";
+            ToolbarSelectCollisionButton.Click += ToolbarSelectCollisionButton_Click;
+            // 
+            // ToolbarSelectNavMeshButton
+            // 
+            ToolbarSelectNavMeshButton.Name = "ToolbarSelectNavMeshButton";
+            ToolbarSelectNavMeshButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectNavMeshButton.Text = "Nav Mesh";
+            ToolbarSelectNavMeshButton.Click += ToolbarSelectNavMeshButton_Click;
+            // 
+            // ToolbarSelectPathButton
+            // 
+            ToolbarSelectPathButton.Name = "ToolbarSelectPathButton";
+            ToolbarSelectPathButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectPathButton.Text = "Traffic Path";
+            ToolbarSelectPathButton.Click += ToolbarSelectPathButton_Click;
+            // 
+            // ToolbarSelectTrainTrackButton
+            // 
+            ToolbarSelectTrainTrackButton.Name = "ToolbarSelectTrainTrackButton";
+            ToolbarSelectTrainTrackButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectTrainTrackButton.Text = "Train Track";
+            ToolbarSelectTrainTrackButton.Click += ToolbarSelectTrainTrackButton_Click;
+            // 
+            // ToolbarSelectLodLightsButton
+            // 
+            ToolbarSelectLodLightsButton.Name = "ToolbarSelectLodLightsButton";
+            ToolbarSelectLodLightsButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectLodLightsButton.Text = "Lod Lights";
+            ToolbarSelectLodLightsButton.Click += ToolbarSelectLodLightsButton_Click;
+            // 
+            // ToolbarSelectMloInstanceButton
+            // 
+            ToolbarSelectMloInstanceButton.Name = "ToolbarSelectMloInstanceButton";
+            ToolbarSelectMloInstanceButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectMloInstanceButton.Text = "Interior Instance";
+            ToolbarSelectMloInstanceButton.Click += ToolbarSelectMloInstanceButton_Click;
+            // 
+            // ToolbarSelectScenarioButton
+            // 
+            ToolbarSelectScenarioButton.Name = "ToolbarSelectScenarioButton";
+            ToolbarSelectScenarioButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectScenarioButton.Text = "Scenario";
+            ToolbarSelectScenarioButton.Click += ToolbarSelectScenarioButton_Click;
+            // 
+            // ToolbarSelectAudioButton
+            // 
+            ToolbarSelectAudioButton.Name = "ToolbarSelectAudioButton";
+            ToolbarSelectAudioButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectAudioButton.Text = "Audio";
+            ToolbarSelectAudioButton.Click += ToolbarSelectAudioButton_Click;
+            // 
+            // ToolbarSelectOcclusionButton
+            // 
+            ToolbarSelectOcclusionButton.Name = "ToolbarSelectOcclusionButton";
+            ToolbarSelectOcclusionButton.Size = new System.Drawing.Size(185, 22);
+            ToolbarSelectOcclusionButton.Text = "Occlusion";
+            ToolbarSelectOcclusionButton.Click += ToolbarSelectOcclusionButton_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarMoveButton
+            // 
+            ToolbarMoveButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarMoveButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarMoveButton.Image");
+            ToolbarMoveButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarMoveButton.Name = "ToolbarMoveButton";
+            ToolbarMoveButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarMoveButton.Text = "Move";
+            ToolbarMoveButton.ToolTipText = "Move (W)";
+            ToolbarMoveButton.Click += ToolbarMoveButton_Click;
+            // 
+            // ToolbarRotateButton
+            // 
+            ToolbarRotateButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarRotateButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarRotateButton.Image");
+            ToolbarRotateButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarRotateButton.Name = "ToolbarRotateButton";
+            ToolbarRotateButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarRotateButton.Text = "Rotate";
+            ToolbarRotateButton.ToolTipText = "Rotate (E)";
+            ToolbarRotateButton.Click += ToolbarRotateButton_Click;
+            // 
+            // ToolbarScaleButton
+            // 
+            ToolbarScaleButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarScaleButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarScaleButton.Image");
+            ToolbarScaleButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarScaleButton.Name = "ToolbarScaleButton";
+            ToolbarScaleButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarScaleButton.Text = "Scale";
+            ToolbarScaleButton.ToolTipText = "Scale (R)";
+            ToolbarScaleButton.Click += ToolbarScaleButton_Click;
+            // 
+            // ToolbarTransformSpaceButton
+            // 
+            ToolbarTransformSpaceButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarTransformSpaceButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarObjectSpaceButton, ToolbarWorldSpaceButton });
+            ToolbarTransformSpaceButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarTransformSpaceButton.Image");
+            ToolbarTransformSpaceButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarTransformSpaceButton.Name = "ToolbarTransformSpaceButton";
+            ToolbarTransformSpaceButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarTransformSpaceButton.Text = "Toggle transform space";
+            ToolbarTransformSpaceButton.ButtonClick += ToolbarTransformSpaceButton_ButtonClick;
+            // 
+            // ToolbarObjectSpaceButton
+            // 
+            ToolbarObjectSpaceButton.Checked = true;
+            ToolbarObjectSpaceButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            ToolbarObjectSpaceButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarObjectSpaceButton.Image");
+            ToolbarObjectSpaceButton.Name = "ToolbarObjectSpaceButton";
+            ToolbarObjectSpaceButton.Size = new System.Drawing.Size(142, 22);
+            ToolbarObjectSpaceButton.Text = "Object space";
+            ToolbarObjectSpaceButton.Click += ToolbarObjectSpaceButton_Click;
+            // 
+            // ToolbarWorldSpaceButton
+            // 
+            ToolbarWorldSpaceButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarWorldSpaceButton.Image");
+            ToolbarWorldSpaceButton.Name = "ToolbarWorldSpaceButton";
+            ToolbarWorldSpaceButton.Size = new System.Drawing.Size(142, 22);
+            ToolbarWorldSpaceButton.Text = "World space";
+            ToolbarWorldSpaceButton.Click += ToolbarWorldSpaceButton_Click;
+            // 
+            // ToolbarSnapButton
+            // 
+            ToolbarSnapButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarSnapButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarSnapToGroundButton, ToolbarSnapToGridButton, ToolbarSnapToGroundGridButton, ToolbarSnapGridSizeButton, ToolbarRotationSnappingButton });
+            ToolbarSnapButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarSnapButton.Image");
+            ToolbarSnapButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarSnapButton.Name = "ToolbarSnapButton";
+            ToolbarSnapButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarSnapButton.Text = "Snap to Ground";
+            ToolbarSnapButton.ToolTipText = "Snap to Ground";
+            ToolbarSnapButton.ButtonClick += ToolbarSnapButton_ButtonClick;
+            // 
+            // ToolbarSnapToGroundButton
+            // 
+            ToolbarSnapToGroundButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarSnapToGroundButton.Image");
+            ToolbarSnapToGroundButton.Name = "ToolbarSnapToGroundButton";
+            ToolbarSnapToGroundButton.Size = new System.Drawing.Size(205, 22);
+            ToolbarSnapToGroundButton.Text = "Snap to Ground";
+            ToolbarSnapToGroundButton.Click += ToolbarSnapToGroundButton_Click;
+            // 
+            // ToolbarSnapToGridButton
+            // 
+            ToolbarSnapToGridButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarSnapToGridButton.Image");
+            ToolbarSnapToGridButton.Name = "ToolbarSnapToGridButton";
+            ToolbarSnapToGridButton.Size = new System.Drawing.Size(205, 22);
+            ToolbarSnapToGridButton.Text = "Snap to Grid";
+            ToolbarSnapToGridButton.Click += ToolbarSnapToGridButton_Click;
+            // 
+            // ToolbarSnapToGroundGridButton
+            // 
+            ToolbarSnapToGroundGridButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarSnapToGroundGridButton.Image");
+            ToolbarSnapToGroundGridButton.Name = "ToolbarSnapToGroundGridButton";
+            ToolbarSnapToGroundGridButton.Size = new System.Drawing.Size(205, 22);
+            ToolbarSnapToGroundGridButton.Text = "Snap to Grid and Ground";
+            ToolbarSnapToGroundGridButton.Click += ToolbarSnapToGroundGridButton_Click;
+            // 
+            // ToolbarSnapGridSizeButton
+            // 
+            ToolbarSnapGridSizeButton.Name = "ToolbarSnapGridSizeButton";
+            ToolbarSnapGridSizeButton.Size = new System.Drawing.Size(205, 22);
+            ToolbarSnapGridSizeButton.Text = "Grid Size...";
+            ToolbarSnapGridSizeButton.Click += ToolbarSnapGridSizeButton_Click;
+            // 
+            // ToolbarRotationSnappingButton
+            // 
+            ToolbarRotationSnappingButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarRotationSnappingOffButton, ToolbarRotationSnapping1Button, ToolbarRotationSnapping2Button, ToolbarRotationSnapping5Button, ToolbarRotationSnapping10Button, ToolbarRotationSnapping45Button, ToolbarRotationSnapping90Button, ToolbarRotationSnappingCustomButton });
+            ToolbarRotationSnappingButton.Name = "ToolbarRotationSnappingButton";
+            ToolbarRotationSnappingButton.Size = new System.Drawing.Size(205, 22);
+            ToolbarRotationSnappingButton.Text = "Rotation Snapping";
+            // 
+            // ToolbarRotationSnappingOffButton
+            // 
+            ToolbarRotationSnappingOffButton.Name = "ToolbarRotationSnappingOffButton";
+            ToolbarRotationSnappingOffButton.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnappingOffButton.Text = "Off";
+            ToolbarRotationSnappingOffButton.Click += ToolbarRotationSnappingOffButton_Click;
+            // 
+            // ToolbarRotationSnapping1Button
+            // 
+            ToolbarRotationSnapping1Button.Name = "ToolbarRotationSnapping1Button";
+            ToolbarRotationSnapping1Button.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnapping1Button.Text = "1 Degree";
+            ToolbarRotationSnapping1Button.Click += ToolbarRotationSnapping1Button_Click;
+            // 
+            // ToolbarRotationSnapping2Button
+            // 
+            ToolbarRotationSnapping2Button.Name = "ToolbarRotationSnapping2Button";
+            ToolbarRotationSnapping2Button.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnapping2Button.Text = "2 Degrees";
+            ToolbarRotationSnapping2Button.Click += ToolbarRotationSnapping2Button_Click;
+            // 
+            // ToolbarRotationSnapping5Button
+            // 
+            ToolbarRotationSnapping5Button.Checked = true;
+            ToolbarRotationSnapping5Button.CheckState = System.Windows.Forms.CheckState.Checked;
+            ToolbarRotationSnapping5Button.Name = "ToolbarRotationSnapping5Button";
+            ToolbarRotationSnapping5Button.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnapping5Button.Text = "5 Degrees";
+            ToolbarRotationSnapping5Button.Click += ToolbarRotationSnapping5Button_Click;
+            // 
+            // ToolbarRotationSnapping10Button
+            // 
+            ToolbarRotationSnapping10Button.Name = "ToolbarRotationSnapping10Button";
+            ToolbarRotationSnapping10Button.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnapping10Button.Text = "10 Degrees";
+            ToolbarRotationSnapping10Button.Click += ToolbarRotationSnapping10Button_Click;
+            // 
+            // ToolbarRotationSnapping45Button
+            // 
+            ToolbarRotationSnapping45Button.Name = "ToolbarRotationSnapping45Button";
+            ToolbarRotationSnapping45Button.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnapping45Button.Text = "45 Degrees";
+            ToolbarRotationSnapping45Button.Click += ToolbarRotationSnapping45Button_Click;
+            // 
+            // ToolbarRotationSnapping90Button
+            // 
+            ToolbarRotationSnapping90Button.Name = "ToolbarRotationSnapping90Button";
+            ToolbarRotationSnapping90Button.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnapping90Button.Text = "90 Degrees";
+            ToolbarRotationSnapping90Button.Click += ToolbarRotationSnapping90Button_Click;
+            // 
+            // ToolbarRotationSnappingCustomButton
+            // 
+            ToolbarRotationSnappingCustomButton.Name = "ToolbarRotationSnappingCustomButton";
+            ToolbarRotationSnappingCustomButton.Size = new System.Drawing.Size(131, 22);
+            ToolbarRotationSnappingCustomButton.Text = "Custom...";
+            ToolbarRotationSnappingCustomButton.Click += ToolbarRotationSnappingCustomButton_Click;
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarUndoButton
+            // 
+            ToolbarUndoButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarUndoButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarUndoListButton });
+            ToolbarUndoButton.Enabled = false;
+            ToolbarUndoButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarUndoButton.Image");
+            ToolbarUndoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarUndoButton.Name = "ToolbarUndoButton";
+            ToolbarUndoButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarUndoButton.Text = "Undo";
+            ToolbarUndoButton.ButtonClick += ToolbarUndoButton_ButtonClick;
+            // 
+            // ToolbarUndoListButton
+            // 
+            ToolbarUndoListButton.Name = "ToolbarUndoListButton";
+            ToolbarUndoListButton.Size = new System.Drawing.Size(121, 22);
+            ToolbarUndoListButton.Text = "Undo list";
+            ToolbarUndoListButton.Click += ToolbarUndoListButton_Click;
+            // 
+            // ToolbarRedoButton
+            // 
+            ToolbarRedoButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarRedoButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarRedoListButton });
+            ToolbarRedoButton.Enabled = false;
+            ToolbarRedoButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarRedoButton.Image");
+            ToolbarRedoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarRedoButton.Name = "ToolbarRedoButton";
+            ToolbarRedoButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarRedoButton.Text = "Redo";
+            ToolbarRedoButton.ButtonClick += ToolbarRedoButton_ButtonClick;
+            // 
+            // ToolbarRedoListButton
+            // 
+            ToolbarRedoListButton.Name = "ToolbarRedoListButton";
+            ToolbarRedoListButton.Size = new System.Drawing.Size(119, 22);
+            ToolbarRedoListButton.Text = "Redo list";
+            ToolbarRedoListButton.Click += ToolbarRedoListButton_Click;
+            // 
+            // toolStripSeparator3
+            // 
+            toolStripSeparator3.Name = "toolStripSeparator3";
+            toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarInfoWindowButton
+            // 
+            ToolbarInfoWindowButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarInfoWindowButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarInfoWindowButton.Image");
+            ToolbarInfoWindowButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarInfoWindowButton.Name = "ToolbarInfoWindowButton";
+            ToolbarInfoWindowButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarInfoWindowButton.Text = "Selection info window";
+            ToolbarInfoWindowButton.Click += ToolbarInfoWindowButton_Click;
+            // 
+            // ToolbarProjectWindowButton
+            // 
+            ToolbarProjectWindowButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarProjectWindowButton.Enabled = false;
+            ToolbarProjectWindowButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarProjectWindowButton.Image");
+            ToolbarProjectWindowButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarProjectWindowButton.Name = "ToolbarProjectWindowButton";
+            ToolbarProjectWindowButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarProjectWindowButton.Text = "Project window";
+            ToolbarProjectWindowButton.Click += ToolbarProjectWindowButton_Click;
+            // 
+            // toolStripSeparator4
+            // 
+            toolStripSeparator4.Name = "toolStripSeparator4";
+            toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarAddItemButton
+            // 
+            ToolbarAddItemButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarAddItemButton.Enabled = false;
+            ToolbarAddItemButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarAddItemButton.Image");
+            ToolbarAddItemButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarAddItemButton.Name = "ToolbarAddItemButton";
+            ToolbarAddItemButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarAddItemButton.Text = "Add entity";
+            ToolbarAddItemButton.Click += ToolbarAddItemButton_Click;
+            // 
+            // ToolbarDeleteItemButton
+            // 
+            ToolbarDeleteItemButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarDeleteItemButton.Enabled = false;
+            ToolbarDeleteItemButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarDeleteItemButton.Image");
+            ToolbarDeleteItemButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarDeleteItemButton.Name = "ToolbarDeleteItemButton";
+            ToolbarDeleteItemButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarDeleteItemButton.Text = "Delete entity";
+            ToolbarDeleteItemButton.Click += ToolbarDeleteItemButton_Click;
+            // 
+            // toolStripSeparator6
+            // 
+            toolStripSeparator6.Name = "toolStripSeparator6";
+            toolStripSeparator6.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarCopyButton
+            // 
+            ToolbarCopyButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarCopyButton.Enabled = false;
+            ToolbarCopyButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarCopyButton.Image");
+            ToolbarCopyButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarCopyButton.Name = "ToolbarCopyButton";
+            ToolbarCopyButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarCopyButton.Text = "Copy";
+            ToolbarCopyButton.ToolTipText = "Copy (Ctrl+C)";
+            ToolbarCopyButton.Click += ToolbarCopyButton_Click;
+            // 
+            // ToolbarPasteButton
+            // 
+            ToolbarPasteButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarPasteButton.Enabled = false;
+            ToolbarPasteButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarPasteButton.Image");
+            ToolbarPasteButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarPasteButton.Name = "ToolbarPasteButton";
+            ToolbarPasteButton.Size = new System.Drawing.Size(23, 22);
+            ToolbarPasteButton.Text = "Paste";
+            ToolbarPasteButton.ToolTipText = "Paste (Ctrl+V)";
+            ToolbarPasteButton.Click += ToolbarPasteButton_Click;
+            // 
+            // toolStripSeparator7
+            // 
+            toolStripSeparator7.Name = "toolStripSeparator7";
+            toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
+            // 
+            // ToolbarCameraModeButton
+            // 
+            ToolbarCameraModeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            ToolbarCameraModeButton.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { ToolbarCameraPerspectiveButton, ToolbarCameraMapViewButton, ToolbarCameraOrthographicButton });
+            ToolbarCameraModeButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarCameraModeButton.Image");
+            ToolbarCameraModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            ToolbarCameraModeButton.Name = "ToolbarCameraModeButton";
+            ToolbarCameraModeButton.Size = new System.Drawing.Size(32, 22);
+            ToolbarCameraModeButton.Text = "Camera Mode";
+            ToolbarCameraModeButton.ButtonClick += ToolbarCameraModeButton_ButtonClick;
+            // 
+            // ToolbarCameraPerspectiveButton
+            // 
+            ToolbarCameraPerspectiveButton.Checked = true;
+            ToolbarCameraPerspectiveButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            ToolbarCameraPerspectiveButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarCameraPerspectiveButton.Image");
+            ToolbarCameraPerspectiveButton.Name = "ToolbarCameraPerspectiveButton";
+            ToolbarCameraPerspectiveButton.Size = new System.Drawing.Size(145, 22);
+            ToolbarCameraPerspectiveButton.Text = "Perspective";
+            ToolbarCameraPerspectiveButton.Click += ToolbarCameraPerspectiveButton_Click;
+            // 
+            // ToolbarCameraMapViewButton
+            // 
+            ToolbarCameraMapViewButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarCameraMapViewButton.Image");
+            ToolbarCameraMapViewButton.Name = "ToolbarCameraMapViewButton";
+            ToolbarCameraMapViewButton.Size = new System.Drawing.Size(145, 22);
+            ToolbarCameraMapViewButton.Text = "Map View";
+            ToolbarCameraMapViewButton.Click += ToolbarCameraMapViewButton_Click;
+            // 
+            // ToolbarCameraOrthographicButton
+            // 
+            ToolbarCameraOrthographicButton.Image = (System.Drawing.Image)resources.GetObject("ToolbarCameraOrthographicButton.Image");
+            ToolbarCameraOrthographicButton.Name = "ToolbarCameraOrthographicButton";
+            ToolbarCameraOrthographicButton.Size = new System.Drawing.Size(145, 22);
+            ToolbarCameraOrthographicButton.Text = "Orthographic";
+            ToolbarCameraOrthographicButton.Click += ToolbarCameraOrthographicButton_Click;
+            // 
+            // ToolbarPanel
+            // 
+            ToolbarPanel.BackColor = System.Drawing.SystemColors.Control;
+            ToolbarPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            ToolbarPanel.Controls.Add(Toolbar);
+            ToolbarPanel.Location = new System.Drawing.Point(14, 14);
+            ToolbarPanel.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            ToolbarPanel.Name = "ToolbarPanel";
+            ToolbarPanel.Size = new System.Drawing.Size(650, 30);
+            ToolbarPanel.TabIndex = 7;
+            ToolbarPanel.Visible = false;
+            // 
+            // SubtitleLabel
+            // 
+            SubtitleLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            SubtitleLabel.AutoSize = true;
+            SubtitleLabel.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            SubtitleLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            SubtitleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            SubtitleLabel.Location = new System.Drawing.Point(531, 640);
+            SubtitleLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            SubtitleLabel.Name = "SubtitleLabel";
+            SubtitleLabel.Size = new System.Drawing.Size(83, 18);
+            SubtitleLabel.TabIndex = 8;
+            SubtitleLabel.Text = "Test Subtitle";
+            SubtitleLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            SubtitleLabel.Visible = false;
+            SubtitleLabel.SizeChanged += SubtitleLabel_SizeChanged;
+            // 
+            // SubtitleTimer
+            // 
+            SubtitleTimer.Tick += SubtitleTimer_Tick;
             // 
             // WorldForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.MidnightBlue;
-            this.ClientSize = new System.Drawing.Size(984, 711);
-            this.Controls.Add(this.ToolbarPanel);
-            this.Controls.Add(this.SelectedMarkerPanel);
-            this.Controls.Add(this.ConsolePanel);
-            this.Controls.Add(this.ToolsPanel);
-            this.Controls.Add(this.StatusStrip);
-            this.Controls.Add(this.ToolsPanelShowButton);
-            this.Controls.Add(this.SubtitleLabel);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.KeyPreview = true;
-            this.Name = "WorldForm";
-            this.Text = "CodeWalker";
-            this.Deactivate += new System.EventHandler(this.WorldForm_Deactivate);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.WorldForm_FormClosing);
-            this.Load += new System.EventHandler(this.WorldForm_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.WorldForm_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.WorldForm_KeyUp);
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.WorldForm_MouseDown);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.WorldForm_MouseMove);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.WorldForm_MouseUp);
-            this.StatusStrip.ResumeLayout(false);
-            this.StatusStrip.PerformLayout();
-            this.ToolsPanel.ResumeLayout(false);
-            this.ToolsTabControl.ResumeLayout(false);
-            this.ViewTabPage.ResumeLayout(false);
-            this.ViewTabPage.PerformLayout();
-            this.ViewTabControl.ResumeLayout(false);
-            this.ViewWorldTabPage.ResumeLayout(false);
-            this.ViewWorldTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.WorldDetailDistTrackBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.WorldLodDistTrackBar)).EndInit();
-            this.ViewYmapsTabPage.ResumeLayout(false);
-            this.ViewYmapsTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.DetailTrackBar)).EndInit();
-            this.ViewModelTabPage.ResumeLayout(false);
-            this.ViewModelTabPage.PerformLayout();
-            this.MarkersTabPage.ResumeLayout(false);
-            this.MarkersTabPage.PerformLayout();
-            this.SelectionTabPage.ResumeLayout(false);
-            this.SelectionTabPage.PerformLayout();
-            this.SelectionTabControl.ResumeLayout(false);
-            this.SelectionEntityTabPage.ResumeLayout(false);
-            this.SelectionArchetypeTabPage.ResumeLayout(false);
-            this.SelectionDrawableTabPage.ResumeLayout(false);
-            this.tabControl3.ResumeLayout(false);
-            this.tabPage11.ResumeLayout(false);
-            this.tabPage12.ResumeLayout(false);
-            this.tabPage13.ResumeLayout(false);
-            this.SelectionExtensionTabPage.ResumeLayout(false);
-            this.OptionsTabPage.ResumeLayout(false);
-            this.OptionsTabPage.PerformLayout();
-            this.OptionsTabControl.ResumeLayout(false);
-            this.OptionsGeneralTabPage.ResumeLayout(false);
-            this.OptionsGeneralTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.MapViewDetailTrackBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.CollisionMeshRangeTrackBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FieldOfViewTrackBar)).EndInit();
-            this.OptionsRenderTabPage.ResumeLayout(false);
-            this.OptionsRenderTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.AntiAliasingTrackBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FarClipUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.NearClipUpDown)).EndInit();
-            this.OptionsHelpersTabPage.ResumeLayout(false);
-            this.OptionsHelpersTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).EndInit();
-            this.OptionsLightingTabPage.ResumeLayout(false);
-            this.OptionsLightingTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.CloudParamTrackBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TimeSpeedTrackBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
-            this.ConsolePanel.ResumeLayout(false);
-            this.ConsolePanel.PerformLayout();
-            this.SelectedMarkerPanel.ResumeLayout(false);
-            this.SelectedMarkerPanel.PerformLayout();
-            this.ToolsMenu.ResumeLayout(false);
-            this.Toolbar.ResumeLayout(false);
-            this.Toolbar.PerformLayout();
-            this.ToolbarPanel.ResumeLayout(false);
-            this.ToolbarPanel.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            BackColor = System.Drawing.Color.MidnightBlue;
+            ClientSize = new System.Drawing.Size(1148, 820);
+            Controls.Add(ToolbarPanel);
+            Controls.Add(SelectedMarkerPanel);
+            Controls.Add(ConsolePanel);
+            Controls.Add(ToolsPanel);
+            Controls.Add(StatusStrip);
+            Controls.Add(ToolsPanelShowButton);
+            Controls.Add(SubtitleLabel);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            KeyPreview = true;
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            Name = "WorldForm";
+            Text = "CodeWalker";
+            Deactivate += WorldForm_Deactivate;
+            FormClosing += WorldForm_FormClosing;
+            Load += WorldForm_Load;
+            KeyDown += WorldForm_KeyDown;
+            KeyUp += WorldForm_KeyUp;
+            MouseDown += WorldForm_MouseDown;
+            MouseMove += WorldForm_MouseMove;
+            MouseUp += WorldForm_MouseUp;
+            StatusStrip.ResumeLayout(false);
+            StatusStrip.PerformLayout();
+            ToolsPanel.ResumeLayout(false);
+            ToolsTabControl.ResumeLayout(false);
+            ViewTabPage.ResumeLayout(false);
+            ViewTabPage.PerformLayout();
+            ViewTabControl.ResumeLayout(false);
+            ViewWorldTabPage.ResumeLayout(false);
+            ViewWorldTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)WorldDetailDistTrackBar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)WorldLodDistTrackBar).EndInit();
+            ViewYmapsTabPage.ResumeLayout(false);
+            ViewYmapsTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)DetailTrackBar).EndInit();
+            ViewModelTabPage.ResumeLayout(false);
+            ViewModelTabPage.PerformLayout();
+            MarkersTabPage.ResumeLayout(false);
+            MarkersTabPage.PerformLayout();
+            SelectionTabPage.ResumeLayout(false);
+            SelectionTabPage.PerformLayout();
+            SelectionTabControl.ResumeLayout(false);
+            SelectionEntityTabPage.ResumeLayout(false);
+            SelectionArchetypeTabPage.ResumeLayout(false);
+            SelectionDrawableTabPage.ResumeLayout(false);
+            tabControl3.ResumeLayout(false);
+            tabPage11.ResumeLayout(false);
+            tabPage12.ResumeLayout(false);
+            tabPage13.ResumeLayout(false);
+            SelectionExtensionTabPage.ResumeLayout(false);
+            OptionsTabPage.ResumeLayout(false);
+            OptionsTabPage.PerformLayout();
+            OptionsTabControl.ResumeLayout(false);
+            OptionsGeneralTabPage.ResumeLayout(false);
+            OptionsGeneralTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)MapViewDetailTrackBar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)CollisionMeshRangeTrackBar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)FieldOfViewTrackBar).EndInit();
+            OptionsRenderTabPage.ResumeLayout(false);
+            OptionsRenderTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)AntiAliasingTrackBar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)FarClipUpDown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)NearClipUpDown).EndInit();
+            OptionsHelpersTabPage.ResumeLayout(false);
+            OptionsHelpersTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)SnapAngleUpDown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)SnapGridSizeUpDown).EndInit();
+            ((System.ComponentModel.ISupportInitialize)BoundsRangeTrackBar).EndInit();
+            OptionsLightingTabPage.ResumeLayout(false);
+            OptionsLightingTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)CloudParamTrackBar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)TimeSpeedTrackBar).EndInit();
+            ((System.ComponentModel.ISupportInitialize)TimeOfDayTrackBar).EndInit();
+            ConsolePanel.ResumeLayout(false);
+            ConsolePanel.PerformLayout();
+            SelectedMarkerPanel.ResumeLayout(false);
+            SelectedMarkerPanel.PerformLayout();
+            ToolsMenu.ResumeLayout(false);
+            Toolbar.ResumeLayout(false);
+            Toolbar.PerformLayout();
+            ToolbarPanel.ResumeLayout(false);
+            ToolbarPanel.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion

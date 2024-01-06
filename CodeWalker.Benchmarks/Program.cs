@@ -16,6 +16,10 @@ namespace CodeWalker.Benchmarks
 
         static void Main(string[] args)
         {
+#if DEBUG
+            var benchmarks = new Benchmarks();
+            benchmarks.Setup();
+
             //var benchmarks = new Benchmarks();
 
             //benchmarks.Setup();
@@ -28,8 +32,9 @@ namespace CodeWalker.Benchmarks
             //benchmarks.GlobalCleanup();
 
             //ParseBuffer();
-
+#else
             BenchmarkRunner.Run<Benchmarks>();
+#endif
         }
     }
 }

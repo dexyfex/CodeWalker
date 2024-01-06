@@ -27,16 +27,26 @@ namespace CodeWalker.GameFiles
 
             Loaded = true;
         }
+
+        public async Task LoadAsync(byte[] data)
+        {
+            //direct load from a raw, compressed ydr file
+
+            await RpfFile.LoadResourceFileAsync(this, data, 165);
+
+            Loaded = true;
+        }
+
         public void Load(byte[] data, RpfFileEntry entry)
         {
             Name = entry.Name;
             RpfFileEntry = entry;
 
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                throw new Exception("File entry wasn't a resource! (is it binary data?)");
+                ThrowFileIsNotAResourceException();
+                return;
             }
 
             using var rd = new ResourceDataReader(resentry, data);
@@ -70,13 +80,8 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-        new public long MemoryUsage
-        {
-            get
-            {
-                return Drawable.MemoryUsage;
-            }
-        }
+        public long PhysicalMemoryUsage => Drawable.PhysicalMemoryUsage;
+        public long VirtualMemoryUsage => Drawable.VirtualMemoryUsage;
     }
 
 
@@ -84,20 +89,25 @@ namespace CodeWalker.GameFiles
 
     public class YdrXml : MetaXmlBase
     {
-
         public static string GetXml(YdrFile ydr, string outputFolder = "")
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if (ydr?.Drawable != null)
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                Drawable.WriteXmlNode(ydr.Drawable, sb, 0, outputFolder);
+                sb.AppendLine(XmlHeader);
+
+                if (ydr?.Drawable != null)
+                {
+                    Drawable.WriteXmlNode(ydr.Drawable, sb, 0, outputFolder);
+                }
+
+                return sb.ToString();
             }
-
-            return sb.ToString();
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
-
     }
 
     public class XmlYdr

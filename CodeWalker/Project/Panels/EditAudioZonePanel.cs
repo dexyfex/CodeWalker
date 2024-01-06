@@ -568,8 +568,11 @@ namespace CodeWalker.Project.Panels
 
         private void DependentAmbiencesTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
+            if (populatingui)
+                return;
+            if (CurrentZone?.AudioZone == null)
+                return;
+
 
             var paramstrs = DependentAmbiencesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
@@ -609,10 +612,10 @@ namespace CodeWalker.Project.Panels
             ProjectForm.WorldForm.GoToPosition(CurrentZone.Position, CurrentZone.AudioZone.PlaybackZoneSize);
         }
 
-        private void AddToProjectButton_Click(object sender, EventArgs e)
+        private async void AddToProjectButton_Click(object sender, EventArgs e)
         {
             ProjectForm.SetProjectItem(CurrentZone);
-            ProjectForm.AddAudioFileToProject(CurrentZone.RelFile);
+            await ProjectForm.AddAudioFileToProject(CurrentZone.RelFile);
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)

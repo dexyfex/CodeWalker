@@ -1,6 +1,6 @@
 ﻿namespace CodeWalker.WinForms
 {
-    partial class ReadOnlyPropertyGrid
+    public partial class ReadOnlyPropertyGrid : PropertyGridFix
     {
         /// <summary>
         /// Required designer variable.

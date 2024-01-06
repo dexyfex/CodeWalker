@@ -34,10 +34,10 @@ namespace CodeWalker.GameFiles
             Name = entry.Name;
             RpfFileEntry = entry;
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                throw new Exception("File entry wasn't a resource! (is it binary data?)");
+                ThrowFileIsNotAResourceException();
+                return;
             }
 
             using var rd = new ResourceDataReader(resentry, data);
@@ -68,7 +68,8 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-
+        public long PhysicalMemoryUsage => Fragment.Drawable.PhysicalMemoryUsage;
+        public long VirtualMemoryUsage => Fragment.Drawable.VirtualMemoryUsage;
     }
 
 
@@ -80,17 +81,23 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(YftFile yft, string outputFolder = "")
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if (yft?.Fragment != null)
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                FragType.WriteXmlNode(yft.Fragment, sb, 0, outputFolder);
+                sb.AppendLine(XmlHeader);
+
+                if (yft?.Fragment != null)
+                {
+                    FragType.WriteXmlNode(yft.Fragment, sb, 0, outputFolder);
+                }
+
+                return sb.ToString();
             }
-
-            return sb.ToString();
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
-
     }
 
     public class XmlYft

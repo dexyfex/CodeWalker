@@ -34,13 +34,13 @@ namespace CodeWalker.Tools
 
                 if (!GameFileCache.IsInited)
                 {
-                    Task.Run(() =>
+                    Task.Run(async () =>
                     {
                         try
                         {
                             GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                             GameFileCache.DoFullStringIndex = true;
-                            GameFileCache.Init(UpdateStatus, UpdateStatus);
+                            await GameFileCache.InitAsync(UpdateStatus, UpdateStatus);
                             IndexBuildComplete();
                         }
                         catch (Exception ex)
@@ -80,14 +80,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { UpdateStatus(text); }));
+                    Invoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void IndexBuildComplete()
         {
@@ -95,7 +97,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { IndexBuildComplete(); }));
+                    Invoke(IndexBuildComplete);
                 }
                 else
                 {
@@ -104,7 +106,9 @@ namespace CodeWalker.Tools
                     Cursor = Cursors.Default;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -149,7 +153,7 @@ namespace CodeWalker.Tools
                     return;
                 }
             }
-            StatusLabel.Text = Convert.ToString(hash, 16).ToUpper().PadLeft(8, '0');
+            StatusLabel.Text = hash.ToString("X8");
 
 
             var str = JenkIndex.TryGetString(hash);

@@ -132,7 +132,7 @@ namespace CodeWalker.Rendering
 
         public SkydomeShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] skyvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkydomeVS.cso"));
             byte[] skypsbytes = File.ReadAllBytes(Path.Combine(folder, "SkydomePS.cso"));
             byte[] sunvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkySunVS.cso"));
@@ -261,7 +261,7 @@ namespace CodeWalker.Rendering
             SkyLocalVars.Vars.noisePhase = Vector4.Zero;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             SkyLocalVars.Update(context);
             SkyLocalVars.SetVSCBuffer(context, 0);
@@ -288,7 +288,8 @@ namespace CodeWalker.Rendering
 
         public override void SetModelVars(DeviceContext context, RenderableModel model)
         {
-            if (!model.UseTransform) return;
+            if (!model.UseTransform)
+                return;
             VSModelVars.Vars.Transform = Matrix.Transpose(model.Transform);
             VSModelVars.Update(context);
             VSModelVars.SetVSCBuffer(context, 3);

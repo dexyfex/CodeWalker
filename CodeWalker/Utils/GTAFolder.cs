@@ -107,13 +107,14 @@ namespace CodeWalker
                 CurrentGTAFolder = folder;
                 Settings.Default.GTAFolder = folder;
                 Settings.Default.Save();
+                Settings.Default.Reload();
                 return true;
             }
 
             return false;
         }
 
-        public static string GetCurrentGTAFolderWithTrailingSlash() =>CurrentGTAFolder.EndsWith(@"\") ? CurrentGTAFolder : CurrentGTAFolder + @"\";
+        public static string GetCurrentGTAFolderWithTrailingSlash() =>CurrentGTAFolder.EndsWith('\\') ? CurrentGTAFolder : CurrentGTAFolder + '\\';
 
         public static bool AutoDetectFolder(out Dictionary<string, string> matches)
         {

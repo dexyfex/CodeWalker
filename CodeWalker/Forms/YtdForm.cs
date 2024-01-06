@@ -152,8 +152,8 @@ namespace CodeWalker.Forms
             {
                 int cmip = Math.Min(Math.Max(mip, 0), tex.Levels - 1);
                 byte[] pixels = DDSIO.GetPixels(tex, cmip);
-                int w = tex.Width >> cmip;
-                int h = tex.Height >> cmip;
+                int w = Math.Max(tex.Width >> cmip, 1);
+                int h = Math.Max(tex.Height >> cmip, 1);
 
                 //Image bmp = Image.FromStream(new MemoryStream(pixels));
 
@@ -188,6 +188,7 @@ namespace CodeWalker.Forms
             {
                 UpdateStatus("Error reading texture mip: " + ex.ToString());
                 SelTexturePictureBox.Image = null;
+                Console.WriteLine(ex);
             }
 
             UpdateZoom();

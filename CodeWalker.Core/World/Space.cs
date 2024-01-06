@@ -1,9 +1,13 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
+using Collections.Pooled;
+using CommunityToolkit.HighPerformance;
 using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CodeWalker.World
 {
@@ -50,48 +54,50 @@ namespace CodeWalker.World
         private MetaHash CurrentWeather;
 
 
-        public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
+        public async Task InitAsync(GameFileCache gameFileCache, Action<string>? updateStatus)
         {
+            using var _ = new DisposableTimer("Space Init");
             GameFileCache = gameFileCache;
 
 
-            updateStatus("Scanning manifests...");
+            updateStatus?.Invoke("Scanning manifests...");
 
             InitManifestData();
 
 
-            updateStatus("Scanning caches...");
+            updateStatus?.Invoke("Scanning caches...");
 
-            InitCacheData();
+            await InitCacheDataAsync();
 
 
-            updateStatus("Building map data store...");
+            updateStatus?.Invoke("Building map data store...");
 
             InitMapDataStore();
 
 
-            updateStatus("Building bounds store...");
+            updateStatus?.Invoke("Building bounds store...");
 
             InitBoundsStore();
 
 
-            updateStatus("Loading paths...");
+            updateStatus?.Invoke("Loading paths...");
 
             InitNodeGrid();
 
 
-            updateStatus("Loading nav meshes...");
+            updateStatus?.Invoke("Loading nav meshes...");
 
             InitNavGrid();
 
 
             Inited = true;
-            updateStatus("World initialised.");
+            updateStatus?.Invoke("World initialised.");
         }
 
 
         private void InitManifestData()
         {
+            using var _ = new DisposableTimer("InitManifestData");
             interiorLookup.Clear();
             interiorManifest.Clear();
             ymaptimes.Clear();
@@ -102,54 +108,40 @@ namespace CodeWalker.World
             foreach (var manifest in manifests)
             {
                 //build interior lookup - maps child->parent interior bounds
-                if (manifest.Interiors != null)
-                {
-                    foreach (var interior in manifest.Interiors)
-                    {
-                        var intname = interior.Interior.Name;
-                        if (interiorManifest.ContainsKey(intname))
-                        { }
-                        interiorManifest[intname] = interior;
 
-                        if (interior.Bounds != null)
+                foreach(var interior in manifest.Interiors)
+                {
+                    var intname = interior.Interior.Name;
+                    interiorManifest[intname] = interior;
+
+                    if (interior.Bounds != null)
+                    {
+                        foreach (var intbound in interior.Bounds)
                         {
-                            foreach (var intbound in interior.Bounds)
-                            {
-                                if (interiorLookup.ContainsKey(intbound))
-                                { }//updates can hit here
-                                interiorLookup[intbound] = intname;
-                            }
+                            interiorLookup[intbound] = intname;
                         }
-                        else
-                        { }
                     }
                 }
 
                 //these appear to be all the dynamic "togglable" ymaps....
-                if (manifest.MapDataGroups != null)
+                if (manifest.MapDataGroups.Length > 0)
                 {
-                    foreach (var mapgroup in manifest.MapDataGroups)
+                    foreach(var mapgroup in manifest.MapDataGroups)
                     {
                         if (mapgroup.HoursOnOff != 0)
                         {
                             ymaptimes[mapgroup.Name] = mapgroup.HoursOnOff;
                         }
-                        if (mapgroup.WeatherTypes != null)
+                        if (mapgroup.WeatherTypes.Length > 0)
                         {
                             ymapweathertypes[mapgroup.Name] = mapgroup.WeatherTypes;
                         }
 
                         if (dataGroupDict.ContainsKey(mapgroup.DataGroup.Name))
                         {
-                            if (mapgroup.Bounds != null)
+                            if (mapgroup.Bounds.Length == 0)
                             {
-                                var ex = dataGroupDict[mapgroup.DataGroup.Name];
-                                if (ex.Bounds != null)
-                                { } //only 1 hit here - redcarpet
-                            }
-                            else
-                            {
-                                continue;//nothing to replace with
+                                continue;
                             }
                         }
                         dataGroupDict[mapgroup.DataGroup.Name] = mapgroup;
@@ -174,178 +166,167 @@ namespace CodeWalker.World
 
         }
 
-        private void InitCacheData()
+        private async Task InitCacheDataAsync()
         {
             //build the grid from the cached data
+            using var _ = new DisposableTimer("InitCacheDataAsync");
             var caches = GameFileCache.AllCacheFiles;
-            nodedict = new Dictionary<MetaHash, MapDataStoreNode>();
-            MetaHash inthash;
-            List<BoundsStoreItem> intlist = new List<BoundsStoreItem>();
-            boundsdict = new Dictionary<SpaceBoundsKey, BoundsStoreItem>();
-            usedboundsdict = new Dictionary<MetaHash, BoundsStoreItem>();
-            interiorProxies = new Dictionary<SpaceBoundsKey, CInteriorProxy>();
+            nodedict = new Dictionary<MetaHash, MapDataStoreNode>(6000);
+            //List<BoundsStoreItem> intlist = new List<BoundsStoreItem>();
+            boundsdict = new Dictionary<SpaceBoundsKey, BoundsStoreItem>(10000);
+            usedboundsdict = new Dictionary<MetaHash, BoundsStoreItem>(10000);
+            interiorProxies = new Dictionary<SpaceBoundsKey, CInteriorProxy>(1000);
 
-            Dictionary<MetaHash, CacheFileDate> filedates = new Dictionary<MetaHash, CacheFileDate>();
-            Dictionary<uint, CacheFileDate> filedates2 = new Dictionary<uint, CacheFileDate>();
+            //Dictionary<MetaHash, CacheFileDate> filedates = new Dictionary<MetaHash, CacheFileDate>(1500);
+            //Dictionary<uint, CacheFileDate> filedates2 = new Dictionary<uint, CacheFileDate>(1500);
 
-            foreach (var cache in caches)
+            using(new DisposableTimer("caches loop"))
             {
-                foreach (var filedate in cache.FileDates)
+                foreach (var cache in caches)
                 {
-                    CacheFileDate exdate;
-                    if (filedates.TryGetValue(filedate.FileName, out exdate))
+                    //foreach (var filedate in cache.FileDates)
+                    //{
+                    //    if (filedates.TryGetValue(filedate.FileName, out CacheFileDate? exdate))
+                    //    {
+                    //        if (filedate.TimeStamp >= exdate.TimeStamp)
+                    //        {
+                    //            filedates[filedate.FileName] = filedate;
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        filedates[filedate.FileName] = filedate;
+                    //    }
+
+                    //    if (filedates2.TryGetValue(filedate.FileID, out exdate))
+                    //    {
+                    //        if (filedate.TimeStamp >= exdate.TimeStamp)
+                    //        {
+                    //            filedates2[filedate.FileID] = filedate;
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        filedates2[filedate.FileID] = filedate;
+                    //    }
+
+                    //}
+
+
+                    foreach (var node in cache.AllMapNodes)
                     {
-                        if (filedate.TimeStamp >= exdate.TimeStamp)
+                        if (!GameFileCache.YmapDict.ContainsKey(node.Name))
+                            continue;
+                        nodedict[node.Name] = node;
+                    }
+
+                    foreach (var intprx in cache.AllCInteriorProxies)
+                    {
+                        //these might need to go into the grid. which grid..?
+                        //but might need to map back to the bounds store... this has more info though!
+                        SpaceBoundsKey key = new SpaceBoundsKey(intprx.Name, intprx.Position);
+                        //if (interiorProxies.ContainsKey(key))
+                        //{ }//updates/dlc hit here
+                        interiorProxies[key] = intprx;
+                    }
+
+                    foreach (var item in cache.AllBoundsStoreItems)
+                    {
+                        if (!GameFileCache.YbnDict.ContainsKey(item.Name))
+                            continue;
+
+                        if (!interiorLookup.TryGetValue(item.Name, out var inthash))
                         {
-                            filedates[filedate.FileName] = filedate;
+                            SpaceBoundsKey key = new SpaceBoundsKey(item.Name, item.Min);
+                            boundsdict[key] = item;
                         }
-                        else //if (filedate.TimeStamp < exdate.TimeStamp)
-                        { }
-                    }
-                    else
-                    {
-                        filedates[filedate.FileName] = filedate;
-                    }
-
-                    if (filedates2.TryGetValue(filedate.FileID, out exdate))
-                    {
-                        if (filedate.FileName != exdate.FileName)
-                        { }
-                        if (filedate.TimeStamp >= exdate.TimeStamp)
-                        {
-                            filedates2[filedate.FileID] = filedate;
-                        }
-                        else
-                        { }
-                    }
-                    else
-                    {
-                        filedates2[filedate.FileID] = filedate;
+                        //else
+                        //{
+                        //    intlist.Add(item);//handle it later? use the parent for a dict?
+                        //}
+                        usedboundsdict[item.Name] = item;
                     }
 
-                }
-
-
-
-                foreach (var node in cache.AllMapNodes)
-                {
-                    if (!GameFileCache.YmapDict.ContainsKey(node.Name))
-                    { continue; }
-                    nodedict[node.Name] = node;
-                }
-
-                foreach (var intprx in cache.AllCInteriorProxies)
-                {
-                    //these might need to go into the grid. which grid..?
-                    //but might need to map back to the bounds store... this has more info though!
-                    SpaceBoundsKey key = new SpaceBoundsKey(intprx.Name, intprx.Position);
-                    if (interiorProxies.ContainsKey(key))
-                    { }//updates/dlc hit here
-                    interiorProxies[key] = intprx;
-                }
-
-                foreach (var item in cache.AllBoundsStoreItems)
-                {
-                    if (!GameFileCache.YbnDict.ContainsKey(item.Name))
-                    { continue; }
-
-                    if ((item.Layer < 0) || (item.Layer > 3))
-                    { } //won't hit here..
-                    if (interiorLookup.TryGetValue(item.Name, out inthash))
-                    {
-                        //it's an interior... the vectors are in local space...
-                        intlist.Add(item);//handle it later? use the parent for a dict?
-                    }
-                    else //interiors filtered out
-                    {
-                        SpaceBoundsKey key = new SpaceBoundsKey(item.Name, item.Min);
-                        if (boundsdict.ContainsKey(key))
-                        { }//updates/dlc hit here
-                        boundsdict[key] = item;
-
-                    }
-                    usedboundsdict[item.Name] = item;
                 }
             }
 
 
 
-
-            //try and generate the cache data for uncached ymaps... mainly for mod maps!
-            var maprpfs = GameFileCache.ActiveMapRpfFiles;
-            foreach (var maprpf in maprpfs.Values)
+            using var ymapTimer = new DisposableTimer("ymaps");
+            using var ybnTimer = new DisposableTimer("ybns");
+            using(new DisposableTimer("maprpfs.Values"))
             {
-                foreach (var entry in maprpf.AllEntries)
+                //try and generate the cache data for uncached ymaps... mainly for mod maps!
+                var maprpfs = GameFileCache.ActiveMapRpfFiles;
+                foreach (var maprpf in maprpfs.Values)
                 {
-                    if (entry.IsExtension(".ymap"))
+                    foreach (var entry in maprpf.AllEntries)
                     {
-                        if (!nodedict.ContainsKey(new MetaHash(entry.ShortNameHash)))
+                        if (entry.IsExtension(".ymap"))
                         {
-                            //non-cached ymap. mostly only mods... but some interesting test things also
-                            var ymap = GameFileCache.RpfMan.GetFile<YmapFile>(entry);
-                            if (ymap != null)
+                            if (!nodedict.ContainsKey(new MetaHash(entry.ShortNameHash)))
                             {
-                                MapDataStoreNode dsn = new MapDataStoreNode(ymap);
-                                if (dsn.Name != 0)
+                                //non-cached ymap. mostly only mods... but some interesting test things also
+                                var ymap = await RpfManager.GetFileAsync<YmapFile>(entry);
+                                if (ymap is not null)
                                 {
-                                    nodedict[dsn.Name] = dsn;//perhaps should add as entry.ShortNameHash?
+                                    MapDataStoreNode dsn = new MapDataStoreNode(ymap);
+                                    if (dsn.Name != 0)
+                                    {
+                                        nodedict[dsn.Name] = dsn;//perhaps should add as entry.ShortNameHash?
+                                    }
                                 }
-                                else
-                                { }
                             }
-                            else
-                            { }
                         }
-                    }
-                    if (entry.IsExtension(".ybn"))
-                    {
-                        MetaHash ehash = new MetaHash(entry.ShortNameHash);
-                        if (!usedboundsdict.ContainsKey(ehash))
+                        if (entry.IsExtension(".ybn"))
                         {
-                            if (interiorLookup.ContainsKey(ehash))
+                            MetaHash ehash = new MetaHash(entry.ShortNameHash);
+                            if (!usedboundsdict.ContainsKey(ehash))
                             {
-                            }
-                            else
-                            {
-                                //exterior ybn's that aren't already cached... only noncached modded bounds hit here...
-                                //load the ybn and cache its extents.
-                                var ybn = GameFileCache.RpfMan.GetFile<YbnFile>(entry);
-                                BoundsStoreItem item = new BoundsStoreItem(ybn.Bounds);
-                                item.Name = ehash;
-                                SpaceBoundsKey key = new SpaceBoundsKey(ehash, item.Min);
-                                if (boundsdict.ContainsKey(key))
-                                { }
-                                boundsdict[key] = item;
+                                if (!interiorLookup.ContainsKey(ehash))
+                                {
+                                    //exterior ybn's that aren't already cached... only noncached modded bounds hit here...
+                                    //load the ybn and cache its extents.
+                                    var ybn = await RpfManager.GetFileAsync<YbnFile>(entry);
+                                    if (ybn is not null)
+                                    {
+                                        BoundsStoreItem item = new BoundsStoreItem(ybn.Bounds);
+                                        item.Name = ehash;
+                                        SpaceBoundsKey key = new SpaceBoundsKey(ehash, item.Min);
+                                        boundsdict[key] = item;
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
+            Console.WriteLine($"nodedict: {nodedict.Count}; boundsdict: {boundsdict.Count}; usedboundsdict: {usedboundsdict.Count}; interiorProxies: {interiorProxies.Count}");
 
         }
 
         private void InitMapDataStore()
         {
-
+            using var _ = new DisposableTimer("InitMapDataStore");
             MapDataStore = new SpaceMapDataStore();
 
-            MapDataStore.Init(nodedict.Values.ToList());
+            MapDataStore.Init(nodedict.Values);
 
         }
 
         private void InitBoundsStore()
         {
-
+            using var _ = new DisposableTimer("InitBoundsStore");
             BoundsStore = new SpaceBoundsStore();
 
-            BoundsStore.Init(boundsdict.Values.ToList());
+            BoundsStore.Init(boundsdict.Values);
 
         }
 
         private void InitNodeGrid()
         {
-
+            using var _ = new DisposableTimer("InitNodeGrid");
             NodeGrid = new SpaceNodeGrid();
             AllYnds.Clear();
 
@@ -358,7 +339,7 @@ namespace CodeWalker.World
             if (GameFileCache.EnableDlc)
             {
                 var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load nodes from patch area...
-                if (updrpf != null)
+                if (updrpf is not null)
                 {
                     foreach (var rpffile in updrpf.Children)
                     {
@@ -367,7 +348,8 @@ namespace CodeWalker.World
                 }
                 foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
                 {
-                    if (dlcrpf.Path.StartsWith("x64", StringComparison.OrdinalIgnoreCase)) continue; //don't override update.rpf YNDs with x64 ones! *hack
+                    if (dlcrpf.Path.StartsWith("x64", StringComparison.OrdinalIgnoreCase))
+                        continue; //don't override update.rpf YNDs with x64 ones! *hack
                     foreach (var rpffile in dlcrpf.Children)
                     {
                         AddRpfYnds(rpffile, yndentries);
@@ -384,12 +366,11 @@ namespace CodeWalker.World
                 for (int y = 0; y < NodeGrid.CellCountY; y++)
                 {
                     var cell = NodeGrid.Cells[x, y];
-                    string fname = "nodes" + cell.ID + ".ynd";
+                    string fname = $"nodes{cell.ID}.ynd";
                     uint fnhash = JenkHash.GenHash(fname);
-                    RpfFileEntry fentry = null;
-                    if (yndentries.TryGetValue(fnhash, out fentry))
+                    if (yndentries.TryGetValue(fnhash, out RpfFileEntry? fentry))
                     {
-                        cell.Ynd = rpfman.GetFile<YndFile>(fentry);
+                        cell.Ynd = RpfManager.GetFile<YndFile>(fentry);
                         cell.Ynd.BBMin = corner + (cellsize * new Vector3(x, y, 0));
                         cell.Ynd.BBMax = cell.Ynd.BBMin + cellsize;
                         cell.Ynd.CellX = x;
@@ -482,8 +463,8 @@ namespace CodeWalker.World
             //join the dots....
             //StringBuilder sb = new StringBuilder();
             List<EditorVertex> tverts = new List<EditorVertex>();
-            List<YndLink> tlinks = new List<YndLink>();
-            List<YndLink> nlinks = new List<YndLink>();
+            using PooledList<YndLink> tlinks = new PooledList<YndLink>();
+            using PooledList<YndLink> nlinks = new PooledList<YndLink>();
             foreach (var ynd in AllYnds.Values)
             {
                 BuildYndData(ynd, tverts, tlinks, nlinks);
@@ -503,35 +484,34 @@ namespace CodeWalker.World
 
         private void AddRpfYnds(RpfFile rpffile, Dictionary<uint, RpfFileEntry> yndentries)
         {
-            if (rpffile.AllEntries == null) return;
+            if (rpffile.AllEntries is null)
+                return;
             foreach (var entry in rpffile.AllEntries)
             {
-                if (entry is RpfFileEntry)
+                if (entry is RpfFileEntry fentry)
                 {
-                    RpfFileEntry fentry = entry as RpfFileEntry;
-                    if (entry.IsExtension(".ynd"))
+                    if (fentry.IsExtension(".ynd"))
                     {
-                        if (yndentries.ContainsKey(entry.NameHash))
-                        { }
                         yndentries[entry.NameHash] = fentry;
                     }
                 }
             }
         }
 
-        public void BuildYndLinks(YndFile ynd, List<YndLink> tlinks = null, List<YndLink> nlinks = null)
+        public void BuildYndLinks(YndFile ynd, IList<YndLink>? tlinks = null, IList<YndLink>? nlinks = null)
         {
             var ynodes = ynd.Nodes;
             var nodes = ynd.NodeDictionary?.Nodes;
             var links = ynd.NodeDictionary?.Links;
-            if ((ynodes == null) || (nodes == null) || (links == null)) return;
+            if (ynodes is null || nodes is null || links is null) return;
 
             int nodecount = ynodes.Length;
 
 
             //build the links arrays.
-            if(tlinks==null) tlinks = new List<YndLink>();
-            if(nlinks==null) nlinks = new List<YndLink>();
+            tlinks ??= new PooledList<YndLink>();
+            nlinks ??= new PooledList<YndLink>();
+
             tlinks.Clear();
             for (int i = 0; i < nodecount; i++)
             {
@@ -570,26 +550,26 @@ namespace CodeWalker.World
             ynd.Links = tlinks.ToArray();
 
         }
-        public void BuildYndVerts(YndFile ynd, YndNode[] selectedNodes, List<EditorVertex> tverts = null)
+        public void BuildYndVerts(YndFile ynd, YndNode[]? selectedNodes, IList<EditorVertex>? tverts = null)
         {
             var laneColour = (uint) new Color4(0f, 0f, 1f, 1f).ToRgba();
             var ynodes = ynd.Nodes;
-            if (ynodes == null) return;
+            if (ynodes is null)
+                return;
 
             int nodecount = ynodes.Length;
 
             //build the main linked vertex array (used by the renderable to draw the lines).
-            if(tverts==null) tverts = new List<EditorVertex>();
+            tverts ??= new PooledList<EditorVertex>();
             tverts.Clear();
             for (int i = 0; i < nodecount; i++)
             {
                 var node = ynodes[i];
-                if (node.Links == null) continue;
+                if (node.Links is null)
+                    continue;
 
 
-                var nvert = new EditorVertex();
-                nvert.Position = node.Position;
-                nvert.Colour = (uint)node.Colour.ToRgba();
+                var nvert = new EditorVertex(node.Position, (uint)node.Colour.ToRgba());
 
 
                 for (int l = 0; l < node.Links.Length; l++)
@@ -607,10 +587,9 @@ namespace CodeWalker.World
 
                     var tnode = yl.Node2;
 
-                    if (tnode == null) continue; //invalid links could hit here
-                    var tvert = new EditorVertex();
-                    tvert.Position = tnode.Position;
-                    tvert.Colour = (uint)tnode.Colour.ToRgba();
+                    if (tnode == null)
+                        continue; //invalid links could hit here
+                    var tvert = new EditorVertex(tnode.Position, (uint)tnode.Colour.ToRgba());
 
                     tverts.Add(nvert);
                     tverts.Add(tvert);
@@ -621,17 +600,8 @@ namespace CodeWalker.World
                         var vertOffset = laneDirCross * (offset + laneWidth * j);
                         
                         vertOffset.Z = 0.1f;
-                        var lvert1 = new EditorVertex
-                        {
-                            Position = nvert.Position + vertOffset,
-                            Colour = laneColour
-                        };
-
-                        var lvert2 = new EditorVertex
-                        {
-                            Position = tvert.Position + vertOffset,
-                            Colour = laneColour
-                        };
+                        var lvert1 = new EditorVertex(nvert.Position + vertOffset, laneColour);
+                        var lvert2 = new EditorVertex(tvert.Position + vertOffset, laneColour);
 
                         tverts.Add(lvert1);
                         tverts.Add(lvert2);
@@ -640,10 +610,10 @@ namespace CodeWalker.World
                         var apos = lvert1.Position + laneDir * yl.LinkLength / 2;
                         const float asize = 0.5f;
                         const float negasize = asize * -1f;
-                        tverts.Add(new EditorVertex(){ Position = apos, Colour = laneColour});
-                        tverts.Add(new EditorVertex() { Position = apos + laneDir * negasize + laneDirCross * asize, Colour = laneColour });
-                        tverts.Add(new EditorVertex() { Position = apos, Colour = laneColour });
-                        tverts.Add(new EditorVertex() { Position = apos + laneDir * negasize + laneDirCross * negasize, Colour = laneColour });
+                        tverts.Add(new EditorVertex(apos, laneColour));
+                        tverts.Add(new EditorVertex(apos + laneDir * negasize + laneDirCross * asize, laneColour));
+                        tverts.Add(new EditorVertex(apos, laneColour));
+                        tverts.Add(new EditorVertex(apos + laneDir * negasize + laneDirCross * negasize, laneColour));
                     }
                 }
             }
@@ -662,8 +632,8 @@ namespace CodeWalker.World
                 {
                     var junc = yjuncs[i];
                     var cell = NodeGrid.GetCell(junc.RefData.AreaID);
-                    if ((cell == null) || (cell.Ynd == null) || (cell.Ynd.Nodes == null))
-                    { continue; }
+                    if (cell?.Ynd?.Nodes is null)
+                        continue;
 
                     var jynd = cell.Ynd;
                     if (cell.Ynd != ynd) //junc in different ynd..? no hits here, except ynds in project..
@@ -677,7 +647,7 @@ namespace CodeWalker.World
                     }
 
                     if (junc.RefData.NodeID >= jynd.Nodes.Length)
-                    { continue; }
+                        continue;
 
                     var jnode = jynd.Nodes[junc.RefData.NodeID];
                     jnode.Junction = junc;
@@ -686,7 +656,7 @@ namespace CodeWalker.World
             }
 
         }
-        public void BuildYndData(YndFile ynd, List<EditorVertex> tverts = null, List<YndLink> tlinks = null, List<YndLink> nlinks = null)
+        public void BuildYndData(YndFile ynd, IList<EditorVertex>? tverts = null, IList<YndLink>? tlinks = null, IList<YndLink>? nlinks = null)
         {
 
             BuildYndLinks(ynd, tlinks, nlinks);
@@ -755,6 +725,7 @@ namespace CodeWalker.World
 
         private void InitNavGrid()
         {
+            using var _ = new DisposableTimer("InitNavGrid");
             NavGrid = new SpaceNavGrid();
 
             var rpfman = GameFileCache.RpfMan;
@@ -968,7 +939,7 @@ namespace CodeWalker.World
 
             BoundingSphere sph = new BoundingSphere(r.HitPos + e.Center, e.Radius);
 
-            r.SphereHit = SphereIntersect(sph, CollisionLayers);
+            r.SphereHit = SphereIntersect(ref sph, CollisionLayers);
 
             if (!r.SphereHit.Hit)
             {
@@ -976,7 +947,7 @@ namespace CodeWalker.World
                 {
                     Ray rayt = new Ray(sphpos, r.HitVelDir);
                     float rayl = absdisp + e.Radius * 4.0f; //include some extra incase of glancing hit
-                    var rayhit = RayIntersect(rayt, rayl);
+                    var rayhit = RayIntersect(ref rayt, rayl);
                     if (rayhit.Hit) //looks like it is tunnelling... need to find the sphere hit point
                     {
                         sph.Center = rayhit.Position - (r.HitVelDir*Math.Min(e.Radius*0.5f, rayhit.HitDist));
@@ -988,7 +959,7 @@ namespace CodeWalker.World
                             sph.Center = r.HitPos + e.Center; //this really shouldn't happen... but just in case of glancing hit..
                         }
 
-                        r.SphereHit = SphereIntersect(sph, CollisionLayers); //this really should be a hit!
+                        r.SphereHit = SphereIntersect(ref sph, CollisionLayers); //this really should be a hit!
                     }
                 }
             }
@@ -1003,7 +974,7 @@ namespace CodeWalker.World
                 while (curiter < maxiter) //iterate to find a closer hit time... improve this!
                 {
                     sph.Center = sphpos + disp * curt;
-                    var tcollres = SphereIntersect(sph, CollisionLayers);
+                    var tcollres = SphereIntersect(ref sph, CollisionLayers);
                     if (tcollres.Hit)
                     {
                         r.HitT = curt;
@@ -1060,24 +1031,23 @@ namespace CodeWalker.World
 
         private bool IsYmapAvailable(uint ymaphash, int hour, MetaHash weather)
         {
-            MetaHash ymapname = new MetaHash(ymaphash);
-            uint ymaptime;
-            MetaHash[] weathers;
-            if ((hour >= 0) && (hour <= 23))
+            if (hour >= 0 && hour <= 23)
             {
-                if (ymaptimes.TryGetValue(ymapname, out ymaptime))
+                if (ymaptimes.TryGetValue(ymaphash, out var ymaptime))
                 {
                     uint mask = 1u << hour;
-                    if ((ymaptime & mask) == 0) return false;
+                    if ((ymaptime & mask) == 0)
+                        return false;
                 }
             }
             if (weather.Hash != 0)
             {
-                if (ymapweathertypes.TryGetValue(ymapname, out weathers))
+                if (ymapweathertypes.TryGetValue(ymaphash, out var weathers))
                 {
                     for (int i = 0; i < weathers.Length; i++)
                     {
-                        if (weathers[i] == weather) return true;
+                        if (weathers[i] == weather)
+                            return true;
                     }
                     return false;
                 }
@@ -1087,15 +1057,17 @@ namespace CodeWalker.World
 
         public void GetVisibleYmaps(Camera cam, int hour, MetaHash weather, Dictionary<MetaHash, YmapFile> ymaps)
         {
-            if (!Inited) return;
-            if (MapDataStore == null) return;
+            if (!Inited)
+                return;
+            if (MapDataStore is null)
+                return;
             CurrentHour = hour;
             CurrentWeather = weather;
-            var items = MapDataStore.GetItems(ref cam.Position);
-            for (int i = 0; i < items.Count; i++)
+            var items = MapDataStore.GetItems(in cam.Position);
+
+            foreach(var item in items.AsSpan())
             {
-                var item = items[i];
-                if (item == null)
+                if (item is null)
                 {
                     continue;
                 }
@@ -1104,12 +1076,21 @@ namespace CodeWalker.World
                 if (!ymaps.ContainsKey(hash))
                 {
                     var ymap = (hash > 0) ? GameFileCache.GetYmap(hash) : null;
-                    while ((ymap != null) && (ymap.Loaded))
+                    while (ymap is not null && ymap.Loaded)
                     {
-                        if (!IsYmapAvailable(hash, hour, weather)) break;
+                        if (!IsYmapAvailable(hash, hour, weather))
+                        {
+                            break;
+                        }
+
                         ymaps[hash] = ymap;
                         hash = ymap._CMapData.parent;
-                        if (ymaps.ContainsKey(hash)) break;
+                        if (ymaps.ContainsKey(hash))
+                        {
+                            break;
+                        }
+                           
+
                         ymap = (hash > 0) ? GameFileCache.GetYmap(hash) : null;
                     }
                 }
@@ -1119,22 +1100,26 @@ namespace CodeWalker.World
 
         public void GetVisibleBounds(Camera cam, int gridrange, bool[] layers, List<BoundsStoreItem> boundslist)
         {
-            if (!Inited) return;
+            if (!Inited)
+                return;
 
-            if (BoundsStore == null) return;
+            if (BoundsStore is null)
+                return;
             float dist = 50.0f * gridrange;
             var pos = cam.Position;
             var min = pos - dist;
             var max = pos + dist;
-            var items = BoundsStore.GetItems(ref min, ref max, layers);
+            var items = BoundsStore.GetItems(in min, in max, layers);
             boundslist.AddRange(items);
         }
 
 
         public void GetVisibleYnds(Camera cam, List<YndFile> ynds)
         {
-            if (!Inited) return;
-            if (NodeGrid == null) return;
+            if (!Inited)
+                return;
+            if (NodeGrid is null)
+                return;
 
             //int x = 9;
             //int y = 15; //== nodes489.ynd
@@ -1148,8 +1133,10 @@ namespace CodeWalker.World
 
         public void GetVisibleYnvs(Camera cam, int gridrange, List<YnvFile> ynvs)
         {
-            if (!Inited) return;
-            if (NavGrid == null) return;
+            if (!Inited)
+                return;
+            if (NavGrid is null)
+                return;
 
 
             ynvs.Clear();
@@ -1181,16 +1168,18 @@ namespace CodeWalker.World
         }
 
 
-        public SpaceRayIntersectResult RayIntersect(Ray ray, float maxdist = float.MaxValue, bool[] layers = null)
+        public SpaceRayIntersectResult RayIntersect(ref Ray ray, float maxdist = float.MaxValue, bool[]? layers = null)
         {
             var res = new SpaceRayIntersectResult();
-            if (GameFileCache == null) return res;
+            if (GameFileCache is null)
+                return res;
             bool testcomplete = true;
             res.HitDist = maxdist;
             var box = new BoundingBox();
             float boxhitdisttest;
 
-            if ((BoundsStore == null) || (MapDataStore == null)) return res;
+            if (BoundsStore is null || MapDataStore is null)
+                return res;
 
             var boundslist = BoundsStore.GetItems(ref ray, layers);
             var mapdatalist = MapDataStore.GetItems(ref ray);
@@ -1203,24 +1192,33 @@ namespace CodeWalker.World
                 if (ray.Intersects(ref box, out boxhitdisttest))
                 {
                     if (boxhitdisttest > res.HitDist)
-                    { continue; } //already a closer hit
+                    {
+                        continue;
+                    } //already a closer hit
 
                     YbnFile ybn = GameFileCache.GetYbn(bound.Name);
                     if (ybn == null)
-                    { continue; } //ybn not found?
+                    {
+                        continue;
+                    } //ybn not found?
                     if (!ybn.Loaded)
-                    { testcomplete = false; continue; } //ybn not loaded yet...
+                    {
+                        testcomplete = false;
+                        continue;
+                    } //ybn not loaded yet...
 
                     var b = ybn.Bounds;
-                    if (b == null)
-                    { continue; }
+                    if (b is null)
+                    {
+                        continue;
+                    }
 
                     var bhit = b.RayIntersect(ref ray, res.HitDist);
                     if (bhit.Hit)
                     {
                         bhit.HitYbn = ybn;
                     }
-                    res.TryUpdate(ref bhit);
+                    res.TryUpdate(in bhit);
                 }
             }
 
@@ -1232,50 +1230,58 @@ namespace CodeWalker.World
                     continue;
                 }
                 if ((mapdata.ContentFlags & 1) == 0)
-                { continue; } //only test HD ymaps
+                {
+                    continue;
+                } //only test HD ymaps
 
                 box.Minimum = mapdata.entitiesExtentsMin;
                 box.Maximum = mapdata.entitiesExtentsMax;
                 if (ray.Intersects(ref box, out boxhitdisttest))
                 {
                     if (boxhitdisttest > res.HitDist)
-                    { continue; } //already a closer hit
+                    {
+                        continue;
+                    } //already a closer hit
 
                     var hash = mapdata.Name;
                     var ymap = (hash > 0) ? GameFileCache.GetYmap(hash) : null;
-                    if ((ymap != null) && (ymap.Loaded) && (ymap.AllEntities != null))
+                    if (ymap is not null && ymap.Loaded && ymap.AllEntities.Length > 0)
                     {
                         if (!IsYmapAvailable(hash, CurrentHour, CurrentWeather))
-                        { continue; }
-
-                        for (int e = 0; e < ymap.AllEntities.Length; e++)
                         {
-                            var ent = ymap.AllEntities[e];
+                            continue;
+                        }
 
+                        foreach(var ent in ymap.AllEntities)
+                        {
                             if (!EntityCollisionsEnabled(ent))
-                            { continue; }
+                            {
+                                continue;
+                            }
 
                             box.Minimum = ent.BBMin;
                             box.Maximum = ent.BBMax;
                             if (ray.Intersects(ref box, out boxhitdisttest))
                             {
                                 if (boxhitdisttest > res.HitDist)
-                                { continue; } //already a closer hit
+                                {
+                                    continue;
+                                } //already a closer hit
 
                                 if (ent.IsMlo)
                                 {
                                     var ihit = RayIntersectInterior(ref ray, ent, res.HitDist);
-                                    res.TryUpdate(ref ihit);
+                                    res.TryUpdate(in ihit);
                                 }
                                 else
                                 {
                                     var ehit = RayIntersectEntity(ref ray, ent, res.HitDist);
-                                    res.TryUpdate(ref ehit);
+                                    res.TryUpdate(in ehit);
                                 }
                             }
                         }
                     }
-                    else if ((ymap != null) && (!ymap.Loaded))
+                    else if (ymap is not null && !ymap.Loaded)
                     {
                         testcomplete = false;
                     }
@@ -1306,40 +1312,40 @@ namespace CodeWalker.World
                 var eorinv = Quaternion.Invert(ent.Orientation);
                 var eray = new Ray();
                 eray.Position = eorinv.Multiply(ray.Position - ent.Position);
-                eray.Direction = eorinv.Multiply(ray.Direction);
+                eray.Direction = eorinv.Multiply(in ray.Direction);
 
                 if ((drawable is Drawable sdrawable) && (sdrawable.Bound != null))
                 {
                     var dhit = sdrawable.Bound.RayIntersect(ref eray, res.HitDist);
                     if (dhit.Hit)
                     {
-                        dhit.Position = eori.Multiply(dhit.Position) + ent.Position;
-                        dhit.Normal = eori.Multiply(dhit.Normal);
+                        dhit.Position = eori.Multiply(in dhit.Position) + ent.Position;
+                        dhit.Normal = eori.Multiply(in dhit.Normal);
                     }
-                    res.TryUpdate(ref dhit);
+                    res.TryUpdate(in dhit);
                 }
                 else if (drawable is FragDrawable fdrawable)
                 {
-                    if (fdrawable.Bound != null)
+                    if (fdrawable.Bound is not null)
                     {
                         var fhit = fdrawable.Bound.RayIntersect(ref eray, res.HitDist);
                         if (fhit.Hit)
                         {
-                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
-                            fhit.Normal = eori.Multiply(fhit.Normal);
+                            fhit.Position = eori.Multiply(in fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(in fhit.Normal);
                         }
-                        res.TryUpdate(ref fhit);
+                        res.TryUpdate(in fhit);
                     }
                     var fbound = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound;
-                    if (fbound != null)
+                    if (fbound is not null)
                     {
                         var fhit = fbound.RayIntersect(ref eray, res.HitDist);//TODO: these probably have extra transforms..!
                         if (fhit.Hit)
                         {
-                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
-                            fhit.Normal = eori.Multiply(fhit.Normal);
+                            fhit.Position = eori.Multiply(in fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(in fhit.Normal);
                         }
-                        res.TryUpdate(ref fhit);
+                        res.TryUpdate(in fhit);
                     }
                 }
             }
@@ -1355,84 +1361,97 @@ namespace CodeWalker.World
             var res = new SpaceRayIntersectResult();
             res.HitDist = maxdist;
 
-            if (mlo.Archetype == null)
-            { return res; }
+            if (mlo.Archetype is null)
+            {
+                return res;
+            }
 
             var iori = mlo.Orientation;
             var iorinv = Quaternion.Invert(mlo.Orientation);
             var iray = new Ray();
             iray.Position = iorinv.Multiply(ray.Position - mlo.Position);
-            iray.Direction = iorinv.Multiply(ray.Direction);
+            iray.Direction = iorinv.Multiply(in ray.Direction);
 
             var hash = mlo.Archetype.Hash;
             var ybn = GameFileCache.GetYbn(hash);
-            if ((ybn != null) && (ybn.Loaded))
+            if (ybn is not null && ybn.Loaded)
             {
                 var ihit = ybn.Bounds.RayIntersect(ref iray, res.HitDist);
                 if (ihit.Hit)
                 {
                     ihit.HitYbn = ybn;
                     ihit.HitEntity = mlo;
-                    ihit.Position = iori.Multiply(ihit.Position) + mlo.Position;
-                    ihit.Normal = iori.Multiply(ihit.Normal);
+                    ihit.Position = iori.Multiply(in ihit.Position) + mlo.Position;
+                    ihit.Normal = iori.Multiply(in ihit.Normal);
                 }
-                res.TryUpdate(ref ihit);
+                res.TryUpdate(in ihit);
             }
 
             var mlodat = mlo.MloInstance;
-            if (mlodat == null)
-            { return res; }
+            if (mlodat is null)
+            {
+                return res;
+            }
 
             var box = new BoundingBox();
             float boxhitdisttest;
 
-            if (mlodat.Entities != null)
+            if (mlodat.Entities != null && mlodat.Entities.Length > 0)
             {
-                for (int j = 0; j < mlodat.Entities.Length; j++) //should really improve this by using rooms!
+                foreach(var intent in mlodat.Entities)
                 {
-                    var intent = mlodat.Entities[j];
-                    if (intent.Archetype == null) continue; //missing archetype...
+                    if (intent.Archetype is null)
+                        continue; //missing archetype...
 
                     if (!EntityCollisionsEnabled(intent))
-                    { continue; }
+                    {
+                        continue;
+                    }
 
                     box.Minimum = intent.BBMin;
                     box.Maximum = intent.BBMax;
                     if (ray.Intersects(ref box, out boxhitdisttest))
                     {
                         if (boxhitdisttest > res.HitDist)
-                        { continue; } //already a closer hit
+                        {
+                            continue;
+                        } //already a closer hit
 
                         var ehit = RayIntersectEntity(ref ray, intent, res.HitDist);
-                        res.TryUpdate(ref ehit);
+                        res.TryUpdate(in ehit);
                     }
                 }
             }
-            if (mlodat.EntitySets != null)
+            if (mlodat.EntitySets is not null && mlodat.EntitySets.Length > 0)
             {
-                for (int e = 0; e < mlodat.EntitySets.Length; e++)
+                foreach(var entityset in mlodat.EntitySets)
                 {
-                    var entityset = mlodat.EntitySets[e];
-                    if (!entityset.Visible) continue;
+                    if (!entityset.Visible)
+                        continue;
                     var entities = entityset.Entities;
-                    if (entities == null) continue;
+                    if (entities is null)
+                        continue;
                     for (int i = 0; i < entities.Count; i++) //should really improve this by using rooms!
                     {
                         var intent = entities[i];
                         if (intent.Archetype == null) continue; //missing archetype...
 
                         if (!EntityCollisionsEnabled(intent))
-                        { continue; }
+                        {
+                            continue;
+                        }
 
                         box.Minimum = intent.BBMin;
                         box.Maximum = intent.BBMax;
                         if (ray.Intersects(ref box, out boxhitdisttest))
                         {
                             if (boxhitdisttest > res.HitDist)
-                            { continue; } //already a closer hit
+                            {
+                                continue;
+                            } //already a closer hit
 
                             var ehit = RayIntersectEntity(ref ray, intent, res.HitDist);
-                            res.TryUpdate(ref ehit);
+                            res.TryUpdate(in ehit);
                         }
                     }
                 }
@@ -1441,7 +1460,7 @@ namespace CodeWalker.World
             return res;
         }
 
-        public SpaceSphereIntersectResult SphereIntersect(BoundingSphere sph, bool[] layers = null)
+        public SpaceSphereIntersectResult SphereIntersect(ref BoundingSphere sph, bool[] layers = null)
         {
             var res = new SpaceSphereIntersectResult();
             if (GameFileCache == null) return res;
@@ -1450,10 +1469,11 @@ namespace CodeWalker.World
             Vector3 sphmax = sph.Center + sph.Radius;
             var box = new BoundingBox();
 
-            if ((BoundsStore == null) || (MapDataStore == null)) return res;
+            if (BoundsStore is null || MapDataStore is null)
+                return res;
 
-            var boundslist = BoundsStore.GetItems(ref sphmin, ref sphmax, layers);
-            var mapdatalist = MapDataStore.GetItems(ref sphmin, ref sphmax);
+            var boundslist = BoundsStore.GetItems(in sphmin, in sphmax, layers);
+            var mapdatalist = MapDataStore.GetItems(in sphmin, in sphmax);
 
             for (int i = 0; i < boundslist.Count; i++)
             {
@@ -1462,15 +1482,15 @@ namespace CodeWalker.World
                 box.Maximum = bound.Max;
                 if (sph.Intersects(ref box))
                 {
-                    YbnFile ybn = GameFileCache.GetYbn(bound.Name);
-                    if (ybn == null)
-                    { continue; } //ybn not found?
+                    YbnFile? ybn = GameFileCache.GetYbn(bound.Name);
+                    if (ybn is null)
+                        continue; //ybn not found?
                     if (!ybn.Loaded)
                     { testcomplete = false; continue; } //ybn not loaded yet...
 
                     var b = ybn.Bounds;
-                    if (b == null)
-                    { continue; }
+                    if (b is null)
+                        continue;
 
                     var bhit = b.SphereIntersect(ref sph);
                     res.TryUpdate(ref bhit);
@@ -1489,17 +1509,21 @@ namespace CodeWalker.World
                 {
                     var hash = mapdata.Name;
                     var ymap = (hash > 0) ? GameFileCache.GetYmap(hash) : null;
-                    if ((ymap != null) && (ymap.Loaded) && (ymap.AllEntities != null))
+                    if (ymap is not null && ymap.Loaded && ymap.AllEntities.Length > 0)
                     {
                         if (!IsYmapAvailable(hash, CurrentHour, CurrentWeather))
-                        { continue; }
+                        {
+                            continue;
+                        }
 
                         for (int e = 0; e < ymap.AllEntities.Length; e++)
                         {
                             var ent = ymap.AllEntities[e];
 
                             if (!EntityCollisionsEnabled(ent))
-                            { continue; }
+                            {
+                                continue;
+                            }
 
                             box.Minimum = ent.BBMin;
                             box.Maximum = ent.BBMax;
@@ -1552,8 +1576,8 @@ namespace CodeWalker.World
                     var dhit = sdrawable.Bound.SphereIntersect(ref esph);
                     if (dhit.Hit)
                     {
-                        dhit.Position = eori.Multiply(dhit.Position) + ent.Position;
-                        dhit.Normal = eori.Multiply(dhit.Normal);
+                        dhit.Position = eori.Multiply(in dhit.Position) + ent.Position;
+                        dhit.Normal = eori.Multiply(in dhit.Normal);
                     }
                     res.TryUpdate(ref dhit);
                 }
@@ -1564,8 +1588,8 @@ namespace CodeWalker.World
                         var fhit = fdrawable.Bound.SphereIntersect(ref esph);
                         if (fhit.Hit)
                         {
-                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
-                            fhit.Normal = eori.Multiply(fhit.Normal);
+                            fhit.Position = eori.Multiply(in fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(in fhit.Normal);
                         }
                         res.TryUpdate(ref fhit);
                     }
@@ -1575,8 +1599,8 @@ namespace CodeWalker.World
                         var fhit = fbound.SphereIntersect(ref esph);//TODO: these probably have extra transforms..!
                         if (fhit.Hit)
                         {
-                            fhit.Position = eori.Multiply(fhit.Position) + ent.Position;
-                            fhit.Normal = eori.Multiply(fhit.Normal);
+                            fhit.Position = eori.Multiply(in fhit.Position) + ent.Position;
+                            fhit.Normal = eori.Multiply(in fhit.Normal);
                         }
                         res.TryUpdate(ref fhit);
                     }
@@ -1604,8 +1628,8 @@ namespace CodeWalker.World
                 var ihit = ybn.Bounds.SphereIntersect(ref isph);
                 if (ihit.Hit)
                 {
-                    ihit.Position = iori.Multiply(ihit.Position) + mlo.Position;
-                    ihit.Normal = iori.Multiply(ihit.Normal);
+                    ihit.Position = iori.Multiply(in ihit.Position) + mlo.Position;
+                    ihit.Normal = iori.Multiply(in ihit.Normal);
                 }
                 res.TryUpdate(ref ihit);
             }
@@ -1699,7 +1723,7 @@ namespace CodeWalker.World
 
         public List<MapDataStoreNode> VisibleItems = new List<MapDataStoreNode>();
 
-        public void Init(List<MapDataStoreNode> rootnodes)
+        public void Init(IEnumerable<MapDataStoreNode> rootnodes)
         {
             RootNode = new SpaceMapDataStoreNode();
             RootNode.Owner = this;
@@ -1710,25 +1734,19 @@ namespace CodeWalker.World
             RootNode.TrySplit(SplitThreshold);
         }
 
-        public List<MapDataStoreNode> GetItems(ref Vector3 p) //get items at a point, using the streaming extents
+        public List<MapDataStoreNode> GetItems(in Vector3 p) //get items at a point, using the streaming extents
         {
             VisibleItems.Clear();
 
-            if (RootNode != null)
-            {
-                RootNode.GetItems(ref p, VisibleItems);
-            }
+            RootNode?.GetItems(in p, VisibleItems);
 
             return VisibleItems;
         }
-        public List<MapDataStoreNode> GetItems(ref Vector3 min, ref Vector3 max) //get items intersecting a box, using the entities extents
+        public List<MapDataStoreNode> GetItems(in Vector3 min, in Vector3 max) //get items intersecting a box, using the entities extents
         {
             VisibleItems.Clear();
 
-            if (RootNode != null)
-            {
-                RootNode.GetItems(ref min, ref max, VisibleItems);
-            }
+            RootNode?.GetItems(in min, in max, VisibleItems);
 
             return VisibleItems;
         }
@@ -1736,38 +1754,33 @@ namespace CodeWalker.World
         {
             VisibleItems.Clear();
 
-            if (RootNode != null)
-            {
-                RootNode.GetItems(ref ray, VisibleItems);
-            }
+            RootNode?.GetItems(ref ray, VisibleItems);
 
             return VisibleItems;
         }
     }
     public class SpaceMapDataStoreNode
     {
-        public SpaceMapDataStore Owner = null;
-        public SpaceMapDataStoreNode[] Children = null;
-        public List<MapDataStoreNode> Items = null;
+        public SpaceMapDataStore? Owner = null;
+        public SpaceMapDataStoreNode[]? Children = null;
+        public List<MapDataStoreNode>? Items = null;
         public Vector3 BBMin = new Vector3(float.MaxValue);
         public Vector3 BBMax = new Vector3(float.MinValue);
         public int Depth = 0;
 
         public void Add(MapDataStoreNode item)
         {
-            if (Items == null)
-            {
-                Items = new List<MapDataStoreNode>();
-            }
-            BBMin = Vector3.Min(BBMin, item.streamingExtentsMin);
-            BBMax = Vector3.Max(BBMax, item.streamingExtentsMax);
+            Items ??= new List<MapDataStoreNode>();
+
+            Vectors.Min(in BBMin, item.streamingExtentsMin, out BBMin);
+            Vectors.Max(in BBMax, item.streamingExtentsMax, out BBMax);
             Items.Add(item);
         }
 
         public void TrySplit(int threshold)
         {
-            if ((Items == null) || (Items.Count <= threshold))
-            { return; }
+            if (Items is null || Items.Count <= threshold)
+                return;
 
             Children = new SpaceMapDataStoreNode[4];
 
@@ -1794,7 +1807,7 @@ namespace CodeWalker.World
                 {
                     var cind = ((icen.X > ncen.X) ? 1 : 0) + ((icen.Y > ncen.Y) ? 2 : 0);
                     var c = Children[cind];
-                    if (c == null)
+                    if (c is null)
                     {
                         c = new SpaceMapDataStoreNode();
                         c.Owner = Owner;
@@ -1807,72 +1820,58 @@ namespace CodeWalker.World
 
             for (int i = 0; i < 4; i++)
             {
-                var c = Children[i];
-                if (c != null)
-                {
-                    c.TrySplit(threshold);
-                }
+                Children[i]?.TrySplit(threshold);
             }
 
             Items = newItems;
         }
 
-        public void GetItems(ref Vector3 p, List<MapDataStoreNode> items) //get items at a point, using the streaming extents
+        public void GetItems(in Vector3 p, List<MapDataStoreNode> items) //get items at a point, using the streaming extents
         {
-            if ((p.X >= BBMin.X) && (p.X <= BBMax.X) && (p.Y >= BBMin.Y) && (p.Y <= BBMax.Y))
+            if (p.X >= BBMin.X && p.X <= BBMax.X && p.Y >= BBMin.Y && p.Y <= BBMax.Y)
             {
-                if (Items != null)
+                if (Items is not null)
                 {
-                    for (int i = 0; i < Items.Count; i++)
+                    foreach (var item in Items.AsSpan())
                     {
-                        var item = Items[i];
                         var imin = item.streamingExtentsMin;
                         var imax = item.streamingExtentsMax;
-                        if ((p.X >= imin.X) && (p.X <= imax.X) && (p.Y >= imin.Y) && (p.Y <= imax.Y))
+                        if (p.X >= imin.X && p.X <= imax.X && p.Y >= imin.Y && p.Y <= imax.Y)
                         {
                             items.Add(item);
                         }
                     }
                 }
-                if (Children != null)
+                if (Children is not null)
                 {
-                    for (int i = 0; i < 4; i++)
+                    foreach(var c in Children)
                     {
-                        var c = Children[i];
-                        if (c != null)
-                        {
-                            c.GetItems(ref p, items);
-                        }
+                        c?.GetItems(in p, items);
                     }
                 }
             }
         }
-        public void GetItems(ref Vector3 min, ref Vector3 max, List<MapDataStoreNode> items) //get items intersecting a box, using the entities extents
+        public void GetItems(in Vector3 min, in Vector3 max, List<MapDataStoreNode> items) //get items intersecting a box, using the entities extents
         {
             if ((max.X >= BBMin.X) && (min.X <= BBMax.X) && (max.Y >= BBMin.Y) && (min.Y <= BBMax.Y))
             {
-                if (Items != null)
+                if (Items is not null)
                 {
-                    for (int i = 0; i < Items.Count; i++)
+                    foreach(var item in Items.AsSpan())
                     {
-                        var item = Items[i];
                         var imin = item.entitiesExtentsMin;
                         var imax = item.entitiesExtentsMax;
-                        if ((max.X >= imin.X) && (min.X <= imax.X) && (max.Y >= imin.Y) && (min.Y <= imax.Y))
+                        if (max.X >= imin.X && min.X <= imax.X && max.Y >= imin.Y && min.Y <= imax.Y)
                         {
                             items.Add(item);
                         }
                     }
                 }
-                if (Children != null)
+                if (Children is not null)
                 {
-                    for (int i = 0; i < 4; i++)
+                    foreach(var child in Children)
                     {
-                        var c = Children[i];
-                        if (c != null)
-                        {
-                            c.GetItems(ref min, ref max, items);
-                        }
+                        child?.GetItems(in min, in max, items);
                     }
                 }
             }
@@ -1884,9 +1883,8 @@ namespace CodeWalker.World
             {
                 if (Items != null)
                 {
-                    for (int i = 0; i < Items.Count; i++)
+                    foreach(var item in Items.AsSpan())
                     {
-                        var item = Items[i];
                         bb.Minimum = item.entitiesExtentsMin;
                         bb.Maximum = item.entitiesExtentsMax;
                         if (ray.Intersects(ref bb))
@@ -1900,10 +1898,7 @@ namespace CodeWalker.World
                     for (int i = 0; i < 4; i++)
                     {
                         var c = Children[i];
-                        if (c != null)
-                        {
-                            c.GetItems(ref ray, items);
-                        }
+                        c?.GetItems(ref ray, items);
                     }
                 }
             }
@@ -1918,7 +1913,7 @@ namespace CodeWalker.World
 
         public List<BoundsStoreItem> VisibleItems = new List<BoundsStoreItem>();
 
-        public void Init(List<BoundsStoreItem> items)
+        public void Init(IEnumerable<BoundsStoreItem> items)
         {
             RootNode = new SpaceBoundsStoreNode();
             RootNode.Owner = this;
@@ -1929,25 +1924,19 @@ namespace CodeWalker.World
             RootNode.TrySplit(SplitThreshold);
         }
 
-        public List<BoundsStoreItem> GetItems(ref Vector3 min, ref Vector3 max, bool[] layers = null)
+        public List<BoundsStoreItem> GetItems(in Vector3 min, in Vector3 max, bool[]? layers = null)
         {
             VisibleItems.Clear();
 
-            if (RootNode != null)
-            {
-                RootNode.GetItems(ref min, ref max, VisibleItems, layers);
-            }
+            RootNode?.GetItems(in min, in max, VisibleItems, layers);
 
             return VisibleItems;
         }
-        public List<BoundsStoreItem> GetItems(ref Ray ray, bool[] layers = null)
+        public List<BoundsStoreItem> GetItems(ref Ray ray, bool[]? layers = null)
         {
             VisibleItems.Clear();
 
-            if (RootNode != null)
-            {
-                RootNode.GetItems(ref ray, VisibleItems, layers);
-            }
+            RootNode?.GetItems(ref ray, VisibleItems, layers);
 
             return VisibleItems;
         }
@@ -2015,17 +2004,13 @@ namespace CodeWalker.World
 
             for (int i = 0; i < 4; i++)
             {
-                var c = Children[i];
-                if (c != null)
-                {
-                    c.TrySplit(threshold);
-                }
+                Children[i]?.TrySplit(threshold);
             }
 
             Items = newItems;
         }
 
-        public void GetItems(ref Vector3 min, ref Vector3 max, List<BoundsStoreItem> items, bool[] layers = null)
+        public void GetItems(in Vector3 min, in Vector3 max, List<BoundsStoreItem> items, bool[] layers = null)
         {
             if ((max.X >= BBMin.X) && (min.X <= BBMax.X) && (max.Y >= BBMin.Y) && (min.Y <= BBMax.Y))
             {
@@ -2036,7 +2021,9 @@ namespace CodeWalker.World
                         var item = Items[i];
 
                         if ((layers != null) && (item.Layer < 3) && (!layers[item.Layer]))
-                        { continue; }
+                        {
+                            continue;
+                        }
 
                         if ((max.X >= item.Min.X) && (min.X <= item.Max.X) && (max.Y >= item.Min.Y) && (min.Y <= item.Max.Y))
                         {
@@ -2048,45 +2035,39 @@ namespace CodeWalker.World
                 {
                     for (int i = 0; i < 4; i++)
                     {
-                        var c = Children[i];
-                        if (c != null)
-                        {
-                            c.GetItems(ref min, ref max, items, layers);
-                        }
+                        Children[i]?.GetItems(in min, in max, items, layers);
                     }
                 }
             }
         }
-        public void GetItems(ref Ray ray, List<BoundsStoreItem> items, bool[] layers = null)
+        public void GetItems(ref Ray ray, List<BoundsStoreItem> items, bool[]? layers = null)
         {
             var box = new BoundingBox(BBMin, BBMax);
             if (ray.Intersects(ref box))
             {
-                if (Items != null)
+                if (Items is not null)
                 {
                     for (int i = 0; i < Items.Count; i++)
                     {
                         var item = Items[i];
 
-                        if ((layers != null) && (item.Layer < 3) && (!layers[item.Layer]))
-                        { continue; }
+                        if (layers is not null && item.Layer < 3 && !layers[item.Layer])
+                        {
+                            continue;
+                        }
 
                         box = new BoundingBox(item.Min, item.Max);
-                        if (ray.Intersects(box))
+                        if (ray.Intersects(ref box))
                         {
                             items.Add(item);
                         }
                     }
                 }
-                if (Children != null)
+                if (Children is not null)
                 {
                     for (int i = 0; i < 4; i++)
                     {
-                        var c = Children[i];
-                        if (c != null)
-                        {
-                            c.GetItems(ref ray, items, layers);
-                        }
+                        Children[i]?.GetItems(ref ray, items, layers);
                     }
                 }
             }
@@ -2131,7 +2112,7 @@ namespace CodeWalker.World
             return null;
         }
 
-        public SpaceNodeGridCell GetCellForPosition(Vector3 position)
+        public SpaceNodeGridCell? GetCellForPosition(in Vector3 position)
         {
             var x = (int)((position.X - CornerX) / CellSize);
             var y = (int)((position.Y - CornerY) / CellSize);
@@ -2145,11 +2126,11 @@ namespace CodeWalker.World
         }
 
 
-        public YndNode GetYndNode(ushort areaid, ushort nodeid)
+        public YndNode? GetYndNode(ushort areaid, ushort nodeid)
         {
             var cell = GetCell(areaid);
-            if ((cell == null) || (cell.Ynd == null) || (cell.Ynd.Nodes == null))
-            { return null; }
+            if (cell?.Ynd?.Nodes is null)
+                return null;
             if (nodeid >= cell.Ynd.Nodes.Length)
             { return null; }
             return cell.Ynd.Nodes[nodeid];
@@ -2309,7 +2290,7 @@ namespace CodeWalker.World
         public bool TestComplete;
         public BoundMaterial_s Material;
 
-        public void TryUpdate(ref SpaceRayIntersectResult r)
+        public void TryUpdate(in SpaceRayIntersectResult r)
         {
             if (r.Hit)
             {

@@ -215,7 +215,8 @@ namespace CodeWalker.World
         }
         private void AddSelectionDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check)
         {
-            if (models == null) return;
+            if (models is null)
+                return;
 
             for (int mi = 0; mi < models.Length; mi++)
             {
@@ -228,7 +229,8 @@ namespace CodeWalker.World
                 var tmnode = SelDrawableTexturesTreeView.Nodes.Add(mprefix + " " + model.ToString());
                 tmnode.Tag = model;
 
-                if (model.Geometries == null) continue;
+                if (model.Geometries is null || model.Geometries.Length == 0)
+                    continue;
 
                 foreach (var geom in model.Geometries)
                 {
@@ -249,14 +251,12 @@ namespace CodeWalker.World
                         {
                             var hash = pl.Hashes[ip];
                             var parm = pl.Parameters[ip];
-                            var tex = parm.Data as TextureBase;
-                            if (tex != null)
+                            if (parm.Data is TextureBase tex)
                             {
-                                var t = tex as Texture;
                                 var tstr = tex.Name.Trim();
-                                if (t != null)
+                                if (tex is Texture t)
                                 {
-                                    tstr = string.Format("{0} ({1}x{2}, embedded)", tex.Name, t.Width, t.Height);
+                                    tstr = $"{tex.Name} ({t.Width}x{t.Height}, embedded)";
                                 }
                                 var tnode = tgnode.Nodes.Add(hash.ToString().Trim() + ": " + tstr);
                                 tnode.Tag = tex;
@@ -381,12 +381,9 @@ namespace CodeWalker.World
                 {
                     owner = Selection.Drawable.Owner;
                 }
-                YdrFile ydr = owner as YdrFile;
-                YddFile ydd = owner as YddFile;
-                YftFile yft = owner as YftFile;
 
                 SelTextureNameTextBox.Text = tex.Name;
-                SelTextureDictionaryTextBox.Text = (ytd != null) ? ytd.Name : (ydr != null) ? ydr.Name : (ydd != null) ? ydd.Name : (yft != null) ? yft.Name : string.Empty;
+                SelTextureDictionaryTextBox.Text = (ytd != null) ? ytd.Name : (owner is YdrFile ydr) ? ydr.Name : (owner is YddFile ydd) ? ydd.Name : (owner is YftFile yft) ? yft.Name : string.Empty;
                 SaveTextureButton.Enabled = true;
             }
             else

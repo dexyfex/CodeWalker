@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using WeifenLuo.WinFormsUI.Docking;
 using Point = System.Drawing.Point;
 
@@ -240,46 +243,52 @@ namespace CodeWalker
         {
             if (Environment.OSVersion.Version.Major >= 6)
             {
-                var ofd = new OpenFileDialog();
-                ofd.Filter = "Folders|\n";
-                ofd.AddExtension = false;
-                ofd.CheckFileExists = false;
+                var ofd = new OpenFolderDialog();
+                //ofd.Filter = "Folders|\n";
+                //ofd.AddExtension = false;
+                //ofd.CheckFileExists = false;
                 ofd.DereferenceLinks = true;
                 ofd.Multiselect = false;
                 ofd.InitialDirectory = fbd.SelectedPath;
 
-                int result = 0;
-                var ns = "MS.Internal.AppModel";
-                var asmb = Assembly.Load("System.Windows.Forms.Primitives");
-                //var asmb = Assembly.LoadWithPartialName("PresentationFramework");
-                var dialogint = asmb.GetType("Interop+Shell32+IFileDialog");
-                //var dialogint = GetType(asmb, ns, "IFileDialog");
-                var dialog = Call(typeof(OpenFileDialog), ofd, "CreateVistaDialog");
-                Call(typeof(OpenFileDialog), ofd, "OnBeforeVistaDialog", dialog);
-                var options = Convert.ToUInt32(Call(typeof(FileDialog), ofd, "GetOptions"));
+                ofd.ValidateNames = true;
 
-                var enumValue = GetEnumValue("System.Windows.Forms.Primitives", "Interop+Shell32+FOS", "PICKFOLDERS");
-                options |= Convert.ToUInt32(enumValue);
+                var result = ofd.ShowDialog() ?? false;
 
-                Call(dialogint, dialog, "SetOptions", options);
-                dynamic pfde = New("System.Windows.Forms", "System.Windows.Forms.FileDialog+VistaDialogEvents", ofd);
-                var parameters = new object[] { pfde, (uint)0 };
-                Call(dialogint, dialog, "Advise", parameters);
-                var adviseres = Convert.ToUInt32(parameters[1]);
-                try {
-                    result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner));
-                }
-                finally {
-                    //pfde.Dispose();
-                    Call(dialogint, dialog, "Unadvise", adviseres);
-                }
-                GC.KeepAlive(pfde);
+                //int result = 0;
+                //var ns = "MS.Internal.AppModel";
+                //var asmb = Assembly.Load("System.Windows.Forms.Primitives");
+                ////var asmb = Assembly.LoadWithPartialName("PresentationFramework");
+                //var dialogint = asmb.GetType("Interop+Shell32+IFileDialog");
+                ////var dialogint = GetType(asmb, ns, "IFileDialog");
+                //var dialog = Call(typeof(OpenFileDialog), ofd, "CreateVistaDialog");
+                //Call(typeof(OpenFileDialog), ofd, "OnBeforeVistaDialog", dialog);
+                //var options = Convert.ToUInt32(Call(typeof(FileDialog), ofd, "GetOptions"));
+
+                //var enumValue = GetEnumValue("System.Windows.Forms.Primitives", "Interop+Shell32+FOS", "PICKFOLDERS");
+                //options |= Convert.ToUInt32(enumValue);
+
+                //Call(dialogint, dialog, "SetOptions", options);
+                //dynamic pfde = New("System.Windows.Forms", "System.Windows.Forms.FileDialog+VistaDialogEvents", ofd);
+                //var parameters = new object[] { pfde, (uint)0 };
+                //Call(dialogint, dialog, "Advise", parameters);
+                //var adviseres = Convert.ToUInt32(parameters[1]);
+                //try {
+                //    result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner));
+                //}
+                //finally {
+                //    //pfde.Dispose();
+                //    Call(dialogint, dialog, "Unadvise", adviseres);
+                //}
+                //GC.KeepAlive(pfde);
 
                 
 
-                fbd.SelectedPath = ofd.FileName;
+                fbd.SelectedPath = ofd.FolderName;
 
-                return (result == 0) ? DialogResult.OK : DialogResult.Cancel;
+                //return (result == 0) ? DialogResult.OK : DialogResult.Cancel;
+
+                return result ? DialogResult.OK : DialogResult.Cancel;
             }
             else
             {
@@ -302,11 +311,22 @@ namespace CodeWalker
             }
             return type;
         }
+
         private static object Call(Type type, object obj, string func, params object[] parameters)
         {
             var mi = type.GetMethod(func, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (mi == null) return null;
-            return mi.Invoke(obj, parameters);
+            if (mi == null)
+                return null;
+            try
+            {
+                return mi.Invoke(obj, parameters);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Exception occured while invoking method {type} {func}");
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
         }
 
         private static object GetEnumValue(string assemblyName, string typeName, string name)
@@ -458,6 +478,55 @@ namespace CodeWalker
 
     }
 
+
+    public static class InvokeExtensions
+    {
+        public static void InvokeIfRequired(this Form form, System.Windows.Forms.MethodInvoker method)
+        {
+            if (form.InvokeRequired)
+            {
+                form.Invoke(method);
+                return;
+            }
+
+            method?.Invoke();
+        }
+
+        public static void InvokeIfRequired(this Form form, Action<object[]> action, params object[] args)
+        {
+            if (form.InvokeRequired)
+            {
+                form.Invoke(action, args);
+                return;
+            }
+
+            action?.Invoke(args);
+        }
+
+        public static SwitchToUiAwaitable SwitchToUi(this Form form)
+        {
+            return new SwitchToUiAwaitable(form);
+        }
+
+        public readonly struct SwitchToUiAwaitable(Form form) : INotifyCompletion
+        {
+            public SwitchToUiAwaitable GetAwaiter()
+            {
+                return this;
+            }
+
+            public void GetResult()
+            {
+            }
+
+            public bool IsCompleted => !form.InvokeRequired;
+
+            public void OnCompleted(Action continuation)
+            {
+                form.BeginInvoke(continuation);
+            }
+        }
+    }
 
 
     //unused

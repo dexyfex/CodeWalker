@@ -32,6 +32,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static CodeWalker.GameFiles.MetaXmlBase;
 
 namespace CodeWalker.GameFiles
 {
@@ -736,11 +737,11 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x60, Cloths),
-                new Tuple<long, IResourceBlock>(0x110, LightAttributes)
+            return new (long, IResourceBlock)[] {
+                (0x60, Cloths),
+                (0x110, LightAttributes)
             };
         }
     }
@@ -2854,11 +2855,11 @@ namespace CodeWalker.GameFiles
         {
             if (ItemIndices != null)
             {
-                YftXml.WriteRawArray(sb, ItemIndices, indent, "ItemIndices", "", null, 22);
+                YftXml.WriteRawArray(sb, ItemIndices, indent, "ItemIndices", "", (FormatterRef<uint>?)null, 22);
             }
             if (ItemFlags != null)
             {
-                YftXml.WriteRawArray(sb, ItemFlags, indent, "ItemFlags", "", null, 22);
+                YftXml.WriteRawArray(sb, ItemFlags, indent, "ItemFlags", "", (FormatterRef<byte>?)null, 22);
             }
             if (UnknownVectors != null)
             {
@@ -4362,7 +4363,7 @@ namespace CodeWalker.GameFiles
             Unknown_24h = u(36);
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             UintStringBuilder usb = new UintStringBuilder();
             usb.Add(Unknown_00h);

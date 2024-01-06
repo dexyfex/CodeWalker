@@ -26,11 +26,6 @@ namespace CodeWalker.GameFiles
                 return _instance;
             }
         }
-        public static GameFileCache GetInstance()
-        {
-            return Instance;
-        }
-
     }
 
 }

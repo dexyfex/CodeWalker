@@ -58,6 +58,7 @@ VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
         cpos.y += (ipos.w * 2 - 1) * lodlight.OuterAngleOrCapExt;
         opos = (cpos.x * lodlight.TangentX.xyz) + (cpos.y * lodlight.Direction.xyz) + (cpos.z * lodlight.TangentY.xyz);
     }
+
     opos += (lodlight.Position - CameraPos.xyz);
     float4 spos = mul(float4(opos, 1), ViewProj);
     VS_Output output;

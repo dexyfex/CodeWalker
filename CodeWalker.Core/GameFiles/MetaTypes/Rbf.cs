@@ -24,59 +24,72 @@
 
 
 using System;
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using CodeWalker.Core.Utils;
+using Collections.Pooled;
+using CommunityToolkit.Diagnostics;
+using Microsoft.Extensions.ObjectPool;
 
 namespace CodeWalker.GameFiles
 {
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfFile
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class RbfFile : IDisposable
     {
-        private const int RBF_IDENT = 0x30464252;
+        public const uint RBF_IDENT_LITTLE_ENDIAN = 0x30464252;
 
         public RbfStructure current { get; set; }
-        public Stack<RbfStructure> stack { get; set; }
         public List<RbfEntryDescription> descriptors { get; set; }
         public Dictionary<string, int> outDescriptors { get; private set; } = new Dictionary<string, int>();
 
 
-        public void Load(byte[] data)
+        public RbfStructure Load(byte[] data)
         {
-            using (var ms = new MemoryStream(data))
-                Load(ms);
+            var sequence = new ReadOnlySequence<byte>(data);
+            var reader = new SequenceReader<byte>(sequence);
+            return Load(ref reader);
         }
 
         public RbfStructure Load(string fileName)
         {
-            using (var fileStream = new FileStream(fileName, FileMode.Open))
-            {
-                return Load(fileStream);
-            }
+            var data = File.ReadAllBytes(fileName);
+            return Load(data);
         }
 
-        public RbfStructure Load(Stream stream)
+        public RbfStructure Load(ref SequenceReader<byte> reader)
         {
-            stack = new Stack<RbfStructure>();
+            var stack = new Stack<RbfStructure>();
             descriptors = new List<RbfEntryDescription>();
 
-            var reader = new DataReader(stream);
+            //var reader = new DataReader(stream);
             var ident = reader.ReadInt32();
-            if (ident != RBF_IDENT)
-                throw new Exception("The file identifier does not match.");
+            if (ident != RBF_IDENT_LITTLE_ENDIAN)
+            {
+                ThrowHelper.ThrowInvalidOperationException("The file identifier does not match.");
+                return default;
+            }
 
-            while (reader.Position < reader.Length)
+            while (reader.Consumed < reader.Length)
             {
                 var descriptorIndex = reader.ReadByte();
                 if (descriptorIndex == 0xFF) // close tag
                 {
                     var b = reader.ReadByte();
                     if (b != 0xFF)
-                        throw new Exception("Expected 0xFF but was " + b.ToString("X2"));
+                    {
+                        ThrowHelper.ThrowInvalidOperationException($"Expected 0xFF but was {b:X2}");
+                        return default;
+                    }
+                        
 
                     if (stack.Count > 0)
                     {
@@ -84,8 +97,12 @@ namespace CodeWalker.GameFiles
                     }
                     else
                     {
-                        if (reader.Position != reader.Length)
-                            throw new Exception("Expected end of stream but was not.");
+                        if (reader.Consumed != reader.Length)
+                        {
+                            ThrowHelper.ThrowInvalidOperationException("Expected end of stream but was not.");
+                            return default;
+                        }
+
                         return current;
                     }
                 }
@@ -93,14 +110,17 @@ namespace CodeWalker.GameFiles
                 {
                     var b = reader.ReadByte();
                     if (b != 0xFF)
-                        throw new Exception("Expected 0xFF but was " + b.ToString("X2"));
+                    {
+                        ThrowHelper.ThrowInvalidOperationException($"Expected 0xFF but was {b:X2}");
+                        return default;
+                    }
 
                     var dataLength = reader.ReadInt32();
                     var data = reader.ReadBytes(dataLength);
 
                     var bytesValue = new RbfBytes();
-                    bytesValue.Value = data;
-                    current.Children.Add(bytesValue);
+                    bytesValue.Value = data.ToArray();
+                    current.AddChild(bytesValue);
                 }
                 else
                 {
@@ -116,10 +136,15 @@ namespace CodeWalker.GameFiles
                         descriptor.Type = dataType;
                         descriptors.Add(descriptor);
 
-                        ParseElement(reader, descriptors.Count - 1, dataType);
+                        ParseElement(ref reader, descriptors.Count - 1, dataType, stack);
                     }
                     else // existing descriptor + data
                     {
+                        if (descriptorIndex >= descriptors.Count)
+                        {
+                            ThrowHelper.ThrowInvalidOperationException("Index out of range");
+                            return default;
+                        }
                         if (dataType != descriptors[descriptorIndex].Type)
                         {
                             //throw new Exception("Data type does not match. Expected "
@@ -127,15 +152,16 @@ namespace CodeWalker.GameFiles
                             //    + dataType.ToString() + ". Descriptor: " + descriptors[descriptorIndex].Name);
                         }
 
-                        ParseElement(reader, descriptorIndex, dataType);
+                        ParseElement(ref reader, descriptorIndex, dataType, stack);
                     }
                 }
             }
 
-            throw new Exception("Unexpected end of stream.");
+            ThrowHelper.ThrowInvalidOperationException("Unexpected end of stream.");
+            return default;
         }
 
-        private void ParseElement(DataReader reader, int descriptorIndex, byte dataType)
+        private void ParseElement(ref SequenceReader<byte> reader, int descriptorIndex, byte dataType, Stack<RbfStructure> stack)
         {
             var descriptor = descriptors[descriptorIndex];
             switch (dataType)
@@ -145,9 +171,9 @@ namespace CodeWalker.GameFiles
                         var structureValue = new RbfStructure();
                         structureValue.Name = descriptor.Name;
 
-                        if (current != null)
+                        if (current is not null)
                         {
-                            current.AddChild(structureValue);
+                            current.AddChildOrAttribute(structureValue);
                             stack.Push(current);
                         }
 
@@ -163,7 +189,7 @@ namespace CodeWalker.GameFiles
                         var intValue = new RbfUint32();
                         intValue.Name = descriptor.Name;
                         intValue.Value = reader.ReadUInt32();
-                        current.AddChild(intValue);
+                        current.AddChildOrAttribute(intValue);
                         break;
                     }
                 case 0x20:
@@ -171,7 +197,7 @@ namespace CodeWalker.GameFiles
                         var booleanValue = new RbfBoolean();
                         booleanValue.Name = descriptor.Name;
                         booleanValue.Value = true;
-                        current.AddChild(booleanValue);
+                        current.AddChildOrAttribute(booleanValue);
                         break;
                     }
                 case 0x30:
@@ -179,7 +205,7 @@ namespace CodeWalker.GameFiles
                         var booleanValue = new RbfBoolean();
                         booleanValue.Name = descriptor.Name;
                         booleanValue.Value = false;
-                        current.AddChild(booleanValue);
+                        current.AddChildOrAttribute(booleanValue);
                         break;
                     }
                 case 0x40:
@@ -187,7 +213,7 @@ namespace CodeWalker.GameFiles
                         var floatValue = new RbfFloat();
                         floatValue.Name = descriptor.Name;
                         floatValue.Value = reader.ReadSingle();
-                        current.AddChild(floatValue);
+                        current.AddChildOrAttribute(floatValue);
                         break;
                     }
                 case 0x50:
@@ -197,7 +223,7 @@ namespace CodeWalker.GameFiles
                         floatVectorValue.X = reader.ReadSingle();
                         floatVectorValue.Y = reader.ReadSingle();
                         floatVectorValue.Z = reader.ReadSingle();
-                        current.AddChild(floatVectorValue);
+                        current.AddChildOrAttribute(floatVectorValue);
                         break;
                     }
                 case 0x60:
@@ -207,24 +233,38 @@ namespace CodeWalker.GameFiles
                         var stringValue = new RbfString();
                         stringValue.Name = descriptor.Name;
                         stringValue.Value = value;
-                        current.AddChild(stringValue);
+                        current.AddChildOrAttribute(stringValue);
                         break;
                     }
                 default:
-                    throw new Exception("Unsupported data type.");
+                    ThrowHelper.ThrowInvalidOperationException("Unsupported data type.");
+                    return;
             }
         }
 
         public static bool IsRBF(Stream stream)
         {
-            var reader = new DataReader(stream);
             var origpos = stream.Position;
-            var ident = reader.ReadInt32();
-            var isrbf = (ident == RBF_IDENT);
+
+            Span<byte> buffer = stackalloc byte[4];
+
+            stream.Read(buffer);
             stream.Position = origpos;
-            return isrbf;
+
+            return IsRBF(buffer);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRBF(Span<byte> ident)
+        {
+            return IsRBF(BinaryPrimitives.ReadUInt32LittleEndian(ident));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsRBF(uint ident)
+        {
+            return ident == RBF_IDENT_LITTLE_ENDIAN;
+        }
 
         public byte GetDescriptorIndex(IRbfType t, out bool isNew)
         {
@@ -268,11 +308,10 @@ namespace CodeWalker.GameFiles
             outDescriptors = new Dictionary<string, int>();
 
             var writer = new DataWriter(stream);
-            writer.Write(RBF_IDENT);
+            writer.Write(RBF_IDENT_LITTLE_ENDIAN);
 
             current.Save(this, writer);
         }
-
 
         public void WriteRecordId(IRbfType type, DataWriter writer)
         {
@@ -285,21 +324,36 @@ namespace CodeWalker.GameFiles
                 writer.Write(Encoding.ASCII.GetBytes(type.Name));
             }
         }
+
+        public void Dispose()
+        {
+            current?.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        ~RbfFile()
+        {
+            Dispose();
+        }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfEntryDescription
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class RbfEntryDescription
     {
         public string Name { get; set; }
         public int Type { get; set; }
-        public override string ToString() { return Name + ": " + Type.ToString(); }
+        public override string ToString() => $"{Name}: {Type}";
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public interface IRbfType
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public interface IRbfType
     {
         string Name { get; set; }
         byte DataType { get; }
         void Save(RbfFile file, DataWriter writer);
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfBytes : IRbfType
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class RbfBytes : IRbfType
     {
         public string Name { get; set; }
         public byte[] Value { get; set; }
@@ -311,8 +365,20 @@ namespace CodeWalker.GameFiles
             writer.Write(Value.Length);
             writer.Write(Value);
         }
-        public override string ToString() { return Name + ": " + Value.ToString(); }
+
+        public string GetNullTerminatedString()
+        {
+            var span = Value.AsSpan();
+            var index = span.IndexOf((byte)0);
+            if (index == -1)
+                return Encoding.ASCII.GetString(span);
+
+            return Encoding.ASCII.GetString(span.Slice(0, index));
+        }
+
+        public override string ToString() => $"{Name}: {Value}";
     }
+
     [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfUint32 : IRbfType
     {
         public string Name { get; set; }
@@ -323,9 +389,11 @@ namespace CodeWalker.GameFiles
             file.WriteRecordId(this, writer);
             writer.Write(Value);
         }
-        public override string ToString() { return Name + ": " + Value.ToString(); }
+        public override string ToString() => $"{Name}: {Value}";
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfBoolean : IRbfType
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class RbfBoolean : IRbfType
     {
         public string Name { get; set; }
         public bool Value { get; set; }
@@ -334,7 +402,7 @@ namespace CodeWalker.GameFiles
         {
             file.WriteRecordId(this, writer);
         }
-        public override string ToString() { return Name + ": " + Value.ToString(); }
+        public override string ToString() => $"{Name}: {Value}";
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfFloat : IRbfType
     {
@@ -346,9 +414,10 @@ namespace CodeWalker.GameFiles
             file.WriteRecordId(this, writer);
             writer.Write(Value);
         }
-        public override string ToString() { return Name + ": " + Value.ToString(); }
+        public override string ToString() => $"{Name}: {Value}";
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfFloat3 : IRbfType
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class RbfFloat3 : IRbfType
     {
         public string Name { get; set; }
         public float X { get; set; }
@@ -362,9 +431,10 @@ namespace CodeWalker.GameFiles
             writer.Write(Y);
             writer.Write(Z);
         }
-        public override string ToString() { return string.Format("{0}: X:{1}, Y:{2}, Z:{3}", Name, X, Y, Z); }
+        public override string ToString() => $"{Name}: X:{X}, Y:{Y}, Z:{Z}";
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfString : IRbfType
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class RbfString : IRbfType
     {
         public string Name { get; set; }
         public string Value { get; set; }
@@ -375,32 +445,47 @@ namespace CodeWalker.GameFiles
             writer.Write((short)Value.Length);
             writer.Write(Encoding.ASCII.GetBytes(Value));
         }
-        public override string ToString() { return Name + ": " + Value.ToString(); }
+        public override string ToString() => $"{Name}: {Value}";
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class RbfStructure : IRbfType
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class RbfStructure : IRbfType, IDisposable
     {
+        private static ObjectPool<PooledList<IRbfType>> listPool = ObjectPool.Create(new DefaultPooledObjectPolicy<PooledList<IRbfType>>());
         public string Name { get; set; }
-        public List<IRbfType> Children { get; set; } = new List<IRbfType>();
-        public List<IRbfType> Attributes { get; set; } = new List<IRbfType>();
+
+        public PooledList<IRbfType>? Children { get; set; }
+        public PooledList<IRbfType>? Attributes { get; set; }
         internal int PendingAttributes { get; set; }
         public byte DataType => 0;
-        public override string ToString() { return Name + ": {" + Children.Count.ToString() + "}"; }
-        public IRbfType FindChild(string name)
+        public override string ToString() => $"{ Name }: {{{ Children?.Count ?? 0 }}}";
+        public IRbfType? FindChild(string name)
         {
+            if (Children is null || Children.Count == 0)
+                return null;
+
             foreach (var child in Children)
             {
-                if (child == null) continue;
-                if (child.Name == name) return child;
+                if (child is null)
+                    continue;
+
+                if (child.Name == name)
+                    return child;
             }
             return null;
         }
-        public IRbfType FindAttribute(string name)
+        public IRbfType? FindAttribute(string name)
         {
+            if (Attributes is null || Attributes.Count == 0)
+                return null;
+
             foreach (var attr in Attributes)
             {
-                if (attr == null) continue;
-                if (attr.Name == name) return attr;
+                if (attr is null)
+                    continue;
+                if (attr.Name == name)
+                    return attr;
             }
+
             return null;
         }
         public void Save(RbfFile root, DataWriter writer)
@@ -410,31 +495,70 @@ namespace CodeWalker.GameFiles
             writer.Write(new byte[4]); // 00
 
             // count of non-primitive fields in this (... attributes??)
-            writer.Write((short)Attributes.Count);   //writer.Write((short)Children.TakeWhile(a => !(a is RbfBytes || a is RbfStructure)).Count());
+            writer.Write((short)(Attributes?.Count ?? 0));   //writer.Write((short)Children.TakeWhile(a => !(a is RbfBytes || a is RbfStructure)).Count());
 
-            foreach (var attr in Attributes)
+            if (Attributes is not null)
             {
-                attr.Save(root, writer);
+                foreach (var attr in Attributes)
+                {
+                    attr.Save(root, writer);
+                }
             }
-            foreach (var child in Children)
+
+            if (Children is not null)
             {
-                child.Save(root, writer);
+                foreach (var child in Children)
+                {
+                    child.Save(root, writer);
+                }
             }
 
             writer.Write((byte)0xFF);
             writer.Write((byte)0xFF);
         }
+
         internal void AddChild(IRbfType value)
+        {
+            Children ??= listPool.Get();
+            Children.Add(value);
+        }
+
+        internal void AddAttribute(IRbfType value)
+        {
+            Attributes ??= listPool.Get();
+            Attributes.Add(value);
+        }
+
+        internal void AddChildOrAttribute(IRbfType value)
         {
             if (PendingAttributes > 0)
             {
                 PendingAttributes--;
-                Attributes.Add(value);
+                AddAttribute(value);
             }
             else
             {
-                Children.Add(value);
+                AddChild(value);
             }
+        }
+
+        public void Dispose()
+        {
+            if (Children is PooledList<IRbfType> children)
+            {
+                listPool.Return(children);
+            }
+            if (Attributes is PooledList<IRbfType> attributes)
+            {
+                listPool.Return(attributes);
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
+        ~RbfStructure()
+        {
+            Dispose();
         }
     }
 

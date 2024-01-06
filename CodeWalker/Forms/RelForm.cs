@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
+//using System.Windows.Forms.DataVisualization.Charting;
 using System.Xml;
 using Range = FastColoredTextBoxNS.Range;
 using TextStyle = FastColoredTextBoxNS.TextStyle;
@@ -168,7 +168,7 @@ namespace CodeWalker.Forms
                         }
                         else
                         {
-                            sb.AppendLine("0x" + h.ToString("X").PadLeft(8, '0'));
+                            sb.AppendLine("0x" + h.ToString("X8"));
                         }
                     }
                     sb.AppendLine();
@@ -203,13 +203,12 @@ namespace CodeWalker.Forms
         private bool SaveRel(XmlDocument doc)
         {
 
-            if (!(ExploreForm.Instance?.EditMode ?? false)) return false;
+            if (!(ExploreForm.Instance?.EditMode ?? false))
+                return false;
 
-            byte[] data = null;
+            byte[] data;
 
-#if !DEBUG
             try
-#endif
             {
                 switch (metaFormat)
                 {
@@ -227,14 +226,13 @@ namespace CodeWalker.Forms
                         break;
                 }
             }
-#if !DEBUG
             catch (Exception ex)
             {
                 MessageBox.Show("Exception encountered!\r\n" + ex.ToString(), "Cannot convert XML");
                 return false;
             }
-#endif
-            if (data == null)
+
+            if (data.Length == 0)
             {
                 MessageBox.Show("Schema not supported. (Unspecified error - data was null!)", "Cannot convert XML");
                 return false;
@@ -255,8 +253,6 @@ namespace CodeWalker.Forms
                     if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return false;
 
                     var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
-                    if (newentry != rpfFileEntry)
-                    { }
                     rpfFileEntry = newentry;
 
                     ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
@@ -327,7 +323,8 @@ namespace CodeWalker.Forms
         }
         private void NewDocument()
         {
-            if (!CloseDocument()) return;
+            if (!CloseDocument())
+                return;
 
             FileName = "New.xml";
             rpfFileEntry = null;
@@ -336,13 +333,16 @@ namespace CodeWalker.Forms
         }
         private void OpenDocument()
         {
-            if (OpenFileDialog.ShowDialog() != DialogResult.OK) return;
+            if (OpenFileDialog.ShowDialog() != DialogResult.OK)
+                return;
 
-            if (!CloseDocument()) return;
+            if (!CloseDocument())
+                return;
 
             var fn = OpenFileDialog.FileName;
 
-            if (!File.Exists(fn)) return; //couldn't find file?
+            if (!File.Exists(fn))
+                return; //couldn't find file?
 
             Xml = File.ReadAllText(fn);
 
@@ -377,10 +377,14 @@ namespace CodeWalker.Forms
                 saveAs = true;
             }
 
-            if (string.IsNullOrEmpty(FileName)) saveAs = true;
-            if (string.IsNullOrEmpty(FilePath)) saveAs = true;
-            else if (FilePath.StartsWith(GTAFolder.CurrentGTAFolder, StringComparison.OrdinalIgnoreCase)) saveAs = true;
-            if (!File.Exists(FilePath)) saveAs = true;
+            if (string.IsNullOrEmpty(FileName))
+                saveAs = true;
+            if (string.IsNullOrEmpty(FilePath))
+                saveAs = true;
+            else if (FilePath.StartsWith(GTAFolder.CurrentGTAFolder, StringComparison.OrdinalIgnoreCase))
+                saveAs = true;
+            if (!File.Exists(FilePath))
+                saveAs = true;
 
             var fn = FilePath;
             if (saveAs)
@@ -504,20 +508,20 @@ namespace CodeWalker.Forms
         {
             SearchResultsGrid.SelectedObject = null;
 
-            if (CurrentFile?.RelDatasSorted == null) return;
+            if (CurrentFile?.RelDatas == null || CurrentFile.RelDatas.Length == 0)
+                return;
 
 
             bool textsearch = SearchTextRadio.Checked;
             var text = SearchTextBox.Text;
 
-            uint hash = 0;
-            uint hashl = 0;
-            if (!uint.TryParse(text, out hash))//don't re-hash hashes
+            uint hashl;
+            if (!uint.TryParse(text, out uint hash))//don't re-hash hashes
             {
                 hash = JenkHash.GenHash(text);
-                JenkIndex.Ensure(text);
+                JenkIndex.Ensure(text, hash);
                 hashl = JenkHash.GenHashLower(text);
-                JenkIndex.EnsureLower(text);
+                JenkIndex.Ensure(text, hashl);
             }
             else
             {
@@ -715,16 +719,16 @@ namespace CodeWalker.Forms
             }
             else
             {
-//#if !DEBUG
+                //#if !DEBUG
                 try
                 {
-//#endif
+                    //#endif
                     if (synthesizer == null)
                     {
                         synthesizer = new Synthesizer();
                         synthesizer.Stopped += (t, _) =>
                         {
-                            BeginInvoke((Action)(() =>
+                            BeginInvoke((() =>
                             {
                                 SynthPlayButton.Enabled = true;
                                 SynthStopButton.Enabled = false;
@@ -739,37 +743,37 @@ namespace CodeWalker.Forms
                                 Array.Copy(synthesizer.Buffers[i], buffersCopy[i], synthesizer.Buffers[i].Length);
                             }
 
-                            BeginInvoke((Action)(() =>
+                            BeginInvoke((() =>
                             {
                                 //for (int i = 0; i < buffersCopy.Length; i++)
                                 int i = synthesizer.Synth.OutputsIndices[0];
                                 try
                                 {
-                                    var series = SynthBufferChart.Series.FindByName($"B{i}");
-                                    if (series != null)
-                                    {
-                                        series.Points.Clear();
-                                        foreach (var v in buffersCopy[i])
-                                            series.Points.AddY(Math.Max(Math.Min(v, 2.0f), -2.0f));//make sure crazy accidental values don't crash it later
-                                    }
+                                    //var series = SynthBufferChart.Series.FindByName($"B{i}");
+                                    //if (series != null)
+                                    //{
+                                    //    series.Points.Clear();
+                                    //    foreach (var v in buffersCopy[i])
+                                    //        series.Points.AddY(Math.Max(Math.Min(v, 2.0f), -2.0f));//make sure crazy accidental values don't crash it later
+                                    //}
                                 }
                                 catch { }
                             }));
                         };
                     }
 
-                    SynthBufferChart.Series.Clear();
-                    for (int i = 0; i < newSynth.BuffersCount; i++)
-                    {
-                        var series = SynthBufferChart.Series.Add($"B{i}");
-                        series.IsXValueIndexed = true;
-                        series.ChartType = SeriesChartType.FastLine;
-                    }
+                    //SynthBufferChart.Series.Clear();
+                    //for (int i = 0; i < newSynth.BuffersCount; i++)
+                    //{
+                    //    var series = SynthBufferChart.Series.Add($"B{i}");
+                    //    series.IsXValueIndexed = true;
+                    //    series.ChartType = SeriesChartType.FastLine;
+                    //}
 
                     SynthPlayButton.Enabled = false;
                     SynthStopButton.Enabled = true;
                     synthesizer.Play(newSynth);
-//#if !DEBUG
+                    //#if !DEBUG
                 }
                 catch (Exception ex)
                 {
@@ -777,7 +781,7 @@ namespace CodeWalker.Forms
                     SynthStopButton.Enabled = false;
                     StatusLabel.Text = $"Synthesizer error: {ex}";
                 }
-//#endif
+                //#endif
             }
         }
 

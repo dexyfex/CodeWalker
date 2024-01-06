@@ -9,6 +9,8 @@ using SharpDX.Direct3D11;
 using Device = SharpDX.Direct3D11.Device;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using SharpDX.DXGI;
+using System.Runtime.CompilerServices;
+using Collections.Pooled;
 
 namespace CodeWalker.Rendering
 {
@@ -20,20 +22,14 @@ namespace CodeWalker.Rendering
         private VertexBufferBinding vbbinding;
         private int indexcount;
 
-        private struct SphTri
+        private readonly struct SphTri(int i1, int i2, int i3)
         {
-            public int v1;
-            public int v2;
-            public int v3;
-            public SphTri(int i1,int i2, int i3)
-            {
-                v1 = i1;
-                v2 = i2;
-                v3 = i3;
-            }
+            public readonly int v1 = i1;
+            public readonly int v2 = i2;
+            public readonly int v3 = i3;
         }
 
-        public UnitSphere(Device device, byte[] vsbytes, int detail, bool invert = false)
+        public UnitSphere(Device device, byte[] vsbytes, int detail, bool invert = false, [CallerMemberName] string caller = "")
         {
 
             InputLayout = new InputLayout(device, vsbytes, new[]
@@ -41,13 +37,14 @@ namespace CodeWalker.Rendering
                 new InputElement("POSITION", 0, Format.R32G32B32A32_Float, 0, 0),
                 //new InputElement("NORMAL", 0, Format.R32G32B32A32_Float, 16, 0),
             });
+            InputLayout.DebugName = caller;
 
 
 
-            List<Vector3> verts = new List<Vector3>();
+            using var verts = new PooledList<Vector3>();
             Dictionary<Vector3, int> vdict = new Dictionary<Vector3, int>();
-            List<SphTri> curtris = new List<SphTri>();
-            List<SphTri> nxttris = new List<SphTri>();
+            var curtris = new PooledList<SphTri>();
+            var nxttris = new PooledList<SphTri>();
 
             verts.Add(new Vector3(-1.0f, 0.0f, 0.0f));
             verts.Add(new Vector3(1.0f, 0.0f, 0.0f));
@@ -111,13 +108,13 @@ namespace CodeWalker.Rendering
             }
 
 
-            List<Vector4> vdata = new List<Vector4>();
+            using var vdata = new PooledList<Vector4>();
             foreach (var vert in verts)
             {
                 vdata.Add(new Vector4(vert, 1.0f));
             }
 
-            List<uint> idata = new List<uint>();
+            using var idata = new PooledList<uint>();
             foreach (var tri in curtris)
             {
                 idata.Add((uint)tri.v1);
@@ -125,9 +122,11 @@ namespace CodeWalker.Rendering
                 idata.Add((uint)(invert ? tri.v2 : tri.v3));
             }
 
+            curtris.Dispose();
+            nxttris.Dispose();
 
             VertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, vdata.ToArray());
-            vbbinding = new VertexBufferBinding(VertexBuffer, 8, 0);
+            vbbinding = new VertexBufferBinding(VertexBuffer, 16, 0);
 
             IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, idata.ToArray());
             indexcount = idata.Count;

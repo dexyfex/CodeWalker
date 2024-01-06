@@ -10,31 +10,29 @@ namespace CodeWalker.GameFiles
 {
     public class YmfFile : PackedFile
     {
-        public RpfFileEntry FileEntry { get; set; }
+        public RpfFileEntry? FileEntry { get; set; }
 
-        public Meta Meta { get; set; }
-        public PsoFile Pso { get; set; }
-        public RbfFile Rbf { get; set; }
+        public Meta? Meta { get; set; }
+        public PsoFile? Pso { get; set; }
+        public RbfFile? Rbf { get; set; }
 
-        public YmfMapDataGroup[] MapDataGroups { get; set; }
-        public CImapDependency[] imapDependencies { get; set; }
-        public YmfImapDependency2[] imapDependencies2 { get; set; }
-        public YmfItypDependency2[] itypDependencies2 { get; set; }
-        public CHDTxdAssetBinding[] HDTxdAssetBindings { get; set; }
-        public YmfInterior[] Interiors { get; set; }
+        public YmfMapDataGroup[] MapDataGroups { get; set; } = Array.Empty<YmfMapDataGroup>();
+        public CImapDependency[] imapDependencies { get; set; } = Array.Empty<CImapDependency>();
+        public YmfImapDependency2[] imapDependencies2 { get; set; } = Array.Empty<YmfImapDependency2>();
+        public YmfItypDependency2[] itypDependencies2 { get; set; } = Array.Empty<YmfItypDependency2>();
+        public CHDTxdAssetBinding[] HDTxdAssetBindings { get; set; } = Array.Empty<CHDTxdAssetBinding>();
+        public YmfInterior[] Interiors { get; set; } = Array.Empty<YmfInterior>();
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
             FileEntry = entry;
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                MemoryStream ms = new MemoryStream(data);
-                if (RbfFile.IsRBF(ms))
+                if (RbfFile.IsRBF(data.AsSpan(0, 4)))
                 {
                     Rbf = new RbfFile();
-                    Rbf.Load(ms);
+                    Rbf.Load(data);
 
                     //x64j.rpf\\levels\\gta5\\_citye\\indust_01\\id1_props.rpf\\_manifest.ymf
                     //x64j.rpf\\levels\\gta5\\_citye\\indust_02\\id2_props.rpf\\_manifest.ymf
@@ -43,10 +41,10 @@ namespace CodeWalker.GameFiles
 
                     return;
                 }
-                if (PsoFile.IsPSO(ms))
+                if (PsoFile.IsPSO(data.AsSpan(0, 4)))
                 {
                     Pso = new PsoFile();
-                    Pso.Load(ms);
+                    Pso.Load(data);
 
                     //PsoTypes.EnsurePsoTypes(Pso);
 
@@ -56,21 +54,14 @@ namespace CodeWalker.GameFiles
                 }
                 else
                 {
-
+                    Console.WriteLine("Neither");
                 }
                 return;
             }
-            else
-            { }//doesn't get here
-
-
-
-
 
             using var rd = new ResourceDataReader(resentry, data);
 
             Meta = rd.ReadBlock<Meta>();
-
         }
 
 
@@ -81,22 +72,22 @@ namespace CodeWalker.GameFiles
             //for TIMED YMAP stuff!!!!
             //check CMapDataGroup.HoursOnOff
 
+            ArgumentNullException.ThrowIfNull(Pso, nameof(Pso));
+
 
             var d = PsoTypes.GetRootItem<CPackFileMetaData>(Pso);
 
-            MapDataGroups = PsoTypes.GetObjectArray<YmfMapDataGroup, CMapDataGroup>(Pso, d.MapDataGroups);
+            MapDataGroups = PsoTypes.GetObjectArray<YmfMapDataGroup, CMapDataGroup>(Pso, in d._MapDataGroups) ?? Array.Empty<YmfMapDataGroup>();
 
-            imapDependencies = PsoTypes.GetItemArray<CImapDependency>(Pso, d.imapDependencies).ToArray();
+            imapDependencies = PsoTypes.GetItemArray<CImapDependency>(Pso, in d._imapDependencies)?.ToArray() ?? Array.Empty<CImapDependency>();
 
-            imapDependencies2 = PsoTypes.GetObjectArray<YmfImapDependency2, CImapDependencies>(Pso, d.imapDependencies_2);
+            imapDependencies2 = PsoTypes.GetObjectArray<YmfImapDependency2, CImapDependencies>(Pso, in d._imapDependencies_2) ?? Array.Empty<YmfImapDependency2>();
 
-            itypDependencies2 = PsoTypes.GetObjectArray<YmfItypDependency2, CItypDependencies>(Pso, d.itypDependencies_2);
+            itypDependencies2 = PsoTypes.GetObjectArray<YmfItypDependency2, CItypDependencies>(Pso, in d._itypDependencies_2) ?? Array.Empty<YmfItypDependency2>();
 
-            HDTxdAssetBindings = PsoTypes.GetItemArray<CHDTxdAssetBinding>(Pso, d.HDTxdBindingArray).ToArray();
+            HDTxdAssetBindings = PsoTypes.GetItemArray<CHDTxdAssetBinding>(Pso, in d._HDTxdBindingArray)?.ToArray() ?? Array.Empty<CHDTxdAssetBinding>();
 
-            Interiors = PsoTypes.GetObjectArray<YmfInterior, CInteriorBoundsFiles>(Pso, d.Interiors);
-
-
+            Interiors = PsoTypes.GetObjectArray<YmfInterior, CInteriorBoundsFiles>(Pso, in d._Interiors) ?? Array.Empty<YmfInterior>();
         }
 
 
@@ -109,8 +100,8 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YmfMapDataGroup : PsoClass<CMapDataGroup>
     {
         public CMapDataGroup DataGroup { get; set; } //ymap name
-        public MetaHash[] Bounds { get; set; }
-        public MetaHash[] WeatherTypes { get; set; }
+        public MetaHash[] Bounds { get; set; } = Array.Empty<MetaHash>();
+        public MetaHash[] WeatherTypes { get; set; } = Array.Empty<MetaHash>();
         public MetaHash Name { get; set; }
         public ushort Flags { get; set; }
         public uint HoursOnOff { get; set; }
@@ -120,11 +111,11 @@ namespace CodeWalker.GameFiles
             return DataGroup.ToString();
         }
 
-        public override void Init(PsoFile pso, ref CMapDataGroup v)
+        public override void Init(PsoFile pso, in CMapDataGroup v)
         {
             DataGroup = v;
-            Bounds = PsoTypes.GetHashArray(pso, v.Bounds);
-            WeatherTypes = PsoTypes.GetHashArray(pso, v.WeatherTypes);
+            Bounds = PsoTypes.GetHashArray(pso, v.Bounds) ?? Array.Empty<MetaHash>();
+            WeatherTypes = PsoTypes.GetHashArray(pso, v.WeatherTypes) ?? Array.Empty<MetaHash>();
             Name = v.Name;
             Flags = v.Flags;
             HoursOnOff = v.HoursOnOff;
@@ -136,7 +127,7 @@ namespace CodeWalker.GameFiles
         public CImapDependencies Dep { get; set; }
         public MetaHash[] itypDepArray { get; set; }//ybn hashes?
 
-        public override void Init(PsoFile pso, ref CImapDependencies v)
+        public override void Init(PsoFile pso, in CImapDependencies v)
         {
             Dep = v;
             itypDepArray = PsoTypes.GetHashArray(pso, v.itypDepArray);
@@ -153,7 +144,7 @@ namespace CodeWalker.GameFiles
         public CItypDependencies Dep { get; set; }
         public MetaHash[] itypDepArray { get; set; }//ytyp hashes?
 
-        public override void Init(PsoFile pso, ref CItypDependencies v)
+        public override void Init(PsoFile pso, in CItypDependencies v)
         {
             Dep = v;
             itypDepArray = PsoTypes.GetHashArray(pso, v.itypDepArray);
@@ -170,15 +161,12 @@ namespace CodeWalker.GameFiles
         public CInteriorBoundsFiles Interior { get; set; }
         public MetaHash[] Bounds { get; set; }//ybn hashes?
 
-        public override string ToString()
-        {
-            return Interior.ToString();
-        }
+        public override string ToString() => Interior.ToString();
 
-        public override void Init(PsoFile pso, ref CInteriorBoundsFiles v)
+        public override void Init(PsoFile pso, in CInteriorBoundsFiles v)
         {
             Interior = v;
-            Bounds = PsoTypes.GetHashArray(pso, v.Bounds);
+            Bounds = PsoTypes.GetHashArray(pso, in v._Bounds);
         }
     }
 

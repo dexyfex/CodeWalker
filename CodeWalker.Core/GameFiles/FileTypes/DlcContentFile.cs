@@ -1,23 +1,75 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace CodeWalker.GameFiles
 {
     public class DlcContentFile
     {
-
         public List<DlcContentDataFile> dataFiles { get; set; } = new List<DlcContentDataFile>();
         public List<DlcContentChangeSet> contentChangeSets { get; set; } = new List<DlcContentChangeSet>();
 
         public RpfFile DlcFile { get; set; } //used by GameFileCache
-        public Dictionary<string, DlcExtraFolderMountFile> ExtraMounts { get; set; } = new Dictionary<string, DlcExtraFolderMountFile>();
-        public Dictionary<string, DlcContentDataFile> RpfDataFiles { get; set; } = new Dictionary<string, DlcContentDataFile>();
+        public Dictionary<string, DlcExtraFolderMountFile> ExtraMounts { get; set; } = new Dictionary<string, DlcExtraFolderMountFile>(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, DlcContentDataFile> RpfDataFiles { get; set; } = new Dictionary<string, DlcContentDataFile>(StringComparer.OrdinalIgnoreCase);
 
         public DlcExtraTitleUpdateFile ExtraTitleUpdates { get; set; }
+
+        public void Load(XmlReader reader)
+        {
+            reader.MoveToStartElement("CDataFileMgr__ContentsOfDataFileXml");
+            while (reader.Read())
+            {
+                switch (reader.MoveToContent())
+                {
+                    case XmlNodeType.Element:
+                        ReadElement(reader);
+                        break;
+                    case XmlNodeType.EndElement:
+                        if (reader.Name == "CDataFileMgr__ContentsOfDataFileXml")
+                        {
+                            //Reached end of file
+                            return;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        public void ReadElement(XmlReader reader)
+        {
+            switch(reader.Name)
+            {
+                case "disabledFiles":
+                case "includedXmlFiles":
+                case "includedDataFiles":
+                case "patchFiles":
+                    reader.Skip();
+                    return;
+
+                case "dataFiles":
+                    foreach(var item in reader.IterateItems("dataFiles"))
+                    {
+                        dataFiles.Add(new DlcContentDataFile(item));
+                    }
+                    return;
+
+                case "contentChangeSets":
+                    foreach(var item in reader.IterateItems("contentChangeSets"))
+                    {
+                        contentChangeSets.Add(new DlcContentChangeSet(item));
+                    }
+                    return;
+            }
+        }
 
         public void Load(XmlDocument doc)
         {
@@ -32,16 +84,16 @@ namespace CodeWalker.GameFiles
                 switch (node.Name)
                 {
                     case "disabledFiles":
-                        foreach (XmlNode disabledFile in node.ChildNodes)
-                        { } //nothing to see here..
+                        //foreach (XmlNode disabledFile in node.ChildNodes)
+                        //{ } //nothing to see here..
                         break;
                     case "includedXmlFiles":
-                        foreach (XmlNode includedXmlFile in node.ChildNodes)
-                        { } //nothing to see here..
+                        //foreach (XmlNode includedXmlFile in node.ChildNodes)
+                        //{ } //nothing to see here..
                         break;
                     case "includedDataFiles":
-                        foreach (XmlNode includedDataFile in node.ChildNodes)
-                        { } //nothing to see here..
+                        //foreach (XmlNode includedDataFile in node.ChildNodes)
+                        //{ } //nothing to see here..
                         break;
                     case "dataFiles":
                         foreach (XmlNode dataFile in node.ChildNodes)
@@ -62,8 +114,8 @@ namespace CodeWalker.GameFiles
                         }
                         break;
                     case "patchFiles":
-                        foreach (XmlNode patchFile in node.ChildNodes)
-                        { } //nothing to see here..
+                        //foreach (XmlNode patchFile in node.ChildNodes)
+                        //{ } //nothing to see here..
                         break;
                     default:
                         break;
@@ -82,21 +134,21 @@ namespace CodeWalker.GameFiles
 
             foreach (var datafile in dataFiles)
             {
-                string dfn = GameFileCache.GetDlcPlatformPath(datafile.filename).ToLowerInvariant();
+                string dlcPlatformPath = GameFileCache.GetDlcPlatformPath(datafile.filename);
                 if (datafile.fileType == "EXTRA_FOLDER_MOUNT_DATA")
                 {
-                    string efmdxmlpath = datafile.filename.Replace(setupfile.deviceName + ":", DlcFile.Path).Replace('/', '\\');
+                    string efmdxmlpath = datafile.filename.Replace($"{setupfile.deviceName}:", DlcFile.Path).Replace('/', '\\');
                     efmdxmlpath = gfc.GetDlcPatchedPath(efmdxmlpath);
                     XmlDocument efmdxml = rpfman.GetFileXml(efmdxmlpath);
 
                     DlcExtraFolderMountFile efmf = new DlcExtraFolderMountFile();
                     efmf.Load(efmdxml);
 
-                    ExtraMounts[dfn] = efmf;
+                    ExtraMounts[dlcPlatformPath] = efmf;
                 }
                 if (datafile.fileType == "EXTRA_TITLE_UPDATE_DATA")
                 {
-                    string etudxmlpath = datafile.filename.Replace(setupfile.deviceName + ":", DlcFile.Path).Replace('/', '\\');
+                    string etudxmlpath = datafile.filename.Replace($"{setupfile.deviceName}:", DlcFile.Path).Replace('/', '\\');
                     etudxmlpath = gfc.GetDlcPatchedPath(etudxmlpath);
                     XmlDocument etudxml = rpfman.GetFileXml(etudxmlpath);
 
@@ -107,7 +159,7 @@ namespace CodeWalker.GameFiles
                 }
                 if (datafile.fileType == "RPF_FILE")
                 {
-                    RpfDataFiles[dfn] = datafile;
+                    RpfDataFiles[dlcPlatformPath] = datafile;
                 }
             }
 
@@ -115,7 +167,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return dataFiles.Count.ToString() + " dataFiles, " + contentChangeSets.Count.ToString() + " contentChangeSets";
+            return $"{dataFiles.Count} dataFiles, {contentChangeSets.Count} contentChangeSets";
         }
     }
 
@@ -135,6 +187,52 @@ namespace CodeWalker.GameFiles
         {
             Load(node);
         }
+
+        public DlcContentDataFile(XElement xElement)
+        {
+            Load(xElement);
+        }
+
+        public void Load(XElement xElement)
+        {
+            foreach(var child in xElement.Elements())
+            {
+                switch(child.Name.LocalName)
+                {
+                    case "filename":
+                        filename = child.Value;
+                        break;
+                    case "fileType":
+                        fileType = child.Value;
+                        break;
+                    case "contents":
+                        contents = child.Value;
+                        break;
+                    case "installPartition":
+                        installPartition = child.Value;
+                        break;
+                    case "overlay":
+                        overlay = child.GetBoolAttribute("value");
+                        break;
+                    case "disabled":
+                        disabled = child.GetBoolAttribute("value");
+                        break;
+                    case "persistent":
+                        persistent = child.GetBoolAttribute("value");
+                        break;
+                    case "loadCompletely":
+                        loadCompletely = child.GetBoolAttribute("value");
+                        break;
+                    case "locked":
+                        locked = child.GetBoolAttribute("value");
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+        }
+
         public void Load(XmlNode node)
         {
             foreach (XmlNode child in node.ChildNodes)
@@ -176,36 +274,98 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return filename + ": " + fileType + ": " + contents + ": " + installPartition +
-                (overlay ? ", overlay" : "") + 
-                (disabled ? ", disabled" : "") +
-                (persistent ? ", persistent" : "") +
-                (loadCompletely ? ", loadCompletely" : "") +
-                (locked ? ", locked" : "");
+            return $"{filename}: {fileType}: {contents}: {installPartition}{(overlay ? ", overlay" : "")}{(disabled ? ", disabled" : "")}{(persistent ? ", persistent" : "")}{(loadCompletely ? ", loadCompletely" : "")}{(locked ? ", locked" : "")}";
         }
     }
 
     public class DlcContentChangeSet
     {
         public string changeSetName { get; set; }
-        public List<string> filesToInvalidate { get; set; }
-        public List<string> filesToDisable { get; set; }
-        public List<string> filesToEnable { get; set; }
-        public List<string> txdToLoad { get; set; }
-        public List<string> txdToUnload { get; set; }
-        public List<string> residentResources { get; set; }
-        public List<string> unregisterResources { get; set; }
-        public List<DlcContentChangeSet> mapChangeSetData { get; set; }
+        public List<string>? filesToInvalidate { get; set; }
+        public List<string>? filesToDisable { get; set; }
+        public List<string>? filesToEnable { get; set; }
+        public List<string>? txdToLoad { get; set; }
+        public List<string>? txdToUnload { get; set; }
+        public List<string>? residentResources { get; set; }
+        public List<string>? unregisterResources { get; set; }
+        public List<DlcContentChangeSet>? mapChangeSetData { get; set; }
         public string associatedMap { get; set; }
         public bool requiresLoadingScreen { get; set; }
         public string loadingScreenContext { get; set; }
         public bool useCacheLoader { get; set; }
         public DlcContentChangeSetExecutionConditions executionConditions { get; set; }
 
+        public DlcContentChangeSet(XElement element)
+        {
+            Load(element);
+        }
+
         public DlcContentChangeSet(XmlNode node)
         {
             Load(node);
         }
+
+        public void Load(XElement element)
+        {
+            foreach(var child in element.Elements())
+            {
+                switch (child.Name.LocalName)
+                {
+                    case "changeSetName":
+                        changeSetName = child.Value;
+                        break;
+                    case "filesToInvalidate":
+                        filesToInvalidate = GetChildStringArray(child);
+                        break;
+                    case "filesToDisable":
+                        filesToDisable = GetChildStringArray(child);
+                        break;
+                    case "filesToEnable":
+                        filesToEnable = GetChildStringArray(child);
+                        break;
+                    case "txdToLoad":
+                        txdToLoad = GetChildStringArray(child);
+                        break;
+                    case "txdToUnload":
+                        txdToUnload = GetChildStringArray(child);
+                        break;
+                    case "residentResources":
+                        residentResources = GetChildStringArray(child);
+                        break;
+                    case "unregisterResources":
+                        unregisterResources = GetChildStringArray(child);
+                        break;
+                    case "mapChangeSetData":
+                        if (child.HasElements)
+                        {
+                            mapChangeSetData = new List<DlcContentChangeSet>();
+                            foreach (XElement childElement in child.Elements())
+                            {
+                                mapChangeSetData.Add(new DlcContentChangeSet(childElement));
+                            }
+                        }
+                        break;
+                    case "associatedMap":
+                        associatedMap = child.Value;
+                        break;
+                    case "requiresLoadingScreen":
+                        requiresLoadingScreen = Xml.GetBoolAttribute(child, "value");
+                        break;
+                    case "loadingScreenContext":
+                        loadingScreenContext = child.Value;
+                        break;
+                    case "useCacheLoader":
+                        useCacheLoader = Xml.GetBoolAttribute(child, "value");
+                        break;
+                    case "executionConditions":
+                        executionConditions = new DlcContentChangeSetExecutionConditions(child);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         public void Load(XmlNode node)
         {
             foreach (XmlNode child in node.ChildNodes)
@@ -217,44 +377,33 @@ namespace CodeWalker.GameFiles
                         break;
                     case "filesToInvalidate":
                         filesToInvalidate = GetChildStringArray(child);
-                        if (filesToInvalidate != null)
-                        { }
                         break;
                     case "filesToDisable":
                         filesToDisable = GetChildStringArray(child);
-                        if (filesToDisable != null)
-                        { }
                         break;
                     case "filesToEnable":
                         filesToEnable = GetChildStringArray(child);
-                        if (filesToEnable != null)
-                        { }
                         break;
                     case "txdToLoad":
                         txdToLoad = GetChildStringArray(child);
-                        if (txdToLoad != null)
-                        { }
                         break;
                     case "txdToUnload":
                         txdToUnload = GetChildStringArray(child);
-                        if (txdToUnload != null)
-                        { }
                         break;
                     case "residentResources":
                         residentResources = GetChildStringArray(child);
-                        if (residentResources != null)
-                        { }
                         break;
                     case "unregisterResources":
                         unregisterResources = GetChildStringArray(child);
-                        if (unregisterResources != null)
-                        { }
                         break;
                     case "mapChangeSetData":
-                        mapChangeSetData = new List<DlcContentChangeSet>();
-                        foreach (XmlNode mapChangeSetDataItem in child.ChildNodes)
+                        if (child.HasChildNodes)
                         {
-                            mapChangeSetData.Add(new DlcContentChangeSet(mapChangeSetDataItem));
+                            mapChangeSetData = new List<DlcContentChangeSet>();
+                            foreach (XmlNode mapChangeSetDataItem in child.ChildNodes)
+                            {
+                                mapChangeSetData.Add(new DlcContentChangeSet(mapChangeSetDataItem));
+                            }
                         }
                         break;
                     case "associatedMap":
@@ -292,6 +441,20 @@ namespace CodeWalker.GameFiles
             return result;
         }
 
+        private List<string>? GetChildStringArray(XElement node)
+        {
+            if (!node.HasElements) return null;
+
+            var result = new List<string>();
+            foreach(XElement childNode in node.Elements())
+            {
+                result.Add(childNode.Value);
+            }
+
+            return result;
+        }
+
+
         public override string ToString()
         {
             return (changeSetName != null) ? changeSetName : (associatedMap != null) ? associatedMap : null;
@@ -308,6 +471,30 @@ namespace CodeWalker.GameFiles
         {
             Load(node);
         }
+
+        public DlcContentChangeSetExecutionConditions(XElement element)
+        {
+            Load(element);
+        }
+
+        public void Load(XElement element)
+        {
+            foreach (XElement child in element.Elements())
+            {
+                switch (child.Name.LocalName)
+                {
+                    case "activeChangesetConditions":
+                        activeChangesetConditions = child.Value;
+                        break;
+                    case "genericConditions":
+                        genericConditions = child.Value;
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         public void Load(XmlNode node)
         {
             foreach (XmlNode child in node.ChildNodes)

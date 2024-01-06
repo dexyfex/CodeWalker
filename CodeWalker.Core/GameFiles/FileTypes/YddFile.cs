@@ -31,16 +31,26 @@ namespace CodeWalker.GameFiles
 
             Loaded = true;
         }
+
+        public async Task LoadAsync(byte[] data)
+        {
+            //direct load from a raw, compressed ydd file
+
+            await RpfFile.LoadResourceFileAsync(this, data, 165);
+
+            Loaded = true;
+        }
+
         public void Load(byte[] data, RpfFileEntry entry)
         {
             Name = entry.Name;
             RpfFileEntry = entry;
 
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                throw new Exception("File entry wasn't a resource! (is it binary data?)");
+                ThrowFileIsNotAResourceException();
+                return;
             }
 
             using var rd = new ResourceDataReader(resentry, data);
@@ -99,12 +109,8 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-        new public long MemoryUsage {
-            get {
-                return DrawableDict.MemoryUsage;
-            }
-        }
-
+        public long PhysicalMemoryUsage => DrawableDict.PhysicalMemoryUsage;
+        public long VirtualMemoryUsage => DrawableDict.VirtualMemoryUsage;
     }
 
 
@@ -112,18 +118,24 @@ namespace CodeWalker.GameFiles
 
     public class YddXml : MetaXmlBase
     {
-
         public static string GetXml(YddFile ydd, string outputFolder = "")
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if (ydd?.DrawableDict != null)
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                DrawableDictionary.WriteXmlNode(ydd.DrawableDict, sb, 0, outputFolder);
-            }
+                sb.AppendLine(XmlHeader);
 
-            return sb.ToString();
+                if (ydd?.DrawableDict != null)
+                {
+                    DrawableDictionary.WriteXmlNode(ydd.DrawableDict, sb, 0, outputFolder);
+                }
+
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
 
     }

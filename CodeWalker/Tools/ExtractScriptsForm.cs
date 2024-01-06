@@ -196,14 +196,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { UpdateDumpStatus(text); }));
+                    Invoke(UpdateDumpStatus, text);
                 }
                 else
                 {
                     DumpStatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void UpdateExtractStatus(string text)
@@ -212,14 +214,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { UpdateExtractStatus(text); }));
+                    Invoke(UpdateExtractStatus, text);
                 }
                 else
                 {
                     ExtractStatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
     }

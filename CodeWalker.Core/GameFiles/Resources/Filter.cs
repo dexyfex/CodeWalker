@@ -90,11 +90,11 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.Filters);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, FilterNameHashes),
-                new Tuple<long, IResourceBlock>(0x30, Filters)
+            return new (long, IResourceBlock)[] {
+                (0x20, FilterNameHashes),
+                (0x30, Filters)
             };
         }
 
@@ -215,9 +215,9 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_14h);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return Array.Empty<Tuple<long, IResourceBlock>>();
+            return Array.Empty<(long, IResourceBlock)>();
         }
 
         public IResourceSystemBlock GetType(ResourceDataReader reader, params object[] parameters)
@@ -364,11 +364,11 @@ namespace CodeWalker.GameFiles
             writer.Write(this.Unknown_38h);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x18, Entries),
-                new Tuple<long, IResourceBlock>(0x28, Weights)
+            return new (long, IResourceBlock)[] {
+                (0x18, Entries),
+                (0x28, Weights)
             };
         }
 
@@ -396,7 +396,7 @@ namespace CodeWalker.GameFiles
 
         public void SortEntries()
         {
-            if (Entries?.data_items == null)
+            if (Entries?.data_items == null || Entries.data_items.Length == 0)
             {
                 return;
             }
@@ -408,12 +408,12 @@ namespace CodeWalker.GameFiles
         {
             // CRC-32 hash of the Entries and Weights arrays
             uint s = 0;
-            if (Entries?.data_items != null && Entries?.data_items.Length > 0)
+            if (Entries?.data_items is not null && Entries?.data_items.Length > 0)
             {
                 var data = MetaTypes.ConvertArrayToBytes(Entries.data_items);
                 s = Crc32Hash(data, s);
             }
-            if (Weights?.data_items != null && Weights?.data_items.Length > 0)
+            if (Weights?.data_items is not null && Weights?.data_items.Length > 0)
             {
                 var data = MetaTypes.ConvertArrayToBytes(Weights.data_items);
                 s = Crc32Hash(data, s);
@@ -430,7 +430,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return BoneId + ", " + Track + ": " + WeightIndex;
+                return $"{BoneId}, {Track}: {WeightIndex}";
             }
 
             public uint GetSortKey() => (uint)(BoneId | (Track << 16));

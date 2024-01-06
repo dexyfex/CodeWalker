@@ -47,10 +47,10 @@ namespace CodeWalker.Utils
             else if (extension == ".ymf" || extension == ".ymap" || extension == ".ytyp" || extension == ".ymt")
             {
                 GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
-                var fileCache = GameFileCacheFactory.GetInstance();
+                var fileCache = GameFileCacheFactory.Instance;
                 if (!fileCache.IsInited)
                 {
-                    fileCache.Init();
+                    fileCache.InitAsync().GetAwaiter().GetResult();
                 }
 
                 var metaForm = new MetaForm();

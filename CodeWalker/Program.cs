@@ -5,6 +5,7 @@ using CodeWalker.Properties;
 using CodeWalker.Utils;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -17,7 +18,7 @@ using System.Windows.Forms;
 using System.Windows.Shell;
 
 namespace CodeWalker;
-static class Program
+public static class Program
 {
     /// <summary>
     /// The main entry point for the application.
@@ -25,16 +26,18 @@ static class Program
     [STAThread]
     static void Main(string[] args)
     {
-        Task.Run(() =>
+        ConsoleWindow.Hide();
+        _ = Task.Run(() =>
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-            ConsoleWindow.Hide();
+            
 
             Application.ThreadException += (object sender, ThreadExceptionEventArgs e) =>
             {
                 Console.WriteLine($"Unhandeled exception occured: {e.Exception}");
             };
         });
+        LoadConfig();
         bool menumode = false;
         bool explorermode = false;
         bool projectmode = false;
@@ -81,7 +84,7 @@ static class Program
             }
         }
 
-        Task.Run(EnsureJumpList);
+        EnsureJumpList();
 
         //Application.SetHighDpiMode(HighDpiMode.SystemAware);
         Application.EnableVisualStyles();
@@ -108,7 +111,7 @@ static class Program
                 {
                     var form = new ExploreForm();
                     var namedPipe = new NamedPipe(form);
-                    namedPipe.Init();
+                    namedPipe.StartServer();
                     Application.Run(form);
                 }
             }
@@ -122,7 +125,11 @@ static class Program
             }
             else if (pedsmode)
             {
-                Application.Run(new PedsForm());
+                if (!NamedPipe.TrySendMessageToOtherProcess("peds-mode"))
+                {
+                    var form = new PedsForm();
+                    Application.Run(form);
+                }
             }
             else if (path != null)
             {
@@ -147,7 +154,7 @@ static class Program
             {
                 var form = new WorldForm();
                 var namedPipe = new NamedPipe(form);
-                namedPipe.Init();
+                namedPipe.StartServer();
                 Application.Run(form);
             }
 #if !DEBUG
@@ -155,18 +162,59 @@ static class Program
         catch (Exception ex)
         {
             MessageBox.Show("An unexpected error was encountered!\n" + ex.ToString());
+            Console.WriteLine(ex);
             //this can happen if folder wasn't chosen, or in some other catastrophic error. meh.
         }
 #endif
     }
 
+    public static void LoadConfig()
+    {
+        using var _ = new DisposableTimer("LoadConfig");
+        string configPath = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.PerUserRoamingAndLocal).FilePath;
+        if (!File.Exists(configPath))
+        {
+            Console.WriteLine("Upgrading config");
+            //Existing user config does not exist, so load settings from previous assembly
+            Settings.Default.Upgrade();
+            Settings.Default.Reload();
+            Settings.Default.Save();
+        }
+        //if (Settings.Default.UpgradeRequired)
+        //{
+        //Console.WriteLine($"Upgrading config {Settings.Default.UpgradeRequired}");
+        //Settings.Default.SettingsSaving += (sender, args) =>
+        //{
+        //    Console.WriteLine($"Saving settings {Settings.Default.UpgradeRequired}");
+        //};
+        //Settings.Default.PropertyChanged += (sender, args) =>
+        //{
+        //    Console.WriteLine($"Property {args.PropertyName} Changed {Settings.Default[args.PropertyName]}");
+        //};
+        //Settings.Default.SettingChanging += (sender, args) =>
+        //{
+        //    Console.WriteLine($"Settings Changing {args.SettingName} from {Settings.Default[args.SettingName]} to {args.NewValue}");
+        //};
+        //    Settings.Default.Upgrade();
+        //    Console.WriteLine(Settings.Default.UpgradeRequired);
+        //    Settings.Default.UpgradeRequired = true;
+        //    Settings.Default.UpgradeRequired = false;
+        //    Settings.Default.Save();
+        //}
+    }
 
     static void EnsureJumpList()
     {
-        if (Settings.Default.JumpListInitialised) return;
+        if (Settings.Default.JumpListInitialised)
+        {
+            Console.WriteLine("Jump list already initialized");
+            return;
+        }
 
         try
         {
+            Console.WriteLine("Initializing jump list");
+            Application.OleRequired();
             var cwpath = Assembly.GetEntryAssembly().Location;
             var cwdir = Path.GetDirectoryName(cwpath);
 
@@ -220,7 +268,7 @@ static class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Initializing console failed {ex}");
+            Console.WriteLine($"Initializing jump list failed {ex}");
         }
     }
 }

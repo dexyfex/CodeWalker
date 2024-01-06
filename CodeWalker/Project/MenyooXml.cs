@@ -120,9 +120,6 @@ namespace CodeWalker.Project
 
         public void Init(XmlNode node)
         {
-
-            XmlElement enode = node as XmlElement;
-
             var hashstr = Xml.GetChildInnerText(node, "ModelHash");
             if (hashstr.StartsWith("0x", StringComparison.OrdinalIgnoreCase)) hashstr = hashstr.Substring(2);
             ModelHash = Convert.ToUInt32(hashstr, 16);
@@ -133,7 +130,7 @@ namespace CodeWalker.Project
             HashName = Xml.GetChildInnerText(node, "HashName");
             InitialHandle = Xml.GetChildIntInnerText(node, "InitialHandle");
 
-            if (enode != null)
+            if (node is XmlElement enode)
             {
                 var objprops = Xml.GetChild(enode, "ObjectProperties");
                 ObjectProperties = new List<MenyooXmlProperty>();

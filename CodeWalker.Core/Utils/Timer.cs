@@ -8,7 +8,7 @@ namespace CodeWalker.Core.Utils
     public class DisposableTimer : IDisposable
     {
         public static event Action<TimeSpan, string> TimerStopped;
-        public readonly Stopwatch _stopwatch;
+        public Stopwatch Stopwatch { get; init; }
 
         static DisposableTimer()
         {
@@ -22,14 +22,25 @@ namespace CodeWalker.Core.Utils
 
         public DisposableTimer(string name)
         {
-            _stopwatch = Stopwatch.StartNew();
+            Stopwatch = Stopwatch.StartNew();
             Name = name;
+        }
+        public DisposableTimer(string name, bool start)
+        {
+            Name = name;
+            if (start)
+            {
+                Stopwatch = Stopwatch.StartNew();
+            } else
+            {
+                Stopwatch = new Stopwatch();
+            }
         }
 
         public void Dispose()
         {
-            _stopwatch.Stop();
-            TimerStopped?.Invoke(_stopwatch.Elapsed, Name ?? string.Empty);
+            Stopwatch.Stop();
+            TimerStopped?.Invoke(Stopwatch.Elapsed, Name ?? string.Empty);
         }
     }
 }

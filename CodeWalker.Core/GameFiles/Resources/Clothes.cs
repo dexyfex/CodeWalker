@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using Collections.Pooled;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static CodeWalker.GameFiles.MetaXmlBase;
 
 /*
     Copyright(c) 2017 Neodymium
@@ -101,8 +103,8 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            var clothes = new List<CharacterCloth>();
-            var clothhashes = new List<MetaHash>();
+            using var clothes = new PooledList<CharacterCloth>();
+            using var clothhashes = new PooledList<MetaHash>();
 
             var inodes = node.SelectNodes("Item");
             if (inodes != null)
@@ -144,17 +146,18 @@ namespace CodeWalker.GameFiles
             return cd;
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, ClothNameHashes),
-                new Tuple<long, IResourceBlock>(0x30, Clothes)
+            return new (long, IResourceBlock)[] {
+                (0x20, ClothNameHashes),
+                (0x30, Clothes)
             };
         }
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClothController : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClothController : ResourceSystemBlock
     {
         // clothController
         public override long BlockLength => 0x80;
@@ -333,12 +336,17 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (BridgeSimGfx != null) list.Add(BridgeSimGfx);
-            if (MorphController != null) list.Add(MorphController);
-            if (VerletCloth1 != null) list.Add(VerletCloth1);
-            if (VerletCloth2 != null) list.Add(VerletCloth2);
-            if (VerletCloth3 != null) list.Add(VerletCloth3);
+            using var list = new PooledList<IResourceBlock>();
+            if (BridgeSimGfx is not null)
+                list.Add(BridgeSimGfx);
+            if (MorphController is not null)
+                list.Add(MorphController);
+            if (VerletCloth1 is not null)
+                list.Add(VerletCloth1);
+            if (VerletCloth2 is not null)
+                list.Add(VerletCloth2);
+            if (VerletCloth3 is not null)
+                list.Add(VerletCloth3);
             return list.ToArray();
         }
     }
@@ -535,55 +543,55 @@ namespace CodeWalker.GameFiles
             YldXml.ValueTag(sb, indent, "VertexCount", VertexCount.ToString());
             YldXml.ValueTag(sb, indent, "Unknown14", Unknown_14h.ToString());
             YldXml.ValueTag(sb, indent, "Unknown18", Unknown_18h.ToString());
-            if (Unknown_20h?.data_items != null)
+            if (Unknown_20h?.data_items is not null && Unknown_20h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_20h.data_items, indent, "Unknown20", "", FloatUtil.ToString);
             }
-            if (Unknown_30h?.data_items != null)
+            if (Unknown_30h?.data_items != null && Unknown_30h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_30h.data_items, indent, "Unknown30", "", FloatUtil.ToString);
             }
-            if (Unknown_40h?.data_items != null)
+            if (Unknown_40h?.data_items != null && Unknown_40h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_40h.data_items, indent, "Unknown40", "", FloatUtil.ToString);
             }
-            if (Unknown_60h?.data_items != null)
+            if (Unknown_60h?.data_items != null && Unknown_60h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_60h.data_items, indent, "Unknown60", "", FloatUtil.ToString);
             }
-            if (Unknown_70h?.data_items != null)
+            if (Unknown_70h?.data_items != null && Unknown_70h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_70h.data_items, indent, "Unknown70", "");
             }
-            if (Unknown_80h?.data_items != null)
+            if (Unknown_80h?.data_items != null && Unknown_80h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_80h.data_items, indent, "Unknown80", "");
             }
-            if (Unknown_A0h?.data_items != null)
+            if (Unknown_A0h?.data_items != null && Unknown_A0h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_A0h.data_items, indent, "UnknownA0", "", FloatUtil.ToString);
             }
-            if (Unknown_B0h?.data_items != null)
+            if (Unknown_B0h?.data_items != null && Unknown_B0h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_B0h.data_items, indent, "UnknownB0", "");
             }
-            if (Unknown_C0h?.data_items != null)
+            if (Unknown_C0h?.data_items != null && Unknown_C0h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_C0h.data_items, indent, "UnknownC0", "");
             }
-            if (Unknown_E0h?.data_items != null)
+            if (Unknown_E0h?.data_items != null && Unknown_E0h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_E0h.data_items, indent, "UnknownE0", "");
             }
-            if (Unknown_F0h?.data_items != null)
+            if (Unknown_F0h?.data_items != null && Unknown_F0h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_F0h.data_items, indent, "UnknownF0", "");
             }
-            if (Unknown_100h?.data_items != null)
+            if (Unknown_100h?.data_items != null && Unknown_100h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_100h.data_items, indent, "Unknown100", "");
             }
-            if (Unknown_128h?.data_items != null)
+            if (Unknown_128h?.data_items != null && Unknown_128h.data_items.Length > 0)
             {
                 YldXml.WriteRawArray(sb, Unknown_128h.data_items, indent, "Unknown128", "");
             }
@@ -622,22 +630,22 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, Unknown_20h),
-                new Tuple<long, IResourceBlock>(0x30, Unknown_30h),
-                new Tuple<long, IResourceBlock>(0x40, Unknown_40h),
-                new Tuple<long, IResourceBlock>(0x60, Unknown_60h),
-                new Tuple<long, IResourceBlock>(0x70, Unknown_70h),
-                new Tuple<long, IResourceBlock>(0x80, Unknown_80h),
-                new Tuple<long, IResourceBlock>(0xA0, Unknown_A0h),
-                new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
-                new Tuple<long, IResourceBlock>(0xC0, Unknown_C0h),
-                new Tuple<long, IResourceBlock>(0xE0, Unknown_E0h),
-                new Tuple<long, IResourceBlock>(0xF0, Unknown_F0h),
-                new Tuple<long, IResourceBlock>(0x100, Unknown_100h),
-                new Tuple<long, IResourceBlock>(0x128, Unknown_128h)
+            return new (long, IResourceBlock)[] {
+                (0x20, Unknown_20h),
+                (0x30, Unknown_30h),
+                (0x40, Unknown_40h),
+                (0x60, Unknown_60h),
+                (0x70, Unknown_70h),
+                (0x80, Unknown_80h),
+                (0xA0, Unknown_A0h),
+                (0xB0, Unknown_B0h),
+                (0xC0, Unknown_C0h),
+                (0xE0, Unknown_E0h),
+                (0xF0, Unknown_F0h),
+                (0x100, Unknown_100h),
+                (0x128, Unknown_128h)
             };
         }
     }
@@ -1335,20 +1343,23 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (Bound != null) list.Add(Bound);
-            if (Behavior != null) list.Add(Behavior);
-            if (Unknown_140h_Data != null) list.Add(Unknown_140h_Data);
+            using var list = new PooledList<IResourceBlock>();
+            if (Bound is not null)
+                list.Add(Bound);
+            if (Behavior is not null)
+                list.Add(Behavior);
+            if (Unknown_140h_Data is not null)
+                list.Add(Unknown_140h_Data);
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x70, Vertices2),
-                new Tuple<long, IResourceBlock>(0x80, Vertices),
-                new Tuple<long, IResourceBlock>(0x100, Constraints2),
-                new Tuple<long, IResourceBlock>(0x110, Constraints)
+            return new (long, IResourceBlock)[] {
+                (0x70, Vertices2),
+                (0x80, Vertices),
+                (0x100, Constraints2),
+                (0x110, Constraints)
             };
         }
     }
@@ -1794,12 +1805,12 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x10, Unknown_10h),
-                new Tuple<long, IResourceBlock>(0x30, Unknown_30h),
-                new Tuple<long, IResourceBlock>(0x90, Unknown_90h)
+            return new (long, IResourceBlock)[] {
+                (0x10, Unknown_10h),
+                (0x30, Unknown_30h),
+                (0x90, Unknown_90h)
             };
         }
     }
@@ -1923,14 +1934,14 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x80, Indices),
-                new Tuple<long, IResourceBlock>(0x90, Vertices),
-                new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
-                new Tuple<long, IResourceBlock>(0xC0, BoneWeightsInds),
-                new Tuple<long, IResourceBlock>(0xE0, BoneIds)
+            return new (long, IResourceBlock)[] {
+                (0x80, Indices),
+                (0x90, Vertices),
+                (0xB0, Unknown_B0h),
+                (0xC0, BoneWeightsInds),
+                (0xE0, BoneIds)
             };
         }
     }
@@ -2339,7 +2350,7 @@ namespace CodeWalker.GameFiles
             YldXml.ValueTag(sb, indent, "Unknown180", FloatUtil.ToString(Unknown_180h));
             if (Unknown_50h?.data_items != null)
             {
-                YldXml.WriteRawArray(sb, Unknown_50h.data_items, indent, "Unknown50", "", v => FloatUtil.GetVector4String(v), 1);
+                YldXml.WriteRawArray(sb, Unknown_50h.data_items, indent, "Unknown50", "", FloatUtil.GetVector4String, 1);
             }
             if (Unknown_60h?.data_items != null)
             {
@@ -2359,7 +2370,7 @@ namespace CodeWalker.GameFiles
             }
             if (Unknown_A0h?.data_items != null)
             {
-                YldXml.WriteRawArray(sb, Unknown_A0h.data_items, indent, "UnknownA0", "", v => FloatUtil.GetVector4String(v), 1);
+                YldXml.WriteRawArray(sb, Unknown_A0h.data_items, indent, "UnknownA0", "", FloatUtil.GetVector4String, 1);
             }
             if (Unknown_B0h?.data_items != null)
             {
@@ -2415,21 +2426,21 @@ namespace CodeWalker.GameFiles
             Unknown_160h.data_items = Xml.GetChildRawUshortArrayNullable(node, "Unknown160");
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x50, Unknown_50h),
-                new Tuple<long, IResourceBlock>(0x60, Unknown_60h),
-                new Tuple<long, IResourceBlock>(0x70, Unknown_70h),
-                new Tuple<long, IResourceBlock>(0x80, Unknown_80h),
-                new Tuple<long, IResourceBlock>(0x90, Unknown_90h),
-                new Tuple<long, IResourceBlock>(0xA0, Unknown_A0h),
-                new Tuple<long, IResourceBlock>(0xB0, Unknown_B0h),
-                new Tuple<long, IResourceBlock>(0xC0, Unknown_C0h),
-                new Tuple<long, IResourceBlock>(0xD0, Unknown_D0h),
-                new Tuple<long, IResourceBlock>(0xE0, Unknown_E0h),
-                new Tuple<long, IResourceBlock>(0x150, Unknown_150h),
-                new Tuple<long, IResourceBlock>(0x160, Unknown_160h)
+            return new (long, IResourceBlock)[] {
+                (0x50, Unknown_50h),
+                (0x60, Unknown_60h),
+                (0x70, Unknown_70h),
+                (0x80, Unknown_80h),
+                (0x90, Unknown_90h),
+                (0xA0, Unknown_A0h),
+                (0xB0, Unknown_B0h),
+                (0xC0, Unknown_C0h),
+                (0xD0, Unknown_D0h),
+                (0xE0, Unknown_E0h),
+                (0x150, Unknown_150h),
+                (0x160, Unknown_160h)
             };
         }
     }

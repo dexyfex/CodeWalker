@@ -1,4 +1,5 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ namespace CodeWalker.World
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus, Timecycle timecycle)
         {
+            using var _ = new DisposableTimer("Weather Init");
             Timecycle = timecycle;
             var rpfman = gameFileCache.RpfMan;
 

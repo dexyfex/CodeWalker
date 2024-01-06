@@ -239,8 +239,7 @@ namespace CodeWalker
 
             public override bool Equals(object obj)
             {
-                var id = obj as Identifier;
-                if (id != null)
+                if (obj is Identifier id)
                     return String == id.String;
                 return false;
             }
@@ -383,8 +382,7 @@ namespace CodeWalker
             {
                 ret = ReadTokenSingle();
             } while (ret == null);
-            var id = ret as Identifier;
-            if (id != null)
+            if (ret is Identifier id)
             {
                 object colon;
                 do
@@ -553,8 +551,7 @@ namespace CodeWalker
         public FbxNode ReadNode()
         {
             var first = ReadToken();
-            var id = first as Identifier;
-            if (id == null)
+            if (first is not Identifier id)
             {
                 if (first is EndOfStream)
                     return null;
@@ -1311,7 +1308,7 @@ namespace CodeWalker
 
         private delegate void PropertyWriter(BinaryWriter sw, object obj);
 
-        struct WriterInfo
+        readonly struct WriterInfo
         {
             public readonly char id;
             public readonly PropertyWriter writer;

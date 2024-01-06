@@ -10,17 +10,124 @@ namespace CodeWalker
 {
     public static class Vectors
     {
-        public static Vector3 XYZ(this Vector4 v)
+        public static Vector3 XYZ(in this Vector4 v)
         {
             return new Vector3(v.X, v.Y, v.Z);
         }
 
-        public static Vector3 Round(this Vector3 v)
+        public static Vector3 Round(in this Vector3 v)
         {
             return new Vector3((float)Math.Round(v.X), (float)Math.Round(v.Y), (float)Math.Round(v.Z));
         }
 
-        public static Vector3 GetPerpVec(this Vector3 n)
+        public static void Cross(in this Vector3 left, in Vector3 right, out Vector3 result)
+        {
+            result = new Vector3(left.Y * right.Z - left.Z * right.Y, left.Z * right.X - left.X * right.Z, left.X * right.Y - left.Y * right.X);
+        }
+
+        public static Vector3 Cross(in this Vector3 left, in Vector3 right)
+        {
+            return new Vector3(left.Y * right.Z - left.Z * right.Y, left.Z * right.X - left.X * right.Z, left.X * right.Y - left.Y * right.X);
+        }
+
+        public static void Add(in this Vector3 left, in Vector3 right, out Vector3 result)
+        {
+            result = new Vector3(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+        }
+
+        public static Vector3 Add(in this Vector3 left, in Vector3 right)
+        {
+            return new Vector3(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+        }
+
+        public static void Min(in this Vector3 left, in MetaVECTOR3 right, out Vector3 result)
+        {
+            result.X = ((left.X < right.X) ? left.X : right.X);
+            result.Y = ((left.Y < right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z < right.Z) ? left.Z : right.Z);
+        }
+        public static void Min(in this MetaVECTOR3 left, in MetaVECTOR3 right, out Vector3 result)
+        {
+            result.X = ((left.X < right.X) ? left.X : right.X);
+            result.Y = ((left.Y < right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z < right.Z) ? left.Z : right.Z);
+        }
+
+        public static void Min(in this MetaVECTOR3 left, in Vector3 right, out Vector3 result)
+        {
+            result.X = ((left.X < right.X) ? left.X : right.X);
+            result.Y = ((left.Y < right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z < right.Z) ? left.Z : right.Z);
+        }
+
+        public static void Min(in this Vector3 left, in Vector3 right, out Vector3 result)
+        {
+            result.X = ((left.X < right.X) ? left.X : right.X);
+            result.Y = ((left.Y < right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z < right.Z) ? left.Z : right.Z);
+        }
+
+        public static Vector3 Min(in this Vector3 left, in Vector3 right)
+        {
+            Min(in left, in right, out var result);
+            return result;
+        }
+
+        public static Vector4 Min(in this Vector4 left, in Vector4 right)
+        {
+            Min(in left, in right, out var result);
+            return result;
+        }
+
+        public static void Min(in this Vector4 left, in Vector4 right, out Vector4 result)
+        {
+            result.X = ((left.X < right.X) ? left.X : right.X);
+            result.Y = ((left.Y < right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z < right.Z) ? left.Z : right.Z);
+            result.W = ((left.W < right.W) ? left.W : right.W);
+        }
+
+        public static void Max(in this Vector3 left, in MetaVECTOR3 right, out Vector3 result)
+        {
+            result.X = ((left.X > right.X) ? left.X : right.X);
+            result.Y = ((left.Y > right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z > right.Z) ? left.Z : right.Z);
+        }
+
+        public static void Max(in this MetaVECTOR3 left, in Vector3 right, out Vector3 result)
+        {
+            result.X = ((left.X > right.X) ? left.X : right.X);
+            result.Y = ((left.Y > right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z > right.Z) ? left.Z : right.Z);
+        }
+
+        public static void Max(in this MetaVECTOR3 left, in MetaVECTOR3 right, out Vector3 result)
+        {
+            result.X = ((left.X > right.X) ? left.X : right.X);
+            result.Y = ((left.Y > right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z > right.Z) ? left.Z : right.Z);
+        }
+
+        public static void Max(in this Vector3 left, in Vector3 right, out Vector3 result)
+        {
+            result.X = ((left.X > right.X) ? left.X : right.X);
+            result.Y = ((left.Y > right.Y) ? left.Y : right.Y);
+            result.Z = ((left.Z > right.Z) ? left.Z : right.Z);
+        }
+
+        public static Vector3 Max(in this Vector3 left, in Vector3 right)
+        {
+            Max(in left, in right, out var result);
+            return result;
+        }
+
+        public static Vector3 GetPerpVec(in this Vector3 n)
+        {
+            n.GetPerpVec(out var result);
+            return result;
+        }
+
+        public static void GetPerpVec(in this Vector3 n, out Vector3 result)
         {
             //make a vector perpendicular to the given one
             float nx = Math.Abs(n.X);
@@ -28,33 +135,36 @@ namespace CodeWalker
             float nz = Math.Abs(n.Z);
             if ((nx < ny) && (nx < nz))
             {
-                return Vector3.Cross(n, Vector3.Right);
+                n.Cross(in Vector3.Right, out result);
+                return;
             }
             else if (ny < nz)
             {
-                return Vector3.Cross(n, Vector3.Up);
+                n.Cross(in Vector3.Up, out result);
+                return;
             }
             else
             {
-                return Vector3.Cross(n, Vector3.ForwardLH);
+                n.Cross(in Vector3.ForwardLH, out result);
+                return;
             }
         }
 
-        public static Vector3 Floor(this Vector3 v)
+        public static Vector3 Floor(in this Vector3 v)
         {
             return new Vector3((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z));
         }
-        public static Vector3 Ceiling(this Vector3 v)
+        public static Vector3 Ceiling(in this Vector3 v)
         {
             return new Vector3((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y), (float)Math.Ceiling(v.Z));
         }
 
-        public static Vector3 Abs(this Vector3 v)
+        public static Vector3 Abs(in this Vector3 v)
         {
             return new Vector3(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z));
         }
 
-        public static int CompareTo(this Vector3 a, Vector3 b)
+        public static int CompareTo(in this Vector3 a, in Vector3 b)
         {
             int c;
             c = a.X.CompareTo(b.X); if (c != 0) return c;
@@ -64,23 +174,34 @@ namespace CodeWalker
         }
 
 
-        public static Vector4 Floor(this Vector4 v)
+        public static Vector4 Floor(in this Vector4 v)
         {
             return new Vector4((float)Math.Floor(v.X), (float)Math.Floor(v.Y), (float)Math.Floor(v.Z), (float)Math.Floor(v.W));
         }
-        public static Vector4 Ceiling(this Vector4 v)
+        public static Vector4 Ceiling(in this Vector4 v)
         {
             return new Vector4((float)Math.Ceiling(v.X), (float)Math.Ceiling(v.Y), (float)Math.Ceiling(v.Z), (float)Math.Ceiling(v.W));
         }
 
-        public static Vector4 Abs(this Vector4 v)
+        public static Vector4 Abs(in this Vector4 v)
         {
             return new Vector4(Math.Abs(v.X), Math.Abs(v.Y), Math.Abs(v.Z), Math.Abs(v.W));
         }
 
-        public static Quaternion ToQuaternion(this Vector4 v)
+        public static Quaternion ToQuaternion(in this Vector4 v)
         {
             return new Quaternion(v);
+        }
+
+        public static Quaternion RotationAxis(in this Vector3 axis, float angle)
+        {
+            var result2 = axis;
+            result2.Normalize();
+            float num = angle * 0.5f;
+            float num2 = (float)Math.Sin(num);
+            float w = (float)Math.Cos(num);
+
+            return new Quaternion(result2.X * num2, result2.Y * num2, result2.Z * num2, w);
         }
     }
 
@@ -103,7 +224,7 @@ namespace CodeWalker
 
         public override string ToString()
         {
-            return X.ToString() + ", " + Y.ToString();
+            return $"{X}, {Y}";
         }
 
 
@@ -142,19 +263,19 @@ namespace CodeWalker
     public static class BoundingBoxMath
     {
 
-        public static BoundingBox Transform(this BoundingBox b, Vector3 position, Quaternion orientation, Vector3 scale)
+        public static BoundingBox Transform(this BoundingBox b, in Vector3 position, in Quaternion orientation, in Vector3 scale)
         {
             var mat = Matrix.Transformation(Vector3.Zero, Quaternion.Identity, scale, Vector3.Zero, orientation, position);
-            return b.Transform(mat);
+            return b.Transform(in mat);
         }
 
-        public static BoundingBox Transform(this BoundingBox b, Matrix mat)
+        public static BoundingBox Transform(this BoundingBox b, in Matrix mat)
         {
             var matabs = mat;
-            matabs.Column1 = mat.Column1.Abs();
-            matabs.Column2 = mat.Column2.Abs();
-            matabs.Column3 = mat.Column3.Abs();
-            matabs.Column4 = mat.Column4.Abs();
+            matabs.Column1 = matabs.Column1.Abs();
+            matabs.Column2 = matabs.Column2.Abs();
+            matabs.Column3 = matabs.Column3.Abs();
+            matabs.Column4 = matabs.Column4.Abs();
             var bbcenter = (b.Maximum + b.Minimum) * 0.5f;
             var bbextent = (b.Maximum - b.Minimum) * 0.5f;
             var ncenter = Vector3.TransformCoordinate(bbcenter, mat);
@@ -176,7 +297,7 @@ namespace CodeWalker
     public static class BoundingCapsuleMath
     {
 
-        public static bool Intersects(this Ray r, ref BoundingCapsule capsule, out float dist)
+        public static bool Intersects(in this Ray r, in BoundingCapsule capsule, out float dist)
         {
             // intersect capsule : http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
             Vector3  ba = capsule.PointB - capsule.PointA;
@@ -220,7 +341,7 @@ namespace CodeWalker
             dist = -1.0f;
             return false;
         }
-        public static Vector3 Normal(this BoundingCapsule c, ref Vector3 position)
+        public static Vector3 Normal(this BoundingCapsule c, in Vector3 position)
         {
             Vector3 ba = c.PointB - c.PointA;
             Vector3 pa = position - c.PointA;
@@ -228,14 +349,27 @@ namespace CodeWalker
             return Vector3.Normalize((pa - h * ba) / c.Radius);
         }
 
-
-        public static bool Intersects(this BoundingSphere sph, ref BoundingCapsule capsule, out Vector3 norm)
+        public static void Normalize(in this Vector3 value, out Vector3 result)
         {
-            var dist = LineMath.PointSegmentDistance(ref sph.Center, ref capsule.PointA, ref capsule.PointB);
+            result = value;
+            result.Normalize();
+        }
+
+        public static Vector3 Normalize(in this Vector3 value)
+        {
+            var result = value;
+            result.Normalize();
+            return result;
+        }
+
+
+        public static bool Intersects(in this BoundingSphere sph, in BoundingCapsule capsule, out Vector3 norm)
+        {
+            var dist = LineMath.PointSegmentDistance(in sph.Center, in capsule.PointA, in capsule.PointB);
             var rads = sph.Radius + capsule.Radius;
             if (dist <= rads)
             {
-                norm = LineMath.PointSegmentNormal(ref sph.Center, ref capsule.PointA, ref capsule.PointB);
+                norm = LineMath.PointSegmentNormal(in sph.Center, in capsule.PointA, in capsule.PointB);
                 return true;
             }
             else
@@ -258,7 +392,7 @@ namespace CodeWalker
     public static class BoundingCylinderMath
     {
 
-        public static bool Intersects(this Ray r, ref BoundingCylinder cylinder, out float dist, out Vector3 norm)
+        public static bool Intersects(in this Ray r, in BoundingCylinder cylinder, out float dist, out Vector3 norm)
         {
             // intersect cylinder : https://www.shadertoy.com/view/4lcSRn
             Vector3 ba = cylinder.PointB - cylinder.PointA;
@@ -313,7 +447,7 @@ namespace CodeWalker
     {
 
 
-        public static float PointSegmentDistance(ref Vector3 v, ref Vector3 a, ref Vector3 b)
+        public static float PointSegmentDistance(in Vector3 v, in Vector3 a, in Vector3 b)
         {
             //https://stackoverflow.com/questions/4858264/find-the-distance-from-a-3d-point-to-a-line-segment
             Vector3 ab = b - a;
@@ -333,7 +467,7 @@ namespace CodeWalker
             return Vector3.Cross(ab, av).Length() / ab.Length();// Perpendicular distance of point to segment.
         }
 
-        public static Vector3 PointSegmentNormal(ref Vector3 v, ref Vector3 a, ref Vector3 b)
+        public static Vector3 PointSegmentNormal(in Vector3 v, in Vector3 a, in Vector3 b)
         {
             Vector3 ab = b - a;
             Vector3 av = v - a;
@@ -352,7 +486,7 @@ namespace CodeWalker
             return Vector3.Normalize(Vector3.Cross(Vector3.Cross(ab, av), ab));
         }
 
-        public static float PointRayDist(ref Vector3 p, ref Vector3 ro, ref Vector3 rd)
+        public static float PointRayDist(in Vector3 p, in Vector3 ro, in Vector3 rd)
         {
             return Vector3.Cross(rd, p - ro).Length();
         }
@@ -363,7 +497,7 @@ namespace CodeWalker
     public static class TriangleMath
     {
 
-        public static float AreaPart(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3, out float angle)
+        public static float AreaPart(in Vector3 v1, in Vector3 v2, in Vector3 v3, out float angle)
         {
             var va = v2 - v1;
             var vb = v3 - v1;
@@ -377,11 +511,11 @@ namespace CodeWalker
             return area;
         }
 
-        public static float Area(ref Vector3 v1, ref Vector3 v2, ref Vector3 v3)
+        public static float Area(in Vector3 v1, in Vector3 v2, in Vector3 v3)
         {
-            var a1 = AreaPart(ref v1, ref v2, ref v3, out float t1);
-            var a2 = AreaPart(ref v2, ref v3, ref v1, out float t2);
-            var a3 = AreaPart(ref v3, ref v1, ref v2, out float t3);
+            var a1 = AreaPart(in v1, in v2, in v3, out float t1);
+            var a2 = AreaPart(in v2, in v3, in v1, out float t2);
+            var a3 = AreaPart(in v3, in v1, in v2, out float t3);
             var fp = (float)Math.PI;
             var d1 = Math.Min(t1, Math.Abs(t1 - fp));
             var d2 = Math.Min(t2, Math.Abs(t2 - fp));

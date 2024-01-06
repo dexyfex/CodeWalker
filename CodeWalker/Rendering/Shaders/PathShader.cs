@@ -47,7 +47,7 @@ namespace CodeWalker.Rendering
 
         public PathShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] boxvsbytes = File.ReadAllBytes(Path.Combine(folder, "PathBoxVS.cso"));
             byte[] boxpsbytes = File.ReadAllBytes(Path.Combine(folder, "PathBoxPS.cso"));
             byte[] dynvsbytes = File.ReadAllBytes(Path.Combine(folder, "PathDynVS.cso"));
@@ -99,7 +99,7 @@ namespace CodeWalker.Rendering
             return true;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             VSSceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             VSSceneVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);

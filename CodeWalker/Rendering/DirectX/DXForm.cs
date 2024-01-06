@@ -22,9 +22,12 @@ namespace CodeWalker.Rendering
         Form Form { get; }
 
         public CancellationTokenSource CancellationTokenSource { get; }
+
+        public CancellationToken CancellationToken => CancellationTokenSource.Token;
+
         public bool Pauserendering { get; set; }
         void InitScene(Device device);
-        void CleanupScene();
+        ValueTask CleanupScene();
         ValueTask RenderScene(DeviceContext context);
         void BuffersResized(int w, int h);
         bool ConfirmQuit();

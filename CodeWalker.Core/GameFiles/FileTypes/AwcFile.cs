@@ -8,6 +8,7 @@ using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
 using System.Xml;
 using System.Runtime.InteropServices;
+using CodeWalker.Core.Utils;
 
 namespace CodeWalker.GameFiles
 {
@@ -345,7 +346,8 @@ namespace CodeWalker.GameFiles
         }
         public static void WriteXmlNode(AwcFile f, StringBuilder sb, int indent, string wavfolder, string name = "AudioWaveContainer")
         {
-            if (f == null) return;
+            if (f == null)
+                return;
             AwcXml.OpenTag(sb, indent, name);
             f.WriteXml(sb, indent + 1, wavfolder);
             AwcXml.CloseTag(sb, indent, name);
@@ -1014,7 +1016,7 @@ namespace CodeWalker.GameFiles
             {
                 var export = !string.IsNullOrEmpty(wavfolder);
                 var fname = Name?.Replace("/", "")?.Replace("\\", "") ?? "0x0";
-                byte[] fdata = null;
+                byte[] fdata;
                 if (MidiChunk != null)
                 {
                     fname += ".midi";
@@ -1038,8 +1040,10 @@ namespace CodeWalker.GameFiles
                         File.WriteAllBytes(filepath, fdata);
                     }
                 }
-                catch
-                { }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
             if (StreamFormat != null)
             {
@@ -1107,8 +1111,10 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
-                catch
-                { }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
 
             }
 
@@ -1363,7 +1369,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            var hash = "0x" + (StreamInfo?.Id.ToString("X") ?? "0").PadLeft(8, '0') + ": ";
+            var hash = "0x" + (StreamInfo?.Id.ToString("X8") ?? "0000000") + ": ";
             if (FormatChunk != null)
             {
                 return hash + FormatChunk?.ToString() ?? "AwcAudio";
@@ -1876,7 +1882,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Id.ToString() + ", " + Codec.ToString() + ": " + Samples.ToString() + " samples, " + SamplesPerSecond.ToString() + " samples/sec, headroom: " + Headroom.ToString();
+            return $"{Id}, {Codec}: {Samples} samples, {SamplesPerSecond} samples/sec, headroom: {Headroom}";
         }
     }
 
@@ -1905,7 +1911,7 @@ namespace CodeWalker.GameFiles
             resentry.SystemFlags = BitConverter.ToUInt32(data, 8);
             resentry.GraphicsFlags = BitConverter.ToUInt32(data, 12);
 
-            if (rsc7 != 0x37435352)
+            if (rsc7 != (uint)FileHeader.RSC7)
             { } //testing..
             if (version != 46) //46 is Clip Dictionary...
             { }
@@ -2163,7 +2169,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "gesture: " + (Gestures?.Length ?? 0).ToString() + " items";
+            return $"gesture: {Gestures?.Length ?? 0} items";
         }
     }
 
@@ -2198,32 +2204,26 @@ namespace CodeWalker.GameFiles
             public void WriteLine(StringBuilder sb)
             {
                 sb.Append(UnkUint1.ToString());
-                sb.Append(" ");
+                sb.Append(' ');
                 sb.Append(FloatUtil.ToString(UnkFloat1));
-                sb.Append(" ");
+                sb.Append(' ');
                 sb.Append(UnkUshort1.ToString());
-                sb.Append(" ");
+                sb.Append(' ');
                 sb.Append(UnkUshort2.ToString());
                 sb.AppendLine();
             }
             public void ReadLine(string s)
             {
-                var split = s.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                var list = new List<string>();
-                foreach (var str in split)
+                Span<Range> ranges = stackalloc Range[5];
+                var span = s.AsSpan();
+                span.Split(ranges, ' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                if (ranges.Length >= 4)
                 {
-                    var tstr = str.Trim();
-                    if (!string.IsNullOrEmpty(tstr))
-                    {
-                        list.Add(tstr);
-                    }
-                }
-                if (list.Count >= 4)
-                {
-                    uint.TryParse(list[0], out uint u1);
-                    FloatUtil.TryParse(list[1], out float f1);
-                    ushort.TryParse(list[2], out ushort s1);
-                    ushort.TryParse(list[3], out ushort s2);
+                    uint.TryParse(span[ranges[0]], out uint u1);
+                    FloatUtil.TryParse(span[ranges[1]], out float f1);
+                    ushort.TryParse(span[ranges[2]], out ushort s1);
+                    ushort.TryParse(span[ranges[3]], out ushort s2);
                     UnkUint1 = u1;
                     UnkFloat1 = f1;
                     UnkUshort1 = s1;
@@ -2247,7 +2247,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return UnkUint1.ToString() + ", " + UnkFloat1.ToString() + ", " + UnkUshort1.ToString() + ", " + UnkUshort2.ToString();
+                return $"{UnkUint1}, {UnkFloat1}, {UnkUshort1}, {UnkUshort2}";
             }
         }
 
@@ -2326,7 +2326,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "granulargrains: " + (GranularGrains?.Length ?? 0).ToString() + " items";
+            return $"granulargrains: {(GranularGrains?.Length ?? 0)} items";
         }
     }
 
@@ -2410,7 +2410,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return Identifier.ToString() + ": " + UnkUint1.ToString() + ": " + GrainCount.ToString() + " items";
+                return $"{Identifier}: {UnkUint1}: {GrainCount} items";
             }
 
         }
@@ -2456,7 +2456,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "granularloops: " + (GranularLoops?.Length ?? 0).ToString() + " items";
+            return $"granularloops: {GranularLoops?.Length ?? 0} items";
         }
     }
 
@@ -2576,7 +2576,7 @@ namespace CodeWalker.GameFiles
                         break;
                 }
 
-                return Name.ToString() + ": " + valstr + ", " + SampleOffset.ToString() + ", " + Unused.ToString();
+                return $"{Name}: {valstr}, {SampleOffset}, {Unused}";
             }
 
         }
@@ -3029,15 +3029,22 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(AwcFile awc, string outputFolder = "")
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if (awc != null)
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                AwcFile.WriteXmlNode(awc, sb, 0, outputFolder);
-            }
+                sb.AppendLine(XmlHeader);
 
-            return sb.ToString();
+                if (awc != null)
+                {
+                    AwcFile.WriteXmlNode(awc, sb, 0, outputFolder);
+                }
+
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
 
     }

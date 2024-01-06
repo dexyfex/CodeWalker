@@ -1,8 +1,10 @@
 ﻿using CodeWalker.World;
+using Collections.Pooled;
 using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Xml;
@@ -18,9 +20,9 @@ namespace CodeWalker.GameFiles
         public YndLink[] Links { get; set; }
         public YndJunction[] Junctions { get; set; }
 
-        public EditorVertex[] LinkedVerts { get; set; }//populated by the space (needs to use grid of all ynd's!)
-        public EditorVertex[] TriangleVerts { get; set; } //used for junctions display
-        public Vector4[] NodePositions { get; set; }
+        public EditorVertex[] LinkedVerts { get; set; } = [];//populated by the space (needs to use grid of all ynd's!)
+        public EditorVertex[] TriangleVerts { get; set; } = []; //used for junctions display
+        public Vector4[] NodePositions { get; set; } = [];
 
         public Vector3 BBMin { get; set; }
         public Vector3 BBMax { get; set; }
@@ -31,10 +33,7 @@ namespace CodeWalker.GameFiles
 
         public int AreaID
         {
-            get
-            {
-                return CellY * 32 + CellX;
-            }
+            get => CellY * 32 + CellX;
             set
             {
                 CellX = value % 32;
@@ -78,10 +77,10 @@ namespace CodeWalker.GameFiles
             Name = entry.Name;
             RpfFileEntry = entry;
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                throw new Exception("File entry wasn't a resource! (is it binary data?)");
+                ThrowFileIsNotAResourceException();
+                return;
             }
 
             using var rd = new ResourceDataReader(resentry, data);
@@ -219,9 +218,9 @@ namespace CodeWalker.GameFiles
 
         public void InitNodesFromDictionary()
         {
-            if (NodeDictionary != null)
+            if (NodeDictionary is not null)
             {
-                if (NodeDictionary.Nodes != null)
+                if (NodeDictionary.Nodes is not null)
                 {
                     var nodes = NodeDictionary.Nodes;
                     Nodes = new YndNode[nodes.Length];
@@ -230,11 +229,9 @@ namespace CodeWalker.GameFiles
                         var n = new YndNode();
                         n.Init(this, nodes[i]);
                         Nodes[i] = n;
-                        if (n.NodeID != i)
-                        { } //never hit here - nodeid's have to match the index!
                     }
                 }
-                if ((NodeDictionary.JunctionRefs != null) && (NodeDictionary.Junctions != null))
+                if (NodeDictionary.JunctionRefs is not null && NodeDictionary.Junctions is not null)
                 {
                     var juncrefs = NodeDictionary.JunctionRefs;
                     var juncs = NodeDictionary.Junctions;
@@ -243,7 +240,7 @@ namespace CodeWalker.GameFiles
                     {
                         var juncref = juncrefs[i];
                         if (juncref.JunctionID >= juncs.Length)
-                        { continue; }
+                            continue;
 
                         var j = new YndJunction();
                         j.Init(this, juncs[juncref.JunctionID], juncref);
@@ -295,7 +292,7 @@ namespace CodeWalker.GameFiles
             Nodes = nnodes;
             NodeDictionary.NodesCount = (uint)ncnt;
 
-            var links = new List<YndLink>();
+            using var links = new PooledList<YndLink>();
             if (Links != null)
             {
                 links.AddRange(Links);
@@ -343,7 +340,7 @@ namespace CodeWalker.GameFiles
                 return;
             }
             // Sort nodes so ped nodes are at the end
-            var nodes = new List<YndNode>(Nodes.Length);
+            using var nodes = new PooledList<YndNode>(Nodes.Length);
             var affectedNodesList = new List<YndNode>();
             var vehicleNodes = Nodes.Where(n => !n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
             var pedNodes = Nodes.Where(n => n.IsPedNode).OrderBy(n => n.NodeID).ToArray();
@@ -395,7 +392,7 @@ namespace CodeWalker.GameFiles
                 rmLinks.AddRange(nodeRmLinks);
             }
 
-            if (rmLinks.Any())
+            if (rmLinks.Count != 0)
             {
                 Links = Links.Where(l => !rmLinks.Contains(l)).ToArray();
                 return true;
@@ -420,12 +417,12 @@ namespace CodeWalker.GameFiles
 
         public void UpdateAllNodePositions()
         {
-            int cnt = Nodes?.Length ?? 0;
-            if (cnt <= 0)
+            if (Nodes is null || Nodes.Length == 0)
             {
-                NodePositions = null;
+                NodePositions = Array.Empty<Vector4>();
                 return;
             }
+            int cnt = Nodes.Length;
             var np = new Vector4[cnt];
             for (int i = 0; i < cnt; i++)
             {
@@ -451,12 +448,12 @@ namespace CodeWalker.GameFiles
                 vc = Links.Length * 6;
             }
 
-            List<EditorVertex> verts = new List<EditorVertex>(vc);
-            EditorVertex v0 = new EditorVertex();
-            EditorVertex v1 = new EditorVertex();
-            EditorVertex v2 = new EditorVertex();
-            EditorVertex v3 = new EditorVertex();
-            if ((Links != null) && (Nodes != null))
+            using PooledList<EditorVertex> verts = new PooledList<EditorVertex>(vc);
+            //EditorVertex v0 = new EditorVertex();
+            //EditorVertex v1 = new EditorVertex();
+            //EditorVertex v2 = new EditorVertex();
+            //EditorVertex v3 = new EditorVertex();
+            if (Links is not null && Nodes is not null)
             {
                 foreach (var node in Nodes)
                 {
@@ -496,16 +493,13 @@ namespace CodeWalker.GameFiles
                             outer += halfwidth;
                         }
 
-
-                        v0.Position = p1 + ax * inner;
-                        v1.Position = p0 + ax * inner;
-                        v2.Position = p1 + ax * outer;
-                        v3.Position = p0 + ax * outer;
                         var c = (uint)link.GetColour().ToRgba();
-                        v0.Colour = c;
-                        v1.Colour = c;
-                        v2.Colour = c;
-                        v3.Colour = c;
+
+                        var v0 = new EditorVertex(p1 + ax * inner, c);
+                        var v1 = new EditorVertex(p0 + ax * inner, c);
+                        var v2 = new EditorVertex(p1 + ax * outer, c);
+                        var v3 = new EditorVertex(p0 + ax * outer, c);
+
                         verts.Add(v0);
                         verts.Add(v1);
                         verts.Add(v2);
@@ -523,31 +517,34 @@ namespace CodeWalker.GameFiles
             }
             else
             {
-                TriangleVerts = null;
+                TriangleVerts = [];
             }
         }
 
-        private void UpdateJunctionTriangleVertices(YndNode[] selectedNodes)
+        private void UpdateJunctionTriangleVertices(YndNode[]? selectedNodes)
         {
-            if (selectedNodes == null)
+            if (selectedNodes is null)
             {
                 return;
             }
 
             //build triangles for the junctions bytes display....
-            List<EditorVertex> verts = new List<EditorVertex>();
-            EditorVertex v0 = new EditorVertex();
-            EditorVertex v1 = new EditorVertex();
-            EditorVertex v2 = new EditorVertex();
-            EditorVertex v3 = new EditorVertex();
+            using PooledList<EditorVertex> verts = new PooledList<EditorVertex>();
+            EditorVertex v0;
+            EditorVertex v1;
+            EditorVertex v2;
+            EditorVertex v3;
 
             foreach (var node in selectedNodes)
             {
-                if (node.Ynd != this) continue;
-                if (node.Junction == null) continue;
+                if (node.Ynd != this)
+                    continue;
+                if (node.Junction is null)
+                    continue;
                 var j = node.Junction;
                 var d = j.Heightmap;
-                if (d == null) continue;
+                if (d is null)
+                    continue;
 
                 float maxz = j.MaxZ / 32.0f;
                 float minz = j.MinZ / 32.0f;
@@ -576,14 +573,10 @@ namespace CodeWalker.GameFiles
                         var val2 = row1.Values[x - 1] / 255.0f;
                         var val3 = row1.Values[x] / 255.0f;
                         float offx = x * 2.0f;
-                        v0.Position = cnr + new Vector3(offx - 2.0f, offy - 2.0f, val0 * rngz);
-                        v1.Position = cnr + new Vector3(offx + 0.0f, offy - 2.0f, val1 * rngz);
-                        v2.Position = cnr + new Vector3(offx - 2.0f, offy + 0.0f, val2 * rngz);
-                        v3.Position = cnr + new Vector3(offx + 0.0f, offy + 0.0f, val3 * rngz);
-                        v0.Colour = (uint)new Color4(val0, 1.0f - val0, 0.0f, 0.3f).ToRgba();
-                        v1.Colour = (uint)new Color4(val1, 1.0f - val1, 0.0f, 0.3f).ToRgba();
-                        v2.Colour = (uint)new Color4(val2, 1.0f - val2, 0.0f, 0.3f).ToRgba();
-                        v3.Colour = (uint)new Color4(val3, 1.0f - val3, 0.0f, 0.3f).ToRgba();
+                        v0 = new EditorVertex(cnr + new Vector3(offx - 2.0f, offy - 2.0f, val0 * rngz), (uint)new Color4(val0, 1.0f - val0, 0.0f, 0.3f).ToRgba());
+                        v1 = new EditorVertex(cnr + new Vector3(offx + 0.0f, offy - 2.0f, val1 * rngz), (uint)new Color4(val1, 1.0f - val1, 0.0f, 0.3f).ToRgba());
+                        v2 = new EditorVertex(cnr + new Vector3(offx - 2.0f, offy + 0.0f, val2 * rngz), (uint)new Color4(val2, 1.0f - val2, 0.0f, 0.3f).ToRgba());
+                        v3 = new EditorVertex(cnr + new Vector3(offx + 0.0f, offy + 0.0f, val3 * rngz), (uint)new Color4(val3, 1.0f - val3, 0.0f, 0.3f).ToRgba());
                         verts.Add(v0);
                         verts.Add(v1);
                         verts.Add(v2);
@@ -597,7 +590,7 @@ namespace CodeWalker.GameFiles
             if (verts.Count > 0)
             {
                 var vertsarr = verts.ToArray();
-                if (TriangleVerts != null)
+                if (TriangleVerts.Length > 0)
                 {
                     var nvc = vertsarr.Length;
                     var tvc = TriangleVerts.Length;
@@ -689,18 +682,13 @@ namespace CodeWalker.GameFiles
                 return true;
             }
 
-            affectedFiles = Array.Empty<YndFile>();
+            affectedFiles = [];
             return false;
         }
 
 
 
-
-
-        public override string ToString()
-        {
-            return RpfFileEntry?.ToString() ?? string.Empty;
-        }
+        public override string ToString() => RpfFileEntry?.ToString() ?? string.Empty;
     }
 
     public enum YndNodeSpeed
@@ -725,26 +713,29 @@ namespace CodeWalker.GameFiles
         OffRoadJunction = 20
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class YndNode : BasePathNode
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class YndNode : BasePathNode
     {
         public Node _RawData;
 
         public YndFile Ynd { get; set; }
-        public Node RawData { get { return _RawData; } set { _RawData = value; } }
-        public Vector3 Position { get; set; }
+        public Node RawData { get => _RawData; set => _RawData = value; }
+
+        public Vector3 _Position;
+        public ref Vector3 Position => ref _Position;
         public int LinkCount { get; set; }
         public int LinkCountUnk { get; set; }
-        public YndLink[] Links { get; set; }
+        public YndLink[]? Links { get; set; }
 
-        public ushort AreaID { get { return _RawData.AreaID; } set { _RawData.AreaID = value; } }
-        public ushort NodeID { get { return _RawData.NodeID; } set { _RawData.NodeID = value; } }
-        public ushort LinkID { get { return _RawData.LinkID; } set { _RawData.LinkID = value; } }
-        public FlagsByte Flags0 { get { return _RawData.Flags0; } set { _RawData.Flags0 = value; } }
-        public FlagsByte Flags1 { get { return _RawData.Flags1; } set { _RawData.Flags1 = value; } }
-        public FlagsByte Flags2 { get { return _RawData.Flags2; } set { _RawData.Flags2 = value; } }
-        public FlagsByte Flags3 { get { return _RawData.Flags3; } set { _RawData.Flags3 = value; } }
-        public FlagsByte Flags4 { get { return _RawData.Flags4; } set { _RawData.Flags4 = value; } }
-        public TextHash StreetName { get { return _RawData.StreetName; } set { _RawData.StreetName = value; } }
+        public ushort AreaID { get => _RawData.AreaID; set => _RawData.AreaID = value; }
+        public ushort NodeID { get => _RawData.NodeID; set => _RawData.NodeID = value; }
+        public ushort LinkID { get => _RawData.LinkID; set => _RawData.LinkID = value; }
+        public FlagsByte Flags0 { get => _RawData.Flags0; set => _RawData.Flags0 = value; }
+        public FlagsByte Flags1 { get => _RawData.Flags1; set => _RawData.Flags1 = value; }
+        public FlagsByte Flags2 { get => _RawData.Flags2; set => _RawData.Flags2 = value; }
+        public FlagsByte Flags3 { get => _RawData.Flags3; set => _RawData.Flags3 = value; }
+        public FlagsByte Flags4 { get => _RawData.Flags4; set => _RawData.Flags4 = value; }
+        public TextHash StreetName { get => _RawData.StreetName; set => _RawData.StreetName = value; }
 
         public Color4 Colour { get; set; }
 
@@ -754,14 +745,8 @@ namespace CodeWalker.GameFiles
 
         public YndNodeSpeed Speed
         {
-            get
-            {
-                return (YndNodeSpeed)((LinkCountUnk >> 1) & 3);
-            }
-            set
-            {
-                LinkCountUnk = (LinkCountUnk &~ 6) | (((int)value & 3) << 1);
-            }
+            get => (YndNodeSpeed)((LinkCountUnk >> 1) & 3);
+            set => LinkCountUnk = (LinkCountUnk & ~6) | (((int)value & 3) << 1);
         }
 
         //// Flag0 Properties
@@ -843,14 +828,14 @@ namespace CodeWalker.GameFiles
         }
         public bool IsDisabledUnk1
         {
-            get { return (Flags2.Value & 16) > 0; }
+            get => (Flags2.Value & 16) > 0;
             set => Flags2 = (byte)(value ? Flags2 | 16 : Flags2 &~ 16);
         }
 
         // Flag3 Properties
         public bool Tunnel
         {
-            get { return (Flags3 & 1) > 0; }
+            get => (Flags3 & 1) > 0;
             set => Flags3 = (byte)(value ? Flags3 | 1 : Flags3 &~ 1);
         }
         public int HeuristicValue
@@ -894,11 +879,7 @@ namespace CodeWalker.GameFiles
         {
             Ynd = ynd;
             RawData = node;
-            Vector3 p = new Vector3();
-            p.X = node.PositionX / 4.0f;
-            p.Y = node.PositionY / 4.0f;
-            p.Z = node.PositionZ / 32.0f;
-            Position = p;
+            Position = new Vector3(node.PositionX / 4.0f, node.PositionY / 4.0f, node.PositionZ / 32.0f);
 
             LinkCount = node.LinkCountFlags.Value >> 3;
             LinkCountUnk = node.LinkCountFlags.Value & 7;
@@ -947,7 +928,8 @@ namespace CodeWalker.GameFiles
 
         public void UpdateLinkLengths()
         {
-            if (Links == null) return;
+            if (Links is null)
+                return;
             for (int i = 0; i < Links.Length; i++)
             {
                 var link = Links[i];
@@ -1011,7 +993,7 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public YndLink AddLink(YndNode tonode = null, bool bidirectional = true)
+        public YndLink AddLink(YndNode? tonode = null, bool bidirectional = true)
         {
             if (Links == null)
             {
@@ -1027,13 +1009,13 @@ namespace CodeWalker.GameFiles
             YndLink l = new YndLink();
             l._RawData.AreaID = AreaID;
             l.Node1 = this;
-            if (tonode != null)
+            if (tonode is not null)
             {
                 l.Node2 = tonode;
                 l._RawData.AreaID = tonode.AreaID;
                 l._RawData.NodeID = tonode.NodeID;
             }
-            else if ((Ynd.Nodes != null) && (Ynd.Nodes.Length > 0))
+            else if (Ynd.Nodes is not null && Ynd.Nodes.Length > 0)
             {
                 l.Node2 = Ynd.Nodes[0];
             }
@@ -1066,8 +1048,13 @@ namespace CodeWalker.GameFiles
             return l;
         }
 
-        public bool TryGetLinkForNode(YndNode node, out YndLink link)
+        public bool TryGetLinkForNode(YndNode node, [MaybeNullWhen(false)] out YndLink link)
         {
+            if (Links is null)
+            {
+                link = null;
+                return false;
+            }
             for (int i = 0; i < Links.Length; i++)
             {
                 if (Links[i].Node2 == node)
@@ -1114,15 +1101,15 @@ namespace CodeWalker.GameFiles
         private void FloodCopyFlags(YndNode basis, List<YndNode> seenNodes, out YndFile[] affectedFiles)
         {
             var affectedFilesList = new List<YndFile>();
-            if (Links == null || !Links.Any())
+            if (Links == null || Links.Length == 0)
             {
-                affectedFiles = Array.Empty<YndFile>();
+                affectedFiles = [];
                 return;
             }
 
             if (seenNodes.Contains(this))
             {
-                affectedFiles = Array.Empty<YndFile>();
+                affectedFiles = [];
                 return;
             }
 
@@ -1177,20 +1164,20 @@ namespace CodeWalker.GameFiles
 
             var oldPosition = Position;
             SetPosition(newPosition);
-            var expectedArea = space.NodeGrid.GetCellForPosition(newPosition);
+            var expectedArea = space.NodeGrid.GetCellForPosition(in newPosition);
 
-            if (AreaID != expectedArea.ID)
+            if (AreaID != expectedArea?.ID)
             {
                 var nodeYnd = space.NodeGrid.GetCell(AreaID).Ynd;
-                var newYnd = expectedArea.Ynd;
-                if (newYnd == null)
+                var newYnd = expectedArea?.Ynd;
+                if (newYnd is null)
                 {
                     SetPosition(oldPosition);
                     affectedFiles = Array.Empty<YndFile>();
                     return;
                 }
 
-                if ((nodeYnd == null) ||
+                if ((nodeYnd is null) ||
                     nodeYnd.RemoveYndNode(space, this, false, out var affectedFilesFromDelete))
                 {
                     totalAffectedFiles.Add(nodeYnd);
@@ -1249,7 +1236,8 @@ namespace CodeWalker.GameFiles
                 for (int x = 0; x < sizeX; x++)
                 {
                     var offx = x * 2.0f;
-                    var result = space.RayIntersect(new Ray(start + new Vector3(offx, offy, 0f), new Vector3(0f, 0f, -1f)), maxDist, layers);
+                    var ray = new Ray(start + new Vector3(offx, offy, 0f), new Vector3(0f, 0f, -1f));
+                    var result = space.RayIntersect(ref ray, maxDist, layers);
 
                     var p = start + new Vector3(offx, offy, 0f);
                     //t.AppendLine($"{p.X}, {p.Y}, {p.Z}");
@@ -1287,7 +1275,7 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             //return AreaID.ToString() + "." + NodeID.ToString();
-            return StreetName.ToString() + ", " + Position.X.ToString() + ", " + Position.Y.ToString() + ", " + Position.Z.ToString() + ", " + NodeID.ToString();
+            return $"{StreetName}, {Position.X}, {Position.Y}, {Position.Z}, {NodeID}";
         }
     }
 
@@ -1357,8 +1345,8 @@ namespace CodeWalker.GameFiles
 
         public void UpdateLength()
         {
-            if (Node1 == null) return;
-            if (Node2 == null) return;
+            if (Node1 is null || Node2 is null)
+                return;
 
             LinkLength = (byte)Math.Min(255, (Node2.Position - Node1.Position).Length());
         }
@@ -1366,7 +1354,8 @@ namespace CodeWalker.GameFiles
 
         public void CopyFlags(YndLink link)
         {
-            if (link == null) return;
+            if (link is null)
+                return;
             Flags0 = link.Flags0;
             Flags1 = link.Flags1;
             Flags2 = link.Flags2;
@@ -1678,7 +1667,7 @@ namespace CodeWalker.GameFiles
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < Values.Length; i++)
             {
-                if (i > 0) sb.Append(" ");
+                if (i > 0) sb.Append(' ');
                 sb.Append(Values[i].ToString().PadLeft(3, '0'));
                 //sb.Append(Convert.ToString(Values[i], 16).ToUpper().PadLeft(2, '0'));
             }
@@ -1694,7 +1683,7 @@ namespace CodeWalker.GameFiles
         public int Depth;
         public int MaxDepth;
         public int Threshold;
-        public List<BasePathNode> Nodes;
+        public BasePathNode[] Nodes;
         public BoundingBox Box;
         public BoundingSphere Sphere;
         public PathBVHNode Node1;
@@ -1703,14 +1692,15 @@ namespace CodeWalker.GameFiles
 
         public void CalcBounds()
         {
-            if ((Nodes == null) || (Nodes.Count <= 0)) return;
+            if (Nodes is null || Nodes.Length == 0)
+                return;
 
             Box.Minimum = new Vector3(float.MaxValue);
             Box.Maximum = new Vector3(float.MinValue);
             foreach (var node in Nodes)
             {
-                Box.Minimum = Vector3.Min(Box.Minimum, node.Position);
-                Box.Maximum = Vector3.Max(Box.Maximum, node.Position);
+                Vectors.Min(in Box.Minimum, in node.Position, out Box.Minimum);
+                Vectors.Max(in Box.Maximum, in node.Position, out Box.Maximum);
             }
             Sphere.Center = (Box.Minimum + Box.Maximum) * 0.5f;
             Sphere.Radius = (Box.Maximum - Box.Minimum).Length() * 0.5f;
@@ -1719,24 +1709,28 @@ namespace CodeWalker.GameFiles
 
         public void Build()
         {
-            if ((Nodes == null) || (Nodes.Count <= Threshold) || (Depth >= MaxDepth)) return;
+            if (Nodes == null || Nodes.Length == 0 || Nodes.Length <= Threshold || Depth >= MaxDepth)
+                return;
 
             Vector3 avgsum = Vector3.Zero;
             foreach (var node in Nodes)
             {
                 avgsum += node.Position;
             }
-            Vector3 avg = avgsum * (1.0f / Nodes.Count);
+            Vector3 avg = avgsum * Nodes.Length;
 
             int countx = 0, county = 0, countz = 0;
             foreach (var node in Nodes)
             {
-                if (node.Position.X < avg.X) countx++;
-                if (node.Position.Y < avg.Y) county++;
-                if (node.Position.Z < avg.Z) countz++;
+                if (node.Position.X < avg.X)
+                    countx++;
+                if (node.Position.Y < avg.Y)
+                    county++;
+                if (node.Position.Z < avg.Z)
+                    countz++;
             }
 
-            int target = Nodes.Count / 2;
+            int target = Nodes.Length / 2;
             int dx = Math.Abs(target - countx);
             int dy = Math.Abs(target - county);
             int dz = Math.Abs(target - countz);
@@ -1747,37 +1741,41 @@ namespace CodeWalker.GameFiles
             else axis = 2; //z seems best
 
 
-            List<BasePathNode> l1 = new List<BasePathNode>();
-            List<BasePathNode> l2 = new List<BasePathNode>();
+            using PooledList<BasePathNode> l1 = new PooledList<BasePathNode>(Nodes.Length);
+            using PooledList<BasePathNode> l2 = new PooledList<BasePathNode>(Nodes.Length);
             foreach (var node in Nodes)
             {
-                bool s = false;
-                switch (axis)
+                var s = axis switch
                 {
-                    default:
-                    case 0: s = (node.Position.X > avg.X); break;
-                    case 1: s = (node.Position.Y > avg.Y); break;
-                    case 2: s = (node.Position.Z > avg.Z); break;
-                }
-                if (s) l1.Add(node);
-                else l2.Add(node);
+                    1 => (node.Position.Y > avg.Y),
+                    2 => (node.Position.Z > avg.Z),
+                    _ => (node.Position.X > avg.X),
+                };
+                if (s)
+                    l1.Add(node);
+                else
+                    l2.Add(node);
             }
 
             var cdepth = Depth + 1;
 
-            Node1 = new PathBVHNode();
-            Node1.Depth = cdepth;
-            Node1.MaxDepth = MaxDepth;
-            Node1.Threshold = Threshold;
-            Node1.Nodes = new List<BasePathNode>(l1);
+            Node1 = new PathBVHNode
+            {
+                Depth = cdepth,
+                MaxDepth = MaxDepth,
+                Threshold = Threshold,
+                Nodes = l1.ToArray(),
+            };
             Node1.CalcBounds();
             Node1.Build();
 
-            Node2 = new PathBVHNode();
-            Node2.Depth = cdepth;
-            Node2.MaxDepth = MaxDepth;
-            Node2.Threshold = Threshold;
-            Node2.Nodes = new List<BasePathNode>(l2);
+            Node2 = new PathBVHNode
+            {
+                Depth = cdepth,
+                MaxDepth = MaxDepth,
+                Threshold = Threshold,
+                Nodes = l2.ToArray(),
+            };
             Node2.CalcBounds();
             Node2.Build();
         }
@@ -1785,12 +1783,13 @@ namespace CodeWalker.GameFiles
 
         public void UpdateForNode(BasePathNode node)
         {
-            if (!Nodes.Contains(node)) return;
-            Box.Minimum = Vector3.Min(Box.Minimum, node.Position);
-            Box.Maximum = Vector3.Max(Box.Maximum, node.Position);
+            if (!Nodes.Contains(node))
+                return;
+            Vectors.Min(in Box.Minimum, in node.Position, out Box.Minimum);
+            Vectors.Max(in Box.Maximum, in node.Position, out Box.Maximum);
 
-            if (Node1 != null) Node1.UpdateForNode(node);
-            if (Node2 != null) Node2.UpdateForNode(node);
+            Node1?.UpdateForNode(node);
+            Node2?.UpdateForNode(node);
         }
 
     }
@@ -1802,11 +1801,19 @@ namespace CodeWalker.GameFiles
         {
             Threshold = threshold;
             MaxDepth = maxdepth;
-            Nodes = (nodes != null) ? new List<BasePathNode>(nodes) : new List<BasePathNode>();
+            Nodes = nodes?.ToArray() ?? [];
             CalcBounds();
             Build();
         }
 
+        public PathBVH(BasePathNode[] nodes, int threshold, int maxdepth)
+        {
+            Threshold = threshold;
+            MaxDepth = maxdepth;
+            Nodes = nodes;
+            CalcBounds();
+            Build();
+        }
     }
 
 
@@ -1814,25 +1821,17 @@ namespace CodeWalker.GameFiles
 
     public interface BasePathNode
     {
-        Vector3 Position { get; set; }
+        ref Vector3 Position { get; }
     }
 
     public interface BasePathData
     {
         //reuse this interface for file types that need to get paths rendered...
 
-        EditorVertex[] GetPathVertices();
-        EditorVertex[] GetTriangleVertices();
-        Vector4[] GetNodePositions();
+        EditorVertex[] GetPathVertices() => Array.Empty<EditorVertex>();
+        EditorVertex[] GetTriangleVertices() => Array.Empty<EditorVertex>();
+        Vector4[] GetNodePositions() => Array.Empty<Vector4>();
     }
-
-
-
-
-
-
-
-
 
 
     public class YndXml : MetaXmlBase

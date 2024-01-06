@@ -146,17 +146,38 @@ namespace CodeWalker
 
     public struct MapSphere
     {
-        public Vector3 CamRelPos { get; set; }
-        public float Radius { get; set; }
+        public MapSphere()
+        { }
+
+        public MapSphere(Vector3 camRelPos, float radius)
+        {
+            CamRelPos = camRelPos;
+            Radius = radius;
+        }
+
+        public Vector3 CamRelPos;
+        public float Radius;
     }
 
     public struct MapBox
     {
-        public Vector3 CamRelPos { get; set; }
-        public Vector3 BBMin { get; set; }
-        public Vector3 BBMax { get; set; }
-        public Quaternion Orientation { get; set; }
-        public Vector3 Scale { get; set; }
+        public MapBox()
+        { }
+
+        public MapBox(Vector3 camRelPos, Vector3 bbMin, Vector3 bbMax, Quaternion orientation, Vector3 scale)
+        {
+            CamRelPos = camRelPos;
+            BBMin = bbMin;
+            BBMax = bbMax;
+            Orientation = orientation;
+            Scale = scale;
+        }
+
+        public Vector3 CamRelPos;
+        public Vector3 BBMin;
+        public Vector3 BBMax;
+        public Quaternion Orientation;
+        public Vector3 Scale;
     }
 
 

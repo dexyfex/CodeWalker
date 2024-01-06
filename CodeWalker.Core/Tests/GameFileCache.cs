@@ -22,10 +22,10 @@ namespace CodeWalker.GameFiles
                         if (entry.Name.EndsWith("cache_y.dat", StringComparison.OrdinalIgnoreCase))// || entry.NameLower.EndsWith("cache_y_bank.dat"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
-                            var cdfile = RpfMan.GetFile<CacheDatFile>(entry);
-                            if (cdfile != null)
+                            var cdfile = RpfManager.GetFile<CacheDatFile>(entry);
+                            if (cdfile is not null)
                             {
-                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                var odata = entry.File.ExtractFile((RpfFileEntry)entry);
                                 //var ndata = cdfile.Save();
 
                                 var xml = CacheDatXml.GetXml(cdfile);
@@ -67,7 +67,7 @@ namespace CodeWalker.GameFiles
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
                         HeightmapFile hmf = null;
-                        hmf = RpfMan.GetFile<HeightmapFile>(entry);
+                        hmf = RpfManager.GetFile<HeightmapFile>(entry);
                         var d1 = hmf.RawFileData;
                         //var d2 = hmf.Save();
                         var xml = HmapXml.GetXml(hmf);
@@ -104,7 +104,7 @@ namespace CodeWalker.GameFiles
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
                         WatermapFile wmf = null;
-                        wmf = RpfMan.GetFile<WatermapFile>(entry);
+                        wmf = RpfManager.GetFile<WatermapFile>(entry);
                         //var d1 = wmf.RawFileData;
                         //var d2 = wmf.Save();
                         //var xml = WatermapXml.GetXml(wmf);
@@ -144,8 +144,7 @@ namespace CodeWalker.GameFiles
                 foreach (RpfEntry entry in rpf.AllEntries)
                 {
                     var rfe = entry as RpfFileEntry;
-                    var rbfe = rfe as RpfBinaryFileEntry;
-                    if ((rfe == null) || (rbfe == null)) continue;
+                    if ((rfe == null) || (rfe is not RpfBinaryFileEntry rbfe)) continue;
 
                     if (rfe.IsExtension(".rel"))
                     {
@@ -162,7 +161,7 @@ namespace CodeWalker.GameFiles
                         {
 
                             data = rel.Save();
-                            if (data != null)
+                            if (data.Length > 0)
                             {
                                 if (data.Length != rbfe.FileUncompressedSize)
                                 { }
@@ -172,22 +171,15 @@ namespace CodeWalker.GameFiles
                                 {
                                     for (int i = 0; i < data.Length; i++) //raw file test
                                         if (data[i] != rel.RawFileData[i])
-                                        { break; }
+                                        {
+                                            break;
+                                        }
                                 }
 
 
                                 RelFile rel2 = new RelFile();
                                 rel2.Load(data, rfe);//roundtrip test
-
-                                if (rel2.IndexCount != rel.IndexCount)
-                                { }
-                                if (rel2.RelDatas == null)
-                                { }
-
                             }
-                            else
-                            { }
-
                         }
 
                         if (xmltest)
@@ -210,7 +202,9 @@ namespace CodeWalker.GameFiles
                                     {
                                         for (int i = 0; i < data.Length; i++) //raw file test
                                             if (data[i] != rel.RawFileData[i])
-                                            { break; }
+                                            {
+                                                break;
+                                            }
                                     }
 
                                     var relxml2 = RelXml.GetXml(rel4); //full insanity
@@ -336,7 +330,7 @@ namespace CodeWalker.GameFiles
                                     uint s2 = (un / 80000);
                                     float f1 = s1 / 5000.0f;
                                     float f2 = s2 / 5000.0f;
-                                    sb.AppendFormat("{0}, {1}, 0, {2}\r\n", f1, f2, sn);
+                                    sb.AppendFormat("{0}, {1}, 0, {2}\r\n", f1, f2, sn.ToString());
                                 }
                             }
 
@@ -386,7 +380,7 @@ namespace CodeWalker.GameFiles
                     if (entry.IsExtension(".awc"))
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
-                        var awcfile = RpfMan.GetFile<AwcFile>(entry);
+                        var awcfile = RpfManager.GetFile<AwcFile>(entry);
                         if (awcfile != null)
                         { }
                     }
@@ -443,8 +437,7 @@ namespace CodeWalker.GameFiles
 
                         if (n.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase) || n.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase) || n.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase))
                         {
-                            var rfe = entry as RpfResourceFileEntry;
-                            if (rfe == null) continue;
+                            if (entry is not RpfResourceFileEntry rfe) continue;
 
                             UpdateStatus?.Invoke(string.Format(entry.Path));
 
@@ -603,55 +596,52 @@ namespace CodeWalker.GameFiles
                     var data = entry.File.ExtractFile(fentry);
                     if (data != null)
                     {
-                        using (MemoryStream ms = new MemoryStream(data))
+                        if (RbfFile.IsRBF(data))
                         {
-                            if (RbfFile.IsRBF(ms))
+                            UpdateStatus?.Invoke(string.Format(entry.Path));
+
+                            var rbf = new RbfFile();
+                            _ = rbf.Load(data);
+
+                            allrbfs.Add(fentry.Path);
+
+                            var xml = RbfXml.GetXml(rbf);
+                            if (!string.IsNullOrEmpty(xml))
+                            { }
+
+                            var xdoc = new XmlDocument();
+                            xdoc.LoadXml(xml);
+                            var rbf2 = XmlRbf.GetRbf(xdoc);
+                            var rbf2b = rbf2.Save();
+
+                            var rbf3 = new RbfFile();
+                            rbf3.Load(rbf2b);
+                            var xml3 = RbfXml.GetXml(rbf3);
+
+                            if (xml.Length != xml3.Length)
+                            { }
+                            if (xml != xml3)
                             {
-                                UpdateStatus?.Invoke(string.Format(entry.Path));
+                                diffrbfs.Add(fentry.Path);
+                            }
 
-                                var rbf = new RbfFile();
-                                rbf.Load(ms);
-
-                                allrbfs.Add(fentry.Path);
-
-                                var xml = RbfXml.GetXml(rbf);
-                                if (!string.IsNullOrEmpty(xml))
-                                { }
-
-                                var xdoc = new XmlDocument();
-                                xdoc.LoadXml(xml);
-                                var rbf2 = XmlRbf.GetRbf(xdoc);
-                                var rbf2b = rbf2.Save();
-
-                                var rbf3 = new RbfFile();
-                                rbf3.Load(rbf2b);
-                                var xml3 = RbfXml.GetXml(rbf3);
-
-                                if (xml.Length != xml3.Length)
-                                { }
-                                if (xml != xml3)
+                            if (data.Length != rbf2b.Length)
+                            {
+                                //File.WriteAllBytes("C:\\GitHub\\CodeWalkerResearch\\RBF\\" + fentry.Name + ".dat0", data);
+                                //File.WriteAllBytes("C:\\GitHub\\CodeWalkerResearch\\RBF\\" + fentry.Name + ".dat1", rbf2b);
+                            }
+                            else
+                            {
+                                for (int i = 0; i < data.Length; i++)
                                 {
-                                    diffrbfs.Add(fentry.Path);
-                                }
-
-                                if (data.Length != rbf2b.Length)
-                                {
-                                    //File.WriteAllBytes("C:\\GitHub\\CodeWalkerResearch\\RBF\\" + fentry.Name + ".dat0", data);
-                                    //File.WriteAllBytes("C:\\GitHub\\CodeWalkerResearch\\RBF\\" + fentry.Name + ".dat1", rbf2b);
-                                }
-                                else
-                                {
-                                    for (int i = 0; i < data.Length; i++)
+                                    if (data[i] != rbf2b[i])
                                     {
-                                        if (data[i] != rbf2b[i])
-                                        {
-                                            diffrbfs.Add(fentry.Path);
-                                            break;
-                                        }
+                                        diffrbfs.Add(fentry.Path);
+                                        break;
                                     }
                                 }
-
                             }
+
                         }
                     }
 
@@ -677,8 +667,7 @@ namespace CodeWalker.GameFiles
                     try
 #endif
                     {
-                        var rfe = entry as RpfFileEntry;
-                        if (rfe == null) continue;
+                        if (entry is not RpfFileEntry rfe) continue;
 
                         if (rfe.IsExtension(".cut"))
                         {
@@ -720,8 +709,7 @@ namespace CodeWalker.GameFiles
                     try
 #endif
                     {
-                        var rfe = entry as RpfFileEntry;
-                        if (rfe == null) continue;
+                        if (entry is not RpfFileEntry rfe) continue;
 
                         if (rfe.IsExtension(".yld"))
                         {
@@ -760,8 +748,7 @@ namespace CodeWalker.GameFiles
                     try
 #endif
                     {
-                        var rfe = entry as RpfFileEntry;
-                        if (rfe == null) continue;
+                        if (entry is not RpfFileEntry rfe) continue;
 
                         if (rfe.IsExtension(".yed"))
                         {
@@ -810,7 +797,7 @@ namespace CodeWalker.GameFiles
                     if (entry.IsExtension(".ycd"))
                     {
                         UpdateStatus?.Invoke(string.Format(entry.Path));
-                        YcdFile ycd1 = RpfMan.GetFile<YcdFile>(entry);
+                        YcdFile ycd1 = RpfManager.GetFile<YcdFile>(entry);
                         if (ycd1 == null)
                         {
                             errorentries.Add(entry);
@@ -1084,7 +1071,7 @@ namespace CodeWalker.GameFiles
                             YtdFile ytdfile = null;
                             try
                             {
-                                ytdfile = RpfMan.GetFile<YtdFile>(entry);
+                                ytdfile = RpfManager.GetFile<YtdFile>(entry);
                             }
                             catch (Exception ex)
                             {
@@ -1110,8 +1097,7 @@ namespace CodeWalker.GameFiles
                             }
                             if (savetest && (ytdfile != null) && (ytdfile.TextureDict != null))
                             {
-                                var fentry = entry as RpfFileEntry;
-                                if (fentry == null)
+                                if (entry is not RpfFileEntry fentry)
                                 { continue; } //shouldn't happen
 
                                 var bytes = ytdfile.Save();
@@ -1181,7 +1167,7 @@ namespace CodeWalker.GameFiles
                             YbnFile ybn = null;
                             try
                             {
-                                ybn = RpfMan.GetFile<YbnFile>(entry);
+                                ybn = RpfManager.GetFile<YbnFile>(entry);
                             }
                             catch (Exception ex)
                             {
@@ -1198,8 +1184,7 @@ namespace CodeWalker.GameFiles
                             }
                             if (savetest && (ybn != null) && (ybn.Bounds != null))
                             {
-                                var fentry = entry as RpfFileEntry;
-                                if (fentry == null)
+                                if (entry is not RpfFileEntry fentry)
                                 { continue; } //shouldn't happen
 
                                 var bytes = ybn.Save();
@@ -1225,32 +1210,28 @@ namespace CodeWalker.GameFiles
                                     case BoundsType.Sphere:
                                         {
                                             var a = ybn.Bounds as BoundSphere;
-                                            var b = ybn2.Bounds as BoundSphere;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundSphere b)
                                             { continue; }
                                             break;
                                         }
                                     case BoundsType.Capsule:
                                         {
                                             var a = ybn.Bounds as BoundCapsule;
-                                            var b = ybn2.Bounds as BoundCapsule;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundCapsule b)
                                             { continue; }
                                             break;
                                         }
                                     case BoundsType.Box:
                                         {
                                             var a = ybn.Bounds as BoundBox;
-                                            var b = ybn2.Bounds as BoundBox;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundBox b)
                                             { continue; }
                                             break;
                                         }
                                     case BoundsType.Geometry:
                                         {
                                             var a = ybn.Bounds as BoundGeometry;
-                                            var b = ybn2.Bounds as BoundGeometry;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundGeometry b)
                                             { continue; }
                                             if (a.Polygons?.Length != b.Polygons?.Length)
                                             { continue; }
@@ -1266,8 +1247,7 @@ namespace CodeWalker.GameFiles
                                     case BoundsType.GeometryBVH:
                                         {
                                             var a = ybn.Bounds as BoundBVH;
-                                            var b = ybn2.Bounds as BoundBVH;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundBVH b)
                                             { continue; }
                                             if (a.BVH?.Nodes?.data_items?.Length != b.BVH?.Nodes?.data_items?.Length)
                                             { }
@@ -1285,8 +1265,7 @@ namespace CodeWalker.GameFiles
                                     case BoundsType.Composite:
                                         {
                                             var a = ybn.Bounds as BoundComposite;
-                                            var b = ybn2.Bounds as BoundComposite;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundComposite b)
                                             { continue; }
                                             if (a.Children?.data_items?.Length != b.Children?.data_items?.Length)
                                             { }
@@ -1295,24 +1274,21 @@ namespace CodeWalker.GameFiles
                                     case BoundsType.Disc:
                                         {
                                             var a = ybn.Bounds as BoundDisc;
-                                            var b = ybn2.Bounds as BoundDisc;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundDisc b)
                                             { continue; }
                                             break;
                                         }
                                     case BoundsType.Cylinder:
                                         {
                                             var a = ybn.Bounds as BoundCylinder;
-                                            var b = ybn2.Bounds as BoundCylinder;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundCylinder b)
                                             { continue; }
                                             break;
                                         }
                                     case BoundsType.Cloth:
                                         {
                                             var a = ybn.Bounds as BoundCloth;
-                                            var b = ybn2.Bounds as BoundCloth;
-                                            if (b == null)
+                                            if (ybn2.Bounds is not BoundCloth b)
                                             { continue; }
                                             break;
                                         }
@@ -1353,7 +1329,7 @@ namespace CodeWalker.GameFiles
                             YdrFile ydr = null;
                             try
                             {
-                                ydr = RpfMan.GetFile<YdrFile>(entry);
+                                ydr = RpfManager.GetFile<YdrFile>(entry);
                             }
                             catch (Exception ex)
                             {
@@ -1362,8 +1338,7 @@ namespace CodeWalker.GameFiles
                             }
                             if (savetest && (ydr != null) && (ydr.Drawable != null))
                             {
-                                var fentry = entry as RpfFileEntry;
-                                if (fentry == null)
+                                if (entry is not RpfFileEntry fentry)
                                 { continue; } //shouldn't happen
 
                                 if (boundsonly && (ydr.Drawable.Bound == null))
@@ -1412,7 +1387,7 @@ namespace CodeWalker.GameFiles
                             YddFile ydd = null;
                             try
                             {
-                                ydd = RpfMan.GetFile<YddFile>(entry);
+                                ydd = RpfManager.GetFile<YddFile>(entry);
                             }
                             catch (Exception ex)
                             {
@@ -1421,8 +1396,7 @@ namespace CodeWalker.GameFiles
                             }
                             if (savetest && (ydd != null) && (ydd.DrawableDict != null))
                             {
-                                var fentry = entry as RpfFileEntry;
-                                if (fentry == null)
+                                if (entry is not RpfFileEntry fentry)
                                 { continue; } //shouldn't happen
 
                                 var bytes = ydd.Save();
@@ -1481,7 +1455,7 @@ namespace CodeWalker.GameFiles
                             YftFile yft = null;
                             try
                             {
-                                yft = RpfMan.GetFile<YftFile>(entry);
+                                yft = RpfManager.GetFile<YftFile>(entry);
                             }
                             catch (Exception ex)
                             {
@@ -1490,8 +1464,7 @@ namespace CodeWalker.GameFiles
                             }
                             if (savetest && (yft != null) && (yft.Fragment != null))
                             {
-                                var fentry = entry as RpfFileEntry;
-                                if (fentry == null)
+                                if (entry is not RpfFileEntry fentry)
                                 { continue; } //shouldn't happen
 
                                 var bytes = yft.Save();
@@ -1558,7 +1531,7 @@ namespace CodeWalker.GameFiles
                             YptFile ypt = null;
                             try
                             {
-                                ypt = RpfMan.GetFile<YptFile>(entry);
+                                ypt = RpfManager.GetFile<YptFile>(entry);
                             }
                             catch (Exception ex)
                             {
@@ -1567,8 +1540,7 @@ namespace CodeWalker.GameFiles
                             }
                             if (savetest && (ypt != null) && (ypt.PtfxList != null))
                             {
-                                var fentry = entry as RpfFileEntry;
-                                if (fentry == null)
+                                if (entry is not RpfFileEntry fentry)
                                 { continue; } //shouldn't happen
 
                                 var bytes = ypt.Save();
@@ -1616,7 +1588,7 @@ namespace CodeWalker.GameFiles
                             YnvFile ynv = null;
                             try
                             {
-                                ynv = RpfMan.GetFile<YnvFile>(entry);
+                                ynv = RpfManager.GetFile<YnvFile>(entry);
                             }
                             catch (Exception ex)
                             {
@@ -1646,8 +1618,7 @@ namespace CodeWalker.GameFiles
                             }
                             if (savetest && (ynv != null) && (ynv.Nav != null))
                             {
-                                var fentry = entry as RpfFileEntry;
-                                if (fentry == null)
+                                if (entry is not RpfFileEntry fentry)
                                 { continue; } //shouldn't happen
 
                                 var bytes = ynv.Save();
@@ -1688,8 +1659,7 @@ namespace CodeWalker.GameFiles
                     try
 #endif
                     {
-                        var rfe = entry as RpfFileEntry;
-                        if (rfe == null) continue;
+                        if (entry is not RpfFileEntry rfe) continue;
 
                         if (rfe.IsExtension(".yvr"))
                         {
@@ -1785,7 +1755,7 @@ namespace CodeWalker.GameFiles
                         if (entry.IsExtension(".ymap"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
-                            YmapFile ymapfile = RpfMan.GetFile<YmapFile>(entry);
+                            YmapFile ymapfile = RpfManager.GetFile<YmapFile>(entry);
                             if ((ymapfile != null))// && (ymapfile.Meta != null))
                             { }
                         }
@@ -1805,15 +1775,14 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                    var rfe = entry as RpfFileEntry;
-                    if (rfe == null) continue;
+                    if (entry is not RpfFileEntry rfe) continue;
 
                     try
                     {
                         if (rfe.IsExtension(".ypdb"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
-                            YpdbFile ypdb = RpfMan.GetFile<YpdbFile>(entry);
+                            YpdbFile ypdb = RpfManager.GetFile<YpdbFile>(entry);
                             if (ypdb != null)
                             {
                                 var odata = entry.File.ExtractFile(entry as RpfFileEntry);
@@ -1854,15 +1823,14 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                    var rfe = entry as RpfFileEntry;
-                    if (rfe == null) continue;
+                    if (entry is not RpfFileEntry rfe) continue;
 
                     try
                     {
                         if (rfe.IsExtension(".yfd"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
-                            YfdFile yfd = RpfMan.GetFile<YfdFile>(entry);
+                            YfdFile yfd = RpfManager.GetFile<YfdFile>(entry);
                             if (yfd != null)
                             {
                                 if (yfd.FrameFilterDictionary != null)
@@ -1909,7 +1877,7 @@ namespace CodeWalker.GameFiles
                         if (entry.IsExtension(".mrf"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
-                            MrfFile mrffile = RpfMan.GetFile<MrfFile>(entry);
+                            MrfFile mrffile = RpfManager.GetFile<MrfFile>(entry);
                             if (mrffile != null)
                             {
                                 var odata = entry.File.ExtractFile(entry as RpfFileEntry);
@@ -2079,10 +2047,10 @@ namespace CodeWalker.GameFiles
                         if (entry.IsExtension(".fxc"))
                         {
                             UpdateStatus?.Invoke(string.Format(entry.Path));
-                            var fxcfile = RpfMan.GetFile<FxcFile>(entry);
-                            if (fxcfile != null)
+                            var fxcfile = RpfManager.GetFile<FxcFile>(entry);
+                            if (fxcfile is not null)
                             {
-                                var odata = entry.File.ExtractFile(entry as RpfFileEntry);
+                                var odata = entry.File.ExtractFile((RpfFileEntry)entry);
                                 var ndata = fxcfile.Save();
                                 if (ndata.Length == odata.Length)
                                 {
@@ -2294,7 +2262,7 @@ namespace CodeWalker.GameFiles
                         if (doydr && entry.IsExtension(".ydr"))
                         {
                             UpdateStatus?.Invoke(entry.Path);
-                            YdrFile ydr = RpfMan.GetFile<YdrFile>(entry);
+                            YdrFile ydr = RpfManager.GetFile<YdrFile>(entry);
 
                             if (ydr == null)
                             {
@@ -2323,7 +2291,7 @@ namespace CodeWalker.GameFiles
                         else if (doydd & entry.IsExtension(".ydd"))
                         {
                             UpdateStatus?.Invoke(entry.Path);
-                            YddFile ydd = RpfMan.GetFile<YddFile>(entry);
+                            YddFile ydd = RpfManager.GetFile<YddFile>(entry);
 
                             if (ydd == null)
                             {
@@ -2355,7 +2323,7 @@ namespace CodeWalker.GameFiles
                         else if (doyft && entry.IsExtension(".yft"))
                         {
                             UpdateStatus?.Invoke(entry.Path);
-                            YftFile yft = RpfMan.GetFile<YftFile>(entry);
+                            YftFile yft = RpfManager.GetFile<YftFile>(entry);
 
                             if (yft == null)
                             {

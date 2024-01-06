@@ -23,6 +23,7 @@
 //mangled to fit
 
 
+using Collections.Pooled;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -36,10 +37,7 @@ namespace CodeWalker.GameFiles
 {
     [TypeConverter(typeof(ExpandableObjectConverter))] public class NodeDictionary : ResourceFileBase, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 112; }
-        }
+        public override long BlockLength => 112;
 
         public ulong NodesPointer { get; set; }
         public uint NodesCount { get; set; }
@@ -62,18 +60,18 @@ namespace CodeWalker.GameFiles
         public uint Unk68 { get; set; } // 0x00000000
         public uint Unk6C { get; set; } // 0x00000000
 
-        public Node[] Nodes { get; set; }
-        public NodeLink[] Links { get; set; }
-        public NodeJunction[] Junctions { get; set; }
-        public byte[] JunctionHeightmapBytes { get; set; }
-        public NodeJunctionRef[] JunctionRefs { get; set; }
+        public Node[]? Nodes { get; set; }
+        public NodeLink[]? Links { get; set; }
+        public NodeJunction[]? Junctions { get; set; }
+        public byte[]? JunctionHeightmapBytes { get; set; }
+        public NodeJunctionRef[]? JunctionRefs { get; set; }
 
 
-        private ResourceSystemStructBlock<Node> NodesBlock = null;
-        private ResourceSystemStructBlock<NodeLink> LinksBlock = null;
-        private ResourceSystemStructBlock<NodeJunction> JunctionsBlock = null;
-        private ResourceSystemStructBlock<byte> JunctionHeightmapBytesBlock = null;
-        private ResourceSystemStructBlock<NodeJunctionRef> JunctionRefsBlock = null;
+        private ResourceSystemStructBlock<Node>? NodesBlock = null;
+        private ResourceSystemStructBlock<NodeLink>? LinksBlock = null;
+        private ResourceSystemStructBlock<NodeJunction>? JunctionsBlock = null;
+        private ResourceSystemStructBlock<byte>? JunctionHeightmapBytesBlock = null;
+        private ResourceSystemStructBlock<NodeJunctionRef>? JunctionRefsBlock = null;
 
 
 
@@ -155,29 +153,29 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>(base.GetReferences());
+            using var list = new PooledList<IResourceBlock>(base.GetReferences());
 
-            if ((JunctionRefs != null) && (JunctionRefs.Length > 0))
+            if (JunctionRefs is not null && JunctionRefs.Length > 0)
             {
                 JunctionRefsBlock = new ResourceSystemStructBlock<NodeJunctionRef>(JunctionRefs);
                 list.Add(JunctionRefsBlock);
             }
-            if ((JunctionHeightmapBytes != null) && (JunctionHeightmapBytes.Length > 0))
+            if (JunctionHeightmapBytes is not null && JunctionHeightmapBytes.Length > 0)
             {
                 JunctionHeightmapBytesBlock = new ResourceSystemStructBlock<byte>(JunctionHeightmapBytes);
                 list.Add(JunctionHeightmapBytesBlock);
             }
-            if ((Junctions != null) && (Junctions.Length > 0))
+            if (Junctions is not null && Junctions.Length > 0)
             {
                 JunctionsBlock = new ResourceSystemStructBlock<NodeJunction>(Junctions);
                 list.Add(JunctionsBlock);
             }
-            if ((Links != null) && (Links.Length > 0))
+            if (Links is not null && Links.Length > 0)
             {
                 LinksBlock = new ResourceSystemStructBlock<NodeLink>(Links);
                 list.Add(LinksBlock);
             }
-            if ((Nodes != null) && (Nodes.Length > 0))
+            if (Nodes is not null && Nodes.Length > 0)
             {
                 NodesBlock = new ResourceSystemStructBlock<Node>(Nodes);
                 list.Add(NodesBlock);
@@ -195,7 +193,7 @@ namespace CodeWalker.GameFiles
             YndXml.ValueTag(sb, indent, "VehicleNodeCount", NodesCountVehicle.ToString());
             YndXml.ValueTag(sb, indent, "PedNodeCount", NodesCountPed.ToString());
 
-            XmlNodeWrapper[] nodes = null;
+            XmlNodeWrapper[]? nodes = null;
             int nodecount = Nodes?.Length ?? 0;
             if (nodecount > 0)
             {
@@ -208,7 +206,7 @@ namespace CodeWalker.GameFiles
             YndXml.WriteItemArray(sb, nodes, indent, "Nodes");
 
 
-            XmlJunctionWrapper[] juncs = null;
+            XmlJunctionWrapper[]? juncs = null;
             int junccount = Junctions?.Length ?? 0;
             if (junccount > 0)
             {
@@ -337,7 +335,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct Node
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct Node
     {
         public uint Unused0 { get; set; } // 0x00000000
         public uint Unused1 { get; set; } // 0x00000000
@@ -358,7 +357,7 @@ namespace CodeWalker.GameFiles
         public FlagsByte Flags3 { get; set; }
         public FlagsByte Flags4 { get; set; }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             //return Unused0.ToString() + ", " + Unused1.ToString() + ", " + Unused2.ToString() + ", " +
             //       Unused3.ToString() + ", " + AreaID.ToString() + ", " + NodeID.ToString() + ", " +
@@ -366,7 +365,7 @@ namespace CodeWalker.GameFiles
             //       PositionX.ToString() + ", " + PositionY.ToString() + ", " + Unk20.ToString() + ", " + Unk21.ToString() + ", " + 
             //       Unk22.ToString() + ", " + Unk24.ToString() + ", " + Unk26.ToString();
 
-            return AreaID.ToString() + ", " + NodeID.ToString() + ", " + StreetName.ToString();// + ", X:" +
+            return $"{AreaID}, {NodeID}, {StreetName}";// + ", X:" +
                                                                                                //PositionX.ToString() + ", Y:" + PositionY.ToString() + ", " + PositionZ.ToString();// + ", " + 
                                                                                                //Flags0.ToString() + ", " + Flags1.ToString() + ", Z:" +
                                                                                                //Flags2.ToString() + ", " + LinkCountFlags.ToString() + ", " + 
@@ -374,7 +373,7 @@ namespace CodeWalker.GameFiles
 
         }
 
-        public void WriteXml(StringBuilder sb, int indent, NodeLink[] allLinks)
+        public readonly void WriteXml(StringBuilder sb, int indent, NodeLink[] allLinks)
         {
             Vector3 p = new Vector3();
             p.X = PositionX / 4.0f;
@@ -449,9 +448,9 @@ namespace CodeWalker.GameFiles
         public FlagsByte Flags2 { get; set; }
         public FlagsByte LinkLength { get; set; }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return AreaID.ToString() + ", " + NodeID.ToString() + ", " + Flags0.Value.ToString() + ", " + Flags1.Value.ToString() + ", " + Flags2.Value.ToString() + ", " + LinkLength.Value.ToString();
+            return $"{AreaID}, {NodeID}, {Flags0.Value}, {Flags1.Value}, {Flags2.Value}, {LinkLength.Value}";
         }
 
         public void WriteXml(StringBuilder sb, int indent)
@@ -486,7 +485,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return PositionX.ToString() + ", " + PositionY.ToString() + ": " + MinZ.ToString() + ", " + MaxZ.ToString() + ": " + HeightmapDimX.ToString() + " x " + HeightmapDimY.ToString();
+            return $"{PositionX}, {PositionY}: {MinZ}, {MaxZ}: {HeightmapDimX} x {HeightmapDimY}";
         }
 
         public void WriteXml(StringBuilder sb, int indent, byte[] allHeightmapData)
@@ -544,7 +543,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return AreaID.ToString() + ", " + NodeID.ToString() + ", " + JunctionID.ToString();
+            return $"{AreaID}, {NodeID}, {JunctionID}";
         }
 
         public void WriteXml(StringBuilder sb, int indent)

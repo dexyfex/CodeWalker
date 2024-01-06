@@ -8,6 +8,8 @@ using System.Xml;
 
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using System.Buffers.Binary;
+using System.Buffers;
 
 namespace CodeWalker.GameFiles
 {
@@ -18,6 +20,8 @@ namespace CodeWalker.GameFiles
         public RbfFile Rbf { get; set; }
         public string Xml { get; set; }
 
+        public MetaHash DlcName => VariationInfo.Data.dlcName;
+        public string GameDlcName { get; set; }
         public MCPedVariationInfo VariationInfo { get; set; }
 
 
@@ -39,8 +43,7 @@ namespace CodeWalker.GameFiles
             FilePath = Name;
 
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
                 NonMetaLoad(data);
                 Loaded = true;
@@ -66,10 +69,10 @@ namespace CodeWalker.GameFiles
         {
             var vVariationInfo = MetaTypes.GetTypedData<CPedVariationInfo>(Meta, MetaName.CPedVariationInfo);
             VariationInfo = new MCPedVariationInfo();
-            VariationInfo.Load(Meta, vVariationInfo);
+            VariationInfo.Load(Meta, in vVariationInfo);
 
             Strings = MetaTypes.GetStrings(Meta);
-            if (Strings != null)
+            if (Strings is not null)
             {
                 foreach (string str in Strings)
                 {
@@ -82,7 +85,7 @@ namespace CodeWalker.GameFiles
 
             var vVariationInfo = PsoTypes.GetRootItem<CPedVariationInfo>(Pso);
             VariationInfo = new MCPedVariationInfo();
-            VariationInfo.Load(Pso, vVariationInfo);
+            VariationInfo.Load(Pso, in vVariationInfo);
 
         }
 
@@ -90,18 +93,24 @@ namespace CodeWalker.GameFiles
         private void NonMetaLoad(byte[] data)
         {
             //non meta not supported yet! but see what's in there...
-            MemoryStream ms = new MemoryStream(data);
-            if (RbfFile.IsRBF(ms))
+            if (RbfFile.IsRBF(data.AsSpan(0, 4)))
             {
                 Rbf = new RbfFile();
-                Rbf.Load(ms);
+                var sequence = new ReadOnlySequence<byte>(data);
+                var reader = new SequenceReader<byte>(sequence);
+                Rbf.Load(ref reader);
             }
-            else if (PsoFile.IsPSO(ms))
+            else if (PsoFile.IsPSO(data.AsSpan(0, 4)))
             {
                 Pso = new PsoFile();
-                Pso.Load(ms);
+                Pso.Load(data);
                 LoadPso();
             }
+        }
+
+        public override string ToString()
+        {
+            return Path.GetFileName(RpfFileEntry.Parent.Path);
         }
     }
 }

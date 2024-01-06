@@ -203,7 +203,7 @@ namespace CodeWalker.Project.Panels
             if (d == DialogResult.No)
                 return;
 
-            lock (ProjectForm.WorldForm.RenderSyncRoot)
+            using (ProjectForm.WorldForm.RenderSyncRoot.WaitDisposable())
             {
                 var newBatches = CurrentBatch?.OptimizeInstances(CurrentBatch, (float)OptmizationThresholdNumericUpDown.Value);
                 if (newBatches == null || newBatches.Length <= 0) return;
@@ -243,7 +243,7 @@ namespace CodeWalker.Project.Panels
             var wf = ProjectForm.WorldForm;
             if (wf == null) return;
 
-            lock (wf.RenderSyncRoot)
+            using (wf.RenderSyncRoot.WaitDisposable())
             {
                 CurrentBatch.CreateInstancesAtMouse(
                     CurrentBatch,
@@ -269,7 +269,8 @@ namespace CodeWalker.Project.Panels
 
         private SpaceRayIntersectResult SpawnRayFunc(Vector3 spawnPos)
         {
-            var res = ProjectForm.WorldForm.Raycast(new Ray(spawnPos, -Vector3.UnitZ));
+            var ray = new Ray(spawnPos, -Vector3.UnitZ);
+            var res = ProjectForm.WorldForm.Raycast(ref ray);
             return res;
         }
 

@@ -11,6 +11,7 @@ using Resource = SharpDX.Direct3D11.Resource;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 using SharpDX.Mathematics.Interop;
 using SharpDX.Direct3D;
+using CommunityToolkit.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -137,13 +138,14 @@ namespace CodeWalker.Rendering
                     //nothing to do here
                     break;
                 default:
-                    throw new Exception(); //not implemented....
+                    ThrowHelper.ThrowArgumentOutOfRangeException(nameof(viewDimension), viewDimension, "Given value for viewDimension is not supported");
+                    break;
             }
             ShaderResourceView srv = new ShaderResourceView(device, resource, srvd);
             return srv;
         }
 
-        public static UnorderedAccessView CreateUnorderedAccessView(Device device, Resource resource, Format format, UnorderedAccessViewDimension viewDimension, int firstElement, int numElements, UnorderedAccessViewBufferFlags flags, int mipSlice)
+        public static UnorderedAccessView? CreateUnorderedAccessView(Device device, Resource resource, Format format, UnorderedAccessViewDimension viewDimension, int firstElement, int numElements, UnorderedAccessViewBufferFlags flags, int mipSlice)
         {
             UnorderedAccessViewDescription uavd = new UnorderedAccessViewDescription();
             uavd.Format = format;

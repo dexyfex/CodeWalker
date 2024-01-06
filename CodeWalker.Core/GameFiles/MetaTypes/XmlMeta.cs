@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Xml;
+using CodeWalker.Core.Utils;
+using Collections.Pooled;
 using SharpDX;
 
 namespace CodeWalker.GameFiles
@@ -64,150 +66,174 @@ namespace CodeWalker.GameFiles
                 case MetaFormat.Mrf:
                     return GetMrfData(doc);
             }
-            return null;
+            return [];
         }
         public static byte[] GetRSCData(XmlDocument doc)
         {
             var meta = GetMeta(doc);
-            if ((meta.DataBlocks?.Data == null) || (meta.DataBlocks.Count == 0)) return null;
+            if (meta.DataBlocks?.Data is null || meta.DataBlocks.Count == 0)
+                return [];
             return ResourceBuilder.Build(meta, 2); //meta is RSC V:2
         }
         public static byte[] GetPSOData(XmlDocument doc)
         {
             var pso = XmlPso.GetPso(doc);
-            if ((pso.DataSection == null) || (pso.DataMapSection == null) || (pso.SchemaSection == null)) return null;
+            if (pso.DataSection == null || pso.DataMapSection == null || pso.SchemaSection == null)
+                return [];
             return pso.Save();
         }
         public static byte[] GetRBFData(XmlDocument doc)
         {
             var rbf = XmlRbf.GetRbf(doc);
-            if (rbf.current == null) return null;
+            if (rbf.current is null)
+                return [];
             return rbf.Save();
         }
         public static byte[] GetRelData(XmlDocument doc)
         {
             var rel = XmlRel.GetRel(doc);
-            if ((rel.RelDatasSorted == null) || (rel.RelDatas == null)) return null;
+            if (rel.RelDatas == null)
+                return [];
             return rel.Save();
         }
         public static byte[] GetYndData(XmlDocument doc)
         {
             var ynd = XmlYnd.GetYnd(doc);
-            if (ynd.NodeDictionary == null) return null;
+            if (ynd.NodeDictionary == null)
+                return [];
             return ynd.Save();
         }
         public static byte[] GetYnvData(XmlDocument doc)
         {
             var ynv = XmlYnv.GetYnv(doc);
-            if (ynv.Nav == null) return null;
+            if (ynv.Nav == null)
+                return [];
             return ynv.Save();
         }
         public static byte[] GetYcdData(XmlDocument doc)
         {
             var ycd = XmlYcd.GetYcd(doc);
-            if (ycd.ClipDictionary == null) return null;
+            if (ycd.ClipDictionary == null)
+                return [];
             return ycd.Save();
         }
         public static byte[] GetYbnData(XmlDocument doc)
         {
             var ybn = XmlYbn.GetYbn(doc);
-            if (ybn.Bounds == null) return null;
+            if (ybn.Bounds == null)
+                return [];
             return ybn.Save();
         }
         public static byte[] GetYtdData(XmlDocument doc, string fpathin)
         {
             var ytd = XmlYtd.GetYtd(doc, fpathin);
-            if (ytd.TextureDict == null) return null;
+            if (ytd.TextureDict == null)
+                return [];
             return ytd.Save();
         }
         public static byte[] GetYdrData(XmlDocument doc, string fpathin)
         {
             var ydr = XmlYdr.GetYdr(doc, fpathin);
-            if (ydr.Drawable == null) return null;
+            if (ydr.Drawable == null)
+                return [];
             return ydr.Save();
         }
         public static byte[] GetYddData(XmlDocument doc, string fpathin)
         {
             var ydd = XmlYdd.GetYdd(doc, fpathin);
-            if (ydd.DrawableDict == null) return null;
+            if (ydd.DrawableDict == null)
+                return [];
             return ydd.Save();
         }
         public static byte[] GetYftData(XmlDocument doc, string fpathin)
         {
             var yft = XmlYft.GetYft(doc, fpathin);
-            if (yft.Fragment == null) return null;
+            if (yft.Fragment == null)
+                return [];
             return yft.Save();
         }
         public static byte[] GetYptData(XmlDocument doc, string fpathin)
         {
             var ypt = XmlYpt.GetYpt(doc, fpathin);
-            if (ypt.PtfxList == null) return null;
+            if (ypt.PtfxList == null)
+                return [];
             return ypt.Save();
         }
         public static byte[] GetYldData(XmlDocument doc, string fpathin)
         {
             var yld = XmlYld.GetYld(doc, fpathin);
-            if (yld.ClothDictionary == null) return null;
+            if (yld.ClothDictionary == null)
+                return [];
             return yld.Save();
         }
         public static byte[] GetYedData(XmlDocument doc, string fpathin)
         {
             var yed = XmlYed.GetYed(doc, fpathin);
-            if (yed.ExpressionDictionary == null) return null;
+            if (yed.ExpressionDictionary == null)
+                return [];
             return yed.Save();
         }
         public static byte[] GetYwrData(XmlDocument doc, string fpathin)
         {
             var ywr = XmlYwr.GetYwr(doc, fpathin);
-            if (ywr.Waypoints == null) return null;
+            if (ywr.Waypoints == null)
+                return [];
             return ywr.Save();
         }
         public static byte[] GetYvrData(XmlDocument doc, string fpathin)
         {
             var yvr = XmlYvr.GetYvr(doc, fpathin);
-            if (yvr.Records == null) return null;
+            if (yvr.Records == null)
+                return [];
             return yvr.Save();
         }
         public static byte[] GetAwcData(XmlDocument doc, string fpathin)
         {
             var awc = XmlAwc.GetAwc(doc, fpathin);
-            if (awc.Streams == null) return null;
+            if (awc.Streams == null)
+                return [];
             return awc.Save();
         }
         public static byte[] GetFxcData(XmlDocument doc, string fpathin)
         {
             var fxc = XmlFxc.GetFxc(doc, fpathin);
-            if (fxc.Shaders == null) return null;
+            if (fxc.Shaders == null)
+                return [];
             return fxc.Save();
         }
         public static byte[] GetCacheFileData(XmlDocument doc)
         {
             var cdf = XmlCacheDat.GetCacheDat(doc);
-            if (cdf == null) return null;
+            if (cdf == null)
+                return [];
             return cdf.Save();
         }
         public static byte[] GetHeightmapData(XmlDocument doc)
         {
             var hmf = XmlHmap.GetHeightmap(doc);
-            if (hmf.MaxHeights == null) return null;
+            if (hmf.MaxHeights == null)
+                return [];
             return hmf.Save();
         }
         public static byte[] GetYpdbData(XmlDocument doc)
         {
             var ypdb = XmlYpdb.GetYpdb(doc);
-            if (ypdb.WeightSet == null) return null;
+            if (ypdb.WeightSet == null)
+                return [];
             return ypdb.Save();
         }
         public static byte[] GetYfdData(XmlDocument doc)
         {
             var yfd = XmlYfd.GetYfd(doc);
-            if (yfd.FrameFilterDictionary == null) return null;
+            if (yfd.FrameFilterDictionary == null)
+                return [];
             return yfd.Save();
         }
         public static byte[] GetMrfData(XmlDocument doc)
         {
             var mrf = XmlMrf.GetMrf(doc);
-            if (mrf == null) return null;
+            if (mrf == null)
+                return [];
             return mrf.Save();
         }
 
@@ -463,7 +489,7 @@ namespace CodeWalker.GameFiles
                                 if (!string.IsNullOrEmpty(cnode.InnerText))
                                 {
                                     var ptr = mb.AddStringPtr(cnode.InnerText);
-                                    var val = MetaTypes.ConvertToBytes(ptr);
+                                    var val = MetaTypes.ConvertToBytes(in ptr);
 
                                     Buffer.BlockCopy(val, 0, data, entry.DataOffset, val.Length);
                                 }
@@ -481,6 +507,7 @@ namespace CodeWalker.GameFiles
                                 var bytes = new List<byte>();
                                 for (int j = 0; j < split.Length; j++)
                                 {
+                                    Console.WriteLine("Parsing byte");
                                     byte val;// = Convert.ToByte(split[j], 10);
                                     if (byte.TryParse(split[j].Trim(), ns, ic, out val))
                                     {
@@ -488,7 +515,7 @@ namespace CodeWalker.GameFiles
                                     }
                                 }
                                 var ptr = mb.AddDataBlockPtr(bytes.ToArray(), (MetaName)MetaTypeName.BYTE);
-                                var byt = MetaTypes.ConvertToBytes(ptr);
+                                var byt = MetaTypes.ConvertToBytes(in ptr);
                                 Buffer.BlockCopy(byt, 0, data, entry.DataOffset, byt.Length);
                                 break;
                             }
@@ -1014,7 +1041,7 @@ namespace CodeWalker.GameFiles
 
         private static Array_uint TraverseHashArray(XmlNode node, MetaBuilder mb)
         {
-            var items = new List<MetaHash>();
+            using var items = new PooledList<MetaHash>();
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
@@ -1216,7 +1243,7 @@ namespace CodeWalker.GameFiles
                 var inodes = vnode.SelectNodes("Item");
                 if (inodes?.Count > 0)
                 {
-                    var vlist = new List<MetaHash>();
+                    using var vlist = new PooledList<MetaHash>();
                     foreach (XmlNode inode in inodes)
                     {
                         vlist.Add(GetHash(inode.InnerText));
@@ -1258,7 +1285,7 @@ namespace CodeWalker.GameFiles
         public Dictionary<int, Array_Vector3> Float_XYZs;
         public Dictionary<int, Array_uint> Hashes;
 
-        public void WriteArrays(byte[] data)
+        public readonly void WriteArrays(byte[] data)
         {
             foreach (KeyValuePair<int, Array_Structure> ptr in Structures)
             {

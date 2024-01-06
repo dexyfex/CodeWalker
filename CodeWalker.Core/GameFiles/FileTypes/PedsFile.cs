@@ -10,13 +10,14 @@ using System.Xml;
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
 using System.Xml.Linq;
+using Collections.Pooled;
 
 
 namespace CodeWalker.GameFiles
 {
     [TC(typeof(EXP))] public class PedsFile : GameFile, PackedFile
     {
-        private static XmlNameTable cachedNameTable = new System.Xml.NameTable();
+        private static XmlNameTable cachedNameTable = new XmlNameTableThreadSafe();
         public PsoFile Pso { get; set; }
         public string Xml { get; set; }
 
@@ -36,8 +37,8 @@ namespace CodeWalker.GameFiles
 
 
             //can be PSO .ymt or XML .meta
-            using MemoryStream ms = new MemoryStream(data);
-            if (PsoFile.IsPSO(ms))
+            //using MemoryStream ms = new MemoryStream(data);
+            if (PsoFile.IsPSO(data.AsSpan(0, 4)))
             {
                 Pso = new PsoFile();
                 Pso.Load(data);
@@ -63,7 +64,7 @@ namespace CodeWalker.GameFiles
             //    }
             //}
 
-            using var xmlReader = XmlReader.Create(textReader, new XmlReaderSettings { NameTable = cachedNameTable,  });
+            using var xmlReader = XmlReader.Create(textReader, new XmlReaderSettings { NameTable = cachedNameTable });
 
 
             //if (xdoc.DocumentElement != null)
@@ -114,16 +115,18 @@ namespace CodeWalker.GameFiles
                             break;
                         }
                         reader.ReadStartElement();
-                        var initDatasList = new List<CPedModelInfo__InitData>();
+                        using (var initDatasList = new PooledList<CPedModelInfo__InitData>())
+                        {
+                            while (reader.IsItemElement())
+                            {
+                                initDatasList.Add(new CPedModelInfo__InitData(reader));
+                            }
+                            if (initDatasList.Count > 0)
+                            {
+                                InitDatas = initDatasList.ToArray();
+                            }
+                        }
 
-                        while (reader.IsItemElement())
-                        {
-                            initDatasList.Add(new CPedModelInfo__InitData(reader));
-                        }
-                        if (initDatasList.Count > 0)
-                        {
-                            InitDatas = initDatasList.ToArray();
-                        }
                         reader.ReadEndElement();
                         break;
                     case string Name when Name.Equals("txdRelationships", StringComparison.OrdinalIgnoreCase):
@@ -133,17 +136,19 @@ namespace CodeWalker.GameFiles
                             break;
                         }
                         reader.ReadStartElement();
-                        var txdRelationshipsList = new List<CTxdRelationship>();
+                        using (var txdRelationshipsList = new PooledList<CTxdRelationship>())
+                        {
+                            while (reader.IsItemElement())
+                            {
+                                txdRelationshipsList.Add(new CTxdRelationship(reader));
+                            }
+                            reader.ReadEndElement();
+                            if (txdRelationshipsList.Count > 0)
+                            {
+                                txdRelationships = txdRelationshipsList.ToArray();
+                            }
+                        }
 
-                        while (reader.IsItemElement())
-                        {
-                            txdRelationshipsList.Add(new CTxdRelationship(reader));
-                        }
-                        reader.ReadEndElement();
-                        if (txdRelationshipsList.Count > 0)
-                        {
-                            txdRelationships = txdRelationshipsList.ToArray();
-                        }
                         break;
                     case string Name when Name.Equals("multiTxdRelationships", StringComparison.OrdinalIgnoreCase):
                         if (reader.IsEmptyElement)
@@ -152,16 +157,19 @@ namespace CodeWalker.GameFiles
                             break;
                         }
                         reader.ReadStartElement();
-                        var multiTxdList = new List<CMultiTxdRelationship>();
-                        while (reader.IsItemElement())
+                        using (var multiTxdList = new PooledList<CMultiTxdRelationship>())
                         {
-                            multiTxdList.Add(new CMultiTxdRelationship(reader));
+                            while (reader.IsItemElement())
+                            {
+                                multiTxdList.Add(new CMultiTxdRelationship(reader));
+                            }
+                            reader.ReadEndElement();
+                            if (multiTxdList.Count > 0)
+                            {
+                                multiTxdRelationships = multiTxdList.ToArray();
+                            }
                         }
-                        reader.ReadEndElement();
-                        if (multiTxdList.Count > 0)
-                        {
-                            multiTxdRelationships = multiTxdList.ToArray();
-                        }
+
                         break;
                     default:
                         break;
@@ -334,13 +342,16 @@ namespace CodeWalker.GameFiles
                         MovementClipSet = Xml.GetChildInnerText(reader, "MovementClipSet");
                         break;
                     case "MovementClipSets":
-                        var clipSetsList = new List<string>();
-                        foreach(var item in Xml.IterateItems(reader, "MovementClipSets"))
+                        using (var clipSetsList = new PooledList<string>())
                         {
-                            clipSetsList.Add(item.Value);
+                            foreach (var item in Xml.IterateItems(reader, "MovementClipSets"))
+                            {
+                                clipSetsList.Add(item.Value);
+                            }
+
+                            MovementClipSets = clipSetsList.ToArray();
                         }
 
-                        MovementClipSets = clipSetsList.ToArray();
                         break;
                     case "StrafeClipSet":
                         StrafeClipSet = Xml.GetChildInnerText(reader, "StrafeClipSet");
@@ -707,7 +718,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return parent + ": " + (children?.Length ?? 0).ToString() + " children";
+            return $"{parent}: {(children?.Length ?? 0)} children";
         }
     }
 

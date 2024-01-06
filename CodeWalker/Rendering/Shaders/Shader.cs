@@ -20,7 +20,7 @@ namespace CodeWalker.Rendering
 
         public abstract void SetShader(DeviceContext context);
         public abstract bool SetInputLayout(DeviceContext context, VertexType type);
-        public abstract void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights);
+        public abstract void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights);
         public abstract void SetEntityVars(DeviceContext context, ref RenderableInst rend);
         public abstract void SetModelVars(DeviceContext context, RenderableModel model);
         public abstract void SetGeomVars(DeviceContext context, RenderableGeometry geom);

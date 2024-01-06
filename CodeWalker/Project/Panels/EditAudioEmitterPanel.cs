@@ -43,7 +43,7 @@ namespace CodeWalker.Project.Panels
 
         private void UpdateUI()
         {
-            if (CurrentEmitter?.AudioEmitter == null)
+            if (CurrentEmitter?.AudioEmitter is null)
             {
                 AddToProjectButton.Enabled = false;
                 DeleteButton.Enabled = false;
@@ -144,8 +144,10 @@ namespace CodeWalker.Project.Panels
 
         private void NameTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter is null)
+                return;
 
             uint hash = 0;
             string name = NameTextBox.Text;
@@ -168,8 +170,10 @@ namespace CodeWalker.Project.Panels
 
         private void PositionTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter is null)
+                return;
 
             var vec = FloatUtil.ParseVector3String(PositionTextBox.Text);
             if (CurrentEmitter.AudioEmitter.Position != vec)
@@ -191,8 +195,10 @@ namespace CodeWalker.Project.Panels
 
         private void InnerRadiusTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter is null)
+                return;
 
             float rad = FloatUtil.Parse(InnerRadiusTextBox.Text);
             if (CurrentEmitter.AudioEmitter.InnerRadius != rad)
@@ -205,8 +211,10 @@ namespace CodeWalker.Project.Panels
 
         private void OuterRadiusTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter is null)
+                return;
 
             float rad = FloatUtil.Parse(OuterRadiusTextBox.Text);
             if (CurrentEmitter.AudioEmitter.OuterRadius != rad)
@@ -219,8 +227,10 @@ namespace CodeWalker.Project.Panels
 
         private void ChildSoundTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter is null)
+                return;
 
             uint hash = 0;
             string name = ChildSoundTextBox.Text;
@@ -241,8 +251,10 @@ namespace CodeWalker.Project.Panels
 
         private void CategoryTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter is null)
+                return;
 
             uint hash = 0;
             string name = CategoryTextBox.Text;
@@ -263,8 +275,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk01TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             float unk = FloatUtil.Parse(Unk01TextBox.Text);
             if (CurrentEmitter.AudioEmitter.Unk01 != unk)
@@ -277,8 +291,10 @@ namespace CodeWalker.Project.Panels
 
         private void StartTimeUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             ushort unk = (ushort)StartTimeUpDown.Value;
             if (CurrentEmitter.AudioEmitter.StartTime != unk)
@@ -291,8 +307,10 @@ namespace CodeWalker.Project.Panels
 
         private void EndTimeUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             ushort unk = (ushort)EndTimeUpDown.Value;
             if (CurrentEmitter.AudioEmitter.EndTime != unk)
@@ -305,8 +323,10 @@ namespace CodeWalker.Project.Panels
 
         private void FrequencyUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             ushort unk = (ushort)FrequencyUpDown.Value;
             if (CurrentEmitter.AudioEmitter.Frequency.Value != unk)
@@ -319,8 +339,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk07UpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             ushort unk = (ushort)Unk07UpDown.Value;
             if (CurrentEmitter.AudioEmitter.Unk07.Value != unk)
@@ -333,8 +355,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk08UpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             byte unk = (byte)Unk08UpDown.Value;
             if (CurrentEmitter.AudioEmitter.Unk08.Value != unk)
@@ -347,8 +371,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk09UpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             byte unk = (byte)Unk09UpDown.Value;
             if (CurrentEmitter.AudioEmitter.Unk09.Value != unk)
@@ -361,8 +387,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk10UpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             byte unk = (byte)Unk10UpDown.Value;
             if (CurrentEmitter.AudioEmitter.Unk10.Value != unk)
@@ -375,8 +403,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk11UpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             byte unk = (byte)Unk11UpDown.Value;
             if (CurrentEmitter.AudioEmitter.Unk11.Value != unk)
@@ -389,8 +419,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk12UpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             byte unk = (byte)Unk12UpDown.Value;
             if (CurrentEmitter.AudioEmitter.Unk12.Value != unk)
@@ -403,8 +435,10 @@ namespace CodeWalker.Project.Panels
 
         private void Unk13UpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             byte unk = (byte)Unk13UpDown.Value;
             if (CurrentEmitter.AudioEmitter.Unk13.Value != unk)
@@ -417,8 +451,10 @@ namespace CodeWalker.Project.Panels
 
         private void Flags0TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             uint flags = 0;
             if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
@@ -434,8 +470,10 @@ namespace CodeWalker.Project.Panels
 
         private void Flags1TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             uint flags = 0;
             if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
@@ -451,8 +489,10 @@ namespace CodeWalker.Project.Panels
 
         private void Flags2TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             uint flags = 0;
             if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
@@ -468,8 +508,10 @@ namespace CodeWalker.Project.Panels
 
         private void Flags3TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             uint flags = 0;
             if (uint.TryParse(Flags3TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
@@ -485,8 +527,10 @@ namespace CodeWalker.Project.Panels
 
         private void Flags4TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             uint flags = 0;
             if (uint.TryParse(Flags4TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
@@ -502,8 +546,10 @@ namespace CodeWalker.Project.Panels
 
         private void Flags5TextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             uint flags = 0;
             if (uint.TryParse(Flags5TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
@@ -519,8 +565,10 @@ namespace CodeWalker.Project.Panels
 
         private void VariablesTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (populatingui)
+                return;
+            if (CurrentEmitter?.AudioEmitter == null)
+                return;
 
             var paramstrs = VariablesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
@@ -531,7 +579,6 @@ namespace CodeWalker.Project.Panels
                     var paramvals = paramstr.Split(',');
                     if (paramvals?.Length == 3)
                     {
-                        var param = new Dat151AmbientRule.Variable();
                         var hashstr = paramvals[0].Trim();
                         var valstr = paramvals[1].Trim();
                         var flgstr = paramvals[2].Trim();
@@ -543,9 +590,12 @@ namespace CodeWalker.Project.Panels
                         }
                         uint flags = 0;
                         uint.TryParse(flgstr, out flags);
-                        param.Name = hash;
-                        param.Value = FloatUtil.Parse(valstr);
-                        param.Flags = flags;
+                        var param = new Dat151AmbientRule.Variable
+                        {
+                            Name = hash,
+                            Value = FloatUtil.Parse(valstr),
+                            Flags = flags,
+                        };
                         paramlist.Add(param);
                     }
                 }
@@ -559,15 +609,17 @@ namespace CodeWalker.Project.Panels
 
         private void GoToButton_Click(object sender, EventArgs e)
         {
-            if (CurrentEmitter == null) return;
-            if (ProjectForm.WorldForm == null) return;
+            if (CurrentEmitter == null)
+                return;
+            if (ProjectForm.WorldForm == null)
+                return;
             ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioZone.PlaybackZoneSize);
         }
 
-        private void AddToProjectButton_Click(object sender, EventArgs e)
+        private async void AddToProjectButton_Click(object sender, EventArgs e)
         {
             ProjectForm.SetProjectItem(CurrentEmitter);
-            ProjectForm.AddAudioFileToProject(CurrentEmitter.RelFile);
+            await ProjectForm.AddAudioFileToProject(CurrentEmitter.RelFile);
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)

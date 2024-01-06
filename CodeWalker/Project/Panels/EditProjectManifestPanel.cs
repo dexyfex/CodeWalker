@@ -71,10 +71,10 @@ namespace CodeWalker.Project.Panels
             sb.AppendLine("  <imapDependencies/>");
 
 
-            var getYtypName = new Func<YtypFile, string>((ytyp) =>
+            var getYtypName = new Func<YtypFile?, string?>((ytyp) =>
             {
                 var ytypname = ytyp?.RpfFileEntry?.Name;
-                if (ytyp != null)
+                if (ytyp is not null)
                 {
                     if (string.IsNullOrEmpty(ytypname))
                     {
@@ -108,7 +108,7 @@ namespace CodeWalker.Project.Panels
 
                         mapdeps.Clear();
                         bool ismilo = false;
-                        if (ymap.AllEntities != null)
+                        if (ymap.AllEntities is not null)
                         {
                             foreach (var ent in ymap.AllEntities)
                             {
@@ -122,7 +122,7 @@ namespace CodeWalker.Project.Panels
                                 if (ent.IsMlo)
                                 {
                                     ismilo = true;
-                                    if (ent.MloInstance?.Entities != null)
+                                    if (ent.MloInstance?.Entities != null && ent.MloInstance.Entities.Length > 0)
                                     {
                                         Dictionary<string, YtypFile> typdepdict;
                                         if (!typdeps.TryGetValue(ytypname, out typdepdict))
@@ -144,7 +144,7 @@ namespace CodeWalker.Project.Panels
 
                             }
                         }
-                        if (ymap.GrassInstanceBatches != null)
+                        if (ymap.GrassInstanceBatches != null && ymap.GrassInstanceBatches.Length > 0)
                         {
                             foreach (var batch in ymap.GrassInstanceBatches)
                             {
@@ -182,15 +182,14 @@ namespace CodeWalker.Project.Panels
                     sb.AppendLine("  <imapDependencies_2/>");
                 }
 
-                if ((CurrentProjectFile.YtypFiles.Count > 0) && (ProjectForm?.GameFileCache != null))
+                if (CurrentProjectFile.YtypFiles.Count > 0 && ProjectForm.GameFileCache is not null)
                 {
                     foreach (var ytyp in CurrentProjectFile.YtypFiles)
                     {
                         var ytypname = getYtypName(ytyp);
                         foreach (var archm in ytyp.AllArchetypes)
                         {
-                            var mloa = archm as MloArchetype;
-                            if (mloa != null)
+                            if (archm is MloArchetype mloa)
                             {
                                 interiors.Add(mloa.Name);
                                 Dictionary<string, YtypFile> typdepdict;
@@ -207,7 +206,7 @@ namespace CodeWalker.Project.Panels
                                         var arch = ProjectForm.GameFileCache.GetArchetype(archname);
                                         var iytyp = arch?.Ytyp;
                                         var iytypname = getYtypName(iytyp);
-                                        if ((iytyp != null) && (iytypname != ytypname))
+                                        if (iytyp is not null && iytypname != ytypname)
                                         {
                                             typdepdict[iytypname] = iytyp;
                                         }

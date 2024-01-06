@@ -122,7 +122,7 @@ namespace CodeWalker.Rendering
 
         public WaterShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] vsptbytes = File.ReadAllBytes(Path.Combine(folder, "WaterVS_PT.cso"));
             byte[] vspctbytes = File.ReadAllBytes(Path.Combine(folder, "WaterVS_PCT.cso"));
             byte[] vspnctbytes = File.ReadAllBytes(Path.Combine(folder, "WaterVS_PNCT.cso"));
@@ -234,7 +234,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             uint rendermode = 0;
             uint rendermodeind = 1;
@@ -287,8 +287,8 @@ namespace CodeWalker.Rendering
             Vector2 fogtexInv = 1.0f / (fogtexMax - fogtexMin);
 
 
-            bool usewaterbumps = (waterbump != null) && (waterbump.ShaderResourceView != null) && (waterbump2 != null) && (waterbump2.ShaderResourceView != null);
-            bool usefogtex = (waterfog != null) && (waterfog.ShaderResourceView != null);
+            bool usewaterbumps = (waterbump is not null) && (waterbump.ShaderResourceView is not null) && (waterbump2 is not null) && (waterbump2.ShaderResourceView is not null);
+            bool usefogtex = (waterfog is not null) && (waterfog.ShaderResourceView is not null);
 
             VSSceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             VSSceneVars.Vars.WaterVector = Vector4.Zero;
@@ -297,7 +297,7 @@ namespace CodeWalker.Rendering
             VSSceneVars.SetVSCBuffer(context, 0);
 
             PSSceneVars.Vars.GlobalLights = lights.Params;
-            PSSceneVars.Vars.EnableShadows = (shadowmap != null) ? 1u : 0u;
+            PSSceneVars.Vars.EnableShadows = (shadowmap is not null) ? 1u : 0u;
             PSSceneVars.Vars.RenderMode = rendermode;
             PSSceneVars.Vars.RenderModeIndex = rendermodeind;
             PSSceneVars.Vars.RenderSamplerCoord = (uint)RenderTextureSamplerCoord;
@@ -309,18 +309,15 @@ namespace CodeWalker.Rendering
             PSSceneVars.Update(context);
             PSSceneVars.SetPSCBuffer(context, 0);
 
-            if (shadowmap != null)
-            {
-                shadowmap.SetFinalRenderResources(context);
-            }
+            shadowmap?.SetFinalRenderResources(context);
             if (usewaterbumps)
             {
-                context.PixelShader.SetShaderResource(4, waterbump.ShaderResourceView);
-                context.PixelShader.SetShaderResource(5, waterbump2.ShaderResourceView);
+                context.PixelShader.SetShaderResource(4, waterbump!.ShaderResourceView);
+                context.PixelShader.SetShaderResource(5, waterbump2!.ShaderResourceView);
             }
             if (usefogtex)
             {
-                context.PixelShader.SetShaderResource(6, waterfog.ShaderResourceView);
+                context.PixelShader.SetShaderResource(6, waterfog!.ShaderResourceView);
             }
 
         }
@@ -354,7 +351,8 @@ namespace CodeWalker.Rendering
                     {
                         var itex = geom.RenderableTextures[i];
                         var ihash = geom.TextureParamHashes[i];
-                        if (itex == null) continue;
+                        if (itex is null)
+                            continue;
                         switch (ihash)
                         {
                             case ShaderParamNames.DiffuseSampler:

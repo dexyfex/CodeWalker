@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using Collections.Pooled;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static CodeWalker.GameFiles.MetaXmlBase;
 
 /*
     Copyright(c) 2016 Neodymium
@@ -41,10 +43,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipDictionary : ResourceFileBase
     {
-        public override long BlockLength
-        {
-            get { return 64; }
-        }
+        public override long BlockLength => 64;
 
         // structure data
         public uint Unknown_10h { get; set; } // 0x00000000
@@ -61,11 +60,11 @@ namespace CodeWalker.GameFiles
 
         // reference data
         public AnimationMap Animations { get; set; }
-        public ResourcePointerArray64<ClipMapEntry> Clips { get; set; }
+        public ResourcePointerArray64<ClipMapEntry?> Clips { get; set; }
 
         //data used by CW for loading/saving
-        public Dictionary<MetaHash, ClipMapEntry> ClipMap { get; set; }
-        public Dictionary<MetaHash, AnimationMapEntry> AnimMap { get; set; }
+        public Dictionary<MetaHash, ClipMapEntry?> ClipMap { get; set; }
+        public Dictionary<MetaHash, AnimationMapEntry?> AnimMap { get; set; }
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -138,14 +137,14 @@ namespace CodeWalker.GameFiles
 
         public void BuildMaps()
         {
-            ClipMap = new Dictionary<MetaHash, ClipMapEntry>();
-            AnimMap = new Dictionary<MetaHash, AnimationMapEntry>();
+            ClipMap = new Dictionary<MetaHash, ClipMapEntry?>();
+            AnimMap = new Dictionary<MetaHash, AnimationMapEntry?>();
 
-            if ((Clips != null) && (Clips.data_items != null))
+            if (Clips?.data_items is not null)
             {
                 foreach (var cme in Clips.data_items)
                 {
-                    if (cme != null)
+                    if (cme is not null)
                     {
                         ClipMap[cme.Hash] = cme;
                         var nxt = cme.Next;
@@ -157,11 +156,11 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
-            if ((Animations != null) && (Animations.Animations != null) && (Animations.Animations.data_items != null))
+            if (Animations?.Animations?.data_items is not null)
             {
                 foreach (var ame in Animations.Animations.data_items)
                 {
-                    if (ame != null)
+                    if (ame is not null)
                     {
                         AnimMap[ame.Hash] = ame;
                         var nxt = ame.NextEntry;
@@ -174,21 +173,22 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            foreach (var cme in ClipMap.Values)
-            {
-                var clip = cme.Clip;
-                if (clip == null) continue;
+            //foreach (var cme in ClipMap.Values)
+            //{
+            //    var clip = cme.Clip;
+            //    if (clip == null)
+            //        continue;
 
-                var name = clip.ShortName; //just to make sure ShortName is generated and in JenkIndex...
+            //    var name = clip.ShortName; //just to make sure ShortName is generated and in JenkIndex...
 
-                //if (name.EndsWith("_uv_0")) //hash for these entries match string with this removed, +1
-                //{
-                //}
-                //if (name.EndsWith("_uv_1")) //same as above, but +2
-                //{
-                //}
+            //    //if (name.EndsWith("_uv_0")) //hash for these entries match string with this removed, +1
+            //    //{
+            //    //}
+            //    //if (name.EndsWith("_uv_1")) //same as above, but +2
+            //    //{
+            //    //}
 
-            }
+            //}
             //foreach (var ame in AnimMap.Values)
             //{
             //    var anim = ame.Animation;
@@ -337,8 +337,7 @@ namespace CodeWalker.GameFiles
             foreach (var cme in clipList)
             {
                 var cb = cme?.Clip;
-                var clipanim = cb as ClipAnimation;
-                if (clipanim != null)
+                if (cb is ClipAnimation clipanim)
                 {
                     animDict.TryGetValue(clipanim.AnimationHash, out Animation a);
                     clipanim.Animation = a;
@@ -370,25 +369,25 @@ namespace CodeWalker.GameFiles
         {
             var numClipBuckets = GetNumHashBuckets(clips?.Length ?? 0);
             var clipBuckets = new List<ClipMapEntry>[numClipBuckets];
-            if (clips != null)
+            if (clips is not null)
             {
                 foreach (var cme in clips)
                 {
                     var b = cme.Hash % numClipBuckets;
-                    var bucket = clipBuckets[b];
-                    if (bucket == null)
+                    ref var bucket = ref clipBuckets[b];
+                    if (bucket is null)
                     {
-                        bucket = new List<ClipMapEntry>();
-                        clipBuckets[b] = bucket;
+                        bucket = new List<ClipMapEntry?>();
                     }
                     bucket.Add(cme);
                 }
             }
 
-            var newClips = new List<ClipMapEntry>();
+            var newClips = new List<ClipMapEntry?>();
             foreach (var b in clipBuckets)
             {
-                if ((b?.Count ?? 0) == 0) newClips.Add(null);
+                if ((b?.Count ?? 0) == 0)
+                    newClips.Add(null);
                 else
                 {
                     newClips.Add(b[0]);
@@ -403,33 +402,33 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            Clips = new ResourcePointerArray64<ClipMapEntry>();
+            Clips = new ResourcePointerArray64<ClipMapEntry?>();
             Clips.data_items = newClips.ToArray();
 
         }
         public void CreateAnimationsMap(AnimationMapEntry[] anims)
         {
             var numAnimBuckets = GetNumHashBuckets(anims?.Length ?? 0);
-            var animBuckets = new List<AnimationMapEntry>[numAnimBuckets];
-            if (anims != null)
+            var animBuckets = new List<AnimationMapEntry?>[numAnimBuckets];
+            if (anims is not null)
             {
                 foreach (var ame in anims)
                 {
                     var b = ame.Hash % numAnimBuckets;
-                    var bucket = animBuckets[b];
-                    if (bucket == null)
+                    ref var bucket = ref animBuckets[b];
+                    if (bucket is null)
                     {
-                        bucket = new List<AnimationMapEntry>();
-                        animBuckets[b] = bucket;
+                        bucket = new List<AnimationMapEntry?>();
                     }
                     bucket.Add(ame);
                 }
             }
 
-            var newAnims = new List<AnimationMapEntry>();
+            var newAnims = new List<AnimationMapEntry?>();
             foreach (var b in animBuckets)
             {
-                if ((b?.Count ?? 0) == 0) newAnims.Add(null);
+                if (b is null || b.Count == 0)
+                    newAnims.Add(null);
                 else
                 {
                     newAnims.Add(b[0]);
@@ -479,10 +478,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimationMap : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         // structure data
         public uint VFT { get; set; }
@@ -548,17 +544,17 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (Animations != null) list.Add(Animations);
-            return list.ToArray();
+            if (Animations is null)
+            {
+                return [];
+            }
+
+            return [ Animations ];
         }
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class AnimationMapEntry : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 32; }
-        }
+        public override long BlockLength => 32;
 
         // structure data
         public MetaHash Hash { get; set; }
@@ -569,8 +565,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1Ch { get; set; } // 0x00000000
 
         // reference data
-        public Animation Animation { get; set; }
-        public AnimationMapEntry NextEntry { get; set; }
+        public Animation? Animation { get; set; }
+        public AnimationMapEntry? NextEntry { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -590,10 +586,8 @@ namespace CodeWalker.GameFiles
                 this.NextEntryPtr // offset
             );
 
-            if (Animation != null)
+            if (Animation is not null)
             {
-                if (Animation.Hash != 0)
-                { }
                 Animation.Hash = Hash;
             }
         }
@@ -616,23 +610,19 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (Animation != null) list.Add(Animation);
-            if (NextEntry != null) list.Add(NextEntry);
+            if (Animation is not null)
+                list.Add(Animation);
+            if (NextEntry is not null)
+                list.Add(NextEntry);
             return list.ToArray();
         }
 
-        public override string ToString()
-        {
-            return Hash.ToString();
-        }
+        public override string ToString() => Hash.ToString();
 
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Animation : ResourceSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 96; }
-        }
+        public override long BlockLength => 96;
 
         // structure data
         public uint VFT { get; set; }
@@ -687,80 +677,6 @@ namespace CodeWalker.GameFiles
             this.BoneIds = reader.ReadBlock<ResourceSimpleList64_s<AnimationBoneId>>();
 
             AssignSequenceBoneIds();
-
-
-
-            //bool hasUVs = false;
-            //if (BoneIds?.data_items != null)
-            //{
-            //    foreach (var boneid in BoneIds.data_items)
-            //    {
-            //        if (boneid.Track == 17)//UV0
-            //        { hasUVs = true; }
-            //        if (boneid.Track == 18)//UV1
-            //        { hasUVs = true; }
-            //    }
-            //}
-
-            //bool hasRootMotion = false;  // (Unknown_10h & 16) == hasRootMotion
-            //if (Sequences?.data_items != null)
-            //{
-            //    foreach (var seq in Sequences.data_items)
-            //    {
-            //        if (seq == null) continue;
-            //        if (seq.RootMotionRefCounts != 0) { hasRootMotion = true; }
-            //    }
-            //}
-
-            //var b0 = (Unknown_1Ch) & 0xFF;
-            //var b1 = (Unknown_1Ch >> 8) & 0xFF;
-            //var b2 = (Unknown_1Ch >> 16) & 0xFF;
-            //var b3 = (Unknown_1Ch >> 24) & 0xFF;
-            //if (hasUVs)
-            //{
-            //    if (Unknown_1Ch != 0x6B002400)
-            //    { }
-            //}
-            //else
-            //{
-            //}
-
-
-            //switch (Unknown_10h)
-            //{
-            //    case 0:
-            //        if (hasRootMotion) { }
-            //        break;
-            //    case 1://is prop?
-            //        if (hasRootMotion) { }
-            //        break;
-            //    case 8:
-            //        if (hasRootMotion) { }
-            //        break;
-            //    case 16:
-            //        if (!hasRootMotion) { }
-            //        break;
-            //    case 24:
-            //        if (!hasRootMotion) { }
-            //        break;
-            //    default: break;
-            //}
-
-
-
-
-
-
-
-            //if (Unknown_04h != 1)
-            //{ }
-            //if (Unknown_11h != 1)
-            //{ }
-
-
-
-
-
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -791,13 +707,13 @@ namespace CodeWalker.GameFiles
             writer.WriteBlock(this.BoneIds);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
             BuildSequencesData();//TODO: move this somewhere better?
 
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x40, Sequences),
-                new Tuple<long, IResourceBlock>(0x50, BoneIds)
+            return new (long, IResourceBlock)[] {
+                (0x40, Sequences),
+                (0x50, BoneIds)
             };
         }
 
@@ -879,29 +795,34 @@ namespace CodeWalker.GameFiles
 
 
 
-        public struct FramePosition
+        public readonly struct FramePosition
         {
-            public int Frame0;
-            public int Frame1;
-            public float Alpha0;
-            public float Alpha1;
+            public int Frame0 { get; init; }
+            public int Frame1 { get; init; }
+            public float Alpha0 { get; init; }
+            public float Alpha1 { get; init; }
         }
+
         public FramePosition GetFramePosition(float t)
         {
             bool ignoreLastFrame = true;//if last frame is equivalent to the first one, eg rollercoaster small light "globes" don't
 
-            FramePosition p = new FramePosition();
             var nframes = (ignoreLastFrame) ? (Frames - 1) : Frames;
 
             var curPos = (t / Duration) * nframes;
-            p.Frame0 = ((ushort)curPos) % Frames;
-            p.Frame1 = (p.Frame0 + 1);// % frames;
-            p.Alpha1 = (float)(curPos - Math.Floor(curPos));
-            p.Alpha0 = 1.0f - p.Alpha1;
 
-            return p;
+            var frame0 = ((ushort)curPos) % Frames;
+            var alpha1 = (float)(curPos - Math.Floor(curPos));
+
+            return new FramePosition
+            {
+                Frame0 = frame0,
+                Frame1 = frame0 + 1,
+                Alpha0 = 1.0f - alpha1,
+                Alpha1 = alpha1,
+            };
         }
-        public Vector4 EvaluateVector4(FramePosition frame, int boneIndex, bool interpolate)
+        public Vector4 EvaluateVector4(in FramePosition frame, int boneIndex, bool interpolate)
         {
             var s = frame.Frame0 / SequenceFrameLimit;
             int f0 = frame.Frame0 % SequenceFrameLimit;
@@ -913,7 +834,7 @@ namespace CodeWalker.GameFiles
             var v = interpolate ? (v0 * frame.Alpha0) + (v1 * frame.Alpha1) : v0;
             return v;
         }
-        public Quaternion EvaluateQuaternion(FramePosition frame, int boneIndex, bool interpolate)
+        public Quaternion EvaluateQuaternion(in FramePosition frame, int boneIndex, bool interpolate)
         {
             var s = frame.Frame0 / SequenceFrameLimit;
             int f0 = frame.Frame0 % SequenceFrameLimit;
@@ -922,7 +843,7 @@ namespace CodeWalker.GameFiles
             var aseq = seq.Sequences[boneIndex];
             var q0 = aseq.EvaluateQuaternion(f0);
             var q1 = aseq.EvaluateQuaternion(f1);
-            var q = interpolate ? QuaternionExtension.FastLerp(q0, q1, frame.Alpha1) : q0;
+            var q = interpolate ? QuaternionExtension.FastLerp(in q0, in q1, frame.Alpha1) : q0;
             return q;
         }
 
@@ -939,20 +860,18 @@ namespace CodeWalker.GameFiles
             }
             return -1;
         }
-
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct AnimationBoneId : IMetaXmlItem
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct AnimationBoneId : IMetaXmlItem
     {
         public ushort BoneId { get; set; }
         public byte Unk0 { get; set; }
         public byte Track { get; set; }
 
-        public override string ToString()
-        {
-            return BoneId.ToString() + ": " + Unk0.ToString() + ", " + Track.ToString();
-        }
+        public readonly override string ToString() => $"{BoneId}: {Unk0}, {Track}";
 
-        public void WriteXml(StringBuilder sb, int indent)
+        public readonly void WriteXml(StringBuilder sb, int indent)
         {
             YcdXml.ValueTag(sb, indent, "BoneId", BoneId.ToString());
             YcdXml.ValueTag(sb, indent, "Track", Track.ToString());
@@ -1292,7 +1211,7 @@ namespace CodeWalker.GameFiles
             YcdXml.ValueTag(sb, indent, "Quantum", FloatUtil.ToString(Quantum));
             YcdXml.ValueTag(sb, indent, "Offset", FloatUtil.ToString(Offset));
             YcdXml.WriteRawArray(sb, Values, indent, "Values", "", FloatUtil.ToString, 10);// (Values?.Length ?? 0) + 1);
-            YcdXml.WriteRawArray(sb, Frames, indent, "Frames", "", null, 10);// (Frames?.Length ?? 0) + 1);
+            YcdXml.WriteRawArray(sb, Frames, indent, "Frames", "", (FormatterRef<uint>?)null, 10);// (Frames?.Length ?? 0) + 1);
         }
         public override void ReadXml(XmlNode node)
         {
@@ -1687,7 +1606,7 @@ namespace CodeWalker.GameFiles
         public override void ReadFrame(AnimChannelDataReader reader)
         {
             uint bits = reader.ReadFrameBits(32);
-            float v = MetaTypes.ConvertData<float>(MetaTypes.ConvertToBytes(bits));
+            float v = MetaTypes.ConvertData<float>(MetaTypes.ConvertToBytes(in bits));
             Values[reader.Frame] = v;
         }
         public override void WriteFrame(AnimChannelDataWriter writer)
@@ -2180,8 +2099,8 @@ namespace CodeWalker.GameFiles
                 );
             }
 
-            var t7 = Channels[3] as AnimChannelCachedQuaternion;//type 1
-            if (t7 == null) t7 = Channels[4] as AnimChannelCachedQuaternion;//type 2
+            //type 1
+            if (Channels[3] is not AnimChannelCachedQuaternion t7) t7 = Channels[4] as AnimChannelCachedQuaternion;//type 2
 
             var x = Channels[0].EvaluateFloat(frame);
             var y = Channels[1].EvaluateFloat(frame);
@@ -2219,9 +2138,7 @@ namespace CodeWalker.GameFiles
             {
                 if (c >= 4) break;
                 var channel = Channels[i];
-                var sv3c = channel as AnimChannelStaticVector3;
-                var ssqc = channel as AnimChannelStaticQuaternion;
-                if (sv3c != null)
+                if (channel is AnimChannelStaticVector3 sv3c)
                 {
                     for (int n = 0; n < 3; n++)
                     {
@@ -2230,7 +2147,7 @@ namespace CodeWalker.GameFiles
                     }
                     c += 3;
                 }
-                else if (ssqc != null)
+                else if (channel is AnimChannelStaticQuaternion ssqc)
                 {
                     for (int n = 0; n < 4; n++)
                     {
@@ -2898,8 +2815,8 @@ namespace CodeWalker.GameFiles
         public uint Unknown_1Ch { get; set; } // 0x00000000
 
         // reference data
-        public ClipBase Clip { get; set; }
-        public ClipMapEntry Next { get; set; }
+        public ClipBase? Clip { get; set; }
+        public ClipMapEntry? Next { get; set; }
 
         public bool EnableRootMotion { get; set; } = false; //used by CW to toggle whether or not to include root motion when playing animations
         public bool OverridePlayTime { get; set; } = false; //used by CW to manually override the animation playback time
@@ -2925,12 +2842,10 @@ namespace CodeWalker.GameFiles
             );
 
 
-            if (Clip != null)
+            if (Clip is not null)
             {
                 Clip.Hash = Hash;
             }
-            else
-            { }
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -2956,18 +2871,12 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override string ToString()
-        {
-            return Clip?.Name ?? Hash.ToString();
-        }
+        public override string ToString() => Clip?.Name ?? Hash.ToString();
 
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipBase : ResourceSystemBlock, IResourceXXSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 112; }
-        }
+        public override long BlockLength => 112;
 
         // structure data
         public uint VFT { get; set; }
@@ -3054,9 +2963,6 @@ namespace CodeWalker.GameFiles
                 this.PropertiesPointer // offset
             );
 
-            if (Unknown_28hPtr != 0x50000000)
-            { }
-
             switch (VFT)//some examples
             {
                 case 1079664808:
@@ -3074,9 +2980,6 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
-
-            if (Tags?.Tags?.data_items == null)
-            { }
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -3117,8 +3020,10 @@ namespace CodeWalker.GameFiles
                 NameBlock = (string_r)Name;
                 list.Add(NameBlock);
             }
-            if (Tags != null) list.Add(Tags);
-            if (Properties != null) list.Add(Properties);
+            if (Tags is not null)
+                list.Add(Tags);
+            if (Properties is not null)
+                list.Add(Properties);
             return list.ToArray();
         }
 
@@ -3132,21 +3037,18 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static ClipBase ConstructClip(ClipType type)
+        public static ClipBase? ConstructClip(ClipType type)
         {
-            switch (type)
+            return type switch
             {
-                case ClipType.Animation: return new ClipAnimation();
-                case ClipType.AnimationList: return new ClipAnimationList();
-                default: return null;// throw new Exception("Unknown type");
-            }
+                ClipType.Animation => new ClipAnimation(),
+                ClipType.AnimationList => new ClipAnimationList(),
+                _ => null,// throw new Exception("Unknown type");
+            };
         }
 
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
 
 
         public virtual void WriteXml(StringBuilder sb, int indent)
@@ -3179,12 +3081,11 @@ namespace CodeWalker.GameFiles
             Properties.CreatePropertyMap(props);
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimation : ClipBase
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClipAnimation : ClipBase
     {
-        public override long BlockLength
-        {
-            get { return 112; }
-        }
+        public override long BlockLength => 112;
 
         // structure data
         public ulong AnimationPointer { get; set; }
@@ -3196,7 +3097,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_6Ch { get; set; } // 0x00000000
 
         // reference data
-        public Animation Animation { get; set; }
+        public Animation? Animation { get; set; }
         public MetaHash AnimationHash { get; set; } //used when reading XML.
 
         public ClipAnimation()
@@ -3239,7 +3140,8 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
             list.AddRange(base.GetReferences());
-            if (Animation != null) list.Add(Animation);
+            if (Animation is not null)
+                list.Add(Animation);
             return list.ToArray();
         }
 
@@ -3270,10 +3172,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimationList : ClipBase
     {
-        public override long BlockLength
-        {
-            get { return 112; }
-        }
+        public override long BlockLength => 112;
 
         // structure data
         public ulong AnimationsPointer { get; set; }
@@ -3286,7 +3185,7 @@ namespace CodeWalker.GameFiles
         public uint Unknown_6Ch { get; set; } // 0x00000000
 
         // reference data
-        public ResourceSimpleArray<ClipAnimationsEntry> Animations { get; set; }
+        public ResourceSimpleArray<ClipAnimationsEntry>? Animations { get; set; }
 
 
         public ClipAnimationList()
@@ -3334,7 +3233,8 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
             list.AddRange(base.GetReferences());
-            if (Animations != null) list.Add(Animations);
+            if (Animations is not null)
+                list.Add(Animations);
             return list.ToArray();
         }
 
@@ -3360,18 +3260,22 @@ namespace CodeWalker.GameFiles
             base.ReadXml(node);
             Duration = Xml.GetChildFloatAttribute(node, "Duration", "value");
 
-            Animations = new ResourceSimpleArray<ClipAnimationsEntry>();
-            Animations.Data = new List<ClipAnimationsEntry>();
             var anims = XmlMeta.ReadItemArrayNullable<ClipAnimationsEntry>(node, "Animations");
-            if (anims != null) Animations.Data.AddRange(anims);
+            Animations = new ResourceSimpleArray<ClipAnimationsEntry>();
+            
+            if (anims != null)
+            {
+                Animations.Data = anims.ToList();
+            } else
+            {
+                Animations.Data = new List<ClipAnimationsEntry>();
+            }
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipAnimationsEntry : ResourceSystemBlock, IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClipAnimationsEntry : ResourceSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 24; }
-        }
+        public override long BlockLength => 24;
 
         // structure data
         public float StartTime { get; set; }
@@ -3381,7 +3285,7 @@ namespace CodeWalker.GameFiles
         public ulong AnimationPointer { get; set; }
 
         // reference data
-        public Animation Animation { get; set; }
+        public Animation? Animation { get; set; }
         public MetaHash AnimationHash { get; set; } //used when reading XML.
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -3402,7 +3306,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.AnimationPointer = (ulong)(this.Animation != null ? this.Animation.FilePosition : 0);
+            AnimationPointer = (ulong)(Animation?.FilePosition ?? 0);
 
             // write structure data
             writer.Write(this.StartTime);
@@ -3451,12 +3355,10 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyMap : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClipPropertyMap : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 16; }
-        }
+        public override long BlockLength => 16;
 
         // structure data
         public ulong PropertyEntriesPointer { get; set; }
@@ -3465,10 +3367,10 @@ namespace CodeWalker.GameFiles
         public uint Unknown_0Ch { get; set; } = 0x01000000; // 0x01000000
 
         // reference data
-        public ResourcePointerArray64<ClipPropertyMapEntry> Properties { get; set; }
+        public ResourcePointerArray64<ClipPropertyMapEntry?>? Properties { get; set; }
 
-        public ClipProperty[] AllProperties { get; set; }
-        public Dictionary<MetaHash, ClipProperty> PropertyMap { get; set; }
+        public ClipProperty[]? AllProperties { get; set; }
+        public Dictionary<MetaHash, ClipProperty>? PropertyMap { get; set; }
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -3509,17 +3411,14 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override string ToString()
-        {
-            return "Count: " + (AllProperties?.Length ?? 0).ToString();
-        }
+        public override string ToString() => $"Count: {AllProperties?.Length ?? 0}";
 
 
         public void BuildPropertyMap()
         {
-            if (Properties?.data_items != null)
+            if (Properties?.data_items is not null)
             {
-                List<ClipProperty> pl = new List<ClipProperty>();
+                using PooledList<ClipProperty> pl = new PooledList<ClipProperty>();
                 foreach (var pme in Properties.data_items)
                 {
                     ClipPropertyMapEntry cpme = pme;
@@ -3562,10 +3461,11 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var newProperties = new List<ClipPropertyMapEntry>();
+            var newProperties = new List<ClipPropertyMapEntry?>();
             foreach (var b in buckets)
             {
-                if ((b?.Count ?? 0) == 0) newProperties.Add(null);
+                if (b is null || b.Count == 0)
+                    newProperties.Add(null);
                 else
                 {
                     newProperties.Add(b[0]);
@@ -3580,19 +3480,18 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            Properties = new ResourcePointerArray64<ClipPropertyMapEntry>();
+            Properties = new ResourcePointerArray64<ClipPropertyMapEntry?>();
             Properties.data_items = newProperties.ToArray();
 
             AllProperties = properties;
         }
 
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyMapEntry : ResourceSystemBlock
+
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClipPropertyMapEntry : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 32; }
-        }
+        public override long BlockLength => 32;
 
         // structure data
         public MetaHash PropertyNameHash { get; set; }
@@ -3651,10 +3550,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipProperty : ResourceSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 64; }
-        }
+        public override long BlockLength => 64;
 
         // structure data
         public uint VFT { get; set; }
@@ -3744,23 +3640,25 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (Attributes != null) list.Add(Attributes);
-            return list.ToArray();
+            if (Attributes is null)
+                return [];
+
+            return [Attributes];
         }
 
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            if ((Attributes != null) && (Attributes.data_items != null))
+            if (Attributes?.data_items is not null)
             {
+                StringBuilder sb = new StringBuilder();
                 foreach (var item in Attributes.data_items)
                 {
                     if (sb.Length > 0) sb.Append(", ");
                     sb.Append(item.ToString());
                 }
+                return $"{NameHash}: {UnkHash}: {sb}";
             }
-            return NameHash.ToString() + ": " + UnkHash.ToString() + ": " + sb.ToString();
+            return $"{NameHash}: {UnkHash}";
         }
 
 
@@ -3798,10 +3696,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttribute : ResourceSystemBlock, IResourceXXSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 16; }
-        }
+        public override long BlockLength => 16;
 
         public uint VFT { get; set; }
         public uint Unknown_04h { get; set; } = 1; // 0x00000001
@@ -3896,10 +3791,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeFloat : ClipPropertyAttribute
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         public float Value { get; set; }
         public uint Unknown_24h { get; set; } // 0x00000000
@@ -3930,7 +3822,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Float:" + FloatUtil.ToString(Value);
+            return $"Float:{FloatUtil.ToString(Value)}";
         }
 
 
@@ -3947,10 +3839,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeInt : ClipPropertyAttribute
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         public int Value { get; set; }
         public uint Unknown_24h { get; set; } // 0x00000000
@@ -3981,7 +3870,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Int:" + Value.ToString();
+            return $"Int:{Value}";
         }
 
 
@@ -3998,10 +3887,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeBool : ClipPropertyAttribute
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         public uint Value { get; set; }
         public uint Unknown_24h { get; set; } // 0x00000000
@@ -4032,7 +3918,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Uint:" + Value.ToString();
+            return $"Uint:{Value}";
         }
 
 
@@ -4049,10 +3935,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeString : ClipPropertyAttribute
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         public ulong ValuePointer { get; set; }
         public ushort ValueLength { get; set; }
@@ -4095,17 +3978,19 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (Value != null)
+
+            if (Value is not null)
             {
                 ValueBlock = (string_r)Value;
                 list.Add(ValueBlock);
             }
+
             return list.ToArray();
         }
 
         public override string ToString()
         {
-            return "String:" + Value;
+            return $"String:{Value}";
         }
 
 
@@ -4122,12 +4007,10 @@ namespace CodeWalker.GameFiles
             ValueCapacity = ValueLength;
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeVector3 : ClipPropertyAttribute
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClipPropertyAttributeVector3 : ClipPropertyAttribute
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         public Vector3 Value { get; set; }
         public float Unknown_02Ch { get; set; }
@@ -4152,7 +4035,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Vector3:" + FloatUtil.GetVector3String(Value);
+            return $"Vector3:{FloatUtil.GetVector3String(Value)}";
         }
 
 
@@ -4171,10 +4054,7 @@ namespace CodeWalker.GameFiles
     }
     [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeVector4 : ClipPropertyAttribute
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         public Vector4 Value { get; set; }
 
@@ -4196,7 +4076,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Vector4:" + FloatUtil.GetVector4String(Value);
+            return $"Vector4:{FloatUtil.GetVector4String(Value)}";
         }
 
 
@@ -4211,7 +4091,8 @@ namespace CodeWalker.GameFiles
             Value = Xml.GetChildVector4Attributes(node, "Value");
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipPropertyAttributeHashString : ClipPropertyAttribute
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClipPropertyAttributeHashString : ClipPropertyAttribute
     {
         public override long BlockLength => 0x30;
 
@@ -4244,7 +4125,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "Hash:" + Value.ToString();
+            return $"Hash:{Value}";
         }
 
 
@@ -4313,9 +4194,6 @@ namespace CodeWalker.GameFiles
             );
 
             BuildAllTags();
-
-            if (TagCount1 != TagCount2)
-            { }
         }
 
         public override void Write(ResourceDataWriter writer, params object[] parameters)
@@ -4340,72 +4218,72 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (Tags != null) list.Add(Tags);
-            return list.ToArray();
+            if (Tags is null)
+                return [];
+
+            return [Tags];
         }
 
         public override string ToString()
         {
-            return "Count: " + (AllTags?.Length ?? 0).ToString();
+            return $"Count: {AllTags?.Length ?? 0}";
         }
 
         public void BuildAllTags()
         {
 
-            if ((Tags != null) && (Tags.data_items != null))
+            if (Tags?.data_items is not null)
             {
-                List<ClipTag> tl = new List<ClipTag>();
+                using var tl = new PooledList<ClipTag>();
                 foreach (var te in Tags.data_items)
                 {
-                    if (te.Tags != this)
-                    { }
-                    if (te != null)
-                    {
-                        tl.Add(te);
-                    }
+                    if (te is null)
+                        continue;
+
+                    tl.Add(te);
                 }
                 AllTags = tl.ToArray();
             }
 
 
             uint hasBlock = 0;
-            if (AllTags != null)
+            if (AllTags is not null)
             {
                 foreach (var tag in AllTags)
                 {
                     if (tag.NameHash == (uint)MetaName.block)
-                    { hasBlock = 1; break; }
+                    {
+                        hasBlock = 1;
+                        break;
+                    }
                 }
             }
-            if (HasBlockTag != hasBlock)
-            { }
             HasBlockTag = hasBlock;
 
         }
 
         public void AssignTagOwners()
         {
-            if (Tags?.data_items == null) return;
+            if (Tags?.data_items is null)
+                return;
+
             foreach (var tag in Tags.data_items)
             {
                 tag.Tags = this;
             }
         }
     }
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ClipTag : ClipProperty
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ClipTag : ClipProperty
     {
-        public override long BlockLength
-        {
-            get { return 80; }
-        }
+        public override long BlockLength => 80;
 
         public float StartPhase { get; set; }
         public float EndPhase { get; set; }
         public ulong TagsPointer { get; set; }
 
         // reference data
-        public ClipTagList Tags { get; set; }
+        public ClipTagList? Tags { get; set; }
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -4439,13 +4317,14 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (Tags != null) list.Add(Tags);
+            if (Tags is not null)
+                list.Add(Tags);
             return list.ToArray();
         }
 
         public override string ToString()
         {
-            return base.ToString() + ": " + StartPhase.ToString() + ", " + EndPhase.ToString();
+            return $"{base.ToString()}: {StartPhase}, {EndPhase}";
         }
 
 

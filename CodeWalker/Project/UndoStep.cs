@@ -1208,12 +1208,12 @@ namespace CodeWalker.Project
 
     public class CollisionVertexPositionUndoStep : UndoStep
     {
-        public BoundVertex Vertex { get; set; }
-        public YmapEntityDef Entity { get; set; }
+        public BoundVertex? Vertex { get; set; }
+        public YmapEntityDef? Entity { get; set; }
         public Vector3 StartPosition { get; set; }
         public Vector3 EndPosition { get; set; }
 
-        public CollisionVertexPositionUndoStep(BoundVertex vertex, YmapEntityDef ent, Vector3 startpos, WorldForm wf)
+        public CollisionVertexPositionUndoStep(BoundVertex? vertex, YmapEntityDef? ent, Vector3 startpos, WorldForm wf)
         {
             Vertex = vertex;
             Entity = ent;
@@ -1225,9 +1225,9 @@ namespace CodeWalker.Project
 
         private void Update(WorldForm wf, ref MapSelection sel, Vector3 p)
         {
-            if (Vertex != null)
+            if (Vertex is not null)
             {
-                if (Entity != null)
+                if (Entity is not null)
                 {
                     Vertex.Position = Quaternion.Invert(Entity.Orientation).Multiply(p - Entity.Position);
                 }
@@ -1237,7 +1237,8 @@ namespace CodeWalker.Project
                 }
             }
 
-            if (Vertex != sel.CollisionVertex) wf.SelectObject(Vertex);
+            if (Vertex != sel.CollisionVertex)
+                wf.SelectObject(Vertex);
             wf.SetWidgetPosition(p);
 
             UpdateGraphics(wf);

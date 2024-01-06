@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodeWalker.Utils;
 using CodeWalker.Core.Utils;
+using System.Diagnostics.Tracing;
+using System.Threading;
 
 namespace CodeWalker.RPFExplorer
 {
@@ -23,6 +25,7 @@ namespace CodeWalker.RPFExplorer
             {
                 if (!NamedPipe.TrySendMessageToOtherProcess("explorer"))
                 {
+                    CodeWalker.Program.LoadConfig();
                     ConsoleWindow.Hide();
                     //Process.Start("CodeWalker.exe", "explorer");
                     Application.EnableVisualStyles();
@@ -30,7 +33,7 @@ namespace CodeWalker.RPFExplorer
 
                     var form = new ExploreForm();
                     var namedPipe = new NamedPipe(form);
-                    namedPipe.Init();
+                    namedPipe.StartServer();
 
                     Application.Run(form);
 

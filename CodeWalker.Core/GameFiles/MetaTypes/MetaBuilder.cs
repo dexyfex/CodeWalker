@@ -10,7 +10,7 @@ namespace CodeWalker.GameFiles
     public class MetaBuilder
     {
 
-        List<MetaBuilderBlock> Blocks = new List<MetaBuilderBlock>();
+        readonly List<MetaBuilderBlock> Blocks = new List<MetaBuilderBlock>();
 
         int MaxBlockLength = 0x4000; //TODO: figure what this should be!
 
@@ -31,16 +31,18 @@ namespace CodeWalker.GameFiles
         }
         public MetaBuilderBlock AddBlock(MetaName type)
         {
-            MetaBuilderBlock b = new MetaBuilderBlock();
-            b.StructureNameHash = type;
-            b.Index = Blocks.Count;
+            MetaBuilderBlock b = new MetaBuilderBlock
+            {
+                StructureNameHash = type,
+                Index = Blocks.Count
+            };
             Blocks.Add(b);
             return b;
         }
 
-        public MetaBuilderPointer AddItem<T>(MetaName type, T item) where T : struct
+        public MetaBuilderPointer AddItem<T>(MetaName type, in T item) where T : struct
         {
-            byte[] data = MetaTypes.ConvertToBytes(item);
+            byte[] data = MetaTypes.ConvertToBytes(in item);
             return AddItem(type, data);
         }
 
@@ -56,11 +58,11 @@ namespace CodeWalker.GameFiles
                 data = newdata; //make sure item size is multiple of 16... so pointers don't need sub offsets!
             }
             int idx = block.AddItem(data);
-            MetaBuilderPointer r = new MetaBuilderPointer();
-            r.BlockID = block.Index + 1;
-            r.Offset = (idx * data.Length);
-            r.Length = data.Length;
-            return r;
+            return new MetaBuilderPointer(
+                blockId: block.Index + 1,
+                offset: (idx * data.Length),
+                length: data.Length
+            );
         }
 
         public MetaBuilderPointer AddItemArray<T>(MetaName type, T[] items) where T : struct
@@ -82,12 +84,13 @@ namespace CodeWalker.GameFiles
             byte[] newdata = new byte[newlen];
             Buffer.BlockCopy(data, 0, newdata, 0, datalen);
             int offs = block.TotalSize;
-            int idx = block.AddItem(newdata);
-            MetaBuilderPointer r = new MetaBuilderPointer();
-            r.BlockID = block.Index + 1;
-            r.Offset = offs; //(idx * data.Length);;
-            r.Length = length;
-            return r;
+            _ = block.AddItem(newdata);
+            return new MetaBuilderPointer
+            (
+                blockId: block.Index + 1,
+                offset: offs, //(idx * data.Length);;
+                length: length
+            );
         }
 
         public MetaBuilderPointer AddString(string str)
@@ -99,17 +102,18 @@ namespace CodeWalker.GameFiles
             byte[] newdata = new byte[newlen];
             Buffer.BlockCopy(data, 0, newdata, 0, datalen);
             int offs = block.TotalSize;
-            int idx = block.AddItem(newdata);
-            MetaBuilderPointer r = new MetaBuilderPointer();
-            r.BlockID = block.Index + 1;
-            r.Offset = offs;// (idx * data.Length);
-            r.Length = datalen; //actual length of string. (not incl null terminator)
-            return r;
+            _ = block.AddItem(newdata);
+            return new MetaBuilderPointer
+            (
+                blockId: block.Index + 1,
+                offset: offs,// (idx * data.Length);
+                length: datalen //actual length of string. (not incl null terminator)
+            );
         }
 
-        public MetaPOINTER AddItemPtr<T>(MetaName type, T item) where T : struct //helper method for AddItem<T>
+        public MetaPOINTER AddItemPtr<T>(MetaName type, in T item) where T : struct //helper method for AddItem<T>
         {
-            var ptr = AddItem(type, item);
+            var ptr = AddItem(type, in item);
             return new MetaPOINTER(ptr.BlockID, ptr.Offset);
         }
 
@@ -121,14 +125,16 @@ namespace CodeWalker.GameFiles
 
         public Array_Structure AddItemArrayPtr<T>(MetaName type, T[] items) where T : struct //helper method for AddItemArray<T>
         {
-            if ((items == null) || (items.Length == 0)) return new Array_Structure();
+            if (items is null || items.Length == 0)
+                return new Array_Structure();
             var ptr = AddItemArray(type, items);
             return new Array_Structure(ptr);
         }
 
         public Array_Structure AddItemArrayPtr(MetaName type, byte[][] data) //helper method for AddItemArray<T>
         {
-            if ((data == null) || (data.Length == 0)) return new Array_Structure();
+            if ((data?.Length ?? 0) == 0)
+                return new Array_Structure();
 
             int len = 0;
 
@@ -153,40 +159,43 @@ namespace CodeWalker.GameFiles
 
         public Array_Vector3 AddPaddedVector3ArrayPtr(Vector4[] items)
         {
-            if (items == null || items.Length == 0)
+            if ((items?.Length ?? 0) == 0)
                 return new Array_Vector3();
             var ptr = AddItemArray((MetaName)MetaTypeName.VECTOR4, items); //padded to vec4...
             return new Array_Vector3(ptr);
         }
         public Array_uint AddHashArrayPtr(MetaHash[] items)
         {
-            if (items == null || items.Length == 0)
+            if ((items?.Length ?? 0) == 0)
                 return new Array_uint();
             var ptr = AddItemArray((MetaName)MetaTypeName.HASH, items);
             return new Array_uint(ptr);
         }
         public Array_uint AddUintArrayPtr(uint[] items)
         {
-            if (items == null || items.Length == 0)
+            if ((items?.Length ?? 0) == 0)
                 return new Array_uint();
             var ptr = AddItemArray((MetaName)MetaTypeName.UINT, items);
             return new Array_uint(ptr);
         }
         public Array_ushort AddUshortArrayPtr(ushort[] items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_ushort();
+            if ((items?.Length ?? 0) == 0)
+                return new Array_ushort();
             var ptr = AddItemArray((MetaName)MetaTypeName.USHORT, items);
             return new Array_ushort(ptr);
         }
         public Array_byte AddByteArrayPtr(byte[] items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_byte();
+            if ((items?.Length ?? 0) == 0)
+                return new Array_byte();
             var ptr = AddItemArray((MetaName)MetaTypeName.BYTE, items);
             return new Array_byte(ptr);
         }
         public Array_float AddFloatArrayPtr(float[] items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_float();
+            if ((items?.Length ?? 0) == 0)
+                return new Array_float();
             var ptr = AddItemArray((MetaName)MetaTypeName.FLOAT, items);
             return new Array_float(ptr);
         }
@@ -199,55 +208,45 @@ namespace CodeWalker.GameFiles
         {
             var block = AddBlock(type);
             int offs = block.TotalSize;//should always be 0...
-            int idx = block.AddItem(data);
+            _ = block.AddItem(data);
             var ptr = new DataBlockPointer(block.Index + 1, offs);
             return ptr;
         }
 
 
-        public Array_StructurePointer AddPointerArray(MetaPOINTER[] arr)
+        public Array_StructurePointer AddPointerArray(MetaPOINTER[]? arr)
         {
-            if ((arr == null) || (arr.Length == 0)) return new Array_StructurePointer();
+            if (arr is null || arr.Length == 0)
+                return new Array_StructurePointer();
+
             var ptr = AddItemArray((MetaName)MetaTypeName.POINTER, arr);
-            Array_StructurePointer sp = new Array_StructurePointer();
-            sp.Count1 = (ushort)arr.Length;
-            sp.Count2 = sp.Count1;
-            sp.Pointer = ptr.Pointer;
+            Array_StructurePointer sp = new Array_StructurePointer {
+                Count1 = (ushort)arr.Length,
+                Count2 = (ushort)arr.Length,
+                Pointer = ptr.Pointer,
+            };
             return sp;
         }
 
-        public Array_StructurePointer AddItemPointerArrayPtr<T>(MetaName type, T[] items) where T : struct
+        public Array_StructurePointer AddItemPointerArrayPtr<T>(MetaName type, T[]? items) where T : struct
         {
             //helper method for creating a pointer array
-            if ((items == null) || (items.Length == 0)) return new Array_StructurePointer();
+            if (items is null || items.Length == 0)
+                return new Array_StructurePointer();
 
             MetaPOINTER[] ptrs = new MetaPOINTER[items.Length];
             for (int i = 0; i < items.Length; i++)
             {
-                ptrs[i] = AddItemPtr(type, items[i]);
+                ptrs[i] = AddItemPtr(type, in items[i]);
             }
             return AddPointerArray(ptrs);
-
-            //Array_StructurePointer sp = new Array_StructurePointer();
-            //sp.Count1 = (ushort)items.Length;
-            //sp.Count2 = sp.Count1;
-            //for (int i = 0; i < items.Length; i++)
-            //{
-            //    var item = items[i];
-            //    var meptr = AddItemPtr(type, item);
-            //    var mptr = AddItem((MetaName)MetaTypeName.POINTER, meptr);
-            //    if (i == 0)
-            //    {
-            //        sp.Pointer = mptr.Pointer; //main pointer points to the first item.
-            //    }
-            //}
-            //return sp;
         }
 
 
-        public Array_StructurePointer AddWrapperArrayPtr(MetaWrapper[] items)
+        public Array_StructurePointer AddWrapperArrayPtr(MetaWrapper[]? items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_StructurePointer();
+            if (items is null || items.Length == 0)
+                return new Array_StructurePointer();
 
 
             MetaPOINTER[] ptrs = new MetaPOINTER[items.Length];
@@ -256,43 +255,31 @@ namespace CodeWalker.GameFiles
                 ptrs[i] = items[i].Save(this);
             }
             return AddPointerArray(ptrs);
-
-            //Array_StructurePointer sp = new Array_StructurePointer();
-            //sp.Count1 = (ushort)items.Length;
-            //sp.Count2 = sp.Count1;
-            //for (int i = 0; i < items.Length; i++)
-            //{
-            //    var item = items[i];
-            //    var meptr = item.Save(this);
-            //    var mptr = AddItem((MetaName)MetaTypeName.POINTER, meptr);
-            //    if (i == 0)
-            //    {
-            //        sp.Pointer = mptr.Pointer; //main pointer points to the first item.
-            //    }
-            //}
-            //return sp;
         }
 
-        public Array_Structure AddWrapperArray(MetaWrapper[] items)
+        public Array_Structure AddWrapperArray(MetaWrapper[]? items)
         {
-            if ((items == null) || (items.Length == 0)) return new Array_Structure();
+            if (items is null || items.Length == 0)
+                return new Array_Structure();
 
-            var sa = new Array_Structure();
-            sa.Count1 = (ushort)items.Length;
-            sa.Count2 = sa.Count1;
+            var pointer = 0UL;
             for (int i = 0; i < items.Length; i++)
             {
                 var item = items[i];
                 var meptr = item.Save(this);
                 if (i == 0)
                 {
-                    MetaBuilderPointer mbp = new MetaBuilderPointer();
-                    mbp.BlockID = meptr.BlockID;
-                    mbp.Offset = meptr.Offset;
-                    sa.Pointer = mbp.Pointer;
+                    MetaBuilderPointer mbp = new MetaBuilderPointer(meptr.BlockID, meptr.Offset, 0);
+                    pointer = mbp.Pointer;
                 }
             }
-            return sa;
+
+            return new Array_Structure
+            {
+                Count1 = (ushort)items.Length,
+                Count2 = (ushort)items.Length,
+                Pointer = pointer,
+            };
         }
 
 
@@ -315,15 +302,13 @@ namespace CodeWalker.GameFiles
                     offset += bdata.Length;
                 }
             }
-            if (offset != data.Length)
-            { }
             return data;
         }
 
 
 
-        Dictionary<MetaName, MetaStructureInfo> StructureInfos = new Dictionary<MetaName, MetaStructureInfo>();
-        Dictionary<MetaName, MetaEnumInfo> EnumInfos = new Dictionary<MetaName, MetaEnumInfo>();
+        readonly Dictionary<MetaName, MetaStructureInfo> StructureInfos = new Dictionary<MetaName, MetaStructureInfo>();
+        readonly Dictionary<MetaName, MetaEnumInfo> EnumInfos = new Dictionary<MetaName, MetaEnumInfo>();
 
         public void AddStructureInfo(MetaName name)
         {
@@ -363,11 +348,7 @@ namespace CodeWalker.GameFiles
 
             if (StructureInfos.Count > 0)
             {
-                m.StructureInfos = new ResourceSimpleArray<MetaStructureInfo>();
-                foreach (var si in StructureInfos.Values)
-                {
-                    m.StructureInfos.Add(si);
-                }
+                m.StructureInfos = new ResourceSimpleArray<MetaStructureInfo>(StructureInfos.Values);
                 m.StructureInfosCount = (short)m.StructureInfos.Count;
             }
             else
@@ -378,11 +359,7 @@ namespace CodeWalker.GameFiles
 
             if (EnumInfos.Count > 0)
             {
-                m.EnumInfos = new ResourceSimpleArray<MetaEnumInfo>();
-                foreach (var ei in EnumInfos.Values)
-                {
-                    m.EnumInfos.Add(ei);
-                }
+                m.EnumInfos = new ResourceSimpleArray<MetaEnumInfo>(EnumInfos.Values);
                 m.EnumInfosCount = (short)m.EnumInfos.Count;
             }
             else
@@ -431,9 +408,10 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public MetaDataBlock GetMetaDataBlock()
+        public MetaDataBlock? GetMetaDataBlock()
         {
-            if (TotalSize <= 0) return null;
+            if (TotalSize <= 0)
+                return null;
 
             byte[] data = new byte[TotalSize];
             int offset = 0;
@@ -455,12 +433,12 @@ namespace CodeWalker.GameFiles
 
     }
 
-    public struct MetaBuilderPointer
+    public readonly struct MetaBuilderPointer(int blockId, int offset, int length)
     {
-        public int BlockID { get; set; } //1-based id
-        public int Offset { get; set; } //byte offset
-        public int Length { get; set; } //for temp use...
-        public uint Pointer
+        public int BlockID { get; init; } = blockId; //1-based id
+        public int Offset { get; init; } = offset; //byte offset
+        public int Length { get; init; } = length; //for temp use...
+        public readonly uint Pointer
         {
             get
             {

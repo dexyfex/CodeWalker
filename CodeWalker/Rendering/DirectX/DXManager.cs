@@ -16,6 +16,7 @@ using System.Runtime;
 using CodeWalker.Core.Utils;
 using CodeWalker.Properties;
 using CodeWalker.GameFiles;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeWalker.Rendering
 {
@@ -31,8 +32,6 @@ namespace CodeWalker.Rendering
         public RenderTargetView targetview { get; private set; }
         public DepthStencilView depthview { get; private set; }
 
-        public CancellationToken cancellationToken;
-
         private volatile bool Running = false;
         private volatile bool Rendering = false;
         private volatile bool Resizing = false;
@@ -46,12 +45,20 @@ namespace CodeWalker.Rendering
         private ViewportF Viewport;
         private bool autoStartLoop = false;
 
+        private void ThrowInitFailedException(Exception exc)
+        {
+            var msg = "CodeWalker was unable to initialise the graphics device. Please ensure your system meets the minimum requirements and that your graphics drivers and DirectX are up to date.";
+            if (exc != null)
+            {
+                msg += "\n\nException info: " + exc.ToString();
+            }
+            throw new Exception(msg);
+        }
+
         public bool Init(DXForm form, bool autostart = true)
         {
             dxform = form;
             autoStartLoop = autostart;
-
-            cancellationToken = form.CancellationTokenSource.Token;
 
             try
             {
@@ -79,17 +86,32 @@ namespace CodeWalker.Rendering
                 //#if DEBUG
                 //    flags = DeviceCreationFlags.Debug;
                 //#endif
-                Device dev = null;
-                SwapChain sc = null;
-                Exception exc = null;
+                Device? dev = null;
+                SwapChain? sc = null;
+                Exception? exc = null;
 
                 bool success = false;
                 try
                 {
+                    if (device is not null)
+                    {
+                        dev = device;
+                    }
+                    else
+                    {
+                        dev = new Device(DriverType.Hardware, flags, levels);
+                        device = dev;
+                    }
+                    
+                    using Factory1 scFactory = new Factory1();
+                    sc = new SwapChain(scFactory, dev, scd);
                     Device.CreateWithSwapChain(DriverType.Hardware, flags, levels, scd, out dev, out sc);
                     success = true;
                 }
-                catch(Exception ex) { exc = ex; }
+                catch(Exception ex)
+                {
+                    exc = ex;
+                }
 
                 if (!success)
                 {
@@ -101,17 +123,15 @@ namespace CodeWalker.Rendering
                         Device.CreateWithSwapChain(DriverType.Hardware, flags, levels, scd, out dev, out sc);
                         success = true;
                     }
-                    catch (Exception ex) { exc = ex; }
+                    catch (Exception ex)
+                    {
+                        exc = ex;
+                    }
                 }
 
                 if (!success)
                 {
-                    var msg = "CodeWalker was unable to initialise the graphics device. Please ensure your system meets the minimum requirements and that your graphics drivers and DirectX are up to date.";
-                    if (exc != null)
-                    {
-                        msg += "\n\nException info: " + exc.ToString();
-                    }
-                    throw new Exception(msg);
+                    ThrowInitFailedException(exc);
                 }
 
                 device = dev;
@@ -152,34 +172,40 @@ namespace CodeWalker.Rendering
         }
 
 
-        private void Cleanup()
+        private async ValueTask Cleanup()
         {
             try
             {
                 using var _ = new DisposableTimer("DXManager Cleanup");
                 Running = false;
                 int count = 0;
+
+                if (!dxform.CancellationTokenSource.IsCancellationRequested)
+                {
+                    dxform.CancellationTokenSource.Cancel();
+                }
+
                 while (Rendering && (count < 1000))
                 {
-                    Thread.Sleep(1); //try to gracefully exit...
+                    await Task.Delay(1);
                     count++;
                 }
 
-                dxform.CleanupScene();
+                await dxform.CleanupScene();
 
-                if (context != null) context.ClearState();
+                context?.ClearState();
 
                 //dipose of all objects
-                if (depthview != null) depthview.Dispose();
-                if (depthbuffer != null) depthbuffer.Dispose();
-                if (targetview != null) targetview.Dispose();
-                if (backbuffer != null) backbuffer.Dispose();
-                if (swapchain != null) swapchain.Dispose();
-                if (context != null) context.Dispose();
+                depthview?.Dispose();
+                depthbuffer?.Dispose();
+                targetview?.Dispose();
+                backbuffer?.Dispose();
+                swapchain?.Dispose();
+                context?.Dispose();
 
                 //var objs = SharpDX.Diagnostics.ObjectTracker.FindActiveObjects();
 
-                if (device != null) device.Dispose();
+                device?.Dispose();
             }
             catch (Exception ex)
             {
@@ -187,12 +213,14 @@ namespace CodeWalker.Rendering
             }
 
         }
+
+        [MemberNotNull(nameof(targetview), nameof(backbuffer), nameof(depthview), nameof(depthbuffer))]
         private void CreateRenderBuffers()
         {
-            if (targetview != null) targetview.Dispose();
-            if (backbuffer != null) backbuffer.Dispose();
-            if (depthview != null) depthview.Dispose();
-            if (depthbuffer != null) depthbuffer.Dispose();
+            targetview?.Dispose();
+            backbuffer?.Dispose();
+            depthview?.Dispose();
+            depthbuffer?.Dispose();
 
 
             backbuffer = Texture2D.FromSwapChain<Texture2D>(swapchain, 0);
@@ -221,11 +249,11 @@ namespace CodeWalker.Rendering
             Viewport.X = 0;
             Viewport.Y = 0;
         }
-        private void Resize()
+        private async void Resize()
         {
             Console.WriteLine($"Resizing {Resizing}");
             if (Resizing) return;
-            semaphore.Wait();
+            await semaphore.WaitAsync().ConfigureAwait(false);
             int width = dxform.Form.ClientSize.Width;
             int height = dxform.Form.ClientSize.Height;
 
@@ -250,7 +278,7 @@ namespace CodeWalker.Rendering
                 StartRenderLoop();
             }
         }
-        private void Dxform_FormClosing(object sender, FormClosingEventArgs e)
+        private async void Dxform_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!e.Cancel)
             {
@@ -265,7 +293,7 @@ namespace CodeWalker.Rendering
                 {
                     dxform.CancellationTokenSource.Cancel();
                 }
-                Cleanup();
+                await Cleanup();
             }
         }
 
@@ -344,7 +372,14 @@ namespace CodeWalker.Rendering
                 {
                     while (Resizing)
                     {
-                        swapchain.Present(1, PresentFlags.None); //just flip buffers when resizing; don't draw
+                        var result = swapchain.Present(1, PresentFlags.None); //just flip buffers when resizing; don't draw
+                        if (result != Result.Ok)
+                        {
+                            if (result == SharpDX.DXGI.ResultCode.DeviceRemoved)
+                            {
+                                Console.WriteLine($"Device was removed {device.DeviceRemovedReason}");
+                            }
+                        }
                     }
                     if (dxform.Form.WindowState == FormWindowState.Minimized)
                     {
@@ -357,30 +392,32 @@ namespace CodeWalker.Rendering
                         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
                         while (dxform.Form.WindowState == FormWindowState.Minimized)
                         {
-                            await Task.Delay(100, cancellationToken).ConfigureAwait(false); //don't hog CPU when minimised
-                            if (dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested) return; //if closed while minimised
+                            await Task.Delay(100, dxform.CancellationToken); //don't hog CPU when minimised
+                            if (dxform.Form.IsDisposed || dxform.CancellationToken.IsCancellationRequested)
+                                return; //if closed while minimised
                         }
                         dxform.Pauserendering = false;
                         Console.WriteLine("Window is maximized");
                     }
 
 
-                    if (Form.ActiveForm == null)
+                    if (Form.ActiveForm is null)
                     {
                         inactiveCount++;
                         if (inactiveCount > 100)
                         {
                             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
                             GC.Collect();
-                            while (Form.ActiveForm == null)
+                            while (Form.ActiveForm is null)
                             {
-                                await Task.Delay(100, cancellationToken).ConfigureAwait(false); //reduce the FPS when the app isn't active (maybe this should be configurable?)
-                                if (context.IsDisposed || dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested) return; //if form closed while sleeping (eg from rightclick on taskbar)
+                                await Task.Delay(100, dxform.CancellationToken); //reduce the FPS when the app isn't active (maybe this should be configurable?)
+                                if (context.IsDisposed || dxform.Form.IsDisposed || dxform.CancellationToken.IsCancellationRequested)
+                                    return; //if form closed while sleeping (eg from rightclick on taskbar)
                             }
                         }
                         else
                         {
-                            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+                            await Task.Delay(100, dxform.CancellationToken);
                         }
                     }
                     else
@@ -388,22 +425,23 @@ namespace CodeWalker.Rendering
                         inactiveCount = 0;
                         if (Form.ActiveForm != dxform.Form)
                         {
-                            await Task.Delay(25, cancellationToken).ConfigureAwait(false);
+                            await Task.Delay(25, dxform.CancellationToken);
                         }
                     }
 
-                    if (context.IsDisposed || dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested) return;
+                    if (context.IsDisposed || dxform.Form.IsDisposed || dxform.CancellationToken.IsCancellationRequested)
+                        return;
 
                     Rendering = true;
 
-                    if (!await semaphore.WaitAsync(50, cancellationToken).ConfigureAwait(false))
+                    if (!await semaphore.WaitAsync(50, dxform.CancellationToken).ConfigureAwait(false))
                     {
                         Console.WriteLine("Failed to get lock for syncroot");
-                        await Task.Delay(10, cancellationToken).ConfigureAwait(false); //don't hog CPU when not able to render...
+                        await Task.Delay(10, dxform.CancellationToken).ConfigureAwait(false); //don't hog CPU when not able to render...
                         continue;
                     }
 
-                    if (dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested)
+                    if (dxform.Form.IsDisposed || dxform.CancellationToken.IsCancellationRequested)
                     {
                         Rendering = false;
                         return;
@@ -426,7 +464,7 @@ namespace CodeWalker.Rendering
 
                         if (ok)
                         {
-                            if (dxform.Form.IsDisposed || cancellationToken.IsCancellationRequested)
+                            if (dxform.Form.IsDisposed || dxform.CancellationToken.IsCancellationRequested)
                             {
 
                                 Rendering = false;
@@ -437,7 +475,17 @@ namespace CodeWalker.Rendering
 
                             try
                             {
-                                swapchain.Present(1, PresentFlags.None);
+                                var result = swapchain.Present(1, PresentFlags.None);
+                                if (result != Result.Ok)
+                                {
+                                    if (result == SharpDX.DXGI.ResultCode.DeviceRemoved)
+                                    {
+                                        Console.WriteLine($"Device was removed {device.DeviceRemovedReason}");
+                                    } else
+                                    {
+                                        Console.WriteLine(result.ToString());
+                                    }
+                                }
                             }
                             catch (Exception ex)
                             {

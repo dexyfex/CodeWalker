@@ -350,12 +350,13 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "(Size: " + FloatUtil.GetVector3String(AABBSize) + ")";
+            return $"(Size: {FloatUtil.GetVector3String(AABBSize)})";
         }
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshUintArray
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct NavMeshUintArray
     {
         public uint Count { get; set; }
         public uint v00;
@@ -391,7 +392,7 @@ namespace CodeWalker.GameFiles
         public uint v30; // 0x00000000
         public uint v31; // 0x00000000
 
-        public uint[] RawValues
+        public readonly uint[] RawValues
         {
             get
             {
@@ -404,7 +405,7 @@ namespace CodeWalker.GameFiles
 
         public uint[] Values
         {
-            get
+            readonly get
             {
                 uint[] vals = new uint[Count];
                 uint[] rvals = RawValues;
@@ -452,44 +453,43 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public uint Get(uint i)
+        public readonly uint Get(uint i)
         {
-            switch (i)
+            return i switch
             {
-                default:
-                case 0: return v00;
-                case 1: return v01;
-                case 2: return v02;
-                case 3: return v03;
-                case 4: return v04;
-                case 5: return v05;
-                case 6: return v06;
-                case 7: return v07;
-                case 8: return v08;
-                case 9: return v09;
-                case 10: return v10;
-                case 11: return v11;
-                case 12: return v12;
-                case 13: return v13;
-                case 14: return v14;
-                case 15: return v15;
-                case 16: return v16;
-                case 17: return v17;
-                case 18: return v18;
-                case 19: return v19;
-                case 20: return v20;
-                case 21: return v21;
-                case 22: return v22;
-                case 23: return v23;
-                case 24: return v24;
-                case 25: return v25;
-                case 26: return v26;
-                case 27: return v27;
-                case 28: return v28;
-                case 29: return v29;
-                case 30: return v30;
-                case 31: return v31;
-            }
+                1 => v01,
+                2 => v02,
+                3 => v03,
+                4 => v04,
+                5 => v05,
+                6 => v06,
+                7 => v07,
+                8 => v08,
+                9 => v09,
+                10 => v10,
+                11 => v11,
+                12 => v12,
+                13 => v13,
+                14 => v14,
+                15 => v15,
+                16 => v16,
+                17 => v17,
+                18 => v18,
+                19 => v19,
+                20 => v20,
+                21 => v21,
+                22 => v22,
+                23 => v23,
+                24 => v24,
+                25 => v25,
+                26 => v26,
+                27 => v27,
+                28 => v28,
+                29 => v29,
+                30 => v30,
+                31 => v31,
+                _ => v00,
+            };
         }
 
         public void Set(uint[] arr)
@@ -497,19 +497,17 @@ namespace CodeWalker.GameFiles
             Values = arr;
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return "(Count: " + Count.ToString() + ")";
+            return $"(Count: {Count})";
         }
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class NavMeshList<T> : ResourceSystemBlock where T : struct
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class NavMeshList<T> : ResourceSystemBlock where T : struct
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         public uint VFT { get; set; }
         public uint Unknown_04h { get; set; } // 0x00000001
@@ -525,16 +523,9 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleArray<NavMeshListPart<T>> ListParts { get; set; }
         public uint[] ListOffsets { get; set; }
 
-        private ResourceSystemStructBlock<uint> ListOffsetsBlock = null;
-        public int ItemSize { get { return System.Runtime.InteropServices.Marshal.SizeOf<T>(); } }
-
-        public uint ByteCount
-        {
-            get
-            {
-                return ItemCount * (uint)ItemSize;
-            }
-        }
+        private ResourceSystemStructBlock<uint>? ListOffsetsBlock = null;
+        public int ItemSize => System.Runtime.InteropServices.Marshal.SizeOf<T>();
+        public uint ByteCount => ItemCount * (uint)ItemSize;
 
 
 
@@ -577,12 +568,17 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (ListParts != null) list.Add(ListParts);
+            if (ListParts is not null)
+                list.Add(ListParts);
 
-            if ((ListOffsets != null) && (ListOffsets.Length > 0))
+            if (ListOffsets is not null && ListOffsets.Length > 0)
             {
                 ListOffsetsBlock = new ResourceSystemStructBlock<uint>(ListOffsets);
                 list.Add(ListOffsetsBlock);
+            }
+            else
+            {
+                ListOffsetsBlock = null;
             }
 
             return list.ToArray();
@@ -594,11 +590,11 @@ namespace CodeWalker.GameFiles
         {
             List<T> list = new List<T>((int)ItemCount);
 
-            if (ListParts != null)
+            if (ListParts is not null)
             {
                 foreach (var part in ListParts)
                 {
-                    if (part.Items != null)
+                    if (part.Items is not null)
                     {
                         list.AddRange(part.Items);
                     }
@@ -646,16 +642,14 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "(" + ItemCount.ToString() + " total items, " + ListPartsCount.ToString() + " parts)";
+            return $"({ItemCount} total items, {ListPartsCount} parts)";
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class NavMeshListPart<T> : ResourceSystemBlock where T : struct
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class NavMeshListPart<T> : ResourceSystemBlock where T : struct
     {
-        public override long BlockLength
-        {
-            get { return 16; }
-        }
+        public override long BlockLength => 16;
 
         public ulong Pointer { get; set; }
         public uint Count { get; set; }
@@ -701,7 +695,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "(" + Count.ToString() + " items)";
+            return $"({Count} items)";
         }
     }
 
@@ -714,14 +708,14 @@ namespace CodeWalker.GameFiles
         public ushort Z { get; set; }
 
 
-        public Vector3 Position { get { return ToVector3(); } set { FromVector3(value); } }
+        public Vector3 Position { readonly get { return ToVector3(); } set { FromVector3(value); } }
 
-        public Vector3 ToVector3()
+        public readonly Vector3 ToVector3()
         {
             const float usmax = ushort.MaxValue;
             return new Vector3(X / usmax, Y / usmax, Z / usmax);
         }
-        public void FromVector3(Vector3 v)
+        public void FromVector3(in Vector3 v)
         {
             const float usmax = ushort.MaxValue;
             X = (ushort)Math.Round(v.X * usmax);
@@ -729,44 +723,53 @@ namespace CodeWalker.GameFiles
             Z = (ushort)Math.Round(v.Z * usmax);
         }
 
-        public static NavMeshVertex Create(Vector3 v)
+        public static NavMeshVertex Create(in Vector3 v)
         {
             var nmv = new NavMeshVertex();
-            nmv.FromVector3(v);
+            nmv.FromVector3(in v);
             return nmv;
         }
 
-        public override string ToString()
-        {
-            return X.ToString() + ", " + Y.ToString() + ", " + Z.ToString();
-        }
+        public override readonly string ToString() => $"{X}, {Y}, {Z}";
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshAABB
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public readonly struct NavMeshAABB(in Vector3 min, in Vector3 max)
     {
-        public short MinX { get; set; }
-        public short MaxX { get; set; }
-        public short MinY { get; set; }
-        public short MaxY { get; set; }
-        public short MinZ { get; set; }
-        public short MaxZ { get; set; }
+        public short MinX { get; init; } = (short)Math.Floor(min.X * 4.0f);
+        public short MaxX { get; init; } = (short)Math.Ceiling(max.X * 4.0f);
+        public short MinY { get; init; } = (short)Math.Floor(min.Y * 4.0f);
+        public short MaxY { get; init; } = (short)Math.Ceiling(max.Y * 4.0f);
+        public short MinZ { get; init; } = (short)Math.Floor(min.Z * 4.0f);
+        public short MaxZ { get; init; } = (short)Math.Ceiling(max.Z * 4.0f);
 
-        public Vector3 Min
+        public readonly Vector3 Min
         {
-            get { return new Vector3(MinX / 4.0f, MinY / 4.0f, MinZ / 4.0f); }
-            set { var v = value * 4.0f; MinX = (short)Math.Floor(v.X); MinY = (short)Math.Floor(v.Y); MinZ = (short)Math.Floor(v.Z); }
+            get => new Vector3(MinX / 4.0f, MinY / 4.0f, MinZ / 4.0f);
+            //set
+            //{
+            //    var v = value * 4.0f;
+            //    MinX = (short)Math.Floor(v.X);
+            //    MinY = (short)Math.Floor(v.Y);
+            //    MinZ = (short)Math.Floor(v.Z);
+            //}
         }
-        public Vector3 Max
+        public readonly Vector3 Max
         {
-            get { return new Vector3(MaxX / 4.0f, MaxY / 4.0f, MaxZ / 4.0f); }
-            set { var v = value * 4.0f; MaxX = (short)Math.Ceiling(v.X); MaxY = (short)Math.Ceiling(v.Y); MaxZ = (short)Math.Ceiling(v.Z); }
+            get => new Vector3(MaxX / 4.0f, MaxY / 4.0f, MaxZ / 4.0f);
+            //set {
+            //    var v = value * 4.0f;
+            //    MaxX = (short)Math.Ceiling(v.X);
+            //    MaxY = (short)Math.Ceiling(v.Y);
+            //    MaxZ = (short)Math.Ceiling(v.Z);
+            //}
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             Vector3 min = Min;
             Vector3 max = Max;
-            return string.Format("({0}, {1}, {2}) | ({3}, {4}, {5})", min.X, min.Y, min.Z, max.X, max.Y, max.Z);
+            return $"({min.X}, {min.Y}, {min.Z}) | ({max.X}, {max.Y}, {max.Z})";
             //return string.Format("({0}, {1}, {2}) | ({3}, {4}, {5})", MinX, MinY, MinZ, MaxX, MaxY, MaxZ);
         }
     }
@@ -777,43 +780,35 @@ namespace CodeWalker.GameFiles
     {
         public NavMeshEdgePart _Poly1;
         public NavMeshEdgePart _Poly2;
-        public NavMeshEdgePart Poly1 { get { return _Poly1; } set { _Poly1 = value; } }
-        public NavMeshEdgePart Poly2 { get { return _Poly2; } set { _Poly2 = value; } }
+        public readonly NavMeshEdgePart Poly1 => _Poly1;
+        public readonly NavMeshEdgePart Poly2 => _Poly2;
 
-        public override string ToString()
-        {
-            return //Poly1.Bin + " | " + Poly2.Bin + " | " + 
-                   _Poly1.ToString() + " | " + _Poly2.ToString();
-        }
+        public override readonly string ToString() => $"{_Poly1} | {_Poly2}";
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshEdgePart
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct NavMeshEdgePart
     {
         public uint Value { get; set; }
 
-        public string Bin
-        {
-            get
-            {
-                return Convert.ToString(Value, 2).PadLeft(32, '0');
-            }
-        }
+        public readonly string Bin => Value.ToString("b32");
 
-        public uint AreaIDInd { get { return (Value >> 0) & 0x1F; } set { Value = (Value & 0xFFFFFFE0) | (value & 0x1F); } }
-        public uint PolyID { get { return (Value >> 5) & 0x3FFF; } set { Value = (Value & 0xFFF8001F) | ((value & 0x3FFF) << 5); } }
-        public uint Unk2 { get { return (Value >> 19) & 0x3; } set { Value = (Value & 0xFFE7FFFF) | ((value & 0x3) << 19); } }
-        public uint Unk3 { get { return (Value >> 21) & 0x7FF; } set { Value = (Value & 0x001FFFFF) | ((value & 0x7FF) << 21); } }
+        public uint AreaIDInd { readonly get { return (Value >> 0) & 0x1F; } set { Value = (Value & 0xFFFFFFE0) | (value & 0x1F); } }
+        public uint PolyID { readonly get { return (Value >> 5) & 0x3FFF; } set { Value = (Value & 0xFFF8001F) | ((value & 0x3FFF) << 5); } }
+        public uint Unk2 { readonly get { return (Value >> 19) & 0x3; } set { Value = (Value & 0xFFE7FFFF) | ((value & 0x3) << 19); } }
+        public uint Unk3 { readonly get { return (Value >> 21) & 0x7FF; } set { Value = (Value & 0x001FFFFF) | ((value & 0x7FF) << 21); } }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             string pid = (PolyID == 0x3FFF) ? "-" : PolyID.ToString();
-            return AreaIDInd.ToString() + ", " + pid + ", " + Unk2.ToString() + ", " + Unk3.ToString();
+            return $"{AreaIDInd}, {pid}, {Unk2}, {Unk3}";
         }
     }
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshPoly
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct NavMeshPoly
     {
         public ushort PolyFlags0 { get; set; }
         public ushort IndexFlags { get; set; }
@@ -830,52 +825,36 @@ namespace CodeWalker.GameFiles
 
 
         //public int IndexUnk { get { return (IndexFlags >> 0) & 31; } } //always 0
-        public int IndexCount { get { return (IndexFlags >> 5); } set { IndexFlags = (ushort)((IndexFlags & 31) | ((value & 0x7FF) << 5)); } }
+        public int IndexCount { readonly get { return (IndexFlags >> 5); } set { IndexFlags = (ushort)((IndexFlags & 31) | ((value & 0x7FF) << 5)); } }
 
         //public int PartUnk1 { get { return (PartFlags >> 0) & 0xF; } } //always 0
-        public ushort PartID { get { return (ushort)((PartFlags >> 4) & 0xFF); } set { PartFlags = ((PartFlags & 0xFFFFF00F) | (((uint)value & 0xFF) << 4)); } }
-        public byte PortalLinkCount { get { return (byte)((PartFlags >> 12) & 0x7); } set { PartFlags = ((PartFlags & 0xFFFF8FFF) | (((uint)value & 0x7) << 12)); } }
-        public uint PortalLinkID { get { return ((PartFlags >> 15) & 0x1FFFF); } set { PartFlags = ((PartFlags & 0x7FFF) | ((value & 0x1FFFF) << 15)); } }
+        public ushort PartID { readonly get { return (ushort)((PartFlags >> 4) & 0xFF); } set { PartFlags = ((PartFlags & 0xFFFFF00F) | (((uint)value & 0xFF) << 4)); } }
+        public byte PortalLinkCount { readonly get { return (byte)((PartFlags >> 12) & 0x7); } set { PartFlags = ((PartFlags & 0xFFFF8FFF) | (((uint)value & 0x7) << 12)); } }
+        public uint PortalLinkID { readonly get { return ((PartFlags >> 15) & 0x1FFFF); } set { PartFlags = ((PartFlags & 0x7FFF) | ((value & 0x1FFFF) << 15)); } }
 
 
-        public byte UnkX { get { return (byte)((PolyFlags2 >> 0) & 0xFF); } set { PolyFlags2 = (PolyFlags2 & 0xFFFFFF00) | ((value & 0xFFu)<<0); } }
-        public byte UnkY { get { return (byte)((PolyFlags2 >> 8) & 0xFF); } set { PolyFlags2 = (PolyFlags2 & 0xFFFF00FF) | ((value & 0xFFu)<<8); } }
+        public byte UnkX { readonly get { return (byte)((PolyFlags2 >> 0) & 0xFF); } set { PolyFlags2 = (PolyFlags2 & 0xFFFFFF00) | ((value & 0xFFu)<<0); } }
+        public byte UnkY { readonly get { return (byte)((PolyFlags2 >> 8) & 0xFF); } set { PolyFlags2 = (PolyFlags2 & 0xFFFF00FF) | ((value & 0xFFu)<<8); } }
 
-        public byte Flags1 { get { return (byte)(PolyFlags0 & 0xFF); } set { PolyFlags0 = (ushort)((PolyFlags0 & 0xFF00) | (value & 0xFF)); } }
-        public byte Flags2 { get { return (byte)((PolyFlags1 >> 0) & 0xFF); } set { PolyFlags1 = ((PolyFlags1 & 0xFFFFFF00u) | ((value & 0xFFu) << 0)); } }
-        public byte Flags3 { get { return (byte)((PolyFlags1 >> 9) & 0xFF); } set { PolyFlags1 = ((PolyFlags1 & 0xFFFE01FFu) | ((value & 0xFFu) << 9)); } }
-        public byte Flags4 { get { return (byte)((PolyFlags2 >> 16) & 0xFF); } set { PolyFlags2 = ((PolyFlags2 & 0xFF00FFFFu) | ((value & 0xFFu) << 16)); } }
+        public byte Flags1 { readonly get { return (byte)(PolyFlags0 & 0xFF); } set { PolyFlags0 = (ushort)((PolyFlags0 & 0xFF00) | (value & 0xFF)); } }
+        public byte Flags2 { readonly get { return (byte)((PolyFlags1 >> 0) & 0xFF); } set { PolyFlags1 = ((PolyFlags1 & 0xFFFFFF00u) | ((value & 0xFFu) << 0)); } }
+        public byte Flags3 { readonly get { return (byte)((PolyFlags1 >> 9) & 0xFF); } set { PolyFlags1 = ((PolyFlags1 & 0xFFFE01FFu) | ((value & 0xFFu) << 9)); } }
+        public byte Flags4 { readonly get { return (byte)((PolyFlags2 >> 16) & 0xFF); } set { PolyFlags2 = ((PolyFlags2 & 0xFF00FFFFu) | ((value & 0xFFu) << 16)); } }
 
         //public uint UnkFlags0 { get { return (uint)((PolyFlags0 >> 8) & 0xFF); } } //always 0
         //public uint UnkFlags1 { get { return (uint)((PolyFlags1 >> 17) & 0xFFFF); } } //always 0
         //public uint UnkFlags2 { get { return (uint)((PolyFlags2 >> 24) & 0xFF); } } //always 0
 
 
-        public override string ToString()
-        {
-            return
-                PolyFlags0.ToString() + ", " +
-                //IndexFlags.ToString() + ", " + 
-                IndexCount.ToString() + ", " + //IndexUnk.ToString() + ", " +
-                IndexID.ToString() + ", " + AreaID.ToString() + ", " +
-                CellAABB.ToString() + ", " +
-                //PolyFlags1.ToString() + ", " + 
-                //PolyFlags2.ToString() + ", " + 
-                //PartFlags.ToString() + ", " + //PartUnk1.ToString() + ", " + 
-                PartID.ToString() + ", " + 
-                PortalLinkCount.ToString() + ", " +
-                PortalLinkID.ToString();
-        }
+        public override readonly string ToString() => $"{PolyFlags0}, {IndexCount}, {IndexID}, {AreaID}, {CellAABB}, {PartID}, {PortalLinkCount}, {PortalLinkID}";
     }
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class NavMeshSector : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class NavMeshSector : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 96; }
-        }
+        public override long BlockLength => 96;
 
         public Vector4 AABBMin { get; set; } //W==NaN
         public Vector4 AABBMax { get; set; } //W==NaN
@@ -913,7 +892,8 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                if (Data == null) return 0;
+                if (Data == null)
+                    return 0;
                 return Data.PointsCount;
             }
         }
@@ -976,22 +956,17 @@ namespace CodeWalker.GameFiles
         {
             AABBMin = new Vector4(min, float.NaN);
             AABBMax = new Vector4(max, float.NaN);
-            CellAABB = new NavMeshAABB() { Min = min, Max = max };
+            CellAABB = new NavMeshAABB(in min, in max);
         }
 
 
-        public override string ToString()
-        {
-            return "[Min: "+AABBMin.ToString() + "], [Max:" + AABBMax.ToString() + "]";
-        }
+        public override string ToString() => $"[Min: {AABBMin}], [Max:{AABBMax}]";
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class NavMeshSectorData : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class NavMeshSectorData : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 32; }
-        }
+        public override long BlockLength => 32;
 
         public uint PointsStartID { get; set; }
         public uint Unused_04h { get; set; } // 0x00000000
@@ -1004,8 +979,8 @@ namespace CodeWalker.GameFiles
         public ushort[] PolyIDs { get; set; }
         public NavMeshPoint[] Points { get; set; }
 
-        public ResourceSystemStructBlock<ushort> PolyIDsBlock = null;
-        public ResourceSystemStructBlock<NavMeshPoint> PointsBlock = null;
+        public ResourceSystemStructBlock<ushort>? PolyIDsBlock = null;
+        public ResourceSystemStructBlock<NavMeshPoint>? PointsBlock = null;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -1043,12 +1018,12 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<IResourceBlock>();
 
-            if ((PolyIDs != null) && (PolyIDs.Length > 0))
+            if (PolyIDs != null && PolyIDs.Length > 0)
             {
                 PolyIDsBlock = new ResourceSystemStructBlock<ushort>(PolyIDs);
                 list.Add(PolyIDsBlock);
             }
-            if ((Points != null) && (Points.Length > 0))
+            if (Points != null && Points.Length > 0)
             {
                 PointsBlock = new ResourceSystemStructBlock<NavMeshPoint>(Points);
                 list.Add(PointsBlock);
@@ -1060,7 +1035,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "(Polys: " + PolyIDsCount.ToString() + ", PointsCount: " + PointsCount.ToString() + ", PointsStartID: " + PointsStartID.ToString() + ")";
+            return $"(Polys: {PolyIDsCount}, PointsCount: {PointsCount}, PointsStartID: {PointsStartID})";
         }
     }
 
@@ -1075,7 +1050,7 @@ namespace CodeWalker.GameFiles
 
         public Vector3 Position
         {
-            get
+            readonly get
             {
                 const float usmax = ushort.MaxValue;
                 return new Vector3(X / usmax, Y / usmax, Z / usmax);
@@ -1089,9 +1064,9 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return Type.ToString() + ": " + Angle.ToString() + ", " + Position.ToString();
+            return $"{Type}: {Angle}, {Position}";
         }
 
 
@@ -1099,7 +1074,8 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct NavMeshPortal
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct NavMeshPortal
     {
         public byte Type { get; set; }//1,2,3
         public byte Angle { get; set; }
@@ -1112,18 +1088,11 @@ namespace CodeWalker.GameFiles
         public ushort PolyIDTo2 { get; set; } //always same as PolyIDTo1
         public uint AreaFlags { get; set; }
 
-        public ushort AreaIDFrom { get { return (ushort)(AreaFlags & 0x3FFF); } set { AreaFlags = (AreaFlags & 0xFFFFC000) | (value & 0x3FFFu); } }//always Ynv.AreaID
-        public ushort AreaIDTo { get { return (ushort)((AreaFlags >> 14) & 0x3FFF); } set { AreaFlags = (AreaFlags & 0xF0003FFF) | ((value & 0x3FFFu) << 14); } }//always Ynv.AreaID
-        public byte AreaUnk { get { return (byte)((AreaFlags >> 28) & 0xF); } set { AreaFlags = (AreaFlags & 0x0FFFFFFF) | ((value & 0xFu) << 28); } }//always 0
+        public ushort AreaIDFrom { readonly get { return (ushort)(AreaFlags & 0x3FFF); } set { AreaFlags = (AreaFlags & 0xFFFFC000) | (value & 0x3FFFu); } }//always Ynv.AreaID
+        public ushort AreaIDTo { readonly get { return (ushort)((AreaFlags >> 14) & 0x3FFF); } set { AreaFlags = (AreaFlags & 0xF0003FFF) | ((value & 0x3FFFu) << 14); } }//always Ynv.AreaID
+        public byte AreaUnk { readonly get { return (byte)((AreaFlags >> 28) & 0xF); } set { AreaFlags = (AreaFlags & 0x0FFFFFFF) | ((value & 0xFu) << 28); } }//always 0
 
-        public override string ToString()
-        {
-            return AreaIDFrom.ToString() + ", " + AreaIDTo.ToString() + ", " + AreaUnk.ToString() + ", " +
-                   PolyIDFrom1.ToString() + ", " + PolyIDFrom2.ToString() + ", " +
-                   PolyIDTo1.ToString() + ", " + PolyIDTo2.ToString() + ", " +
-                   Type.ToString() + ", " + Angle.ToString() + ", " + FlagsUnk.ToString() + ", " +
-                   "(" + PositionFrom.ToString() + " | " + PositionTo.ToString() + ")";
-        }
+        public override readonly string ToString() => $"{AreaIDFrom}, {AreaIDTo}, {AreaUnk}, {PolyIDFrom1}, {PolyIDFrom2}, {PolyIDTo1}, {PolyIDTo2}, {Type}, {Angle}, {FlagsUnk}, ({PositionFrom} | {PositionTo})";
     }
 
 

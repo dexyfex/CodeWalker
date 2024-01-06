@@ -1,5 +1,5 @@
 ﻿using CodeWalker.GameFiles;
-
+using CommunityToolkit.Diagnostics;
 using SharpDX;
 using SharpDX.Multimedia;
 using SharpDX.XAudio2;
@@ -724,7 +724,7 @@ namespace CodeWalker.Utils
                     case Dat10Synth.Opcode.READ_VARIABLE:
                         if ((param[1].Value & 0xFF) < Synth.Variables.Length)
                         {
-                            SetRegister(param[0], Synth.Variables[param[1].Value & 0xFF]?.Value ?? 0);
+                            SetRegister(param[0], Synth.Variables[param[1].Value & 0xFF].Value);
                         }
                         break;
                     case Dat10Synth.Opcode.STOP:
@@ -1612,7 +1612,9 @@ namespace CodeWalker.Utils
                     releaseType = EnvelopeReleaseType.Exponential;
                     break;
 
-                default: throw new ArgumentOutOfRangeException("Not an ENVELOPE_GEN_* opcode");
+                default:
+                    ThrowHelper.ThrowArgumentOutOfRangeException("Not an ENVELOPE_GEN_* opcode");
+                    return default;
             }
 
             EnvelopeTriggerMode triggerMode;
@@ -1631,7 +1633,9 @@ namespace CodeWalker.Utils
                     triggerMode = EnvelopeTriggerMode.Interruptible;
                     break;
 
-                default: throw new ArgumentOutOfRangeException("Not an ENVELOPE_GEN_* opcode");
+                default:
+                    ThrowHelper.ThrowArgumentOutOfRangeException("Not an ENVELOPE_GEN_* opcode");
+                    return default;
             }
 
             return EnvelopeGen(releaseType, triggerMode, buffer, ref stateBlock, predelay, attack, decay, sustain, hold, release, trigger);
@@ -1859,7 +1863,9 @@ namespace CodeWalker.Utils
                     triggerMode = EnvelopeTriggerMode.Interruptible;
                     break;
 
-                default: throw new ArgumentOutOfRangeException("Not an TIMED_TRIGGER_* opcode");
+                default:
+                    ThrowHelper.ThrowArgumentOutOfRangeException("Not an TIMED_TRIGGER_* opcode");
+                    return default;
             }
 
             return TimedTrigger(triggerMode, ref stateBlock, trigger, predelay, attack, decay, hold, release);

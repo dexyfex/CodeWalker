@@ -21,7 +21,7 @@ namespace CodeWalker.Forms
         private string xml;
         public string Xml
         {
-            get { return xml; }
+            get => xml;
             set
             {
                 xml = value;
@@ -32,7 +32,7 @@ namespace CodeWalker.Forms
         private string fileName;
         public string FileName
         {
-            get { return fileName; }
+            get => fileName;
             set
             {
                 fileName = value;
@@ -45,7 +45,7 @@ namespace CodeWalker.Forms
         private bool LoadingXml = false;
         private bool DelayHighlight = false;
 
-        public RpfFileEntry rpfFileEntry { get; private set; } = null;
+        public RpfFileEntry? rpfFileEntry { get; private set; } = null;
         private MetaFormat metaFormat = MetaFormat.XML;
 
 
@@ -63,44 +63,52 @@ namespace CodeWalker.Forms
 
         private void UpdateTextBoxFromData()
         {
-            LoadingXml = true;
-            XmlTextBox.Text = "";
-            XmlTextBox.Language = Language.XML;
-            DelayHighlight = false;
-
-            if (string.IsNullOrEmpty(xml))
+            if (InvokeRequired)
             {
-                LoadingXml = false;
+                BeginInvoke(UpdateTextBoxFromData);
                 return;
             }
-            //if (xml.Length > (1048576 * 5))
-            //{
-            //    XmlTextBox.Language = Language.Custom;
-            //    XmlTextBox.Text = "[XML size > 10MB - Not shown due to performance limitations - Please use an external viewer for this file.]";
-            //    return;
-            //}
-            //else 
-            if (xml.Length > (1024 * 512))
-            {
-                XmlTextBox.Language = Language.Custom;
-                DelayHighlight = true;
-            }
-            //else
-            //{
-            //    XmlTextBox.Language = Language.XML;
-            //}
-
-
+            LoadingXml = true;
             Cursor = Cursors.WaitCursor;
+            try
+            {
+                XmlTextBox.BeginUpdate();
+                XmlTextBox.Clear();
+                XmlTextBox.Language = Language.XML;
+                DelayHighlight = false;
 
+                if (string.IsNullOrEmpty(xml))
+                {
+                    LoadingXml = false;
+                    return;
+                }
+                //if (xml.Length > (1048576 * 5))
+                //{
+                //    XmlTextBox.Language = Language.Custom;
+                //    XmlTextBox.Text = "[XML size > 10MB - Not shown due to performance limitations - Please use an external viewer for this file.]";
+                //    return;
+                //}
+                //else 
+                if (xml.Length > (1024 * 512))
+                {
+                    XmlTextBox.Language = Language.Custom;
+                    DelayHighlight = true;
+                }
+                //else
+                //{
+                //    XmlTextBox.Language = Language.XML;
+                //}
 
-
-            XmlTextBox.Text = xml;
-            //XmlTextBox.IsChanged = false;
-            XmlTextBox.ClearUndo();
-
-            Cursor = Cursors.Default;
-            LoadingXml = false;
+                XmlTextBox.Text = xml;
+                //XmlTextBox.IsChanged = false;
+                XmlTextBox.ClearUndo();
+            }
+            finally
+            {
+                Cursor = Cursors.Default;
+                LoadingXml = false;
+                XmlTextBox.EndUpdate();
+            }
         }
 
 
@@ -130,24 +138,28 @@ namespace CodeWalker.Forms
         }
         private void NewDocument()
         {
-            if (!CloseDocument()) return;
+            if (!CloseDocument())
+                return;
 
             FileName = "New.xml";
             rpfFileEntry = null;
 
             //TODO: decide XML/RSC/PSO/RBF format..?
         }
-        private void OpenDocument()
+        private async ValueTask OpenDocument()
         {
-            if (OpenFileDialog.ShowDialog() != DialogResult.OK) return;
+            if (OpenFileDialog.ShowDialog() != DialogResult.OK)
+                return;
 
-            if (!CloseDocument()) return;
+            if (!CloseDocument())
+                return;
 
             var fn = OpenFileDialog.FileName;
 
-            if (!File.Exists(fn)) return; //couldn't find file?
+            if (!File.Exists(fn))
+                return; //couldn't find file?
 
-            Xml = File.ReadAllText(fn);
+            Xml = await File.ReadAllTextAsync(fn);
 
             modified = false;
             FilePath = fn;
@@ -190,7 +202,8 @@ namespace CodeWalker.Forms
                 if (!string.IsNullOrEmpty(fn))
                 {
                     var dir = new FileInfo(fn).DirectoryName;
-                    if (!Directory.Exists(dir)) dir = "";
+                    if (!Directory.Exists(dir))
+                        dir = "";
                     SaveFileDialog.InitialDirectory = dir;
                 }
                 SaveFileDialog.FileName = FileName;
@@ -235,9 +248,12 @@ namespace CodeWalker.Forms
             metaFormat = MetaFormat.XML;
             if (ymf != null)
             {
-                if (ymf.Meta != null) metaFormat = MetaFormat.RSC;
-                if (ymf.Pso != null) metaFormat = MetaFormat.PSO;
-                if (ymf.Rbf != null) metaFormat = MetaFormat.RBF;
+                if (ymf.Meta != null)
+                    metaFormat = MetaFormat.RSC;
+                if (ymf.Pso != null)
+                    metaFormat = MetaFormat.PSO;
+                if (ymf.Rbf != null)
+                    metaFormat = MetaFormat.RBF;
             }
         }
         public void LoadMeta(YmapFile ymap)
@@ -251,9 +267,12 @@ namespace CodeWalker.Forms
             metaFormat = MetaFormat.XML;
             if (ymap != null)
             {
-                if (ymap.Meta != null) metaFormat = MetaFormat.RSC;
-                if (ymap.Pso != null) metaFormat = MetaFormat.PSO;
-                if (ymap.Rbf != null) metaFormat = MetaFormat.RBF;
+                if (ymap.Meta != null)
+                    metaFormat = MetaFormat.RSC;
+                if (ymap.Pso != null)
+                    metaFormat = MetaFormat.PSO;
+                if (ymap.Rbf != null)
+                    metaFormat = MetaFormat.RBF;
             }
         }
         public void LoadMeta(YtypFile ytyp)
@@ -267,9 +286,12 @@ namespace CodeWalker.Forms
             metaFormat = MetaFormat.XML;
             if (ytyp != null)
             {
-                if (ytyp.Meta != null) metaFormat = MetaFormat.RSC;
-                if (ytyp.Pso != null) metaFormat = MetaFormat.PSO;
-                if (ytyp.Rbf != null) metaFormat = MetaFormat.RBF;
+                if (ytyp.Meta != null)
+                    metaFormat = MetaFormat.RSC;
+                if (ytyp.Pso != null)
+                    metaFormat = MetaFormat.PSO;
+                if (ytyp.Rbf != null)
+                    metaFormat = MetaFormat.RBF;
             }
         }
         public void LoadMeta(JPsoFile jpso)
@@ -283,7 +305,8 @@ namespace CodeWalker.Forms
             metaFormat = MetaFormat.XML;
             if (jpso != null)
             {
-                if (jpso.Pso != null) metaFormat = MetaFormat.PSO;
+                if (jpso.Pso != null)
+                    metaFormat = MetaFormat.PSO;
             }
         }
         public void LoadMeta(CutFile cut)
@@ -297,7 +320,8 @@ namespace CodeWalker.Forms
             metaFormat = MetaFormat.XML;
             if (cut != null)
             {
-                if (cut.Pso != null) metaFormat = MetaFormat.PSO;
+                if (cut.Pso != null)
+                    metaFormat = MetaFormat.PSO;
             }
         }
         public void LoadMeta(YndFile ynd)
@@ -415,7 +439,7 @@ namespace CodeWalker.Forms
 
         public void LoadMeta(PackedFile gameFile)
         {
-            gameFile = gameFile ?? throw new ArgumentNullException(nameof(gameFile));
+            ArgumentNullException.ThrowIfNull(gameFile, nameof(gameFile));
 
             if (gameFile is YmfFile ymfFile)
             {
@@ -484,33 +508,32 @@ namespace CodeWalker.Forms
             //otherwise, save the generated file to disk? 
             //(currently just return false and revert to XML file save)
 
-            if (!(ExploreForm.Instance?.EditMode ?? false)) return false;
+            if (!(ExploreForm.Instance?.EditMode ?? false))
+                return false;
 
-            if(metaFormat == MetaFormat.XML) return false;//what are we even doing here?
+            if(metaFormat == MetaFormat.XML)
+                return false;//what are we even doing here?
 
-            byte[] data = null;
+            byte[] data;
 
-#if !DEBUG
             try
-#endif
             {
 
                 data = XmlMeta.GetData(doc, metaFormat, string.Empty);
 
-                if (data == null)
+                if (data.Length == 0)
                 {
                     MessageBox.Show("Schema not supported.", "Cannot import " + XmlMeta.GetXMLFormatName(metaFormat));
                     return false;
                 }
 
             }
-#if !DEBUG
             catch (Exception ex)
             {
                 MessageBox.Show("Exception encountered!\r\n" + ex.ToString(), "Cannot convert XML");
+                Console.WriteLine(ex);
                 return false;
             }
-#endif
 
             if (rpfFileEntry?.Parent != null)
             {
@@ -524,11 +547,10 @@ namespace CodeWalker.Forms
 
                 try
                 {
-                    if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return false;
+                    if (!ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))
+                        return false;
 
                     var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, data);
-                    if (newentry != rpfFileEntry)
-                    { }
                     rpfFileEntry = newentry;
 
                     ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
@@ -541,6 +563,7 @@ namespace CodeWalker.Forms
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex);
                     MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
                 }
             }
@@ -560,6 +583,7 @@ namespace CodeWalker.Forms
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex);
                     MessageBox.Show("Error saving file to filesystem!\r\n" + ex.ToString(), "File I/O Error");
                 }
             }
@@ -616,9 +640,9 @@ namespace CodeWalker.Forms
             NewDocument();
         }
 
-        private void OpenButton_ButtonClick(object sender, EventArgs e)
+        private async void OpenButton_ButtonClick(object sender, EventArgs e)
         {
-            OpenDocument();
+            await OpenDocument();
         }
 
         private void SaveButton_ButtonClick(object sender, EventArgs e)
@@ -631,9 +655,9 @@ namespace CodeWalker.Forms
             NewDocument();
         }
 
-        private void FileOpenMenu_Click(object sender, EventArgs e)
+        private async void FileOpenMenu_Click(object sender, EventArgs e)
         {
-            OpenDocument();
+            await OpenDocument();
         }
 
         private void FileSaveMenu_Click(object sender, EventArgs e)

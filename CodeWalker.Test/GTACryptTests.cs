@@ -96,7 +96,7 @@ namespace CodeWalker.Test
         public void DecryptWithSpanShouldReturnExpectedData()
         {
             var data = Convert.FromBase64String(InputData);
-            GTACrypto.DecryptNG(data.AsSpan(), Key);
+            GTACrypto.DecryptNG(data.AsMemory(), Key);
 
             Assert.Equal(OutputData, Convert.ToBase64String(data));
         }

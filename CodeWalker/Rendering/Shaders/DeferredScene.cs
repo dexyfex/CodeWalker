@@ -15,6 +15,7 @@ using SharpDX.DXGI;
 using SharpDX.Mathematics.Interop;
 using System.Diagnostics;
 using CodeWalker.Properties;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeWalker.Rendering
 {
@@ -69,9 +70,9 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class DeferredScene
+    public class DeferredScene : IDisposable
     {
-
+        private readonly ShaderManager _shaderManager;
         public GpuMultiTexture GBuffers; // diffuse, normals, specular, irradiance
         public GpuTexture SceneColour; //final scene colour buffer
 
@@ -85,16 +86,19 @@ namespace CodeWalker.Rendering
 
         VertexShader DirLightVS;
         PixelShader DirLightPS;
-        PixelShader DirLightMSPS;
+        PixelShader? DirLightMSPS;
         VertexShader LodLightVS;
         PixelShader LodLightPS;
-        PixelShader LodLightMSPS;
+        PixelShader? LodLightMSPS;
         VertexShader LightVS;
         PixelShader LightPS;
-        PixelShader LightMSPS;
+        PixelShader? LightMSPS;
         LightCone LightCone;
         UnitSphere LightSphere;
         UnitCapsule LightCapsule;
+        LightCone LightConeLOD;
+        UnitSphere LightSphereLOD;
+        UnitCapsule LightCapsuleLOD;
         UnitQuad LightQuad;
         InputLayout LightQuadLayout;
 
@@ -111,26 +115,16 @@ namespace CodeWalker.Rendering
         public int SSAASampleCount = 1;
 
 
-        public int MSAASampleCount = 8;
+        public int MSAASampleCount = Settings.Default.AntiAliasing;
 
+        public long VramUsage => WindowSizeVramUsage;
 
-
-
-        public long VramUsage
+        public DeferredScene(DXManager dxman, ShaderManager shaderManager)
         {
-            get
-            {
-                return WindowSizeVramUsage;
-            }
-        }
-
-
-
-        public DeferredScene(DXManager dxman)
-        {
+            _shaderManager = shaderManager;
             var device = dxman.device;
 
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            var folder = ShaderManager.GetShaderFolder();
             byte[] bDirLightVS = File.ReadAllBytes(Path.Combine(folder, "DirLightVS.cso"));
             byte[] bDirLightPS = File.ReadAllBytes(Path.Combine(folder, "DirLightPS.cso"));
             byte[] bDirLightMSPS = File.ReadAllBytes(Path.Combine(folder, "DirLightPS_MS.cso"));
@@ -159,13 +153,20 @@ namespace CodeWalker.Rendering
             }
             catch
             {
+                DirLightMSPS = null;
+                LodLightMSPS = null;
+                LightMSPS = null;
                 MSAASampleCount = 1; //can't do MSAA without at least 10.1 support
             }
 
 
-            LightCone = new LightCone(device, bLodLightVS, 2);
-            LightSphere = new UnitSphere(device, bLodLightVS, 3, true);
-            LightCapsule = new UnitCapsule(device, bLodLightVS, 4, false);
+            LightCone = new LightCone(device, bLightVS, 2);
+            LightSphere = new UnitSphere(device, bLightVS, 3, true);
+            LightCapsule = new UnitCapsule(device, bLightVS, 4, false);
+
+            LightConeLOD = new LightCone(device, bLodLightVS, 2);
+            LightSphereLOD = new UnitSphere(device, bLodLightVS, 2, true);
+            LightCapsuleLOD = new UnitCapsule(device, bLodLightVS, 2, false);
             LightQuad = new UnitQuad(device, true);
             LightQuadLayout = new InputLayout(device, bDirLightVS, new[]
             {
@@ -191,128 +192,38 @@ namespace CodeWalker.Rendering
 
             BlendState = DXUtility.CreateBlendState(device, false, BlendOperation.Add, BlendOption.One, BlendOption.Zero, BlendOperation.Add, BlendOption.One, BlendOption.Zero, ColorWriteMaskFlags.All);
 
+            OnWindowResize(dxman);
         }
         public void Dispose()
         {
             DisposeBuffers();
 
-            if (BlendState != null)
-            {
-                BlendState.Dispose();
-                BlendState = null;
-            }
-            if (SampleStateLinear != null)
-            {
-                SampleStateLinear.Dispose();
-                SampleStateLinear = null;
-            }
-            if (SampleStatePoint != null)
-            {
-                SampleStatePoint.Dispose();
-                SampleStatePoint = null;
-            }
-            if (LightVSVars != null)
-            {
-                LightVSVars.Dispose();
-                LightVSVars = null;
-            }
-            if (LightPSVars != null)
-            {
-                LightPSVars.Dispose();
-                LightPSVars = null;
-            }
-            if (LightInstVars != null)
-            {
-                LightInstVars.Dispose();
-                LightInstVars = null;
-            }
-            if (LightQuadLayout != null)
-            {
-                LightQuadLayout.Dispose();
-                LightQuadLayout = null;
-            }
-            if (LightQuad != null)
-            {
-                LightQuad.Dispose();
-                LightQuad = null;
-            }
-            if (LightCone != null)
-            {
-                LightCone.Dispose();
-                LightCone = null;
-            }
-            if (LightSphere != null)
-            {
-                LightSphere.Dispose();
-                LightSphere = null;
-            }
-            if (LightCapsule != null)
-            {
-                LightCapsule.Dispose();
-                LightCapsule = null;
-            }
-            if (DirLightPS != null)
-            {
-                DirLightPS.Dispose();
-                DirLightPS = null;
-            }
-            if (DirLightMSPS != null)
-            {
-                DirLightMSPS.Dispose();
-                DirLightMSPS = null;
-            }
-            if (DirLightVS != null)
-            {
-                DirLightVS.Dispose();
-                DirLightVS = null;
-            }
-            if (LodLightPS != null)
-            {
-                LodLightPS.Dispose();
-                LodLightPS = null;
-            }
-            if (LodLightMSPS != null)
-            {
-                LodLightMSPS.Dispose();
-                LodLightMSPS = null;
-            }
-            if (LodLightVS != null)
-            {
-                LodLightVS.Dispose();
-                LodLightVS = null;
-            }
-            if (LightPS != null)
-            {
-                LightPS.Dispose();
-                LightPS = null;
-            }
-            if (LightMSPS != null)
-            {
-                LightMSPS.Dispose();
-                LightMSPS = null;
-            }
-            if (LightVS != null)
-            {
-                LightVS.Dispose();
-                LightVS = null;
-            }
-            if (SSAAPSVars != null)
-            {
-                SSAAPSVars.Dispose();
-                SSAAPSVars = null;
-            }
-            if (SSAAPS != null)
-            {
-                SSAAPS.Dispose();
-                SSAAPS = null;
-            }
-            if (FinalVS != null)
-            {
-                FinalVS.Dispose();
-                FinalVS = null;
-            }
+            BlendState.Dispose();
+            SampleStateLinear.Dispose();
+            SampleStatePoint.Dispose();
+            LightVSVars.Dispose();
+            LightPSVars.Dispose();
+            LightInstVars.Dispose();
+            LightQuadLayout.Dispose();
+            LightQuad.Dispose();
+            LightConeLOD.Dispose();
+            LightSphereLOD.Dispose();
+            LightCapsuleLOD.Dispose();
+            DirLightPS.Dispose();
+            DirLightMSPS?.Dispose();
+            DirLightVS.Dispose();
+            LodLightPS.Dispose();
+            LodLightMSPS?.Dispose();
+            LodLightVS.Dispose();
+            LightPS.Dispose();
+            LightMSPS?.Dispose();
+            LightVS.Dispose();
+            SSAAPSVars.Dispose();
+            SSAAPS.Dispose();
+            FinalVS.Dispose();
         }
 
+        [MemberNotNull(nameof(GBuffers), nameof(SceneColour))]
         public void OnWindowResize(DXManager dxman)
         {
             DisposeBuffers();
@@ -340,16 +251,8 @@ namespace CodeWalker.Rendering
         }
         public void DisposeBuffers()
         {
-            if (GBuffers != null)
-            {
-                GBuffers.Dispose();
-                GBuffers = null;
-            }
-            if (SceneColour != null)
-            {
-                SceneColour.Dispose();
-                SceneColour = null;
-            }
+            GBuffers?.Dispose();
+            SceneColour?.Dispose();
             WindowSizeVramUsage = 0;
         }
 
@@ -374,7 +277,7 @@ namespace CodeWalker.Rendering
             context.Rasterizer.SetViewport(Viewport);
         }
 
-        public void RenderLights(DeviceContext context, Camera camera, Shadowmap globalShadows, ShaderGlobalLights globalLights)
+        public void RenderLights(DeviceContext context, Camera camera, Shadowmap? globalShadows, ShaderGlobalLights globalLights, bool updateLods = true)
         {
 
             //first full-screen directional light pass, for sun/moon
@@ -398,7 +301,7 @@ namespace CodeWalker.Rendering
             LightPSVars.Vars.GlobalLights = globalLights.Params;
             LightPSVars.Vars.ViewProjInv = Matrix.Transpose(camera.ViewProjInvMatrix);
             LightPSVars.Vars.CameraPos = Vector4.Zero;
-            LightPSVars.Vars.EnableShadows = (globalShadows != null) ? 1u : 0u;
+            LightPSVars.Vars.EnableShadows = (globalShadows is not null) ? 1u : 0u;
             LightPSVars.Vars.RenderMode = 0;
             LightPSVars.Vars.RenderModeIndex = 1;
             LightPSVars.Vars.RenderSamplerCoord = 0;
@@ -412,7 +315,7 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetShaderResources(0, GBuffers.DepthSRV);
             context.PixelShader.SetShaderResources(2, GBuffers.SRVs);
 
-            if (globalShadows != null)
+            if (globalShadows is not null)
             {
                 globalShadows.SetFinalRenderResources(context);
             }
@@ -427,7 +330,7 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetSamplers(0, null, null);
         }
 
-        public void RenderLights(DeviceContext context, Camera camera, List<RenderableLODLights> lodlights)
+        public void RenderLights(DeviceContext context, Camera camera, List<RenderableLODLights> lodlights, bool updateLods = true)
         {
             //instanced rendering of all other lights, using appropriate shapes
             //blend mode: additive
@@ -436,6 +339,7 @@ namespace CodeWalker.Rendering
 
             context.VertexShader.Set(LodLightVS);
             context.PixelShader.Set(ps);
+            context.InputAssembler.InputLayout = LightQuadLayout;
 
             LightVSVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             LightVSVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);
@@ -458,11 +362,11 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetShaderResources(0, GBuffers.DepthSRV);
             context.PixelShader.SetShaderResources(2, GBuffers.SRVs);
 
-
-            foreach (var rll in lodlights)
+            for (int i = 0; i < Math.Min(lodlights.Count, 500); i++)
             {
-                var (pointsIndex, spotsIndex, capsIndex) = rll.UpdateLods(camera.Position);
-                if (rll.PointsBuffer != null && pointsIndex > 0)
+                var rll = lodlights[i];
+                var (spotsIndex, pointsIndex, capsIndex) = rll.UpdateLods(in camera.Position, updateLods);
+                if (rll.PointsBuffer != null && pointsIndex >= 0)
                 {
                     context.VertexShader.SetShaderResources(0, rll.PointsBuffer.SRV);
                     context.PixelShader.SetShaderResources(6, rll.PointsBuffer.SRV);
@@ -473,9 +377,9 @@ namespace CodeWalker.Rendering
                     LightPSVars.Update(context);
                     LightPSVars.SetPSCBuffer(context, 0);
 
-                    LightSphere.DrawInstanced(context, pointsIndex + 1);
+                    LightSphereLOD.DrawInstanced(context, pointsIndex + 1);
                 }
-                if (rll.SpotsBuffer != null && spotsIndex > 0)
+                if (rll.SpotsBuffer != null && spotsIndex >= 0)
                 {
                     context.VertexShader.SetShaderResources(0, rll.SpotsBuffer.SRV);
                     context.PixelShader.SetShaderResources(6, rll.SpotsBuffer.SRV);
@@ -485,9 +389,9 @@ namespace CodeWalker.Rendering
                     LightPSVars.Vars.LightType = 2;
                     LightPSVars.Update(context);
                     LightPSVars.SetPSCBuffer(context, 0);
-                    LightCone.DrawInstanced(context, spotsIndex + 1);
+                    LightConeLOD.DrawInstanced(context, spotsIndex + 1);
                 }
-                if (rll.CapsBuffer != null && capsIndex > 0)
+                if (rll.CapsBuffer != null && capsIndex >= 0)
                 {
                     context.VertexShader.SetShaderResources(0, rll.CapsBuffer.SRV);
                     context.PixelShader.SetShaderResources(6, rll.CapsBuffer.SRV);
@@ -497,7 +401,7 @@ namespace CodeWalker.Rendering
                     LightPSVars.Vars.LightType = 4;
                     LightPSVars.Update(context);
                     LightPSVars.SetPSCBuffer(context, 0);
-                    LightCapsule.DrawInstanced(context, capsIndex + 1);
+                    LightCapsuleLOD.DrawInstanced(context, capsIndex + 1);
                 }
             }
 
@@ -509,7 +413,9 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetSamplers(0, null, null);
         }
 
-        public void RenderLights(DeviceContext context, Camera camera, List<RenderableLightInst> lights)
+
+        private const int lightLimit = 500;
+        public void RenderLights(DeviceContext context, Camera camera, List<RenderableLightInst> lights, bool updateLods = true)
         {
             //instanced rendering of all other lights, using appropriate shapes
             //blend mode: additive
@@ -519,6 +425,8 @@ namespace CodeWalker.Rendering
 
             context.VertexShader.Set(LightVS);
             context.PixelShader.Set(ps);
+
+            context.InputAssembler.InputLayout = LightQuadLayout;
 
             LightVSVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             LightVSVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);
@@ -545,8 +453,13 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetShaderResources(0, GBuffers.DepthSRV);
             context.PixelShader.SetShaderResources(2, GBuffers.SRVs);
 
+            if (lights.Count > lightLimit)
+            {
+                Console.WriteLine($"Lights count larger than {lightLimit}, {lights.Count}");
+            }
 
-            for (int i = 0; i < lights.Count; i++)
+            // Cap lights to 200, to avoid excessive GPU load due to loads of lights
+            for (int i = 0; i < Math.Min(lights.Count, lightLimit); i++)
             {
                 var li = lights[i];
                 var rl = li.Light;

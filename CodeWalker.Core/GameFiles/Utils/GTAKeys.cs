@@ -196,8 +196,10 @@ namespace CodeWalker.GameFiles
             var exeStr = new MemoryStream(exeData);
 
             updateStatus?.Invoke("Searching for AES key...");
+            Console.WriteLine("Searching for AES key...");
             PC_AES_KEY = HashSearch.SearchHash(exeStr, GTA5KeyHashes.PC_AES_KEY_HASH, 0x20);
 
+            Console.WriteLine("Complete.");
             updateStatus?.Invoke("Complete.");
         }
 
@@ -290,9 +292,9 @@ namespace CodeWalker.GameFiles
 
         private static void UseMagicData(string path, string key)
         {
-
             if (string.IsNullOrEmpty(key))
             {
+                Console.WriteLine($"Reading keys from {path}\\gta5.exe");
                 byte[] exedata = File.ReadAllBytes(path + "\\gta5.exe");
                 GenerateV2(exedata, null);
             }
@@ -301,6 +303,11 @@ namespace CodeWalker.GameFiles
                 PC_AES_KEY = Convert.FromBase64String(key);
             }
             //GenerateMagicData();
+
+            if (PC_AES_KEY is null)
+            {
+                Console.WriteLine($"PC_AES_KEY is null!");
+            }
 
 
             Random rnd = new Random((int)JenkHash.GenHash(PC_AES_KEY));
@@ -782,7 +789,7 @@ namespace CodeWalker.GameFiles
     public static class HashSearch
     {
         private const long BLOCK_LENGTH = 1048576;
-        private const long ALIGN_LENGTH = 16;
+        private const long ALIGN_LENGTH = 8;
 
         public static byte[] SearchHash(Stream stream, byte[] hash, int length = 32)
         {
@@ -794,10 +801,12 @@ namespace CodeWalker.GameFiles
             stream = Stream.Synchronized(stream);
             var result = new byte[hashes.Count][];
 
-            Parallel.For(0, (stream.Length / BLOCK_LENGTH), (long k) => {
+            Parallel.For(0, (stream.Length / BLOCK_LENGTH), [SkipLocalsInit] (long k) => {
                 var hashProvider = new SHA1CryptoServiceProvider();
                 // TODO: Convert to stack alloc when length appropriate (1024 or lower probs)
-                var buffer = new byte[length];
+                Span<byte> buffer = length < 1024 ? stackalloc byte[length] : new byte[length];
+                Span<byte> hash = length < 1024 ? stackalloc byte[length] : new byte[length];
+                //var buffer = new byte[length];
                 for (long i = 0; i < (BLOCK_LENGTH / ALIGN_LENGTH); i++)
                 {
                     var position = k * BLOCK_LENGTH + i * ALIGN_LENGTH;
@@ -806,15 +815,18 @@ namespace CodeWalker.GameFiles
 
 
                     stream.Position = position;
-                    stream.Read(buffer, 0, length);
+                    stream.Read(buffer);
 
-                    var hash = hashProvider.ComputeHash(buffer);
+                    hashProvider.TryComputeHash(buffer, hash, out var bytesWritten);
+                    //var hash = hashProvider.ComputeHash(buffer);
                     for (int j = 0; j < hashes.Count; j++)
-                        if (hash.SequenceEqual(hashes[j]))
-                            result[j] = (byte[])buffer.Clone();
+                    {
+                        if (hash.Slice(0, bytesWritten).SequenceEqual(hashes[j]))
+                        {
+                            result[j] = buffer.ToArray();
+                        }
+                    }
                 }
-
-
             });
 
             return result;
@@ -867,6 +879,7 @@ namespace CodeWalker.GameFiles
     {
         private const int TEST_ITERATIONS = 100000;
 
+        [SkipLocalsInit]
         public static bool[] Solve(
             uint[][] tables,
             int inByte0, int inByte1, int inByte2, int inByte3,
@@ -1510,9 +1523,8 @@ namespace CodeWalker.GameFiles
 
 
             uint result = 0;
-            for (int index = 0; index < text.Length; index++)
-            {
-                var temp = 1025 * (LUT[text[index]] + result);
+            foreach(var c in text) {
+                var temp = 1025 * (LUT[c] + result);
                 result = (temp >> 6) ^ temp;
             }
 

@@ -1,13 +1,18 @@
 ﻿
 
+using CodeWalker.Core.Utils;
+using CommunityToolkit.HighPerformance;
+using Microsoft.Extensions.ObjectPool;
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static CodeWalker.GameFiles.MetaXmlBase;
 
 namespace CodeWalker.GameFiles
 {
@@ -20,7 +25,7 @@ namespace CodeWalker.GameFiles
 
             if (!string.IsNullOrEmpty(outputfolder))
             {
-                outputfolder = Path.Combine(outputfolder, e.ShortName);
+                outputfolder = Path.Join(outputfolder, e.ShortName);
             }
 
             if (fn.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase))
@@ -179,21 +184,47 @@ namespace CodeWalker.GameFiles
             filename = string.Empty;
             return string.Empty;
         }
-        public static string GetXml(YmapFile ymap, out string filename)
+        public static string GetXml(YmapFile? ymap, out string filename)
         {
             var fn = (ymap?.RpfFileEntry?.Name) ?? "";
-            if (ymap.Meta != null) { filename = fn + ".xml"; return GetXml(ymap.Meta); }
-            else if (ymap.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(ymap.Pso); }
-            else if (ymap.Rbf != null) { filename = fn + ".rbf.xml"; return RbfXml.GetXml(ymap.Rbf); }
+            if (ymap.Meta is not null) {
+                filename = fn + ".xml";
+                return GetXml(ymap.Meta);
+            }
+            else if (ymap.Pso is not null) {
+                filename = fn + ".pso.xml";
+                return PsoXml.GetXml(ymap.Pso);
+            }
+            else if (ymap.Rbf is not null) {
+                filename = fn + ".rbf.xml";
+                return RbfXml.GetXml(ymap.Rbf);
+            }
             filename = string.Empty;
             return string.Empty;
         }
         public static string GetXml(YtypFile ytyp, out string filename)
         {
-            var fn = (ytyp?.RpfFileEntry?.Name) ?? "";
-            if (ytyp.Meta != null) { filename = fn + ".xml"; return GetXml(ytyp.Meta); }
-            else if (ytyp.Pso != null) { filename = fn + ".pso.xml"; return PsoXml.GetXml(ytyp.Pso); }
-            else if (ytyp.Rbf != null) { filename = fn + ".rbf.xml"; return RbfXml.GetXml(ytyp.Rbf); }
+            if (ytyp is null)
+            {
+                filename = string.Empty;
+                return string.Empty;
+            }
+
+            var fn = (ytyp.RpfFileEntry?.Name) ?? "";
+            if (ytyp.Meta is not null)
+            {
+                filename = fn + ".xml";
+                return GetXml(ytyp.Meta);
+            }
+            else if (ytyp.Pso is not null)
+            {
+                filename = fn + ".pso.xml";
+                return PsoXml.GetXml(ytyp.Pso);
+            }
+            else if (ytyp.Rbf is not null) {
+                filename = fn + ".rbf.xml";
+                return RbfXml.GetXml(ytyp.Rbf);
+            }
             filename = string.Empty;
             return string.Empty;
         }
@@ -348,17 +379,24 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(Meta meta)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if (meta != null)
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                var cont = new MetaCont(meta);
+                sb.AppendLine(XmlHeader);
 
-                WriteNode(sb, 0, cont, meta.RootBlockIndex, 0, XmlTagMode.Structure, 0, (string)meta.Name);
+                if (meta != null)
+                {
+                    var cont = new MetaCont(meta);
+
+                    WriteNode(sb, 0, cont, meta.RootBlockIndex, 0, XmlTagMode.Structure, 0, (string)meta.Name);
+                }
+
+                return sb.ToString();
             }
-
-            return sb.ToString();
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
 
         private static void WriteNode(StringBuilder sb, int indent, MetaCont cont, int blockId, int offset, XmlTagMode tagMode = XmlTagMode.None, MetaName structName = 0, string metaName = "")
@@ -395,13 +433,13 @@ namespace CodeWalker.GameFiles
             switch (tagMode)
             {
                 case XmlTagMode.Structure:
-                    OpenTag(sb, indent, name, true, metaName);
+                    OpenTag(sb, indent, name, metaName, true);
                     break;
                 case XmlTagMode.Item:
-                    OpenTag(sb, indent, "Item", true, metaName);
+                    OpenTag(sb, indent, "Item", metaName, true);
                     break;
                 case XmlTagMode.ItemAndType:
-                    OpenTag(sb, indent, "Item type=\"" + name + "\"", true, metaName);
+                    OpenTag(sb, indent, $"Item type=\"{name}\"", metaName, true);
                     break;
             }
 
@@ -420,7 +458,7 @@ namespace CodeWalker.GameFiles
                 switch (entry.DataType)
                 {
                     default:
-                        ErrorXml(sb, cind, ename + ": Unexpected entry DataType: " + entry.DataType.ToString());
+                        ErrorXml(sb, cind, $"{ename}: Unexpected entry DataType: {entry.DataType}");
                         break;
                     case MetaStructureEntryDataType.Array:
 
@@ -456,12 +494,12 @@ namespace CodeWalker.GameFiles
                         ValueTag(sb, cind, ename, byteEnumVal.ToString());
                         break;
                     case MetaStructureEntryDataType.CharPointer:
-                        var charPtr = MetaTypes.ConvertData<CharPointer>(data, eoffset);
+                        MetaTypes.TryConvertData<CharPointer>(data.AsSpan(eoffset), out var charPtr);
                         string charStr = MetaTypes.GetString(cont.Meta, charPtr);
                         OneLineTag(sb, cind, ename, charStr);
                         break;
                     case MetaStructureEntryDataType.DataBlockPointer:
-                        var dataPtr = MetaTypes.ConvertData<DataBlockPointer>(data, eoffset);
+                        MetaTypes.TryConvertData<DataBlockPointer>(data.AsSpan(eoffset), out var dataPtr);
                         //need to just get all the data from that block, since this pointer is referring to the whole block! it should be of type BYTE!
                         var dblock = cont.Meta.GetBlock((int)dataPtr.PointerDataId);
                         WriteRawArray(sb, dblock.Data, cind, ename, "ByteArray", FormatHexByte, 32);
@@ -471,15 +509,15 @@ namespace CodeWalker.GameFiles
                         ValueTag(sb, cind, ename, FloatUtil.ToString(floatVal));
                         break;
                     case MetaStructureEntryDataType.Float_XYZ:
-                        var v3 = MetaTypes.ConvertData<Vector3>(data, eoffset);
-                        SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v3.X) + "\" y=\"" + FloatUtil.ToString(v3.Y) + "\" z=\"" + FloatUtil.ToString(v3.Z) + "\"");
+                        MetaTypes.TryConvertData<Vector3>(data.AsSpan(eoffset), out var v3);
+                        SelfClosingTag(sb, cind, $"{ename} x=\"{FloatUtil.ToString(v3.X)}\" y=\"{FloatUtil.ToString(v3.Y)}\" z=\"{FloatUtil.ToString(v3.Z)}\"");
                         break;
                     case MetaStructureEntryDataType.Float_XYZW:
-                        var v4 = MetaTypes.ConvertData<Vector4>(data, eoffset);
-                        SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v4.X) + "\" y=\"" + FloatUtil.ToString(v4.Y) + "\" z=\"" + FloatUtil.ToString(v4.Z) + "\" w=\"" + FloatUtil.ToString(v4.W) + "\"");
+                        MetaTypes.TryConvertData<Vector4>(data.AsSpan(eoffset), out var v4);
+                        SelfClosingTag(sb, cind, $"{ename} x=\"{FloatUtil.ToString(v4.X)}\" y=\"{FloatUtil.ToString(v4.Y)}\" z=\"{FloatUtil.ToString(v4.Z)}\" w=\"{FloatUtil.ToString(v4.W)}\"");
                         break;
                     case MetaStructureEntryDataType.Hash:
-                        var hashVal = MetaTypes.ConvertData<MetaHash>(data, eoffset);
+                        MetaTypes.TryConvertData<MetaHash>(data.AsSpan(eoffset), out var hashVal);
                         var hashStr = HashString(hashVal);
                         StringTag(sb, cind, ename, hashStr);
                         break;
@@ -538,7 +576,7 @@ namespace CodeWalker.GameFiles
                                 ValueTag(sb, cind, ename, uintVal.ToString());
                                 break;
                             case MetaName.color:
-                                ValueTag(sb, cind, ename, "0x" + uintVal.ToString("X").PadLeft(8, '0'));
+                                ValueTag(sb, cind, ename, $"0x{uintVal:X8}");
                                 break;
                         }
 
@@ -571,14 +609,14 @@ namespace CodeWalker.GameFiles
             switch (arrEntry.DataType)
             {
                 default:
-                    ErrorXml(sb, indent, ename + ": Unexpected array entry DataType: " + arrEntry.DataType.ToString());
+                    ErrorXml(sb, indent, $"{ename}: Unexpected array entry DataType: {arrEntry.DataType}");
                     break;
                 case MetaStructureEntryDataType.Structure:
-                    var arrStruc = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
+                    MetaTypes.TryConvertData<Array_Structure>(data, eoffset, out var arrStruc);
                     var aBlockId = (int)arrStruc.PointerDataId;
                     var aOffset = (int)arrStruc.PointerDataOffset;
                     aCount = arrStruc.Count1;
-                    arrTag += " itemType=\"" + HashString(arrEntry.ReferenceKey) + "\"";
+                    arrTag += $" itemType=\"{HashString(arrEntry.ReferenceKey)}\"";
                     if (aCount > 0)
                     {
                         OpenTag(sb, indent, arrTag);
@@ -604,15 +642,15 @@ namespace CodeWalker.GameFiles
                     }
                     break;
                 case MetaStructureEntryDataType.StructurePointer:
-                    var arrStrucP = MetaTypes.ConvertData<Array_StructurePointer>(data, eoffset);
-                    var ptrArr = MetaTypes.GetPointerArray(cont.Meta, arrStrucP);
-                    aCount = ptrArr?.Length ?? 0;
+                    MetaTypes.TryConvertData<Array_StructurePointer>(data, eoffset, out var arrStrucP);
+                    var ptrArr = MetaTypes.GetPointerArray(cont.Meta, in arrStrucP);
+                    aCount = ptrArr.Length;
                     if (aCount > 0)
                     {
                         OpenTag(sb, indent, arrTag);
                         for (int n = 0; n < aCount; n++)
                         {
-                            var ptr = ptrArr[n];
+                            ref var ptr = ref ptrArr[n];
                             var offset = ptr.Offset;
                             WriteNode(sb, aind, cont, ptr.BlockID, offset, XmlTagMode.ItemAndType);
                         }
@@ -624,27 +662,27 @@ namespace CodeWalker.GameFiles
                     }
                     break;
                 case MetaStructureEntryDataType.UnsignedInt:
-                    var arrUint = MetaTypes.ConvertData<Array_uint>(data, eoffset);
-                    var uintArr = MetaTypes.GetUintArray(cont.Meta, arrUint);
+                    MetaTypes.TryConvertData<Array_uint>(data, eoffset, out var arrUint);
+                    var uintArr = MetaTypes.GetUintArray(cont.Meta, in arrUint);
                     WriteRawArray(sb, uintArr, indent, ename, "uint");
                     break;
                 case MetaStructureEntryDataType.UnsignedShort:
-                    var arrUshort = MetaTypes.ConvertData<Array_ushort>(data, eoffset);
-                    var ushortArr = MetaTypes.GetUshortArray(cont.Meta, arrUshort);
+                    MetaTypes.TryConvertData<Array_ushort>(data, eoffset, out var arrUshort);
+                    var ushortArr = MetaTypes.GetUshortArray(cont.Meta, in arrUshort);
                     WriteRawArray(sb, ushortArr, indent, ename, "ushort");
                     break;
                 case MetaStructureEntryDataType.UnsignedByte:
-                    var arrUbyte = MetaTypes.ConvertData<Array_byte>(data, eoffset);
-                    var byteArr = MetaTypes.GetByteArray(cont.Meta, arrUbyte);
+                    MetaTypes.TryConvertData<Array_byte>(data, eoffset, out var arrUbyte);
+                    var byteArr = MetaTypes.GetByteArray(cont.Meta, in arrUbyte);
                     WriteRawArray(sb, byteArr, indent, ename, "byte");
                     break;
                 case MetaStructureEntryDataType.Float:
-                    var arrFloat = MetaTypes.ConvertData<Array_float>(data, eoffset);
-                    var floatArr = MetaTypes.GetFloatArray(cont.Meta, arrFloat);
+                    MetaTypes.TryConvertData<Array_float>(data, eoffset, out var arrFloat);
+                    var floatArr = MetaTypes.GetFloatArray(cont.Meta, in arrFloat);
                     WriteRawArray(sb, floatArr, indent, ename, "float");
                     break;
                 case MetaStructureEntryDataType.Float_XYZ:
-                    var arrV3 = MetaTypes.ConvertData<Array_Vector3>(data, eoffset);
+                    MetaTypes.TryConvertData<Array_Vector3>(data, eoffset, out var arrV3);
                     var v4Arr = MetaTypes.ConvertDataArray<Vector4>(cont.Meta, (MetaName)MetaTypeName.VECTOR4, arrV3.Pointer, arrV3.Count1);
                     WriteItemArray(sb, v4Arr, indent, ename, "Vector3/4", FormatVector4);
                     break;
@@ -655,8 +693,8 @@ namespace CodeWalker.GameFiles
                     ErrorXml(sb, indent, "DataBlockPointer ARRAY not supported here! Tell dexy!");
                     break;
                 case MetaStructureEntryDataType.Hash:
-                    var arrHash = MetaTypes.ConvertData<Array_uint>(data, eoffset);
-                    var hashArr = MetaTypes.GetHashArray(cont.Meta, arrHash);
+                    MetaTypes.TryConvertData<Array_uint>(data, eoffset, out var arrHash);
+                    var hashArr = MetaTypes.GetHashArray(cont.Meta, in arrHash);
                     WriteItemArray(sb, hashArr, indent, ename, "Hash", FormatHash);
                     break;
             }
@@ -675,7 +713,7 @@ namespace CodeWalker.GameFiles
                     {
                         var bidx = eoffset + n;
                         byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
-                        sb.Append(b.ToString("X").PadLeft(2, '0'));
+                        sb.Append(b.ToString("X2"));
                     }
                     break;
                 case MetaStructureEntryDataType.SignedByte:
@@ -684,7 +722,7 @@ namespace CodeWalker.GameFiles
                         var bidx = eoffset + n;
                         sbyte b = ((bidx >= 0) && (bidx < data.Length)) ? (sbyte)data[bidx] : (sbyte)0;
                         sb.Append(b.ToString()); //sb.Append(b.ToString("X").PadLeft(2, '0')); to show HEX values
-                        if (n < byteArrLen - 1) sb.Append(" ");
+                        if (n < byteArrLen - 1) sb.Append(' ');
                     }
                     break;
 
@@ -694,7 +732,7 @@ namespace CodeWalker.GameFiles
                         var bidx = eoffset + n;
                         byte b = ((bidx >= 0) && (bidx < data.Length)) ? data[bidx] : (byte)0;
                         sb.Append(b.ToString());
-                        if (n < byteArrLen - 1) sb.Append(" ");
+                        if (n < byteArrLen - 1) sb.Append(' ');
                     }
                     break;
                 case MetaStructureEntryDataType.SignedShort:
@@ -703,7 +741,7 @@ namespace CodeWalker.GameFiles
                         var bidx = eoffset + n * 2;
                         short b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToInt16(data, bidx) : (short)0;
                         sb.Append(b.ToString());
-                        if (n < byteArrLen - 1) sb.Append(" ");
+                        if (n < byteArrLen - 1) sb.Append(' ');
                     }
                     break;
                 case MetaStructureEntryDataType.UnsignedShort:
@@ -712,7 +750,7 @@ namespace CodeWalker.GameFiles
                         var bidx = eoffset + n * 2;
                         ushort b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToUInt16(data, bidx) : (ushort)0;
                         sb.Append(b.ToString());
-                        if (n < byteArrLen - 1) sb.Append(" ");
+                        if (n < byteArrLen - 1) sb.Append(' ');
                     }
                     break;
                 case MetaStructureEntryDataType.SignedInt:
@@ -721,7 +759,7 @@ namespace CodeWalker.GameFiles
                         var bidx = eoffset + n * 4;
                         int b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToInt32(data, bidx) : (int)0;
                         sb.Append(b.ToString());
-                        if (n < byteArrLen - 1) sb.Append(" ");
+                        if (n < byteArrLen - 1) sb.Append(' ');
                     }
                     break;
                 case MetaStructureEntryDataType.UnsignedInt:
@@ -730,7 +768,7 @@ namespace CodeWalker.GameFiles
                         var bidx = eoffset + n * 4;
                         uint b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToUInt32(data, bidx) : (uint)0;
                         sb.Append(b.ToString());
-                        if (n < byteArrLen - 1) sb.Append(" ");
+                        if (n < byteArrLen - 1) sb.Append(' ');
                     }
                     break;
                 case MetaStructureEntryDataType.Float:
@@ -739,7 +777,7 @@ namespace CodeWalker.GameFiles
                         var bidx = eoffset + n * 4;
                         float b = ((bidx >= 0) && (bidx < data.Length)) ? BitConverter.ToSingle(data, bidx) : (float)0;
                         sb.Append(FloatUtil.ToString(b));
-                        if (n < byteArrLen - 1) sb.Append(" ");
+                        if (n < byteArrLen - 1) sb.Append(' ');
                     }
                     break;
             }
@@ -764,18 +802,25 @@ namespace CodeWalker.GameFiles
 
             if (isFlags)
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (var ev in eInfo.Entries)
+                StringBuilder sb = StringBuilderPool.Get();
+                try
                 {
-                    var v = ev.EntryValue;
-                    var m = 1 << v;
-                    if ((value & m) > 0)
+                    foreach (var ev in eInfo.Entries)
                     {
-                        if (sb.Length > 0) sb.Append(", ");
-                        sb.Append(HashString(ev.EntryNameHash));
+                        var v = ev.EntryValue;
+                        var m = 1 << v;
+                        if ((value & m) > 0)
+                        {
+                            if (sb.Length > 0) sb.Append(", ");
+                            sb.Append(HashString(ev.EntryNameHash));
+                        }
                     }
+                    return sb.ToString();
                 }
-                return sb.ToString();
+                finally
+                {
+                    StringBuilderPool.Return(sb);
+                }
             }
             else
             {
@@ -839,36 +884,41 @@ namespace CodeWalker.GameFiles
 
     public class PsoXml : MetaXmlBase
     {
-
         public static string GetXml(PsoFile pso)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if ((pso != null) && (pso.DataSection != null) && (pso.DataMapSection != null))
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                var cont = new PsoCont(pso);
+                sb.AppendLine(XmlHeader);
 
-                WriteNode(sb, 0, cont, pso.DataMapSection.RootId, 0, XmlTagMode.Structure);
+                if (pso?.DataSection is not null && pso.DataMapSection is not null)
+                {
+                    var cont = new PsoCont(pso);
+
+                    WriteNode(sb, 0, cont, pso.DataMapSection.RootId, 0, XmlTagMode.Structure);
+                }
+
+                return sb.ToString();
             }
-
-            return sb.ToString();
+            finally
+            {
+                Console.WriteLine($"StringBuilder Capacity: {sb.Capacity}");
+                StringBuilderPool.Return(sb);
+            }
         }
 
 
         private static void WriteNode(StringBuilder sb, int indent, PsoCont cont, int blockId, int offset, XmlTagMode tagMode = XmlTagMode.None, MetaName structName = 0)
         {
-
-            var block = cont.Pso.GetBlock(blockId);
-            if (block == null)
+            if (!cont.Pso.TryGetBlock(blockId, out var block))
             {
-                ErrorXml(sb, indent, "Couldn't find block " + blockId + "!");
+                ErrorXml(sb, indent, $"Couldn't find block {blockId}!");
                 return;
             }
 
             if (offset >= block.Length)
             {
-                offset = offset >> 8; //how to tell when to do this??
+                offset >>= 8; //how to tell when to do this??
             }
 
             var boffset = offset + block.Offset;
@@ -884,16 +934,16 @@ namespace CodeWalker.GameFiles
             var structInfo = cont.GetStructureInfo(structName);
             if (structInfo == null)
             {
-                structInfo = PsoTypes.GetStructureInfo(structName);//fallback to builtin...
+                structInfo = PsoTypesStructureInfo.GetStructureInfo(structName);//fallback to builtin...
             }
             if (structInfo == null)
             {
-                ErrorXml(sb, indent, "Couldn't find structure info " + name + "!");
+                ErrorXml(sb, indent, $"Couldn't find structure info {name}!");
                 return;
             }
             if (structInfo.Entries == null)
             {
-                ErrorXml(sb, indent, "Couldn't find structure info entries for " + name + "!");
+                ErrorXml(sb, indent, $"Couldn't find structure info entries for {name}!");
                 return;
             }
 
@@ -906,15 +956,14 @@ namespace CodeWalker.GameFiles
                     OpenTag(sb, indent, "Item");
                     break;
                 case XmlTagMode.ItemAndType:
-                    OpenTag(sb, indent, "Item type=\"" + name + "\"");
+                    OpenTag(sb, indent, $"Item type=\"{name}\"");
                     break;
             }
 
 
             var cind = indent + 1;
-            for (int i = 0; i < structInfo.Entries.Length; i++)
+            foreach(ref var entry in structInfo.Entries.AsSpan())
             {
-                var entry = structInfo.Entries[i];
                 if (entry.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO)
                 {
                     continue;
@@ -924,7 +973,7 @@ namespace CodeWalker.GameFiles
                 switch (entry.Type)
                 {
                     default:
-                        ErrorXml(sb, cind, ename + ": Unexpected entry DataType: " + entry.Type.ToString());
+                        ErrorXml(sb, cind, $"{ename}: Unexpected entry DataType: {entry.Type}");
                         break;
                     case PsoDataType.Array:
 
@@ -950,20 +999,27 @@ namespace CodeWalker.GameFiles
                         switch (entry.Unk_5h)
                         {
                             default:
-                                ErrorXml(sb, cind, ename + ": Unexpected Enum subtype: " + entry.Unk_5h.ToString());
+                                ErrorXml(sb, cind, $"{ename}: Unexpected Enum subtype: {entry.Unk_5h}");
                                 break;
                             case 0: //int enum
                                 var intEVal = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
-                                var intE = enumInfo.FindEntry(intEVal);
-                                var intH = HashString(intE?.EntryNameHash ?? 0);
-                                if (string.IsNullOrEmpty(intH))
-                                { }
+                                var intH = string.Empty;
+                                if (enumInfo.TryFindEntry(intEVal, out var intE))
+                                {
+                                    intH = HashString(intE.EntryNameHash);
+                                }
+
                                 StringTag(sb, cind, ename, intH);
+
                                 break;
                             case 2: //byte enum
                                 var byteEVal = data[eoffset];
-                                var byteE = enumInfo.FindEntry(byteEVal);
-                                StringTag(sb, cind, ename, HashString(byteE?.EntryNameHash ?? 0));
+                                var byteH = string.Empty;
+                                if (enumInfo.TryFindEntry(byteEVal, out var byteE))
+                                {
+                                    byteH = HashString(byteE.EntryNameHash);
+                                }
+                                StringTag(sb, cind, ename, byteH);
                                 break;
                         }
                         break;
@@ -972,9 +1028,9 @@ namespace CodeWalker.GameFiles
                         uint fEntry = (entry.ReferenceKey & 0xFFF);
                         var fEnt = (fEntry != 0xFFF) ? structInfo.GetEntry((int)fEntry) : null;
                         PsoEnumInfo flagsInfo = null;
-                        if ((fEnt != null) && (fEnt.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO))
+                        if ((fEnt != null) && (fEnt.Value.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO))
                         {
-                            flagsInfo = cont.GetEnumInfo((MetaName)fEnt.ReferenceKey);
+                            flagsInfo = cont.GetEnumInfo((MetaName)fEnt.Value.ReferenceKey);
                         }
                         if (flagsInfo == null)
                         {
@@ -986,7 +1042,7 @@ namespace CodeWalker.GameFiles
                         switch (entry.Unk_5h)
                         {
                             default:
-                                ErrorXml(sb, cind, ename + ": Unexpected Flags subtype: " + entry.Unk_5h.ToString());
+                                ErrorXml(sb, cind, $"{ename}: Unexpected Flags subtype: {entry.Unk_5h}");
                                 break;
                             case 0: //int flags
                                 flagsVal = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset));
@@ -1028,24 +1084,29 @@ namespace CodeWalker.GameFiles
                         ValueTag(sb, cind, ename, FloatUtil.ToString(floatVal));
                         break;
                     case PsoDataType.Float2:
-                        var v2 = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector2>(data, eoffset));
-                        SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v2.X) + "\" y=\"" + FloatUtil.ToString(v2.Y) + "\"");
+                        MetaTypes.TryConvertData<Vector2>(data, eoffset, out var v2);
+                        v2 = MetaTypes.SwapBytes(in v2);
+                        SelfClosingTag(sb, cind, $"{ename} x=\"{FloatUtil.ToString(v2.X)}\" y=\"{FloatUtil.ToString(v2.Y)}\"");
                         break;
                     case PsoDataType.Float3:
-                        var v3 = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector3>(data, eoffset));
-                        SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v3.X) + "\" y=\"" + FloatUtil.ToString(v3.Y) + "\" z=\"" + FloatUtil.ToString(v3.Z) + "\"");
+                        MetaTypes.TryConvertData<Vector3>(data, eoffset, out var v3);
+                        v3 = MetaTypes.SwapBytes(in v3);
+                        SelfClosingTag(sb, cind, $"{ename} x=\"{FloatUtil.ToString(v3.X)}\" y=\"{FloatUtil.ToString(v3.Y)}\" z=\"{FloatUtil.ToString(v3.Z)}\"");
                         break;
                     case PsoDataType.Float3a: //TODO: check this!
-                        var v3a = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector3>(data, eoffset));
-                        SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v3a.X) + "\" y=\"" + FloatUtil.ToString(v3a.Y) + "\" z=\"" + FloatUtil.ToString(v3a.Z) + "\"");
+                        MetaTypes.TryConvertData<Vector3>(data, eoffset, out var v3a);
+                        v3a = MetaTypes.SwapBytes(in v3a);
+                        SelfClosingTag(sb, cind, $"{ename} x=\"{FloatUtil.ToString(v3a.X)}\" y=\"{FloatUtil.ToString(v3a.Y)}\" z=\"{FloatUtil.ToString(v3a.Z)}\"");
                         break;
                     case PsoDataType.Float4a: //TODO: check this! //...why are there 3 different types of float3?
-                        var v3b = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector3>(data, eoffset));
-                        SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v3b.X) + "\" y=\"" + FloatUtil.ToString(v3b.Y) + "\" z=\"" + FloatUtil.ToString(v3b.Z) + "\"");
+                        MetaTypes.TryConvertData<Vector3>(data, eoffset, out var v3b);
+                        v3b = MetaTypes.SwapBytes(in v3b);
+                        SelfClosingTag(sb, cind, $"{ename} x=\"{FloatUtil.ToString(v3b.X)}\" y=\"{FloatUtil.ToString(v3b.Y)}\" z=\"{FloatUtil.ToString(v3b.Z)}\"");
                         break;
                     case PsoDataType.Float4:
-                        var v4 = MetaTypes.SwapBytes(MetaTypes.ConvertData<Vector4>(data, eoffset));
-                        SelfClosingTag(sb, cind, ename + " x=\"" + FloatUtil.ToString(v4.X) + "\" y=\"" + FloatUtil.ToString(v4.Y) + "\" z=\"" + FloatUtil.ToString(v4.Z) + "\" w=\"" + FloatUtil.ToString(v4.W) + "\"");
+                        MetaTypes.TryConvertData<Vector4>(data, eoffset, out var v4);
+                        v4 = MetaTypes.SwapBytes(in v4);
+                        SelfClosingTag(sb, cind, $"{ename} x=\"{FloatUtil.ToString(v4.X)}\" y=\"{FloatUtil.ToString(v4.Y)}\" z=\"{FloatUtil.ToString(v4.Z)}\" w=\"{FloatUtil.ToString(v4.W)}\"");
                         break;
                     case PsoDataType.SInt: //TODO: convert hashes?
                         var int5Val = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
@@ -1055,7 +1116,7 @@ namespace CodeWalker.GameFiles
                         switch (entry.Unk_5h)
                         {
                             default:
-                                ErrorXml(sb, cind, ename + ": Unexpected Integer subtype: " + entry.Unk_5h.ToString());
+                                ErrorXml(sb, cind, $"{ename}: Unexpected Integer subtype: {entry.Unk_5h}");
                                 break;
                             case 0: //signed int (? flags?)
                                 var int6aVal = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
@@ -1064,7 +1125,7 @@ namespace CodeWalker.GameFiles
                             case 1: //unsigned int
                                 var int6bVal = MetaTypes.SwapBytes(BitConverter.ToUInt32(data, eoffset));
                                 //ValueTag(sb, cind, ename, int6bVal.ToString());
-                                ValueTag(sb, cind, ename, "0x" + int6bVal.ToString("X").PadLeft(8, '0'));
+                                ValueTag(sb, cind, ename, $"0x{int6bVal:X8}");
                                 break;
                         }
                         break;
@@ -1104,7 +1165,7 @@ namespace CodeWalker.GameFiles
                         switch (entry.Unk_5h)
                         {
                             default:
-                                ErrorXml(sb, cind, ename + ": Unexpected Structure subtype: " + entry.Unk_5h.ToString());
+                                ErrorXml(sb, cind, $"{ename}: Unexpected Structure subtype: {entry.Unk_5h}");
                                 break;
                             case 0: //default structure
                                 OpenTag(sb, cind, ename);
@@ -1113,8 +1174,8 @@ namespace CodeWalker.GameFiles
                                 break;
                             case 3: //structure pointer...
                             case 4: //also pointer? what's the difference?
-                                var ptrVal = MetaTypes.ConvertData<PsoPOINTER>(data, eoffset);
-                                ptrVal.SwapEnd();
+                                MetaTypes.TryConvertData<PsoPOINTER>(data.AsSpan(eoffset), out var ptrVal);
+                                ptrVal = ptrVal.SwapEnd();
                                 var pbid = ptrVal.BlockID;
                                 bool pbok = true;
                                 if (pbid <= 0)
@@ -1127,8 +1188,12 @@ namespace CodeWalker.GameFiles
                                 }
                                 if (pbok)
                                 {
-                                    var typename = HashString(cont.Pso.GetBlock(pbid).NameHash);
-                                    OpenTag(sb, cind, ename + " type=\"" + typename + "\"");
+                                    var typename = string.Empty;
+                                    if (cont.Pso.TryGetBlock(pbid, out var _block))
+                                    {
+                                        typename = HashString(_block.NameHash);
+                                    }
+                                    OpenTag(sb, cind, $"{ename} type=\"{typename}\"");
                                     WriteNode(sb, cind, cont, ptrVal.BlockID, (int)ptrVal.ItemOffset, XmlTagMode.None, (MetaName)entry.ReferenceKey);
                                     CloseTag(sb, cind, ename);
                                 }
@@ -1159,19 +1224,25 @@ namespace CodeWalker.GameFiles
 
         private static void WriteArrayNode(StringBuilder sb, int indent, PsoCont cont, int blockId, int offset, PsoStructureEntryInfo entry, PsoStructureInfo estruct, string ename)
         {
+            if (!cont.Pso.TryGetBlock(blockId, out var block))
+            {
+                Console.WriteLine("Couldn't get blockId");
+                return;
+            }
 
-
-            var block = cont.Pso.GetBlock(blockId);
             var boffset = offset + block.Offset;
             var eoffset = boffset + entry.DataOffset;
             var aOffset = offset + entry.DataOffset;
             var abOffset = aOffset + block.Offset;
             var aBlockId = blockId;
             uint aCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
-            Array_Structure arrStruc = new Array_Structure();
-            arrStruc.PointerDataId = (uint)aBlockId;
-            arrStruc.PointerDataOffset = (uint)aOffset;
-            arrStruc.Count1 = arrStruc.Count2 = (ushort)aCount;
+            Array_Structure arrStruc = new Array_Structure
+            {
+                PointerDataId = (uint)aBlockId,
+                PointerDataOffset = (uint)aOffset,
+                Count1 = (ushort)aCount,
+                Count2 = (ushort)aCount,
+            };
             var aind = indent + 1;
             string arrTag = ename;
             var arrEntInd = (entry.ReferenceKey & 0xFFFF);
@@ -1179,10 +1250,9 @@ namespace CodeWalker.GameFiles
             {
                 arrEntInd = (entry.ReferenceKey & 0xFFF);
             }
-            PsoStructureEntryInfo arrEntry = estruct.GetEntry((int)arrEntInd);
-            if (arrEntry == null)
+            if (!estruct.TryGetEntry((int)arrEntInd, out var arrEntry))
             {
-                ErrorXml(sb, indent, "ARRAYINFO not found for " + ename + "!");
+                ErrorXml(sb, indent, $"ARRAYINFO not found for {ename}!");
                 return;
             }
 
@@ -1192,16 +1262,15 @@ namespace CodeWalker.GameFiles
             switch (entry.Unk_5h)
             {
                 default:
-                    ErrorXml(sb, indent, ename + ": WIP! Unsupported Array subtype: " + entry.Unk_5h.ToString());
+                    ErrorXml(sb, indent, $"{ename}: WIP! Unsupported Array subtype: {entry.Unk_5h}");
                     break;
                 case 0: //Array_Structure
-                    arrStruc = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
-                    arrStruc.SwapEnd();
+                    MetaTypes.TryConvertData<Array_Structure>(data, eoffset, out arrStruc);
+                    arrStruc = arrStruc.SwapEnd();
                     aBlockId = (int)arrStruc.PointerDataId;
                     aOffset = (int)arrStruc.PointerDataOffset;
                     aCount = arrStruc.Count1;
-                    var aBlock = cont.Pso.GetBlock(aBlockId);
-                    if (aBlock != null)
+                    if (cont.Pso.TryGetBlock(aBlockId, out var aBlock))
                     {
                         abOffset = aOffset + aBlock.Offset;
                     }
@@ -1214,13 +1283,12 @@ namespace CodeWalker.GameFiles
                 case 4: //pointer array? default array?
                     if (arrEntry.Unk_5h == 3) //pointers...
                     {
-                        arrStruc = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
-                        arrStruc.SwapEnd();
+                        MetaTypes.TryConvertData<Array_Structure>(data, eoffset, out arrStruc);
+                        arrStruc = arrStruc.SwapEnd();
                         aBlockId = (int)arrStruc.PointerDataId;
                         aOffset = (int)arrStruc.PointerDataOffset;
                         aCount = arrStruc.Count1;
-                        var aBlock2 = cont.Pso.GetBlock(aBlockId);
-                        if (aBlock2 != null)
+                        if (cont.Pso.TryGetBlock(aBlockId, out var aBlock2))
                         {
                             abOffset = aOffset + aBlock2.Offset;
                         }
@@ -1268,16 +1336,16 @@ namespace CodeWalker.GameFiles
                         case 0:
                             break;
                         case 3://structure pointer array
-                            var arrStrucPtr = MetaTypes.ConvertData<Array_StructurePointer>(data, eoffset);
-                            arrStrucPtr.SwapEnd();
+                            MetaTypes.TryConvertData<Array_StructurePointer>(data, eoffset, out var arrStrucPtr);
+                            arrStrucPtr = arrStrucPtr.SwapEnd();
                             aBlockId = (int)arrStrucPtr.PointerDataId;
                             aOffset = (int)arrStrucPtr.PointerDataOffset;
                             aCount = arrStrucPtr.Count1;
                             if (aCount > 0)
                             {
-                                var ptrArr = PsoTypes.GetPointerArray(cont.Pso, arrStrucPtr);
+                                var ptrArr = PsoTypes.GetPointerArray(cont.Pso, in arrStrucPtr);
                                 OpenTag(sb, indent, arrTag);
-                                for (int n = 0; n < aCount; n++)
+                                for (int n = 0; n < ptrArr.Length; n++)
                                 {
                                     var ptrVal = ptrArr[n];
                                     if (ptrVal.Pointer == 0)
@@ -1298,9 +1366,8 @@ namespace CodeWalker.GameFiles
                     arrTag += " itemType=\"" + HashString((MetaName)arrEntry.ReferenceKey) + "\"";
                     if (aCount > 0)
                     {
-                        var aBlock = cont.Pso.GetBlock(aBlockId);
                         var atyp = cont.GetStructureInfo((MetaName)arrEntry.ReferenceKey);
-                        if (aBlock == null)
+                        if (!cont.Pso.TryGetBlock(aBlockId, out var aBlock))
                         {
                             ErrorXml(sb, indent, ename + ": Array block not found: " + aBlockId.ToString());
                         }
@@ -1317,7 +1384,7 @@ namespace CodeWalker.GameFiles
                                 {
                                     WriteNode(sb, aind, cont, aBlockId, aOffset, XmlTagMode.Item, (MetaName)arrEntry.ReferenceKey);
                                     aOffset += atyp.StructureLength;
-                                    if ((n < (aCount - 1)) && (aBlock != null) && (aOffset >= aBlock.Length))
+                                    if ((n < (aCount - 1)) && (aOffset >= aBlock.Length))
                                     {
                                         break;
                                     }
@@ -1337,13 +1404,13 @@ namespace CodeWalker.GameFiles
                     switch (entry.Unk_5h)
                     {
                         default:
-                            ErrorXml(sb, indent, ename + ": Unexpected String array subtype: " + entry.Unk_5h.ToString());
+                            ErrorXml(sb, indent, $"{ename}: Unexpected String array subtype: {entry.Unk_5h}");
                             break;
                         case 0: //hash array...
                             if (embedded)
                             { }
-                            var arrHash = MetaTypes.ConvertData<Array_uint>(data, eoffset);
-                            arrHash.SwapEnd();
+                            MetaTypes.TryConvertData<Array_uint>(data, eoffset, out var arrHash);
+                            arrHash = arrHash.SwapEnd();
                             var hashArr = PsoTypes.GetHashArray(cont.Pso, arrHash);
                             WriteItemArray(sb, hashArr, indent, ename, "Hash", HashString);
                             break;
@@ -1394,13 +1461,13 @@ namespace CodeWalker.GameFiles
                     if (embedded)
                     { }
                     var arrFloat = new Array_float(arrStruc.Pointer, arrStruc.Count1); //block type 7
-                    var floatArr = PsoTypes.GetFloatArray(cont.Pso, arrFloat);
+                    var floatArr = PsoTypes.GetFloatArray(cont.Pso, in arrFloat);
                     WriteRawArray(sb, floatArr, indent, ename, "float", FloatUtil.ToString);
                     break;
                 case PsoDataType.UShort:
                     if (embedded)
                     { }
-                    var shortArr = PsoTypes.GetUShortArray(cont.Pso, arrStruc); //block type 4
+                    var shortArr = PsoTypes.GetUShortArray(cont.Pso, in arrStruc); //block type 4
                     WriteRawArray(sb, shortArr, indent, ename, "ushort");
                     break;
                 case PsoDataType.UInt:
@@ -1418,10 +1485,8 @@ namespace CodeWalker.GameFiles
                     WriteRawArray(sb, intArr2, indent, ename, "int");
                     break;
                 case PsoDataType.Enum:
-                    if (embedded)
-                    { }
-                    var arrEnum = MetaTypes.ConvertData<Array_uint>(data, eoffset);
-                    arrEnum.SwapEnd();
+                    MetaTypes.TryConvertData<Array_uint>(data, eoffset, out var arrEnum);
+                    arrEnum = arrEnum.SwapEnd();
                     var enumArr = PsoTypes.GetUintArray(cont.Pso, arrEnum);
                     var enumDef = cont.GetEnumInfo((MetaName)arrEntry.ReferenceKey);
                     WriteItemArray<uint>(sb, enumArr, indent, ename, "enum", (ie)=> {
@@ -1449,8 +1514,8 @@ namespace CodeWalker.GameFiles
                     var mapreftype2 = structInfo.Entries[mapidx1];
                     var x1 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset));
                     var x2 = MetaTypes.SwapBytes(BitConverter.ToInt32(data, eoffset + 4));
-                    var sptr = MetaTypes.ConvertData<Array_Structure>(data, eoffset + 8);
-                    sptr.SwapEnd();
+                    MetaTypes.TryConvertData<Array_Structure>(data, eoffset + 8, out var sptr);
+                    sptr = sptr.SwapEnd();
 
 
                     if (x1 != 0x1000000)
@@ -1468,134 +1533,124 @@ namespace CodeWalker.GameFiles
                         if (c1 != c2)
                         { }
                     }
-                    if (x2 != 0)
-                    { }
-                    if (mapreftype2.ReferenceKey != 0)
-                    { }
 
                     var xBlockId = (int)sptr.PointerDataId;// x3 & 0xFFF;
                     var xOffset = sptr.PointerDataOffset;// (x3 >> 12) & 0xFFFFF;
                     var xCount1 = sptr.Count1;// x5 & 0xFFFF;
+
+                    if (xCount1 == 0)
+                    {
+                        SelfClosingTag(sb, cind, ename);
+                        break;
+                    }
+
                     var xCount2 = sptr.Count2;// (x5 >> 16) & 0xFFFF;
 
-                    var xBlock = cont.Pso.GetBlock(xBlockId);
-                    if ((xBlock == null) && (xCount1 > 0))
+                    if (!cont.Pso.TryGetBlock(xBlockId, out var xBlock))
                     {
                         ErrorXml(sb, cind, ename + ": Couldn't find Map xBlock: " + xBlockId.ToString());
                     }
                     else
                     {
-                        if (xCount1 != xCount2)
-                        { }
-                        if (xCount1 > 0)
+                        var xStruct = cont.GetStructureInfo(xBlock.NameHash);
+                        var xind = indent + 1;
+                        var aind = indent + 2;
+
+                        if (xOffset >= xBlock.Length)
                         {
-                            var xStruct = cont.GetStructureInfo(xBlock.NameHash);
-                            var xind = indent + 1;
-                            var aind = indent + 2;
-                            var kEntry = xStruct?.FindEntry(MetaName.Key);
-                            var iEntry = xStruct?.FindEntry(MetaName.Item);
+                            xOffset = xOffset >> 8; //how to tell when to do this??
+                        }
 
-                            if (xOffset >= xBlock.Length)
-                            {
-                                xOffset = xOffset >> 8; //how to tell when to do this??
-                            }
+                        if (xStruct == null && xBlock.NameHash == 0)
+                        {
+                            SelfClosingTag(sb, cind, ename);
+                        }
+                        else if (xStruct == null)
+                        {
+                            ErrorXml(sb, aind, ename + ": Map struct type not found: " + HashString(xBlock.NameHash));
+                        }
+                        else if (xStruct.IndexInfo.NameHash == 0 && xStruct.IndexInfo.Offset == 0)// || (xStruct.IndexInfo.NameHash != (MetaName)MetaTypeName.ARRAYINFO))
+                        {
+                            ErrorXml(sb, aind, ename + ": Map struct was missing IndexInfo! " + (xStruct == null ? "" : xStruct.ToString()));
+                        }
+                        else if (!xStruct.TryFindEntry(MetaName.Key, out var kEntry) || !xStruct.TryFindEntry(MetaName.Item, out var iEntry))
+                        {
+                            ErrorXml(sb, aind, ename + ": Map Key/Item entries not found!");
+                        }
+                        else if (kEntry.Type != PsoDataType.String)
+                        {
+                            ErrorXml(sb, aind, ename + ": Map Key was not a string!");
+                        }
+                        else if ((iEntry.Type != PsoDataType.Structure) && (iEntry.Type != PsoDataType.String))
+                        {
+                            ErrorXml(sb, aind, ename + ": Map Item was not a structure or string!");
+                        }
+                        //else if (iEntry.Unk_5h != 3)
+                        //{
+                        //    ErrorXml(sb, aind, ename + ": Map Item was not a structure pointer - TODO!");
+                        //}
+                        else
+                        {
+                            OpenTag(sb, xind, ename);
 
-                            if ((xStruct == null) && (xBlock.NameHash == 0))
+                            for (int n = 0; n < xCount1; n++)
                             {
-                                SelfClosingTag(sb, cind, ename);
-                            }
-                            else if (xStruct == null)
-                            {
-                                ErrorXml(sb, aind, ename + ": Map struct type not found: " + HashString(xBlock.NameHash));
-                            }
-                            else if ((xStruct.IndexInfo == null))// || (xStruct.IndexInfo.NameHash != (MetaName)MetaTypeName.ARRAYINFO))
-                            {
-                                ErrorXml(sb, aind, ename + ": Map struct was missing IndexInfo! " + (xStruct == null ? "" : xStruct.ToString()));
-                            }
-                            else if ((kEntry == null) || (iEntry == null))
-                            {
-                                ErrorXml(sb, aind, ename + ": Map Key/Item entries not found!");
-                            }
-                            else if (kEntry.Type != PsoDataType.String)
-                            {
-                                ErrorXml(sb, aind, ename + ": Map Key was not a string!");
-                            }
-                            else if ((iEntry.Type != PsoDataType.Structure) && (iEntry.Type != PsoDataType.String))
-                            {
-                                ErrorXml(sb, aind, ename + ": Map Item was not a structure or string!");
-                            }
-                            //else if (iEntry.Unk_5h != 3)
-                            //{
-                            //    ErrorXml(sb, aind, ename + ": Map Item was not a structure pointer - TODO!");
-                            //}
-                            else
-                            {
-                                OpenTag(sb, xind, ename);
-
-                                for (int n = 0; n < xCount1; n++)
+                                if (xOffset >= xBlock.Length)
                                 {
-                                    if (xOffset >= xBlock.Length)
-                                    {
-                                        ErrorXml(sb, aind, "Offset out of range! Count is " + xCount1.ToString());
-                                        break; //out of range...
-                                    }
-                                    //WriteNode(sb, aind, cont, xBlockId, xOffset, XmlTagMode.Item, xStruct.IndexInfo.NameHash);
+                                    ErrorXml(sb, aind, "Offset out of range! Count is " + xCount1.ToString());
+                                    break; //out of range...
+                                }
+                                //WriteNode(sb, aind, cont, xBlockId, xOffset, XmlTagMode.Item, xStruct.IndexInfo.NameHash);
 
-                                    int sOffset = (int)xOffset + xBlock.Offset;
-                                    var kOffset = sOffset + kEntry.DataOffset;
-                                    var iOffset = sOffset + iEntry.DataOffset;
-                                    var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
-                                    if (iEntry.Type == PsoDataType.String)
+                                int sOffset = (int)xOffset + xBlock.Offset;
+                                var kOffset = sOffset + kEntry.DataOffset;
+                                var iOffset = sOffset + iEntry.DataOffset;
+                                var kStr = GetStringValue(cont.Pso, kEntry, data, kOffset);
+                                if (iEntry.Type == PsoDataType.String)
+                                {
+                                    var iStr = GetStringValue(cont.Pso, iEntry, data, iOffset);
+                                    OpenTag(sb, aind, $"Item type=\"String\" key=\"{kStr}\"", false);
+                                    sb.Append(XmlEscape(iStr));
+                                    CloseTag(sb, 0, "Item");
+                                }
+                                else if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
+                                {
+                                    //embedded map values
+                                    var vOffset = (int)xOffset + iEntry.DataOffset;
+                                    OpenTag(sb, aind, $"Item type=\"{HashString((MetaName)iEntry.ReferenceKey)}\" key=\"{kStr}\"");
+                                    WriteNode(sb, aind, cont, xBlockId, vOffset, XmlTagMode.None, (MetaName)iEntry.ReferenceKey);
+                                    CloseTag(sb, aind, "Item");
+                                }
+                                else
+                                {
+                                    MetaTypes.TryConvertData<PsoPOINTER>(data, iOffset, out var iPtr);
+                                    iPtr = iPtr.SwapEnd();
+                                    if (!cont.Pso.TryGetBlock(iPtr.BlockID, out var iBlock))
                                     {
-                                        var iStr = GetStringValue(cont.Pso, iEntry, data, iOffset);
-                                        OpenTag(sb, aind, "Item type=\"String\" key=\"" + kStr + "\"", false);
-                                        sb.Append(XmlEscape(iStr));
-                                        CloseTag(sb, 0, "Item");
-                                    }
-                                    else if (iEntry.ReferenceKey != 0)//(xBlock.NameHash != (MetaName)MetaTypeName.ARRAYINFO)//257,258,259
-                                    {
-                                        //embedded map values
-                                        var vOffset = (int)xOffset + iEntry.DataOffset;
-                                        OpenTag(sb, aind, "Item type=\"" + HashString((MetaName)iEntry.ReferenceKey) + "\" key=\"" + kStr + "\"");
-                                        WriteNode(sb, aind, cont, xBlockId, vOffset, XmlTagMode.None, (MetaName)iEntry.ReferenceKey);
-                                        CloseTag(sb, aind, "Item");
+                                        ErrorXml(sb, aind, ename + ": Could not find iBlock for Map entry!");
                                     }
                                     else
                                     {
-                                        var iPtr = MetaTypes.ConvertData<PsoPOINTER>(data, iOffset);
-                                        iPtr.SwapEnd();
-                                        var iBlock = cont.Pso.GetBlock(iPtr.BlockID);
-                                        if (iBlock == null)
+                                        var iStr = $"Item type=\"{HashString(iBlock.NameHash)}\" key=\"{kStr}\"";
+                                        var iStruc = cont.GetStructureInfo(iBlock.NameHash);
+                                        if (iStruc?.EntriesCount == 0)
                                         {
-                                            ErrorXml(sb, aind, ename + ": Could not find iBlock for Map entry!");
+                                            //SelfClosingTag(sb, aind, iStr);
+                                            OpenTag(sb, aind, iStr);
+                                            CloseTag(sb, aind, "Item");
                                         }
                                         else
                                         {
-                                            var iStr = "Item type=\"" + HashString(iBlock.NameHash) + "\" key=\"" + kStr + "\"";
-                                            var iStruc = cont.GetStructureInfo(iBlock.NameHash);
-                                            if (iStruc?.EntriesCount == 0)
-                                            {
-                                                //SelfClosingTag(sb, aind, iStr);
-                                                OpenTag(sb, aind, iStr);
-                                                CloseTag(sb, aind, "Item");
-                                            }
-                                            else
-                                            {
-                                                var iOff = (int)iPtr.ItemOffset;
-                                                OpenTag(sb, aind, iStr);
-                                                WriteNode(sb, aind, cont, iPtr.BlockID, iOff, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
-                                                CloseTag(sb, aind, "Item");
-                                            }
+                                            var iOff = (int)iPtr.ItemOffset;
+                                            OpenTag(sb, aind, iStr);
+                                            WriteNode(sb, aind, cont, iPtr.BlockID, iOff, XmlTagMode.None);//, (MetaName)entry.ReferenceKey);
+                                            CloseTag(sb, aind, "Item");
                                         }
                                     }
-                                    xOffset += (uint)xStruct.StructureLength;
                                 }
-                                CloseTag(sb, xind, ename);
+                                xOffset += (uint)xStruct.StructureLength;
                             }
-                        }
-                        else
-                        {
-                            SelfClosingTag(sb, cind, ename);
+                            CloseTag(sb, xind, ename);
                         }
                     }
                     break;
@@ -1605,7 +1660,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        private static string GetStringValue(PsoFile pso, PsoStructureEntryInfo entry, byte[] data, int eoffset)
+        private static string? GetStringValue(PsoFile pso, PsoStructureEntryInfo entry, byte[] data, int eoffset)
         {
             switch (entry.Unk_5h)
             {
@@ -1616,17 +1671,17 @@ namespace CodeWalker.GameFiles
                     return Encoding.ASCII.GetString(data, eoffset, str0len).Replace("\0", "");
                 case 1:
                 case 2:
-                    var dataPtr2 = MetaTypes.ConvertData<DataBlockPointer>(data, eoffset);
-                    dataPtr2.SwapEnd();
-                    return PsoTypes.GetString(pso, dataPtr2);
+                    MetaTypes.TryConvertData<DataBlockPointer>(data, eoffset, out var dataPtr2);
+                    dataPtr2 = dataPtr2.SwapEnd();
+                    return PsoTypes.GetString(pso, in dataPtr2);
                 case 3:
-                    var charPtr3 = MetaTypes.ConvertData<CharPointer>(data, eoffset);
-                    charPtr3.SwapEnd();
-                    var strval = PsoTypes.GetString(pso, charPtr3);
-                    return strval ?? "";
+                    MetaTypes.TryConvertData<CharPointer>(data, eoffset, out var charPtr3);
+                    charPtr3 = charPtr3.SwapEnd();
+                    return PsoTypes.GetString(pso, in charPtr3);
                 case 7:
                 case 8:
-                    var hashVal = (MetaHash)MetaTypes.SwapBytes(MetaTypes.ConvertData<MetaHash>(data, eoffset));
+                    MetaTypes.TryConvertData<MetaHash>(data, eoffset, out var rawVal);
+                    var hashVal = (MetaHash)MetaTypes.SwapBytes(rawVal);
                     return HashString(hashVal);
             }
 
@@ -1708,45 +1763,57 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(RbfFile rbf)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
+            StringBuilder sb = StringBuilderPool.Get();
+            try
+            {
+                sb.AppendLine(XmlHeader);
 
-            WriteNode(sb, 0, rbf.current);
+                WriteNode(sb, 0, rbf.current);
 
-            return sb.ToString();
+                return sb.ToString();
+            } finally
+            {
+                StringBuilderPool.Return(sb);
+            }
+
         }
 
         private static void WriteNode(StringBuilder sb, int indent, RbfStructure rs)
         {
             var attStr = "";
-            if (rs.Attributes.Count > 0)
+            if (rs.Attributes is not null && rs.Attributes.Count > 0)
             {
-                var asb = new StringBuilder();
-                foreach (var attr in rs.Attributes)
+                var asb = StringBuilderPool.Get();
+                try
                 {
-                    if (attr is RbfString str)
+                    foreach (var attr in rs.Attributes)
                     {
-                        asb.Append($" {attr.Name}=\"{str.Value}\"");
+                        if (attr is RbfString str)
+                        {
+                            asb.Append($" {attr.Name}=\"{str.Value}\"");
+                        }
+                        else if (attr is RbfFloat flt)
+                        {
+                            asb.Append($" {attr.Name}=\"{FloatUtil.ToString(flt.Value)}\"");
+                        }
+                        else if (attr is RbfUint32 unt)
+                        {
+                            asb.Append($" {attr.Name}=\"{unt.Value}\"");
+                        }
+                        else if (attr is RbfBoolean bln)
+                        {
+                            asb.Append($" {attr.Name}=\"{bln.Value}\"");
+                        }
                     }
-                    else if (attr is RbfFloat flt)
-                    {
-                        asb.Append($" {attr.Name}=\"{FloatUtil.ToString(flt.Value)}\"");
-                    }
-                    else if (attr is RbfUint32 unt)
-                    {
-                        asb.Append($" {attr.Name}=\"{unt.Value.ToString()}\"");
-                    }
-                    else if (attr is RbfBoolean bln)
-                    {
-                        asb.Append($" {attr.Name}=\"{bln.Value.ToString()}\"");
-                    }
-                    else
-                    { }
+                    attStr = $"{asb}";
                 }
-                attStr = $"{asb.ToString()}";
+                finally
+                {
+                    StringBuilderPool.Return(asb);
+                }
             }
 
-            if (rs.Children.Count == 0)
+            if (rs.Children is null || rs.Children.Count == 0)
             {
                 SelfClosingTag(sb, indent, rs.Name + attStr);
                 return;
@@ -1764,8 +1831,8 @@ namespace CodeWalker.GameFiles
                 if (child is RbfBytes)
                 {
                     var bytesChild = (RbfBytes)child;
-                    var contentField = rs.FindAttribute("content") as RbfString;//TODO: fix this to output nicer XML!
-                    if (contentField != null)
+                    //TODO: fix this to output nicer XML!
+                    if (rs.FindAttribute("content") is RbfString contentField)
                     {
                         if (contentField.Value == "char_array")
                         {
@@ -1787,7 +1854,7 @@ namespace CodeWalker.GameFiles
                         }
                         else
                         {
-                            ErrorXml(sb, cind, "Unexpected content type: " + contentField.Value);
+                            ErrorXml(sb, cind, $"Unexpected content type: {contentField.Value}");
                         }
                     }
                     else
@@ -1813,24 +1880,21 @@ namespace CodeWalker.GameFiles
                     //else if (stringChild.Name.Equals("type"))
                     //else throw new Exception("Unexpected string content");
                 }
-                if (child is RbfStructure)
+                if (child is RbfStructure rbfStructure)
                 {
-                    WriteNode(sb, cind, child as RbfStructure);
+                    WriteNode(sb, cind, rbfStructure);
                 }
-                if (child is RbfUint32)
+                if (child is RbfUint32 intChild)
                 {
-                    var intChild = (RbfUint32)child;
                     ValueTag(sb, cind, intChild.Name, UintString(intChild.Value));
                 }
-                if (child is RbfBoolean)
+                if (child is RbfBoolean booleanChild)
                 {
-                    var booleanChild = (RbfBoolean)child;
                     ValueTag(sb, cind, booleanChild.Name, booleanChild.Value.ToString());
                 }
-                if (child is RbfFloat3)
+                if (child is RbfFloat3 v3)
                 {
-                    var v3 = child as RbfFloat3;
-                    SelfClosingTag(sb, cind, v3.Name + " x=\"" + FloatUtil.ToString(v3.X) + "\" y=\"" + FloatUtil.ToString(v3.Y) + "\" z=\"" + FloatUtil.ToString(v3.Z) + "\"");
+                    SelfClosingTag(sb, cind, $"{v3.Name} x=\"{FloatUtil.ToString(v3.X)}\" y=\"{FloatUtil.ToString(v3.Y)}\" z=\"{FloatUtil.ToString(v3.Z)}\"");
                 }
 
 
@@ -1843,83 +1907,94 @@ namespace CodeWalker.GameFiles
 
     }
 
+    public class StringBuilderPooledObjectPolicyLogged : StringBuilderPooledObjectPolicy
+    {
+        public override bool Return(StringBuilder obj)
+        {
+            Console.WriteLine($"StringBuilder returned with capacity: {obj.Capacity} {obj.Length}");
+            return base.Return(obj);
+        }
+    }
 
     public class MetaXmlBase
     {
-
+        public static ObjectPool<StringBuilder> StringBuilderPool = ObjectPool.Create<StringBuilder>(new StringBuilderPooledObjectPolicyLogged { MaximumRetainedCapacity = 4 * 1024 * 1024, InitialCapacity = 1024 * 32 });
         public const string XmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 
 
         public static void Indent(StringBuilder sb, int indent)
         {
-            for (int i = 0; i < indent; i++)
-            {
-                sb.Append(" ");
-            }
+            sb.Append(' ', indent);
         }
+
         public static void ErrorXml(StringBuilder sb, int indent, string msg)
         {
             Indent(sb, indent);
-            sb.Append("<error>");
-            sb.Append(msg);
-            sb.Append("</error>");
-            sb.AppendLine();
+            sb.AppendLine($"<error>{msg}</error>");
         }
-        public static void OpenTag(StringBuilder sb, int indent, string name, bool appendLine = true, string metaName = "")
+
+        public static void OpenTag(StringBuilder sb, int indent, string name, bool appendLine = true)
         {
             Indent(sb, indent);
-            sb.Append("<");
+            sb.Append('<');
+            sb.Append(name);
+            sb.Append('>');
+            if (appendLine)
+                sb.AppendLine();
+        }
+
+        public static void OpenTag(StringBuilder sb, int indent, string name, string metaName, bool appendLine = true)
+        {
+            Indent(sb, indent);
+            sb.Append('<');
             sb.Append(name);
             if (string.IsNullOrWhiteSpace(metaName))
             {
-                sb.Append(">");
+                sb.Append('>');
             }
             else
             {
-                sb.Append(" name=\"" + metaName + "\">");
+                sb.Append($" name=\"{metaName}\">");
             }
             if (appendLine) sb.AppendLine();
         }
+
+        //public static void OpenTag(StringBuilder sb, int indent, string name, bool appendLine = true, string metaName = "")
+        //{
+        //    Indent(sb, indent);
+        //    sb.Append('<');
+        //    sb.Append(name);
+        //    if (string.IsNullOrWhiteSpace(metaName))
+        //    {
+        //        sb.Append('>');
+        //    }
+        //    else
+        //    {
+        //        sb.Append($" name=\"{metaName}\">");
+        //    }
+        //    if (appendLine) sb.AppendLine();
+        //}
         public static void CloseTag(StringBuilder sb, int indent, string name, bool appendLine = true)
         {
             Indent(sb, indent);
-            sb.Append("</");
-            sb.Append(name);
-            sb.Append(">");
+            sb.Append($"</{name}>");
             if (appendLine) sb.AppendLine();
         }
         public static void ValueTag(StringBuilder sb, int indent, string name, string val, string attr = "value")
         {
             Indent(sb, indent);
-            sb.Append("<");
-            sb.Append(name);
-            sb.Append(" ");
-            sb.Append(attr);
-            sb.Append("=\"");
-            sb.Append(val);
-            sb.Append("\" />");
-            sb.AppendLine();
+            sb.AppendLine($"<{name} {attr}=\"{val}\" />");
         }
         public static void OneLineTag(StringBuilder sb, int indent, string name, string text)
         {
             Indent(sb, indent);
-            sb.Append("<");
-            sb.Append(name);
-            sb.Append(">");
-            sb.Append(text);
-            sb.Append("</");
-            sb.Append(name);
-            sb.Append(">");
-            sb.AppendLine();
+            sb.AppendLine($"<{name}>{text}</{name}>");
         }
         public static void SelfClosingTag(StringBuilder sb, int indent, string val)
         {
             Indent(sb, indent);
-            sb.Append("<");
-            sb.Append(val);
-            sb.Append(" />");
-            sb.AppendLine();
+            sb.AppendLine($"<{val} />");
         }
         public static void StringTag(StringBuilder sb, int indent, string name, string text)
         {
@@ -1927,15 +2002,19 @@ namespace CodeWalker.GameFiles
             else SelfClosingTag(sb, indent, name);
         }
 
-        public static void WriteRawArrayContent<T>(StringBuilder sb, T[] arr, int ind, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
+        public static void WriteRawArrayContent<T>(StringBuilder sb, T[]? arr, int ind, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
         {
-            var aCount = arr?.Length ?? 0;
+            if (arr is null || arr.Length == 0)
+                return;
+
+            var aCount = arr.Length;
             for (int n = 0; n < aCount; n++)
             {
+                ref var value = ref arr[n];
                 var col = n % arrRowSize;
                 if (col == 0) Indent(sb, ind);
-                if (col > 0) sb.Append(" ");
-                string str = (formatter != null) ? formatter(arr[n]) : arr[n].ToString();
+                if (col > 0) sb.Append(' ');
+                string? str = formatter?.Invoke(value) ?? value.ToString();
                 sb.Append(str);
                 bool lastcol = (col == (arrRowSize - 1));
                 bool lastn = (n == (aCount - 1));
@@ -1943,7 +2022,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public static void WriteRawArray<T>(StringBuilder sb, Span<T> arr, int ind, string name, string typeName, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
+        public static void WriteRawArray<T>(StringBuilder sb, Span<T> arr, int ind, string name, string typeName, FormatterRef<T>? formatter = null, int arrRowSize = 10) where T : struct
         {
             var aCount = arr.Length;
             //var arrRowSize = 10;
@@ -1956,8 +2035,8 @@ namespace CodeWalker.GameFiles
                     OpenTag(sb, ind, arrTag, false);
                     for (int n = 0; n < aCount; n++)
                     {
-                        if (n > 0) sb.Append(" ");
-                        string str = (formatter != null) ? formatter(arr[n]) : arr[n].ToString();
+                        if (n > 0) sb.Append(' ');
+                        string? str = formatter?.Invoke(in arr[n]) ?? arr[n].ToString();
                         sb.Append(str);
                     }
                     CloseTag(sb, 0, name);
@@ -1969,8 +2048,8 @@ namespace CodeWalker.GameFiles
                     {
                         var col = n % arrRowSize;
                         if (col == 0) Indent(sb, aind);
-                        if (col > 0) sb.Append(" ");
-                        string str = (formatter != null) ? formatter(arr[n]) : arr[n].ToString();
+                        if (col > 0) sb.Append(' ');
+                        string? str = formatter?.Invoke(in arr[n]) ?? arr[n].ToString();
                         sb.Append(str);
                         bool lastcol = (col == (arrRowSize - 1));
                         bool lastn = (n == (aCount - 1));
@@ -1985,29 +2064,47 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public static void WriteRawArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter = null, int arrRowSize = 10) where T : struct
+        public delegate string FormatterRef<T>(in T y);
+
+        public delegate string Formatter<T>(T y);
+
+        public static void WriteRawArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, FormatterRef<T>? formatter = null, int arrRowSize = 10) where T : struct
         {
             WriteRawArray<T>(sb, arr.AsSpan(), ind, name, typeName, formatter, arrRowSize);
         }
-        public static void WriteItemArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter) where T : struct
+
+        public static void WriteRawArray<T>(StringBuilder sb, T[] arr, int ind, string name, string typeName, Func<T, string> formatter, int arrRowSize = 10) where T : struct
+        {
+            WriteRawArray<T>(sb, arr.AsSpan(), ind, name, typeName, (in T value) => formatter(value), arrRowSize);
+        }
+
+        public static void WriteRawArray<T>(StringBuilder sb, Span<T> arr, int ind, string name, string typeName) where T : struct
+        {
+            WriteRawArray<T>(sb, arr, ind, name, typeName);
+        }
+
+        public static void WriteItemArray<T>(StringBuilder sb, T[]? arr, int ind, string name, string typeName, FormatterRef<T> formatter) where T : struct
         {
             WriteItemArray<T>(sb, arr.AsSpan(), ind, name, typeName, formatter);
         }
 
-        public static void WriteItemArray<T>(StringBuilder sb, Span<T> arr, int ind, string name, string typeName, Func<T, string> formatter) where T : struct
+        public static void WriteItemArray<T>(StringBuilder sb, T[]? arr, int ind, string name, string typeName, Func<T, string> formatter) where T : struct
+        {
+            WriteItemArray<T>(sb, arr.AsSpan(), ind, name, typeName, (in T value) => formatter(value));
+        }
+
+        public static void WriteItemArray<T>(StringBuilder sb, Span<T> arr, int ind, string name, string typeName, FormatterRef<T> formatter) where T : struct
         {
             var itemCount = arr.Length;
             var arrTag = name;// + " itemType=\"Hash\"";
             var aind = ind + 1;
             if (itemCount > 0)
             {
-                OpenTag(sb, ind, arrTag, metaName: typeName);
+                OpenTag(sb, ind, arrTag, typeName);
                 for (int n = 0; n < itemCount; n++)
                 {
                     Indent(sb, aind);
-                    sb.Append("<Item>");
-                    sb.Append(formatter(arr[n]));
-                    sb.AppendLine("</Item>");
+                    sb.AppendLine($"<Item>{formatter(arr[n])}</Item>");
                 }
                 CloseTag(sb, ind, name);
             }
@@ -2016,118 +2113,111 @@ namespace CodeWalker.GameFiles
                 SelfClosingTag(sb, ind, arrTag);
             }
         }
-        public static void WriteItemArray<T>(StringBuilder sb, T[] arr, int ind, string name) where T : IMetaXmlItem
+        public static void WriteItemArray<T>(StringBuilder sb, T[]? arr, int ind, string name) where T : IMetaXmlItem
         {
-            var itemCount = arr?.Length ?? 0;
-            if (itemCount > 0)
-            {
-                OpenTag(sb, ind, name);
-                var cind = ind + 1;
-                var cind2 = ind + 2;
-                for (int i = 0; i < itemCount; i++)
-                {
-                    if (arr[i] != null)
-                    {
-                        OpenTag(sb, cind, "Item");
-                        arr[i].WriteXml(sb, cind2);
-                        CloseTag(sb, cind, "Item");
-                    }
-                    else
-                    {
-                        SelfClosingTag(sb, cind, "Item");
-                    }
-                }
-                CloseTag(sb, ind, name);
-            }
-            else
+            if (arr is null || arr.Length == 0)
             {
                 SelfClosingTag(sb, ind, name);
+                return;
             }
+
+            OpenTag(sb, ind, name);
+            var cind = ind + 1;
+            var cind2 = ind + 2;
+            foreach(var item in arr)
+            {
+                if (item is null)
+                {
+                    SelfClosingTag(sb, cind, "Item");
+                    continue;
+                }
+
+                OpenTag(sb, cind, "Item");
+                item.WriteXml(sb, cind2);
+                CloseTag(sb, cind, "Item");
+            }
+            CloseTag(sb, ind, name);
         }
-        public static void WriteCustomItemArray<T>(StringBuilder sb, T[] arr, int ind, string name) where T : IMetaXmlItem
+        public static void WriteCustomItemArray<T>(StringBuilder sb, T[]? arr, int ind, string name) where T : IMetaXmlItem
         {
-            var itemCount = arr?.Length ?? 0;
-            if (itemCount > 0)
-            {
-                OpenTag(sb, ind, name);
-                var cind = ind + 1;
-                for (int i = 0; i < itemCount; i++)
-                {
-                    if (arr[i] != null)
-                    {
-                        arr[i].WriteXml(sb, cind);
-                    }
-                }
-                CloseTag(sb, ind, name);
-            }
-            else
+            if (arr is null || arr.Length == 0)
             {
                 SelfClosingTag(sb, ind, name);
+                return;
             }
+
+            OpenTag(sb, ind, name);
+            var cind = ind + 1;
+            foreach(var item in arr)
+            {
+                item?.WriteXml(sb, cind);
+            }
+            CloseTag(sb, ind, name);
         }
-        public static void WriteHashItemArray(StringBuilder sb, MetaHash[] arr, int ind, string name)
+        public static void WriteHashItemArray(StringBuilder sb, MetaHash[]? arr, int ind, string name)
         {
-            var itemCount = arr?.Length ?? 0;
-            if (itemCount > 0)
-            {
-                OpenTag(sb, ind, name);
-                var cind = ind + 1;
-                for (int i = 0; i < itemCount; i++)
-                {
-                    var iname = HashString(arr[i]);
-                    StringTag(sb, cind, "Item", iname);
-                }
-                CloseTag(sb, ind, name);
-            }
-            else
+            if (arr is null || arr.Length == 0)
             {
                 SelfClosingTag(sb, ind, name);
+                return;
             }
+
+            OpenTag(sb, ind, name);
+            var cind = ind + 1;
+            foreach(var item in arr)
+            {
+                var iname = HashString(item);
+                StringTag(sb, cind, "Item", iname);
+            }
+            CloseTag(sb, ind, name);
         }
 
         public static string FormatHash(MetaHash h) //for use with WriteItemArray
         {
-            var str = JenkIndex.TryGetString(h);
-            if (!string.IsNullOrEmpty(str)) return str;
-            str = GlobalText.TryGetString(h);
-            if (!string.IsNullOrEmpty(str)) return str;
+            
+            if (JenkIndex.TryGetString(h, out var str))
+                return str;
+
+            if (GlobalText.TryGetString(h, out str))
+                return str;
+
             return HashString(h);// "hash_" + h.Hex;
             //return h.ToString();
         }
-        public static string FormatVector2(Vector2 v) //for use with WriteItemArray
+        public static string FormatVector2(in Vector2 v) //for use with WriteItemArray
         {
             return FloatUtil.GetVector2String(v);
         }
-        public static string FormatVector3(Vector3 v) //for use with WriteItemArray
+        public static string FormatVector3(in Vector3 v) //for use with WriteItemArray
         {
-            return FloatUtil.GetVector3String(v);
+            return FloatUtil.GetVector3String(in v);
         }
-        public static string FormatVector4(Vector4 v) //for use with WriteItemArray
+        public static string FormatVector4(in Vector4 v) //for use with WriteItemArray
         {
-            return FloatUtil.GetVector4String(v);
+            return FloatUtil.GetVector4String(in v);
         }
         public static string FormatHexByte(byte b)
         {
-            return Convert.ToString(b, 16).ToUpperInvariant().PadLeft(2, '0'); //hex byte array
+            return b.ToString("X2");
         }
 
         public static string FormatHashSwap(MetaHash h) //for use with WriteItemArray, swaps endianness
         {
             return MetaTypes.SwapBytes(h).ToString();
         }
-        public static string FormatVector2Swap(Vector2 v) //for use with WriteItemArray, swaps endianness
+        public static string FormatVector2Swap(in Vector2 v) //for use with WriteItemArray, swaps endianness
         {
-            return FloatUtil.GetVector2String(MetaTypes.SwapBytes(v));
+            return FloatUtil.GetVector2String(MetaTypes.SwapBytes(in v));
         }
         public static string FormatVector3Swap(Vector3 v) //for use with WriteItemArray, swaps endianness
         {
-            return FloatUtil.GetVector3String(MetaTypes.SwapBytes(v));
+            return FloatUtil.GetVector3String(MetaTypes.SwapBytes(in v));
         }
         public static string FormatVector4Swap(Vector4 v) //for use with WriteItemArray, swaps endianness
         {
-            return FloatUtil.GetVector4String(MetaTypes.SwapBytes(v));
+            return FloatUtil.GetVector4String(MetaTypes.SwapBytes(in v));
         }
-        public static string FormatVector4SwapXYZOnly(Vector4 v) //for use with WriteItemArray, swaps endianness, and outputs only XYZ components
+        public static string FormatVector4SwapXYZOnly(in Vector4 v) //for use with WriteItemArray, swaps endianness, and outputs only XYZ components
         {
             return FloatUtil.GetVector3String(MetaTypes.SwapBytes(v.XYZ()));
         }
@@ -2137,50 +2227,56 @@ namespace CodeWalker.GameFiles
         public static string HashString(MetaName h)
         {
             uint uh = (uint)h;
-            if (uh == 0) return "";
+            if (uh == 0)
+                return string.Empty;
 
-            string str;
-            if (MetaNames.TryGetString(uh, out str)) return str;
+            string? str;
+            if (MetaNames.TryGetString(uh, out str))
+                return str;
 
             str = JenkIndex.TryGetString(uh);
-            if (!string.IsNullOrEmpty(str)) return str;
+            if (!string.IsNullOrEmpty(str))
+                return str;
 
             //TODO: do extra hash lookup here
             //if(Lookup.TryGetValue(uh, out str)) ...
 
-            return "hash_" + uh.ToString("X").PadLeft(8, '0');
+            return $"hash_{uh:X8}";
 
         }
         public static string HashString(MetaHash h)
         {
-            if (h == 0) return "";
+            if (h == 0)
+                return string.Empty;
 
-            var str = JenkIndex.TryGetString(h);
+            if (JenkIndex.TryGetString(h, out var str))
+                return str;
 
-            if (string.IsNullOrEmpty(str))
-            {
-                if (MetaNames.TryGetString(h, out str)) return str;
-            }
+            if (MetaNames.TryGetString(h, out str))
+                return str;
 
             //todo: make sure JenkIndex is built!
             //todo: do extra hash lookup here
 
 
-            if (!string.IsNullOrEmpty(str)) return str;
-            return "hash_" + h.Hex;
+            if (!string.IsNullOrEmpty(str))
+                return str;
+
+            return $"hash_{h.Hex}";
         }
         public static string HashString(TextHash h)
         {
             uint uh = h.Hash;
-            if (uh == 0) return "";
+            if (uh == 0)
+                return string.Empty;
 
-            var str = GlobalText.TryGetString(uh);
-            if (!string.IsNullOrEmpty(str)) return str;
+            if (GlobalText.TryGetString(uh, out var str))
+                return str;
 
             //TODO: do extra hash lookup here
             //if(Lookup.TryGetValue(uh, out str)) ...
 
-            return "hash_" + uh.ToString("X").PadLeft(8, '0');
+            return $"hash_{uh:X8}";
         }
 
 
@@ -2197,16 +2293,17 @@ namespace CodeWalker.GameFiles
 
 
             //if (h == 0) return "";
-            return "0x" + h.ToString("X");
+            return $"0x{h:X}";
 
         }
 
 
 
-
-        public static string XmlEscape(string unescaped)
+        [return: NotNullIfNotNull(nameof(unescaped))]
+        public static string? XmlEscape(string? unescaped)
         {
-            if (unescaped == null) return null;
+            if (unescaped is null)
+                return null;
             var escaped = System.Web.HttpUtility.HtmlEncode(unescaped).Replace("\"", "&quot;");
             return escaped;
         }

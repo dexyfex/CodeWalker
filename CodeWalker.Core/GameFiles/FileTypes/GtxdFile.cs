@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Collections.Pooled;
+using CommunityToolkit.HighPerformance;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -9,16 +12,12 @@ using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class GtxdFile : GameFile, PackedFile
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class GtxdFile : GameFile, PackedFile
     {
-
         public RbfFile Rbf { get; set; }
 
-
-        public Dictionary<string, string> TxdRelationships { get; set; }
-
-
-
+        public PooledDictionary<string, string> TxdRelationships { get; set; }
 
         public GtxdFile() : base(null, GameFileType.Gtxd)
         {
@@ -36,13 +35,15 @@ namespace CodeWalker.GameFiles
             FilePath = Name;
 
 
-            if (entry.Name.EndsWith(".ymt", StringComparison.OrdinalIgnoreCase))
+            if (entry.IsExtension(".ymt"))
             {
-                MemoryStream ms = new MemoryStream(data);
-                if (RbfFile.IsRBF(ms))
+                if (RbfFile.IsRBF(data.AsSpan(0, 4)))
                 {
+                    //using MemoryStream ms = new MemoryStream(data);
+                    var sequence = new ReadOnlySequence<byte>(data);
+                    var reader = new SequenceReader<byte>(sequence);
                     Rbf = new RbfFile();
-                    var rbfstruct = Rbf.Load(ms);
+                    var rbfstruct = Rbf.Load(ref reader);
 
                     if (rbfstruct.Name == "CMapParentTxds")
                     {
@@ -52,12 +53,8 @@ namespace CodeWalker.GameFiles
                     Loaded = true;
                     return;
                 }
-                else
-                {
-                    //not an RBF file...
-                }
             }
-            else if (entry.Name.EndsWith(".meta", StringComparison.OrdinalIgnoreCase))
+            else if (entry.IsExtension(".meta"))
             {
                 //required for update\x64\dlcpacks\mpheist\dlc.rpf\common\data\gtxd.meta and update\x64\dlcpacks\mpluxe\dlc.rpf\common\data\gtxd.meta
                 string xml = TextUtil.GetUTF8Text(data);
@@ -73,30 +70,31 @@ namespace CodeWalker.GameFiles
         private void LoadTxdRelationships(RbfStructure rbfstruct)
         {
 
-            TxdRelationships = new Dictionary<string, string>();
+            TxdRelationships?.Clear();
+            if (rbfstruct.Children is null)
+                return;
+
+            TxdRelationships ??= new PooledDictionary<string, string>();
             //StringBuilder sblist = new StringBuilder();
-            foreach (var child in rbfstruct.Children)
+            foreach (var child in rbfstruct.Children.Span)
             {
-                var childstruct = child as RbfStructure;
-                if ((childstruct != null) && (childstruct.Name == "txdRelationships"))
+                if (child is RbfStructure childstruct && childstruct.Name == "txdRelationships" && childstruct.Children is not null)
                 {
+                    TxdRelationships.EnsureCapacity(TxdRelationships.Count + childstruct.Children.Count);
                     foreach (var txdrel in childstruct.Children)
                     {
-                        var txdrelstruct = txdrel as RbfStructure;
-                        if ((txdrelstruct != null) && (txdrelstruct.Name == "item"))
+                        if (txdrel is RbfStructure txdrelstruct && txdrelstruct.Name == "item" && txdrelstruct.Children is not null)
                         {
                             string parentstr = string.Empty;
                             string childstr = string.Empty;
                             foreach (var item in txdrelstruct.Children)
                             {
-                                var itemstruct = item as RbfStructure;
-                                if ((itemstruct != null))
+                                if (item is RbfStructure itemstruct)
                                 {
-                                    var strbytes = itemstruct.Children[0] as RbfBytes;
                                     string thisstr = string.Empty;
-                                    if (strbytes != null)
+                                    if (itemstruct.Children is not null && itemstruct.Children.Count > 0 && itemstruct.Children[0] is RbfBytes strbytes)
                                     {
-                                        thisstr = Encoding.ASCII.GetString(strbytes.Value).Replace("\0", "");
+                                        thisstr = strbytes.GetNullTerminatedString();
                                     }
                                     switch (item.Name)
                                     {
@@ -108,17 +106,10 @@ namespace CodeWalker.GameFiles
                                             break;
                                     }
                                 }
-
                             }
-                            if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
+                            if (!string.IsNullOrEmpty(parentstr) && !string.IsNullOrEmpty(childstr))
                             {
-                                if (!TxdRelationships.ContainsKey(childstr))
-                                {
-                                    TxdRelationships.Add(childstr, parentstr);
-                                }
-                                else
-                                {
-                                }
+                                _ = TxdRelationships.TryAdd(childstr, parentstr);
                                 //sblist.AppendLine(childstr + ": " + parentstr);
                             }
                         }
@@ -140,20 +131,25 @@ namespace CodeWalker.GameFiles
             xmldoc.LoadXml(xml); //maybe better load xml.ToLower() and use "cmapparenttxds/txdrelationships/item" as xpath?
             XmlNodeList items = xmldoc.SelectNodes("CMapParentTxds/txdRelationships/Item | CMapParentTxds/txdRelationships/item");
 
-            TxdRelationships = new Dictionary<string, string>();
+            TxdRelationships = new PooledDictionary<string, string>(items.Count);
             for (int i = 0; i < items.Count; i++)
             {
                 string parentstr = Xml.GetChildInnerText(items[i], "parent");
                 string childstr = Xml.GetChildInnerText(items[i], "child");
 
-                if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
+                if (!string.IsNullOrEmpty(parentstr) && !string.IsNullOrEmpty(childstr))
                 {
-                    if (!TxdRelationships.ContainsKey(childstr))
-                    {
-                        TxdRelationships.Add(childstr, parentstr);
-                    }
+                    _ = TxdRelationships.TryAdd(childstr, parentstr);
                 }
             }
+        }
+
+        public override void Dispose()
+        {
+            TxdRelationships?.Dispose();
+            Rbf?.Dispose();
+            GC.SuppressFinalize(this);
+            base.Dispose();
         }
 
     }

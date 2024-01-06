@@ -102,7 +102,7 @@ namespace CodeWalker.Rendering
 
         public TerrainShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] vspncct = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCT.cso"));
             byte[] vspncctt = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCTT.cso"));
             byte[] vspnccttx = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCTTX.cso"));
@@ -280,7 +280,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             uint rendermode = 0;
             uint rendermodeind = 1;
@@ -334,10 +334,7 @@ namespace CodeWalker.Rendering
             PSSceneVars.Update(context);
             PSSceneVars.SetPSCBuffer(context, 0);
 
-            if (shadowmap != null)
-            {
-                shadowmap.SetFinalRenderResources(context);
-            }
+            shadowmap?.SetFinalRenderResources(context);
         }
 
         public override void SetEntityVars(DeviceContext context, ref RenderableInst rend)
@@ -385,7 +382,7 @@ namespace CodeWalker.Rendering
                     if (geom.HDTextureEnable)
                     {
                         var hdtex = geom.RenderableTexturesHD[i];
-                        if ((hdtex != null) && (hdtex.IsLoaded))
+                        if (hdtex is not null && hdtex.IsLoaded)
                         {
                             itex = hdtex;
                         }

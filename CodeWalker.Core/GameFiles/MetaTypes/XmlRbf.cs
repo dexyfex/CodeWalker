@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using Collections.Pooled;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,13 +28,13 @@ namespace CodeWalker.GameFiles
             return rbf;
         }
 
-        private static IRbfType Traverse(XNode node)
+        private static IRbfType? Traverse(XNode node)
         {
             if (node is XElement element)
             {
-                if (element.Attribute("value") != null)
+                if (element.TryGetAttribute("value", out var value))
                 {
-                    var val = element.Attribute("value").Value;
+                    var val = value.Value;
                     if (!string.IsNullOrEmpty(val))
                     {
                         var rval = CreateValueNode(element.Name.LocalName, val);
@@ -43,11 +44,11 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
-                else if ((element.Attributes().Count() == 3) && (element.Attribute("x") != null) && (element.Attribute("y") != null) && (element.Attribute("z") != null))
+                else if (element.Attributes().Count() == 3 && element.TryGetAttribute("x", out var xAttr) && element.TryGetAttribute("y", out var yAttr) && element.TryGetAttribute("z", out var zAttr))
                 {
-                    FloatUtil.TryParse(element.Attribute("x").Value, out float x);
-                    FloatUtil.TryParse(element.Attribute("y").Value, out float y);
-                    FloatUtil.TryParse(element.Attribute("z").Value, out float z);
+                    FloatUtil.TryParse(xAttr.Value, out float x);
+                    FloatUtil.TryParse(yAttr.Value, out float y);
+                    FloatUtil.TryParse(zAttr.Value, out float z);
                     return new RbfFloat3()
                     {
                         Name = element.Name.LocalName,
@@ -56,7 +57,7 @@ namespace CodeWalker.GameFiles
                         Z = z
                     };
                 }
-                else if ((element.Elements().Count() == 0) && (element.Attributes().Count() == 0) && (!element.IsEmpty)) //else if (element.Name == "type" || element.Name == "key" || element.Name == "platform")
+                else if (!element.HasElements && !element.HasAttributes && !element.IsEmpty) //else if (element.Name == "type" || element.Name == "key" || element.Name == "platform")
                 {
                     var bytearr = Encoding.ASCII.GetBytes(element.Value);
                     var bytearrnt = new byte[bytearr.Length + 1];
@@ -69,7 +70,7 @@ namespace CodeWalker.GameFiles
 
                 var n = new RbfStructure();
                 n.Name = element.Name.LocalName;
-                n.Children = element.Nodes().Select(c => Traverse(c)).ToList();
+                n.Children = element.Nodes().Select(Traverse).ToPooledList();
 
                 foreach (var attr in element.Attributes())
                 {
@@ -85,9 +86,8 @@ namespace CodeWalker.GameFiles
             }
             else if (node is XText text)
             {
-                byte[] bytes = null;
-                var contentAttr = node.Parent?.Attribute("content");
-                if (contentAttr != null)
+                byte[]? bytes = null;
+                if (node.Parent?.TryGetAttribute("content", out var contentAttr) ?? false)
                 {
                     if (contentAttr.Value == "char_array")
                     {
@@ -97,14 +97,12 @@ namespace CodeWalker.GameFiles
                     {
                         bytes = GetUshortArray(text.Value);
                     }
-                    else
-                    { }
                 }
                 else
                 {
                     bytes = Encoding.ASCII.GetBytes(text.Value).Concat(new byte[] { 0x00 }).ToArray();
                 }
-                if (bytes != null)
+                if (bytes is not null)
                 {
                     return new RbfBytes()
                     {
@@ -138,7 +136,7 @@ namespace CodeWalker.GameFiles
             }
             else if (val.StartsWith("0x"))
             {
-                uint.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint u);
+                uint.TryParse(val.AsSpan(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out uint u);
                 return new RbfUint32()
                 {
                     Name = name,
@@ -167,37 +165,32 @@ namespace CodeWalker.GameFiles
 
 
 
-        private static byte[] GetByteArray(string text)
+        private static byte[]? GetByteArray(string text)
         {
-            if (string.IsNullOrEmpty(text)) return null;
-            var data = new List<byte>();
+            if (string.IsNullOrEmpty(text))
+                return null;
+            using var data = new PooledList<byte>();
             var split = Regex.Split(text, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+            foreach(var str in split)
             {
-                if (!string.IsNullOrEmpty(split[i]))
-                {
-                    var str = split[i];
-                    if (string.IsNullOrEmpty(str)) continue;
-                    var val = Convert.ToByte(str);
-                    data.Add(val);
-                }
+                if (string.IsNullOrEmpty(str))
+                    continue;
+                var val = Convert.ToByte(str);
+                data.Add(val);
             }
             return data.ToArray();
         }
         private static byte[] GetUshortArray(string text)
         {
-            var data = new List<byte>();
+            using var data = new PooledList<byte>();
             var split = Regex.Split(text, @"[\s\r\n\t]");
-            for (int i = 0; i < split.Length; i++)
+            foreach(var str in split)
             {
-                if (!string.IsNullOrEmpty(split[i]))
-                {
-                    var str = split[i];
-                    if (string.IsNullOrEmpty(str)) continue;
-                    var val = Convert.ToUInt16(str);
-                    data.Add((byte)((val >> 0) & 0xFF));
-                    data.Add((byte)((val >> 8) & 0xFF));
-                }
+                if (string.IsNullOrEmpty(str))
+                    continue;
+                var val = Convert.ToUInt16(str);
+                data.Add((byte)((val >> 0) & 0xFF));
+                data.Add((byte)((val >> 8) & 0xFF));
             }
             return data.ToArray();
         }

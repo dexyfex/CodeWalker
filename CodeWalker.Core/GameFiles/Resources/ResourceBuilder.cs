@@ -459,7 +459,7 @@ namespace CodeWalker.GameFiles
         {
             using (MemoryStream ms = RpfFile.recyclableMemoryStreamManager.GetStream())
             {
-                DeflateStream ds = new DeflateStream(ms, CompressionMode.Compress, true);
+                DeflateStream ds = new DeflateStream(ms, CompressionLevel.SmallestSize, true);
                 ds.Write(data, 0, data.Length);
                 ds.Close();
                 return ms.ToArray();
@@ -470,8 +470,19 @@ namespace CodeWalker.GameFiles
             using (MemoryStream ms = new MemoryStream(data))
             {
                 DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
-                MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream("Decompress", data.Length);
+                MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream("Decompress", data.Length * 2);
                 ds.CopyTo(outstr, 524288);
+                return outstr.ToArray();
+            }
+        }
+
+        public static async Task<byte[]> DecompressAsync(byte[] data)
+        {
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
+                MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream("Decompress", data.Length * 2);
+                await ds.CopyToAsync(outstr, 524288);
                 return outstr.ToArray();
             }
         }

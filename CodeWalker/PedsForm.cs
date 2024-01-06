@@ -10,12 +10,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Color = SharpDX.Color;
 
 namespace CodeWalker
@@ -25,7 +29,6 @@ namespace CodeWalker
         public Form Form { get { return this; } } //for DXForm/DXManager use
 
         public Renderer Renderer { get; set; }
-        public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
 
         public bool Pauserendering { get; set; }
         volatile bool formopen = false;
@@ -52,7 +55,7 @@ namespace CodeWalker
         System.Drawing.Point MouseLastPoint;
 
 
-        public GameFileCache GameFileCache { get; } = GameFileCacheFactory.GetInstance();
+        public GameFileCache GameFileCache => GameFileCacheFactory.Instance;
 
 
         InputManager Input = new InputManager();
@@ -80,42 +83,73 @@ namespace CodeWalker
 
         Ped SelectedPed = new Ped();
 
+        public class ComponentComboBoxesContainer
+        {
+            public int Index = 0;
+            public required ComboBox DrawableBox;
+            public required ComboBox TextureBox;
 
-        ComboBox[] ComponentComboBoxes = null;
+            [SetsRequiredMembers]
+            public ComponentComboBoxesContainer(ComboBox drawableBox, ComboBox textureBox)
+            {
+                DrawableBox = drawableBox;
+                TextureBox = textureBox;
+            }
+        }
+
+        ComboBox[] ComponentComboBoxesOld = null;
+
+        ComponentComboBoxesContainer[] ComponentComboBoxes = null;
+
         public class ComponentComboItem
         {
             public MCPVDrawblData DrawableData { get; set; }
             public int AlternativeIndex { get; set; }
-            public int TextureIndex { get; set; }
-            public ComponentComboItem(MCPVDrawblData drawableData, int altIndex = 0, int textureIndex = -1)
+            public MetaHash DlcName => DrawableData?.Owner.Owner.Data.dlcName ?? default;
+            public int Index { get; set; }
+
+            public string DrawableName => DrawableData?.GetDrawableName(AlternativeIndex) ?? "error";
+
+            public ComponentComboItem(MCPVDrawblData drawableData, int altIndex = 0, int index = 0)
             {
                 DrawableData = drawableData;
                 AlternativeIndex = altIndex;
-                TextureIndex = textureIndex;
+                Index = index;
             }
+
             public override string ToString()
             {
-                if (DrawableData == null) return TextureIndex.ToString();
+                if (DrawableData == null)
+                    return $"[{Index}] {AlternativeIndex}";
                 var itemname = DrawableData.GetDrawableName(AlternativeIndex);
-                if (DrawableData.TexData?.Length > 0) return itemname + " + " + DrawableData.GetTextureSuffix(TextureIndex);
-                return itemname;
-            }
-            public string DrawableName
-            {
-                get
-                {
-                    return DrawableData?.GetDrawableName(AlternativeIndex) ?? "error";
-                }
-            }
-            public string TextureName
-            {
-                get
-                {
-                    return DrawableData?.GetTextureName(TextureIndex);
-                }
+                if (DrawableData.TexData?.Length > 0)
+                    return $"[{Index}] {DlcName}^{itemname}";
+                return $"[{Index}] {itemname}{DlcName}";
             }
         }
 
+        public class ComponentTextureItem : ComponentComboItem
+        {
+            public int TextureIndex { get; set; }
+
+            public string TextureName => DrawableData?.GetTextureName(TextureIndex);
+
+            public ComponentTextureItem(MCPVDrawblData drawableData, int altIndex = 0, int textureIndex = -1) : base(drawableData, altIndex)
+            {
+                TextureIndex = textureIndex;
+            }
+
+            public override string ToString()
+            {
+                if (DrawableData == null)
+                    return TextureIndex.ToString();
+
+                if (DrawableData.TexData?.Length > 0)
+                    return TextureName;
+
+                return TextureIndex.ToString();
+            }
+        }
 
 
         public PedsForm()
@@ -123,6 +157,22 @@ namespace CodeWalker
             InitializeComponent();
 
             ComponentComboBoxes = new[]
+            {
+                new ComponentComboBoxesContainer(CompHeadComboBox, CompHeadTexture),
+                new ComponentComboBoxesContainer(CompBerdComboBox, CompBerdTexture),
+                new ComponentComboBoxesContainer(CompHairComboBox, CompHairTexture),
+                new ComponentComboBoxesContainer(CompUpprComboBox, CompUpprTexture),
+                new ComponentComboBoxesContainer(CompLowrComboBox, CompLowrTexture),
+                new ComponentComboBoxesContainer(CompHandComboBox, CompHandTexture),
+                new ComponentComboBoxesContainer(CompFeetComboBox, CompFeetTexture),
+                new ComponentComboBoxesContainer(CompTeefComboBox, CompTeefTexture),
+                new ComponentComboBoxesContainer(CompAccsComboBox, CompAccsTexture),
+                new ComponentComboBoxesContainer(CompTaskComboBox, CompTaskTexture),
+                new ComponentComboBoxesContainer(CompDeclComboBox, CompDeclTexture),
+                new ComponentComboBoxesContainer(CompJbibComboBox, CompJbibTexture),
+            };
+
+            ComponentComboBoxesOld = new[]
             {
                 CompHeadComboBox,
                 CompBerdComboBox,
@@ -184,7 +234,7 @@ namespace CodeWalker
             camera.TargetRotation.X = 1.0f * (float)Math.PI;
             camera.CurrentRotation.X = 1.0f * (float)Math.PI;
 
-            Renderer.shaders.deferred = false; //no point using this here yet
+            Renderer.Shaders.deferred = false; //no point using this here yet
 
 
             LoadSettings();
@@ -197,7 +247,7 @@ namespace CodeWalker
             frametimer.Start();
 
         }
-        public void CleanupScene()
+        public async ValueTask CleanupScene()
         {
             formopen = false;
 
@@ -206,7 +256,7 @@ namespace CodeWalker
             int count = 0;
             while (running && (count < 5000)) //wait for the content thread to exit gracefully
             {
-                Thread.Sleep(1);
+                await Task.Delay(1);
                 count++;
             }
         }
@@ -224,7 +274,7 @@ namespace CodeWalker
 
             GameFileCache.BeginFrame();
 
-            if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
+            if (!await Renderer.RenderSyncRoot.WaitAsync(50))
             {
                 return;
             } //couldn't get a lock, try again next time
@@ -277,7 +327,7 @@ namespace CodeWalker
             }
             finally
             {
-                Monitor.Exit(Renderer.RenderSyncRoot);
+                Renderer.RenderSyncRoot.Release();
             }
 
             //UpdateMarkerSelectionPanelInvoke();
@@ -337,7 +387,7 @@ namespace CodeWalker
         }
 
 
-        private void ContentThread()
+        private async ValueTask ContentThread()
         {
             try
             {
@@ -366,7 +416,7 @@ namespace CodeWalker
                     GameFileCache.LoadArchetypes = false;//to speed things up a little
                     GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
                     GameFileCache.DoFullStringIndex = true;//to get all global text from DLC...
-                    GameFileCache.Init(UpdateStatus, LogError, force: false);
+                    await GameFileCache.InitAsync(UpdateStatus, LogError, force: false);
                 }
 
                 //UpdateDlcListComboBox(gameFileCache.DlcNameList);
@@ -387,14 +437,15 @@ namespace CodeWalker
                 //UpdateStatus("Ready");
 
 
-                Task.Run(async () => {
+                Task.Run(async () =>
+                {
                     while (formopen && !IsDisposed) //renderer content loop
                     {
                         bool rcItemsPending = Renderer.ContentThreadProc();
 
                         if (!rcItemsPending)
                         {
-                            await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
+                            await Task.Delay(ActiveForm == null ? 50 : 2).ConfigureAwait(false);
                         }
                     }
                 });
@@ -407,14 +458,14 @@ namespace CodeWalker
 
                         if (!fcItemsPending)
                         {
-                            await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
+                            await Task.Delay(ActiveForm == null ? 50 : 2).ConfigureAwait(false);
                         }
                     }
 
                     running = false;
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Exception occured in PedsForm::ContentThread.\n{ex}");
             }
@@ -476,14 +527,16 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateStatus(text); }));
+                    BeginInvoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void LogError(string text)
         {
@@ -491,17 +544,20 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { LogError(text); }));
+                    Invoke(LogError, text);
                 }
                 else
                 {
                     //TODO: error logging..
                     ConsoleTextBox.AppendText(text + "\r\n");
+                    Console.WriteLine(text);
                     //StatusLabel.Text = text;
                     //MessageBox.Show(text);
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -523,7 +579,7 @@ namespace CodeWalker
         {
             //move the camera to a default place where the given sphere is fully visible.
 
-            rad = Math.Max(0.01f, rad*0.1f);
+            rad = Math.Max(0.01f, rad * 0.1f);
 
             camera.FollowEntity.Position = pos;
             camera.TargetDistance = rad * 1.2f;
@@ -545,6 +601,7 @@ namespace CodeWalker
             var dnode = ModelsTreeView.Nodes.Add(name);
             dnode.Tag = drawable;
             dnode.Checked = check;
+            UpdateDrawFlags(drawable, check);
 
             AddDrawableModelsTreeNodes(drawable.DrawableModels?.High, "High Detail", true, dnode, tnode);
             AddDrawableModelsTreeNodes(drawable.DrawableModels?.Med, "Medium Detail", false, dnode, tnode);
@@ -555,7 +612,8 @@ namespace CodeWalker
         }
         private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check, TreeNode parentDrawableNode = null, TreeNode parentTextureNode = null)
         {
-            if (models == null) return;
+            if (models is null || models.Length == 0)
+                return;
 
             for (int mi = 0; mi < models.Length; mi++)
             {
@@ -566,17 +624,14 @@ namespace CodeWalker
                 var mnode = tnc.Add(mprefix + " " + model.ToString());
                 mnode.Tag = model;
                 mnode.Checked = check;
+                UpdateDrawFlags(model, check);
 
                 var ttnc = (parentTextureNode != null) ? parentTextureNode.Nodes : TexturesTreeView.Nodes;
                 var tmnode = ttnc.Add(mprefix + " " + model.ToString());
                 tmnode.Tag = model;
 
-                if (!check)
-                {
-                    Renderer.SelectionModelDrawFlags[model] = false;
-                }
-
-                if (model.Geometries == null) continue;
+                if (model.Geometries is null || model.Geometries.Length == 0)
+                    continue;
 
                 foreach (var geom in model.Geometries)
                 {
@@ -584,11 +639,12 @@ namespace CodeWalker
                     var gnode = mnode.Nodes.Add(gname);
                     gnode.Tag = geom;
                     gnode.Checked = true;// check;
+                    UpdateDrawFlags(geom, true);
 
                     var tgnode = tmnode.Nodes.Add(gname);
                     tgnode.Tag = geom;
 
-                    if ((geom.Shader != null) && (geom.Shader.ParametersList != null) && (geom.Shader.ParametersList.Hashes != null))
+                    if (geom.Shader?.ParametersList?.Hashes is not null)
                     {
                         var pl = geom.Shader.ParametersList;
                         var h = pl.Hashes;
@@ -597,14 +653,12 @@ namespace CodeWalker
                         {
                             var hash = pl.Hashes[ip];
                             var parm = pl.Parameters[ip];
-                            var tex = parm.Data as TextureBase;
-                            if (tex != null)
+                            if (parm.Data is TextureBase tex)
                             {
-                                var t = tex as Texture;
                                 var tstr = tex.Name.Trim();
-                                if (t != null)
+                                if (tex is Texture t)
                                 {
-                                    tstr = string.Format("{0} ({1}x{2}, embedded)", tex.Name, t.Width, t.Height);
+                                    tstr = $"{tex.Name} ({t.Width}x{t.Height}, embedded)";
                                 }
                                 var tnode = tgnode.Nodes.Add(hash.ToString().Trim() + ": " + tstr);
                                 tnode.Tag = tex;
@@ -619,67 +673,74 @@ namespace CodeWalker
                 tmnode.Expand();
             }
         }
+
+        private void UpdateDrawFlags(DrawableModel model, bool rem)
+        {
+            using (Renderer.RenderSyncRoot.WaitDisposable())
+            {
+                if (rem)
+                {
+                    Renderer.SelectionModelDrawFlags.Remove(model);
+                }
+                else
+                {
+                    Renderer.SelectionModelDrawFlags[model] = false;
+                }
+            }
+        }
+
+        private void UpdateDrawFlags(DrawableGeometry geom, bool rem)
+        {
+            using (Renderer.RenderSyncRoot.WaitDisposable())
+            {
+                if (rem)
+                {
+                    Renderer.SelectionGeometryDrawFlags.Remove(geom);
+                }
+                else
+                {
+                    Renderer.SelectionGeometryDrawFlags[geom] = false;
+                }
+            }
+        }
+
+        private void UpdateDrawFlags(DrawableBase drwbl, bool rem)
+        {
+            using (Renderer.RenderSyncRoot.WaitDisposable())
+            {
+                if (rem)
+                {
+                    Renderer.SelectionDrawableDrawFlags.Remove(drwbl);
+                }
+                else
+                {
+                    Renderer.SelectionDrawableDrawFlags[drwbl] = false;
+                }
+            }
+        }
+
         private void UpdateSelectionDrawFlags(TreeNode node)
         {
-            //update the selection draw flags depending on tag and checked/unchecked
-            var drwbl = node.Tag as DrawableBase;
-            var model = node.Tag as DrawableModel;
-            var geom = node.Tag as DrawableGeometry;
-            bool rem = node.Checked;
-            lock (Renderer.RenderSyncRoot)
+            if (node.Tag is DrawableBase drwbl)
             {
-                if (drwbl != null)
-                {
-                    if (rem)
-                    {
-                        if (Renderer.SelectionDrawableDrawFlags.ContainsKey(drwbl))
-                        {
-                            Renderer.SelectionDrawableDrawFlags.Remove(drwbl);
-                        }
-                    }
-                    else
-                    {
-                        Renderer.SelectionDrawableDrawFlags[drwbl] = false;
-                    }
-                }
-                if (model != null)
-                {
-                    if (rem)
-                    {
-                        if (Renderer.SelectionModelDrawFlags.ContainsKey(model))
-                        {
-                            Renderer.SelectionModelDrawFlags.Remove(model);
-                        }
-                    }
-                    else
-                    {
-                        Renderer.SelectionModelDrawFlags[model] = false;
-                    }
-                }
-                if (geom != null)
-                {
-                    if (rem)
-                    {
-                        if (Renderer.SelectionGeometryDrawFlags.ContainsKey(geom))
-                        {
-                            Renderer.SelectionGeometryDrawFlags.Remove(geom);
-                        }
-                    }
-                    else
-                    {
-                        Renderer.SelectionGeometryDrawFlags[geom] = false;
-                    }
-                }
-                //updateArchetypeStatus = true;
+                UpdateDrawFlags(drwbl, node.Checked);
+            }
+            else if (node.Tag is DrawableModel model)
+            {
+                UpdateDrawFlags(model, node.Checked);
+            }
+            else if (node.Tag is DrawableGeometry geom)
+            {
+                UpdateDrawFlags(geom, node.Checked);
             }
         }
 
 
-        private void UpdateGlobalPedsUI()
+        private async void UpdateGlobalPedsUI()
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new Action(() => { UpdateGlobalPedsUI(); }));
+                BeginInvoke(UpdateGlobalPedsUI);
             }
             else
             {
@@ -692,7 +753,7 @@ namespace CodeWalker
                 List<string> ycdlist = new List<string>();
                 foreach (var ycde in ycds)
                 {
-                    ycdlist.Add(ycde.ShortName);
+                    ycdlist.Add(ycde.ShortName.ToString());
                 }
                 ClipDictComboBox.AutoCompleteCustomSource.AddRange(ycdlist.ToArray());
                 ClipDictComboBox.Text = "";
@@ -700,6 +761,10 @@ namespace CodeWalker
 
 
                 PedNameComboBox.Items.Clear();
+                if (GameFileCache.PedsInitDict is null)
+                {
+                    await GameFileCache.InitPeds(true);
+                }
                 var peds = GameFileCache.PedsInitDict.Values.ToList();
                 peds.Sort((a, b) => { return a.Name.CompareTo(b.Name); });
                 foreach (var ped in peds)
@@ -708,7 +773,7 @@ namespace CodeWalker
                 }
                 if (peds.Count > 0)
                 {
-                    var ind = PedNameComboBox.FindString("A_F_Y_Beach_01"); // //A_C_Pug
+                    var ind = PedNameComboBox.FindString("MP_M_Freemode_01"); // //A_C_Pug
                     PedNameComboBox.SelectedIndex = Math.Max(ind, 0);
                     //PedNameComboBox.SelectedIndex = 0;
                 }
@@ -733,7 +798,8 @@ namespace CodeWalker
             TexturesTreeView.Nodes.Clear();
             TexturesTreeView.ShowRootLines = true;
 
-            if (SelectedPed == null) return;
+            if (SelectedPed is null)
+                return;
 
 
             for (int i = 0; i < 12; i++)
@@ -741,9 +807,11 @@ namespace CodeWalker
                 var drawable = SelectedPed.Drawables[i];
                 var drawablename = SelectedPed.DrawableNames[i];
 
-                if (drawable != null)
+                if (drawable is not null)
                 {
                     AddDrawableTreeNode(drawable, drawablename, true);
+
+                    PopulateCompComboTextures(ComponentComboBoxes[i]);
                 }
             }
 
@@ -754,39 +822,96 @@ namespace CodeWalker
 
         public async ValueTask LoadPedAsync()
         {
+            SuspendLayout();
             var pedname = PedNameComboBox.Text;
-            var pedhash = JenkHash.GenHash(pedname.ToLowerInvariant());
+            var pedhash = JenkHash.GenHashLower(pedname);
             var pedchange = SelectedPed.NameHash != pedhash;
 
             for (int i = 0; i < 12; i++)
             {
-                ClearCombo(ComponentComboBoxes[i]);
+                ClearCombo(ComponentComboBoxesOld[i]);
             }
 
             DetailsPropertyGrid.SelectedObject = null;
 
-            await SelectedPed.InitAsync(pedname, GameFileCache);
+            Console.WriteLine($"{YmtNameComboBox.SelectedItem}: {YmtNameComboBox.SelectedItem?.GetType()}");
+            MetaHash? selectedDlc = null;
+            if (YmtNameComboBox.SelectedItem is MetaHash metaHash)
+            {
+                selectedDlc = metaHash;
+            }
+            PedFile? pedFile = YmtNameComboBox.SelectedItem as PedFile;
+
+            await SelectedPed.InitAsync(pedname, GameFileCache, selectedDlc);
+
+            YmtNameComboBox.Items.Clear();
+            YmtNameComboBox.Items.AddRange(SelectedPed.Dlcs.Select(p => (object)p).ToArray());
+
+            YmtNameComboBox.SelectedItem = SelectedPed.Ymt;
 
             LoadModel(SelectedPed.Yft, pedchange);
 
-
-            var vi = SelectedPed.Ymt?.VariationInfo;
-            if (vi != null)
+            if (SelectedPed.Ymts?.Count > 0)
             {
-                for (int i = 0; i < 12; i++)
+                foreach (var comboBox in ComponentComboBoxes)
                 {
-                    PopulateCompCombo(ComponentComboBoxes[i], vi.GetComponentData(i));
+                    comboBox.DrawableBox.BeginUpdate();
+                    comboBox.TextureBox.BeginUpdate();
+                    comboBox.Index = 0;
+                }
+                try
+                {
+                    foreach (var ymt in SelectedPed.Ymts)
+                    {
+                        var vi = ymt.VariationInfo;
+                        if (vi is not null)
+                        {
+                            for (int i = 0; i < 12; i++)
+                            {
+                                PopulateCompCombo(ComponentComboBoxes[i], vi.GetComponentData(i));
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    foreach (var comboBox in ComponentComboBoxes)
+                    {
+                        if (comboBox.DrawableBox.Items.Count > 1)
+                        {
+                            comboBox.DrawableBox.SelectedIndex = 1;
+                        }
+                        if (comboBox.TextureBox.Items.Count > 1)
+                        {
+                            comboBox.TextureBox.SelectedIndex = 0;
+                        }
+                    }
+                    foreach (var comboBox in ComponentComboBoxes)
+                    {
+                        comboBox.DrawableBox.EndUpdate();
+                        comboBox.TextureBox.EndUpdate();
+                    }
                 }
             }
+
+            //var vi = SelectedPed.Ymt?.VariationInfo;
+            //if (vi != null)
+            //{
+            //    for (int i = 0; i < 12; i++)
+            //    {
+            //        PopulateCompCombo(ComponentComboBoxes[i], vi.GetComponentData(i));
+            //    }
+            //}
 
             ClipDictComboBox.Text = SelectedPed.InitData?.ClipDictionaryName ?? "";
             ClipComboBox.Text = "idle";
 
+            UpdateModelsUI();
+            ResumeLayout(true);
 
             DetailsPropertyGrid.SelectedObject = SelectedPed;
-
-            UpdateModelsUI();
-
+            DetailsPropertyGrid.Invalidate();
+            DetailsPropertyGrid.Update();
         }
 
         public void LoadModel(YftFile yft, bool movecamera = true)
@@ -813,40 +938,69 @@ namespace CodeWalker
             c.Items.Add("");
             c.Text = string.Empty;
         }
-        private void PopulateCompCombo(ComboBox c, MCPVComponentData compData)
+
+        private void PopulateCompComboTextures(ComponentComboBoxesContainer c)
+        {
+            if (c.DrawableBox.SelectedItem is not ComponentComboItem selectedDrawable || selectedDrawable.DrawableData is null)
+                return;
+
+            if (c.TextureBox.SelectedItem is ComponentTextureItem selectedTexture)
+            {
+                if (selectedTexture.DrawableData == selectedDrawable.DrawableData)
+                {
+                    return;
+                }
+            }
+
+            c.TextureBox.BeginUpdate();
+
+            c.TextureBox.Items.Clear();
+
+            var item = selectedDrawable.DrawableData;
+
+            if (item.TexData?.Length > 0)
+            {
+                for (int tex = 0; tex < item.TexData.Length; tex++)
+                {
+                    c.TextureBox.Items.Add(new ComponentTextureItem(item, selectedDrawable.AlternativeIndex, tex));
+                }
+            }
+
+            c.TextureBox.SelectedIndex = 0;
+
+            c.TextureBox.EndUpdate();
+        }
+
+        private void PopulateCompCombo(ComponentComboBoxesContainer c, MCPVComponentData compData)
         {
             if (compData?.DrawblData3 == null) return;
             foreach (var item in compData.DrawblData3)
             {
                 for (int alt = 0; alt <= item.NumAlternatives; alt++)
                 {
-                    if (item.TexData?.Length > 0)
-                    {
-                        for (int tex = 0; tex < item.TexData.Length; tex++)
-                        {
-                            c.Items.Add(new ComponentComboItem(item, alt, tex));
-                        }
-                    }
-                    else
-                    {
-                        c.Items.Add(new ComponentComboItem(item));
-                    }
+                    c.DrawableBox.Items.Add(new ComponentComboItem(item, alt, c.Index));
+                    //if (item.TexData?.Length > 0)
+                    //{
+                    //    for (int tex = 0; tex < item.TexData.Length; tex++)
+                    //    {
+                    //        c.TextureBox.Items.Add(new ComponentTextureItem(item, alt, tex));
+                    //    }
+                    //}
                 }
-            }
-            if (compData.DrawblData3.Length > 0)
-            {
-                c.SelectedIndex = 1;
+                c.Index++;
             }
         }
 
-        private async ValueTask SetComponentDrawableAsync(int index, object comboObj)
+        private async ValueTask SetComponentDrawableAsync(int index)
         {
-
-            var comboItem = comboObj as ComponentComboItem;
+            var comboBoxes = ComponentComboBoxes[index];
+            var comboItem = comboBoxes.DrawableBox.SelectedItem as ComponentComboItem;
+            var textureItem = comboBoxes.TextureBox.SelectedItem as ComponentTextureItem;
             var name = comboItem?.DrawableName;
-            var tex = comboItem?.TextureName;
+            var tex = textureItem?.TextureName;
+            var dlc = comboItem?.DlcName ?? 0;
 
-            await SelectedPed.SetComponentDrawableAsync(index, name, tex, GameFileCache);
+            await SelectedPed.SetComponentDrawableAsync(index, name, tex, dlc, GameFileCache);
 
             UpdateModelsUI();
         }
@@ -1356,7 +1510,7 @@ namespace CodeWalker
 
         private void ModelsTreeView_AfterCheck(object sender, TreeViewEventArgs e)
         {
-            if (e.Node != null)
+            if (e.Node is not null)
             {
                 UpdateSelectionDrawFlags(e.Node);
             }
@@ -1378,17 +1532,33 @@ namespace CodeWalker
 
         private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            if (Renderer.Shaders is null)
+                return;
+
+            Renderer.RenderSyncRoot.Wait();
+            try
             {
-                Renderer.shaders.hdr = HDRRenderingCheckBox.Checked;
+                Renderer.Shaders.hdr = HDRRenderingCheckBox.Checked;
+            }
+            finally
+            {
+                Renderer.RenderSyncRoot.Release();
             }
         }
 
         private void ShadowsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            if (Renderer.Shaders is null)
+                return;
+
+            Renderer.RenderSyncRoot.Wait();
+            try
             {
-                Renderer.shaders.shadows = ShadowsCheckBox.Checked;
+                Renderer.Shaders.shadows = ShadowsCheckBox.Checked;
+            }
+            finally
+            {
+                Renderer.RenderSyncRoot.Release();
             }
         }
 
@@ -1408,7 +1578,7 @@ namespace CodeWalker
             int v = TimeOfDayTrackBar.Value;
             float fh = v / 60.0f;
             UpdateTimeOfDayLabel();
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 Renderer.timeofday = fh;
                 timecycle.SetTime(Renderer.timeofday);
@@ -1423,12 +1593,12 @@ namespace CodeWalker
 
         private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.wireframe = WireframeCheckBox.Checked;
+            Renderer.Shaders.wireframe = WireframeCheckBox.Checked;
         }
 
         private void AnisotropicFilteringCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+            Renderer.Shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
         }
 
         private void HDTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -1444,42 +1614,42 @@ namespace CodeWalker
             {
                 default:
                 case "Default":
-                    Renderer.shaders.RenderMode = WorldRenderMode.Default;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.Default;
                     break;
                 case "Single texture":
-                    Renderer.shaders.RenderMode = WorldRenderMode.SingleTexture;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.SingleTexture;
                     TextureSamplerComboBox.Enabled = true;
                     TextureCoordsComboBox.Enabled = true;
                     break;
                 case "Vertex normals":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexNormals;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexNormals;
                     break;
                 case "Vertex tangents":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexTangents;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexTangents;
                     break;
                 case "Vertex colour 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 1;
                     break;
                 case "Vertex colour 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 2;
                     break;
                 case "Vertex colour 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 3;
                     break;
                 case "Texture coord 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 1;
                     break;
                 case "Texture coord 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 2;
                     break;
                 case "Texture coord 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 3;
                     break;
             }
         }
@@ -1488,7 +1658,7 @@ namespace CodeWalker
         {
             if (TextureSamplerComboBox.SelectedItem is ShaderParamNames)
             {
-                Renderer.shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
+                Renderer.Shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
             }
         }
 
@@ -1498,13 +1668,13 @@ namespace CodeWalker
             {
                 default:
                 case "Texture coord 1":
-                    Renderer.shaders.RenderTextureSamplerCoord = 1;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 1;
                     break;
                 case "Texture coord 2":
-                    Renderer.shaders.RenderTextureSamplerCoord = 2;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 2;
                     break;
                 case "Texture coord 3":
-                    Renderer.shaders.RenderTextureSamplerCoord = 3;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 3;
                     break;
             }
         }
@@ -1583,69 +1753,82 @@ namespace CodeWalker
 
         private async void PedNameComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (!GameFileCache.IsInited) return;
+            if (!GameFileCache.IsInited)
+            {
+                return;
+            }
+
+            await LoadPedAsync();
+        }
+
+        private async void YmtNameCombaBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!GameFileCache.IsInited)
+            {
+                return;
+            }
 
             await LoadPedAsync();
         }
 
         private async void CompHeadComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(0, CompHeadComboBox.SelectedItem);
+            await SetComponentDrawableAsync(0);
         }
 
         private async void CompBerdComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(1, CompBerdComboBox.SelectedItem);
+            await SetComponentDrawableAsync(1);
         }
 
         private async void CompHairComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(2, CompHairComboBox.SelectedItem);
+            await SetComponentDrawableAsync(2);
         }
 
         private async void CompUpprComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(3, CompUpprComboBox.SelectedItem);
+            await SetComponentDrawableAsync(3);
         }
 
         private async void CompLowrComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(4, CompLowrComboBox.SelectedItem);
+            await SetComponentDrawableAsync(4);
         }
 
         private async void CompHandComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(5, CompHandComboBox.SelectedItem);
+            await SetComponentDrawableAsync(5);
         }
 
         private async void CompFeetComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(6, CompFeetComboBox.SelectedItem);
+            await SetComponentDrawableAsync(6);
         }
 
         private async void CompTeefComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(7, CompTeefComboBox.SelectedItem);
+            await SetComponentDrawableAsync(7);
         }
 
         private async void CompAccsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(8, CompAccsComboBox.SelectedItem);
+            await SetComponentDrawableAsync(8);
         }
 
         private async void CompTaskComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(9, CompTaskComboBox.SelectedItem);
+            await SetComponentDrawableAsync(9);
         }
 
         private async void CompDeclComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(10, CompDeclComboBox.SelectedItem);
+            await SetComponentDrawableAsync(10);
         }
 
         private async void CompJbibComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            await SetComponentDrawableAsync(11, CompJbibComboBox.SelectedItem);
+            await SetComponentDrawableAsync(11);
         }
 
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
@@ -1661,6 +1844,71 @@ namespace CodeWalker
         private void EnableRootMotionCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             SelectedPed.EnableRootMotion = EnableRootMotionCheckBox.Checked;
+        }
+
+        private void label24_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void CompHeadTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(0);
+        }
+
+        private async void CompBerdTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(1);
+        }
+
+        private async void CompHairTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(2);
+        }
+
+        private async void CompUpprTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(3);
+        }
+
+        private async void CompLowrTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(4);
+        }
+
+        private async void CompHandTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(5);
+        }
+
+        private async void CompFeetTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(6);
+        }
+
+        private async void CompTeefTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(7);
+        }
+
+        private async void CompAccsTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(8);
+        }
+
+        private async void CompTaskTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(9);
+        }
+
+        private async void CompDeclTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(10);
+        }
+
+        private async void CompJbibTexture_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            await SetComponentDrawableAsync(11);
         }
     }
 }

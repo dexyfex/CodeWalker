@@ -63,6 +63,7 @@ namespace CodeWalker.GameFiles
             GraphicsPages = FileEntry?.GraphicsFlags.Pages;
 
             var dlist = new List<ResourceAnalyzerItem>();
+#if DEBUG
             foreach (var kvp in reader.blockPool)
             {
                 var item = new ResourceAnalyzerItem();
@@ -98,6 +99,7 @@ namespace CodeWalker.GameFiles
                 }
                 dlist.Add(item);
             }
+#endif
 
             dlist.Sort((a, b) => a.Position.CompareTo(b.Position));
 

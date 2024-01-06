@@ -1,5 +1,7 @@
-﻿using SharpDX;
+﻿using CodeWalker.Core.Utils;
+using SharpDX;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -141,6 +143,17 @@ namespace CodeWalker.GameFiles
             this.Unk2 = reader.ReadUInt16();
             this.Unk3 = reader.ReadUInt16();
         }
+
+        public void Read(ref SequenceReader<byte> reader, params object[] parameters)
+        {
+            // read structure data
+            this.Position = reader.ReadVector3();
+            this.Unk0 = reader.ReadUInt16();
+            this.Unk1 = reader.ReadUInt16();
+            this.Unk2 = reader.ReadUInt16();
+            this.Unk3 = reader.ReadUInt16();
+        }
+
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data

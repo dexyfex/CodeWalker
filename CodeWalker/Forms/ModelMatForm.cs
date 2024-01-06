@@ -41,8 +41,7 @@ namespace CodeWalker.Forms
                 AddDrawableModelsTreeNodes(drawable.DrawableModels?.Low, "Low Detail");
                 AddDrawableModelsTreeNodes(drawable.DrawableModels?.VLow, "Very Low Detail");
 
-                var fdrawable = drawable as FragDrawable;
-                if (fdrawable != null)
+                if (drawable is FragDrawable fdrawable)
                 {
                     var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
                     if ((plod1 != null) && (plod1.Children?.data_items != null))
@@ -114,7 +113,8 @@ namespace CodeWalker.Forms
 
         private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, TreeNode parentDrawableNode = null)
         {
-            if (models == null) return;
+            if (models is null)
+                return;
 
             for (int mi = 0; mi < models.Length; mi++)
             {
@@ -125,7 +125,8 @@ namespace CodeWalker.Forms
                 var mnode = tnc.Add(mprefix + " " + model.ToString());
                 mnode.Tag = model;
 
-                if (model.Geometries == null) continue;
+                if (model.Geometries is null || model.Geometries.Length == 0)
+                    continue;
 
                 foreach (var geom in model.Geometries)
                 {
@@ -213,17 +214,19 @@ namespace CodeWalker.Forms
 
         private void ParamTextBox_TextChanged(object sender, EventArgs e)
         {
-            var tb = sender as TextBox;
-            var parm = tb?.Tag as ShaderParameter;
-            var txt = tb?.Text;
+            if (sender is not TextBox tb)
+            {
+                throw new InvalidOperationException($"TextBox is not a textbox on {nameof(ParamTextBox_TextChanged)}");
+            }
+            var txt = tb.Text;
 
-            if (parm == null) return;
+            if (tb.Tag is not ShaderParameter parm)
+                return;
 
             if (parm.DataType == 0)//texture
             {
                 var tex = parm.Data as TextureBase;
-                var ttex = tex as Texture;
-                if (ttex == null)//don't do this for embedded textures!
+                if (tex is not null && tex is not Texture ttex)//don't do this for embedded textures!
                 {
                     tex.Name = txt;
                     tex.NameHash = JenkHash.GenHashLower(txt);
@@ -254,8 +257,7 @@ namespace CodeWalker.Forms
             }
 
 
-            var geom = ModelsTreeView.SelectedNode?.Tag as DrawableGeometry;
-            if (geom != null)
+            if (ModelsTreeView.SelectedNode?.Tag is DrawableGeometry geom)
             {
                 if (Drawable != null)
                 {

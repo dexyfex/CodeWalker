@@ -147,11 +147,11 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>(base.GetReferences());
             return list.ToArray();
         }
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, ExpressionNameHashes),
-                new Tuple<long, IResourceBlock>(0x30, Expressions)
+            return new (long, IResourceBlock)[] {
+                (0x20, ExpressionNameHashes),
+                (0x30, Expressions)
             };
         }
 
@@ -416,13 +416,13 @@ namespace CodeWalker.GameFiles
             if (Name != null) list.Add(Name);
             return list.ToArray();
         }
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, Streams),
-                new Tuple<long, IResourceBlock>(0x30, BoneTracks),
-                new Tuple<long, IResourceBlock>(0x40, JiggleData),
-                new Tuple<long, IResourceBlock>(0x50, ItemHashes)
+            return new (long, IResourceBlock)[] {
+                (0x20, Streams),
+                (0x30, BoneTracks),
+                (0x40, JiggleData),
+                (0x50, ItemHashes)
             };
         }
 

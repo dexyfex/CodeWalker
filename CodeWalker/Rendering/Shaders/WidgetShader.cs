@@ -29,7 +29,7 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class WidgetShader : Shader
+    public class WidgetShader : Shader, IDisposable
     {
         VertexShader vs;
         PixelShader ps;
@@ -40,7 +40,7 @@ namespace CodeWalker.Rendering
 
         public WidgetShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "WidgetVS.cso"));
             byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "WidgetPS.cso"));
 
@@ -72,7 +72,7 @@ namespace CodeWalker.Rendering
             context.InputAssembler.SetIndexBuffer(null, SharpDX.DXGI.Format.Unknown, 0);
             return true;
         }
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             SceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             SceneVars.Update(context);

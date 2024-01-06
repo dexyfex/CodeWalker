@@ -1,12 +1,16 @@
 ﻿using CodeWalker.GameFiles;
+using CommunityToolkit.HighPerformance;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,7 +20,7 @@ namespace CodeWalker.World
     {
         private WorldForm WorldForm;
 
-        private volatile bool AbortOperation = false;
+        private CancellationTokenSource AbortOperation = new CancellationTokenSource();
 
         private List<Archetype> ArchetypeResults = new List<Archetype>();
         private List<YmapEntityDef> EntityResults = new List<YmapEntityDef>();
@@ -67,118 +71,141 @@ namespace CodeWalker.World
             ArchetypeSearchButton.Enabled = false;
             ArchetypeSearchAbortButton.Enabled = true;
             ArchetypeSearchExportResultsButton.Enabled = false;
-            AbortOperation = false;
+            AbortOperation.Cancel();
+            AbortOperation = new CancellationTokenSource();
             ArchetypeResults.Clear();
             ArchetypeResultsListView.VirtualListSize = 0;
 
             s = s.ToLowerInvariant();
 
-            Task.Run(() =>
+            _ = Task.Run(async () =>
             {
 
                 var rpfman = gfc.RpfMan;
-                IEnumerable<RpfFile> rpflist = loadedOnly ? gfc.ActiveMapRpfFiles.Values : rpfman.AllRpfs;
-                var results = new List<Archetype>();
+                RpfFile[] rpflist = (loadedOnly ? (IEnumerable<RpfFile>)gfc.ActiveMapRpfFiles.Values : rpfman.AllRpfs).ToArray();
+                var results = new ConcurrentBag<Archetype>();
 
-                foreach (var rpf in rpflist)
+                var token = AbortOperation.Token;
+
+                var hash = JenkHash.GenHashLower(s);
+
+                var archetype = GameFileCache.Instance?.GetArchetype(hash);
+
+                if (archetype is not null)
                 {
-                    foreach (var entry in rpf.AllEntries)
+                    ArchetypeSearchAddResult(archetype);
+                    results.Add(archetype);
+                }
+
+                try
+                {
+                    await Parallel.ForAsync(0, rpflist.Length, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount / 2, CancellationToken = token }, async (i, cancellationToken) =>
                     {
-                        try
+                        var rpf = rpflist[i];
+                        foreach (var entry in rpf.AllEntries)
                         {
-                            if (AbortOperation)
+                            try
                             {
-                                ArchetypeSearchUpdateStatus("Search aborted!");
-                                ArchetypeSearchComplete();
-                                return;
-                            }
-                            if (entry.Name.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase))
-                            {
-                                ArchetypeSearchUpdateStatus(entry.Path);
-
-                                YtypFile ytyp = rpfman.GetFile<YtypFile>(entry);
-                                if (ytyp == null) continue;
-                                if (ytyp.AllArchetypes == null) continue;
-
-                                foreach (var arch in ytyp.AllArchetypes)
+                                if (token.IsCancellationRequested)
                                 {
-                                    if (arch.Name.ToLowerInvariant().Contains(s)
-                                        || arch.AssetName.ToLowerInvariant().Contains(s))
+                                    return;
+                                }
+                                if (entry.Name.EndsWith(".ytyp", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    ArchetypeSearchUpdateStatus(entry.Path);
+
+                                    YtypFile? ytyp = await RpfManager.GetFileAsync<YtypFile>(entry);
+
+                                    if (ytyp == null)
+                                        continue;
+
+                                    foreach (var arch in ytyp.AllArchetypes)
                                     {
-                                        ArchetypeSearchAddResult(arch);
-                                        results.Add(arch);
+                                        if (arch.Name.Contains(s, StringComparison.OrdinalIgnoreCase)
+                                            || arch.AssetName.Contains(s, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            ArchetypeSearchAddResult(arch);
+                                            results.Add(arch);
+                                        }
                                     }
                                 }
                             }
+                            catch (Exception ex)
+                            {
+                                ArchetypeSearchUpdateStatus(ex.Message);
+                                Console.WriteLine(ex);
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            ArchetypeSearchUpdateStatus(ex.Message);
-                        }
-                    }
-                }
+                    });
 
-                ArchetypeSearchUpdateStatus("Search complete. " + results.Count.ToString() + " archetypes found.");
-                ArchetypeSearchComplete();
+                    ArchetypeSearchUpdateStatus($"Search complete. {results.Count} archetypes found.");
+                }
+                catch (TaskCanceledException)
+                {
+                    ArchetypeSearchUpdateStatus("Search aborted!");
+                }
+                finally
+                {
+                    ArchetypeSearchComplete();
+                }
             });
 
         }
 
-        private void ArchetypeSearchUpdateStatus(string text)
+        private async void ArchetypeSearchUpdateStatus(string text, bool force = false)
         {
+            if (!force && LastUpdate.Elapsed < TimeSpan.FromSeconds(0.1))
+            {
+                return;
+            }
+
+            LastUpdate.Restart();
             try
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { ArchetypeSearchUpdateStatus(text); }));
-                }
-                else
-                {
-                    ArchetypeSearchStatusLabel.Text = text;
-                }
+                await this.SwitchToUi();
+                ArchetypeSearchStatusLabel.Text = text;
             }
-            catch { }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
-        private void ArchetypeSearchAddResult(Archetype arch)
+        private async void ArchetypeSearchAddResult(Archetype arch)
         {
             try
             {
-                if (InvokeRequired)
-                {
-                    BeginInvoke(new Action(() => { ArchetypeSearchAddResult(arch); }));
-                }
-                else
-                {
-                    ArchetypeResults.Add(arch);
-                    ArchetypeResultsListView.VirtualListSize = ArchetypeResults.Count;
-                }
+                await this.SwitchToUi();
+                if (ArchetypeResults.Contains(arch))
+                    return;
+                ArchetypeResults.Add(arch);
+                ArchetypeResultsListView.VirtualListSize = ArchetypeResults.Count;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
-        private void ArchetypeSearchComplete()
+        private async void ArchetypeSearchComplete()
         {
             try
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { ArchetypeSearchComplete(); }));
-                }
-                else
-                {
-                    ArchetypeSearchTextBox.Enabled = true;
-                    ArchetypeSearchButton.Enabled = true;
-                    ArchetypeSearchAbortButton.Enabled = false;
-                    ArchetypeSearchExportResultsButton.Enabled = true;
-                }
+                await this.SwitchToUi();
+                ArchetypeSearchTextBox.Enabled = true;
+                ArchetypeSearchButton.Enabled = true;
+                ArchetypeSearchAbortButton.Enabled = false;
+                ArchetypeSearchExportResultsButton.Enabled = true;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         private void ArchetypeSearchAbortButton_Click(object sender, EventArgs e)
         {
-            AbortOperation = true;
+            AbortOperation.Cancel();
         }
 
         private void ArchetypeSearchExportResultsButton_Click(object sender, EventArgs e)
@@ -189,7 +216,7 @@ namespace CodeWalker.World
                 return;
             }
 
-            SaveFileDialog.FileName = "Archetypes_" + ArchetypeSearchTextBox.Text;
+            SaveFileDialog.FileName = $"Archetypes_{ArchetypeSearchTextBox.Text}";
             if (SaveFileDialog.ShowDialog() != DialogResult.OK)
             {
                 return;
@@ -201,7 +228,7 @@ namespace CodeWalker.World
             sb.AppendLine("Name, AssetName, YtypFile");
             foreach (var arch in ArchetypeResults)
             {
-                sb.AppendLine(string.Format("{0}, {1}, {2}", arch.Name, arch.AssetName, arch.Ytyp?.RpfFileEntry?.Path ?? ""));
+                sb.AppendLine($"{arch.Name}, {arch.AssetName}, {arch.Ytyp?.RpfFileEntry?.Path ?? ""}");
             }
 
             File.WriteAllText(fname, sb.ToString());
@@ -308,120 +335,133 @@ namespace CodeWalker.World
             EntitySearchLoadedOnlyCheckBox.Enabled = false;
             EntitySearchExportResultsButton.Enabled = false;
             EntitySearchSetMarkersButton.Enabled = false;
-            AbortOperation = false;
+            AbortOperation.Cancel();
+            AbortOperation = new CancellationTokenSource();
             EntityResults.Clear();
             EntityResultsListView.VirtualListSize = 0;
 
             s = s.ToLowerInvariant();
             //var h = JenkHash.GenHash(s, JenkHashInputEncoding.UTF8);
 
-            Task.Run(() =>
+            _ = Task.Run(async () =>
             {
 
                 var rpfman = gfc.RpfMan;
-                IEnumerable<RpfFile> rpflist = loadedOnly ? gfc.ActiveMapRpfFiles.Values : rpfman.AllRpfs;
-                var results = new List<YmapEntityDef>();
+                RpfFile[] rpflist = (loadedOnly ? (IEnumerable<RpfFile>)gfc.ActiveMapRpfFiles.Values : rpfman.AllRpfs).ToArray();
+                var results = new ConcurrentBag<YmapEntityDef>();
 
-                foreach (var rpf in rpflist)
+                var token = AbortOperation.Token;
+
+                try
                 {
-                    foreach (var entry in rpf.AllEntries)
+                    await Parallel.ForAsync(0, rpflist.Length, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount / 2, CancellationToken = token }, async (i, cancellationToken) =>
                     {
-                        try
+                        var rpf = rpflist[i];
+                        foreach (var entry in rpf.AllEntries)
                         {
-                            if (AbortOperation)
+                            try
                             {
-                                EntitySearchUpdateStatus("Search aborted!");
-                                EntitySearchComplete();
-                                return;
-                            }
-                            if (entry.Name.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase))
-                            {
-                                EntitySearchUpdateStatus(entry.Path);
+                                if (cancellationToken.IsCancellationRequested || AbortOperation.IsCancellationRequested)
+                                    return;
 
-                                YmapFile ymap = rpfman.GetFile<YmapFile>(entry);
-                                if (ymap == null) continue;
-                                if (ymap.AllEntities == null) continue;
-
-                                foreach (var ent in ymap.AllEntities)
+                                if (entry.Name.EndsWith(".ymap", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    //if (ent._CEntityDef.archetypeName.Hash == h)
-                                    if (ent.Name.ToLowerInvariant().Contains(s))
+                                    EntitySearchUpdateStatus(entry.Path);
+
+                                    var ymap = await GameFileCache.Instance.GetYmapAsync(entry.ShortNameHash);
+
+                                    if (ymap is null || ymap.AllEntities.Length == 0)
+                                        continue;
+
+                                    foreach (var ent in ymap.AllEntities)
                                     {
-                                        EntitySearchAddResult(ent);
-                                        results.Add(ent);
+                                        //if (ent._CEntityDef.archetypeName.Hash == h)
+                                        if (ent.Name.Contains(s, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            EntitySearchAddResult(ent);
+                                            results.Add(ent);
+                                        }
                                     }
                                 }
                             }
+                            catch (Exception ex)
+                            {
+                                EntitySearchUpdateStatus(ex.Message);
+                                Console.WriteLine(ex);
+                            }
                         }
-                        catch (Exception ex)
-                        {
-                            EntitySearchUpdateStatus(ex.Message);
-                        }
-                    }
-                }
+                    });
 
-                EntitySearchUpdateStatus("Search complete. " + results.Count.ToString() + " entities found.");
-                EntitySearchComplete();
+                    EntitySearchUpdateStatus($"Search complete. {results.Count} entities found.", true);
+                }
+                catch(TaskCanceledException)
+                {
+                    EntitySearchUpdateStatus("Search aborted!", true);
+                }
+                finally
+                {
+                    EntitySearchComplete();
+                }
             });
         }
 
-        private void EntitySearchUpdateStatus(string text)
+        Stopwatch LastUpdate = Stopwatch.StartNew();
+        private async void EntitySearchUpdateStatus(string text, bool force = false)
         {
+            if (!force && LastUpdate.Elapsed < TimeSpan.FromSeconds(0.1))
+            {
+                return;
+            }
+
+            LastUpdate.Restart();
             try
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { EntitySearchUpdateStatus(text); }));
-                }
-                else
-                {
-                    EntitySearchStatusLabel.Text = text;
-                }
+                await this.SwitchToUi();
+                EntitySearchStatusLabel.Text = text;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
-        private void EntitySearchAddResult(YmapEntityDef ent)
+        private async void EntitySearchAddResult(YmapEntityDef ent)
         {
             try
             {
-                if (InvokeRequired)
-                {
-                    BeginInvoke(new Action(() => { EntitySearchAddResult(ent); }));
-                }
-                else
-                {
-                    EntityResults.Add(ent);
-                    EntityResultsListView.VirtualListSize = EntityResults.Count;
-                }
+                await this.SwitchToUi();
+                if (EntityResults.Contains(ent))
+                    return;
+                EntityResults.Add(ent);
+                EntityResultsListView.VirtualListSize = EntityResults.Count;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
-        private void EntitySearchComplete()
+        private async void EntitySearchComplete()
         {
             try
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { EntitySearchComplete(); }));
-                }
-                else
-                {
-                    EntitySearchTextBox.Enabled = true;
-                    EntitySearchButton.Enabled = true;
-                    EntitySearchAbortButton.Enabled = false;
-                    EntitySearchLoadedOnlyCheckBox.Enabled = true;
-                    EntitySearchExportResultsButton.Enabled = true;
-                    EntitySearchSetMarkersButton.Enabled = true;
-                }
+                await this.SwitchToUi();
+                EntitySearchTextBox.Enabled = true;
+                EntitySearchButton.Enabled = true;
+                EntitySearchAbortButton.Enabled = false;
+                EntitySearchLoadedOnlyCheckBox.Enabled = true;
+                EntitySearchExportResultsButton.Enabled = true;
+                EntitySearchSetMarkersButton.Enabled = true;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         private void EntitySearchAbortButton_Click(object sender, EventArgs e)
         {
-            AbortOperation = true;
+            AbortOperation.Cancel();
         }
 
         private void EntitySearchExportResultsButton_Click(object sender, EventArgs e)
@@ -444,7 +484,7 @@ namespace CodeWalker.World
             sb.AppendLine("ArchetypeName, PositionX, PositionY, PositionZ, RotationX, RotationY, RotationZ, RotationW, YmapFile");
             foreach (var ent in EntityResults)
             {
-                sb.AppendLine(string.Format("{0}, {1}, {2}, {3}", ent.Name, FloatUtil.GetVector3String(ent._CEntityDef.position), FloatUtil.GetVector4String(ent._CEntityDef.rotation), ent.Ymap?.RpfFileEntry?.Path ?? ""));
+                sb.AppendLine($"{ent.Name}, {FloatUtil.GetVector3String(ent._CEntityDef.position)}, {FloatUtil.GetVector4String(ent._CEntityDef.rotation)}, {ent.Ymap?.RpfFileEntry?.Path ?? ""}");
             }
 
             File.WriteAllText(fname, sb.ToString());

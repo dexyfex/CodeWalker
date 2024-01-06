@@ -1,5 +1,8 @@
 #include "Common.hlsli"
 
+#define PCFSTART -1
+#define PCFEND 2
+
 //Texture2DArray<float> Depthmap : register(t1);
 //SamplerState DepthmapSS : register(s1);
 Texture2D Depthmap : register(t1);
@@ -54,9 +57,11 @@ void ShadowmapCalculatePCFPercentLit(in float4 vShadowTexCoord,
     fPercentLit = 0.0f;
     // This loop could be unrolled, and texture immediate offsets could be used if the kernel size were fixed.
     // This would be performance improvment.
-    for (int x = PCFLoopStart; x < PCFLoopEnd; ++x)
+    [unroll]
+    for (int x = PCFSTART; x < PCFEND; ++x)
     {
-        for (int y = PCFLoopStart; y < PCFLoopEnd; ++y)
+        [unroll]
+        for (int y = PCFSTART; y < PCFEND; ++y)
         {
             float depthcompare = vShadowTexCoord.z;
             // A very simple solution to the depth bias problems of PCF is to use an offset.

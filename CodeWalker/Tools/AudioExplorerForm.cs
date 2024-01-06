@@ -29,7 +29,8 @@ namespace CodeWalker.Tools
 
         private void LoadDropDowns()
         {
-            if (!GameFileCache.IsInited) return;
+            if (!GameFileCache.IsInited)
+                return;
 
             NameComboLookup.Clear();
             NameComboBox.Items.Clear();
@@ -64,14 +65,22 @@ namespace CodeWalker.Tools
                 var str = filetype + " : " + item.ToString();
                 TypeComboBox.Items.Add(str);
             }
-            foreach (var e in Enum.GetValues(typeof(Dat4ConfigType))) addTypeItem("Config", e);
-            foreach (var e in Enum.GetValues(typeof(Dat4SpeechType))) addTypeItem("Speech", e);
-            foreach (var e in Enum.GetValues(typeof(Dat10RelType))) addTypeItem("Synths", e);
-            foreach (var e in Enum.GetValues(typeof(Dat15RelType))) addTypeItem("Mixers", e);
-            foreach (var e in Enum.GetValues(typeof(Dat16RelType))) addTypeItem("Curves", e);
-            foreach (var e in Enum.GetValues(typeof(Dat22RelType))) addTypeItem("Categories", e);
-            foreach (var e in Enum.GetValues(typeof(Dat54SoundType))) addTypeItem("Sounds", e);
-            foreach (var e in Enum.GetValues(typeof(Dat151RelType))) addTypeItem("Game", e);
+            foreach (var e in Enum.GetValues(typeof(Dat4ConfigType)))
+                addTypeItem("Config", e);
+            foreach (var e in Enum.GetValues(typeof(Dat4SpeechType)))
+                addTypeItem("Speech", e);
+            foreach (var e in Enum.GetValues(typeof(Dat10RelType)))
+                addTypeItem("Synths", e);
+            foreach (var e in Enum.GetValues(typeof(Dat15RelType)))
+                addTypeItem("Mixers", e);
+            foreach (var e in Enum.GetValues(typeof(Dat16RelType)))
+                addTypeItem("Curves", e);
+            foreach (var e in Enum.GetValues(typeof(Dat22RelType)))
+                addTypeItem("Categories", e);
+            foreach (var e in Enum.GetValues(typeof(Dat54SoundType)))
+                addTypeItem("Sounds", e);
+            foreach (var e in Enum.GetValues(typeof(Dat151RelType)))
+                addTypeItem("Game", e);
             TypeComboBox.SelectedIndex = 0;
 
 
@@ -127,12 +136,16 @@ namespace CodeWalker.Tools
 
         private string GetRelDataTitleString(RelData item)
         {
-            if (item == null) return "";
+            if (item is null)
+                return "";
             var h = item.NameHash;
             var str = JenkIndex.TryGetString(h);
-            if (string.IsNullOrEmpty(str)) str = GlobalText.TryGetString(h);//is this necessary?
-            if (string.IsNullOrEmpty(str)) MetaNames.TryGetString(h, out str);
-            if (string.IsNullOrEmpty(str)) str = h.Hex;
+            if (string.IsNullOrEmpty(str))
+                str = GlobalText.TryGetString(h);//is this necessary?
+            if (string.IsNullOrEmpty(str))
+                MetaNames.TryGetString(h, out str);
+            if (string.IsNullOrEmpty(str))
+                str = h.Hex;
             var typeid = item.TypeID.ToString();
             var rel = item.Rel;
             if (rel != null)
@@ -172,90 +185,104 @@ namespace CodeWalker.Tools
 
         private IEnumerable<MetaHash> GetUniqueHashes(MetaHash[] hashes, RelData item)
         {
-            return hashes?.Distinct()?.Where(h => h != item.NameHash); //try avoid infinite loops...
+            return hashes?.Distinct()?.Where(h => h != item.NameHash) ?? []; //try avoid infinite loops...
         }
 
 
-        private void LoadItemHierarchy(RelData item, TreeNode parentNode = null)
+        private void LoadItemHierarchy(RelData? item, TreeNode? parentNode = null)
         {
             TreeNode node;
             if (parentNode == null)
             {
                 HierarchyTreeView.Nodes.Clear();
-                if (item == null) return;
+                if (item is null)
+                    return;
                 node = HierarchyTreeView.Nodes.Add(GetRelDataTitleString(item));
             }
             else
             {
-                if (item == null) return;
+                if (item is null)
+                    return;
                 node = parentNode.Nodes.Add(GetRelDataTitleString(item));
             }
 
             node.Tag = item;
 
 
-            if ((item is Dat22Category) && (parentNode != null) && (!(parentNode.Tag is Dat22Category))) //don't bother expanding out categories, too spammy!
+            if (item is Dat22Category && parentNode != null && parentNode.Tag is not Dat22Category) //don't bother expanding out categories, too spammy!
             {
                 return;
             }
 
 
-            var speech = GetUniqueHashes(item.GetSpeechHashes(), item);
-            var synths = GetUniqueHashes(item.GetSynthHashes(), item);
-            var mixers = GetUniqueHashes(item.GetMixerHashes(), item);
-            var curves = GetUniqueHashes(item.GetCurveHashes(), item);
-            var categs = GetUniqueHashes(item.GetCategoryHashes(), item);
-            var sounds = GetUniqueHashes(item.GetSoundHashes(), item);
-            var games = GetUniqueHashes(item.GetGameHashes(), item);
+            var speech = item.GetSpeechHashes();
+            if (speech.Length > 0)
+            {
+                foreach (var h in GetUniqueHashes(speech, item))
+                {
+                    if (GameFileCache.AudioSpeechDict.TryGetValue(h, out RelData child))
+                        LoadItemHierarchy(child, node);
+                }
+            }
 
 
-            if (speech != null)
+            var synths = item.GetSynthHashes();
+            if (synths.Length > 0)
             {
-                foreach (var h in speech)
+                foreach (var h in GetUniqueHashes(synths, item))
                 {
-                    if (GameFileCache.AudioSpeechDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
+                    if (GameFileCache.AudioSynthsDict.TryGetValue(h, out RelData child))
+                        LoadItemHierarchy(child, node);
                 }
             }
-            if (synths != null)
+
+            var mixers = item.GetMixerHashes();
+            if (mixers.Length > 0)
             {
-                foreach (var h in synths)
+                foreach (var h in GetUniqueHashes(mixers, item))
                 {
-                    if (GameFileCache.AudioSynthsDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
+                    if (GameFileCache.AudioMixersDict.TryGetValue(h, out RelData child))
+                        LoadItemHierarchy(child, node);
                 }
             }
-            if (mixers != null)
+
+            var curves = item.GetCurveHashes();
+            if (curves.Length > 0)
             {
-                foreach (var h in mixers)
+                foreach (var h in GetUniqueHashes(curves, item))
                 {
-                    if (GameFileCache.AudioMixersDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
+                    if (GameFileCache.AudioCurvesDict.TryGetValue(h, out RelData child))
+                        LoadItemHierarchy(child, node);
                 }
             }
-            if (curves != null)
+
+            var categs = item.GetCategoryHashes();
+            if (categs.Length > 0)
             {
-                foreach (var h in curves)
+                foreach (var h in GetUniqueHashes(categs, item))
                 {
-                    if (GameFileCache.AudioCurvesDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
+                    if (GameFileCache.AudioCategsDict.TryGetValue(h, out RelData child))
+                        LoadItemHierarchy(child, node);
                 }
             }
-            if (categs != null)
+
+            var sounds = item.GetSoundHashes();
+            if (sounds.Length > 0)
             {
-                foreach (var h in categs)
+                foreach (var h in GetUniqueHashes(sounds, item))
                 {
-                    if (GameFileCache.AudioCategsDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
+                    if (GameFileCache.AudioSoundsDict.TryGetValue(h, out RelData child))
+                        LoadItemHierarchy(child, node);
                 }
             }
-            if (sounds != null)
+
+            var games = item.GetGameHashes();
+            if (games.Length > 0)
             {
-                foreach (var h in sounds)
+                foreach (var h in GetUniqueHashes(games, item))
                 {
-                    if (GameFileCache.AudioSoundsDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
-                }
-            }
-            if (games != null)
-            {
-                foreach (var h in games)
-                {
-                    if (GameFileCache.AudioGameDict.TryGetValue(h, out RelData child)) LoadItemHierarchy(child, node);
+                    if (GameFileCache.AudioGameDict.TryGetValue(h, out RelData child))
+                        LoadItemHierarchy(child, node);
                 }
             }
 

@@ -10,10 +10,11 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 using SharpDX.Direct3D11;
 using SharpDX;
 using SharpDX.Direct3D;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeWalker.Rendering
 {
-    public class GpuVarsBuffer<T> where T:struct //shader vars buffer helper!
+    public class GpuVarsBuffer<T> : IDisposable where T:struct //shader vars buffer helper!
     {
         public int Size;
         public Buffer Buffer;
@@ -26,12 +27,16 @@ namespace CodeWalker.Rendering
         }
         public void Dispose()
         {
-            if (Buffer != null)
-            {
-                Buffer.Dispose();
-                Buffer = null;
-            }
+            Buffer.Dispose();
+            GC.SuppressFinalize(this);
         }
+
+        ~GpuVarsBuffer()
+        {
+            Console.WriteLine("Finalizing GpuVarsBuffer");
+            Dispose();
+        }
+
         public void Update(DeviceContext context)
         {
             try
@@ -40,7 +45,9 @@ namespace CodeWalker.Rendering
                 Utilities.Write(dataBox.DataPointer, ref Vars);
                 context.UnmapSubresource(Buffer, 0);
             }
-            catch { } //not much we can do about this except ignore it..
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            } //not much we can do about this except ignore it..
         }
         public void SetVSCBuffer(DeviceContext context, int slot)
         {
@@ -53,7 +60,7 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class GpuABuffer<T> where T : struct //Dynamic GPU buffer of items updated by CPU, for array of structs used as a constant buffer
+    public class GpuABuffer<T> : IDisposable where T : struct //Dynamic GPU buffer of items updated by CPU, for array of structs used as a constant buffer
     {
         public int StructSize;
         public int StructCount;
@@ -69,12 +76,16 @@ namespace CodeWalker.Rendering
         }
         public void Dispose()
         {
-            if (Buffer != null)
-            {
-                Buffer.Dispose();
-                Buffer = null;
-            }
+            Buffer.Dispose();
+            GC.SuppressFinalize(this);
         }
+
+        ~GpuABuffer()
+        {
+            Console.WriteLine("Finalizing GpuABuffer");
+            Dispose();
+        }
+
         public void Update(DeviceContext context, T[] data)
         {
             var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
@@ -94,7 +105,7 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class GpuSBuffer<T> where T : struct //for static struct data as resource view
+    public class GpuSBuffer<T> : IDisposable where T : struct //for static struct data as resource view
     {
         public int StructSize;
         public int StructCount;
@@ -113,26 +124,25 @@ namespace CodeWalker.Rendering
         }
         public void Dispose()
         {
-            if (SRV != null)
-            {
-                SRV.Dispose();
-                SRV = null;
-            }
-            if (Buffer != null)
-            {
-                Buffer.Dispose();
-                Buffer = null;
-            }
+            SRV.Dispose();
+            Buffer.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        ~GpuSBuffer()
+        {
+            Console.WriteLine("Finalizing GpuSBuffer");
+            Dispose();
         }
     }
 
 
-    public class GpuCBuffer<T> where T : struct //Dynamic GPU buffer of items updated by CPU
+    public class GpuCBuffer<T> : IDisposable where T : struct //Dynamic GPU buffer of items updated by CPU
     {
         public int StructSize;
         public int StructCount;
         public int BufferSize;
-        public int CurrentCount;
+        public int CurrentCount => Data.Count;
         public Buffer Buffer;
         public ShaderResourceView SRV;
         public List<T> Data;
@@ -149,42 +159,58 @@ namespace CodeWalker.Rendering
             Data = new List<T>(count);
             DataArray = new T[count];
         }
+
         public void Dispose()
         {
-            if (SRV != null)
-            {
-                SRV.Dispose();
-                SRV = null;
-            }
-            if (Buffer != null)
-            {
-                Buffer.Dispose();
-                Buffer = null;
-            }
+            SRV.Dispose();
+            Buffer.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
+        ~GpuCBuffer()
+        {
+            Console.WriteLine("Finalizing GpuCBuffer");
+            Dispose();
         }
 
         public void Clear()
         {
             Data.Clear();
-            CurrentCount = 0;
         }
-        public bool Add(T item)
+
+        public void EnsureElementsFit(int add)
         {
-            if (CurrentCount < StructCount)
+            if (CurrentCount + add > StructCount)
             {
-                Data.Add(item);
-                CurrentCount++;
-                return true;
+                throw new ArgumentOutOfRangeException(nameof(add), $"GpuBuffer exceeded max length of {StructCount}");
             }
-            return false;
+        }
+
+        public bool Add(in T item)
+        {
+            EnsureElementsFit(1);
+            Data.Add(item);
+            return true;
+        }
+
+        public void AddRange(ICollection<T> items)
+        {
+            EnsureElementsFit(items.Count);
+            Data.AddRange(items);
+        }
+
+        public void AddRange(Span<T> items)
+        {
+            EnsureElementsFit(items.Length);
+            for (int i = 0; i < items.Length; i++)
+            {
+                Data.Add(items[i]);
+            }
         }
 
         public void Update(DeviceContext context)
         {
-            for (int i = 0; i < CurrentCount; i++)
-            {
-                DataArray[i] = Data[i];
-            }
+            Data.CopyTo(DataArray);
             var dataBox = context.MapSubresource(Buffer, 0, MapMode.WriteDiscard, MapFlags.None);
             Utilities.Write(dataBox.DataPointer, DataArray, 0, CurrentCount);
             context.UnmapSubresource(Buffer, 0);
@@ -208,7 +234,7 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class GpuBuffer<T> where T : struct //Dynamic GPU buffer of items updated by compute shader
+    public class GpuBuffer<T> : IDisposable where T : struct //Dynamic GPU buffer of items updated by compute shader
     {
         public int StructSize;
         public int StructCount;
@@ -232,41 +258,38 @@ namespace CodeWalker.Rendering
         }
         public void Dispose()
         {
-            if (UAV != null)
-            {
-                UAV.Dispose();
-                UAV = null;
-            }
-            if (SRV != null)
-            {
-                SRV.Dispose();
-                SRV = null;
-            }
-            if (Buffer != null)
-            {
-                Buffer.Dispose();
-                Buffer = null;
-            }
+            UAV.Dispose();
+            SRV.Dispose();
+            Buffer.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
+
+        ~GpuBuffer()
+        {
+            Console.WriteLine("Finalizing GpuBuffer");
+            Dispose();
         }
     }
 
 
-    public class GpuTexture //texture and render targets (depth, MS).
+    public class GpuTexture : IDisposable //texture and render targets (depth, MS).
     {
         public Texture2D Texture;
-        public Texture2D TextureMS;
-        public Texture2D Depth;
-        public Texture2D DepthMS;
+        public Texture2D? TextureMS;
+        public Texture2D? Depth;
+        public Texture2D? DepthMS;
         public RenderTargetView RTV;
-        public DepthStencilView DSV;
-        public RenderTargetView MSRTV;
-        public DepthStencilView MSDSV;
+        public DepthStencilView? DSV;
+        public RenderTargetView? MSRTV;
+        public DepthStencilView? MSDSV;
         public ShaderResourceView SRV;
         //public ShaderResourceView DepthSRV; //possibly causing crash on DX10 hardware when multisampled
         public int VramUsage;
         public bool Multisampled;
         public bool UseDepth;
 
+        [MemberNotNull(nameof(Texture), nameof(RTV), nameof(SRV))]
         public void Init(Device device, int w, int h, Format f, int sc, int sq, bool depth, Format df)
         {
             VramUsage = 0;
@@ -281,7 +304,6 @@ namespace CodeWalker.Rendering
             BindFlags db = BindFlags.DepthStencil;// | BindFlags.ShaderResource;// D3D11_BIND_DEPTH_STENCIL;
             DepthStencilViewDimension dsvd = DepthStencilViewDimension.Texture2D;
             Format dtexf = GetDepthTexFormat(df);
-            Format dsrvf = GetDepthSrvFormat(df);
 
             Texture = DXUtility.CreateTexture2D(device, w, h, 1, 1, f, 1, 0, u, b, 0, 0);
             RTV = DXUtility.CreateRenderTargetView(device, Texture, f, rtvd, 0, 0, 0);
@@ -320,52 +342,24 @@ namespace CodeWalker.Rendering
         }
         public void Dispose()
         {
-            if (SRV != null)
-            {
-                SRV.Dispose();
-                SRV = null;
-            }
-            if (MSDSV != null)
-            {
-                MSDSV.Dispose();
-                MSDSV = null;
-            }
-            if (MSRTV != null)
-            {
-                MSRTV.Dispose();
-                MSRTV = null;
-            }
-            if (DSV != null)
-            {
-                DSV.Dispose();
-                DSV = null;
-            }
-            if (RTV != null)
-            {
-                RTV.Dispose();
-                RTV = null;
-            }
-            if (DepthMS != null)
-            {
-                DepthMS.Dispose();
-                DepthMS = null;
-            }
-            if (Depth != null)
-            {
-                Depth.Dispose();
-                Depth = null;
-            }
-            if (TextureMS != null)
-            {
-                TextureMS.Dispose();
-                TextureMS = null;
-            }
-            if (Texture != null)
-            {
-                Texture.Dispose();
-                Texture = null;
-            }
+            SRV.Dispose();
+            MSDSV?.Dispose();
+            MSRTV?.Dispose();
+            DSV?.Dispose();
+            RTV.Dispose();
+            DepthMS?.Dispose();
+            Depth?.Dispose();
+            TextureMS?.Dispose();
+            Texture.Dispose();
+            GC.SuppressFinalize(this);
         }
+
+        ~GpuTexture()
+        {
+            Console.WriteLine("Finalizer called on GpuTexture");
+            Dispose();
+        }
+
         public GpuTexture(Device device, int w, int h, Format f, int sc, int sq, bool depth, Format df)
         {
             Init(device, w, h, f, sc, sq, depth, df);
@@ -473,20 +467,21 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class GpuMultiTexture //multiple texture and render targets (depth).
+    public class GpuMultiTexture : IDisposable //multiple texture and render targets (depth).
     {
         public Texture2D[] Textures;
-        public Texture2D Depth;
+        public Texture2D? Depth;
         public RenderTargetView[] RTVs;
-        public DepthStencilView DSV;
+        public DepthStencilView? DSV;
         public ShaderResourceView[] SRVs;
-        public ShaderResourceView DepthSRV;
+        public ShaderResourceView? DepthSRV;
         public int VramUsage;
         public bool UseDepth;
         public int Count;
         public bool Multisampled;
         public int MultisampleCount;
 
+        [MemberNotNull(nameof(Textures), nameof(RTVs), nameof(SRVs))]
         public void Init(Device device, int w, int h, int count, Format f, bool depth, Format df, int multisamplecount)
         {
             Count = count;
@@ -539,26 +534,23 @@ namespace CodeWalker.Rendering
                 RTVs[i].Dispose();
                 Textures[i].Dispose();
             }
-            SRVs = null;
-            RTVs = null;
-            Textures = null;
+            SRVs = Array.Empty<ShaderResourceView>();
+            RTVs = Array.Empty<RenderTargetView>();
+            Textures = Array.Empty<Texture2D>();
+            Count = 0;
 
-            if (DSV != null)
-            {
-                DSV.Dispose();
-                DSV = null;
-            }
-            if (DepthSRV != null)
-            {
-                DepthSRV.Dispose();
-                DepthSRV = null;
-            }
-            if (Depth != null)
-            {
-                Depth.Dispose();
-                Depth = null;
-            }
+            DSV?.Dispose();
+            DepthSRV?.Dispose();
+            Depth?.Dispose();
+            GC.SuppressFinalize(this);
         }
+
+        ~GpuMultiTexture()
+        {
+            Console.WriteLine("Finalizer called on GpuBuffers");
+            Dispose();
+        }
+
         public GpuMultiTexture(Device device, int w, int h, int count, Format f, bool depth, Format df, int msc = 1)
         {
             Init(device, w, h, count, f, depth, df, msc);
@@ -582,7 +574,8 @@ namespace CodeWalker.Rendering
 
         public void ClearDepth(DeviceContext context)
         {
-            if (!UseDepth) return;
+            if (!UseDepth)
+                return;
             context.ClearDepthStencilView(DSV, DepthStencilClearFlags.Depth, 0.0f, 0);
         }
 

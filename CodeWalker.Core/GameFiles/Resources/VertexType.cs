@@ -185,10 +185,15 @@ namespace CodeWalker.GameFiles
         public Half4 Tangent;
     }
 
-    public struct EditorVertex    //vertex data to be used by the editor. TODO: maybe move somewhere else.
+    public struct EditorVertex(Vector3 position, uint colour)    //vertex data to be used by the editor. TODO: maybe move somewhere else.
     {
-        public Vector3 Position;
-        public uint Colour;
+        public Vector3 Position = position;
+        public uint Colour = colour;
+
+        public EditorVertex(): this(default, default)
+        {
+            
+        }
     }
 
 

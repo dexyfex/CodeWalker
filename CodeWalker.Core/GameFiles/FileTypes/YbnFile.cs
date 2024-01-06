@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CommunityToolkit.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -45,10 +46,10 @@ namespace CodeWalker.GameFiles
             RpfFileEntry = entry;
 
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                throw new Exception("File entry wasn't a resource! (is it binary data?)");
+                ThrowFileIsNotAResourceException();
+                return;
             }
 
             using var rd = new ResourceDataReader(resentry, data);
@@ -105,26 +106,34 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(YbnFile ybn)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            var name = "BoundsFile";
-            OpenTag(sb, 0, name);
-
-            if (ybn?.Bounds != null)
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                Bounds.WriteXmlNode(ybn.Bounds, sb, 1);
+                sb.AppendLine(XmlHeader);
+
+                var name = "BoundsFile";
+                OpenTag(sb, 0, name);
+
+                if (ybn?.Bounds != null)
+                {
+                    Bounds.WriteXmlNode(ybn.Bounds, sb, 1);
+                }
+
+                CloseTag(sb, 0, name);
+
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilderPool.Return(sb);
             }
 
-            CloseTag(sb, 0, name);
-
-            return sb.ToString();
         }
 
 
         public static string FormatBoundMaterialColour(BoundMaterialColour c) //for use with WriteItemArray
         {
-            return c.R.ToString() + ", " + c.G.ToString() + ", " + c.B.ToString() + ", " + c.A.ToString();
+            return $"{c.R}, {c.G}, {c.B}, {c.A}";
         }
 
     }

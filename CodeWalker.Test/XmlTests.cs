@@ -960,18 +960,17 @@ namespace CodeWalker.Test
             var xdoc = new XmlDocument();
             xdoc.LoadXml(markup);
 
-            XmlNodeList items = xdoc.SelectNodes("CVehicleModelInfo__InitDataList/InitDatas/Item | CVehicleModelInfo__InitDataList/InitDatas/item");
+            XmlNodeList? items = xdoc.SelectNodes("CVehicleModelInfo__InitDataList/InitDatas/Item | CVehicleModelInfo__InitDataList/InitDatas/item");
+            VehicleInitData? initDataExpected = null;
+            VehicleInitData? initData = null;
 
-
-            string modelName = null;
-            string gameName = null;
-            VehicleInitData initDataExpected = null;
-            VehicleInitData initData = null;
-
-            var InitDatas = new List<VehicleInitData>();
+            string? modelName;
+            string? gameName;
             for (int i = 0; i < items.Count; i++)
             {
                 var node = items[i];
+
+                Assert.NotNull(node);
 
                 initDataExpected = new VehicleInitData();
                 initDataExpected.Load(node);
@@ -992,7 +991,7 @@ namespace CodeWalker.Test
             //Assert.Null(initDataExpected.trailers);
             Assert.Equal(9, initDataExpected.trailers.Length);
             Assert.Single(initDataExpected.drivers);
-            Assert.Equal("S_M_Y_Cop_01", initDataExpected.drivers[0].driverName);
+            Assert.Equal("S_M_Y_Cop_01", initDataExpected.drivers[0].DriverName);
             Assert.Equal("trailers4", initDataExpected.trailers[4]);
 
             using XmlReader xmlReader = XmlReader.Create(new StringReader(markup));
@@ -1019,8 +1018,10 @@ namespace CodeWalker.Test
 
             Assert.NotNull(initData.pOverrideRagdollThreshold);
 
+            Assert.Equal(initDataExpected.pOverrideRagdollThreshold, initData.pOverrideRagdollThreshold);
+            Assert.Equal(initDataExpected.requiredExtras, initData.requiredExtras);
+
             Assert.Equivalent(initDataExpected, initData);
-            Assert.Equal(initDataExpected.GetHashCode(), initData.GetHashCode());
 
             var bytes = Encoding.UTF8.GetBytes(markup);
 
@@ -1063,6 +1064,7 @@ namespace CodeWalker.Test
             xDocument.LoadXml(xmlText);
 
             var pedsFile = new CPedModelInfo__InitDataList(xmlReader);
+            Assert.NotNull(xDocument?.DocumentElement);
             var pedsFileExpected = new CPedModelInfo__InitDataList(xDocument.DocumentElement);
 
             for (int i = 0; i < pedsFileExpected.InitDatas.Length; i++)
@@ -1076,6 +1078,30 @@ namespace CodeWalker.Test
             }
 
             Assert.Equivalent(pedsFileExpected, pedsFile);
+        }
+
+        [Fact]
+        public void ContentFileShouldBeTheSame()
+        {
+            var fileStream = File.OpenRead(TestFiles.GetFilePath("content.xml"));
+
+            var xmlReader = XmlReader.Create(fileStream);
+
+            var contentFile = new DlcContentFile();
+            contentFile.Load(xmlReader);
+
+            var xmlDocument = new XmlDocument();
+            xmlDocument.LoadXml(TextUtil.GetUTF8Text(File.ReadAllBytes(TestFiles.GetFilePath("content.xml"))));
+
+            var contentFileExpected = new DlcContentFile();
+            contentFileExpected.Load(xmlDocument);
+
+            for (int i = 0; i < contentFileExpected.contentChangeSets.Count; i++)
+            {
+                Assert.Equivalent(contentFileExpected.contentChangeSets[i], contentFile.contentChangeSets[i]);
+            }
+
+            Assert.Equivalent(contentFileExpected, contentFile);
         }
     }
 }

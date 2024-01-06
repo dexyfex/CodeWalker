@@ -78,7 +78,7 @@ namespace CodeWalker.Rendering
 
         public TreesLodShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "TreesLodVS.cso"));
             byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "TreesLodPS.cso"));
             byte[] psdefbytes = File.ReadAllBytes(Path.Combine(folder, "TreesLodPS_Deferred.cso"));
@@ -134,7 +134,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             VSSceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             VSSceneVars.Update(context);

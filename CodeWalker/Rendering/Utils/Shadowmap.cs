@@ -16,7 +16,7 @@ using CodeWalker.Properties;
 
 namespace CodeWalker.Rendering
 {
-    public class Shadowmap
+    public class Shadowmap : IDisposable
     {
         Texture2D DepthTexture;
         SamplerState DepthTextureSS;
@@ -880,7 +880,7 @@ namespace CodeWalker.Rendering
                 case 15: V15 = v; break;
             }
         }
-        public Vector4 Get(int index)
+        public readonly Vector4 Get(int index)
         {
             switch (index)
             {
@@ -943,7 +943,7 @@ namespace CodeWalker.Rendering
         public Vector4 pt2;
         public bool culled;
 
-        public Vector4 pt(int i)
+        public readonly Vector4 pt(int i)
         {
             switch (i)
             {

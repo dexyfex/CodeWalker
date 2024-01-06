@@ -1,13 +1,19 @@
-﻿using System;
+﻿using CommunityToolkit.HighPerformance;
+using CommunityToolkit.HighPerformance.Buffers;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CodeWalker.GameFiles
 {
@@ -29,10 +35,19 @@ namespace CodeWalker.GameFiles
             HashHex = "0x" + HashUint.ToString("X");
         }
 
+        private const int minInclusive = 'A';
+        private const int maxInclusive = 'Z' - minInclusive;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static char ToLower(char c)
+        public static byte ToLower(char c)
         {
-            return (c >= 'A' && c <= 'Z') ? (char)(c - 'A' + 'a') : c;
+            return ToLower((byte)c);
+            //return (c >= 'A' && c <= 'Z') ? (byte)(c - 'A' + 'a') : (byte)c;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte ToLower(byte c)
+        {
+            return ('A' <= c && c <= 'Z') ? (byte)(c | 0x20) : c;
         }
 
         public static uint GenHash(string text, JenkHashInputEncoding encoding)
@@ -54,105 +69,126 @@ namespace CodeWalker.GameFiles
             for (uint i = 0; i < chars.Length; i++)
             {
                 h += chars[i];
-                h += (h << 10);
-                h ^= (h >> 6);
+                h += h << 10;
+                h ^= h >> 6;
             }
-            h += (h << 3);
-            h ^= (h >> 11);
-            h += (h << 15);
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
 
             return h;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint GenHashLowerInline(string text)
+        {
+            return GenHashLower(text.AsSpan());
         }
 
         public static uint GenHashLower(string text)
         {
-            if (text == null) return 0;
-            uint h = 0;
-            for (int i = 0; i < text.Length; i++)
-            {
-                h += (byte)ToLower(text[i]);
-                h += (h << 10);
-                h ^= (h >> 6);
-            }
-            h += (h << 3);
-            h ^= (h >> 11);
-            h += (h << 15);
-
-            return h;
+            return GenHashLower(text.AsSpan());
         }
 
-        public static uint GenHashLower(ReadOnlySpan<char> text, ReadOnlySpan<char> str2 = default)
-        {
-            if (text == null) return 0;
-            uint h = 0;
-            for (int i = 0; i < text.Length; i++)
-            {
-                h += (byte)ToLower(text[i]);
-                h += (h << 10);
-                h ^= (h >> 6);
-            }
-            for (int i = 0; i < str2.Length; i++)
-            {
-                h += (byte)ToLower(str2[i]);
-                h += (h << 10);
-                h ^= (h >> 6);
-            }
-            h += (h << 3);
-            h ^= (h >> 11);
-            h += (h << 15);
-
-            return h;
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GenHash(ReadOnlySpan<char> text)
         {
-            if (text == null) return 0;
             uint h = 0;
-            for (int i = 0; i < text.Length; i++)
+            foreach(var c in text)
             {
-                h += (byte)text[i];
-                h += (h << 10);
-                h ^= (h >> 6);
+                h += (byte)c;
+                h += h << 10;
+                h ^= h >> 6;
             }
-            h += (h << 3);
-            h ^= (h >> 11);
-            h += (h << 15);
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
 
             return h;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint GenHashInline(string text)
+        {
+            return GenHash(text.AsSpan());
         }
 
         public static uint GenHash(string text)
         {
-            if (text == null) return 0;
+            return GenHash(text.AsSpan());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint GenHashLower(ReadOnlySpan<byte> data)
+        {
+            uint h = 0;
+            foreach(var b in data)
+            {
+                h += ToLower(b);
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
+
+            return h;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint GenHashLower(ReadOnlySpan<char> text)
+        {
+            uint h = 0;
+            foreach(var c in text)
+            {
+                h += ToLower(c);
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
+
+            return h;
+        }
+
+        public static uint GenHashLower(ReadOnlySpan<char> text, ReadOnlySpan<char> str2)
+        {
             uint h = 0;
             for (int i = 0; i < text.Length; i++)
             {
-                h += (byte)text[i];
-                h += (h << 10);
-                h ^= (h >> 6);
+                h += ToLower(text[i]);
+                h += h << 10;
+                h ^= h >> 6;
             }
-            h += (h << 3);
-            h ^= (h >> 11);
-            h += (h << 15);
+            for (int i = 0; i < str2.Length; i++)
+            {
+                h += ToLower(str2[i]);
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
 
             return h;
         }
 
-        public static uint GenHash(byte[] data)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint GenHash(ReadOnlySpan<byte> data)
         {
             uint h = 0;
-            for (uint i = 0; i < data.Length; i++)
+            foreach(var c in data)
             {
-                h += data[i];
-                h += (h << 10);
-                h ^= (h >> 6);
+                h += c;
+                h += h << 10;
+                h ^= h >> 6;
             }
-            h += (h << 3);
-            h ^= (h >> 11);
-            h += (h << 15);
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
             return h;
         }
-
     }
 
     public enum JenkHashInputEncoding
@@ -256,68 +292,65 @@ namespace CodeWalker.GameFiles
         }
     }
 
-
-
-    public static class DictionaryExtension
-    {
-        public static bool TryAdd<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, TValue value)
-        {
-            if (dict.ContainsKey(key))
-            {
-                return false;
-            }
-
-            dict[key] = value;
-            return true;
-        }
-    }
-
-
-
     public static class JenkIndex
     {
         //public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(Environment.ProcessorCount * 2, 2000000);
-        public static Dictionary<uint, string> Index = new Dictionary<uint, string>(2000000);
+        public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(Environment.ProcessorCount, 2097152);
 
         public static void Ensure(string str)
         {
-            uint hash = JenkHash.GenHash(str);
-            Ensure(str, hash);
+            uint hash = JenkHash.GenHashInline(str);
+
+            addString(str, hash);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void addString(string str, uint hash)
+        {
+            //lock(Index)
+            //{
+                Index.TryAdd(hash, str);
+            //}
         }
 
         public static void Ensure(string str, uint hash)
         {
-            if (hash == 0) return;
-
-            if (Index.ContainsKey(hash))
-            {
+            if (hash == 0)
                 return;
-            }
 
-            lock(Index)
-            {
-                Index[hash] = str;
-            }
+            addString(str, hash);
         }
 
-        public static void Ensure(ReadOnlySpan<char> str, uint hash)
+        public static void Ensure(ReadOnlySpan<char> span, uint hash)
         {
-            if (hash == 0) return;
+            if (hash == 0)
+                return;
 
             if (Index.ContainsKey(hash))
             {
                 return;
             }
 
-            lock(Index)
+            var str = StringPool.Shared.GetOrAdd(span);
+            addString(str, hash);
+        }
+
+        public static void Ensure(ReadOnlySpan<byte> str, uint hash)
+        {
+            if (hash == 0)
+                return;
+
+            if (Index.ContainsKey(hash))
             {
-                Index[hash] = str.ToString();
+                return;
             }
+
+            addString(Encoding.ASCII.GetString(str), hash);
         }
 
         public static void EnsureLower(string str)
         {
-            uint hash = JenkHash.GenHashLower(str);
+            uint hash = JenkHash.GenHashLowerInline(str);
             Ensure(str, hash);
         }
 
@@ -329,8 +362,8 @@ namespace CodeWalker.GameFiles
 
         public static void EnsureBoth(string str)
         {
-            uint hash = JenkHash.GenHash(str);
-            uint hashLower = JenkHash.GenHashLower(str);
+            uint hash = JenkHash.GenHashInline(str);
+            uint hashLower = JenkHash.GenHashLowerInline(str);
             Ensure(str, hash);
             if (hash != hashLower)
             {
@@ -338,14 +371,23 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public static void EnsureBoth(ReadOnlySpan<char> str)
+        public static void EnsureBoth(ReadOnlySpan<char> strSpan)
         {
-            uint hash = JenkHash.GenHash(str);
-            uint hashLower = JenkHash.GenHashLower(str);
-            Ensure(str, hash);
+            uint hash = JenkHash.GenHash(strSpan);
+            uint hashLower = JenkHash.GenHashLower(strSpan);
+
+            var contains = Index.ContainsKey(hash);
+            var containsLower = Index.ContainsKey(hashLower);
+            if (contains && containsLower)
+            {
+                return;
+            }
+
+            var str = StringPool.Shared.GetOrAdd(strSpan);
+            addString(str, hash);
             if (hash != hashLower)
             {
-                Ensure(str, hashLower);
+                addString(str, hashLower);
             }
         }
 
@@ -367,6 +409,8 @@ namespace CodeWalker.GameFiles
             }
             return res;
         }
+
+        public static bool TryGetString(uint hash, [MaybeNullWhen(false)] out string res) => Index.TryGetValue(hash, out res);
 
         public static ICollection<string> GetAllStrings()
         {

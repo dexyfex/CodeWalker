@@ -12,11 +12,22 @@ using EXP = System.ComponentModel.ExpandableObjectConverter;
 using CodeWalker.World;
 using System.Reflection;
 using System.Threading;
+using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
+using System.Buffers.Binary;
+using System.Buffers;
+using Collections.Pooled;
+using CommunityToolkit.HighPerformance;
+using CommunityToolkit.HighPerformance.Buffers;
+using CommunityToolkit.Diagnostics;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using CodeWalker.Core.Utils;
 
 namespace CodeWalker.GameFiles
 {
 
     //this is a helper class for parsing the data.
+    [SkipLocalsInit]
     public static class MetaTypes
     {
 
@@ -32,7 +43,7 @@ namespace CodeWalker.GameFiles
         public static void EnsureMetaTypes(Meta meta)
         {
 
-            if (meta.EnumInfos != null)
+            if (meta.EnumInfos is not null)
             {
                 foreach (MetaEnumInfo mei in meta.EnumInfos)
                 {
@@ -51,7 +62,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            if (meta.StructureInfos != null)
+            if (meta.StructureInfos is not null)
             {
                 foreach (MetaStructureInfo msi in meta.StructureInfos)
                 {
@@ -76,15 +87,17 @@ namespace CodeWalker.GameFiles
         {
             //returns true if they are the same.
 
-            if (a.Entries.Length != b.Entries.Length)
+            var aEntries = a.Entries;
+            var bEntries = b.Entries;
+            if (aEntries.Length != bEntries.Length)
             {
                 return false;
             }
 
-            for (int i = 0; i < a.Entries.Length; i++)
+            for (int i = 0; i < aEntries.Length; i++)
             {
-                if ((a.Entries[i].EntryNameHash != b.Entries[i].EntryNameHash) ||
-                    (a.Entries[i].EntryValue != b.Entries[i].EntryValue))
+                if ((aEntries[i].EntryNameHash != bEntries[i].EntryNameHash) ||
+                    (aEntries[i].EntryValue != bEntries[i].EntryValue))
                 {
                     return false;
                 }
@@ -96,16 +109,19 @@ namespace CodeWalker.GameFiles
         {
             //returns true if they are the same.
 
-            if (a.Entries.Length != b.Entries.Length)
+            var aEntries = a.Entries;
+            var bEntries = b.Entries;
+
+            if (aEntries.Length != bEntries.Length)
             {
                 return false;
             }
 
-            for (int i = 0; i < a.Entries.Length; i++)
+            for (int i = 0; i < aEntries.Length; i++)
             {
-                if ((a.Entries[i].EntryNameHash != b.Entries[i].EntryNameHash) ||
-                    (a.Entries[i].DataOffset != b.Entries[i].DataOffset) ||
-                    (a.Entries[i].DataType != b.Entries[i].DataType))
+                if ((aEntries[i].EntryNameHash != bEntries[i].EntryNameHash) ||
+                    (aEntries[i].DataOffset != bEntries[i].DataOffset) ||
+                    (aEntries[i].DataType != bEntries[i].DataType))
                 {
                     return false;
                 }
@@ -247,7 +263,7 @@ namespace CodeWalker.GameFiles
         private static void AddStructureInfoString(MetaStructureInfo si, StringBuilder sb)
         {
             var ns = GetMetaNameString(si.StructureNameHash);
-            sb.AppendFormat("case " + ns + ":");
+            sb.AppendFormat("case " + ns + ':');
             sb.AppendLine();
             sb.AppendFormat("return new MetaStructureInfo({0}, {1}, {2}, {3},", ns, si.StructureKey, si.Unknown_8h, si.StructureSize);
             sb.AppendLine();
@@ -260,7 +276,7 @@ namespace CodeWalker.GameFiles
                     refkey = GetMetaNameString(e.ReferenceKey);
                 }
                 sb.AppendFormat(" new MetaStructureEntryInfo_s({0}, {1}, MetaStructureEntryDataType.{2}, {3}, {4}, {5})", GetMetaNameString(e.EntryNameHash), e.DataOffset, e.DataType, e.Unknown_9h, e.ReferenceTypeIndex, refkey);
-                if (i < si.Entries.Length - 1) sb.Append(",");
+                if (i < si.Entries.Length - 1) sb.Append(',');
                 sb.AppendLine();
             }
             sb.AppendFormat(");");
@@ -269,7 +285,7 @@ namespace CodeWalker.GameFiles
         private static void AddEnumInfoString(MetaEnumInfo ei, StringBuilder sb)
         {
             var ns = GetMetaNameString(ei.EnumNameHash);
-            sb.AppendFormat("case " + ns + ":");
+            sb.AppendFormat("case " + ns + ':');
             sb.AppendLine();
             sb.AppendFormat("return new MetaEnumInfo({0}, {1},", ns, ei.EnumKey);
             sb.AppendLine();
@@ -277,7 +293,7 @@ namespace CodeWalker.GameFiles
             {
                 var e = ei.Entries[i];
                 sb.AppendFormat(" new MetaEnumEntryInfo_s({0}, {1})", GetMetaNameString(e.EntryNameHash), e.EntryValue);
-                if (i < ei.Entries.Length - 1) sb.Append(",");
+                if (i < ei.Entries.Length - 1) sb.Append(',');
                 sb.AppendLine();
             }
             sb.AppendFormat(");");
@@ -296,166 +312,151 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static MetaStructureInfo GetStructureInfo(MetaName name)
+        public static MetaStructureInfo? GetStructureInfo(MetaName name)
         {
             //to generate structinfos
-            switch (name)
+            return name switch
             {
-                case MetaName.CScenarioPointContainer:
-                    return new MetaStructureInfo(MetaName.CScenarioPointContainer, 2489654897, 768, 48,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
-                     new MetaStructureEntryInfo_s(MetaName.LoadSavePoints, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPoint),
-                     new MetaStructureEntryInfo_s(MetaName.MyPoints, 16, MetaStructureEntryDataType.Array, 0, 2, 0)
-                    );
-                case MetaName.CScenarioChainingGraph:
-                    return new MetaStructureInfo(MetaName.CScenarioChainingGraph, 88255871, 768, 88,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
-                     new MetaStructureEntryInfo_s(MetaName.Nodes, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
-                     new MetaStructureEntryInfo_s(MetaName.Edges, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChain),
-                     new MetaStructureEntryInfo_s(MetaName.Chains, 32, MetaStructureEntryDataType.Array, 0, 4, 0)
-                    );
-                case MetaName.rage__spdGrid2D:
-                    return new MetaStructureInfo(MetaName.rage__spdGrid2D, 894636096, 768, 64,
-                     new MetaStructureEntryInfo_s(MetaName.MinCellX, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.MaxCellX, 16, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.MinCellY, 20, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.MaxCellY, 24, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CellDimX, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CellDimY, 48, MetaStructureEntryDataType.Float, 0, 0, 0)
-                    );
-                case MetaName.CScenarioPointLookUps:
-                    return new MetaStructureInfo(MetaName.CScenarioPointLookUps, 2669361587, 768, 96,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.TypeNames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.PedModelSetNames, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.VehicleModelSetNames, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.GroupNames, 48, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.InteriorNames, 64, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.RequiredIMapNames, 80, MetaStructureEntryDataType.Array, 0, 10, 0)
-                    );
-                case MetaName.CScenarioPointRegion:
-                    return new MetaStructureInfo(MetaName.CScenarioPointRegion, 3501351821, 768, 376,
-                     new MetaStructureEntryInfo_s(MetaName.VersionNumber, 0, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Points, 8, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioEntityOverride),
-                     new MetaStructureEntryInfo_s(MetaName.EntityOverrides, 72, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ChainingGraph, 96, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingGraph),
-                     new MetaStructureEntryInfo_s(MetaName.AccelGrid, 184, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdGrid2D),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3844724227, 248, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointCluster),
-                     new MetaStructureEntryInfo_s(MetaName.Clusters, 264, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.LookUps, 280, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointLookUps)
-                    );
-                case MetaName.CScenarioPoint:
-                    return new MetaStructureInfo(MetaName.CScenarioPoint, 402442150, 1024, 64,
-                     new MetaStructureEntryInfo_s(MetaName.iType, 21, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ModelSetId, 22, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iInterior, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iRequiredIMapId, 24, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iProbability, 25, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.uAvailableInMpSp, 26, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 27, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 28, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iRadius, 29, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iTimeTillPedLeaves, 30, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iScenarioGroup, 32, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
-                     new MetaStructureEntryInfo_s(MetaName.vPositionAndDirection, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
-                    );
-                case MetaName.CScenarioEntityOverride:
-                    return new MetaStructureInfo(MetaName.CScenarioEntityOverride, 1271200492, 1024, 80,
-                     new MetaStructureEntryInfo_s(MetaName.EntityPosition, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.EntityType, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
-                     new MetaStructureEntryInfo_s(MetaName.ScenarioPoints, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.EntityMayNotAlwaysExist, 64, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.SpecificallyPreventArtPoints, 65, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefSpawnPoint:
-                    return new MetaStructureInfo(MetaName.CExtensionDefSpawnPoint, 3077340721, 1024, 96,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.spawnType, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.pedType, 52, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.group, 56, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.interior, 60, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.requiredImap, 64, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.availableInMpSp, 68, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CSpawnPoint__AvailabilityMpSp),
-                     new MetaStructureEntryInfo_s(MetaName.probability, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.timeTillPedLeaves, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.radius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.start, 84, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.end, 85, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
-                     new MetaStructureEntryInfo_s(MetaName.highPri, 92, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extendedRange, 93, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.shortRange, 94, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CScenarioChainingNode:
-                    return new MetaStructureInfo(MetaName.CScenarioChainingNode, 1811784424, 1024, 32,
-                     new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2602393771, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ScenarioType, 20, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.HasIncomingEdges, 24, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.HasOutgoingEdges, 25, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CScenarioChainingEdge:
-                    return new MetaStructureInfo(MetaName.CScenarioChainingEdge, 2004985940, 256, 8,
-                     new MetaStructureEntryInfo_s(MetaName.NodeIndexFrom, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.NodeIndexTo, 2, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Action, 4, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eAction),
-                     new MetaStructureEntryInfo_s(MetaName.NavMode, 5, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eNavMode),
-                     new MetaStructureEntryInfo_s(MetaName.NavSpeed, 6, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eNavSpeed)
-                    );
-                case MetaName.CScenarioChain:
-                    return new MetaStructureInfo(MetaName.CScenarioChain, 2751910366, 768, 40,
-                     new MetaStructureEntryInfo_s((MetaName)1156691834, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.EdgeIds, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
-                    );
-                case MetaName.rage__spdSphere:
-                    return new MetaStructureInfo(MetaName.rage__spdSphere, 1189037266, 1024, 16,
-                     new MetaStructureEntryInfo_s(MetaName.centerAndRadius, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
-                    );
-                case MetaName.CScenarioPointCluster:
-                    return new MetaStructureInfo(MetaName.CScenarioPointCluster, 3622480419, 1024, 80,
-                     new MetaStructureEntryInfo_s(MetaName.Points, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
-                     new MetaStructureEntryInfo_s(MetaName.ClusterSphere, 48, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdSphere),
-                     new MetaStructureEntryInfo_s((MetaName)1095875445, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3129415068, 68, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CStreamingRequestRecord:
-                    return new MetaStructureInfo(MetaName.CStreamingRequestRecord, 3825587854, 768, 40,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CStreamingRequestFrame),
-                     new MetaStructureEntryInfo_s(MetaName.Frames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CStreamingRequestCommonSet),
-                     new MetaStructureEntryInfo_s(MetaName.CommonSets, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.NewStyle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CStreamingRequestFrame:
-                    return new MetaStructureInfo(MetaName.CStreamingRequestFrame, 1112444512, 1024, 112,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.AddList, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.RemoveList, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)896120921, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CamPos, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CamDir, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1762439591, 80, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 96, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
+                MetaName.CScenarioPointContainer => new MetaStructureInfo(MetaName.CScenarioPointContainer, 2489654897, 768, 48,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
+                                     new MetaStructureEntryInfo_s(MetaName.LoadSavePoints, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPoint),
+                                     new MetaStructureEntryInfo_s(MetaName.MyPoints, 16, MetaStructureEntryDataType.Array, 0, 2, 0)
+                                    ),
+                MetaName.CScenarioChainingGraph => new MetaStructureInfo(MetaName.CScenarioChainingGraph, 88255871, 768, 88,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingNode),
+                                     new MetaStructureEntryInfo_s(MetaName.Nodes, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingEdge),
+                                     new MetaStructureEntryInfo_s(MetaName.Edges, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChain),
+                                     new MetaStructureEntryInfo_s(MetaName.Chains, 32, MetaStructureEntryDataType.Array, 0, 4, 0)
+                                    ),
+                MetaName.rage__spdGrid2D => new MetaStructureInfo(MetaName.rage__spdGrid2D, 894636096, 768, 64,
+                                     new MetaStructureEntryInfo_s(MetaName.MinCellX, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.MaxCellX, 16, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.MinCellY, 20, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.MaxCellY, 24, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CellDimX, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CellDimY, 48, MetaStructureEntryDataType.Float, 0, 0, 0)
+                                    ),
+                MetaName.CScenarioPointLookUps => new MetaStructureInfo(MetaName.CScenarioPointLookUps, 2669361587, 768, 96,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.TypeNames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.PedModelSetNames, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.VehicleModelSetNames, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.GroupNames, 48, MetaStructureEntryDataType.Array, 0, 6, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.InteriorNames, 64, MetaStructureEntryDataType.Array, 0, 8, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.RequiredIMapNames, 80, MetaStructureEntryDataType.Array, 0, 10, 0)
+                                    ),
+                MetaName.CScenarioPointRegion => new MetaStructureInfo(MetaName.CScenarioPointRegion, 3501351821, 768, 376,
+                                     new MetaStructureEntryInfo_s(MetaName.VersionNumber, 0, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Points, 8, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioEntityOverride),
+                                     new MetaStructureEntryInfo_s(MetaName.EntityOverrides, 72, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ChainingGraph, 96, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioChainingGraph),
+                                     new MetaStructureEntryInfo_s(MetaName.AccelGrid, 184, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdGrid2D),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)3844724227, 248, MetaStructureEntryDataType.Array, 0, 6, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointCluster),
+                                     new MetaStructureEntryInfo_s(MetaName.Clusters, 264, MetaStructureEntryDataType.Array, 0, 8, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.LookUps, 280, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointLookUps)
+                                    ),
+                MetaName.CScenarioPoint => new MetaStructureInfo(MetaName.CScenarioPoint, 402442150, 1024, 64,
+                                     new MetaStructureEntryInfo_s(MetaName.iType, 21, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ModelSetId, 22, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iInterior, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iRequiredIMapId, 24, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iProbability, 25, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.uAvailableInMpSp, 26, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 27, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 28, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iRadius, 29, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iTimeTillPedLeaves, 30, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iScenarioGroup, 32, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Flags, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
+                                     new MetaStructureEntryInfo_s(MetaName.vPositionAndDirection, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
+                                    ),
+                MetaName.CScenarioEntityOverride => new MetaStructureInfo(MetaName.CScenarioEntityOverride, 1271200492, 1024, 80,
+                                     new MetaStructureEntryInfo_s(MetaName.EntityPosition, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.EntityType, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CExtensionDefSpawnPoint),
+                                     new MetaStructureEntryInfo_s(MetaName.ScenarioPoints, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.EntityMayNotAlwaysExist, 64, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.SpecificallyPreventArtPoints, 65, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefSpawnPoint => new MetaStructureInfo(MetaName.CExtensionDefSpawnPoint, 3077340721, 1024, 96,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.spawnType, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.pedType, 52, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.group, 56, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.interior, 60, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.requiredImap, 64, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.availableInMpSp, 68, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CSpawnPoint__AvailabilityMpSp),
+                                     new MetaStructureEntryInfo_s(MetaName.probability, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.timeTillPedLeaves, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.radius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.start, 84, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.end, 85, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 88, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
+                                     new MetaStructureEntryInfo_s(MetaName.highPri, 92, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extendedRange, 93, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.shortRange, 94, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CScenarioChainingNode => new MetaStructureInfo(MetaName.CScenarioChainingNode, 1811784424, 1024, 32,
+                                     new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)2602393771, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ScenarioType, 20, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.HasIncomingEdges, 24, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.HasOutgoingEdges, 25, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CScenarioChainingEdge => new MetaStructureInfo(MetaName.CScenarioChainingEdge, 2004985940, 256, 8,
+                                     new MetaStructureEntryInfo_s(MetaName.NodeIndexFrom, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.NodeIndexTo, 2, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Action, 4, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eAction),
+                                     new MetaStructureEntryInfo_s(MetaName.NavMode, 5, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eNavMode),
+                                     new MetaStructureEntryInfo_s(MetaName.NavSpeed, 6, MetaStructureEntryDataType.ByteEnum, 0, 0, MetaName.CScenarioChainingEdge__eNavSpeed)
+                                    ),
+                MetaName.CScenarioChain => new MetaStructureInfo(MetaName.CScenarioChain, 2751910366, 768, 40,
+                                     new MetaStructureEntryInfo_s((MetaName)1156691834, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.EdgeIds, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
+                                    ),
+                MetaName.rage__spdSphere => new MetaStructureInfo(MetaName.rage__spdSphere, 1189037266, 1024, 16,
+                                     new MetaStructureEntryInfo_s(MetaName.centerAndRadius, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
+                                    ),
+                MetaName.CScenarioPointCluster => new MetaStructureInfo(MetaName.CScenarioPointCluster, 3622480419, 1024, 80,
+                                     new MetaStructureEntryInfo_s(MetaName.Points, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CScenarioPointContainer),
+                                     new MetaStructureEntryInfo_s(MetaName.ClusterSphere, 48, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdSphere),
+                                     new MetaStructureEntryInfo_s((MetaName)1095875445, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)3129415068, 68, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CStreamingRequestRecord => new MetaStructureInfo(MetaName.CStreamingRequestRecord, 3825587854, 768, 40,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CStreamingRequestFrame),
+                                     new MetaStructureEntryInfo_s(MetaName.Frames, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CStreamingRequestCommonSet),
+                                     new MetaStructureEntryInfo_s(MetaName.CommonSets, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.NewStyle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CStreamingRequestFrame => new MetaStructureInfo(MetaName.CStreamingRequestFrame, 1112444512, 1024, 112,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.AddList, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.RemoveList, 16, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)896120921, 32, MetaStructureEntryDataType.Array, 0, 4, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CamPos, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CamDir, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)1762439591, 80, MetaStructureEntryDataType.Array, 0, 8, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Flags, 96, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
                 //case MetaName.CStreamingRequestFrame:
                 //    return new MetaStructureInfo(MetaName.CStreamingRequestFrame, 3672937465, 1024, 96,
                 //     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
@@ -468,43 +469,40 @@ namespace CodeWalker.GameFiles
                 //     new MetaStructureEntryInfo_s((MetaName)1762439591, 64, MetaStructureEntryDataType.Array, 0, 6, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.Flags, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
                 //    );
-                case MetaName.CStreamingRequestCommonSet:
-                    return new MetaStructureInfo(MetaName.CStreamingRequestCommonSet, 3710200606, 768, 16,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Requests, 0, MetaStructureEntryDataType.Array, 0, 0, 0)
-                    );
-                case MetaName.CMapTypes:
-                    return new MetaStructureInfo(MetaName.CMapTypes, 2608875220, 768, 80,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extensions, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.archetypes, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.name, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.dependencies, 48, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompositeEntityType),
-                     new MetaStructureEntryInfo_s(MetaName.compositeEntityTypes, 64, MetaStructureEntryDataType.Array, 0, 7, 0)
-                    );
-                case MetaName.CBaseArchetypeDef:
-                    return new MetaStructureInfo(MetaName.CBaseArchetypeDef, 2411387556, 1024, 144,
-                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
-                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0)
-                    );
+                MetaName.CStreamingRequestCommonSet => new MetaStructureInfo(MetaName.CStreamingRequestCommonSet, 3710200606, 768, 16,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Requests, 0, MetaStructureEntryDataType.Array, 0, 0, 0)
+                                    ),
+                MetaName.CMapTypes => new MetaStructureInfo(MetaName.CMapTypes, 2608875220, 768, 80,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extensions, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.archetypes, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.name, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.dependencies, 48, MetaStructureEntryDataType.Array, 0, 5, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompositeEntityType),
+                                     new MetaStructureEntryInfo_s(MetaName.compositeEntityTypes, 64, MetaStructureEntryDataType.Array, 0, 7, 0)
+                                    ),
+                MetaName.CBaseArchetypeDef => new MetaStructureInfo(MetaName.CBaseArchetypeDef, 2411387556, 1024, 144,
+                                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
+                                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0)
+                                    ),
                 //case MetaName.CBaseArchetypeDef:
                 //    return new MetaStructureInfo(MetaName.CBaseArchetypeDef, 2352343492, 1024, 128,
                 //     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
@@ -523,896 +521,822 @@ namespace CodeWalker.GameFiles
                 //     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
                 //     new MetaStructureEntryInfo_s(MetaName.extensions, 112, MetaStructureEntryDataType.Array, 0, 13, 0)
                 //    );
-                case MetaName.CCreatureMetaData:
-                    return new MetaStructureInfo(MetaName.CCreatureMetaData, 2181653572, 768, 56,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CShaderVariableComponent),
-                     new MetaStructureEntryInfo_s(MetaName.shaderVariableComponents, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropExpressionData),
-                     new MetaStructureEntryInfo_s(MetaName.pedPropExpressions, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedCompExpressionData),
-                     new MetaStructureEntryInfo_s(MetaName.pedCompExpressions, 40, MetaStructureEntryDataType.Array, 0, 4, 0)
-                    );
-                case MetaName.CShaderVariableComponent:
-                    return new MetaStructureInfo(MetaName.CShaderVariableComponent, 3085831725, 768, 72,
-                     new MetaStructureEntryInfo_s(MetaName.pedcompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.maskID, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.shaderVariableHashString, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.components, 56, MetaStructureEntryDataType.Array, 0, 7, 0)
-                    );
-                case MetaName.CPedPropExpressionData:
-                    return new MetaStructureInfo(MetaName.CPedPropExpressionData, 1355135810, 768, 88,
-                     new MetaStructureEntryInfo_s(MetaName.pedPropID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.pedPropVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.pedPropExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
-                    );
-                case MetaName.CPedCompExpressionData:
-                    return new MetaStructureInfo(MetaName.CPedCompExpressionData, 3458164745, 768, 88,
-                     new MetaStructureEntryInfo_s(MetaName.pedCompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.pedCompVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.pedCompExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
-                    );
-                case MetaName.rage__fwInstancedMapData:
-                    return new MetaStructureInfo(MetaName.rage__fwInstancedMapData, 1836780118, 768, 48,
-                     new MetaStructureEntryInfo_s(MetaName.ImapLink, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwPropInstanceListDef),
-                     new MetaStructureEntryInfo_s(MetaName.PropInstanceList, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef),
-                     new MetaStructureEntryInfo_s(MetaName.GrassInstanceList, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
-                    );
-                case MetaName.CLODLight:
-                    return new MetaStructureInfo(MetaName.CLODLight, 2325189228, 768, 136,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.FloatXYZ),
-                     new MetaStructureEntryInfo_s(MetaName.direction, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.falloff, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.falloffExponent, 40, MetaStructureEntryDataType.Array, 0, 4, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.timeAndStateFlags, 56, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.hash, 72, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 88, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.coneOuterAngleOrCapExt, 104, MetaStructureEntryDataType.Array, 0, 12, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 120, MetaStructureEntryDataType.Array, 0, 14, 0)
-                    );
-                case MetaName.CDistantLODLight:
-                    return new MetaStructureInfo(MetaName.CDistantLODLight, 2820908419, 768, 48,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.FloatXYZ),
-                     new MetaStructureEntryInfo_s(MetaName.position, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.RGBI, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.numStreetLights, 40, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.category, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0)
-                    );
-                case MetaName.CBlockDesc:
-                    return new MetaStructureInfo(MetaName.CBlockDesc, 2015795449, 768, 72,
-                     new MetaStructureEntryInfo_s(MetaName.version, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 4, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.exportedBy, 24, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.owner, 40, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.time, 56, MetaStructureEntryDataType.CharPointer, 0, 0, 0)
-                    );
-                case MetaName.CMapData:
-                    return new MetaStructureInfo(MetaName.CMapData, 3448101671, 1024, 512,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.parent, 12, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.contentFlags, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.streamingExtentsMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.streamingExtentsMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMin, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMax, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwContainerLodDef),
-                     new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.BoxOccluder),
-                     new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.OccludeModel),
-                     new MetaStructureEntryInfo_s(MetaName.occludeModels, 144, MetaStructureEntryDataType.Array, 4, 14, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.physicsDictionaries, 160, MetaStructureEntryDataType.Array, 0, 16, 0),
-                     new MetaStructureEntryInfo_s(MetaName.instancedData, 176, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwInstancedMapData),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CTimeCycleModifier),
-                     new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 224, MetaStructureEntryDataType.Array, 0, 19, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCarGen),
-                     new MetaStructureEntryInfo_s(MetaName.carGenerators, 240, MetaStructureEntryDataType.Array, 0, 21, 0),
-                     new MetaStructureEntryInfo_s(MetaName.LODLightsSOA, 256, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLODLight),
-                     new MetaStructureEntryInfo_s(MetaName.DistantLODLightsSOA, 392, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CDistantLODLight),
-                     new MetaStructureEntryInfo_s(MetaName.block, 440, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CBlockDesc)
-                    );
-                case MetaName.CEntityDef:
-                    return new MetaStructureInfo(MetaName.CEntityDef, 1825799514, 1024, 128,
-                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
-                     new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CTimeCycleModifier:
-                    return new MetaStructureInfo(MetaName.CTimeCycleModifier, 2683420777, 1024, 64,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.minExtents, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.maxExtents, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.percentage, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.range, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.startHour, 56, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.endHour, 60, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CTimeArchetypeDef:
-                    return new MetaStructureInfo(MetaName.CTimeArchetypeDef, 2520619910, 1024, 160,
-                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
-                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
-                     new MetaStructureEntryInfo_s(MetaName.timeFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefLightEffect:
-                    return new MetaStructureInfo(MetaName.CExtensionDefLightEffect, 2436199897, 1024, 48,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLightAttrDef),
-                     new MetaStructureEntryInfo_s(MetaName.instances, 32, MetaStructureEntryDataType.Array, 0, 2, 0)
-                    );
-                case MetaName.CLightAttrDef:
-                    return new MetaStructureInfo(MetaName.CLightAttrDef, 2363260268, 768, 160,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.posn, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.colour, 20, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.flashiness, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.intensity, 24, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.boneTag, 32, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lightType, 34, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.groupId, 35, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.timeFlags, 36, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.falloff, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.falloffExponent, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.cullingPlane, 48, MetaStructureEntryDataType.ArrayOfBytes, 0, 13, (MetaName)4),
-                     new MetaStructureEntryInfo_s(MetaName.shadowBlur, 64, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.padding1, 65, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.padding2, 66, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.padding3, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.volIntensity, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.volSizeScale, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.volOuterColour, 80, MetaStructureEntryDataType.ArrayOfBytes, 0, 21, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.lightHash, 83, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.volOuterIntensity, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.coronaSize, 88, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.volOuterExponent, 92, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lightFadeDistance, 96, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.shadowFadeDistance, 97, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.specularFadeDistance, 98, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.volumetricFadeDistance, 99, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.shadowNearClip, 100, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 104, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.coronaZBias, 108, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.direction, 112, MetaStructureEntryDataType.ArrayOfBytes, 0, 34, (MetaName)3),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.tangent, 124, MetaStructureEntryDataType.ArrayOfBytes, 0, 36, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.coneOuterAngle, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extents, 144, MetaStructureEntryDataType.ArrayOfBytes, 0, 40, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.projectedTextureKey, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CMloInstanceDef:
-                    return new MetaStructureInfo(MetaName.CMloInstanceDef, 2151576752, 1024, 160,
-                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
-                     new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.groupId, 128, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.floorId, 132, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.defaultEntitySets, 136, MetaStructureEntryDataType.Array, 0, 20, 0),
-                     new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.BoxOccluder:
-                    return new MetaStructureInfo(MetaName.BoxOccluder, 1831736438, 256, 16,
-                     new MetaStructureEntryInfo_s(MetaName.iCenterX, 0, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iCenterY, 2, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iCenterZ, 4, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iCosZ, 6, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iLength, 8, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iWidth, 10, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iHeight, 12, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iSinZ, 14, MetaStructureEntryDataType.SignedShort, 0, 0, 0)
-                    );
-                case MetaName.OccludeModel:
-                    return new MetaStructureInfo(MetaName.OccludeModel, 1172796107, 1024, 64,
-                     new MetaStructureEntryInfo_s(MetaName.bmin, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bmax, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.dataSize, 32, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.verts, 40, MetaStructureEntryDataType.DataBlockPointer, 4, 3, (MetaName)2),
-                     new MetaStructureEntryInfo_s(MetaName.numVertsInBytes, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.numTris, 50, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CMloArchetypeDef:
-                    return new MetaStructureInfo(MetaName.CMloArchetypeDef, 937664754, 1024, 240,
-                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
-                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
-                     new MetaStructureEntryInfo_s(MetaName.mloFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.entities, 152, MetaStructureEntryDataType.Array, 0, 18, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloRoomDef),
-                     new MetaStructureEntryInfo_s(MetaName.rooms, 168, MetaStructureEntryDataType.Array, 0, 20, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloPortalDef),
-                     new MetaStructureEntryInfo_s(MetaName.portals, 184, MetaStructureEntryDataType.Array, 0, 22, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloEntitySet),
-                     new MetaStructureEntryInfo_s(MetaName.entitySets, 200, MetaStructureEntryDataType.Array, 0, 24, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloTimeCycleModifier),
-                     new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 216, MetaStructureEntryDataType.Array, 0, 26, 0)
-                    );
-                case MetaName.CMloRoomDef:
-                    return new MetaStructureInfo(MetaName.CMloRoomDef, 3885428245, 1024, 112,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.blend, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.timecycleName, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.secondaryTimecycleName, 72, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.portalCount, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.floorId, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.exteriorVisibiltyDepth, 88, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.attachedObjects, 96, MetaStructureEntryDataType.Array, 0, 10, 0)
-                    );
-                case MetaName.CMloPortalDef:
-                    return new MetaStructureInfo(MetaName.CMloPortalDef, 1110221513, 768, 64,
-                     new MetaStructureEntryInfo_s(MetaName.roomFrom, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.roomTo, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.mirrorPriority, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.opacity, 24, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.audioOcclusion, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.corners, 32, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.attachedObjects, 48, MetaStructureEntryDataType.Array, 0, 8, 0)
-                    );
-                case MetaName.CMloTimeCycleModifier:
-                    return new MetaStructureInfo(MetaName.CMloTimeCycleModifier, 838874674, 1024, 48,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.sphere, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.percentage, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.range, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.startHour, 40, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.endHour, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefParticleEffect:
-                    return new MetaStructureInfo(MetaName.CExtensionDefParticleEffect, 466596385, 1024, 96,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fxName, 48, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fxType, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.boneTag, 68, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.scale, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.probability, 76, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 80, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.color, 84, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CCompositeEntityType:
-                    return new MetaStructureInfo(MetaName.CCompositeEntityType, 659539004, 1024, 304,
-                     new MetaStructureEntryInfo_s(MetaName.Name, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
-                     new MetaStructureEntryInfo_s(MetaName.lodDist, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 72, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMin, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bbMax, 96, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 112, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.StartModel, 136, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
-                     new MetaStructureEntryInfo_s(MetaName.EndModel, 200, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
-                     new MetaStructureEntryInfo_s(MetaName.StartImapFile, 264, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.EndImapFile, 268, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.PtFxAssetName, 272, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityAnims),
-                     new MetaStructureEntryInfo_s(MetaName.Animations, 280, MetaStructureEntryDataType.Array, 0, 13, 0)
-                    );
-                case MetaName.CCompEntityAnims:
-                    return new MetaStructureInfo(MetaName.CCompEntityAnims, 4110496011, 768, 216,
-                     new MetaStructureEntryInfo_s(MetaName.AnimDict, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
-                     new MetaStructureEntryInfo_s(MetaName.AnimName, 64, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
-                     new MetaStructureEntryInfo_s(MetaName.AnimatedModel, 128, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
-                     new MetaStructureEntryInfo_s(MetaName.punchInPhase, 192, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.punchOutPhase, 196, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityEffectsData),
-                     new MetaStructureEntryInfo_s(MetaName.effectsData, 200, MetaStructureEntryDataType.Array, 0, 5, 0)
-                    );
-                case MetaName.CCompEntityEffectsData:
-                    return new MetaStructureInfo(MetaName.CCompEntityEffectsData, 1724963966, 1024, 160,
-                     new MetaStructureEntryInfo_s(MetaName.fxType, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fxOffsetPos, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fxOffsetRot, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.boneTag, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.startPhase, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.endPhase, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxIsTriggered, 60, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxTag, 61, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxScale, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxProbability, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxHasTint, 136, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxTintR, 137, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxTintG, 138, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxTintB, 139, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ptFxSize, 144, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefAudioCollisionSettings:
-                    return new MetaStructureInfo(MetaName.CExtensionDefAudioCollisionSettings, 2701897500, 1024, 48,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.settings, 32, MetaStructureEntryDataType.Hash, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefAudioEmitter:
-                    return new MetaStructureInfo(MetaName.CExtensionDefAudioEmitter, 15929839, 1024, 64,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.effectHash, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefExplosionEffect:
-                    return new MetaStructureInfo(MetaName.CExtensionDefExplosionEffect, 2840366784, 1024, 80,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.explosionName, 48, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.boneTag, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.explosionTag, 68, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.explosionType, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefLadder:
-                    return new MetaStructureInfo(MetaName.CExtensionDefLadder, 1978210597, 1024, 96,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bottom, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.top, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.normal, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.materialType, 80, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CExtensionDefLadderMaterialType),
-                     new MetaStructureEntryInfo_s(MetaName.template, 84, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.canGetOffAtTop, 88, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.canGetOffAtBottom, 89, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefBuoyancy:
-                    return new MetaStructureInfo(MetaName.CExtensionDefBuoyancy, 2383039928, 1024, 32,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefExpression:
-                    return new MetaStructureInfo(MetaName.CExtensionDefExpression, 24441706, 1024, 48,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.expressionDictionaryName, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.expressionName, 36, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.creatureMetadataName, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.initialiseOnCollision, 44, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefLightShaft:
-                    return new MetaStructureInfo(MetaName.CExtensionDefLightShaft, 2526429398, 1024, 176,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.cornerA, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.cornerB, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.cornerC, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.cornerD, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.direction, 96, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.directionAmount, 112, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.length, 116, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fadeInTimeStart, 120, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fadeInTimeEnd, 124, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fadeOutTimeStart, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fadeOutTimeEnd, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fadeDistanceStart, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.fadeDistanceEnd, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.color, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.intensity, 148, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flashiness, 152, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.densityType, 160, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CExtensionDefLightShaftDensityType),
-                     new MetaStructureEntryInfo_s(MetaName.volumeType, 164, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CExtensionDefLightShaftVolumeType),
-                     new MetaStructureEntryInfo_s(MetaName.softness, 168, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.scaleBySunIntensity, 172, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.FloatXYZ:
-                    return new MetaStructureInfo(MetaName.FloatXYZ, 2751397072, 512, 12,
-                     new MetaStructureEntryInfo_s(MetaName.x, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
-                    );
-                case MetaName.CPedPropInfo:
-                    return new MetaStructureInfo(MetaName.CPedPropInfo, 1792487819, 768, 40,
-                     new MetaStructureEntryInfo_s(MetaName.numAvailProps, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
-                     new MetaStructureEntryInfo_s(MetaName.aPropMetaData, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
-                     new MetaStructureEntryInfo_s(MetaName.aAnchors, 24, MetaStructureEntryDataType.Array, 0, 3, 0)
-                    );
-                case MetaName.CPedVariationInfo:
-                    return new MetaStructureInfo(MetaName.CPedVariationInfo, 4030871161, 768, 112,
-                     new MetaStructureEntryInfo_s(MetaName.bHasTexVariations, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bHasDrawblVariations, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bHasLowLODs, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bIsSuperLOD, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.availComp, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)MetaTypeName.PsoPOINTER),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVComponentData),
-                     new MetaStructureEntryInfo_s(MetaName.aComponentData3, 16, MetaStructureEntryDataType.Array, 0, 6, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
-                     new MetaStructureEntryInfo_s(MetaName.aSelectionSets, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CComponentInfo),
-                     new MetaStructureEntryInfo_s(MetaName.compInfos, 48, MetaStructureEntryDataType.Array, 0, 10, 0),
-                     new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropInfo),
-                     new MetaStructureEntryInfo_s(MetaName.dlcName, 104, MetaStructureEntryDataType.Hash, 0, 0, 0)
-                    );
-                case MetaName.CPVComponentData:
-                    return new MetaStructureInfo(MetaName.CPVComponentData, 2024084511, 768, 24,
-                     new MetaStructureEntryInfo_s(MetaName.numAvailTex, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVDrawblData),
-                     new MetaStructureEntryInfo_s(MetaName.aDrawblData3, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
-                    );
-                case MetaName.CPVDrawblData__CPVClothComponentData:
-                    return new MetaStructureInfo(MetaName.CPVDrawblData__CPVClothComponentData, 508935687, 0, 24,
-                     new MetaStructureEntryInfo_s(MetaName.ownsCloth, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0)
-                    );
-                case MetaName.CPVDrawblData:
-                    return new MetaStructureInfo(MetaName.CPVDrawblData, 124073662, 768, 48,
-                     new MetaStructureEntryInfo_s(MetaName.propMask, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.numAlternatives, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVTextureData),
-                     new MetaStructureEntryInfo_s(MetaName.aTexData, 8, MetaStructureEntryDataType.Array, 0, 2, 0),
-                     new MetaStructureEntryInfo_s(MetaName.clothData, 24, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVDrawblData__CPVClothComponentData)
-                    );
-                case MetaName.CPVTextureData:
-                    return new MetaStructureInfo(MetaName.CPVTextureData, 4272717794, 0, 3,
-                     new MetaStructureEntryInfo_s(MetaName.texId, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.distribution, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
-                    );
-                case MetaName.CComponentInfo:
-                    return new MetaStructureInfo(MetaName.CComponentInfo, 3693847250, 512, 48,
-                     new MetaStructureEntryInfo_s((MetaName)802196719, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)4233133352, 4, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)128864925, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)5),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.inclusions, 32, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
-                     new MetaStructureEntryInfo_s(MetaName.exclusions, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
-                     new MetaStructureEntryInfo_s((MetaName)1613922652, 40, MetaStructureEntryDataType.ShortFlags, 0, 16, MetaName.ePedVarComp),
-                     new MetaStructureEntryInfo_s((MetaName)2114993291, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)3509540765, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)4196345791, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
-                    );
-                case MetaName.CPedPropMetaData:
-                    return new MetaStructureInfo(MetaName.CPedPropMetaData, 2029738350, 768, 56,
-                     new MetaStructureEntryInfo_s(MetaName.audioId, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.expressionMods, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)5),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropTexData),
-                     new MetaStructureEntryInfo_s(MetaName.texData, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
-                     new MetaStructureEntryInfo_s(MetaName.renderFlags, 40, MetaStructureEntryDataType.IntFlags1, 0, 3, MetaName.ePropRenderFlags),
-                     new MetaStructureEntryInfo_s(MetaName.propFlags, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.anchorId, 50, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.propId, 51, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)2894625425, 52, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
-                    );
-                case MetaName.CPedPropTexData:
-                    return new MetaStructureInfo(MetaName.CPedPropTexData, 2767296137, 512, 12,
-                     new MetaStructureEntryInfo_s(MetaName.inclusions, 0, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
-                     new MetaStructureEntryInfo_s(MetaName.exclusions, 4, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
-                     new MetaStructureEntryInfo_s(MetaName.texId, 8, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.inclusionId, 9, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.exclusionId, 10, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.distribution, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
-                    );
-                case MetaName.CAnchorProps:
-                    return new MetaStructureInfo(MetaName.CAnchorProps, 403574180, 768, 24,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.props, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.anchor, 16, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.eAnchorPoints)
-                    );
-                case MetaName.CPedSelectionSet:
-                    return new MetaStructureInfo(MetaName.CPedSelectionSet, 3120284999, 512, 48,
-                     new MetaStructureEntryInfo_s(MetaName.name, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.compDrawableId, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)MetaTypeName.PsoPOINTER),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.compTexId, 16, MetaStructureEntryDataType.ArrayOfBytes, 0, 3, (MetaName)MetaTypeName.PsoPOINTER),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.propAnchorId, 28, MetaStructureEntryDataType.ArrayOfBytes, 0, 5, (MetaName)6),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.propDrawableId, 34, MetaStructureEntryDataType.ArrayOfBytes, 0, 7, (MetaName)6),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.propTexId, 40, MetaStructureEntryDataType.ArrayOfBytes, 0, 9, (MetaName)6)
-                    );
-                case MetaName.CExtensionDefDoor:
-                    return new MetaStructureInfo(MetaName.CExtensionDefDoor, 2671601385, 1024, 48,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.enableLimitAngle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.startsLocked, 33, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.canBreak, 34, MetaStructureEntryDataType.Boolean, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.limitAngle, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.doorTargetRatio, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.audioHash, 44, MetaStructureEntryDataType.Hash, 0, 0, 0)
-                    );
-                case MetaName.CMloEntitySet:
-                    return new MetaStructureInfo(MetaName.CMloEntitySet, 4180211587, 768, 48,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.locations, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.entities, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
-                    );
-                case MetaName.CExtensionDefSpawnPointOverride:
-                    return new MetaStructureInfo(MetaName.CExtensionDefSpawnPointOverride, 2551875873, 1024, 64,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ScenarioType, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 36, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 37, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Group, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.ModelSet, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CSpawnPoint__AvailabilityMpSp),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
-                     new MetaStructureEntryInfo_s(MetaName.Radius, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.TimeTillPedLeaves, 60, MetaStructureEntryDataType.Float, 0, 0, 0)
-                    );
-                case MetaName.CExtensionDefWindDisturbance:
-                    return new MetaStructureInfo(MetaName.CExtensionDefWindDisturbance, 3971538917, 1024, 96,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.disturbanceType, 48, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.boneTag, 52, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.size, 64, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.strength, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0)
-                    );
-                case MetaName.CCarGen:
-                    return new MetaStructureInfo(MetaName.CCarGen, 2345238261, 1024, 80,
-                     new MetaStructureEntryInfo_s(MetaName.position, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.orientX, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.orientY, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.perpendicularLength, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.carModel, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap1, 52, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap2, 56, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap3, 60, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap4, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.popGroup, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.livery, 72, MetaStructureEntryDataType.SignedByte, 0, 0, 0)
-                    );
-                case MetaName.rage__spdAABB:
-                    return new MetaStructureInfo(MetaName.rage__spdAABB, 1158138379, 1024, 32,
-                     new MetaStructureEntryInfo_s(MetaName.min, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.max, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
-                    );
-                case MetaName.rage__fwGrassInstanceListDef:
-                    return new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef, 941808164, 1024, 96,
-                     new MetaStructureEntryInfo_s(MetaName.BatchAABB, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdAABB),
-                     new MetaStructureEntryInfo_s(MetaName.ScaleRange, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.lodDist, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.LodFadeStartDist, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.LodInstFadeRange, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.OrientToTerrain, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef__InstanceData),
-                     new MetaStructureEntryInfo_s(MetaName.InstanceList, 72, MetaStructureEntryDataType.Array, 36, 7, 0)
-                    );
-                case MetaName.rage__fwGrassInstanceListDef__InstanceData:
-                    return new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef__InstanceData, 2740378365, 256, 16,
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.NormalX, 6, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.NormalY, 7, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Color, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)3),
-                     new MetaStructureEntryInfo_s(MetaName.Scale, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Ao, 12, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Pad, 13, MetaStructureEntryDataType.ArrayOfBytes, 0, 8, (MetaName)3)
-                    );
-                case MetaName.CExtensionDefProcObject:
-                    return new MetaStructureInfo(MetaName.CExtensionDefProcObject, 3965391891, 1024, 80,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.radiusInner, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.radiusOuter, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.spacing, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.minScale, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.maxScale, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.minScaleZ, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.maxScaleZ, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.minZOffset, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.maxZOffset, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.objectHash, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.flags, 72, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
-                    );
-                case MetaName.rage__phVerletClothCustomBounds:
-                    return new MetaStructureInfo(MetaName.rage__phVerletClothCustomBounds, 2075461750, 768, 32,
-                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
-                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__phCapsuleBoundDef),
-                     new MetaStructureEntryInfo_s(MetaName.CollisionData, 16, MetaStructureEntryDataType.Array, 0, 1, 0)
-                    );
-                case MetaName.rage__phCapsuleBoundDef:
-                    return new MetaStructureInfo(MetaName.rage__phCapsuleBoundDef, 2859775340, 1024, 96,
-                     new MetaStructureEntryInfo_s(MetaName.OwnerName, 0, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Rotation, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Normal, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CapsuleRadius, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CapsuleLen, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CapsuleHalfHeight, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.CapsuleHalfWidth, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
-                     new MetaStructureEntryInfo_s(MetaName.Flags, 80, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.rage__phCapsuleBoundDef__enCollisionBoundDef)
-                    );
-
-                default:
-                    return null;
-            }
+                MetaName.CCreatureMetaData => new MetaStructureInfo(MetaName.CCreatureMetaData, 2181653572, 768, 56,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CShaderVariableComponent),
+                                     new MetaStructureEntryInfo_s(MetaName.shaderVariableComponents, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropExpressionData),
+                                     new MetaStructureEntryInfo_s(MetaName.pedPropExpressions, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedCompExpressionData),
+                                     new MetaStructureEntryInfo_s(MetaName.pedCompExpressions, 40, MetaStructureEntryDataType.Array, 0, 4, 0)
+                                    ),
+                MetaName.CShaderVariableComponent => new MetaStructureInfo(MetaName.CShaderVariableComponent, 3085831725, 768, 72,
+                                     new MetaStructureEntryInfo_s(MetaName.pedcompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.maskID, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.shaderVariableHashString, 16, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.components, 56, MetaStructureEntryDataType.Array, 0, 7, 0)
+                                    ),
+                MetaName.CPedPropExpressionData => new MetaStructureInfo(MetaName.CPedPropExpressionData, 1355135810, 768, 88,
+                                     new MetaStructureEntryInfo_s(MetaName.pedPropID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.pedPropVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.pedPropExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
+                                    ),
+                MetaName.CPedCompExpressionData => new MetaStructureInfo(MetaName.CPedCompExpressionData, 3458164745, 768, 88,
+                                     new MetaStructureEntryInfo_s(MetaName.pedCompID, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.pedCompVarIndex, 12, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.pedCompExpressionIndex, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.tracks, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ids, 40, MetaStructureEntryDataType.Array, 0, 5, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.types, 56, MetaStructureEntryDataType.Array, 0, 7, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.components, 72, MetaStructureEntryDataType.Array, 0, 9, 0)
+                                    ),
+                MetaName.rage__fwInstancedMapData => new MetaStructureInfo(MetaName.rage__fwInstancedMapData, 1836780118, 768, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.ImapLink, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwPropInstanceListDef),
+                                     new MetaStructureEntryInfo_s(MetaName.PropInstanceList, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef),
+                                     new MetaStructureEntryInfo_s(MetaName.GrassInstanceList, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
+                                    ),
+                MetaName.CLODLight => new MetaStructureInfo(MetaName.CLODLight, 2325189228, 768, 136,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.FloatXYZ),
+                                     new MetaStructureEntryInfo_s(MetaName.direction, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.falloff, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.falloffExponent, 40, MetaStructureEntryDataType.Array, 0, 4, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.timeAndStateFlags, 56, MetaStructureEntryDataType.Array, 0, 6, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.hash, 72, MetaStructureEntryDataType.Array, 0, 8, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 88, MetaStructureEntryDataType.Array, 0, 10, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.coneOuterAngleOrCapExt, 104, MetaStructureEntryDataType.Array, 0, 12, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 120, MetaStructureEntryDataType.Array, 0, 14, 0)
+                                    ),
+                MetaName.CDistantLODLight => new MetaStructureInfo(MetaName.CDistantLODLight, 2820908419, 768, 48,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.FloatXYZ),
+                                     new MetaStructureEntryInfo_s(MetaName.position, 8, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.RGBI, 24, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.numStreetLights, 40, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.category, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0)
+                                    ),
+                MetaName.CBlockDesc => new MetaStructureInfo(MetaName.CBlockDesc, 2015795449, 768, 72,
+                                     new MetaStructureEntryInfo_s(MetaName.version, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 4, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.exportedBy, 24, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.owner, 40, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.time, 56, MetaStructureEntryDataType.CharPointer, 0, 0, 0)
+                                    ),
+                MetaName.CMapData => new MetaStructureInfo(MetaName.CMapData, 3448101671, 1024, 512,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.parent, 12, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.contentFlags, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.streamingExtentsMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.streamingExtentsMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMin, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.entitiesExtentsMax, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.entities, 96, MetaStructureEntryDataType.Array, 0, 8, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwContainerLodDef),
+                                     new MetaStructureEntryInfo_s(MetaName.containerLods, 112, MetaStructureEntryDataType.Array, 0, 10, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.BoxOccluder),
+                                     new MetaStructureEntryInfo_s(MetaName.boxOccluders, 128, MetaStructureEntryDataType.Array, 4, 12, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.OccludeModel),
+                                     new MetaStructureEntryInfo_s(MetaName.occludeModels, 144, MetaStructureEntryDataType.Array, 4, 14, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.physicsDictionaries, 160, MetaStructureEntryDataType.Array, 0, 16, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.instancedData, 176, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwInstancedMapData),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CTimeCycleModifier),
+                                     new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 224, MetaStructureEntryDataType.Array, 0, 19, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCarGen),
+                                     new MetaStructureEntryInfo_s(MetaName.carGenerators, 240, MetaStructureEntryDataType.Array, 0, 21, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.LODLightsSOA, 256, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLODLight),
+                                     new MetaStructureEntryInfo_s(MetaName.DistantLODLightsSOA, 392, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CDistantLODLight),
+                                     new MetaStructureEntryInfo_s(MetaName.block, 440, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CBlockDesc)
+                                    ),
+                MetaName.CEntityDef => new MetaStructureInfo(MetaName.CEntityDef, 1825799514, 1024, 128,
+                                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
+                                     new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CTimeCycleModifier => new MetaStructureInfo(MetaName.CTimeCycleModifier, 2683420777, 1024, 64,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.minExtents, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.maxExtents, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.percentage, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.range, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.startHour, 56, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.endHour, 60, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CTimeArchetypeDef => new MetaStructureInfo(MetaName.CTimeArchetypeDef, 2520619910, 1024, 160,
+                                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
+                                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.timeFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefLightEffect => new MetaStructureInfo(MetaName.CExtensionDefLightEffect, 2436199897, 1024, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CLightAttrDef),
+                                     new MetaStructureEntryInfo_s(MetaName.instances, 32, MetaStructureEntryDataType.Array, 0, 2, 0)
+                                    ),
+                MetaName.CLightAttrDef => new MetaStructureInfo(MetaName.CLightAttrDef, 2363260268, 768, 160,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.posn, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.colour, 20, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)3),
+                                     new MetaStructureEntryInfo_s(MetaName.flashiness, 23, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.intensity, 24, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.boneTag, 32, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.lightType, 34, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.groupId, 35, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.timeFlags, 36, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.falloff, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.falloffExponent, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.cullingPlane, 48, MetaStructureEntryDataType.ArrayOfBytes, 0, 13, (MetaName)4),
+                                     new MetaStructureEntryInfo_s(MetaName.shadowBlur, 64, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.padding1, 65, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.padding2, 66, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.padding3, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.volIntensity, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.volSizeScale, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.volOuterColour, 80, MetaStructureEntryDataType.ArrayOfBytes, 0, 21, (MetaName)3),
+                                     new MetaStructureEntryInfo_s(MetaName.lightHash, 83, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.volOuterIntensity, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.coronaSize, 88, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.volOuterExponent, 92, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.lightFadeDistance, 96, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.shadowFadeDistance, 97, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.specularFadeDistance, 98, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.volumetricFadeDistance, 99, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.shadowNearClip, 100, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.coronaIntensity, 104, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.coronaZBias, 108, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.direction, 112, MetaStructureEntryDataType.ArrayOfBytes, 0, 34, (MetaName)3),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.tangent, 124, MetaStructureEntryDataType.ArrayOfBytes, 0, 36, (MetaName)3),
+                                     new MetaStructureEntryInfo_s(MetaName.coneInnerAngle, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.coneOuterAngle, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extents, 144, MetaStructureEntryDataType.ArrayOfBytes, 0, 40, (MetaName)3),
+                                     new MetaStructureEntryInfo_s(MetaName.projectedTextureKey, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CMloInstanceDef => new MetaStructureInfo(MetaName.CMloInstanceDef, 2151576752, 1024, 160,
+                                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.guid, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.rotation, 48, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.scaleXY, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.scaleZ, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.parentIndex, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.lodDist, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.childLodDist, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.lodLevel, 84, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__eLodType),
+                                     new MetaStructureEntryInfo_s(MetaName.numChildren, 88, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.priorityLevel, 92, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__ePriorityLevel),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extensions, 96, MetaStructureEntryDataType.Array, 0, 13, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ambientOcclusionMultiplier, 112, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.artificialAmbientOcclusion, 116, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.tintValue, 120, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.groupId, 128, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.floorId, 132, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.defaultEntitySets, 136, MetaStructureEntryDataType.Array, 0, 20, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.numExitPortals, 152, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.MLOInstflags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.BoxOccluder => new MetaStructureInfo(MetaName.BoxOccluder, 1831736438, 256, 16,
+                                     new MetaStructureEntryInfo_s(MetaName.iCenterX, 0, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iCenterY, 2, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iCenterZ, 4, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iCosZ, 6, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iLength, 8, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iWidth, 10, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iHeight, 12, MetaStructureEntryDataType.SignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iSinZ, 14, MetaStructureEntryDataType.SignedShort, 0, 0, 0)
+                                    ),
+                MetaName.OccludeModel => new MetaStructureInfo(MetaName.OccludeModel, 1172796107, 1024, 64,
+                                     new MetaStructureEntryInfo_s(MetaName.bmin, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bmax, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.dataSize, 32, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.verts, 40, MetaStructureEntryDataType.DataBlockPointer, 4, 3, (MetaName)2),
+                                     new MetaStructureEntryInfo_s(MetaName.numVertsInBytes, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.numTris, 50, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CMloArchetypeDef => new MetaStructureInfo(MetaName.CMloArchetypeDef, 937664754, 1024, 240,
+                                     new MetaStructureEntryInfo_s(MetaName.lodDist, 8, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.hdTextureDist, 84, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.name, 88, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.textureDictionary, 92, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.clipDictionary, 96, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.drawableDictionary, 100, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.physicsDictionary, 104, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.assetType, 108, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.rage__fwArchetypeDef__eAssetType),
+                                     new MetaStructureEntryInfo_s(MetaName.assetName, 112, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.extensions, 120, MetaStructureEntryDataType.Array, 0, 15, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.mloFlags, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.entities, 152, MetaStructureEntryDataType.Array, 0, 18, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloRoomDef),
+                                     new MetaStructureEntryInfo_s(MetaName.rooms, 168, MetaStructureEntryDataType.Array, 0, 20, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloPortalDef),
+                                     new MetaStructureEntryInfo_s(MetaName.portals, 184, MetaStructureEntryDataType.Array, 0, 22, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloEntitySet),
+                                     new MetaStructureEntryInfo_s(MetaName.entitySets, 200, MetaStructureEntryDataType.Array, 0, 24, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CMloTimeCycleModifier),
+                                     new MetaStructureEntryInfo_s(MetaName.timeCycleModifiers, 216, MetaStructureEntryDataType.Array, 0, 26, 0)
+                                    ),
+                MetaName.CMloRoomDef => new MetaStructureInfo(MetaName.CMloRoomDef, 3885428245, 1024, 112,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMin, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMax, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.blend, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.timecycleName, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.secondaryTimecycleName, 72, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.portalCount, 80, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.floorId, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.exteriorVisibiltyDepth, 88, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.attachedObjects, 96, MetaStructureEntryDataType.Array, 0, 10, 0)
+                                    ),
+                MetaName.CMloPortalDef => new MetaStructureInfo(MetaName.CMloPortalDef, 1110221513, 768, 64,
+                                     new MetaStructureEntryInfo_s(MetaName.roomFrom, 8, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.roomTo, 12, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 16, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.mirrorPriority, 20, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.opacity, 24, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.audioOcclusion, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.corners, 32, MetaStructureEntryDataType.Array, 0, 6, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.attachedObjects, 48, MetaStructureEntryDataType.Array, 0, 8, 0)
+                                    ),
+                MetaName.CMloTimeCycleModifier => new MetaStructureInfo(MetaName.CMloTimeCycleModifier, 838874674, 1024, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.sphere, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.percentage, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.range, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.startHour, 40, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.endHour, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefParticleEffect => new MetaStructureInfo(MetaName.CExtensionDefParticleEffect, 466596385, 1024, 96,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fxName, 48, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fxType, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.boneTag, 68, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.scale, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.probability, 76, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 80, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.color, 84, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CCompositeEntityType => new MetaStructureInfo(MetaName.CCompositeEntityType, 659539004, 1024, 304,
+                                     new MetaStructureEntryInfo_s(MetaName.Name, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                                     new MetaStructureEntryInfo_s(MetaName.lodDist, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.specialAttribute, 72, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMin, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bbMax, 96, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsCentre, 112, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bsRadius, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.StartModel, 136, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                                     new MetaStructureEntryInfo_s(MetaName.EndModel, 200, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                                     new MetaStructureEntryInfo_s(MetaName.StartImapFile, 264, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.EndImapFile, 268, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.PtFxAssetName, 272, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityAnims),
+                                     new MetaStructureEntryInfo_s(MetaName.Animations, 280, MetaStructureEntryDataType.Array, 0, 13, 0)
+                                    ),
+                MetaName.CCompEntityAnims => new MetaStructureInfo(MetaName.CCompEntityAnims, 4110496011, 768, 216,
+                                     new MetaStructureEntryInfo_s(MetaName.AnimDict, 0, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                                     new MetaStructureEntryInfo_s(MetaName.AnimName, 64, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                                     new MetaStructureEntryInfo_s(MetaName.AnimatedModel, 128, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                                     new MetaStructureEntryInfo_s(MetaName.punchInPhase, 192, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.punchOutPhase, 196, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CCompEntityEffectsData),
+                                     new MetaStructureEntryInfo_s(MetaName.effectsData, 200, MetaStructureEntryDataType.Array, 0, 5, 0)
+                                    ),
+                MetaName.CCompEntityEffectsData => new MetaStructureInfo(MetaName.CCompEntityEffectsData, 1724963966, 1024, 160,
+                                     new MetaStructureEntryInfo_s(MetaName.fxType, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fxOffsetPos, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fxOffsetRot, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.boneTag, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.startPhase, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.endPhase, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxIsTriggered, 60, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxTag, 61, MetaStructureEntryDataType.ArrayOfChars, 0, 0, (MetaName)64),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxScale, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxProbability, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxHasTint, 136, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxTintR, 137, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxTintG, 138, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxTintB, 139, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ptFxSize, 144, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefAudioCollisionSettings => new MetaStructureInfo(MetaName.CExtensionDefAudioCollisionSettings, 2701897500, 1024, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.settings, 32, MetaStructureEntryDataType.Hash, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefAudioEmitter => new MetaStructureInfo(MetaName.CExtensionDefAudioEmitter, 15929839, 1024, 64,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.effectHash, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefExplosionEffect => new MetaStructureInfo(MetaName.CExtensionDefExplosionEffect, 2840366784, 1024, 80,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.explosionName, 48, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.boneTag, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.explosionTag, 68, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.explosionType, 72, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 76, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefLadder => new MetaStructureInfo(MetaName.CExtensionDefLadder, 1978210597, 1024, 96,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bottom, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.top, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.normal, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.materialType, 80, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CExtensionDefLadderMaterialType),
+                                     new MetaStructureEntryInfo_s(MetaName.template, 84, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.canGetOffAtTop, 88, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.canGetOffAtBottom, 89, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefBuoyancy => new MetaStructureInfo(MetaName.CExtensionDefBuoyancy, 2383039928, 1024, 32,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefExpression => new MetaStructureInfo(MetaName.CExtensionDefExpression, 24441706, 1024, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.expressionDictionaryName, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.expressionName, 36, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.creatureMetadataName, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.initialiseOnCollision, 44, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefLightShaft => new MetaStructureInfo(MetaName.CExtensionDefLightShaft, 2526429398, 1024, 176,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.cornerA, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.cornerB, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.cornerC, 64, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.cornerD, 80, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.direction, 96, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.directionAmount, 112, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.length, 116, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fadeInTimeStart, 120, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fadeInTimeEnd, 124, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fadeOutTimeStart, 128, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fadeOutTimeEnd, 132, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fadeDistanceStart, 136, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.fadeDistanceEnd, 140, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.color, 144, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.intensity, 148, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flashiness, 152, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 156, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.densityType, 160, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CExtensionDefLightShaftDensityType),
+                                     new MetaStructureEntryInfo_s(MetaName.volumeType, 164, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CExtensionDefLightShaftVolumeType),
+                                     new MetaStructureEntryInfo_s(MetaName.softness, 168, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.scaleBySunIntensity, 172, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.FloatXYZ => new MetaStructureInfo(MetaName.FloatXYZ, 2751397072, 512, 12,
+                                     new MetaStructureEntryInfo_s(MetaName.x, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.y, 4, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.z, 8, MetaStructureEntryDataType.Float, 0, 0, 0)
+                                    ),
+                MetaName.CPedPropInfo => new MetaStructureInfo(MetaName.CPedPropInfo, 1792487819, 768, 40,
+                                     new MetaStructureEntryInfo_s(MetaName.numAvailProps, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropMetaData),
+                                     new MetaStructureEntryInfo_s(MetaName.aPropMetaData, 8, MetaStructureEntryDataType.Array, 0, 1, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CAnchorProps),
+                                     new MetaStructureEntryInfo_s(MetaName.aAnchors, 24, MetaStructureEntryDataType.Array, 0, 3, 0)
+                                    ),
+                MetaName.CPedVariationInfo => new MetaStructureInfo(MetaName.CPedVariationInfo, 4030871161, 768, 112,
+                                     new MetaStructureEntryInfo_s(MetaName.bHasTexVariations, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bHasDrawblVariations, 1, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bHasLowLODs, 2, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bIsSuperLOD, 3, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.availComp, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)MetaTypeName.PsoPOINTER),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVComponentData),
+                                     new MetaStructureEntryInfo_s(MetaName.aComponentData3, 16, MetaStructureEntryDataType.Array, 0, 6, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedSelectionSet),
+                                     new MetaStructureEntryInfo_s(MetaName.aSelectionSets, 32, MetaStructureEntryDataType.Array, 0, 8, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CComponentInfo),
+                                     new MetaStructureEntryInfo_s(MetaName.compInfos, 48, MetaStructureEntryDataType.Array, 0, 10, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.propInfo, 64, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropInfo),
+                                     new MetaStructureEntryInfo_s(MetaName.dlcName, 104, MetaStructureEntryDataType.Hash, 0, 0, 0)
+                                    ),
+                MetaName.CPVComponentData => new MetaStructureInfo(MetaName.CPVComponentData, 2024084511, 768, 24,
+                                     new MetaStructureEntryInfo_s(MetaName.numAvailTex, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVDrawblData),
+                                     new MetaStructureEntryInfo_s(MetaName.aDrawblData3, 8, MetaStructureEntryDataType.Array, 0, 1, 0)
+                                    ),
+                MetaName.CPVDrawblData__CPVClothComponentData => new MetaStructureInfo(MetaName.CPVDrawblData__CPVClothComponentData, 508935687, 0, 24,
+                                     new MetaStructureEntryInfo_s(MetaName.ownsCloth, 0, MetaStructureEntryDataType.Boolean, 0, 0, 0)
+                                    ),
+                MetaName.CPVDrawblData => new MetaStructureInfo(MetaName.CPVDrawblData, 124073662, 768, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.propMask, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.numAlternatives, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVTextureData),
+                                     new MetaStructureEntryInfo_s(MetaName.aTexData, 8, MetaStructureEntryDataType.Array, 0, 2, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.clothData, 24, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPVDrawblData__CPVClothComponentData)
+                                    ),
+                MetaName.CPVTextureData => new MetaStructureInfo(MetaName.CPVTextureData, 4272717794, 0, 3,
+                                     new MetaStructureEntryInfo_s(MetaName.texId, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.distribution, 1, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                                    ),
+                MetaName.CComponentInfo => new MetaStructureInfo(MetaName.CComponentInfo, 3693847250, 512, 48,
+                                     new MetaStructureEntryInfo_s((MetaName)802196719, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)4233133352, 4, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)128864925, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 2, (MetaName)5),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 28, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.inclusions, 32, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.exclusions, 36, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)1613922652, 40, MetaStructureEntryDataType.ShortFlags, 0, 16, MetaName.ePedVarComp),
+                                     new MetaStructureEntryInfo_s((MetaName)2114993291, 42, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)3509540765, 44, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)4196345791, 45, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                                    ),
+                MetaName.CPedPropMetaData => new MetaStructureInfo(MetaName.CPedPropMetaData, 2029738350, 768, 56,
+                                     new MetaStructureEntryInfo_s(MetaName.audioId, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.expressionMods, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)5),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.CPedPropTexData),
+                                     new MetaStructureEntryInfo_s(MetaName.texData, 24, MetaStructureEntryDataType.Array, 0, 3, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.renderFlags, 40, MetaStructureEntryDataType.IntFlags1, 0, 3, MetaName.ePropRenderFlags),
+                                     new MetaStructureEntryInfo_s(MetaName.propFlags, 44, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.anchorId, 50, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.propId, 51, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)2894625425, 52, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                                    ),
+                MetaName.CPedPropTexData => new MetaStructureInfo(MetaName.CPedPropTexData, 2767296137, 512, 12,
+                                     new MetaStructureEntryInfo_s(MetaName.inclusions, 0, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.exclusions, 4, MetaStructureEntryDataType.IntFlags2, 0, 32, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.texId, 8, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.inclusionId, 9, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.exclusionId, 10, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.distribution, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0)
+                                    ),
+                MetaName.CAnchorProps => new MetaStructureInfo(MetaName.CAnchorProps, 403574180, 768, 24,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.props, 0, MetaStructureEntryDataType.Array, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.anchor, 16, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.eAnchorPoints)
+                                    ),
+                MetaName.CPedSelectionSet => new MetaStructureInfo(MetaName.CPedSelectionSet, 3120284999, 512, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 0, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.compDrawableId, 4, MetaStructureEntryDataType.ArrayOfBytes, 0, 1, (MetaName)MetaTypeName.PsoPOINTER),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.compTexId, 16, MetaStructureEntryDataType.ArrayOfBytes, 0, 3, (MetaName)MetaTypeName.PsoPOINTER),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.propAnchorId, 28, MetaStructureEntryDataType.ArrayOfBytes, 0, 5, (MetaName)6),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.propDrawableId, 34, MetaStructureEntryDataType.ArrayOfBytes, 0, 7, (MetaName)6),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.propTexId, 40, MetaStructureEntryDataType.ArrayOfBytes, 0, 9, (MetaName)6)
+                                    ),
+                MetaName.CExtensionDefDoor => new MetaStructureInfo(MetaName.CExtensionDefDoor, 2671601385, 1024, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.enableLimitAngle, 32, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.startsLocked, 33, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.canBreak, 34, MetaStructureEntryDataType.Boolean, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.limitAngle, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.doorTargetRatio, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.audioHash, 44, MetaStructureEntryDataType.Hash, 0, 0, 0)
+                                    ),
+                MetaName.CMloEntitySet => new MetaStructureInfo(MetaName.CMloEntitySet, 4180211587, 768, 48,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.locations, 16, MetaStructureEntryDataType.Array, 0, 1, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.StructurePointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.entities, 32, MetaStructureEntryDataType.Array, 0, 3, 0)
+                                    ),
+                MetaName.CExtensionDefSpawnPointOverride => new MetaStructureInfo(MetaName.CExtensionDefSpawnPointOverride, 2551875873, 1024, 64,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ScenarioType, 32, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iTimeStartOverride, 36, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.iTimeEndOverride, 37, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Group, 40, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.ModelSet, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.AvailabilityInMpSp, 48, MetaStructureEntryDataType.IntEnum, 0, 0, MetaName.CSpawnPoint__AvailabilityMpSp),
+                                     new MetaStructureEntryInfo_s(MetaName.Flags, 52, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.CScenarioPointFlags__Flags),
+                                     new MetaStructureEntryInfo_s(MetaName.Radius, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.TimeTillPedLeaves, 60, MetaStructureEntryDataType.Float, 0, 0, 0)
+                                    ),
+                MetaName.CExtensionDefWindDisturbance => new MetaStructureInfo(MetaName.CExtensionDefWindDisturbance, 3971538917, 1024, 96,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetRotation, 32, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.disturbanceType, 48, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.boneTag, 52, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.size, 64, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.strength, 80, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 84, MetaStructureEntryDataType.SignedInt, 0, 0, 0)
+                                    ),
+                MetaName.CCarGen => new MetaStructureInfo(MetaName.CCarGen, 2345238261, 1024, 80,
+                                     new MetaStructureEntryInfo_s(MetaName.position, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.orientX, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.orientY, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.perpendicularLength, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.carModel, 44, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 48, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap1, 52, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap2, 56, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap3, 60, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.bodyColorRemap4, 64, MetaStructureEntryDataType.SignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.popGroup, 68, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.livery, 72, MetaStructureEntryDataType.SignedByte, 0, 0, 0)
+                                    ),
+                MetaName.rage__spdAABB => new MetaStructureInfo(MetaName.rage__spdAABB, 1158138379, 1024, 32,
+                                     new MetaStructureEntryInfo_s(MetaName.min, 0, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.max, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0)
+                                    ),
+                MetaName.rage__fwGrassInstanceListDef => new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef, 941808164, 1024, 96,
+                                     new MetaStructureEntryInfo_s(MetaName.BatchAABB, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__spdAABB),
+                                     new MetaStructureEntryInfo_s(MetaName.ScaleRange, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.archetypeName, 48, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.lodDist, 52, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.LodFadeStartDist, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.LodInstFadeRange, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.OrientToTerrain, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__fwGrassInstanceListDef__InstanceData),
+                                     new MetaStructureEntryInfo_s(MetaName.InstanceList, 72, MetaStructureEntryDataType.Array, 36, 7, 0)
+                                    ),
+                MetaName.rage__fwGrassInstanceListDef__InstanceData => new MetaStructureInfo(MetaName.rage__fwGrassInstanceListDef__InstanceData, 2740378365, 256, 16,
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedShort, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Position, 0, MetaStructureEntryDataType.ArrayOfBytes, 0, 0, (MetaName)3),
+                                     new MetaStructureEntryInfo_s(MetaName.NormalX, 6, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.NormalY, 7, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Color, 8, MetaStructureEntryDataType.ArrayOfBytes, 0, 4, (MetaName)3),
+                                     new MetaStructureEntryInfo_s(MetaName.Scale, 11, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Ao, 12, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.UnsignedByte, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Pad, 13, MetaStructureEntryDataType.ArrayOfBytes, 0, 8, (MetaName)3)
+                                    ),
+                MetaName.CExtensionDefProcObject => new MetaStructureInfo(MetaName.CExtensionDefProcObject, 3965391891, 1024, 80,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.offsetPosition, 16, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.radiusInner, 32, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.radiusOuter, 36, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.spacing, 40, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.minScale, 44, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.maxScale, 48, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.minScaleZ, 52, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.maxScaleZ, 56, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.minZOffset, 60, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.maxZOffset, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.objectHash, 68, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.flags, 72, MetaStructureEntryDataType.UnsignedInt, 0, 0, 0)
+                                    ),
+                MetaName.rage__phVerletClothCustomBounds => new MetaStructureInfo(MetaName.rage__phVerletClothCustomBounds, 2075461750, 768, 32,
+                                     new MetaStructureEntryInfo_s(MetaName.name, 8, MetaStructureEntryDataType.Hash, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s((MetaName)MetaTypeName.ARRAYINFO, 0, MetaStructureEntryDataType.Structure, 0, 0, MetaName.rage__phCapsuleBoundDef),
+                                     new MetaStructureEntryInfo_s(MetaName.CollisionData, 16, MetaStructureEntryDataType.Array, 0, 1, 0)
+                                    ),
+                MetaName.rage__phCapsuleBoundDef => new MetaStructureInfo(MetaName.rage__phCapsuleBoundDef, 2859775340, 1024, 96,
+                                     new MetaStructureEntryInfo_s(MetaName.OwnerName, 0, MetaStructureEntryDataType.CharPointer, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Rotation, 16, MetaStructureEntryDataType.Float_XYZW, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Position, 32, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Normal, 48, MetaStructureEntryDataType.Float_XYZ, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CapsuleRadius, 64, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CapsuleLen, 68, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CapsuleHalfHeight, 72, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.CapsuleHalfWidth, 76, MetaStructureEntryDataType.Float, 0, 0, 0),
+                                     new MetaStructureEntryInfo_s(MetaName.Flags, 80, MetaStructureEntryDataType.IntFlags2, 0, 32, MetaName.rage__phCapsuleBoundDef__enCollisionBoundDef)
+                                    ),
+                _ => null,
+            };
         }
-        public static MetaEnumInfo GetEnumInfo(MetaName name)
+        public static MetaEnumInfo? GetEnumInfo(MetaName name)
         {
             //to generate enuminfos
-            switch (name)
+            return name switch
             {
-                case MetaName.CScenarioPointFlags__Flags:
-                    return new MetaEnumInfo(MetaName.CScenarioPointFlags__Flags, 2814596095,
-                     new MetaEnumEntryInfo_s(MetaName.IgnoreMaxInRange, 0),
-                     new MetaEnumEntryInfo_s(MetaName.NoSpawn, 1),
-                     new MetaEnumEntryInfo_s(MetaName.StationaryReactions, 2),
-                     new MetaEnumEntryInfo_s(MetaName.OnlySpawnInSameInterior, 3),
-                     new MetaEnumEntryInfo_s(MetaName.SpawnedPedIsArrestable, 4),
-                     new MetaEnumEntryInfo_s(MetaName.ActivateVehicleSiren, 5),
-                     new MetaEnumEntryInfo_s(MetaName.AggressiveVehicleDriving, 6),
-                     new MetaEnumEntryInfo_s(MetaName.LandVehicleOnArrival, 7),
-                     new MetaEnumEntryInfo_s(MetaName.IgnoreThreatsIfLosNotClear, 8),
-                     new MetaEnumEntryInfo_s(MetaName.EventsInRadiusTriggerDisputes, 9),
-                     new MetaEnumEntryInfo_s(MetaName.AerialVehiclePoint, 10),
-                     new MetaEnumEntryInfo_s(MetaName.TerritorialScenario, 11),
-                     new MetaEnumEntryInfo_s(MetaName.EndScenarioIfPlayerWithinRadius, 12),
-                     new MetaEnumEntryInfo_s(MetaName.EventsInRadiusTriggerThreatResponse, 13),
-                     new MetaEnumEntryInfo_s(MetaName.TaxiPlaneOnGround, 14),
-                     new MetaEnumEntryInfo_s(MetaName.FlyOffToOblivion, 15),
-                     new MetaEnumEntryInfo_s(MetaName.InWater, 16),
-                     new MetaEnumEntryInfo_s(MetaName.AllowInvestigation, 17),
-                     new MetaEnumEntryInfo_s(MetaName.OpenDoor, 18),
-                     new MetaEnumEntryInfo_s(MetaName.PreciseUseTime, 19),
-                     new MetaEnumEntryInfo_s(MetaName.NoRespawnUntilStreamedOut, 20),
-                     new MetaEnumEntryInfo_s(MetaName.NoVehicleSpawnMaxDistance, 21),
-                     new MetaEnumEntryInfo_s(MetaName.ExtendedRange, 22),
-                     new MetaEnumEntryInfo_s(MetaName.ShortRange, 23),
-                     new MetaEnumEntryInfo_s(MetaName.HighPriority, 24),
-                     new MetaEnumEntryInfo_s(MetaName.IgnoreLoitering, 25),
-                     new MetaEnumEntryInfo_s(MetaName.UseSearchlight, 26),
-                     new MetaEnumEntryInfo_s(MetaName.ResetNoCollisionOnCleanUp, 27),
-                     new MetaEnumEntryInfo_s(MetaName.CheckCrossedArrivalPlane, 28),
-                     new MetaEnumEntryInfo_s(MetaName.UseVehicleFrontForArrival, 29),
-                     new MetaEnumEntryInfo_s(MetaName.IgnoreWeatherRestrictions, 30)
-                    );
-                case MetaName.CSpawnPoint__AvailabilityMpSp:
-                    return new MetaEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp, 671739257,
-                     new MetaEnumEntryInfo_s(MetaName.kBoth, 0),
-                     new MetaEnumEntryInfo_s(MetaName.kOnlySp, 1),
-                     new MetaEnumEntryInfo_s(MetaName.kOnlyMp, 2)
-                    );
-                case MetaName.CScenarioChainingEdge__eAction:
-                    return new MetaEnumInfo(MetaName.CScenarioChainingEdge__eAction, 3326075799,
-                     new MetaEnumEntryInfo_s(MetaName.Move, 0),
-                     new MetaEnumEntryInfo_s((MetaName)7865678, 1),
-                     new MetaEnumEntryInfo_s(MetaName.MoveFollowMaster, 2)
-                    );
-                case MetaName.CScenarioChainingEdge__eNavMode:
-                    return new MetaEnumInfo(MetaName.CScenarioChainingEdge__eNavMode, 3016128742,
-                     new MetaEnumEntryInfo_s(MetaName.Direct, 0),
-                     new MetaEnumEntryInfo_s(MetaName.NavMesh, 1),
-                     new MetaEnumEntryInfo_s(MetaName.Roads, 2)
-                    );
-                case MetaName.CScenarioChainingEdge__eNavSpeed:
-                    return new MetaEnumInfo(MetaName.CScenarioChainingEdge__eNavSpeed, 1112851290,
-                     new MetaEnumEntryInfo_s((MetaName)3279574318, 0),
-                     new MetaEnumEntryInfo_s((MetaName)2212923970, 1),
-                     new MetaEnumEntryInfo_s((MetaName)4022799658, 2),
-                     new MetaEnumEntryInfo_s((MetaName)1425672334, 3),
-                     new MetaEnumEntryInfo_s((MetaName)957720931, 4),
-                     new MetaEnumEntryInfo_s((MetaName)3795195414, 5),
-                     new MetaEnumEntryInfo_s((MetaName)2834622009, 6),
-                     new MetaEnumEntryInfo_s((MetaName)1876554076, 7),
-                     new MetaEnumEntryInfo_s((MetaName)698543797, 8),
-                     new MetaEnumEntryInfo_s((MetaName)1544199634, 9),
-                     new MetaEnumEntryInfo_s((MetaName)2725613303, 10),
-                     new MetaEnumEntryInfo_s((MetaName)4033265820, 11),
-                     new MetaEnumEntryInfo_s((MetaName)3054809929, 12),
-                     new MetaEnumEntryInfo_s((MetaName)3911005380, 13),
-                     new MetaEnumEntryInfo_s((MetaName)3717649022, 14),
-                     new MetaEnumEntryInfo_s((MetaName)3356026130, 15)
-                    );
-                case MetaName.rage__fwArchetypeDef__eAssetType:
-                    return new MetaEnumInfo(MetaName.rage__fwArchetypeDef__eAssetType, 1866031916,
-                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_UNINITIALIZED, 0),
-                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_FRAGMENT, 1),
-                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLE, 2),
-                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLEDICTIONARY, 3),
-                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_ASSETLESS, 4)
-                    );
-                case MetaName.rage__eLodType:
-                    return new MetaEnumInfo(MetaName.rage__eLodType, 1856311430,
-                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_HD, 0),
-                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_LOD, 1),
-                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD1, 2),
-                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD2, 3),
-                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD3, 4),
-                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_ORPHANHD, 5),
-                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD4, 6)
-                    );
-                case MetaName.rage__ePriorityLevel:
-                    return new MetaEnumInfo(MetaName.rage__ePriorityLevel, 2200357711,
-                     new MetaEnumEntryInfo_s(MetaName.PRI_REQUIRED, 0),
-                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_HIGH, 1),
-                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_MEDIUM, 2),
-                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_LOW, 3)
-                    );
-                case MetaName.CExtensionDefLadderMaterialType:
-                    return new MetaEnumInfo(MetaName.CExtensionDefLadderMaterialType, 3514570158,
-                     new MetaEnumEntryInfo_s(MetaName.METAL_SOLID_LADDER, 0),
-                     new MetaEnumEntryInfo_s(MetaName.METAL_LIGHT_LADDER, 1),
-                     new MetaEnumEntryInfo_s(MetaName.WOODEN_LADDER, 2)
-                    );
-                case MetaName.CExtensionDefLightShaftDensityType:
-                    return new MetaEnumInfo(MetaName.CExtensionDefLightShaftDensityType, 3539601182,
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_CONSTANT, 0),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT, 1),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW, 2),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW_HD, 3),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_LINEAR, 4),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_LINEAR_GRADIENT, 5),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_QUADRATIC, 6),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_QUADRATIC_GRADIENT, 7)
-                    );
-                case MetaName.CExtensionDefLightShaftVolumeType:
-                    return new MetaEnumInfo(MetaName.CExtensionDefLightShaftVolumeType, 4287472345,
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_VOLUMETYPE_SHAFT, 0),
-                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_VOLUMETYPE_CYLINDER, 1)
-                    );
-                case MetaName.ePedVarComp:
-                    return new MetaEnumInfo(MetaName.ePedVarComp, 3472084374,
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_INVALID, -1),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HEAD, 0),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_BERD, 1),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HAIR, 2),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_UPPR, 3),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_LOWR, 4),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HAND, 5),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_FEET, 6),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_TEEF, 7),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_ACCS, 8),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_TASK, 9),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_DECL, 10),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_JBIB, 11),
-                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_MAX, 12)
-                    );
-                case MetaName.ePropRenderFlags:
-                    return new MetaEnumInfo(MetaName.ePropRenderFlags, 1551913633,
-                     new MetaEnumEntryInfo_s(MetaName.PRF_ALPHA, 0),
-                     new MetaEnumEntryInfo_s(MetaName.PRF_DECAL, 1),
-                     new MetaEnumEntryInfo_s(MetaName.PRF_CUTOUT, 2)
-                    );
-                case MetaName.eAnchorPoints:
-                    return new MetaEnumInfo(MetaName.eAnchorPoints, 1309372691,
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_HEAD, 0),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_EYES, 1),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_EARS, 2),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_MOUTH, 3),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_HAND, 4),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_HAND, 5),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_WRIST, 6),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_WRIST, 7),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_HIP, 8),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_FOOT, 9),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_FOOT, 10),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_PH_L_HAND, 11),
-                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_PH_R_HAND, 12),
-                     new MetaEnumEntryInfo_s(MetaName.NUM_ANCHORS, 13)
-                    );
-                case MetaName.rage__phCapsuleBoundDef__enCollisionBoundDef:
-                    return new MetaEnumInfo(MetaName.rage__phCapsuleBoundDef__enCollisionBoundDef, 1585854303,
-                     new MetaEnumEntryInfo_s(MetaName.BOUND_DEF_IS_PLANE, 0)
-                    );
-
-                default:
-                    return null;
-            }
+                MetaName.CScenarioPointFlags__Flags => new MetaEnumInfo(MetaName.CScenarioPointFlags__Flags, 2814596095,
+                                     new MetaEnumEntryInfo_s(MetaName.IgnoreMaxInRange, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.NoSpawn, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.StationaryReactions, 2),
+                                     new MetaEnumEntryInfo_s(MetaName.OnlySpawnInSameInterior, 3),
+                                     new MetaEnumEntryInfo_s(MetaName.SpawnedPedIsArrestable, 4),
+                                     new MetaEnumEntryInfo_s(MetaName.ActivateVehicleSiren, 5),
+                                     new MetaEnumEntryInfo_s(MetaName.AggressiveVehicleDriving, 6),
+                                     new MetaEnumEntryInfo_s(MetaName.LandVehicleOnArrival, 7),
+                                     new MetaEnumEntryInfo_s(MetaName.IgnoreThreatsIfLosNotClear, 8),
+                                     new MetaEnumEntryInfo_s(MetaName.EventsInRadiusTriggerDisputes, 9),
+                                     new MetaEnumEntryInfo_s(MetaName.AerialVehiclePoint, 10),
+                                     new MetaEnumEntryInfo_s(MetaName.TerritorialScenario, 11),
+                                     new MetaEnumEntryInfo_s(MetaName.EndScenarioIfPlayerWithinRadius, 12),
+                                     new MetaEnumEntryInfo_s(MetaName.EventsInRadiusTriggerThreatResponse, 13),
+                                     new MetaEnumEntryInfo_s(MetaName.TaxiPlaneOnGround, 14),
+                                     new MetaEnumEntryInfo_s(MetaName.FlyOffToOblivion, 15),
+                                     new MetaEnumEntryInfo_s(MetaName.InWater, 16),
+                                     new MetaEnumEntryInfo_s(MetaName.AllowInvestigation, 17),
+                                     new MetaEnumEntryInfo_s(MetaName.OpenDoor, 18),
+                                     new MetaEnumEntryInfo_s(MetaName.PreciseUseTime, 19),
+                                     new MetaEnumEntryInfo_s(MetaName.NoRespawnUntilStreamedOut, 20),
+                                     new MetaEnumEntryInfo_s(MetaName.NoVehicleSpawnMaxDistance, 21),
+                                     new MetaEnumEntryInfo_s(MetaName.ExtendedRange, 22),
+                                     new MetaEnumEntryInfo_s(MetaName.ShortRange, 23),
+                                     new MetaEnumEntryInfo_s(MetaName.HighPriority, 24),
+                                     new MetaEnumEntryInfo_s(MetaName.IgnoreLoitering, 25),
+                                     new MetaEnumEntryInfo_s(MetaName.UseSearchlight, 26),
+                                     new MetaEnumEntryInfo_s(MetaName.ResetNoCollisionOnCleanUp, 27),
+                                     new MetaEnumEntryInfo_s(MetaName.CheckCrossedArrivalPlane, 28),
+                                     new MetaEnumEntryInfo_s(MetaName.UseVehicleFrontForArrival, 29),
+                                     new MetaEnumEntryInfo_s(MetaName.IgnoreWeatherRestrictions, 30)
+                                    ),
+                MetaName.CSpawnPoint__AvailabilityMpSp => new MetaEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp, 671739257,
+                                     new MetaEnumEntryInfo_s(MetaName.kBoth, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.kOnlySp, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.kOnlyMp, 2)
+                                    ),
+                MetaName.CScenarioChainingEdge__eAction => new MetaEnumInfo(MetaName.CScenarioChainingEdge__eAction, 3326075799,
+                                     new MetaEnumEntryInfo_s(MetaName.Move, 0),
+                                     new MetaEnumEntryInfo_s((MetaName)7865678, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.MoveFollowMaster, 2)
+                                    ),
+                MetaName.CScenarioChainingEdge__eNavMode => new MetaEnumInfo(MetaName.CScenarioChainingEdge__eNavMode, 3016128742,
+                                     new MetaEnumEntryInfo_s(MetaName.Direct, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.NavMesh, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.Roads, 2)
+                                    ),
+                MetaName.CScenarioChainingEdge__eNavSpeed => new MetaEnumInfo(MetaName.CScenarioChainingEdge__eNavSpeed, 1112851290,
+                                     new MetaEnumEntryInfo_s((MetaName)3279574318, 0),
+                                     new MetaEnumEntryInfo_s((MetaName)2212923970, 1),
+                                     new MetaEnumEntryInfo_s((MetaName)4022799658, 2),
+                                     new MetaEnumEntryInfo_s((MetaName)1425672334, 3),
+                                     new MetaEnumEntryInfo_s((MetaName)957720931, 4),
+                                     new MetaEnumEntryInfo_s((MetaName)3795195414, 5),
+                                     new MetaEnumEntryInfo_s((MetaName)2834622009, 6),
+                                     new MetaEnumEntryInfo_s((MetaName)1876554076, 7),
+                                     new MetaEnumEntryInfo_s((MetaName)698543797, 8),
+                                     new MetaEnumEntryInfo_s((MetaName)1544199634, 9),
+                                     new MetaEnumEntryInfo_s((MetaName)2725613303, 10),
+                                     new MetaEnumEntryInfo_s((MetaName)4033265820, 11),
+                                     new MetaEnumEntryInfo_s((MetaName)3054809929, 12),
+                                     new MetaEnumEntryInfo_s((MetaName)3911005380, 13),
+                                     new MetaEnumEntryInfo_s((MetaName)3717649022, 14),
+                                     new MetaEnumEntryInfo_s((MetaName)3356026130, 15)
+                                    ),
+                MetaName.rage__fwArchetypeDef__eAssetType => new MetaEnumInfo(MetaName.rage__fwArchetypeDef__eAssetType, 1866031916,
+                                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_UNINITIALIZED, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_FRAGMENT, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLE, 2),
+                                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_DRAWABLEDICTIONARY, 3),
+                                     new MetaEnumEntryInfo_s(MetaName.ASSET_TYPE_ASSETLESS, 4)
+                                    ),
+                MetaName.rage__eLodType => new MetaEnumInfo(MetaName.rage__eLodType, 1856311430,
+                                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_HD, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_LOD, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD1, 2),
+                                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD2, 3),
+                                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD3, 4),
+                                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_ORPHANHD, 5),
+                                     new MetaEnumEntryInfo_s(MetaName.LODTYPES_DEPTH_SLOD4, 6)
+                                    ),
+                MetaName.rage__ePriorityLevel => new MetaEnumInfo(MetaName.rage__ePriorityLevel, 2200357711,
+                                     new MetaEnumEntryInfo_s(MetaName.PRI_REQUIRED, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_HIGH, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_MEDIUM, 2),
+                                     new MetaEnumEntryInfo_s(MetaName.PRI_OPTIONAL_LOW, 3)
+                                    ),
+                MetaName.CExtensionDefLadderMaterialType => new MetaEnumInfo(MetaName.CExtensionDefLadderMaterialType, 3514570158,
+                                     new MetaEnumEntryInfo_s(MetaName.METAL_SOLID_LADDER, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.METAL_LIGHT_LADDER, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.WOODEN_LADDER, 2)
+                                    ),
+                MetaName.CExtensionDefLightShaftDensityType => new MetaEnumInfo(MetaName.CExtensionDefLightShaftDensityType, 3539601182,
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_CONSTANT, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW, 2),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_SOFT_SHADOW_HD, 3),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_LINEAR, 4),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_LINEAR_GRADIENT, 5),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_QUADRATIC, 6),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_DENSITYTYPE_QUADRATIC_GRADIENT, 7)
+                                    ),
+                MetaName.CExtensionDefLightShaftVolumeType => new MetaEnumInfo(MetaName.CExtensionDefLightShaftVolumeType, 4287472345,
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_VOLUMETYPE_SHAFT, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.LIGHTSHAFT_VOLUMETYPE_CYLINDER, 1)
+                                    ),
+                MetaName.ePedVarComp => new MetaEnumInfo(MetaName.ePedVarComp, 3472084374,
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_INVALID, -1),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HEAD, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_BERD, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HAIR, 2),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_UPPR, 3),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_LOWR, 4),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_HAND, 5),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_FEET, 6),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_TEEF, 7),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_ACCS, 8),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_TASK, 9),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_DECL, 10),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_JBIB, 11),
+                                     new MetaEnumEntryInfo_s(MetaName.PV_COMP_MAX, 12)
+                                    ),
+                MetaName.ePropRenderFlags => new MetaEnumInfo(MetaName.ePropRenderFlags, 1551913633,
+                                     new MetaEnumEntryInfo_s(MetaName.PRF_ALPHA, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.PRF_DECAL, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.PRF_CUTOUT, 2)
+                                    ),
+                MetaName.eAnchorPoints => new MetaEnumInfo(MetaName.eAnchorPoints, 1309372691,
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_HEAD, 0),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_EYES, 1),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_EARS, 2),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_MOUTH, 3),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_HAND, 4),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_HAND, 5),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_WRIST, 6),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_WRIST, 7),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_HIP, 8),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_LEFT_FOOT, 9),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_RIGHT_FOOT, 10),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_PH_L_HAND, 11),
+                                     new MetaEnumEntryInfo_s(MetaName.ANCHOR_PH_R_HAND, 12),
+                                     new MetaEnumEntryInfo_s(MetaName.NUM_ANCHORS, 13)
+                                    ),
+                MetaName.rage__phCapsuleBoundDef__enCollisionBoundDef => new MetaEnumInfo(MetaName.rage__phCapsuleBoundDef__enCollisionBoundDef, 1585854303,
+                                     new MetaEnumEntryInfo_s(MetaName.BOUND_DEF_IS_PLANE, 0)
+                                    ),
+                _ => null,
+            };
         }
 
 
@@ -1423,11 +1347,11 @@ namespace CodeWalker.GameFiles
             string name = namehash.ToString();
             if (string.IsNullOrEmpty(name))
             {
-                name = "Unk_" + key;
+                name = $"Unk_{key}";
             }
             if (!char.IsLetter(name[0]))
             {
-                name = "Unk_" + name;
+                name = $"Unk_{name}";
             }
             return name;
         }
@@ -1436,12 +1360,12 @@ namespace CodeWalker.GameFiles
 
 
 
-        public static byte[] ConvertToBytes<T>(T item) where T : struct
+        public static byte[] ConvertToBytes<T>(in T item) where T : struct
         {
             int size = Marshal.SizeOf(typeof(T));
             //int offset = 0;
             byte[] arr = new byte[size];
-            MemoryMarshal.TryWrite(arr.AsSpan(), ref item);
+            MemoryMarshal.TryWrite(arr.AsSpan(), in item);
             return arr;
             //IntPtr ptr = Marshal.AllocHGlobal(size);
             //Marshal.StructureToPtr(item, ptr, true);
@@ -1450,35 +1374,46 @@ namespace CodeWalker.GameFiles
             //offset += size;
             //return arr;
         }
-        public static byte[] ConvertArrayToBytes<T>(params T[] items) where T : struct
+
+        [return: NotNullIfNotNull(nameof(items))]
+        public static byte[]? ConvertArrayToBytes<T>(params T[]? items) where T : struct
         {
-            if (items == null) return null;
+            if (items is null)
+                return null;
 
             return MemoryMarshal.AsBytes(items.AsSpan()).ToArray();
         }
 
         public static Span<byte> ConvertArrayToBytes<T>(Span<T> items) where T : struct
         {
-            if (items == null) return null;
-
             return MemoryMarshal.AsBytes(items);
         }
 
 
-        public static T ConvertData<T>(byte[] data) where T : struct
+        //public static T ConvertData<T>(byte[] data) where T : struct
+        //{
+        //    MemoryMarshal.TryRead<T>(data.AsSpan(), out T value);
+
+        //    return value;
+        //    //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+        //    //var h = handle.AddrOfPinnedObject();
+        //    //var r = Marshal.PtrToStructure<T>(h);
+        //    //handle.Free();
+        //    //return r;
+        //}
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T ConvertData<T>(Span<byte> data) where T : struct
         {
-            MemoryMarshal.TryRead<T>(data.AsSpan(), out T value);
+            TryConvertData(data, out T value);
 
             return value;
-            //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            //var h = handle.AddrOfPinnedObject();
-            //var r = Marshal.PtrToStructure<T>(h);
-            //handle.Free();
-            //return r;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ConvertData<T>(byte[] data, int offset) where T : struct
         {
-            MemoryMarshal.TryRead<T>(data.AsSpan(offset), out T value);
+            TryConvertData(data.AsSpan(offset), out T value);
 
             return value;
             //GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
@@ -1487,6 +1422,23 @@ namespace CodeWalker.GameFiles
             //handle.Free();
             //return r;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryConvertData<T>(Span<byte> data, out T value) where T : struct
+        {
+            return MemoryMarshal.TryRead<T>(data, out value);
+        }
+
+        public static bool TryConvertData<T>(byte[] data, int offset, out T value) where T : struct
+        {
+            return TryConvertData<T>(data.AsSpan(offset), out value);
+        }
+
+        public static Span<T> ConvertDataArray<T>(Span<byte> data, int count) where T : struct
+        {
+            return MemoryMarshal.Cast<byte, T>(data.Slice(0, count * Marshal.SizeOf(typeof(T))));
+        }
+
         public static Span<T> ConvertDataArray<T>(byte[] data, int offset, int count) where T : struct
         {
             //T[] items = new T[count];
@@ -1517,64 +1469,136 @@ namespace CodeWalker.GameFiles
 
             //return items;
         }
-        public static T[] ConvertDataArray<T>(Meta meta, MetaName name, Array_StructurePointer array) where T : struct
+
+        public static T[]? ConvertDataArray<T>(Meta meta, MetaName name, in Array_StructurePointer array, T[]? buffer = null) where T : struct
         {
             //return ConvertDataArray<T>(meta, name, array.Pointer, array.Count1);
-            uint count = array.Count1;
-            if (count == 0) return null;
-            MetaPOINTER[] ptrs = GetPointerArray(meta, array);
-            if (ptrs == null) return null;
-            if (ptrs.Length < count)
-            { return null; }
-
-            T[] items = new T[count];
-
-            //MetaName blocktype = 0;
-            for (int i = 0; i < count; i++)
-            {
-                var ptr = ptrs[i];
-                var offset = ptr.Offset;
-                var block = meta.GetBlock(ptr.BlockID);
-                if (block == null)
-                {
-                    continue;
-                }
-
-                //if (blocktype == 0)
-                //{ blocktype = block.StructureNameHash; }
-                //else if (block.StructureNameHash != blocktype)
-                //{ } //not all the same type..!
-
-                if (block.StructureNameHash != name)
-                {
-                    return null;
-                } //type mismatch - don't return anything...
-                if ((offset < 0) || (block.Data == null) || (offset >= block.Data.Length))
-                {
-                    continue;
-                }
-                items[i] = ConvertData<T>(block.Data, offset);
-            }
-
-            return items;
-        }
-        public static T[] ConvertDataArray<T>(Meta meta, MetaName name, Array_Structure array) where T : struct
-        {
-            return ConvertDataArray<T>(meta, name, array.Pointer, array.Count1);
-        }
-        public static T[] ConvertDataArray<T>(Meta meta, MetaName name, ulong pointer, uint count) where T : struct
-        {
+            var count = (int)array.Count1;
             if (count == 0)
                 return null;
 
-            T[] items = new T[count];
+            var ptrsArr = ArrayPool<MetaPOINTER>.Shared.Rent(count);
+            try
+            {
+                Span<MetaPOINTER> ptrs = GetPointerArray(meta, in array, ptrsArr).AsSpan(0, count);
+                if (ptrs.IsEmpty)
+                    return null;
+                if (ptrs.Length < count)
+                {
+                    return null;
+                }
+
+                T[] items = buffer ?? new T[count];
+
+                //MetaName blocktype = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    var ptr = ptrs[i];
+                    var offset = ptr.Offset;
+                    var block = meta.GetBlock(ptr.BlockID);
+                    if (block is null)
+                    {
+                        continue;
+                    }
+
+                    if (block.StructureNameHash != name)
+                    {
+                        return null;
+                    } //type mismatch - don't return anything...
+                    if (offset < 0 || block.Data is null || offset >= block.Data.Length)
+                    {
+                        continue;
+                    }
+                    TryConvertData<T>(block.Data.AsSpan(offset), out items[i]);
+                }
+
+                return items;
+            }
+            finally
+            {
+                ArrayPool<MetaPOINTER>.Shared.Return(ptrsArr);
+            }
+        }
+
+        public delegate void DataArrayAction<T, TArg>(Span<T> span, ref TArg arg);
+
+        public static void ConvertDataArrayAction<T, TState>(Meta meta, MetaName name, in Array_Structure array, ref TState state, DataArrayAction<T, TState> action) where T : struct
+        {
+            ConvertDataArrayAction(meta, name, array.Pointer, array.Count1, ref state, action);
+        }
+
+        public static T[]? ConvertDataArray<T>(Meta meta, MetaName name, in Array_Structure array, T[]? buffer = null) where T : struct
+        {
+            return ConvertDataArray<T>(meta, name, array.Pointer, array.Count1, buffer);
+        }
+
+        public static void ConvertDataArrayAction<T, TState>(Meta meta, MetaName name, ulong pointer, uint count, ref TState state, DataArrayAction<T, TState> action) where T : struct
+        {
+            if (count == 0)
+                return;
+
             int itemsize = Marshal.SizeOf(typeof(T));
             int itemsleft = (int)count; //large arrays get split into chunks...
 
             uint ptrindex = (uint)(pointer & 0xFFF) - 1;
             uint ptroffset = (uint)((pointer >> 12) & 0xFFFFF);
             var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
-            if ((ptrblock == null) || (ptrblock.Data == null) || (ptrblock.StructureNameHash != name))
+            if (ptrblock?.Data is null || ptrblock.StructureNameHash != name)
+            {
+                return;
+            } //no block or wrong block? shouldn't happen!
+
+            int byteoffset = (int)ptroffset;// (ptroffset * 16 + ptrunkval);
+            int itemoffset = byteoffset / itemsize;
+
+            int curi = 0;
+            while (itemsleft > 0)
+            {
+                int blockcount = ptrblock.DataLength / itemsize;
+                int itemcount = blockcount - itemoffset;
+                if (itemcount > itemsleft)
+                {
+                    itemcount = itemsleft;
+                } //don't try to read too many items..
+
+                action(ConvertDataArray<T>(ptrblock.Data, itemoffset * Marshal.SizeOf(typeof(T)), itemcount), ref state);
+                //for (int i = 0; i < itemcount; i++)
+                //{
+                //    int offset = (itemoffset + i) * itemsize;
+                //    int index = curi + i;
+                //    items[index] = ConvertData<T>(ptrblock.Data, offset);
+                //}
+                itemoffset = 0; //start at beginning of next block..
+                curi += itemcount;
+                itemsleft -= itemcount;
+                if (itemsleft <= 0)
+                {
+                    return;
+                }//all done!
+                ptrindex++;
+                ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
+                if (ptrblock?.Data is null || ptrblock.StructureNameHash != name)
+                {
+                    break;
+                } //not enough items..?
+            }
+
+            return;
+        }
+
+        public static T[]? ConvertDataArray<T>(Meta meta, MetaName name, ulong pointer, uint count, T[]? buffer = null) where T : struct
+        {
+            if (count == 0)
+                return null;
+
+            T[] items = buffer ?? GC.AllocateUninitializedArray<T>((int)count);
+            int itemsize = Marshal.SizeOf(typeof(T));
+            int itemsleft = (int)count; //large arrays get split into chunks...
+
+            uint ptrindex = (uint)(pointer & 0xFFF) - 1;
+            uint ptroffset = (uint)((pointer >> 12) & 0xFFFFF);
+            var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
+            if (ptrblock?.Data is null || ptrblock.StructureNameHash != name)
             {
                 return null;
             } //no block or wrong block? shouldn't happen!
@@ -1608,14 +1632,10 @@ namespace CodeWalker.GameFiles
                 }//all done!
                 ptrindex++;
                 ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
-                if ((ptrblock == null) || (ptrblock.Data == null))
+                if (ptrblock?.Data is null || ptrblock.StructureNameHash != name)
                 {
                     break;
                 } //not enough items..?
-                if (ptrblock.StructureNameHash != name)
-                {
-                    break;
-                } //type mismatch..
             }
 
             return null;
@@ -1707,91 +1727,111 @@ namespace CodeWalker.GameFiles
             #endregion
         }
 
-        public static MetaPOINTER[] GetPointerArray(Meta meta, Array_StructurePointer array)
+        public static MetaPOINTER[] GetPointerArray(this Meta meta, in Array_StructurePointer array, MetaPOINTER[]? buffer = null)
         {
             uint count = array.Count1;
-            if (count == 0) return null;
+            if (count == 0)
+                return [];
 
-            MetaPOINTER[] ptrs = new MetaPOINTER[count];
             int ptrsize = Marshal.SizeOf(typeof(MetaPOINTER));
             int ptroffset = (int)array.PointerDataOffset;
             var ptrblock = meta.GetBlock((int)array.PointerDataId);
-            if ((ptrblock == null) || (ptrblock.Data == null) || (ptrblock.StructureNameHash != (MetaName)MetaTypeName.POINTER))
-            { return null; }
+            if (ptrblock?.Data == null || ptrblock.StructureNameHash != (MetaName)MetaTypeName.POINTER)
+            {
+                return [];
+            }
 
+            MetaPOINTER[] ptrs = buffer ?? GC.AllocateUninitializedArray<MetaPOINTER>((int)count);
             for (int i = 0; i < count; i++)
             {
                 int offset = ptroffset + (i * ptrsize);
                 if (offset >= ptrblock.Data.Length)
-                { break; }
-                ptrs[i] = ConvertData<MetaPOINTER>(ptrblock.Data, offset);
+                {
+                    break;
+                }
+                TryConvertData(ptrblock.Data.AsSpan(offset), out ptrs[i]);
             }
 
             return ptrs;
         }
 
-        public static MetaHash[] GetHashArray(Meta meta, Array_uint array)
+        //public static MetaPOINTER[]? GetPointerArray(this Meta meta, Array_StructurePointer array, MetaPOINTER[]? buffer = null)
+        //{
+        //    return GetPointerArray(meta, in array, buffer);
+        //}
+
+        public static MetaHash[]? GetHashArray(this Meta meta, in Array_uint array)
         {
             return ConvertDataArray<MetaHash>(meta, (MetaName)MetaTypeName.HASH, array.Pointer, array.Count1);
         }
-        public static Vector4[] GetPaddedVector3Array(Meta meta, Array_Vector3 array)
+        public static Vector4[]? GetPaddedVector3Array(Meta meta, in Array_Vector3 array)
         {
             return ConvertDataArray<Vector4>(meta, (MetaName)MetaTypeName.VECTOR4, array.Pointer, array.Count1);
         }
-        public static uint[] GetUintArray(Meta meta, Array_uint array)
+        public static uint[]? GetUintArray(Meta meta, in Array_uint array)
         {
             return ConvertDataArray<uint>(meta, (MetaName)MetaTypeName.UINT, array.Pointer, array.Count1);
         }
-        public static ushort[] GetUshortArray(Meta meta, Array_ushort array)
+        public static ushort[]? GetUshortArray(Meta meta, in Array_ushort array)
         {
             return ConvertDataArray<ushort>(meta, (MetaName)MetaTypeName.USHORT, array.Pointer, array.Count1);
         }
-        public static short[] GetShortArray(Meta meta, Array_ushort array)
-        {
-            return ConvertDataArray<short>(meta, (MetaName)MetaTypeName.USHORT, array.Pointer, array.Count1);
-        }
-        public static float[] GetFloatArray(Meta meta, Array_float array)
+        public static float[]? GetFloatArray(this Meta meta, in Array_float array)
         {
             return ConvertDataArray<float>(meta, (MetaName)MetaTypeName.FLOAT, array.Pointer, array.Count1);
         }
-        public static byte[] GetByteArray(Meta meta, Array_byte array)
+
+        public static byte[]? GetByteArray(this Meta meta, in Array_byte array)
         {
             uint ptrindex = array.PointerDataIndex;
             uint ptroffset = array.PointerDataOffset;
-            var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
-            if ((ptrblock == null) || (ptrblock.Data == null))// || (ptrblock.StructureNameHash != name))
-            { return null; } //no block or wrong block? shouldn't happen!
+
+            if (meta.DataBlocks is null || ptrindex >= meta.DataBlocks.Count)
+                return null;
+
+            var ptrblock = meta.DataBlocks[(int)ptrindex];
+            if (ptrblock?.Data is null)// || (ptrblock.StructureNameHash != name))
+                return null; //no block or wrong block? shouldn't happen!
+
             var count = array.Count1;
-            if ((ptroffset + count) > ptrblock.Data.Length)
-            { return null; }
-            byte[] data = new byte[count];
+            if (ptroffset + count > ptrblock.Data.Length)
+                return null;
+
+            byte[] data = GC.AllocateUninitializedArray<byte>(count);
             Buffer.BlockCopy(ptrblock.Data, (int)ptroffset, data, 0, count);
             return data;
         }
-        public static byte[] GetByteArray(Meta meta, DataBlockPointer ptr, uint count)
+
+        public static byte[]? GetByteArray(Meta meta, in DataBlockPointer ptr, uint count)
         {
             //var pointer = array.Pointer;
             uint ptrindex = ptr.PointerDataIndex;// (pointer & 0xFFF) - 1;
             uint ptroffset = ptr.PointerDataOffset;// ((pointer >> 12) & 0xFFFFF);
-            var ptrblock = (ptrindex < meta.DataBlocks.Count) ? meta.DataBlocks[(int)ptrindex] : null;
-            if ((ptrblock == null) || (ptrblock.Data == null))// || (ptrblock.StructureNameHash != name))
-            { return null; } //no block or wrong block? shouldn't happen!
-            //var count = array.Count1;
-            if ((ptroffset + count) > ptrblock.Data.Length)
-            { return null; }
-            byte[] data = new byte[count];
+
+            if (meta.DataBlocks is null || ptrindex >= meta.DataBlocks.Count)
+                return null;
+
+            var ptrblock = meta.DataBlocks[(int)ptrindex];
+            if (ptrblock?.Data is null) // || (ptrblock.StructureNameHash != name))
+                return null; //no block or wrong block? shouldn't happen!
+
+            if (ptroffset + count > ptrblock.Data.Length)
+                return null;
+
+            byte[] data = GC.AllocateUninitializedArray<byte>((int)count);
             Buffer.BlockCopy(ptrblock.Data, (int)ptroffset, data, 0, (int)count);
             return data;
         }
 
 
-        public static T[] GetTypedDataArray<T>(Meta meta, MetaName name) where T : struct
+        public static T[]? GetTypedDataArray<T>(Meta meta, MetaName name) where T : struct
         {
-            if ((meta == null) || (meta.DataBlocks == null)) return null;
+            if (meta?.DataBlocks is null)
+                return null;
 
             var datablocks = meta.DataBlocks.Data;
 
-            MetaDataBlock startblock = null;
+            MetaDataBlock? startblock = null;
             int startblockind = -1;
             for (int i = 0; i < datablocks.Count; i++)
             {
@@ -1803,7 +1843,7 @@ namespace CodeWalker.GameFiles
                     break;
                 }
             }
-            if (startblock == null)
+            if (startblock is null)
             {
                 return null; //couldn't find the data.
             }
@@ -1812,14 +1852,17 @@ namespace CodeWalker.GameFiles
             int itemsize = Marshal.SizeOf(typeof(T));
             var currentblock = startblock;
             int currentblockind = startblockind;
-            while (currentblock != null)
+            while (currentblock is not null)
             {
                 int blockitems = currentblock.DataLength / itemsize;
                 count += blockitems;
                 currentblockind++;
-                if (currentblockind >= datablocks.Count) break; //last block, can't go any further
+                if (currentblockind >= datablocks.Count)
+                    break; //last block, can't go any further
+
                 currentblock = datablocks[currentblockind];
-                if (currentblock.StructureNameHash != name) break; //not the right block type, can't go further
+                if (currentblock.StructureNameHash != name)
+                    break; //not the right block type, can't go further
             }
 
             if (count <= 0)
@@ -1829,26 +1872,49 @@ namespace CodeWalker.GameFiles
 
             return ConvertDataArray<T>(meta, name, (uint)startblockind + 1, (uint)count);
         }
+
+        [DoesNotReturn]
+        private static void ThrowBlockNotFoundException(MetaName name)
+        {
+            throw new Exception($"Couldn't find {name} block.");
+        }
+
         public static T GetTypedData<T>(Meta meta, MetaName name) where T : struct
         {
-            foreach (var block in meta.DataBlocks)
+            ArgumentNullException.ThrowIfNull(meta, nameof(meta));
+            if (meta?.DataBlocks is null)
+            {
+                ThrowHelper.ThrowInvalidOperationException($"meta.DataBlocks is null!");
+            }
+            
+            foreach (var block in meta.DataBlocks.Span)
             {
                 if (block.StructureNameHash == name)
                 {
-                    return MetaTypes.ConvertData<T>(block.Data);
+                    return ConvertData<T>(block.Data);
                 }
             }
-            throw new Exception("Couldn't find " + name.ToString() + " block.");
+            //foreach (var block in meta.DataBlocks)
+            //{
+            //    if (block.StructureNameHash == name)
+            //    {
+            //        return MetaTypes.ConvertData<T>(block.Data);
+            //    }
+            //}
+
+            ThrowBlockNotFoundException(name);
+            return default;
         }
-        public static string[] GetStrings(Meta meta)
+        public static string[]? GetStrings(this Meta? meta)
         {
             //look for strings in the sectionSTRINGS data block(s)
 
-            if ((meta == null) || (meta.DataBlocks == null)) return null;
+            if (meta?.DataBlocks is null)
+                return null;
 
             var datablocks = meta.DataBlocks.Data;
 
-            MetaDataBlock startblock = null;
+            MetaDataBlock? startblock = null;
             int startblockind = -1;
             for (int i = 0; i < datablocks.Count; i++)
             {
@@ -1860,52 +1926,61 @@ namespace CodeWalker.GameFiles
                     break;
                 }
             }
-            if (startblock == null)
+            if (startblock is null)
             {
                 return null; //couldn't find the strings data section.
             }
 
-            List<string> strings = new List<string>();
-            StringBuilder sb = new StringBuilder();
+            using PooledList<string> strings = new PooledList<string>();
             var currentblock = startblock;
             int currentblockind = startblockind;
             while (currentblock != null)
             {
                 //read strings from the block.
-
-                sb.Clear();
                 int startindex = 0;
                 int endindex = 0;
                 var data = currentblock.Data;
-                for (int b = 0; b < data.Length; b++)
+                foreach(var span in data.AsSpan().EnumerateSplit((byte)0))
                 {
-                    if (data[b] == 0)
+                    if (!span.IsEmpty)
                     {
-                        startindex = endindex;
-                        endindex = b;
-                        if (endindex > startindex)
-                        {
-                            string str = Encoding.ASCII.GetString(data, startindex, endindex - startindex);
-                            strings.Add(str);
-                            endindex++; //start next string after the 0.
-                        }
-                    }
-                }
-                if (endindex != data.Length - 1)
-                {
-                    startindex = endindex;
-                    endindex = data.Length - 1;
-                    if (endindex > startindex)
-                    {
-                        string str = Encoding.ASCII.GetString(data, startindex, endindex - startindex);
+                        string str = Encoding.ASCII.GetStringPooled(span);
                         strings.Add(str);
                     }
                 }
+                //for (int b = 0; b < data.Length; b++)
+                //{
+                //    if (data[b] == 0)
+                //    {
+                //        startindex = endindex;
+                //        endindex = b;
+                //        if (endindex > startindex)
+                //        {
+                //            string str = Encoding.ASCII.GetString(data.AsSpan(startindex, endindex - startindex));
+                //            strings.Add(str);
+                //            endindex++; //start next string after the 0.
+                //        }
+                //    }
+                //}
+                //if (endindex != data.Length - 1)
+                //{
+                //    startindex = endindex;
+                //    endindex = data.Length - 1;
+                //    if (endindex > startindex)
+                //    {
+                //        string str = Encoding.ASCII.GetString(data.AsSpan(startindex, endindex - startindex));
+                //        strings.Add(str);
+                //        strings2.Add(str);
+                //    }
+                //}
 
                 currentblockind++;
-                if (currentblockind >= datablocks.Count) break; //last block, can't go any further
+                if (currentblockind >= datablocks.Count)
+                    break; //last block, can't go any further
+
                 currentblock = datablocks[currentblockind];
-                if (currentblock.StructureNameHash != (MetaName)MetaTypeName.STRING) break; //not the right block type, can't go further
+                if (currentblock.StructureNameHash != (MetaName)MetaTypeName.STRING)
+                    break; //not the right block type, can't go further
             }
 
 
@@ -1915,186 +1990,181 @@ namespace CodeWalker.GameFiles
             }
             return strings.ToArray();
         }
-        public static string GetString(Meta meta, CharPointer ptr)
+
+        [SkipLocalsInit]
+        public static string? GetString(this Meta meta, in CharPointer ptr)
         {
             var blocki = (int)ptr.PointerDataIndex;// (ptr.Pointer & 0xFFF) - 1;
             var offset = (int)ptr.PointerDataOffset;// (ptr.Pointer >> 12) & 0xFFFFF;
             if ((blocki < 0) || (blocki >= meta.DataBlocks.BlockLength))
-            { return null; }
+            {
+                return null;
+            }
             var block = meta.DataBlocks[blocki];
             if (block.StructureNameHash != (MetaName)MetaTypeName.STRING)
-            { return null; }
+            {
+                return null;
+            }
             //var byteoffset = offset * 16 + offset2;
             var length = ptr.Count1;
             var lastbyte = offset + length;
             if (lastbyte >= block.DataLength)
-            { return null; }
-            string s = Encoding.ASCII.GetString(block.Data, offset, length);
+            {
+                return null;
+            }
+
+            //string s = Encoding.ASCII.GetString(block.Data.AsSpan(offset, length));
 
             //if (meta.Strings == null) return null;
             //if (offset < 0) return null;
             //if (offset >= meta.Strings.Length) return null;
             //string s = meta.Strings[offset];
 
-            return s;
+            return Encoding.ASCII.GetStringPooled(block.Data.AsSpan(offset, length));
         }
 
-        public static MetaWrapper[] GetExtensions(Meta meta, Array_StructurePointer ptr)
+        public static string? GetString(this Meta meta, CharPointer ptr)
         {
-            if (ptr.Count1 == 0) return null;
+            return GetString(meta, in ptr);
+        }
+
+        public static MetaWrapper[]? GetExtensions(Meta meta, in Array_StructurePointer ptr)
+        {
+            if (ptr.Count1 == 0)
+                return null;
             var result = new MetaWrapper[ptr.Count1];
-            var extptrs = GetPointerArray(meta, ptr);
-            if (extptrs != null)
+            var ptrs = ArrayPool<MetaPOINTER>.Shared.Rent(ptr.Count1);
+            try
             {
-                for (int i = 0; i < extptrs.Length; i++)
+                GetPointerArray(meta, in ptr, ptrs);
+                var extptrs = ptrs.AsSpan(0, ptr.Count1);
+                if (!extptrs.IsEmpty)
                 {
-                    var extptr = extptrs[i];
-                    MetaWrapper ext = null;
-                    var block = meta.GetBlock(extptr.BlockID);
-                    var h = block.StructureNameHash;
-                    switch (h)
+                    for (int i = 0; i < extptrs.Length; i++)
                     {
-                        //archetype extension types
-                        case MetaName.CExtensionDefParticleEffect:
-                            ext = new MCExtensionDefParticleEffect();// MetaExtension<CExtensionDefParticleEffect>(h, GetData<CExtensionDefParticleEffect>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefAudioCollisionSettings:
-                            ext = new MCExtensionDefAudioCollisionSettings();// MetaExtension<CExtensionDefAudioCollisionSettings>(h, GetData<CExtensionDefAudioCollisionSettings>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefAudioEmitter:
-                            ext = new MCExtensionDefAudioEmitter();// MetaExtension<CExtensionDefAudioEmitter>(h, GetData<CExtensionDefAudioEmitter>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefSpawnPoint:
-                            ext = new MCExtensionDefSpawnPoint();// new MetaExtension<CExtensionDefSpawnPoint>(h, GetData<CExtensionDefSpawnPoint>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefExplosionEffect:
-                            ext = new MCExtensionDefExplosionEffect();// MetaExtension<CExtensionDefExplosionEffect>(h, GetData<CExtensionDefExplosionEffect>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefLadder:
-                            ext = new MCExtensionDefLadder();// MetaExtension<CExtensionDefLadder>(h, GetData<CExtensionDefLadder>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefBuoyancy:
-                            ext = new MCExtensionDefBuoyancy();// MetaExtension<CExtensionDefBuoyancy>(h, GetData<CExtensionDefBuoyancy>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefExpression:
-                            ext = new MCExtensionDefExpression();// MetaExtension<CExtensionDefExpression>(h, GetData<CExtensionDefExpression>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefLightShaft:
-                            ext = new MCExtensionDefLightShaft();// MetaExtension<CExtensionDefLightShaft>(h, GetData<CExtensionDefLightShaft>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefWindDisturbance:
-                            ext = new MCExtensionDefWindDisturbance();// MetaExtension<CExtensionDefWindDisturbance>(h, GetData<CExtensionDefWindDisturbance>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefProcObject:
-                            ext = new MCExtensionDefProcObject();// MetaExtension<CExtensionDefProcObject>(h, GetData<CExtensionDefProcObject>(block, extptr));
-                            break;
+                        ref var extptr = ref extptrs[i];
+                        var block = meta.GetBlock(extptr.BlockID);
+                        var h = block?.StructureNameHash ?? 0;
 
-                        //entity extension types
-                        case MetaName.CExtensionDefLightEffect:
-                            ext = new MCExtensionDefLightEffect();// MetaExtension<CExtensionDefLightEffect>(h, GetData<CExtensionDefLightEffect>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefSpawnPointOverride:
-                            ext = new MCExtensionDefSpawnPointOverride();// MetaExtension<CExtensionDefSpawnPointOverride>(h, GetData<CExtensionDefSpawnPointOverride>(block, extptr));
-                            break;
-                        case MetaName.CExtensionDefDoor:
-                            ext = new MCExtensionDefDoor();// MetaExtension<CExtensionDefDoor>(h, GetData<CExtensionDefDoor>(block, extptr));
-                            break;
-                        case MetaName.rage__phVerletClothCustomBounds: //rage__phVerletClothCustomBounds
-                            ext = new Mrage__phVerletClothCustomBounds();// MetaExtension<rage__phVerletClothCustomBounds>(h, GetData<rage__phVerletClothCustomBounds>(block, extptr));
-                            break;
+                        //var extptr = extptrs[i];
+                        MetaWrapper? ext = h switch
+                        {
+                            //archetype extension types
+                            MetaName.CExtensionDefParticleEffect => new MCExtensionDefParticleEffect(),// MetaExtension<CExtensionDefParticleEffect>(h, GetData<CExtensionDefParticleEffect>(block, extptr));
+                            MetaName.CExtensionDefAudioCollisionSettings => new MCExtensionDefAudioCollisionSettings(),// MetaExtension<CExtensionDefAudioCollisionSettings>(h, GetData<CExtensionDefAudioCollisionSettings>(block, extptr));
+                            MetaName.CExtensionDefAudioEmitter => new MCExtensionDefAudioEmitter(),// MetaExtension<CExtensionDefAudioEmitter>(h, GetData<CExtensionDefAudioEmitter>(block, extptr));
+                            MetaName.CExtensionDefSpawnPoint => new MCExtensionDefSpawnPoint(),// new MetaExtension<CExtensionDefSpawnPoint>(h, GetData<CExtensionDefSpawnPoint>(block, extptr));
+                            MetaName.CExtensionDefExplosionEffect => new MCExtensionDefExplosionEffect(),// MetaExtension<CExtensionDefExplosionEffect>(h, GetData<CExtensionDefExplosionEffect>(block, extptr));
+                            MetaName.CExtensionDefLadder => new MCExtensionDefLadder(),// MetaExtension<CExtensionDefLadder>(h, GetData<CExtensionDefLadder>(block, extptr));
+                            MetaName.CExtensionDefBuoyancy => new MCExtensionDefBuoyancy(),// MetaExtension<CExtensionDefBuoyancy>(h, GetData<CExtensionDefBuoyancy>(block, extptr));
+                            MetaName.CExtensionDefExpression => new MCExtensionDefExpression(),// MetaExtension<CExtensionDefExpression>(h, GetData<CExtensionDefExpression>(block, extptr));
+                            MetaName.CExtensionDefLightShaft => new MCExtensionDefLightShaft(),// MetaExtension<CExtensionDefLightShaft>(h, GetData<CExtensionDefLightShaft>(block, extptr));
+                            MetaName.CExtensionDefWindDisturbance => new MCExtensionDefWindDisturbance(),// MetaExtension<CExtensionDefWindDisturbance>(h, GetData<CExtensionDefWindDisturbance>(block, extptr));
+                            MetaName.CExtensionDefProcObject => new MCExtensionDefProcObject(),// MetaExtension<CExtensionDefProcObject>(h, GetData<CExtensionDefProcObject>(block, extptr));
+                                                                                               //entity extension types
+                            MetaName.CExtensionDefLightEffect => new MCExtensionDefLightEffect(),// MetaExtension<CExtensionDefLightEffect>(h, GetData<CExtensionDefLightEffect>(block, extptr));
+                            MetaName.CExtensionDefSpawnPointOverride => new MCExtensionDefSpawnPointOverride(),// MetaExtension<CExtensionDefSpawnPointOverride>(h, GetData<CExtensionDefSpawnPointOverride>(block, extptr));
+                            MetaName.CExtensionDefDoor => new MCExtensionDefDoor(),// MetaExtension<CExtensionDefDoor>(h, GetData<CExtensionDefDoor>(block, extptr));
+                                                                                   //rage__phVerletClothCustomBounds
+                            MetaName.rage__phVerletClothCustomBounds => new Mrage__phVerletClothCustomBounds(),// MetaExtension<rage__phVerletClothCustomBounds>(h, GetData<rage__phVerletClothCustomBounds>(block, extptr));
+                            _ => null,
+                        };
 
-                        default:
-                            break;
-                    }
+                        //string ts = GetTypesInitString(meta);
 
-                    //string ts = GetTypesInitString(meta);
-
-                    if (ext != null)
-                    {
-                        ext.Load(meta, extptr);
-                    }
-                    if (i < result.Length)
-                    {
-                        result[i] = ext;
+                        ext?.Load(meta, in extptr);
+                        if (i < result.Length)
+                        {
+                            result[i] = ext;
+                        }
                     }
                 }
+            }
+            finally
+            {
+                ArrayPool<MetaPOINTER>.Shared.Return(ptrs);
             }
             return result;
         }
 
 
-        public static int GetDataOffset(MetaDataBlock block, MetaPOINTER ptr)
+        public static int GetDataOffset(MetaDataBlock? block, in MetaPOINTER ptr)
         {
-            if (block == null) return -1;
+            if (block is null || block.Data is null)
+                return -1;
+
             var offset = ptr.Offset;
-            if ((offset < 0) || (block.Data == null) || (offset >= block.Data.Length))
-            { return -1; }
+            if (offset < 0 || offset >= block.Data.Length)
+                return -1;
+
             return offset;
         }
-        public static T GetData<T>(Meta meta, MetaPOINTER ptr) where T : struct
+
+        public static T GetData<T>(Meta meta, in MetaPOINTER ptr) where T : struct
         {
-            var block = meta.GetBlock(ptr.BlockID);
-            var offset = GetDataOffset(block, ptr);
-            if (offset < 0) return new T();
-            return ConvertData<T>(block.Data, offset);
+            _ = TryGetData<T>(meta, in ptr, out var result);
+
+            return result;
         }
 
+        public static bool TryGetData<T>(Meta meta, in MetaPOINTER ptr, out T result) where T : struct
+        {
+            var block = meta.GetBlock(ptr.BlockID); 
+            var offset = GetDataOffset(block, in ptr);
+            if (offset < 0 || block is null)
+            {
+                result = default;
+                return false;
+            }
+
+            return TryConvertData(block.Data, out result);
+        }
 
         public static ushort SwapBytes(ushort x)
         {
-            return (ushort)(((x & 0xFF00) >> 8) | ((x & 0x00FF) << 8));
+            return BinaryPrimitives.ReverseEndianness(x);
         }
         public static short SwapBytes(short x)
         {
-            return (short)SwapBytes((ushort)x);
+            return BinaryPrimitives.ReverseEndianness(x);
         }
         public static uint SwapBytes(uint x)
         {
-            // swap adjacent 16-bit blocks
-            x = (x >> 16) | (x << 16);
-            // swap adjacent 8-bit blocks
-            return ((x & 0xFF00FF00) >> 8) | ((x & 0x00FF00FF) << 8);
+            return BinaryPrimitives.ReverseEndianness(x);
         }
         public static int SwapBytes(int x)
         {
-            return (int)SwapBytes((uint)x);
+            return BinaryPrimitives.ReverseEndianness(x);
         }
         public static ulong SwapBytes(ulong x)
         {
-            //////// [not swapping 32bit blocks! careful!]
-            ////// swap adjacent 32-bit blocks
-            ////x = (x >> 32) | (x << 32);
-            // swap adjacent 16-bit blocks
+            ////////// [not swapping 32bit blocks! careful!]
+            //////// swap adjacent 32-bit blocks
+            //////x = (x >> 32) | (x << 32);
+            //// swap adjacent 16-bit blocks
             x = ((x & 0xFFFF0000FFFF0000) >> 16) | ((x & 0x0000FFFF0000FFFF) << 16);
-            // swap adjacent 8-bit blocks
+            //// swap adjacent 8-bit blocks
             return ((x & 0xFF00FF00FF00FF00) >> 8) | ((x & 0x00FF00FF00FF00FF) << 8);
+
+            //return (ulong)((ulong)(BinaryPrimitives.ReverseEndianness((uint)(x >> 32)) << 32) | (ulong)BinaryPrimitives.ReverseEndianness((uint)(x & 0xFFFFFFFF)));
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float SwapBytes(float f)
         {
-            var a = BitConverter.GetBytes(f);
-            Array.Reverse(a);
-            return BitConverter.ToSingle(a, 0);
+            return BitConverter.Int32BitsToSingle(BinaryPrimitives.ReverseEndianness(BitConverter.SingleToInt32Bits(f)));
         }
-        public static Vector2 SwapBytes(Vector2 v)
+        public static Vector2 SwapBytes(in Vector2 v)
         {
-            var x = SwapBytes(v.X);
-            var y = SwapBytes(v.Y);
-            return new Vector2(x, y);
+            return new Vector2(SwapBytes(v.X), SwapBytes(v.Y));
         }
-        public static Vector3 SwapBytes(Vector3 v)
+        public static Vector3 SwapBytes(in Vector3 v)
         {
-            var x = SwapBytes(v.X);
-            var y = SwapBytes(v.Y);
-            var z = SwapBytes(v.Z);
-            return new Vector3(x, y, z);
+            return new Vector3(SwapBytes(v.X), SwapBytes(v.Y), SwapBytes(v.Z));
         }
-        public static Vector4 SwapBytes(Vector4 v)
+        public static Vector4 SwapBytes(in Vector4 v)
         {
-            var x = SwapBytes(v.X);
-            var y = SwapBytes(v.Y);
-            var z = SwapBytes(v.Z);
-            var w = SwapBytes(v.W);
-            return new Vector4(x, y, z, w);
+            return new Vector4(SwapBytes(v.X), SwapBytes(v.Y), SwapBytes(v.Z), SwapBytes(v.W));
         }
     }
 
@@ -2122,10 +2192,11 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TC(typeof(EXP))] public abstract class MetaWrapper
+    [TC(typeof(EXP))]
+    public abstract class MetaWrapper
     {
-        public virtual string Name { get { return ToString(); } }
-        public abstract void Load(Meta meta, MetaPOINTER ptr);
+        public virtual string Name => ToString();
+        public abstract void Load(Meta meta, in MetaPOINTER ptr);
         public abstract MetaPOINTER Save(MetaBuilder mb);
     }
 
@@ -2333,24 +2404,23 @@ namespace CodeWalker.GameFiles
 
     //generated + adjusted structs code (UnusedX padding vars manually added) from here down, + meta wrapper classes
 
-    [TC(typeof(EXP))] public struct CMapTypes //80 bytes, Key:2608875220
+    [TC(typeof(EXP))]
+    public struct CMapTypes //80 bytes, Key:2608875220
     {
-        public uint Unused0 { get; set; }//0
-        public uint Unused1 { get; set; }//4
-        public Array_StructurePointer extensions { get; set; } //8   8: Array: 0: extensions  {0: StructurePointer: 0: 256}
-        public Array_StructurePointer archetypes { get; set; } //24   24: Array: 0: archetypes  {0: StructurePointer: 0: 256}
-        public MetaHash name { get; set; } //40   40: Hash: 0: name
-        public uint Unused2 { get; set; }//44
-        public Array_uint dependencies { get; set; } //48   48: Array: 0: dependencies//1013942340  {0: Hash: 0: 256}
-        public Array_Structure compositeEntityTypes { get; set; } //64   64: Array: 0: compositeEntityTypes  {0: Structure: SectionUNKNOWN2: 256}
+        public uint Unused0;//0
+        public uint Unused1;//4
+        public Array_StructurePointer extensions; //8   8: Array: 0: extensions  {0: StructurePointer: 0: 256}
+        public Array_StructurePointer archetypes; //24   24: Array: 0: archetypes  {0: StructurePointer: 0: 256}
+        public MetaHash name; //40   40: Hash: 0: name
+        public uint Unused2;//44
+        public Array_uint dependencies; //48   48: Array: 0: dependencies//1013942340  {0: Hash: 0: 256}
+        public Array_Structure compositeEntityTypes; //64   64: Array: 0: compositeEntityTypes  {0: Structure: SectionUNKNOWN2: 256}
 
-        public override string ToString()
-        {
-            return name.ToString();
-        }
+        public override readonly string ToString() => name.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CBaseArchetypeDef //144 bytes, Key:2411387556
+    [TC(typeof(EXP))]
+    public struct CBaseArchetypeDef //144 bytes, Key:2411387556
     {
         public uint Unused00 { get; set; }//0
         public uint Unused01 { get; set; }//4
@@ -2360,11 +2430,11 @@ namespace CodeWalker.GameFiles
         public uint Unused02 { get; set; }//20
         public uint Unused03 { get; set; }//24
         public uint Unused04 { get; set; }//28
-        public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
+        public Vector3 bbMin; //32   32: Float_XYZ: 0: bbMin
         public float Unused05 { get; set; }//44
-        public Vector3 bbMax { get; set; } //48   48: Float_XYZ: 0: bbMax
+        public Vector3 bbMax; //48   48: Float_XYZ: 0: bbMax
         public float Unused06 { get; set; }//60
-        public Vector3 bsCentre { get; set; } //64   64: Float_XYZ: 0: bsCentre
+        public Vector3 bsCentre; //64   64: Float_XYZ: 0: bsCentre
         public float Unused07 { get; set; }//76
         public float bsRadius { get; set; } //80   80: Float: 0: bsRadius
         public float hdTextureDist { get; set; } //84   84: Float: 0: hdTextureDist//2908576588
@@ -2376,21 +2446,16 @@ namespace CodeWalker.GameFiles
         public rage__fwArchetypeDef__eAssetType assetType { get; set; } //108   108: IntEnum: 1991964615: assetType
         public MetaHash assetName { get; set; } //112   112: Hash: 0: assetName
         public uint Unused08 { get; set; }//116
-        public Array_StructurePointer extensions { get; set; } //120   120: Array: 0: extensions  {0: StructurePointer: 0: 256}
+        public Array_StructurePointer extensions; //120   120: Array: 0: extensions  {0: StructurePointer: 0: 256}
         public uint Unused09 { get; set; }//136
         public uint Unused10 { get; set; }//140
 
 
-        public override string ToString()
-        {
-            return name.ToString() + ", " +
-                   assetName.ToString() + ", " +
-                   drawableDictionary.ToString() + ", " +
-                   textureDictionary.ToString();
-        }
+        public override readonly string ToString() => $"{name}, {assetName}, {drawableDictionary}, {textureDictionary}";
     }
 
-    [TC(typeof(EXP))] public struct CBaseArchetypeDef_v2 //128 bytes, Key:2352343492  //old version...
+    [TC(typeof(EXP))]
+    public struct CBaseArchetypeDef_v2 //128 bytes, Key:2352343492  //old version...
     {
         public uint Unused00 { get; set; }//0
         public uint Unused01 { get; set; }//4
@@ -2417,66 +2482,68 @@ namespace CodeWalker.GameFiles
         public Array_StructurePointer extensions { get; set; } //112   112: Array: 0: extensions  {0: StructurePointer: 0: 256}
     }
 
-    [TC(typeof(EXP))] public struct CTimeArchetypeDefData
+    [TC(typeof(EXP))]
+    public struct CTimeArchetypeDefData
     {
         public uint timeFlags { get; set; } //144   144: UnsignedInt: 0: timeFlags//2248791340
         public uint Unused11 { get; set; }//148
         public uint Unused12 { get; set; }//152
         public uint Unused13 { get; set; }//156
     }
-    [TC(typeof(EXP))] public struct CTimeArchetypeDef //160 bytes, Key:2520619910
+
+    [TC(typeof(EXP))]
+    public struct CTimeArchetypeDef //160 bytes, Key:2520619910
     {
         public CBaseArchetypeDef _BaseArchetypeDef;
         public CTimeArchetypeDefData _TimeArchetypeDef;
-        public CBaseArchetypeDef BaseArchetypeDef { get { return _BaseArchetypeDef; } set { _BaseArchetypeDef = value; } }
-        public CTimeArchetypeDefData TimeArchetypeDef { get { return _TimeArchetypeDef; } set { _TimeArchetypeDef = value; } }
+        public readonly CBaseArchetypeDef BaseArchetypeDef => _BaseArchetypeDef;
+        public readonly CTimeArchetypeDefData TimeArchetypeDef => _TimeArchetypeDef;
 
-        public override string ToString()
-        {
-            return _BaseArchetypeDef.ToString();
-        }
+        public override readonly string ToString() => _BaseArchetypeDef.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CMloArchetypeDefData
+    [TC(typeof(EXP))]
+    public struct CMloArchetypeDefData
     {
         public uint mloFlags { get; set; } //144   144: UnsignedInt: 0: mloFlags//3590839912
         public uint Unused11 { get; set; }//148
-        public Array_StructurePointer entities { get; set; } //152   152: Array: 0: entities  {0: StructurePointer: 0: 256}
-        public Array_Structure rooms { get; set; } //168   168: Array: 0: rooms  {0: Structure: CMloRoomDef: 256}
-        public Array_Structure portals { get; set; } //184   184: Array: 0: portals//2314725778  {0: Structure: CMloPortalDef: 256}
-        public Array_Structure entitySets { get; set; } //200   200: Array: 0: entitySets//1169996080  {0: Structure: CMloEntitySet: 256}
-        public Array_Structure timeCycleModifiers { get; set; } //216   216: Array: 0: timeCycleModifiers  {0: Structure: CMloTimeCycleModifier: 256}
+        public Array_StructurePointer entities; //152   152: Array: 0: entities  {0: StructurePointer: 0: 256}
+        public Array_Structure rooms; //168   168: Array: 0: rooms  {0: Structure: CMloRoomDef: 256}
+        public Array_Structure portals; //184   184: Array: 0: portals//2314725778  {0: Structure: CMloPortalDef: 256}
+        public Array_Structure entitySets; //200   200: Array: 0: entitySets//1169996080  {0: Structure: CMloEntitySet: 256}
+        public Array_Structure timeCycleModifiers; //216   216: Array: 0: timeCycleModifiers  {0: Structure: CMloTimeCycleModifier: 256}
         public uint Unused12 { get; set; }//232
         public uint Unused13 { get; set; }//236
     }
-    [TC(typeof(EXP))] public struct CMloArchetypeDef //240 bytes, Key:937664754
+
+    [TC(typeof(EXP))]
+    public struct CMloArchetypeDef //240 bytes, Key:937664754
     {
         public CBaseArchetypeDef _BaseArchetypeDef;
         public CMloArchetypeDefData _MloArchetypeDef;
-        public CBaseArchetypeDef BaseArchetypeDef { get { return _BaseArchetypeDef; } set { _BaseArchetypeDef = value; } }
-        public CMloArchetypeDefData MloArchetypeDef { get { return _MloArchetypeDef; } set { _MloArchetypeDef = value; } }
+        public readonly CBaseArchetypeDef BaseArchetypeDef => _BaseArchetypeDef;
+        public readonly CMloArchetypeDefData MloArchetypeDef => _MloArchetypeDef;
 
-        public override string ToString()
-        {
-            return _BaseArchetypeDef.ToString();
-        }
+        public override readonly string ToString() => _BaseArchetypeDef.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CMloInstanceDef //160 bytes, Key:2151576752
+    [TC(typeof(EXP))]
+    public struct CMloInstanceDef //160 bytes, Key:2151576752
     {
-        public CEntityDef CEntityDef { get; set; }
+        public CEntityDef CEntityDef;
         public uint groupId { get; set; } //128   128: UnsignedInt: 0: 2501631252
         public uint floorId { get; set; } //132   132: UnsignedInt: 0: floorId//2187650609
-        public Array_uint defaultEntitySets { get; set; } //136   136: Array: 0: defaultEntitySets//1407157833  {0: Hash: 0: 256}
+        public Array_uint defaultEntitySets; //136   136: Array: 0: defaultEntitySets//1407157833  {0: Hash: 0: 256}
         public uint numExitPortals { get; set; } //152   152: UnsignedInt: 0: numExitPortals//528711607
         public uint MLOInstflags { get; set; } //156   156: UnsignedInt: 0: MLOInstflags//3761966250
     }
 
-    [TC(typeof(EXP))] public struct CMloRoomDef //112 bytes, Key:3885428245
+    [TC(typeof(EXP))]
+    public struct CMloRoomDef //112 bytes, Key:3885428245
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
-        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
+        public CharPointer name; //8   8: CharPointer: 0: name
         public uint Unused2 { get; set; }//24
         public uint Unused3 { get; set; }//28
         public Vector3 bbMin { get; set; } //32   32: Float_XYZ: 0: bbMin
@@ -2491,9 +2558,11 @@ namespace CodeWalker.GameFiles
         public int floorId { get; set; } //84   84: SignedInt: 0: floorId//2187650609
         public int exteriorVisibiltyDepth { get; set; } //88   88: SignedInt: 0: exteriorVisibiltyDepth//552849982
         public uint Unused6 { get; set; }//92
-        public Array_uint attachedObjects { get; set; } //96   96: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
+        public Array_uint attachedObjects; //96   96: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
     }
-    [TC(typeof(EXP))] public class MCMloRoomDef : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCMloRoomDef : MetaWrapper
     {
         public CMloRoomDef _Data;
         public CMloRoomDef Data { get { return _Data; } }
@@ -2514,15 +2583,15 @@ namespace CodeWalker.GameFiles
         public MCMloRoomDef(Meta meta, CMloRoomDef data)
         {
             _Data = data;
-            RoomName = MetaTypes.GetString(meta, _Data.name);
-            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects) ?? Array.Empty<uint>();
+            RoomName = MetaTypes.GetString(meta, in _Data.name);
+            AttachedObjects = MetaTypes.GetUintArray(meta, in _Data.attachedObjects) ?? Array.Empty<uint>();
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CMloRoomDef>(meta, ptr);
-            RoomName = MetaTypes.GetString(meta, _Data.name);
-            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+            MetaTypes.TryGetData(meta, in ptr, out _Data);
+            RoomName = MetaTypes.GetString(meta, in _Data.name);
+            AttachedObjects = MetaTypes.GetUintArray(meta, in _Data.attachedObjects) ?? Array.Empty<uint>();
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -2539,24 +2608,16 @@ namespace CodeWalker.GameFiles
             _Data.attachedObjects = mb.AddUintArrayPtr(AttachedObjects);
 
             mb.AddStructureInfo(MetaName.CMloRoomDef);
-            return mb.AddItemPtr(MetaName.CMloRoomDef, _Data);
+            return mb.AddItemPtr(MetaName.CMloRoomDef, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return RoomName;
-            }
-        }
+        public override string Name => RoomName;
 
-        public override string ToString()
-        {
-            return RoomName;
-        }
+        public override string ToString() => RoomName;
     }
 
-    [TC(typeof(EXP))] public struct CMloPortalDef //64 bytes, Key:1110221513
+    [TC(typeof(EXP))]
+    public struct CMloPortalDef //64 bytes, Key:1110221513
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -2566,13 +2627,15 @@ namespace CodeWalker.GameFiles
         public uint mirrorPriority { get; set; } //20   20: UnsignedInt: 0: 1185490713
         public uint opacity { get; set; } //24   24: UnsignedInt: 0: opacity
         public uint audioOcclusion { get; set; } //28   28: UnsignedInt: 0: 1093790004
-        public Array_Vector3 corners { get; set; } //32   32: Array: 0: corners  {0: Float_XYZ: 0: 256}
-        public Array_uint attachedObjects { get; set; } //48   48: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
+        public Array_Vector3 corners; //32   32: Array: 0: corners  {0: Float_XYZ: 0: 256}
+        public Array_uint attachedObjects; //48   48: Array: 0: attachedObjects//2382704940  {0: UnsignedInt: 0: 256}
     }
-    [TC(typeof(EXP))] public class MCMloPortalDef : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCMloPortalDef : MetaWrapper
     {
         public CMloPortalDef _Data;
-        public CMloPortalDef Data { get { return _Data; } }
+        public CMloPortalDef Data => _Data;
         public Vector4[] Corners { get; set; }
         public uint[] AttachedObjects { get; set; }
 
@@ -2580,7 +2643,8 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                if ((Corners == null)||(Corners.Length==0)) return Vector3.Zero;
+                if (Corners == null || Corners.Length == 0)
+                    return Vector3.Zero;
                 var v = Vector3.Zero;
                 for (int i = 0; i < Corners.Length; i++)
                 {
@@ -2598,20 +2662,20 @@ namespace CodeWalker.GameFiles
         public MCMloPortalDef(Meta meta, CMloPortalDef data)
         {
             _Data = data;
-            Corners = MetaTypes.GetPaddedVector3Array(meta, _Data.corners);
-            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+            Corners = MetaTypes.GetPaddedVector3Array(meta, in _Data.corners);
+            AttachedObjects = MetaTypes.GetUintArray(meta, in _Data.attachedObjects);
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CMloPortalDef>(meta, ptr);
-            Corners = MetaTypes.GetPaddedVector3Array(meta, _Data.corners);
-            AttachedObjects = MetaTypes.GetUintArray(meta, _Data.attachedObjects);
+            MetaTypes.TryGetData<CMloPortalDef>(meta, in ptr, out _Data);
+            Corners = MetaTypes.GetPaddedVector3Array(meta, in _Data.corners);
+            AttachedObjects = MetaTypes.GetUintArray(meta, in _Data.attachedObjects);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
-            if (Corners!=null)
+            if (Corners is not null)
             {
                 _Data.corners = mb.AddPaddedVector3ArrayPtr(Corners);
             }
@@ -2620,7 +2684,7 @@ namespace CodeWalker.GameFiles
                 _Data.corners = new Array_Vector3();
             }
 
-            if (AttachedObjects != null)
+            if (AttachedObjects is not null)
             {
                 _Data.attachedObjects = mb.AddUintArrayPtr(AttachedObjects);
             }
@@ -2630,45 +2694,42 @@ namespace CodeWalker.GameFiles
             }
 
             mb.AddStructureInfo(MetaName.CMloPortalDef);
-            return mb.AddItemPtr(MetaName.CMloPortalDef, _Data);
+            return mb.AddItemPtr(MetaName.CMloPortalDef, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return Index.ToString() + ": " + _Data.roomFrom.ToString() + " to " + _Data.roomTo.ToString();
-            }
-        }
+        public override string Name => $"{Index}: {_Data.roomFrom} to {_Data.roomTo}";
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
     }
 
-    [TC(typeof(EXP))] public struct CMloEntitySet //48 bytes, Key:4180211587
+    [TC(typeof(EXP))]
+    public struct CMloEntitySet //48 bytes, Key:4180211587
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
         public MetaHash name { get; set; } //8   8: Hash: 0: name
         public uint Unused2 { get; set; }//12
-        public Array_uint locations { get; set; } //16   16: Array: 0: locations  {0: UnsignedInt: 0: 256}
-        public Array_StructurePointer entities { get; set; } //32   32: Array: 0: entities  {0: StructurePointer: 0: 256}
+        public Array_uint locations; //16   16: Array: 0: locations  {0: UnsignedInt: 0: 256}
+        public Array_StructurePointer entities; //32   32: Array: 0: entities  {0: StructurePointer: 0: 256}
     }
-    [TC(typeof(EXP))] public class MCMloEntitySet : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCMloEntitySet : MetaWrapper
     {
         public CMloEntitySet _Data;
-        public CMloEntitySet Data { get { return _Data; } }
+        public CMloEntitySet Data => _Data;
         public uint[] Locations { get; set; }
         public MCEntityDef[] Entities { get; set; }
 
-        public MloArchetype OwnerMlo { get; set; } // for browsing/reference purposes
+        public MloArchetype? OwnerMlo { get; set; } // for browsing/reference purposes
         public int Index { get; set; }
 
         public bool ForceVisible { get; set; } = false; //forces this entity set visible from the project window, for rendering  purpose
 
-        public MCMloEntitySet() { }
+        public MCMloEntitySet() {
+            Entities = [];
+            Locations = [];
+        }
         public MCMloEntitySet(Meta meta, CMloEntitySet data, MloArchetype owner)
         {
             _Data = data;
@@ -2676,23 +2737,24 @@ namespace CodeWalker.GameFiles
             Load(meta);
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CMloEntitySet>(meta, ptr);
+            MetaTypes.TryGetData<CMloEntitySet>(meta, in ptr, out _Data);
             Load(meta);
         }
 
+        [MemberNotNull(nameof(Entities), nameof(Locations))]
         private void Load(Meta meta)
         {
-            Locations = MetaTypes.GetUintArray(meta, _Data.locations);
+            Locations = MetaTypes.GetUintArray(meta, in _Data.locations) ?? Array.Empty<uint>();
 
-            var ents = MetaTypes.ConvertDataArray<CEntityDef>(meta, MetaName.CEntityDef, _Data.entities);
+            var ents = MetaTypes.ConvertDataArray<CEntityDef>(meta, MetaName.CEntityDef, in _Data.entities);
             if (ents != null)
             {
                 Entities = new MCEntityDef[ents.Length];
                 for (int i = 0; i < ents.Length; i++)
                 {
-                    Entities[i] = new MCEntityDef(meta, ref ents[i]) { OwnerMlo = OwnerMlo };
+                    Entities[i] = new MCEntityDef(meta, ents[i]) { OwnerMlo = OwnerMlo };
                 }
             }
         }
@@ -2700,7 +2762,7 @@ namespace CodeWalker.GameFiles
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
-            if (Locations != null)
+            if (Locations.Length > 0)
             {
                 _Data.locations = mb.AddUintArrayPtr(Locations);
             }
@@ -2709,7 +2771,7 @@ namespace CodeWalker.GameFiles
                 _Data.locations = new Array_uint();
             }
 
-            if (Entities!=null)
+            if (Entities.Length > 0)
             {
                 _Data.entities = mb.AddWrapperArrayPtr(Entities);
             }
@@ -2719,21 +2781,11 @@ namespace CodeWalker.GameFiles
             }
 
             mb.AddStructureInfo(MetaName.CMloEntitySet);
-            return mb.AddItemPtr(MetaName.CMloEntitySet, _Data);
+            return mb.AddItemPtr(MetaName.CMloEntitySet, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
-
-        public override string ToString()
-        {
-            return Name + ": " + (Entities?.Length ?? 0).ToString() + " entities";
-        }
+        public override string Name => _Data.name.ToString();
+        public override string ToString() => $"{Name}: {Entities?.Length ?? 0} entities";
     }
 
     [TC(typeof(EXP))] public struct CMloTimeCycleModifier //48 bytes, Key:838874674
@@ -2771,17 +2823,17 @@ namespace CodeWalker.GameFiles
         public float Unused6 { get; set; }//76
         public Vector3 entitiesExtentsMax { get; set; } //80   80: Float_XYZ: 0: entitiesExtentsMax//1829192759
         public float Unused7 { get; set; }//92
-        public Array_StructurePointer entities { get; set; } //96   96: Array: 0: entities  {0: StructurePointer: 0: 256}
-        public Array_Structure containerLods { get; set; } //112   112: Array: 0: containerLods//2935983381  {0: Structure: 372253349: 256}
-        public Array_Structure boxOccluders { get; set; } //128   128: Array: 0: boxOccluders//3983590932  {0: Structure: SectionUNKNOWN7: 256}
-        public Array_Structure occludeModels { get; set; } //144   144: Array: 0: occludeModels//2132383965  {0: Structure: SectionUNKNOWN5: 256}
-        public Array_uint physicsDictionaries { get; set; } //160   160: Array: 0: physicsDictionaries//949589348  {0: Hash: 0: 256}
-        public rage__fwInstancedMapData instancedData { get; set; } //176   176: Structure: rage__fwInstancedMapData: instancedData//2569067561
-        public Array_Structure timeCycleModifiers { get; set; } //224   224: Array: 0: timeCycleModifiers  {0: Structure: CTimeCycleModifier: 256}
-        public Array_Structure carGenerators { get; set; } //240   240: Array: 0: carGenerators//3254823756  {0: Structure: CCarGen: 256}
-        public CLODLight LODLightsSOA { get; set; } //256   256: Structure: CLODLight: LODLightsSOA//1774371066
-        public CDistantLODLight DistantLODLightsSOA { get; set; } //392   392: Structure: CDistantLODLight: DistantLODLightsSOA//2954466641
-        public CBlockDesc block { get; set; } //440   440: Structure: CBlockDesc//3072355914: block
+        public Array_StructurePointer entities; //96   96: Array: 0: entities  {0: StructurePointer: 0: 256}
+        public Array_Structure containerLods; //112   112: Array: 0: containerLods//2935983381  {0: Structure: 372253349: 256}
+        public Array_Structure boxOccluders; //128   128: Array: 0: boxOccluders//3983590932  {0: Structure: SectionUNKNOWN7: 256}
+        public Array_Structure occludeModels; //144   144: Array: 0: occludeModels//2132383965  {0: Structure: SectionUNKNOWN5: 256}
+        public Array_uint physicsDictionaries; //160   160: Array: 0: physicsDictionaries//949589348  {0: Hash: 0: 256}
+        public rage__fwInstancedMapData instancedData; //176   176: Structure: rage__fwInstancedMapData: instancedData//2569067561
+        public Array_Structure timeCycleModifiers; //224   224: Array: 0: timeCycleModifiers  {0: Structure: CTimeCycleModifier: 256}
+        public Array_Structure carGenerators; //240   240: Array: 0: carGenerators//3254823756  {0: Structure: CCarGen: 256}
+        public CLODLight LODLightsSOA; //256   256: Structure: CLODLight: LODLightsSOA//1774371066
+        public CDistantLODLight DistantLODLightsSOA; //392   392: Structure: CDistantLODLight: DistantLODLightsSOA//2954466641
+        public CBlockDesc block; //440   440: Structure: CBlockDesc//3072355914: block
 
 
         //notes:
@@ -2790,13 +2842,11 @@ namespace CodeWalker.GameFiles
         //  flag 2 = LOD flag? reflection proxy flag?
 
 
-        public override string ToString()
-        {
-            return name.ToString() + ": " + parent.ToString();
-        }
+        public override readonly string ToString() => $"{name}: {parent}";
     }
 
-    [TC(typeof(EXP))] public struct CEntityDef //128 bytes, Key:1825799514
+    [TC(typeof(EXP))]
+    public struct CEntityDef //128 bytes, Key:1825799514
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -2817,52 +2867,53 @@ namespace CodeWalker.GameFiles
         public rage__eLodType lodLevel { get; set; } //84   84: IntEnum: 1264241711: lodLevel  //LODTYPES_DEPTH_
         public uint numChildren { get; set; } //88   88: UnsignedInt: 0: numChildren//2793909385
         public rage__ePriorityLevel priorityLevel { get; set; } //92   92: IntEnum: 648413703: priorityLevel//647098393
-        public Array_StructurePointer extensions { get; set; } //96   96: Array: 0: extensions  {0: StructurePointer: 0: 256}
+        public Array_StructurePointer extensions; //96   96: Array: 0: extensions  {0: StructurePointer: 0: 256}
         public int ambientOcclusionMultiplier { get; set; } //112   112: SignedInt: 0: ambientOcclusionMultiplier//415356295
         public int artificialAmbientOcclusion { get; set; } //116   116: SignedInt: 0: artificialAmbientOcclusion//599844163
         public uint tintValue { get; set; } //120   120: UnsignedInt: 0: tintValue//1015358759
         public uint Unused6 { get; set; }//124
 
 
-        public override string ToString()
-        {
-            return JenkIndex.GetString(archetypeName) + ": " + JenkIndex.GetString(guid) + ": " + position.ToString();
-        }
+        public override readonly string ToString() => $"{JenkIndex.GetString(archetypeName)}: {JenkIndex.GetString(guid)}: {position}";
     }
     [TC(typeof(EXP))] public class MCEntityDef : MetaWrapper
     {
         public CEntityDef _Data;
-        public CEntityDef Data { get { return _Data; } set { _Data = value; } }
+        public ref CEntityDef Data => ref _Data;
         public MetaWrapper[] Extensions { get; set; }
 
 
-        public MloArchetype OwnerMlo { get; set; } // for browsing/reference purposes
+        public MloArchetype? OwnerMlo { get; set; } // for browsing/reference purposes
         public int Index { get; set; }
 
         public MCEntityDef(MCEntityDef copy)
         {
-            if (copy != null) _Data = copy.Data;
+            if (copy != null)
+                _Data = copy._Data;
+
+            Extensions = [];
         }
-        public MCEntityDef(Meta meta, ref CEntityDef d)
+        public MCEntityDef(Meta meta, CEntityDef d)
         {
             _Data = d;
-            Extensions = MetaTypes.GetExtensions(meta, _Data.extensions);
+            Extensions = MetaTypes.GetExtensions(meta, in _Data.extensions) ?? [];
         }
-        public MCEntityDef(ref CEntityDef d, MloArchetype arch)
+        public MCEntityDef(in CEntityDef d, MloArchetype arch)
         {
             _Data = d;
             OwnerMlo = arch;
+            Extensions = [];
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CEntityDef>(meta, ptr);
-            Extensions = MetaTypes.GetExtensions(meta, _Data.extensions);
+            MetaTypes.TryGetData<CEntityDef>(meta, in ptr, out _Data);
+            Extensions = MetaTypes.GetExtensions(meta, in _Data.extensions) ?? [];
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
-            if (Extensions != null)
+            if (Extensions.Length > 0)
             {
                 _Data.extensions = mb.AddWrapperArrayPtr(Extensions);
             }
@@ -2872,24 +2923,16 @@ namespace CodeWalker.GameFiles
             }
 
             mb.AddStructureInfo(MetaName.CEntityDef);
-            return mb.AddItemPtr(MetaName.CEntityDef, _Data);
+            return mb.AddItemPtr(MetaName.CEntityDef, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.archetypeName.ToString();
-            }
-        }
+        public override string Name => _Data.archetypeName.ToString();
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
     }
 
-    [TC(typeof(EXP))] public struct BoxOccluder //16 bytes, Key:1831736438   //boxOccluders
+    [TC(typeof(EXP))]
+    public struct BoxOccluder //16 bytes, Key:1831736438   //boxOccluders
     {
         public short iCenterX { get; set; } //0   0: SignedShort: 0: 48026296
         public short iCenterY { get; set; } //2   2: SignedShort: 0: 896907229
@@ -2901,38 +2944,40 @@ namespace CodeWalker.GameFiles
         public short iSinZ { get; set; } //14   14: SignedShort: 0: iSinZ
     }
 
-    [TC(typeof(EXP))] public struct OccludeModel //64 bytes, Key:1172796107  //occludeModels
+    [TC(typeof(EXP))]
+    public struct OccludeModel //64 bytes, Key:1172796107  //occludeModels
     {
-        public Vector3 bmin { get; set; } //0   0: Float_XYZ: 0: bmin
+        public Vector3 bmin; //0   0: Float_XYZ: 0: bmin
         public float Unused0 { get; set; }//12
-        public Vector3 bmax { get; set; } //16   16: Float_XYZ: 0: bmax
+        public Vector3 bmax; //16   16: Float_XYZ: 0: bmax
         public float Unused1 { get; set; }//28
         public uint dataSize { get; set; } //32   32: UnsignedInt: 0: dataSize//2442753371
         public uint Unused2 { get; set; }//36
-        public DataBlockPointer verts { get; set; } //40   40: DataBlockPointer: 2: verts
+        public DataBlockPointer verts; //40   40: DataBlockPointer: 2: verts
         public ushort numVertsInBytes { get; set; } //48   48: UnsignedShort: 0: numVertsInBytes
         public ushort numTris { get; set; } //50   50: UnsignedShort: 0: numTris
         public uint flags { get; set; } //52   52: UnsignedInt: 0: flags
         public uint Unused3 { get; set; }//56
         public uint Unused4 { get; set; }//60
+
+        public readonly BoundingBox BoundingBox => new BoundingBox(bmin, bmax);
     }
 
-    [TC(typeof(EXP))] public struct rage__fwInstancedMapData //48 bytes, Key:1836780118
+    [TC(typeof(EXP))]
+    public struct rage__fwInstancedMapData //48 bytes, Key:1836780118
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
         public MetaHash ImapLink { get; set; } //8   8: Hash: 0: ImapLink//2142127586
         public uint Unused2 { get; set; }//12
-        public Array_Structure PropInstanceList { get; set; } //16   16: Array: 0: PropInstanceList//3551474528  {0: Structure: rage__fwPropInstanceListDef: 256}
-        public Array_Structure GrassInstanceList { get; set; } //32   32: Array: 0: GrassInstanceList//255292381  {0: Structure: rage__fwGrassInstanceListDef: 256}
+        public Array_Structure PropInstanceList; //16   16: Array: 0: PropInstanceList//3551474528  {0: Structure: rage__fwPropInstanceListDef: 256}
+        public Array_Structure GrassInstanceList; //32   32: Array: 0: GrassInstanceList//255292381  {0: Structure: rage__fwGrassInstanceListDef: 256}
 
-        public override string ToString()
-        {
-            return ImapLink.ToString() + ", " + PropInstanceList.Count1.ToString() + " props, " + GrassInstanceList.Count1.ToString() + " grasses";
-        }
+        public override readonly string ToString() => $"{ImapLink}, {PropInstanceList.Count1} props, {GrassInstanceList.Count1} grasses";
     }
 
-    [TC(typeof(EXP))] public struct rage__fwGrassInstanceListDef //96 bytes, Key:941808164  rage__fwGrassInstanceListDef//2085051229
+    [TC(typeof(EXP))]
+    public struct rage__fwGrassInstanceListDef //96 bytes, Key:941808164  rage__fwGrassInstanceListDef//2085051229
     {
         public rage__spdAABB BatchAABB { get; set; } //0   0: Structure: 4084721864: BatchAABB//1859041902
         public Vector3 ScaleRange { get; set; } //32   32: Float_XYZ: 0: ScaleRange
@@ -2943,33 +2988,29 @@ namespace CodeWalker.GameFiles
         public float LodInstFadeRange { get; set; } //60   60: Float: 0: LodInstFadeRange//1405992723
         public float OrientToTerrain { get; set; } //64   64: Float: 0: OrientToTerrain//3341475578
         public uint Unused1 { get; set; }//68
-        public Array_Structure InstanceList { get; set; } //72   72: Array: 0: InstanceList//470289337  {0: Structure: rage__fwGrassInstanceListDef__InstanceData: 256}
+        public Array_Structure InstanceList; //72   72: Array: 0: InstanceList//470289337  {0: Structure: rage__fwGrassInstanceListDef__InstanceData: 256}
         public uint Unused2 { get; set; }//88
         public uint Unused3 { get; set; }//92
 
-        public override string ToString()
-        {
-            return archetypeName.ToString() + " (" + InstanceList.Count1.ToString() + " instances)";
-        }
+        public override readonly string ToString() => $"{archetypeName} ({InstanceList.Count1} instances)";
     }
 
-    [TC(typeof(EXP))] public struct rage__fwGrassInstanceListDef__InstanceData //16 bytes, Key:2740378365 rage__fwGrassInstanceListDef__InstanceData//3985044770 // Tom: Something to do with placing foliage
+    [TC(typeof(EXP))]
+    public struct rage__fwGrassInstanceListDef__InstanceData //16 bytes, Key:2740378365 rage__fwGrassInstanceListDef__InstanceData//3985044770 // Tom: Something to do with placing foliage
     {
-        public ArrayOfUshorts3 Position { get; set; } //0   0: ArrayOfBytes: 3: Position - Ushorts
+        public ArrayOfUshorts3 Position; //0   0: ArrayOfBytes: 3: Position - Ushorts
         public byte NormalX { get; set; } //6   6: UnsignedByte: 0: NormalX//3138065392
         public byte NormalY { get; set; } //7   7: UnsignedByte: 0: NormalY//273792636
-        public ArrayOfBytes3 Color { get; set; } //8   8: ArrayOfBytes: 3: Color
+        public ArrayOfBytes3 Color; //8   8: ArrayOfBytes: 3: Color
         public byte Scale { get; set; } //11   11: UnsignedByte: 0: Scale
         public byte Ao { get; set; } //12   12: UnsignedByte: 0: Ao//2996378564
-        public ArrayOfBytes3 Pad { get; set; } //13   13: ArrayOfBytes: 3: Pad
+        public ArrayOfBytes3 Pad; //13   13: ArrayOfBytes: 3: Pad
 
-        public override string ToString()
-        {
-            return Position.ToString() + " : " + Color.ToString() + " : " + Scale.ToString();
-        }
+        public override readonly string ToString() => $"{Position} : {Color} : {Scale}";
     }
 
-    [TC(typeof(EXP))] public struct CTimeCycleModifier //64 bytes, Key:2683420777
+    [TC(typeof(EXP))]
+    public struct CTimeCycleModifier //64 bytes, Key:2683420777
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -2989,15 +3030,11 @@ namespace CodeWalker.GameFiles
         //2633803310 = NoAmbientmult
         //2003616884 = INT_NoAmbientMult
 
-
-
-        public override string ToString()
-        {
-            return name.ToString() + ": startHour " + startHour.ToString() + ", endHour " + endHour.ToString() + ", range " + range.ToString() + ", percentage " + percentage.ToString();
-        }
+        public override readonly string ToString() => $"{name}: startHour {startHour}, endHour {endHour}, range {range}, percentage {percentage}";
     }
 
-    [TC(typeof(EXP))] public struct CCarGen //80 bytes, Key:2345238261
+    [TC(typeof(EXP))]
+    public struct CCarGen //80 bytes, Key:2345238261
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3020,45 +3057,45 @@ namespace CodeWalker.GameFiles
         public ushort Unused6 { get; set; }//74
         public uint Unused7 { get; set; }//76
 
-        public override string ToString()
-        {
-            return carModel.ToString() + ", " + position.ToString() + ", " + popGroup.ToString() + ", " + livery.ToString();
-        }
+        public override readonly string ToString() => $"{carModel}, {position}, {popGroup}, {livery}";
     }
 
-    [TC(typeof(EXP))] public struct CLODLight //136 bytes, Key:2325189228
+    [TC(typeof(EXP))]
+    public struct CLODLight //136 bytes, Key:2325189228
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
-        public Array_Structure direction { get; set; } //8   8: Array: 0: direction  {0: Structure: VECTOR3: 256}
-        public Array_float falloff { get; set; } //24   24: Array: 0: falloff  {0: Float: 0: 256}
-        public Array_float falloffExponent { get; set; } //40   40: Array: 0: falloffExponent  {0: Float: 0: 256}
-        public Array_uint timeAndStateFlags { get; set; } //56   56: Array: 0: timeAndStateFlags=3112418278  {0: UnsignedInt: 0: 256}
-        public Array_uint hash { get; set; } //72   72: Array: 0: hash  {0: UnsignedInt: 0: 256}
-        public Array_byte coneInnerAngle { get; set; } //88   88: Array: 0: coneInnerAngle//1163671864  {0: UnsignedByte: 0: 256}
-        public Array_byte coneOuterAngleOrCapExt { get; set; } //104   104: Array: 0: coneOuterAngleOrCapExt=3161894080  {0: UnsignedByte: 0: 256}
-        public Array_byte coronaIntensity { get; set; } //120   120: Array: 0: coronaIntensity//2292363771  {0: UnsignedByte: 0: 256}
+        public Array_Structure direction; //8   8: Array: 0: direction  {0: Structure: VECTOR3: 256}
+        public Array_float falloff; //24   24: Array: 0: falloff  {0: Float: 0: 256}
+        public Array_float falloffExponent; //40   40: Array: 0: falloffExponent  {0: Float: 0: 256}
+        public Array_uint timeAndStateFlags; //56   56: Array: 0: timeAndStateFlags=3112418278  {0: UnsignedInt: 0: 256}
+        public Array_uint hash; //72   72: Array: 0: hash  {0: UnsignedInt: 0: 256}
+        public Array_byte coneInnerAngle; //88   88: Array: 0: coneInnerAngle//1163671864  {0: UnsignedByte: 0: 256}
+        public Array_byte coneOuterAngleOrCapExt; //104   104: Array: 0: coneOuterAngleOrCapExt=3161894080  {0: UnsignedByte: 0: 256}
+        public Array_byte coronaIntensity; //120   120: Array: 0: coronaIntensity//2292363771  {0: UnsignedByte: 0: 256}
     }
 
-    [TC(typeof(EXP))] public struct CDistantLODLight //48 bytes, Key:2820908419
+    [TC(typeof(EXP))]
+    public struct CDistantLODLight //48 bytes, Key:2820908419
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
-        public Array_Structure position { get; set; } //8   8: Array: 0: position  {0: Structure: VECTOR3: 256}
-        public Array_uint RGBI { get; set; } //24   24: Array: 0: RGBI  {0: UnsignedInt: 0: 256}
+        public Array_Structure position; //8   8: Array: 0: position  {0: Structure: VECTOR3: 256}
+        public Array_uint RGBI; //24   24: Array: 0: RGBI  {0: UnsignedInt: 0: 256}
         public ushort numStreetLights { get; set; } //40   40: UnsignedShort: 0: numStreetLights//3708891211
         public ushort category { get; set; } //42   42: UnsignedShort: 0: category//2052871693
         public uint Unused2 { get; set; }//44
     }
 
-    [TC(typeof(EXP))] public struct CBlockDesc //72 bytes, Key:2015795449
+    [TC(typeof(EXP))]
+    public struct CBlockDesc //72 bytes, Key:2015795449
     {
         public uint version { get; set; } //0   0: UnsignedInt: 0: version
         public uint flags { get; set; } //4   4: UnsignedInt: 0: flags
-        public CharPointer name { get; set; } //8   8: CharPointer: 0: name
-        public CharPointer exportedBy { get; set; } //24   24: CharPointer: 0: exportedBy//1983184981
-        public CharPointer owner { get; set; } //40   40: CharPointer: 0: owner
-        public CharPointer time { get; set; } //56   56: CharPointer: 0: time
+        public CharPointer name; //8   8: CharPointer: 0: name
+        public CharPointer exportedBy; //24   24: CharPointer: 0: exportedBy//1983184981
+        public CharPointer owner; //40   40: CharPointer: 0: owner
+        public CharPointer time; //56   56: CharPointer: 0: time
     }
 
 
@@ -3070,7 +3107,8 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TC(typeof(EXP))] public struct CExtensionDefParticleEffect //96 bytes, Key:466596385
+    [TC(typeof(EXP))]
+    public struct CExtensionDefParticleEffect //96 bytes, Key:466596385
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3079,7 +3117,7 @@ namespace CodeWalker.GameFiles
         public Vector3 offsetPosition { get; set; } //16   16: Float_XYZ: 0: offsetPosition
         public uint Unused3 { get; set; }//28
         public Vector4 offsetRotation { get; set; } //32   32: Float_XYZW: 0: offsetRotation
-        public CharPointer fxName { get; set; } //48   48: CharPointer: 0: fxName
+        public CharPointer fxName; //48   48: CharPointer: 0: fxName
         public int fxType { get; set; } //64   64: SignedInt: 0: fxType
         public int boneTag { get; set; } //68   68: SignedInt: 0: boneTag
         public float scale { get; set; } //72   72: Float: 0: scale
@@ -3089,22 +3127,21 @@ namespace CodeWalker.GameFiles
         public uint Unused4 { get; set; }//88
         public uint Unused5 { get; set; }//92
 
-        public override string ToString()
-        {
-            return "CExtensionDefParticleEffect - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefParticleEffect - {name}";
     }
-    [TC(typeof(EXP))] public class MCExtensionDefParticleEffect : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCExtensionDefParticleEffect : MetaWrapper
     {
         public CExtensionDefParticleEffect _Data;
-        public CExtensionDefParticleEffect Data { get { return _Data; } }
+        public CExtensionDefParticleEffect Data => _Data;
 
         public string fxName { get; set; }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefParticleEffect>(meta, ptr);
-            fxName = MetaTypes.GetString(meta, _Data.fxName);
+            MetaTypes.TryGetData<CExtensionDefParticleEffect>(meta, in ptr, out _Data);
+            fxName = MetaTypes.GetString(meta, in _Data.fxName);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -3115,37 +3152,26 @@ namespace CodeWalker.GameFiles
             }
 
             mb.AddStructureInfo(MetaName.CExtensionDefParticleEffect);
-            return mb.AddItemPtr(MetaName.CExtensionDefParticleEffect, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefParticleEffect, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return fxName;
-            }
-        }
+        public override string Name => fxName;
 
-        public override string ToString()
-        {
-            return _Data.ToString() + " - " + fxName;
-        }
+        public override string ToString() => $"{_Data} - {fxName}";
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefLightEffect //48 bytes, Key:2436199897
+    [TC(typeof(EXP))]
+    public struct CExtensionDefLightEffect //48 bytes, Key:2436199897
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
         public MetaHash name { get; set; } //8   8: Hash: 0: name
         public uint Unused2 { get; set; }//12
-        public Vector3 offsetPosition { get; set; } //16   16: Float_XYZ: 0: offsetPosition
+        public Vector3 offsetPosition; //16   16: Float_XYZ: 0: offsetPosition
         public float Unused3 { get; set; }//28
-        public Array_Structure instances { get; set; } //32   32: Array: 0: 274177522  {0: Structure: CLightAttrDef: 256}
+        public Array_Structure instances; //32   32: Array: 0: 274177522  {0: Structure: CLightAttrDef: 256}
 
-        public override string ToString()
-        {
-            return "CExtensionDefLightEffect - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefLightEffect - {name}";
     }
     [TC(typeof(EXP))] public class MCExtensionDefLightEffect : MetaWrapper
     {
@@ -3154,10 +3180,10 @@ namespace CodeWalker.GameFiles
 
         public CLightAttrDef[] instances { get; set; }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefLightEffect>(meta, ptr);
-            instances = MetaTypes.ConvertDataArray<CLightAttrDef>(meta, MetaName.CLightAttrDef, _Data.instances);
+            MetaTypes.TryGetData<CExtensionDefLightEffect>(meta, in ptr, out _Data);
+            instances = MetaTypes.ConvertDataArray<CLightAttrDef>(meta, MetaName.CLightAttrDef, in _Data.instances);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -3169,24 +3195,16 @@ namespace CodeWalker.GameFiles
 
             mb.AddStructureInfo(MetaName.CLightAttrDef);
             mb.AddStructureInfo(MetaName.CExtensionDefLightEffect);
-            return mb.AddItemPtr(MetaName.CExtensionDefLightEffect, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefLightEffect, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString() + " (" + (instances?.Length ?? 0).ToString() + " Attributes)";
-        }
+        public override string ToString() => $"{_Data} ({instances?.Length ?? 0} Attributes)";
     }
 
-    [TC(typeof(EXP))] public struct CLightAttrDef //160 bytes, Key:2363260268
+    [TC(typeof(EXP))]
+    public struct CLightAttrDef //160 bytes, Key:2363260268
     {
         public uint Unused00 { get; set; }//0
         public uint Unused01 { get; set; }//4
@@ -3241,42 +3259,31 @@ namespace CodeWalker.GameFiles
         public uint Unused5 { get; set; }//40
         public uint Unused6 { get; set; }//44
 
-        public override string ToString()
-        {
-            return "CExtensionDefAudioCollisionSettings - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefAudioCollisionSettings - {name}";
     }
     [TC(typeof(EXP))] public class MCExtensionDefAudioCollisionSettings : MetaWrapper
     {
         public CExtensionDefAudioCollisionSettings _Data;
-        public CExtensionDefAudioCollisionSettings Data { get { return _Data; } }
+        public CExtensionDefAudioCollisionSettings Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefAudioCollisionSettings>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefAudioCollisionSettings>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CExtensionDefAudioCollisionSettings);
-            return mb.AddItemPtr(MetaName.CExtensionDefAudioCollisionSettings, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefAudioCollisionSettings, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefAudioEmitter //64 bytes, Key:15929839
+    [TC(typeof(EXP))]
+    public struct CExtensionDefAudioEmitter //64 bytes, Key:15929839
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3290,42 +3297,33 @@ namespace CodeWalker.GameFiles
         public uint Unused5 { get; set; }//56
         public uint Unused6 { get; set; }//60
 
-        public override string ToString()
-        {
-            return "CExtensionDefAudioEmitter - " + name.ToString() + ": " + effectHash.ToString() + ": " + offsetPosition.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefAudioEmitter - {name}: {effectHash}: {offsetPosition}";
     }
-    [TC(typeof(EXP))] public class MCExtensionDefAudioEmitter : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCExtensionDefAudioEmitter : MetaWrapper
     {
         public CExtensionDefAudioEmitter _Data;
-        public CExtensionDefAudioEmitter Data { get { return _Data; } }
+        public CExtensionDefAudioEmitter Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefAudioEmitter>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefAudioEmitter>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CExtensionDefAudioEmitter);
-            return mb.AddItemPtr(MetaName.CExtensionDefAudioEmitter, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefAudioEmitter, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefExplosionEffect //80 bytes, Key:2840366784
+    [TC(typeof(EXP))]
+    public struct CExtensionDefExplosionEffect //80 bytes, Key:2840366784
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3334,28 +3332,25 @@ namespace CodeWalker.GameFiles
         public Vector3 offsetPosition { get; set; } //16   16: Float_XYZ: 0: offsetPosition
         public float Unused3 { get; set; }//28
         public Vector4 offsetRotation { get; set; } //32   32: Float_XYZW: 0: offsetRotation
-        public CharPointer explosionName { get; set; } //48   48: CharPointer: 0: explosionName//3301388915
+        public CharPointer explosionName; //48   48: CharPointer: 0: explosionName//3301388915
         public int boneTag { get; set; } //64   64: SignedInt: 0: boneTag
         public int explosionTag { get; set; } //68   68: SignedInt: 0: explosionTag//2653034051
         public int explosionType { get; set; } //72   72: SignedInt: 0: explosionType//3379115010
         public uint flags { get; set; } //76   76: UnsignedInt: 0: flags
 
-        public override string ToString()
-        {
-            return "CExtensionDefExplosionEffect - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefExplosionEffect - {name}";
     }
     [TC(typeof(EXP))] public class MCExtensionDefExplosionEffect : MetaWrapper
     {
         public CExtensionDefExplosionEffect _Data;
-        public CExtensionDefExplosionEffect Data { get { return _Data; } }
+        public CExtensionDefExplosionEffect Data => _Data;
 
         public string explosionName { get; set; }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefExplosionEffect>(meta, ptr);
-            explosionName = MetaTypes.GetString(meta, _Data.explosionName);
+            MetaTypes.TryGetData<CExtensionDefExplosionEffect>(meta, in ptr, out _Data);
+            explosionName = MetaTypes.GetString(meta, in _Data.explosionName);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -3365,24 +3360,16 @@ namespace CodeWalker.GameFiles
                 _Data.explosionName = mb.AddStringPtr(explosionName);
             }
             mb.AddStructureInfo(MetaName.CExtensionDefExplosionEffect);
-            return mb.AddItemPtr(MetaName.CExtensionDefExplosionEffect, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefExplosionEffect, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString() + " - " + explosionName;
-        }
+        public override string ToString() => $"{_Data} - {explosionName}";
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefLadder //96 bytes, Key:1978210597
+    [TC(typeof(EXP))]
+    public struct CExtensionDefLadder //96 bytes, Key:1978210597
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3403,43 +3390,33 @@ namespace CodeWalker.GameFiles
         public ushort Unused7 { get; set; }//90
         public uint Unused8 { get; set; }//92
 
-        public override string ToString()
-        {
-            return "CExtensionDefLadder - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefLadder - {name}";
     }
-    [TC(typeof(EXP))] public class MCExtensionDefLadder : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCExtensionDefLadder : MetaWrapper
     {
         public CExtensionDefLadder _Data;
-        public CExtensionDefLadder Data { get { return _Data; } }
+        public CExtensionDefLadder Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefLadder>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefLadder>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddEnumInfo(MetaName.CExtensionDefLadderMaterialType);
             mb.AddStructureInfo(MetaName.CExtensionDefLadder);
-            return mb.AddItemPtr(MetaName.CExtensionDefLadder, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefLadder, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
-
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string Name => _Data.name.ToString();
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefBuoyancy //32 bytes, Key:2383039928
+    [TC(typeof(EXP))]
+    public struct CExtensionDefBuoyancy //32 bytes, Key:2383039928
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3450,40 +3427,31 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "CExtensionDefBuoyancy - " + name.ToString();
+            return $"CExtensionDefBuoyancy - {name}";
         }
     }
     [TC(typeof(EXP))] public class MCExtensionDefBuoyancy : MetaWrapper
     {
         public CExtensionDefBuoyancy _Data;
-        public CExtensionDefBuoyancy Data { get { return _Data; } }
+        public CExtensionDefBuoyancy Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefBuoyancy>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefBuoyancy>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CExtensionDefBuoyancy);
-            return mb.AddItemPtr(MetaName.CExtensionDefBuoyancy, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefBuoyancy, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
-
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string Name => _Data.name.ToString();
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefExpression //48 bytes, Key:24441706
+    [TC(typeof(EXP))]
+    public struct CExtensionDefExpression //48 bytes, Key:24441706
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3498,42 +3466,33 @@ namespace CodeWalker.GameFiles
         public byte Unused4 { get; set; }//45
         public ushort Unused5 { get; set; }//46
 
-        public override string ToString()
-        {
-            return "CExtensionDefExpression - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefExpression - {name}";
     }
-    [TC(typeof(EXP))] public class MCExtensionDefExpression : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCExtensionDefExpression : MetaWrapper
     {
         public CExtensionDefExpression _Data;
         public CExtensionDefExpression Data { get { return _Data; } }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefExpression>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefExpression>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CExtensionDefExpression);
-            return mb.AddItemPtr(MetaName.CExtensionDefExpression, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefExpression, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefLightShaft //176 bytes, Key:2526429398
+    [TC(typeof(EXP))]
+    public struct CExtensionDefLightShaft //176 bytes, Key:2526429398
     {
         public uint Unused00 { get; set; }//0
         public uint Unused01 { get; set; }//4
@@ -3572,19 +3531,20 @@ namespace CodeWalker.GameFiles
         public byte Unused11 { get; set; }//173
         public ushort Unused12 { get; set; }//174
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return "CExtensionDefLightShaft - " + name.ToString();
+            return $"CExtensionDefLightShaft - {name}";
         }
     }
-    [TC(typeof(EXP))] public class MCExtensionDefLightShaft : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCExtensionDefLightShaft : MetaWrapper
     {
         public CExtensionDefLightShaft _Data;
-        public CExtensionDefLightShaft Data { get { return _Data; } }
+        public CExtensionDefLightShaft Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefLightShaft>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefLightShaft>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -3592,24 +3552,15 @@ namespace CodeWalker.GameFiles
             mb.AddEnumInfo(MetaName.CExtensionDefLightShaftDensityType);
             mb.AddEnumInfo(MetaName.CExtensionDefLightShaftVolumeType);
             mb.AddStructureInfo(MetaName.CExtensionDefLightShaft);
-            return mb.AddItemPtr(MetaName.CExtensionDefLightShaft, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefLightShaft, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
-
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string Name => _Data.name.ToString();
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefDoor //48 bytes, Key:2671601385
+    [TC(typeof(EXP))]
+    public struct CExtensionDefDoor //48 bytes, Key:2671601385
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3625,42 +3576,35 @@ namespace CodeWalker.GameFiles
         public float doorTargetRatio { get; set; } //40   40: Float: 0: doorTargetRatio=770433283
         public MetaHash audioHash { get; set; } //44   44: Hash: 0: audioHash=224069936
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return "CExtensionDefDoor - " + name.ToString() + ", " + audioHash.ToString() + ", " + offsetPosition.ToString() + ", " + limitAngle.ToString();
+            return $"CExtensionDefDoor - {name}, {audioHash}, {offsetPosition}, {limitAngle}";
         }
     }
-    [TC(typeof(EXP))] public class MCExtensionDefDoor : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCExtensionDefDoor : MetaWrapper
     {
         public CExtensionDefDoor _Data;
-        public CExtensionDefDoor Data { get { return _Data; } }
+        public CExtensionDefDoor Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefDoor>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefDoor>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CExtensionDefDoor);
-            return mb.AddItemPtr(MetaName.CExtensionDefDoor, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefDoor, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefSpawnPoint //96 bytes, Key:3077340721
+    [TC(typeof(EXP))]
+    public struct CExtensionDefSpawnPoint //96 bytes, Key:3077340721
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3687,12 +3631,13 @@ namespace CodeWalker.GameFiles
         public byte shortRange { get; set; } //94   94: Boolean: 0: shortRange
         public byte Unused5 { get; set; }//95
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return spawnType.ToString() + ": " + name.ToString() + ", " + pedType.ToString();// + ", " + flags.ToString() + ", " + offsetPosition.ToString();
+            return $"{spawnType}: {name}, {pedType}";// + ", " + flags.ToString() + ", " + offsetPosition.ToString();
         }
     }
-    [TC(typeof(EXP))] public class MCExtensionDefSpawnPoint : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCExtensionDefSpawnPoint : MetaWrapper
     {
         [TC(typeof(EXP))] public object Parent { get; set; }
         public MCScenarioPointRegion ScenarioRegion { get; private set; }
@@ -3724,7 +3669,7 @@ namespace CodeWalker.GameFiles
         public Quaternion Orientation { get { return new Quaternion(_Data.offsetRotation);  } set { _Data.offsetRotation = value.ToVector4(); } }
 
         public MCExtensionDefSpawnPoint() { }
-        public MCExtensionDefSpawnPoint(MCScenarioPointRegion region, Meta meta, CExtensionDefSpawnPoint data, object parent)
+        public MCExtensionDefSpawnPoint(MCScenarioPointRegion region, Meta meta, in CExtensionDefSpawnPoint data, object parent)
         {
             ScenarioRegion = region;
             Parent = parent;
@@ -3741,9 +3686,9 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefSpawnPoint>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefSpawnPoint>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -3751,24 +3696,15 @@ namespace CodeWalker.GameFiles
             mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
             mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPoint);
-            return mb.AddItemPtr(MetaName.CExtensionDefSpawnPoint, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefSpawnPoint, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
-
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string Name => _Data.name.ToString();
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefSpawnPointOverride //64 bytes, Key:2551875873
+    [TC(typeof(EXP))]
+    public struct CExtensionDefSpawnPointOverride //64 bytes, Key:2551875873
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3787,19 +3723,18 @@ namespace CodeWalker.GameFiles
         public float Radius { get; set; } //56   56: Float: 0: Radius
         public float TimeTillPedLeaves { get; set; } //60   60: Float: 0: TimeTillPedLeaves//4073598194
 
-        public override string ToString()
-        {
-            return "CExtensionDefSpawnPointOverride - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefSpawnPointOverride - {name}";
     }
-    [TC(typeof(EXP))] public class MCExtensionDefSpawnPointOverride : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCExtensionDefSpawnPointOverride : MetaWrapper
     {
         public CExtensionDefSpawnPointOverride _Data;
-        public CExtensionDefSpawnPointOverride Data { get { return _Data; } }
+        public CExtensionDefSpawnPointOverride Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefSpawnPointOverride>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefSpawnPointOverride>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -3807,24 +3742,16 @@ namespace CodeWalker.GameFiles
             mb.AddEnumInfo(MetaName.CSpawnPoint__AvailabilityMpSp);
             mb.AddEnumInfo(MetaName.CScenarioPointFlags__Flags);
             mb.AddStructureInfo(MetaName.CExtensionDefSpawnPointOverride);
-            return mb.AddItemPtr(MetaName.CExtensionDefSpawnPointOverride, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefSpawnPointOverride, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefWindDisturbance //96 bytes, Key:3971538917
+    [TC(typeof(EXP))]
+    public struct CExtensionDefWindDisturbance //96 bytes, Key:3971538917
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3843,42 +3770,32 @@ namespace CodeWalker.GameFiles
         public uint Unused6 { get; set; }//88
         public uint Unused7 { get; set; }//92
 
-        public override string ToString()
-        {
-            return "CExtensionDefWindDisturbance - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefWindDisturbance - {name}";
     }
-    [TC(typeof(EXP))] public class MCExtensionDefWindDisturbance : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCExtensionDefWindDisturbance : MetaWrapper
     {
         public CExtensionDefWindDisturbance _Data;
-        public CExtensionDefWindDisturbance Data { get { return _Data; } }
+        public CExtensionDefWindDisturbance Data => _Data;
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefWindDisturbance>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefWindDisturbance>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CExtensionDefWindDisturbance);
-            return mb.AddItemPtr(MetaName.CExtensionDefWindDisturbance, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefWindDisturbance, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CExtensionDefProcObject //80 bytes, Key:3965391891
+    [TC(typeof(EXP))]
+    public struct CExtensionDefProcObject //80 bytes, Key:3965391891
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -3899,39 +3816,28 @@ namespace CodeWalker.GameFiles
         public uint flags { get; set; } //72   72: UnsignedInt: 0: flags
         public uint Unused4 { get; set; }//76
 
-        public override string ToString()
-        {
-            return "CExtensionDefProcObject - " + name.ToString();
-        }
+        public override readonly string ToString() => $"CExtensionDefProcObject - {name}";
     }
+
     [TC(typeof(EXP))] public class MCExtensionDefProcObject : MetaWrapper
     {
         public CExtensionDefProcObject _Data;
         public CExtensionDefProcObject Data { get { return _Data; } }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CExtensionDefProcObject>(meta, ptr);
+            MetaTypes.TryGetData<CExtensionDefProcObject>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CExtensionDefProcObject);
-            return mb.AddItemPtr(MetaName.CExtensionDefProcObject, _Data);
+            return mb.AddItemPtr(MetaName.CExtensionDefProcObject, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _Data.name.ToString();
-            }
-        }
+        public override string Name => _Data.name.ToString();
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
     }
 
     [TC(typeof(EXP))] public struct rage__phVerletClothCustomBounds //32 bytes, Key:2075461750
@@ -3940,8 +3846,9 @@ namespace CodeWalker.GameFiles
         public uint Unused1 { get; set; }//4
         public MetaHash name { get; set; } //8   8: Hash: 0: name
         public uint Unused2 { get; set; }//12
-        public Array_Structure CollisionData { get; set; } //16   16: Array: 0: CollisionData  {0: Structure: SectionUNKNOWN1: 256}
+        public Array_Structure CollisionData; //16   16: Array: 0: CollisionData  {0: Structure: SectionUNKNOWN1: 256}
     }
+
     [TC(typeof(EXP))] public class Mrage__phVerletClothCustomBounds : MetaWrapper
     {
         public rage__phVerletClothCustomBounds _Data;
@@ -3949,17 +3856,17 @@ namespace CodeWalker.GameFiles
 
         public Mrage__phCapsuleBoundDef[] CollisionData { get; set; }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<rage__phVerletClothCustomBounds>(meta, ptr);
+            MetaTypes.TryGetData<rage__phVerletClothCustomBounds>(meta, in ptr, out _Data);
 
-            var cdata = MetaTypes.ConvertDataArray<rage__phCapsuleBoundDef>(meta, MetaName.rage__phCapsuleBoundDef, _Data.CollisionData);
+            var cdata = MetaTypes.ConvertDataArray<rage__phCapsuleBoundDef>(meta, MetaName.rage__phCapsuleBoundDef, in _Data.CollisionData);
             if (cdata != null)
             {
                 CollisionData = new Mrage__phCapsuleBoundDef[cdata.Length];
                 for (int i = 0; i < cdata.Length; i++)
                 {
-                    CollisionData[i] = new Mrage__phCapsuleBoundDef(meta, cdata[i]);
+                    CollisionData[i] = new Mrage__phCapsuleBoundDef(meta, in cdata[i]);
                 }
             }
         }
@@ -3972,18 +3879,15 @@ namespace CodeWalker.GameFiles
             }
 
             mb.AddStructureInfo(MetaName.rage__phVerletClothCustomBounds);
-            return mb.AddItemPtr(MetaName.rage__phVerletClothCustomBounds, _Data);
+            return mb.AddItemPtr(MetaName.rage__phVerletClothCustomBounds, in _Data);
         }
 
-        public override string ToString()
-        {
-            return "rage__phVerletClothCustomBounds - " + _Data.name.ToString() + " (" + (CollisionData?.Length ?? 0).ToString() + " CollisionData)";
-        }
+        public override string ToString() => $"rage__phVerletClothCustomBounds - {_Data.name} ({CollisionData?.Length ?? 0} CollisionData)";
     }
 
     [TC(typeof(EXP))] public struct rage__phCapsuleBoundDef //96 bytes, Key:2859775340 //dexy: cloth CollisionData (child of rage__phVerletClothCustomBounds) ... eg josh house  // Tom: explosions? 
     {
-        public CharPointer OwnerName { get; set; } //0   0: CharPointer: 0: OwnerName
+        public CharPointer OwnerName; //0   0: CharPointer: 0: OwnerName
         public Vector4 Rotation { get; set; } //16   16: Float_XYZW: 0: Rotation
         public Vector3 Position { get; set; } //32   32: Float_XYZ: 0: Position
         public float Unused0 { get; set; }//44
@@ -3998,23 +3902,25 @@ namespace CodeWalker.GameFiles
         public uint Unused3 { get; set; }//88
         public uint Unused4 { get; set; }//92
     }
-    [TC(typeof(EXP))] public class Mrage__phCapsuleBoundDef : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class Mrage__phCapsuleBoundDef : MetaWrapper
     {
         public rage__phCapsuleBoundDef _Data;
-        public rage__phCapsuleBoundDef Data { get { return _Data; } }
+        public rage__phCapsuleBoundDef Data => _Data;
 
         public string OwnerName { get; set; }
 
         public Mrage__phCapsuleBoundDef() { }
-        public Mrage__phCapsuleBoundDef(Meta meta, rage__phCapsuleBoundDef s)
+        public Mrage__phCapsuleBoundDef(Meta meta, in rage__phCapsuleBoundDef s)
         {
             _Data = s;
-            OwnerName = MetaTypes.GetString(meta, _Data.OwnerName);
+            OwnerName = MetaTypes.GetString(meta, in _Data.OwnerName);
         }
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<rage__phCapsuleBoundDef>(meta, ptr);
-            OwnerName = MetaTypes.GetString(meta, _Data.OwnerName);
+            MetaTypes.TryGetData<rage__phCapsuleBoundDef>(meta, in ptr, out _Data);
+            OwnerName = MetaTypes.GetString(meta, in _Data.OwnerName);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
@@ -4026,12 +3932,12 @@ namespace CodeWalker.GameFiles
 
             mb.AddEnumInfo(MetaName.rage__phCapsuleBoundDef__enCollisionBoundDef);
             mb.AddStructureInfo(MetaName.rage__phCapsuleBoundDef);
-            return mb.AddItemPtr(MetaName.rage__phCapsuleBoundDef, _Data);
+            return mb.AddItemPtr(MetaName.rage__phCapsuleBoundDef, in _Data);
         }
 
         public override string ToString()
         {
-            return "rage__phCapsuleBoundDef - " + OwnerName;
+            return $"rage__phCapsuleBoundDef - {OwnerName}";
         }
     }
 
@@ -4064,19 +3970,10 @@ namespace CodeWalker.GameFiles
         public uint Unused9 { get; set; }//60
 
 
-        public Vector2I Dimensions
-        {
-            get
-            {
-                return new Vector2I((MaxCellX - MinCellX)+1, (MaxCellY - MinCellY)+1);
-            }
-        }
+        public readonly Vector2I Dimensions => new Vector2I((MaxCellX - MinCellX) + 1, (MaxCellY - MinCellY) + 1);
         public Vector2 Scale
         {
-            get
-            {
-                return new Vector2(CellDimX, CellDimY);
-            }
+            get => new Vector2(CellDimX, CellDimY);
             set
             {
                 CellDimX = value.X;
@@ -4085,10 +3982,7 @@ namespace CodeWalker.GameFiles
         }
         public Vector2 Min
         {
-            get
-            {
-                return new Vector2(MinCellX, MinCellY) * Scale;
-            }
+            get => new Vector2(MinCellX, MinCellY) * Scale;
             set
             {
                 var gv = value / Scale;
@@ -4098,10 +3992,7 @@ namespace CodeWalker.GameFiles
         }
         public Vector2 Max
         {
-            get
-            {
-                return new Vector2(MaxCellX, MaxCellY) * Scale;
-            }
+            get => new Vector2(MaxCellX, MaxCellY) * Scale;
             set
             {
                 var gv = value / Scale;
@@ -4120,12 +4011,10 @@ namespace CodeWalker.GameFiles
             return x.Equals(y);
         }
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
-            if (obj is null || obj is not rage__spdGrid2D arrObj)
-                return false;
-
-            return arrObj.MaxCellX == this.MaxCellX
+            return obj is rage__spdGrid2D arrObj
+                && arrObj.MaxCellX == this.MaxCellX
                 && arrObj.MaxCellY == this.MaxCellY
                 && arrObj.MinCellX == this.MinCellX
                 && arrObj.MinCellY == this.MinCellY
@@ -4143,7 +4032,7 @@ namespace CodeWalker.GameFiles
                 && arrObj.Unused9 == this.Unused9;
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             int hashCode = 418850833;
             hashCode = hashCode * -1521134295 + Unused0.GetHashCode();
@@ -4166,19 +4055,30 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct rage__spdAABB //32 bytes, Key:1158138379
+    [TC(typeof(EXP))]
+    public struct rage__spdAABB //32 bytes, Key:1158138379
     {
         public Vector4 min { get; set; } //0   0: Float_XYZW: 0: min
         public Vector4 max { get; set; } //16   16: Float_XYZW: 0: max
 
-        public override string ToString()
+        public rage__spdAABB(in Vector3 _min, in Vector3 _max)
         {
-            return "min: " + min.ToString() + ", max: " + max.ToString();
+            min = new Vector4(_min.X, _min.Y, _min.Z, 0);
+            max = new Vector4(_max.X, _max.Y, _max.Z, 0);
         }
-        public void SwapEnd()
+
+        public readonly override string ToString()
         {
-            min = MetaTypes.SwapBytes(min);
-            max = MetaTypes.SwapBytes(max);
+            return $"min: {min}, max: {max}";
+        }
+        public readonly rage__spdAABB SwapEnd()
+        {
+            return this with
+            {
+                min = MetaTypes.SwapBytes(min),
+                max = MetaTypes.SwapBytes(max),
+            };
+
         }
     }
 
@@ -4196,76 +4096,28 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TC(typeof(EXP))] public struct CScenarioPointRegion  //SCENARIO YMT ROOT  - in /scenario/ folder //376 bytes, Key:3501351821
+    [TC(typeof(EXP))]
+    public struct CScenarioPointRegion  //SCENARIO YMT ROOT  - in /scenario/ folder //376 bytes, Key:3501351821
     {
         public int VersionNumber { get; set; } //0   0: SignedInt: 0: VersionNumber
         public uint Unused0 { get; set; }//4
-        public CScenarioPointContainer Points { get; set; } //8   8: Structure: CScenarioPointContainer//2380938603: Points//702683191
+        public CScenarioPointContainer Points; //8   8: Structure: CScenarioPointContainer//2380938603: Points//702683191
         public uint Unused1 { get; set; }//56
         public uint Unused2 { get; set; }//60
         public uint Unused3 { get; set; }//64
         public uint Unused4 { get; set; }//68
-        public Array_Structure EntityOverrides { get; set; } //72   72: Array: 0: EntityOverrides//697469539  {0: Structure: CScenarioEntityOverride//4213733800: 256}
+        public Array_Structure EntityOverrides; //72   72: Array: 0: EntityOverrides//697469539  {0: Structure: CScenarioEntityOverride//4213733800: 256}
         public uint Unused5 { get; set; }//88
         public uint Unused6 { get; set; }//92
-        public CScenarioChainingGraph ChainingGraph { get; set; } //[PATHS] 96   96: Structure: CScenarioChainingGraph: ChainingGraph
-        public rage__spdGrid2D AccelGrid { get; set; } //184   184: Structure: rage__spdGrid2D: AccelGrid//3053155275
-        public Array_ushort Unk_3844724227 { get; set; } //248   248: Array: 0: 3844724227  {0: UnsignedShort: 0: 256}
-        public Array_Structure Clusters { get; set; } //264   264: Array: 0: Clusters//3587988394  {0: Structure: CScenarioPointCluster//750308016: 256}
-        public CScenarioPointLookUps LookUps { get; set; } //280   280: Structure: CScenarioPointLookUps//3019621867: LookUps//1097626284
-
-        public override bool Equals(object obj)
-        {
-            return obj is CScenarioPointRegion region &&
-                   VersionNumber == region.VersionNumber &&
-                   Unused0 == region.Unused0 &&
-                   EqualityComparer<CScenarioPointContainer>.Default.Equals(Points, region.Points) &&
-                   Unused1 == region.Unused1 &&
-                   Unused2 == region.Unused2 &&
-                   Unused3 == region.Unused3 &&
-                   Unused4 == region.Unused4 &&
-                   EqualityComparer<Array_Structure>.Default.Equals(EntityOverrides, region.EntityOverrides) &&
-                   Unused5 == region.Unused5 &&
-                   Unused6 == region.Unused6 &&
-                   EqualityComparer<CScenarioChainingGraph>.Default.Equals(ChainingGraph, region.ChainingGraph) &&
-                   EqualityComparer<rage__spdGrid2D>.Default.Equals(AccelGrid, region.AccelGrid) &&
-                   EqualityComparer<Array_ushort>.Default.Equals(Unk_3844724227, region.Unk_3844724227) &&
-                   EqualityComparer<Array_Structure>.Default.Equals(Clusters, region.Clusters) &&
-                   EqualityComparer<CScenarioPointLookUps>.Default.Equals(LookUps, region.LookUps);
-        }
-
-        public override int GetHashCode()
-        {
-            int hashCode = 1436693857;
-            hashCode = hashCode * -1521134295 + VersionNumber.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused0.GetHashCode();
-            hashCode = hashCode * -1521134295 + Points.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused1.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused2.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused3.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused4.GetHashCode();
-            hashCode = hashCode * -1521134295 + EntityOverrides.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused5.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused6.GetHashCode();
-            hashCode = hashCode * -1521134295 + ChainingGraph.GetHashCode();
-            hashCode = hashCode * -1521134295 + AccelGrid.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unk_3844724227.GetHashCode();
-            hashCode = hashCode * -1521134295 + Clusters.GetHashCode();
-            hashCode = hashCode * -1521134295 + LookUps.GetHashCode();
-            return hashCode;
-        }
-
-        public static bool operator ==(CScenarioPointRegion left, CScenarioPointRegion right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(CScenarioPointRegion left, CScenarioPointRegion right)
-        {
-            return !(left == right);
-        }
+        public CScenarioChainingGraph ChainingGraph; //[PATHS] 96   96: Structure: CScenarioChainingGraph: ChainingGraph
+        public rage__spdGrid2D AccelGrid; //184   184: Structure: rage__spdGrid2D: AccelGrid//3053155275
+        public Array_ushort Unk_3844724227; //248   248: Array: 0: 3844724227  {0: UnsignedShort: 0: 256}
+        public Array_Structure Clusters; //264   264: Array: 0: Clusters//3587988394  {0: Structure: CScenarioPointCluster//750308016: 256}
+        public CScenarioPointLookUps LookUps; //280   280: Structure: CScenarioPointLookUps//3019621867: LookUps//1097626284
     }
-    [TC(typeof(EXP))] public class MCScenarioPointRegion : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCScenarioPointRegion : MetaWrapper
     {
         public YmtFile Ymt { get; set; }
 
@@ -4281,26 +4133,26 @@ namespace CodeWalker.GameFiles
 
         public int VersionNumber { get { return _Data.VersionNumber; } set { _Data.VersionNumber = value; } }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            var data = MetaTypes.GetData<CScenarioPointRegion>(meta, ptr);
-            Load(meta, data);
+            MetaTypes.TryGetData<CScenarioPointRegion>(meta, in ptr, out var data);
+            Load(meta, in data);
         }
-        public void Load(Meta meta, CScenarioPointRegion data)
+        public void Load(Meta meta, in CScenarioPointRegion data)
         {
             _Data = data;
 
 
-            Points = new MCScenarioPointContainer(this, meta, _Data.Points);
+            Points = new MCScenarioPointContainer(this, meta, in _Data.Points);
 
 
-            var entOverrides = MetaTypes.ConvertDataArray<CScenarioEntityOverride>(meta, MetaName.CScenarioEntityOverride, _Data.EntityOverrides);
+            var entOverrides = MetaTypes.ConvertDataArray<CScenarioEntityOverride>(meta, MetaName.CScenarioEntityOverride, in _Data.EntityOverrides);
             if (entOverrides != null)
             {
                 EntityOverrides = new MCScenarioEntityOverride[entOverrides.Length];
                 for (int i = 0; i < entOverrides.Length; i++)
                 {
-                    EntityOverrides[i] = new MCScenarioEntityOverride(this, meta, entOverrides[i]);
+                    EntityOverrides[i] = new MCScenarioEntityOverride(this, meta, in entOverrides[i]);
                 }
             }
 
@@ -4308,7 +4160,7 @@ namespace CodeWalker.GameFiles
             Paths = new MCScenarioChainingGraph(this, meta, _Data.ChainingGraph);
 
 
-            var clusters = MetaTypes.ConvertDataArray<CScenarioPointCluster>(meta, MetaName.CScenarioPointCluster, _Data.Clusters);
+            var clusters = MetaTypes.ConvertDataArray<CScenarioPointCluster>(meta, MetaName.CScenarioPointCluster, in _Data.Clusters);
             if (clusters != null)
             {
                 Clusters = new MCScenarioPointCluster[clusters.Length];
@@ -4318,9 +4170,9 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            Unk_3844724227 = MetaTypes.GetUshortArray(meta, _Data.Unk_3844724227);
+            Unk_3844724227 = MetaTypes.GetUshortArray(meta, in _Data.Unk_3844724227);
 
-            LookUps = new MCScenarioPointLookUps(this, meta, _Data.LookUps);
+            LookUps = new MCScenarioPointLookUps(this, meta, in _Data.LookUps);
 
 
             #region data analysis
@@ -4412,7 +4264,7 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < EntityOverrides.Length; i++)
                 {
                     var mcent = EntityOverrides[i];
-                    var cent = mcent.Data;
+                    var cent = mcent._Data;
                     var scps = mcent.GetCScenarioPoints();
                     if (scps != null)
                     {
@@ -4432,18 +4284,18 @@ namespace CodeWalker.GameFiles
             }
 
 
-            if (Paths != null)
+            if (Paths is not null)
             {
                 var pd = new CScenarioChainingGraph();
 
                 var nodes = Paths.GetCNodes();
-                if (nodes != null)
+                if (nodes is not null && nodes.Length > 0)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioChainingNode);
                     pd.Nodes = mb.AddItemArrayPtr(MetaName.CScenarioChainingNode, nodes);
                 }
                 var edges = Paths.GetCEdges();
-                if (edges != null)
+                if (edges is not null && edges.Length > 0)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioChainingEdge);
                     mb.AddEnumInfo(MetaName.CScenarioChainingEdge__eAction);
@@ -4451,11 +4303,11 @@ namespace CodeWalker.GameFiles
                     mb.AddEnumInfo(MetaName.CScenarioChainingEdge__eNavSpeed);
                     pd.Edges = mb.AddItemArrayPtr(MetaName.CScenarioChainingEdge, edges);
                 }
-                if (Paths.Chains != null)
+                if (Paths.Chains is not null)
                 {
                     foreach (var chain in Paths.Chains)
                     {
-                        if (chain.EdgeIds != null)
+                        if (chain.EdgeIds is not null)
                         {
                             chain._Data.EdgeIds = mb.AddUshortArrayPtr(chain.EdgeIds);
                         }
@@ -4466,7 +4318,7 @@ namespace CodeWalker.GameFiles
                     }
                 }
                 var chains = Paths.GetCChains();
-                if (chains != null)
+                if (chains is not null && chains.Length > 0)
                 {
                     mb.AddStructureInfo(MetaName.CScenarioChain);
                     pd.Chains = mb.AddItemArrayPtr(MetaName.CScenarioChain, chains);
@@ -4538,7 +4390,7 @@ namespace CodeWalker.GameFiles
 
             mb.AddString("Made with CodeWalker by dexyfex. " + DateTime.Now.ToString());
 
-            return mb.AddItemPtr(MetaName.CScenarioPointRegion, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioPointRegion, in _Data);
         }
 
 
@@ -4621,31 +4473,21 @@ namespace CodeWalker.GameFiles
 
 
 
-        public override string Name
-        {
-            get
-            {
-                return Ymt?.ToString() ?? "CScenarioPointRegion";
-            }
-        }
+        public override string Name => Ymt?.ToString() ?? "CScenarioPointRegion";
 
-        public override string ToString()
-        {
-            return Name;
-        }
-
+        public override string ToString() => Name;
     }
 
     [TC(typeof(EXP))] public struct CScenarioPointContainer  //SCENARIO Region Points arrays // 48 bytes, Key:2489654897
     {
-        public Array_Structure LoadSavePoints { get; set; } //0   0: Array: 0: LoadSavePoints//3016741991  {0: Structure: CExtensionDefSpawnPoint: 256}
-        public Array_Structure MyPoints { get; set; } //16   16: Array: 0: MyPoints//1170781136  {0: Structure: CScenarioPoint//4103049490: 256}
+        public Array_Structure LoadSavePoints; //0   0: Array: 0: LoadSavePoints//3016741991  {0: Structure: CExtensionDefSpawnPoint: 256}
+        public Array_Structure MyPoints; //16   16: Array: 0: MyPoints//1170781136  {0: Structure: CScenarioPoint//4103049490: 256}
         public uint Unused0 { get; set; }//32
         public uint Unused1 { get; set; }//36
         public uint Unused2 { get; set; }//40
         public uint Unused3 { get; set; }//44
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is CScenarioPointContainer container &&
                    EqualityComparer<Array_Structure>.Default.Equals(LoadSavePoints, container.LoadSavePoints) &&
@@ -4656,7 +4498,7 @@ namespace CodeWalker.GameFiles
                    Unused3 == container.Unused3;
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             int hashCode = 746587205;
             hashCode = hashCode * -1521134295 + LoadSavePoints.GetHashCode();
@@ -4668,9 +4510,9 @@ namespace CodeWalker.GameFiles
             return hashCode;
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return LoadSavePoints.Count1.ToString() + " LoadSavePoints, " + MyPoints.Count1.ToString() + " MyPoints";
+            return $"{LoadSavePoints.Count1} LoadSavePoints, {MyPoints.Count1} MyPoints";
         }
 
         public static bool operator ==(CScenarioPointContainer left, CScenarioPointContainer right)
@@ -4683,13 +4525,14 @@ namespace CodeWalker.GameFiles
             return !(left == right);
         }
     }
-    [TC(typeof(EXP))] public class MCScenarioPointContainer : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCScenarioPointContainer : MetaWrapper
     {
         [TC(typeof(EXP))] public object Parent { get; set; }
         public MCScenarioPointRegion Region { get; private set; }
 
         public CScenarioPointContainer _Data;
-        public CScenarioPointContainer Data { get { return _Data; } set { _Data = value; } }
+        public ref CScenarioPointContainer Data => ref _Data;
 
         public MCExtensionDefSpawnPoint[] LoadSavePoints { get; set; }
         public MCScenarioPoint[] MyPoints { get; set; }
@@ -4701,7 +4544,7 @@ namespace CodeWalker.GameFiles
         {
             Region = region;
         }
-        public MCScenarioPointContainer(MCScenarioPointRegion region, Meta meta, CScenarioPointContainer d)
+        public MCScenarioPointContainer(MCScenarioPointRegion region, Meta meta, in CScenarioPointContainer d)
         {
             Region = region;
             _Data = d;
@@ -4710,17 +4553,17 @@ namespace CodeWalker.GameFiles
 
         public void Init(Meta meta)
         {
-            var vLoadSavePoints = MetaTypes.ConvertDataArray<CExtensionDefSpawnPoint>(meta, MetaName.CExtensionDefSpawnPoint, _Data.LoadSavePoints);
+            var vLoadSavePoints = MetaTypes.ConvertDataArray<CExtensionDefSpawnPoint>(meta, MetaName.CExtensionDefSpawnPoint, in _Data.LoadSavePoints);
             if (vLoadSavePoints != null)
             {
                 LoadSavePoints = new MCExtensionDefSpawnPoint[vLoadSavePoints.Length];
                 for (int i = 0; i < vLoadSavePoints.Length; i++)
                 {
-                    LoadSavePoints[i] = new MCExtensionDefSpawnPoint(Region, meta, vLoadSavePoints[i], this);
+                    LoadSavePoints[i] = new MCExtensionDefSpawnPoint(Region, meta, in vLoadSavePoints[i], this);
                 }
             }
 
-            var vMyPoints = MetaTypes.ConvertDataArray<CScenarioPoint>(meta, MetaName.CScenarioPoint, _Data.MyPoints);
+            var vMyPoints = MetaTypes.ConvertDataArray<CScenarioPoint>(meta, MetaName.CScenarioPoint, in _Data.MyPoints);
             if (vMyPoints != null)
             {
                 MyPoints = new MCScenarioPoint[vMyPoints.Length];
@@ -4732,16 +4575,16 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioPointContainer>(meta, ptr);
+            MetaTypes.TryGetData<CScenarioPointContainer>(meta, in ptr, out _Data);
             Init(meta);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CScenarioPointContainer);
-            return mb.AddItemPtr(MetaName.CScenarioPointContainer, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioPointContainer, in _Data);
         }
 
 
@@ -4845,23 +4688,12 @@ namespace CodeWalker.GameFiles
         }
 
 
-
-        public override string Name
-        {
-            get
-            {
-                return "CScenarioPointContainer";
-            }
-        }
-
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
-
+        public override string Name => "CScenarioPointContainer";
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CScenarioPoint  //SCENARIO Point, similar to CExtensionDefSpawnPointOverride //64 bytes, Key:402442150
+    [TC(typeof(EXP))]
+    public struct CScenarioPoint  //SCENARIO Point, similar to CExtensionDefSpawnPointOverride //64 bytes, Key:402442150
     {
         public uint Unused0 { get; set; }//0
         public uint Unused1 { get; set; }//4
@@ -4887,12 +4719,13 @@ namespace CodeWalker.GameFiles
         public uint Unused9 { get; set; }//44
         public Vector4 vPositionAndDirection { get; set; } //48   48: Float_XYZW: 0: vPositionAndDirection//4685037
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return FloatUtil.GetVector4String(vPositionAndDirection); //iTimeStartOverride.ToString() + "-" + iTimeEndOverride.ToString();// + ", " + Flags.ToString();
         }
     }
-    [TC(typeof(EXP))] public class MCScenarioPoint : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCScenarioPoint : MetaWrapper
     {
         [TC(typeof(EXP))] public MCScenarioPointContainer Container { get; set; }
         public MCScenarioPointRegion Region { get; set; }
@@ -4907,7 +4740,7 @@ namespace CodeWalker.GameFiles
             get { return Quaternion.RotationAxis(Vector3.UnitZ, Direction); }
             set
             {
-                Vector3 dir = value.Multiply(Vector3.UnitX);
+                Vector3 dir = value.Multiply(in Vector3.UnitX);
                 float dira = (float)Math.Atan2(dir.Y, dir.X);
                 Direction = dira;
             }
@@ -4929,7 +4762,7 @@ namespace CodeWalker.GameFiles
         public byte IMapId { get { return _Data.iRequiredIMapId; } set { _Data.iRequiredIMapId = value; } }
         public MetaHash IMapName { get; set; }
 
-        public string TimeRange { get { return _Data.iTimeStartOverride.ToString().PadLeft(2, '0') + ":00 - " + _Data.iTimeEndOverride.ToString().PadLeft(2, '0') + ":00"; } }
+        public string TimeRange => $"{_Data.iTimeStartOverride.ToString().PadLeft(2, '0')}:00 - {_Data.iTimeEndOverride.ToString().PadLeft(2, '0')}:00";
         public byte TimeStart { get { return _Data.iTimeStartOverride; } set { _Data.iTimeStartOverride = value; } }
         public byte TimeEnd { get { return _Data.iTimeEndOverride; } set { _Data.iTimeEndOverride = value; } }
         public byte Probability { get { return _Data.iProbability; } set { _Data.iProbability = value; } }
@@ -4973,39 +4806,30 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioPoint>(meta, ptr);
+            MetaTypes.TryGetData<CScenarioPoint>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CScenarioPoint);
-            return mb.AddItemPtr(MetaName.CScenarioPoint, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioPoint, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return (Type?.ToString() ?? "") + ": " + (ModelSet?.ToString() ?? "");
-            }
-        }
-
-        public override string ToString()
-        {
-            return Name + ": " + TimeRange;
-        }
+        public override string Name => $"{Type?.ToString() ?? string.Empty} : {ModelSet?.ToString() ?? string.Empty}";
+        public override string ToString() => $"{Name}: {TimeRange}";
 
     }
 
-    [TC(typeof(EXP))] public struct CScenarioEntityOverride  //SCENARIO Entity Override //80 bytes, Key:1271200492
+    [TC(typeof(EXP))]
+    public struct CScenarioEntityOverride  //SCENARIO Entity Override //80 bytes, Key:1271200492
     {
-        public Vector3 EntityPosition { get; set; } //0   0: Float_XYZ: 0: EntityPosition//642078041
+        public Vector3 EntityPosition; //0   0: Float_XYZ: 0: EntityPosition//642078041
         public float Unused00 { get; set; }//12
         public MetaHash EntityType { get; set; } //16   16: Hash: 0: EntityType//1374199246
         public uint Unused01 { get; set; }//20
-        public Array_Structure ScenarioPoints { get; set; } //24   24: Array: 0: ScenarioPoints  {0: Structure: CExtensionDefSpawnPoint: 256}
+        public Array_Structure ScenarioPoints; //24   24: Array: 0: ScenarioPoints  {0: Structure: CExtensionDefSpawnPoint: 256}
         public uint Unused02 { get; set; }//40
         public uint Unused03 { get; set; }//44
         public uint Unused04 { get; set; }//48
@@ -5019,12 +4843,11 @@ namespace CodeWalker.GameFiles
         public uint Unused10 { get; set; }//72
         public uint Unused11 { get; set; }//76
 
-        public override string ToString()
-        {
-            return EntityType.ToString() + ", " + ScenarioPoints.Count1.ToString() + " ScenarioPoints";
-        }
+        public override readonly string ToString() => $"{EntityType}, {ScenarioPoints.Count1} ScenarioPoints";
     }
-    [TC(typeof(EXP))] public class MCScenarioEntityOverride : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCScenarioEntityOverride : MetaWrapper
     {
         [TC(typeof(EXP))] public object Parent { get; set; }
         public MCScenarioPointRegion Region { get; set; }
@@ -5050,7 +4873,7 @@ namespace CodeWalker.GameFiles
                 _Data = copy.Data;
             }
         }
-        public MCScenarioEntityOverride(MCScenarioPointRegion region, Meta meta, CScenarioEntityOverride d)
+        public MCScenarioEntityOverride(MCScenarioPointRegion region, Meta meta, in CScenarioEntityOverride d)
         {
             Region = region;
             _Data = d;
@@ -5060,22 +4883,22 @@ namespace CodeWalker.GameFiles
         public void Init(Meta meta)
         {
 
-            var scenarioPoints = MetaTypes.ConvertDataArray<CExtensionDefSpawnPoint>(meta, MetaName.CExtensionDefSpawnPoint, _Data.ScenarioPoints);
+            var scenarioPoints = MetaTypes.ConvertDataArray<CExtensionDefSpawnPoint>(meta, MetaName.CExtensionDefSpawnPoint, in _Data.ScenarioPoints);
             if (scenarioPoints != null)
             {
                 ScenarioPoints = new MCExtensionDefSpawnPoint[scenarioPoints.Length];
                 for (int i = 0; i < scenarioPoints.Length; i++)
                 {
-                    ScenarioPoints[i] = new MCExtensionDefSpawnPoint(Region, meta, scenarioPoints[i], this);
+                    ScenarioPoints[i] = new MCExtensionDefSpawnPoint(Region, meta, in scenarioPoints[i], this);
                     ScenarioPoints[i].ParentPosition = Position;
                 }
             }
 
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioEntityOverride>(meta, ptr);
+            MetaTypes.TryGetData<CScenarioEntityOverride>(meta, in ptr, out _Data);
             Init(meta);
         }
 
@@ -5091,7 +4914,7 @@ namespace CodeWalker.GameFiles
                 _Data.ScenarioPoints = mb.AddWrapperArray(ScenarioPoints);
             }
 
-            return mb.AddItemPtr(MetaName.CScenarioEntityOverride, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioEntityOverride, in _Data);
         }
 
 
@@ -5145,25 +4968,16 @@ namespace CodeWalker.GameFiles
 
 
 
-        public override string Name
-        {
-            get
-            {
-                return "CScenarioEntityOverride " + _Data.EntityType.ToString();
-            }
-        }
-
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string Name => $"CScenarioEntityOverride {_Data.EntityType}";
+        public override string ToString() => _Data.ToString();
     }
 
-    [TC(typeof(EXP))] public struct CScenarioChainingGraph  //SCENARIO PATH ARRAYS //88 bytes, Key:88255871
+    [TC(typeof(EXP))]
+    public record struct CScenarioChainingGraph  //SCENARIO PATH ARRAYS //88 bytes, Key:88255871
     {
-        public Array_Structure Nodes { get; set; } //0   0: Array: 0: Nodes  {0: Structure: CScenarioChainingNode//3340683255: 256}
-        public Array_Structure Edges { get; set; } //16   16: Array: 0: Edges  {0: Structure: CScenarioChainingEdge//4255409560: 256}
-        public Array_Structure Chains { get; set; } //32   32: Array: 0: Chains  {0: Structure: CScenarioChain: 256}
+        public Array_Structure Nodes; //0   0: Array: 0: Nodes  {0: Structure: CScenarioChainingNode//3340683255: 256}
+        public Array_Structure Edges; //16   16: Array: 0: Edges  {0: Structure: CScenarioChainingEdge//4255409560: 256}
+        public Array_Structure Chains; //32   32: Array: 0: Chains  {0: Structure: CScenarioChain: 256}
         public uint Unused0 { get; set; }//48
         public uint Unused1 { get; set; }//52
         public uint Unused2 { get; set; }//56
@@ -5175,51 +4989,14 @@ namespace CodeWalker.GameFiles
         public uint Unused8 { get; set; }//80
         public uint Unused9 { get; set; }//84
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return Nodes.Count1.ToString() + " Nodes, " + Edges.Count1.ToString() + " Edges, " + Chains.Count1.ToString() + " Chains";
-        }
-
-        public static bool operator !=(CScenarioChainingGraph x, CScenarioChainingGraph y)
-        {
-            return !x.Equals(y);
-        }
-
-        public static bool operator ==(CScenarioChainingGraph x, CScenarioChainingGraph y)
-        {
-            return x.Equals(y);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is null || obj is not CScenarioChainingGraph arrObj)
-                return false;
-
-            return arrObj.Nodes == this.Nodes
-                && arrObj.Edges == this.Edges
-                && arrObj.Chains == this.Chains;
-        }
-
-        public override int GetHashCode()
-        {
-            int hashCode = -1851298727;
-            hashCode = hashCode * -1521134295 + Nodes.GetHashCode();
-            hashCode = hashCode * -1521134295 + Edges.GetHashCode();
-            hashCode = hashCode * -1521134295 + Chains.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused0.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused1.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused2.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused3.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused4.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused5.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused6.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused7.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused8.GetHashCode();
-            hashCode = hashCode * -1521134295 + Unused9.GetHashCode();
-            return hashCode;
+            return $"{Nodes.Count1} Nodes, {Edges.Count1} Edges, {Chains.Count1} Chains";
         }
     }
-    [TC(typeof(EXP))] public class MCScenarioChainingGraph : MetaWrapper
+
+    [TC(typeof(EXP))]
+    public class MCScenarioChainingGraph : MetaWrapper
     {
         public MCScenarioPointRegion Region { get; private set; }
 
@@ -5241,7 +5018,7 @@ namespace CodeWalker.GameFiles
 
         public void Init(Meta meta)
         {
-            var pathnodes = MetaTypes.ConvertDataArray<CScenarioChainingNode>(meta, MetaName.CScenarioChainingNode, _Data.Nodes);
+            var pathnodes = MetaTypes.ConvertDataArray<CScenarioChainingNode>(meta, MetaName.CScenarioChainingNode, in _Data.Nodes);
             if (pathnodes != null)
             {
                 Nodes = new MCScenarioChainingNode[pathnodes.Length];
@@ -5251,7 +5028,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var pathedges = MetaTypes.ConvertDataArray<CScenarioChainingEdge>(meta, MetaName.CScenarioChainingEdge, _Data.Edges);
+            var pathedges = MetaTypes.ConvertDataArray<CScenarioChainingEdge>(meta, MetaName.CScenarioChainingEdge, in _Data.Edges);
             if (pathedges != null)
             {
                 Edges = new MCScenarioChainingEdge[pathedges.Length];
@@ -5261,7 +5038,7 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var pathchains = MetaTypes.ConvertDataArray<CScenarioChain>(meta, MetaName.CScenarioChain, _Data.Chains);
+            var pathchains = MetaTypes.ConvertDataArray<CScenarioChain>(meta, MetaName.CScenarioChain, in _Data.Chains);
             if (pathchains != null)
             {
                 Chains = new MCScenarioChain[pathchains.Length];
@@ -5272,9 +5049,9 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioChainingGraph>(meta, ptr);
+            MetaTypes.TryGetData<CScenarioChainingGraph>(meta, in ptr, out _Data);
             Init(meta);
         }
 
@@ -5283,7 +5060,7 @@ namespace CodeWalker.GameFiles
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CScenarioChainingGraph);
-            return mb.AddItemPtr(MetaName.CScenarioChainingGraph, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioChainingGraph, in _Data);
         }
 
 
@@ -5294,11 +5071,12 @@ namespace CodeWalker.GameFiles
 
         public CScenarioChainingNode[] GetCNodes()
         {
-            if ((Nodes == null) || (Nodes.Length == 0)) return null;
+            if (Nodes == null || Nodes.Length == 0)
+                return null;
             CScenarioChainingNode[] r = new CScenarioChainingNode[Nodes.Length];
             for (int i = 0; i < Nodes.Length; i++)
             {
-                r[i] = Nodes[i].Data;
+                r[i] = Nodes[i]._Data;
             }
             return r;
         }
@@ -5495,7 +5273,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CScenarioChainingNode //SCENARIO PATH NODE //32 bytes, Key:1811784424
+    [TC(typeof(EXP))]
+    public struct CScenarioChainingNode //SCENARIO PATH NODE //32 bytes, Key:1811784424
     {
         public Vector3 Position { get; set; } //0   0: Float_XYZ: 0: Position
         public float Unused0 { get; set; }//12
@@ -5508,8 +5287,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return 
-                ScenarioType.ToString() + ", " + Unk_2602393771.ToString();
+            return $"{ScenarioType}, {Unk_2602393771}";
         }
     }
     [TC(typeof(EXP))] public class MCScenarioChainingNode : MetaWrapper
@@ -5553,30 +5331,21 @@ namespace CodeWalker.GameFiles
             Type = copy.Type;
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioChainingNode>(meta, ptr);
+            MetaTypes.TryGetData<CScenarioChainingNode>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CScenarioChainingNode);
-            return mb.AddItemPtr(MetaName.CScenarioChainingNode, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioChainingNode, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return "CScenarioChainingNode";// + _Data.Unk_2602393771.ToString();
-            }
-        }
+        public override string Name => "CScenarioChainingNode";
 
 
-        public override string ToString()
-        {
-            return _Data.ToString();
-        }
+        public override string ToString() => _Data.ToString();
 
     }
 
@@ -5591,7 +5360,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return NodeIndexFrom.ToString() + ", " + NodeIndexTo.ToString() + ", " + Action.ToString() + ", " + NavMode.ToString() + ", " + NavSpeed.ToString();
+            return $"{NodeIndexFrom}, {NodeIndexTo}, {Action}, {NavMode}, {NavSpeed}";
         }
     }
     [TC(typeof(EXP))] public class MCScenarioChainingEdge : MetaWrapper
@@ -5627,28 +5396,22 @@ namespace CodeWalker.GameFiles
             NodeTo = copy.NodeTo;//these should be updated later...
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioChainingEdge>(meta, ptr);
+            MetaTypes.TryGetData<CScenarioChainingEdge>(meta, in ptr, out _Data);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CScenarioChainingEdge);
-            return mb.AddItemPtr(MetaName.CScenarioChainingEdge, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioChainingEdge, in _Data);
         }
 
-        public override string Name
-        {
-            get
-            {
-                return "CScenarioChainingEdge";
-            }
-        }
+        public override string Name => "CScenarioChainingEdge";
 
         public override string ToString()
         {
-            return Action.ToString() + ", " + NavMode.ToString() + ", " + NavSpeed.ToString();
+            return $"{Action}, {NavMode}, {NavSpeed}";
         }
 
     }
@@ -5659,15 +5422,15 @@ namespace CodeWalker.GameFiles
         public byte Unused0 { get; set; }//1
         public ushort Unused1 { get; set; }//2
         public uint Unused2 { get; set; }//4
-        public Array_ushort EdgeIds { get; set; } //8   8: Array: 0: EdgeIds  {0: UnsignedShort: 0: 256}
+        public Array_ushort EdgeIds; //8   8: Array: 0: EdgeIds  {0: UnsignedShort: 0: 256}
         public uint Unused3 { get; set; }//24
         public uint Unused4 { get; set; }//28
         public uint Unused5 { get; set; }//32
         public uint Unused6 { get; set; }//36
 
-        public override string ToString()
+        public override readonly string ToString()
         {
-            return Unk_1156691834.ToString() + ": " + EdgeIds.Count1.ToString() + " EdgeIds";
+            return $"{Unk_1156691834}: {EdgeIds.Count1} EdgeIds";
         }
     }
     [TC(typeof(EXP))] public class MCScenarioChain : MetaWrapper
@@ -5689,13 +5452,13 @@ namespace CodeWalker.GameFiles
         {
             Region = region;
             _Data = d;
-            EdgeIds = MetaTypes.GetUshortArray(meta, _Data.EdgeIds);
+            EdgeIds = MetaTypes.GetUshortArray(meta, in _Data.EdgeIds);
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioChain>(meta, ptr);
-            EdgeIds = MetaTypes.GetUshortArray(meta, _Data.EdgeIds);
+            MetaTypes.TryGetData<CScenarioChain>(meta, in ptr, out _Data);
+            EdgeIds = MetaTypes.GetUshortArray(meta, in _Data.EdgeIds);
         }
 
 
@@ -5756,7 +5519,7 @@ namespace CodeWalker.GameFiles
             //}
 
             mb.AddStructureInfo(MetaName.CScenarioChain);
-            return mb.AddItemPtr(MetaName.CScenarioChain, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioChain, in _Data);
         }
 
         public override string Name
@@ -5776,14 +5539,14 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public struct CScenarioPointCluster  //SCENARIO spawn cluster - all things spawn together //80 bytes, Key:3622480419
     {
-        public CScenarioPointContainer Points { get; set; } //0   0: Structure: CScenarioPointContainer//2380938603: Points//702683191
-        public rage__spdSphere ClusterSphere { get; set; } //48   48: Structure: 1062159465: ClusterSphere//352461053
+        public CScenarioPointContainer Points; //0   0: Structure: CScenarioPointContainer//2380938603: Points//702683191
+        public rage__spdSphere ClusterSphere; //48   48: Structure: 1062159465: ClusterSphere//352461053
         public float Unk_1095875445 { get; set; } //64   64: Float: 0: 1095875445 //spawn chance? eg 5, 30
         public byte Unk_3129415068 { get; set; } //68   68: Boolean: 0: 3129415068
         public uint Unused0 { get; set; }//72
         public uint Unused1 { get; set; }//76
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return Points.ToString();// + ", Sphere: " + ClusterSphere.ToString();
         }
@@ -5830,18 +5593,18 @@ namespace CodeWalker.GameFiles
             Points = new MCScenarioPointContainer(region);
             Points.Parent = this;
         }
-        public MCScenarioPointCluster(MCScenarioPointRegion region, Meta meta, CScenarioPointCluster d)
+        public MCScenarioPointCluster(MCScenarioPointRegion region, Meta meta, in CScenarioPointCluster d)
         {
             Region = region;
             _Data = d;
-            Points = new MCScenarioPointContainer(region, meta, d.Points);
+            Points = new MCScenarioPointContainer(region, meta, in d.Points);
             Points.Parent = this;
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioPointCluster>(meta, ptr);
-            Points = new MCScenarioPointContainer(Region, meta, _Data.Points);
+            MetaTypes.TryGetData<CScenarioPointCluster>(meta, in ptr, out _Data);
+            Points = new MCScenarioPointContainer(Region, meta, in _Data.Points);
             Points.Parent = this;
         }
 
@@ -5889,7 +5652,7 @@ namespace CodeWalker.GameFiles
                 _Data.Points = new CScenarioPointContainer();
             }
 
-            return mb.AddItemPtr(MetaName.CScenarioPointCluster, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioPointCluster, in _Data);
         }
 
         public override string Name
@@ -5913,12 +5676,12 @@ namespace CodeWalker.GameFiles
         public Array_uint InteriorNames { get; set; } //64   64: Array: 0: InteriorNames  {0: Hash: 0: 256}
         public Array_uint RequiredIMapNames { get; set; } //[ymap names] //80   80: Array: 0: RequiredIMapNames//1767860162  {0: Hash: 0: 256}
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return "CScenarioPointLookUps";
         }
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is CScenarioPointLookUps ups &&
                    EqualityComparer<Array_uint>.Default.Equals(TypeNames, ups.TypeNames) &&
@@ -5929,7 +5692,7 @@ namespace CodeWalker.GameFiles
                    EqualityComparer<Array_uint>.Default.Equals(RequiredIMapNames, ups.RequiredIMapNames);
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             int hashCode = -153113894;
             hashCode = hashCode * -1521134295 + TypeNames.GetHashCode();
@@ -5956,7 +5719,7 @@ namespace CodeWalker.GameFiles
         public MCScenarioPointRegion Region { get; set; }
 
         public CScenarioPointLookUps _Data;
-        public CScenarioPointLookUps Data { get { return _Data; } set { _Data = value; } }
+        public CScenarioPointLookUps Data => _Data;
 
         public MetaHash[] TypeNames { get; set; } //scenario type hashes used by points
         public MetaHash[] PedModelSetNames { get; set; } //ped names
@@ -5971,7 +5734,7 @@ namespace CodeWalker.GameFiles
         {
             Region = region;
         }
-        public MCScenarioPointLookUps(MCScenarioPointRegion region, Meta meta, CScenarioPointLookUps d)
+        public MCScenarioPointLookUps(MCScenarioPointRegion region, Meta meta, in CScenarioPointLookUps d)
         {
             Region = region;
             _Data = d;
@@ -5988,16 +5751,16 @@ namespace CodeWalker.GameFiles
             RequiredIMapNames = MetaTypes.GetHashArray(meta, _Data.RequiredIMapNames);
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CScenarioPointLookUps>(meta, ptr);
+            MetaTypes.TryGetData<CScenarioPointLookUps>(meta, in ptr, out _Data);
             Init(meta);
         }
 
         public override MetaPOINTER Save(MetaBuilder mb)
         {
             mb.AddStructureInfo(MetaName.CScenarioPointLookUps);
-            return mb.AddItemPtr(MetaName.CScenarioPointLookUps, _Data);
+            return mb.AddItemPtr(MetaName.CScenarioPointLookUps, in _Data);
         }
 
         public override string Name
@@ -6015,69 +5778,51 @@ namespace CodeWalker.GameFiles
 
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    [TC(typeof(EXP))] public struct CCompositeEntityType //304 bytes, Key:659539004 dex: composite entity type - ytyp // Tom: des_ destruction
+    [TC(typeof(EXP))]
+    public readonly struct CCompositeEntityType //304 bytes, Key:659539004 dex: composite entity type - ytyp // Tom: des_ destruction
     {
-        public ArrayOfChars64 Name { get; set; } //0   0: ArrayOfChars: 64: Name
-        public float lodDist { get; set; } //64   64: Float: 0: lodDist
-        public uint flags { get; set; } //68   68: UnsignedInt: 0: flags
-        public uint specialAttribute { get; set; } //72   72: UnsignedInt: 0: specialAttribute
-        public uint Unused0 { get; set; }//76
-        public Vector3 bbMin { get; set; } //80   80: Float_XYZ: 0: bbMin
-        public float Unused1 { get; set; }//92
-        public Vector3 bbMax { get; set; } //96   96: Float_XYZ: 0: bbMax
-        public float Unused2 { get; set; }//108
-        public Vector3 bsCentre { get; set; } //112   112: Float_XYZ: 0: bsCentre
-        public float Unused3 { get; set; }//124
-        public float bsRadius { get; set; } //128   128: Float: 0: bsRadius
-        public uint Unused4 { get; set; }//132
-        public ArrayOfChars64 StartModel { get; set; } //136   136: ArrayOfChars: 64: StartModel
-        public ArrayOfChars64 EndModel { get; set; } //200   200: ArrayOfChars: 64: EndModel
-        public MetaHash StartImapFile { get; set; } //264   264: Hash: 0: StartImapFile//2462971690
-        public MetaHash EndImapFile { get; set; } //268   268: Hash: 0: EndImapFile//2059586669
-        public MetaHash PtFxAssetName { get; set; } //272   272: Hash: 0: PtFxAssetName//2497993358
-        public uint Unused5 { get; set; }//276
-        public Array_Structure Animations { get; set; } //280   280: Array: 0: Animations  {0: Structure: 1980345114: 256}
-        public uint Unused6 { get; set; }//296
-        public uint Unused7 { get; set; }//300
+        public ArrayOfChars64 Name { get; init; } //0   0: ArrayOfChars: 64: Name
+        public float lodDist { get; init; } //64   64: Float: 0: lodDist
+        public uint flags { get; init; } //68   68: UnsignedInt: 0: flags
+        public uint specialAttribute { get; init; } //72   72: UnsignedInt: 0: specialAttribute
+        public uint Unused0 { get; init; }//76
+        public Vector3 bbMin { get; init; } //80   80: Float_XYZ: 0: bbMin
+        public float Unused1 { get; init; }//92
+        public Vector3 bbMax { get; init; } //96   96: Float_XYZ: 0: bbMax
+        public float Unused2 { get; init; }//108
+        public Vector3 bsCentre { get; init; } //112   112: Float_XYZ: 0: bsCentre
+        public float Unused3 { get; init; }//124
+        public float bsRadius { get; init; } //128   128: Float: 0: bsRadius
+        public uint Unused4 { get; init; }//132
+        public ArrayOfChars64 StartModel { get; init; } //136   136: ArrayOfChars: 64: StartModel
+        public ArrayOfChars64 EndModel { get; init; } //200   200: ArrayOfChars: 64: EndModel
+        public MetaHash StartImapFile { get; init; } //264   264: Hash: 0: StartImapFile//2462971690
+        public MetaHash EndImapFile { get; init; } //268   268: Hash: 0: EndImapFile//2059586669
+        public MetaHash PtFxAssetName { get; init; } //272   272: Hash: 0: PtFxAssetName//2497993358
+        public uint Unused5 { get; init; }//276
+        public Array_Structure Animations { get; init; } //280   280: Array: 0: Animations  {0: Structure: 1980345114: 256}
+        public uint Unused6 { get; init; }//296
+        public uint Unused7 { get; init; }//300
 
         public override string ToString()
         {
-            return Name.ToString() + ", " + StartModel.ToString() + ", " + EndModel.ToString() + ", " + 
-                    StartImapFile.ToString() + ", " + EndImapFile.ToString() + ", " + PtFxAssetName.ToString();
+            return $"{Name}, {StartModel}, {EndModel}, {StartImapFile}, {EndImapFile}, {PtFxAssetName}";
         }
     }
 
-    [TC(typeof(EXP))] public struct CCompEntityAnims //216 bytes, Key:4110496011 //destruction animations?
+    [TC(typeof(EXP))]
+    public readonly struct CCompEntityAnims //216 bytes, Key:4110496011 //destruction animations?
     {
-        public ArrayOfChars64 AnimDict { get; set; } //0   0: ArrayOfChars: 64: AnimDict
-        public ArrayOfChars64 AnimName { get; set; } //64   64: ArrayOfChars: 64: AnimName
-        public ArrayOfChars64 AnimatedModel { get; set; } //128   128: ArrayOfChars: 64: AnimatedModel
-        public float punchInPhase { get; set; } //192   192: Float: 0: punchInPhase//3142377407
-        public float punchOutPhase { get; set; } //196   196: Float: 0: punchOutPhase//2164219370
-        public Array_Structure effectsData { get; set; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
+        public ArrayOfChars64 AnimDict { get; init; } //0   0: ArrayOfChars: 64: AnimDict
+        public ArrayOfChars64 AnimName { get; init; } //64   64: ArrayOfChars: 64: AnimName
+        public ArrayOfChars64 AnimatedModel { get; init; } //128   128: ArrayOfChars: 64: AnimatedModel
+        public float punchInPhase { get; init; } //192   192: Float: 0: punchInPhase//3142377407
+        public float punchOutPhase { get; init; } //196   196: Float: 0: punchOutPhase//2164219370
+        public Array_Structure effectsData { get; init; } //200   200: Array: 0: effectsData  {0: Structure: 3430328684: 256}
     }
 
-    [TC(typeof(EXP))] public struct CCompEntityEffectsData //160 bytes, Key:1724963966 //destruction animation effects data
+    [TC(typeof(EXP))]
+    public struct CCompEntityEffectsData //160 bytes, Key:1724963966 //destruction animation effects data
     {
         public uint fxType { get; set; } //0   0: UnsignedInt: 0: fxType
         public uint Unused0 { get; set; }//4
@@ -6104,18 +5849,8 @@ namespace CodeWalker.GameFiles
         public uint Unused7 { get; set; }//156
     }
 
-
-
-
-
-
-
-
-
-
-
-
-    [TC(typeof(EXP))] public struct CStreamingRequestRecord //40 bytes, Key:3825587854  //SRL YMT ROOT - in /streaming/ folder
+    [TC(typeof(EXP))]
+    public struct CStreamingRequestRecord //40 bytes, Key:3825587854  //SRL YMT ROOT - in /streaming/ folder
     {
         public Array_Structure Frames { get; set; } //0   0: Array: 0: Frames  {0: Structure: CStreamingRequestFrame: 256}
         public Array_Structure CommonSets { get; set; } //16   16: Array: 0: CommonSets  {0: Structure: CStreamingRequestCommonSet: 256}
@@ -6125,7 +5860,8 @@ namespace CodeWalker.GameFiles
         public uint Unused2 { get; set; }//36
     }
 
-    [TC(typeof(EXP))] public struct CStreamingRequestFrame //112 bytes, Key:1112444512  //SRL frame...
+    [TC(typeof(EXP))]
+    public struct CStreamingRequestFrame //112 bytes, Key:1112444512  //SRL frame...
     {
         public Array_uint AddList { get; set; } //0   0: Array: 0: AddList//327274266  {0: Hash: 0: 256}
         public Array_uint RemoveList { get; set; } //16   16: Array: 0: RemoveList//3372321331  {0: Hash: 0: 256}
@@ -6141,7 +5877,8 @@ namespace CodeWalker.GameFiles
         public uint Unused4 { get; set; }//108
     }
 
-    [TC(typeof(EXP))] public struct CStreamingRequestFrame_v2 //96 bytes, Key:3672937465  //SRL frame...
+    [TC(typeof(EXP))]
+    public struct CStreamingRequestFrame_v2 //96 bytes, Key:3672937465  //SRL frame...
     {
         public Array_uint AddList { get; set; } //0   0: Array: 0: AddList//327274266  {0: Hash: 0: 256}
         public Array_uint RemoveList { get; set; } //16   16: Array: 0: RemoveList//3372321331  {0: Hash: 0: 256}
@@ -6227,33 +5964,36 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TC(typeof(EXP))] public struct CPedVariationInfo : IPsoSwapEnd //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
+    [TC(typeof(EXP))] public struct CPedVariationInfo : IPsoSwapEnd<CPedVariationInfo> //112 bytes, Key:4030871161  //COMPONENT PEDS YMT ROOT  - in componentpeds .rpf's
     {
         public byte bHasTexVariations { get; set; } //0   0: Boolean: 0: bHasTexVariations
         public byte bHasDrawblVariations { get; set; } //1   1: Boolean: 0: bHasDrawblVariations
         public byte bHasLowLODs { get; set; } //2   2: Boolean: 0: bHasLowLODs
         public byte bIsSuperLOD { get; set; } //3   3: Boolean: 0: bIsSuperLOD
-        public ArrayOfBytes12 availComp { get; set; } //4   4: ArrayOfBytes: 12: availComp
-        public Array_Structure aComponentData3 { get; set; } //16   16: Array: 0: aComponentData3  {0: Structure: CPVComponentData: 256}
-        public Array_Structure aSelectionSets { get; set; } //32   32: Array: 0: aSelectionSets  {0: Structure: CPedSelectionSet: 256}
-        public Array_Structure compInfos { get; set; } //48   48: Array: 0: compInfos  {0: Structure: CComponentInfo: 256}
-        public CPedPropInfo propInfo { get; set; } //64   64: Structure: CPedPropInfo: propInfo
+        public ArrayOfBytes12 availComp; //4   4: ArrayOfBytes: 12: availComp
+        public Array_Structure aComponentData3; //16   16: Array: 0: aComponentData3  {0: Structure: CPVComponentData: 256}
+        public Array_Structure aSelectionSets; //32   32: Array: 0: aSelectionSets  {0: Structure: CPedSelectionSet: 256}
+        public Array_Structure compInfos; //48   48: Array: 0: compInfos  {0: Structure: CComponentInfo: 256}
+        public CPedPropInfo propInfo; //64   64: Structure: CPedPropInfo: propInfo
         public MetaHash dlcName { get; set; } //104   104: Hash: 0: dlcName
         public uint Unused0 { get; set; }//108
 
-        public void SwapEnd()
+        public CPedVariationInfo SwapEnd()
         {
-            aComponentData3 = aComponentData3.SwapEnd();
-            aSelectionSets = aSelectionSets.SwapEnd();
-            compInfos = compInfos.SwapEnd();
-            propInfo = propInfo.SwapEnd();
-            dlcName = MetaTypes.SwapBytes(dlcName);
+            return this with
+            {
+                aComponentData3 = aComponentData3.SwapEnd(),
+                aSelectionSets = aSelectionSets.SwapEnd(),
+                compInfos = compInfos.SwapEnd(),
+                propInfo = propInfo.SwapEnd(),
+                dlcName = MetaTypes.SwapBytes(dlcName),
+            };
         }
     }
     [TC(typeof(EXP))] public class MCPedVariationInfo : MetaWrapper
     {
         public CPedVariationInfo _Data;
-        public CPedVariationInfo Data { get { return _Data; } }
+        public CPedVariationInfo Data => _Data;
 
         public byte[] ComponentIndices { get; set; }
         public MCPVComponentData[] ComponentData3 { get; set; }
@@ -6262,12 +6002,12 @@ namespace CodeWalker.GameFiles
         public MCPedPropInfo PropInfo { get; set; }
 
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            var data = MetaTypes.GetData<CPedVariationInfo>(meta, ptr);
-            Load(meta, data);
+            MetaTypes.TryGetData<CPedVariationInfo>(meta, in ptr, out var data);
+            Load(meta, in data);
         }
-        public void Load(Meta meta, CPedVariationInfo data)
+        public void Load(Meta meta, in CPedVariationInfo data)
         {
             //maybe see https://github.com/emcifuntik/altv-cloth-tool/blob/master/AltTool/ResourceBuilder.cs
 
@@ -6277,17 +6017,17 @@ namespace CodeWalker.GameFiles
             ComponentIndices = data.availComp.GetArray();
 
 
-            var aComponentData3 = MetaTypes.ConvertDataArray<CPVComponentData>(meta, MetaName.CPVComponentData, _Data.aComponentData3);
+            var aComponentData3 = MetaTypes.ConvertDataArray<CPVComponentData>(meta, MetaName.CPVComponentData, in _Data.aComponentData3);
             if (aComponentData3 != null)
             {
                 ComponentData3 = new MCPVComponentData[aComponentData3.Length];
                 for (int i = 0; i < aComponentData3.Length; i++)
                 {
-                    ComponentData3[i] = new MCPVComponentData(meta, aComponentData3[i], this);
+                    ComponentData3[i] = new MCPVComponentData(meta, in aComponentData3[i], this);
                 }
             }
 
-            var vSelectionSets = MetaTypes.ConvertDataArray<CPedSelectionSet>(meta, MetaName.CPedSelectionSet, _Data.aSelectionSets);
+            var vSelectionSets = MetaTypes.ConvertDataArray<CPedSelectionSet>(meta, MetaName.CPedSelectionSet, in _Data.aSelectionSets);
             if (vSelectionSets != null)
             {
                 SelectionSets = new MCPedSelectionSet[vSelectionSets.Length];
@@ -6297,24 +6037,24 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            var vCompInfos = MetaTypes.ConvertDataArray<CComponentInfo>(meta, MetaName.CComponentInfo, _Data.compInfos);
+            var vCompInfos = MetaTypes.ConvertDataArray<CComponentInfo>(meta, MetaName.CComponentInfo, in _Data.compInfos);
             if (vCompInfos != null)
             {
                 CompInfos = new MCComponentInfo[vCompInfos.Length];
                 for (int i = 0; i < vCompInfos.Length; i++)
                 {
-                    CompInfos[i] = new MCComponentInfo(meta, vCompInfos[i], this);
+                    CompInfos[i] = new MCComponentInfo(meta, in vCompInfos[i], this);
                 }
             }
 
-            PropInfo = new MCPedPropInfo(meta, data.propInfo, this);
+            PropInfo = new MCPedPropInfo(meta, in data.propInfo, this);
 
 
 
             for (int i = 0; i < 12; i++) //set the component type indices on all the component variants, for them to use
             {
                 var compInd = ComponentIndices[i];
-                if ((compInd > 0) && (compInd < ComponentData3?.Length))
+                if ((compInd >= 0) && (compInd < ComponentData3?.Length))
                 {
                     var compvar = ComponentData3[compInd];
                     compvar.ComponentType = i;
@@ -6331,10 +6071,16 @@ namespace CodeWalker.GameFiles
             }
 
 
-
+            foreach(var component in ComponentData3)
+            {
+                if (component.ComponentType == -1)
+                {
+                    Console.WriteLine($"No component type found for {component.Name} {component.Owner.Name}");
+                }
+            }
 
         }
-        public void Load(PsoFile pso, CPedVariationInfo data)
+        public void Load(PsoFile pso, in CPedVariationInfo data)
         {
             //TODO!
         }
@@ -6345,37 +6091,44 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public MCPVComponentData GetComponentData(int componentType)
+        public MCPVComponentData? GetComponentData(int componentType)
         {
-            if ((componentType < 0) || (componentType > 11)) return null;
-            if (ComponentIndices == null) return null;
+            if ((componentType < 0) || (componentType > 11))
+                throw new ArgumentOutOfRangeException(nameof(componentType), componentType, "Value should fall in range 0-11");
+            if (ComponentIndices is null || ComponentData3 is null)
+                return null;
+
             var index = ComponentIndices[componentType];
-            if (index > ComponentData3?.Length) return null;
+            // Apparantly some files (like mp_f_stunt_01) have more datas than indices for some reason?
+            // I don't know if this is a mistake made by them or that this data is used for something else, but for now just discard it
+            if (index > ComponentData3?.Length || ComponentData3[index].ComponentType == -1)
+                return null;
             return ComponentData3[index];
         }
 
     }
 
-    [TC(typeof(EXP))] public struct CPVComponentData //24 bytes, Key:2024084511  //COMPONENT PEDS component variations item
+    [TC(typeof(EXP))]
+    public readonly struct CPVComponentData //24 bytes, Key:2024084511  //COMPONENT PEDS component variations item
     {
-        public byte numAvailTex { get; set; } //0   0: UnsignedByte: 0: numAvailTex
-        public byte Unused0 { get; set; }//1
-        public ushort Unused1 { get; set; }//2
-        public uint Unused2 { get; set; }//4
-        public Array_Structure aDrawblData3 { get; set; } //8   8: Array: 0: aDrawblData3  {0: Structure: CPVDrawblData: 256}
+        public byte numAvailTex { get; init; } //0   0: UnsignedByte: 0: numAvailTex
+        public byte Unused0 { get; init; }//1
+        public ushort Unused1 { get; init; }//2
+        public uint Unused2 { get; init; }//4
+        public readonly Array_Structure aDrawblData3; //8   8: Array: 0: aDrawblData3  {0: Structure: CPVDrawblData: 256}
     }
     [TC(typeof(EXP))] public class MCPVComponentData : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
         public CPVComponentData _Data;
-        public CPVComponentData Data { get { return _Data; } }
+        public CPVComponentData Data => _Data;
 
-        public byte numAvailTex { get { return _Data.numAvailTex; } set { _Data.numAvailTex = value; } }
+        public byte numAvailTex => _Data.numAvailTex;
 
         public MCPVDrawblData[] DrawblData3 { get; set; }
 
-        public int ComponentType { get; set; } = 0;
+        public int ComponentType { get; set; } = -1;
         public static string[] ComponentTypeNames { get; } =
         {
             "head",//0
@@ -6394,7 +6147,7 @@ namespace CodeWalker.GameFiles
 
 
         public MCPVComponentData() { }
-        public MCPVComponentData(Meta meta, CPVComponentData data, MCPedVariationInfo owner)
+        public MCPVComponentData(Meta meta, in CPVComponentData data, MCPedVariationInfo owner)
         {
             _Data = data;
             Owner = owner;
@@ -6404,21 +6157,21 @@ namespace CodeWalker.GameFiles
 
         private void Init(Meta meta)
         {
-            var aDrawblData3 = MetaTypes.ConvertDataArray<CPVDrawblData>(meta, MetaName.CPVDrawblData, _Data.aDrawblData3);
+            var aDrawblData3 = MetaTypes.ConvertDataArray<CPVDrawblData>(meta, MetaName.CPVDrawblData, in _Data.aDrawblData3);
             if (aDrawblData3 != null)
             {
                 DrawblData3 = new MCPVDrawblData[aDrawblData3.Length];
                 for (int i = 0; i < aDrawblData3.Length; i++)
                 {
-                    DrawblData3[i] = new MCPVDrawblData(meta, aDrawblData3[i], this, i);
+                    DrawblData3[i] = new MCPVDrawblData(meta, in aDrawblData3[i], this, i);
                 }
             }
         }
 
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
-            _Data = MetaTypes.GetData<CPVComponentData>(meta, ptr);
+            MetaTypes.TryGetData<CPVComponentData>(meta, in ptr, out _Data);
             Init(meta);
         }
 
@@ -6429,35 +6182,36 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            string r = (ComponentType < 12) ? ComponentTypeNames[ComponentType] : "error";
-            return r + " : " + DrawblData3?.Length.ToString() ?? base.ToString();
+            string r = (ComponentType < 12 && ComponentType >= 0) ? ComponentTypeNames[ComponentType] : "error";
+            return r + " : " + (DrawblData3?.Length.ToString() ?? base.ToString());
         }
     }
 
-    [TC(typeof(EXP))] public struct CPVDrawblData //48 bytes, Key:124073662  //COMPONENT PEDS drawable info
+    [TC(typeof(EXP))]
+    public readonly struct CPVDrawblData //48 bytes, Key:124073662  //COMPONENT PEDS drawable info
     {
-        public byte propMask { get; set; } //0   0: UnsignedByte: 0: propMask
-        public byte numAlternatives { get; set; } //1   1: UnsignedByte: 0: 2806194106
-        public ushort Unused0 { get; set; }//2
-        public uint Unused1 { get; set; }//4
-        public Array_Structure aTexData { get; set; } //8   8: Array: 0: aTexData  {0: Structure: CPVTextureData: 256}
-        public CPVDrawblData__CPVClothComponentData clothData { get; set; } //24   24: Structure: CPVDrawblData__CPVClothComponentData: clothData
+        public byte propMask { get; init; } //0   0: UnsignedByte: 0: propMask
+        public byte numAlternatives { get; init; } //1   1: UnsignedByte: 0: 2806194106
+        public ushort Unused0 { get; init; }//2
+        public uint Unused1 { get; init; }//4
+        public readonly Array_Structure aTexData; //8   8: Array: 0: aTexData  {0: Structure: CPVTextureData: 256}
+        public readonly CPVDrawblData__CPVClothComponentData clothData; //24   24: Structure: CPVDrawblData__CPVClothComponentData: clothData
     }
     [TC(typeof(EXP))] public class MCPVDrawblData : MetaWrapper
     {
         public MCPVComponentData Owner { get; set; }
 
         public CPVDrawblData _Data;
-        public CPVDrawblData Data { get { return _Data; } }
+        public CPVDrawblData Data => _Data;
 
         public CPVTextureData[] TexData { get; set; }
 
         public int ComponentType { get; set; } = 0;
         public int DrawableIndex { get; set; } = 0;
-        public int PropMask { get { return _Data.propMask; } }
-        public int NumAlternatives { get { return _Data.numAlternatives; } }
+        public int PropMask => _Data.propMask;
+        public int NumAlternatives => _Data.numAlternatives;
 
-        public int PropType { get { return (PropMask >> 4) & 3; } }
+        public int PropType => (PropMask >> 4) & 3;
 
         public string GetDrawableName(int altnum = 0)
         {
@@ -6539,17 +6293,17 @@ namespace CodeWalker.GameFiles
 
 
         public MCPVDrawblData() { }
-        public MCPVDrawblData(Meta meta, CPVDrawblData data, MCPVComponentData owner, int index)
+        public MCPVDrawblData(Meta meta, in CPVDrawblData data, MCPVComponentData owner, int index)
         {
             _Data = data;
             Owner = owner;
             DrawableIndex = index;
 
-            TexData = MetaTypes.ConvertDataArray<CPVTextureData>(meta, MetaName.CPVTextureData, _Data.aTexData);
+            TexData = MetaTypes.ConvertDataArray<CPVTextureData>(meta, MetaName.CPVTextureData, in _Data.aTexData);
         }
 
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
             throw new NotImplementedException();
         }
@@ -6565,41 +6319,44 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CPVTextureData //3 bytes, Key:4272717794  //COMPONENT PEDS (cloth?) aTexData
+    [TC(typeof(EXP))]
+    public struct CPVTextureData //3 bytes, Key:4272717794  //COMPONENT PEDS (cloth?) aTexData
     {
         public byte texId { get; set; } //0   0: UnsignedByte: 0: texId
         public byte distribution { get; set; } //1   1: UnsignedByte: 0: distribution//914976023
         public byte Unused0 { get; set; }//2
     }
 
-    [TC(typeof(EXP))] public struct CPVDrawblData__CPVClothComponentData //24 bytes, Key:508935687  //COMPONENT PEDS clothData
+    [TC(typeof(EXP))]
+    public readonly struct CPVDrawblData__CPVClothComponentData //24 bytes, Key:508935687  //COMPONENT PEDS clothData
     {
-        public byte ownsCloth { get; set; } //0   0: Boolean: 0: ownsCloth
-        public byte Unused0 { get; set; }//1
-        public ushort Unused1 { get; set; }//2
-        public uint Unused2 { get; set; }//4
-        public uint Unused3 { get; set; }//8
-        public uint Unused4 { get; set; }//12
-        public uint Unused5 { get; set; }//16
-        public uint Unused6 { get; set; }//20
+        public byte ownsCloth { get; init; } //0   0: Boolean: 0: ownsCloth
+        public byte Unused0 { get; init; }//1
+        public ushort Unused1 { get; init; }//2
+        public uint Unused2 { get; init; }//4
+        public uint Unused3 { get; init; }//8
+        public uint Unused4 { get; init; }//12
+        public uint Unused5 { get; init; }//16
+        public uint Unused6 { get; init; }//20
     }
 
-    [TC(typeof(EXP))] public struct CPedSelectionSet //48 bytes, Key:3120284999  //COMPONENT PEDS 
+    [TC(typeof(EXP))]
+    public readonly struct CPedSelectionSet //48 bytes, Key:3120284999  //COMPONENT PEDS 
     {
-        public MetaHash name { get; set; } //0   0: Hash: 0: name
-        public ArrayOfBytes12 compDrawableId { get; set; } //4   4: ArrayOfBytes: 12: compDrawableId
-        public ArrayOfBytes12 compTexId { get; set; } //16   16: ArrayOfBytes: 12: compTexId
-        public ArrayOfBytes6 propAnchorId { get; set; } //28   28: ArrayOfBytes: 6: propAnchorId
-        public ArrayOfBytes6 propDrawableId { get; set; } //34   34: ArrayOfBytes: 6: propDrawableId
-        public ArrayOfBytes6 propTexId { get; set; } //40   40: ArrayOfBytes: 6: propTexId
-        public ushort Unused0 { get; set; }//46
+        public MetaHash name { get; init; } //0   0: Hash: 0: name
+        public ArrayOfBytes12 compDrawableId { get; init; } //4   4: ArrayOfBytes: 12: compDrawableId
+        public ArrayOfBytes12 compTexId { get; init; } //16   16: ArrayOfBytes: 12: compTexId
+        public ArrayOfBytes6 propAnchorId { get; init; } //28   28: ArrayOfBytes: 6: propAnchorId
+        public ArrayOfBytes6 propDrawableId { get; init; } //34   34: ArrayOfBytes: 6: propDrawableId
+        public ArrayOfBytes6 propTexId { get; init; } //40   40: ArrayOfBytes: 6: propTexId
+        public ushort Unused0 { get; init; }//46
     }
     [TC(typeof(EXP))] public class MCPedSelectionSet : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
         public CPedSelectionSet _Data;
-        public CPedSelectionSet Data { get { return _Data; } }
+        public CPedSelectionSet Data => _Data;
 
         public MCPedSelectionSet() { }
         public MCPedSelectionSet(Meta meta, CPedSelectionSet data, MCPedVariationInfo owner)
@@ -6608,7 +6365,7 @@ namespace CodeWalker.GameFiles
             Owner = owner;
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
             throw new NotImplementedException();
         }
@@ -6619,45 +6376,47 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CComponentInfo //48 bytes, Key:3693847250  //COMPONENT PEDS 
+    [TC(typeof(EXP))]
+    public readonly struct CComponentInfo //48 bytes, Key:3693847250  //COMPONENT PEDS 
     {
-        public MetaHash Unk_802196719 { get; set; } //0   0: Hash: 0: 802196719
-        public MetaHash Unk_4233133352 { get; set; } //4   4: Hash: 0: 4233133352
-        public ArrayOfBytes5 Unk_128864925 { get; set; } //8   8: ArrayOfBytes: 5: 128864925
-        public byte Unused0 { get; set; }//13
-        public ushort Unused1 { get; set; }//14
-        public uint Unused2 { get; set; }//16
-        public uint Unused3 { get; set; }//20
-        public uint Unused4 { get; set; }//24
-        public uint flags { get; set; } //28   28: UnsignedInt: 0: flags
-        public int inclusions { get; set; } //32   32: IntFlags2: 0: inclusions//2172318933
-        public int exclusions { get; set; } //36   36: IntFlags2: 0: exclusions
-        public ePedVarComp Unk_1613922652 { get; set; } //40   40: ShortFlags: ePedVarComp: 1613922652
-        public ushort Unk_2114993291 { get; set; } //42   42: UnsignedShort: 0: 2114993291
-        public byte Unk_3509540765 { get; set; } //44   44: UnsignedByte: 0: 3509540765
-        public byte Unk_4196345791 { get; set; } //45   45: UnsignedByte: 0: 4196345791
-        public ushort Unused5 { get; set; }//46
+        public MetaHash Unk_802196719 { get; init; } //0   0: Hash: 0: 802196719
+        public MetaHash Unk_4233133352 { get; init; } //4   4: Hash: 0: 4233133352
+        public ArrayOfBytes5 Unk_128864925 { get; init; } //8   8: ArrayOfBytes: 5: 128864925
+        public byte Unused0 { get; init; }//13
+        public ushort Unused1 { get; init; }//14
+        public uint Unused2 { get; init; }//16
+        public uint Unused3 { get; init; }//20
+        public uint Unused4 { get; init; }//24
+        public uint flags { get; init; } //28   28: UnsignedInt: 0: flags
+        public int inclusions { get; init; } //32   32: IntFlags2: 0: inclusions//2172318933
+        public int exclusions { get; init; } //36   36: IntFlags2: 0: exclusions
+        public ePedVarComp Unk_1613922652 { get; init; } //40   40: ShortFlags: ePedVarComp: 1613922652
+        public ushort Unk_2114993291 { get; init; } //42   42: UnsignedShort: 0: 2114993291
+        public byte Unk_3509540765 { get; init; } //44   44: UnsignedByte: 0: 3509540765
+        public byte Unk_4196345791 { get; init; } //45   45: UnsignedByte: 0: 4196345791
+        public ushort Unused5 { get; init; }//46
     }
-    [TC(typeof(EXP))] public class MCComponentInfo : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCComponentInfo : MetaWrapper
     {
         public MCPedVariationInfo Owner { get; set; }
 
         public CComponentInfo _Data;
-        public CComponentInfo Data { get { return _Data; } }
+        public CComponentInfo Data => _Data;
 
 
-        public int ComponentType { get { return _Data.Unk_3509540765; } }
-        public int ComponentIndex { get { return _Data.Unk_4196345791; } }
+        public int ComponentType => _Data.Unk_3509540765;
+        public int ComponentIndex => _Data.Unk_4196345791;
 
         public MCComponentInfo() { }
-        public MCComponentInfo(Meta meta, CComponentInfo data, MCPedVariationInfo owner)
+        public MCComponentInfo(Meta meta, in CComponentInfo data, MCPedVariationInfo owner)
         {
             _Data = data;
             Owner = owner;
         }
 
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
             throw new NotImplementedException();
         }
@@ -6679,8 +6438,8 @@ namespace CodeWalker.GameFiles
         public byte Unused0 { get; set; }//1
         public ushort Unused1 { get; set; }//2
         public uint Unused2 { get; set; }//4
-        public Array_Structure aPropMetaData { get; set; } //8   8: Array: 0: aPropMetaData  {0: Structure: CPedPropMetaData: 256}
-        public Array_Structure aAnchors { get; set; } //24   24: Array: 0: aAnchors  {0: Structure: CAnchorProps: 256}
+        public Array_Structure aPropMetaData; //8   8: Array: 0: aPropMetaData  {0: Structure: CPedPropMetaData: 256}
+        public Array_Structure aAnchors; //24   24: Array: 0: aAnchors  {0: Structure: CAnchorProps: 256}
         public CPedPropInfo SwapEnd()
         {
             aPropMetaData = aPropMetaData.SwapEnd();
@@ -6693,28 +6452,28 @@ namespace CodeWalker.GameFiles
         public MCPedVariationInfo Owner { get; set; }
 
         public CPedPropInfo _Data;
-        public CPedPropInfo Data { get { return _Data; } }
+        public CPedPropInfo Data => _Data;
 
         public MCPedPropMetaData[] PropMetaData { get; set; }
         public MCAnchorProps[] Anchors { get; set; }
 
         public MCPedPropInfo() { }
-        public MCPedPropInfo(Meta meta, CPedPropInfo data, MCPedVariationInfo owner)
+        public MCPedPropInfo(Meta meta, in CPedPropInfo data, MCPedVariationInfo owner)
         {
             _Data = data;
             Owner = owner;
 
-            var vPropMetaData = MetaTypes.ConvertDataArray<CPedPropMetaData>(meta, MetaName.CPedPropMetaData, _Data.aPropMetaData);
+            var vPropMetaData = MetaTypes.ConvertDataArray<CPedPropMetaData>(meta, MetaName.CPedPropMetaData, in _Data.aPropMetaData);
             if (vPropMetaData != null)
             {
                 PropMetaData = new MCPedPropMetaData[vPropMetaData.Length];
                 for (int i = 0; i < vPropMetaData.Length; i++)
                 {
-                    PropMetaData[i] = new MCPedPropMetaData(meta, vPropMetaData[i], this);
+                    PropMetaData[i] = new MCPedPropMetaData(meta, in vPropMetaData[i], this);
                 }
             }
 
-            var vAnchors = MetaTypes.ConvertDataArray<CAnchorProps>(meta, MetaName.CAnchorProps, _Data.aAnchors);
+            var vAnchors = MetaTypes.ConvertDataArray<CAnchorProps>(meta, MetaName.CAnchorProps, in _Data.aAnchors);
             if (vAnchors != null)
             {
                 Anchors = new MCAnchorProps[vAnchors.Length];
@@ -6728,7 +6487,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
             throw new NotImplementedException();
         }
@@ -6739,43 +6498,44 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS 
+    [TC(typeof(EXP))]
+    public struct CPedPropMetaData //56 bytes, Key:2029738350  //COMPONENT PEDS 
     {
-        public MetaHash audioId { get; set; } //0   0: Hash: 0: audioId
-        public ArrayOfBytes5 expressionMods { get; set; } //4   4: ArrayOfBytes: 5: expressionMods//942761829
-        public byte Unused0 { get; set; }//9
-        public ushort Unused1 { get; set; }//10
-        public uint Unused2 { get; set; }//12
-        public uint Unused3 { get; set; }//16
-        public uint Unused4 { get; set; }//20
-        public Array_Structure texData { get; set; } //24   24: Array: 0: texData  {0: Structure: CPedPropTexData: 256}
-        public ePropRenderFlags renderFlags { get; set; } //40   40: IntFlags1: ePropRenderFlags: renderFlags
-        public uint propFlags { get; set; } //44   44: UnsignedInt: 0: propFlags
-        public ushort flags { get; set; } //48   48: UnsignedShort: 0: flags
-        public byte anchorId { get; set; } //50   50: UnsignedByte: 0: anchorId
-        public byte propId { get; set; } //51   51: UnsignedByte: 0: propId
-        public byte Unk_2894625425 { get; set; } //52   52: UnsignedByte: 0: 2894625425
-        public byte Unused5 { get; set; }//53
-        public ushort Unused6 { get; set; }//54
+        public MetaHash audioId { get; init; } //0   0: Hash: 0: audioId
+        public readonly ArrayOfBytes5 expressionMods; //4   4: ArrayOfBytes: 5: expressionMods//942761829
+        public byte Unused0 { get; init; }//9
+        public ushort Unused1 { get; init; }//10
+        public uint Unused2 { get; init; }//12
+        public uint Unused3 { get; init; }//16
+        public uint Unused4 { get; init; }//20
+        public readonly Array_Structure texData;//24   24: Array: 0: texData  {0: Structure: CPedPropTexData: 256}
+        public ePropRenderFlags renderFlags { get; init; } //40   40: IntFlags1: ePropRenderFlags: renderFlags
+        public uint propFlags { get; init; } //44   44: UnsignedInt: 0: propFlags
+        public ushort flags { get; init; } //48   48: UnsignedShort: 0: flags
+        public byte anchorId { get; init; } //50   50: UnsignedByte: 0: anchorId
+        public byte propId { get; init; } //51   51: UnsignedByte: 0: propId
+        public byte Unk_2894625425 { get; init; } //52   52: UnsignedByte: 0: 2894625425
+        public byte Unused5 { get; init; }//53
+        public ushort Unused6 { get; init; }//54
     }
     [TC(typeof(EXP))] public class MCPedPropMetaData : MetaWrapper
     {
         public MCPedPropInfo Owner { get; set; }
 
         public CPedPropMetaData _Data;
-        public CPedPropMetaData Data { get { return _Data; } }
+        public CPedPropMetaData Data => _Data;
 
         public CPedPropTexData[] TexData { get; set; }
 
-        public MCPedPropMetaData(Meta meta, CPedPropMetaData data, MCPedPropInfo owner)
+        public MCPedPropMetaData(Meta meta, in CPedPropMetaData data, MCPedPropInfo owner)
         {
             _Data = data;
             Owner = owner;
 
-            TexData = MetaTypes.ConvertDataArray<CPedPropTexData>(meta, MetaName.CPedPropTexData, _Data.texData);
+            TexData = MetaTypes.ConvertDataArray<CPedPropTexData>(meta, MetaName.CPedPropTexData, in _Data.texData);
         }
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
             throw new NotImplementedException();
         }
@@ -6786,7 +6546,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] public struct CPedPropTexData //12 bytes, Key:2767296137  //COMPONENT PEDS 
+    [TC(typeof(EXP))]
+    public struct CPedPropTexData //12 bytes, Key:2767296137  //COMPONENT PEDS 
     {
         public int inclusions { get; set; } //0   0: IntFlags2: 0: inclusions
         public int exclusions { get; set; } //4   4: IntFlags2: 0: exclusions
@@ -6796,18 +6557,20 @@ namespace CodeWalker.GameFiles
         public byte distribution { get; set; } //11   11: UnsignedByte: 0: distribution
     }
 
-    [TC(typeof(EXP))] public struct CAnchorProps //24 bytes, Key:403574180  //COMPONENT PEDS CAnchorProps
+    [TC(typeof(EXP))]
+    public struct CAnchorProps //24 bytes, Key:403574180  //COMPONENT PEDS CAnchorProps
     {
-        public Array_byte props { get; set; } //0   0: Array: 0: props  {0: UnsignedByte: 0: 256}
+        public readonly Array_byte props; //0   0: Array: 0: props  {0: UnsignedByte: 0: 256}
         public eAnchorPoints anchor { get; set; } //16   16: IntEnum: eAnchorPoints: anchor
         public uint Unused0 { get; set; }//20
     }
-    [TC(typeof(EXP))] public class MCAnchorProps : MetaWrapper
+    [TC(typeof(EXP))]
+    public class MCAnchorProps : MetaWrapper
     {
         public MCPedPropInfo Owner { get; set; }
 
         public CAnchorProps _Data;
-        public CAnchorProps Data { get { return _Data; } }
+        public CAnchorProps Data => _Data;
 
         public byte[] Props { get; set; }
 
@@ -6816,11 +6579,11 @@ namespace CodeWalker.GameFiles
             _Data = data;
             Owner = owner;
 
-            Props = MetaTypes.GetByteArray(meta, _Data.props);
+            Props = MetaTypes.GetByteArray(meta, in _Data.props);
         }
 
 
-        public override void Load(Meta meta, MetaPOINTER ptr)
+        public override void Load(Meta meta, in MetaPOINTER ptr)
         {
             throw new NotImplementedException();
         }

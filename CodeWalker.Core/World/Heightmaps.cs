@@ -1,4 +1,6 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
+using Collections.Pooled;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -18,21 +20,18 @@ namespace CodeWalker.World
         {
             return NodePositions;
         }
-        public EditorVertex[] GetPathVertices()
-        {
-            return null;
-        }
         public EditorVertex[] GetTriangleVertices()
         {
             return TriangleVerts;
         }
 
-        public Vector4[] NodePositions;
-        public EditorVertex[] TriangleVerts;
+        public Vector4[] NodePositions = [];
+        public EditorVertex[] TriangleVerts = [];
 
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
         {
+            using var _ = new DisposableTimer("Heightmaps Init");
             Inited = false;
 
             GameFileCache = gameFileCache;
@@ -68,8 +67,8 @@ namespace CodeWalker.World
         public void BuildVertices()
         {
 
-            var vlist = new List<EditorVertex>();
-            var nlist = new List<Vector4>();
+            using var vlist = new PooledList<EditorVertex>();
+            using var nlist = new PooledList<Vector4>();
 
             foreach (var hmf in HeightmapFiles)
             {
@@ -82,7 +81,7 @@ namespace CodeWalker.World
             }
             else
             {
-                TriangleVerts = null;
+                TriangleVerts = [];
             }
             if (nlist.Count > 0)
             {
@@ -90,16 +89,16 @@ namespace CodeWalker.World
             }
             else
             {
-                NodePositions = null;
+                NodePositions = [];
             }
 
         }
-        private void BuildHeightmapVertices(HeightmapFile hmf, List<EditorVertex> vl, List<Vector4> nl)
+        private void BuildHeightmapVertices(HeightmapFile hmf, PooledList<EditorVertex> vl, PooledList<Vector4> nl)
         {
-            var v1 = new EditorVertex();
-            var v2 = new EditorVertex();
-            var v3 = new EditorVertex();
-            var v4 = new EditorVertex();
+            EditorVertex v1;
+            EditorVertex v2;
+            EditorVertex v3;
+            EditorVertex v4;
 
             uint cgrn = (uint)new Color(0, 128, 0, 60).ToRgba();
             uint cyel = (uint)new Color(128, 128, 0, 200).ToRgba();
@@ -113,7 +112,6 @@ namespace CodeWalker.World
             var siz = max - min;
             var step = siz / new Vector3(w - 1, h - 1, 255);
 
-            v1.Colour = v2.Colour = v3.Colour = v4.Colour = cyel;
             for (int yi = 1; yi < h; yi++)
             {
                 var yo = yi - 1;
@@ -124,15 +122,15 @@ namespace CodeWalker.World
                     var o2 = yo * w + xi;
                     var o3 = yi * w + xo;
                     var o4 = yi * w + xi;
-                    v1.Position = min + step * new Vector3(xo, yo, hmin[o1]);
-                    v2.Position = min + step * new Vector3(xi, yo, hmin[o2]);
-                    v3.Position = min + step * new Vector3(xo, yi, hmin[o3]);
-                    v4.Position = min + step * new Vector3(xi, yi, hmin[o4]);
+                    v1 = new EditorVertex(min + step * new Vector3(xo, yo, hmin[o1]), cyel);
+                    v2 = new EditorVertex(min + step * new Vector3(xi, yo, hmin[o2]), cyel);
+                    v3 = new EditorVertex(min + step * new Vector3(xo, yi, hmin[o3]), cyel);
+                    v4 = new EditorVertex(min + step * new Vector3(xi, yi, hmin[o4]), cyel);
                     vl.Add(v1); vl.Add(v2); vl.Add(v3);
                     vl.Add(v3); vl.Add(v2); vl.Add(v4);
                 }
             }
-            v1.Colour = v2.Colour = v3.Colour = v4.Colour = cgrn;
+
             for (int yi = 1; yi < h; yi++)
             {
                 var yo = yi - 1;
@@ -143,10 +141,10 @@ namespace CodeWalker.World
                     var o2 = yo * w + xi;
                     var o3 = yi * w + xo;
                     var o4 = yi * w + xi;
-                    v1.Position = min + step * new Vector3(xo, yo, hmax[o1]);
-                    v2.Position = min + step * new Vector3(xi, yo, hmax[o2]);
-                    v3.Position = min + step * new Vector3(xo, yi, hmax[o3]);
-                    v4.Position = min + step * new Vector3(xi, yi, hmax[o4]);
+                    v1 = new EditorVertex(min + step * new Vector3(xo, yo, hmax[o1]), cgrn);
+                    v2 = new EditorVertex(min + step * new Vector3(xi, yo, hmax[o2]), cgrn);
+                    v3 = new EditorVertex(min + step * new Vector3(xo, yi, hmax[o3]), cgrn);
+                    v4 = new EditorVertex(min + step * new Vector3(xi, yi, hmax[o4]), cgrn);
                     vl.Add(v1); vl.Add(v2); vl.Add(v3);
                     vl.Add(v3); vl.Add(v2); vl.Add(v4);
                 }

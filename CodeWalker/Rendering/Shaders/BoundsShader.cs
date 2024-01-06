@@ -72,7 +72,7 @@ namespace CodeWalker.Rendering
 
         public BoundsShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] spherevsbytes = File.ReadAllBytes(Path.Combine(folder, "BoundingSphereVS.cso"));
             byte[] boxvsbytes = File.ReadAllBytes(Path.Combine(folder, "BoundingBoxVS.cso"));
             byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "BoundsPS.cso"));
@@ -126,7 +126,7 @@ namespace CodeWalker.Rendering
             return true;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             switch (mode)
             {

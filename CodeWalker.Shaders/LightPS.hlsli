@@ -171,6 +171,31 @@ float4 DeferredLODLight(float3 camRel, float3 norm, float4 diffuse, float4 specu
     return float4(lcol, 1);
 }
 
+bool IsInRange(float3 camRel)
+{
+    float3 srpos = InstPosition - camRel;
+    float ldist = length(srpos);
+    
+    if (InstType == 4)
+    {
+        float3 ext = InstDirection.xyz * (InstCapsuleExtent.y * 0.5);
+        float4 lsn = GetLineSegmentNearestPoint(srpos, ext, -ext);
+        ldist = lsn.w;
+        srpos.xyz = lsn.xyz;
+    }
+    
+    if (ldist > InstFalloff)
+        return false;
+    if (ldist <= 0)
+        return false;
+    
+    float d = dot(srpos, InstCullingPlaneNormal) - InstCullingPlaneOffset;
+    if (d > 0)
+        return false;
+    
+    return true;
+}
+
 float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular, float4 irradiance)
 {
     float3 srpos = InstPosition - camRel; //light position relative to surface position

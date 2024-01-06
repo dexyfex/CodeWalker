@@ -488,9 +488,9 @@ namespace CodeWalker.GameFiles
                 {
                     var h = GridWatermapInds[y * Width + x];
                     sb.Append(h.ToString());
-                    sb.Append(" ");
+                    sb.Append(' ');
                 }
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             return sb.ToString();

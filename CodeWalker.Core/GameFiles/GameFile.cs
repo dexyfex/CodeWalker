@@ -1,58 +1,159 @@
 ﻿          using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
-    public abstract class GameFile : Cacheable<GameFileCacheKey>
+
+    // This would make more sense as a enum, but that would cause lots of bloat casting values
+    public static class LoadState
     {
-        public volatile bool Loaded = false;
-        public volatile bool LoadQueued = false;
+        public const int None = 0;
+        public const int Loaded = 1;
+        public const int LoadQueued = 2;
+    }
+    public abstract class GameFile : Cacheable<GameFileCacheKey>, IDisposable
+    {
+        public byte LoadAttempts = 0;
+
+        public int loadState = (int)LoadState.None;
+
+        [NotifyParentProperty(true)]
+        public bool LoadQueued { 
+            get => (loadState & LoadState.LoadQueued) == LoadState.LoadQueued;
+            set {
+                if (value)
+                {
+                    Interlocked.Or(ref loadState, LoadState.LoadQueued);
+                }
+                else
+                {
+                    Interlocked.And(ref loadState, ~LoadState.LoadQueued);
+                }
+            }
+        }
+
+        [NotifyParentProperty(true)]
+        public bool Loaded
+        {
+            get => (loadState & LoadState.Loaded) == LoadState.Loaded;
+            set
+            {
+                if (value)
+                {
+                    Interlocked.Or(ref loadState, LoadState.Loaded);
+                }
+                else
+                {
+                    Interlocked.And(ref loadState, ~LoadState.Loaded);
+                }
+            }
+        }
+
         public DateTime LastLoadTime = DateTime.MinValue;
-        public RpfFileEntry RpfFileEntry { get; set; }
+        public RpfFileEntry? RpfFileEntry { get; set; }
         public string Name { get; set; }
         public string FilePath { get; set; } //used by the project form.
         public GameFileType Type { get; set; }
+        public bool IsDisposed { get; set; } = false;
 
 
 
-        public GameFile(RpfFileEntry entry, GameFileType type)
+        public GameFile(RpfFileEntry? entry, GameFileType type)
         {
             RpfFileEntry = entry;
             Type = type;
             MemoryUsage = (entry != null) ? entry.GetFileSize() : 0;
-            if (entry is RpfResourceFileEntry)
+            if (entry is RpfResourceFileEntry resent)
             {
-                var resent = entry as RpfResourceFileEntry;
                 var newuse = resent.SystemSize + resent.GraphicsSize;
                 MemoryUsage = newuse;
             }
-            else if (entry is RpfBinaryFileEntry)
+            else if (entry is RpfBinaryFileEntry binent)
             {
-                var binent = entry as RpfBinaryFileEntry;
                 var newuse = binent.FileUncompressedSize;
                 if (newuse > MemoryUsage)
                 {
                     MemoryUsage = newuse;
                 }
             }
+        }
+
+        public bool SetLoadQueued(bool value)
+        {
+            if (value)
+            {
+                return (Interlocked.Or(ref loadState, LoadState.LoadQueued) & LoadState.LoadQueued) == 0;
+            }
             else
             {
+                return (Interlocked.And(ref loadState, ~LoadState.LoadQueued) & LoadState.LoadQueued) == LoadState.LoadQueued;
             }
         }
 
-        public override string ToString()
+        public bool SetLoaded(bool value)
         {
-            return (string.IsNullOrEmpty(Name)) ? JenkIndex.GetString(Key.Hash) : Name;
+            if (value)
+            {
+                return (Interlocked.Or(ref loadState, LoadState.Loaded) & LoadState.Loaded) == 0;
+            }
+            else
+            {
+                return (Interlocked.And(ref loadState, ~LoadState.Loaded) & LoadState.Loaded) == LoadState.Loaded;
+            }
         }
 
+        public override string ToString() => string.IsNullOrEmpty(Name) ? JenkIndex.GetString(Key.Hash) : Name;
 
+        public virtual void Dispose()
+        {
+            IsDisposed = true;
+            GC.SuppressFinalize(this);
+        }
+
+        [DoesNotReturn]
+        public static void ThrowFileIsNotAResourceException()
+        {
+            throw new Exception("File entry wasn't a resource! (is it binary data?)");
+        }
+    }
+
+    public class GameFileByPathComparer : IEqualityComparer<GameFile>
+    {
+        public static readonly GameFileByPathComparer Instance = new GameFileByPathComparer();
+        public bool Equals(GameFile? x, GameFile? y)
+        {
+            if (x is null && y is null)
+                return true;
+            if (x is null || y is null)
+                return false;
+            if (ReferenceEquals(x, y))
+                return true;
+
+            if (x.Type != y.Type)
+                return false;
+
+            if (x.RpfFileEntry is null && y.RpfFileEntry is null)
+                return true;
+            if (x.RpfFileEntry is null || y.RpfFileEntry is null)
+                return false;
+
+            return x.RpfFileEntry.Path.Equals(y.RpfFileEntry.Path, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public int GetHashCode([DisallowNull] GameFile obj)
+        {
+            return HashCode.Combine(obj.RpfFileEntry?.Path.GetHashCode(StringComparison.OrdinalIgnoreCase) ?? 0, obj.Type);
+        }
     }
 
 
-    public enum GameFileType : int
+    public enum GameFileType : byte
     {
         Ydd = 0,
         Ydr = 1,
@@ -86,52 +187,12 @@ namespace CodeWalker.GameFiles
         Mrf = 29,
         DistantLights = 30,
         Ypdb = 31,
+        PedShopMeta = 32,
     }
 
 
 
 
 
-    public struct GameFileCacheKey : IEquatable<GameFileCacheKey>
-    {
-        public uint Hash { get; set; }
-        public GameFileType Type { get; set; }
-
-        public GameFileCacheKey(uint hash, GameFileType type)
-        {
-            Hash = hash;
-            Type = type;
-        }
-
-        public override readonly bool Equals(object obj)
-        {
-            if (obj == null)
-                return false;
-            if (obj is not GameFileCacheKey gameFileCacheKey)
-                return false;
-            return gameFileCacheKey.Hash == Hash && gameFileCacheKey.Type == Type;
-        }
-
-        public readonly bool Equals(GameFileCacheKey obj)
-        {
-            if (obj == null)
-                return false;
-            return obj.Hash == Hash && obj.Type == Type;
-        }
-
-        public static bool operator ==(GameFileCacheKey first, GameFileCacheKey second)
-        {
-            return first.Equals(second);
-        }
-
-        public static bool operator !=(GameFileCacheKey first, GameFileCacheKey second)
-        {
-            return !first.Equals(second);
-        }
-
-        public override readonly int GetHashCode()
-        {
-            return (int)Hash;
-        }
-    }
+    public readonly record struct GameFileCacheKey(uint Hash, GameFileType Type);
 }

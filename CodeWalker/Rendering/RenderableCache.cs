@@ -135,7 +135,8 @@ namespace CodeWalker.Rendering
 
         public bool ContentThreadProc()
         {
-            if (currentDevice == null) return false; //can't do anything with no device
+            if (currentDevice == null)
+                return false; //can't do anything with no device
 
             Monitor.Enter(updateSyncRoot);
             try
@@ -211,35 +212,35 @@ namespace CodeWalker.Rendering
             waterquads.RenderThreadSync(currentDevice);
         }
 
-        public Renderable GetRenderable(DrawableBase drawable)
+        public Renderable? GetRenderable(DrawableBase drawable)
         {
             return renderables.Get(drawable);
         }
-        public RenderableTexture GetRenderableTexture(Texture texture)
+        public RenderableTexture? GetRenderableTexture(Texture texture)
         {
             return textures.Get(texture);
         }
-        public RenderableBoundComposite GetRenderableBoundComp(Bounds bound)
+        public RenderableBoundComposite? GetRenderableBoundComp(Bounds bound)
         {
             return boundcomps.Get(bound);
         }
-        public RenderableInstanceBatch GetRenderableInstanceBatch(YmapGrassInstanceBatch batch)
+        public RenderableInstanceBatch? GetRenderableInstanceBatch(YmapGrassInstanceBatch batch)
         {
             return instbatches.Get(batch);
         }
-        public RenderableDistantLODLights GetRenderableDistantLODLights(YmapDistantLODLights lights)
+        public RenderableDistantLODLights? GetRenderableDistantLODLights(YmapDistantLODLights lights)
         {
             return distlodlights.Get(lights);
         }
-        public RenderableLODLights GetRenderableLODLights(YmapFile ymap)
+        public RenderableLODLights? GetRenderableLODLights(YmapFile ymap)
         {
             return lodlights.Get(ymap);
         }
-        public RenderablePathBatch GetRenderablePathBatch(BasePathData pathdata)
+        public RenderablePathBatch? GetRenderablePathBatch(BasePathData pathdata)
         {
             return pathbatches.Get(pathdata);
         }
-        public RenderableWaterQuad GetRenderableWaterQuad(WaterQuad quad)
+        public RenderableWaterQuad? GetRenderableWaterQuad(WaterQuad quad)
         {
             return waterquads.Get(quad);
         }
@@ -278,7 +279,7 @@ namespace CodeWalker.Rendering
         LoadQueued = 2,
     }
 
-    public abstract class RenderableCacheItem<TKey>
+    public abstract class RenderableCacheItem<TKey>: IDisposable
     {
         public TKey Key;
         public volatile bool IsLoaded = false;
@@ -290,6 +291,12 @@ namespace CodeWalker.Rendering
         public abstract void Init(TKey key);
         public abstract void Load(Device device);
         public abstract void Unload();
+
+        public void Dispose()
+        {
+            Unload();
+            GC.SuppressFinalize(this);
+        }
     }
 
     public class RenderableCacheLookup<TKey, TVal> where TVal: RenderableCacheItem<TKey>, new()
@@ -303,43 +310,23 @@ namespace CodeWalker.Rendering
         public long CacheUse = 0;
         public double CacheTime;
         public int LoadedCount = 0;//temporary, per loop
-        private long LastFrameTime = 0;
 
         public RenderableCacheLookup(long limit, double time)
         {
             CacheLimit = limit;
             CacheTime = time;
-            LastFrameTime = DateTime.UtcNow.ToBinary();
         }
 
-        public int QueueLength
-        {
-            get
-            {
-                return itemsToLoad.Count;
-            }
-        }
-        public int CurrentLoadedCount
-        {
-            get
-            {
-                return loadeditems.Count;
-            }
-        }
-        public int CurrentCacheCount
-        {
-            get
-            {
-                return cacheitems.Count;
-            }
-        }
+        public int QueueLength => itemsToLoad.Count;
+        public int CurrentLoadedCount => loadeditems.Count;
+        public int CurrentCacheCount => cacheitems.Count;
 
         public void Clear()
         {
             itemsToLoad = new ConcurrentQueue<TVal>();
             foreach (TVal rnd in loadeditems)
             {
-                rnd.Unload();
+                rnd.Dispose();
             }
             loadeditems.Clear();
             cacheitems.Clear();
@@ -398,7 +385,7 @@ namespace CodeWalker.Rendering
             //unload items that haven't been used in longer than the cache period.
             //var now = DateTime.UtcNow;
             var rnode = loadeditems.First;
-            while (rnode != null)
+            while (rnode is not null)
             {
                 var lastUsed = rnode.Value.LastUseTime.Elapsed;
                 if (lastUsed.TotalSeconds > CacheTime)
@@ -418,7 +405,6 @@ namespace CodeWalker.Rendering
 
         public void RenderThreadSync(Device device)
         {
-            LastFrameTime = DateTime.UtcNow.ToBinary();
             TVal item;
             TKey key;
             while (keysToInvalidate.TryDequeue(out key))
@@ -445,37 +431,44 @@ namespace CodeWalker.Rendering
 
         }
 
-        public TVal Get(TKey key)
+        public TVal? Get(TKey? key)
         {
-            if (key == null) return null;
-            TVal item = null;
-            if (!cacheitems.TryGetValue(key, out item))
+            if (key is null)
+            {
+                return null;
+            }
+
+            if (!cacheitems.TryGetValue(key, out var item))
             {
                 item = new TVal();
                 item.Init(key);
                 cacheitems.Add(key, item);
             }
+
             item.LastUseTime.Restart();
-            if ((!item.IsLoaded) && (!item.LoadQueued))// || 
+            if (!item.IsLoaded && !item.LoadQueued)// || 
             {
                 item.LoadQueued = true;
                 itemsToLoad.Enqueue(item);
             }
+
             return item;
         }
 
 
-        public void Invalidate(TKey key)
+        public void Invalidate(TKey? key)
         {
-            if (key == null) return;
+            if (key is null)
+            {
+                return;
+            }
 
             keysToInvalidate.Enqueue(key);
 
         }
         public void UpdateImmediate(TKey key, Device device)
         {
-            TVal item;
-            if (cacheitems.TryGetValue(key, out item))
+            if (cacheitems.TryGetValue(key, out var item))
             {
                 Interlocked.Add(ref CacheUse, -item.DataSize);
                 item.Unload();

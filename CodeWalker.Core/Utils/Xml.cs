@@ -1,8 +1,13 @@
 ﻿using CodeWalker.GameFiles;
+using Collections.Pooled;
+using CommunityToolkit.HighPerformance.Buffers;
 using SharpDX;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -15,7 +20,7 @@ namespace CodeWalker
     {
         public static void ValidateReaderState(XmlReader reader, string element)
         {
-            if (reader == null)
+            if (reader is null)
             {
                 throw new ArgumentNullException(nameof(reader));
             }
@@ -29,61 +34,84 @@ namespace CodeWalker
             }
         }
 
-        public static string GetStringAttribute(XmlNode node, string attribute)
+        public static bool TryGetAttribute(this XElement element, string attribute, [NotNullWhen(true)] out XAttribute? attr)
         {
-            if (node == null) return null;
+            attr = element.Attribute(attribute);
+            if (attr is null)
+                return false;
+
+            return true;
+        }
+
+        public static string? GetStringAttribute(this XmlNode? node, string attribute)
+        {
+            if (node is null || node.Attributes is null)
+                return null;
             return node.Attributes[attribute]?.InnerText;
         }
-        public static bool GetBoolAttribute(XmlNode node, string attribute)
+        public static bool GetBoolAttribute(this XElement element, string attribute = "value")
         {
-            if (node == null) return false;
-            string val = node.Attributes[attribute]?.InnerText;
-            bool b;
-            bool.TryParse(val, out b);
+            ArgumentNullException.ThrowIfNull(element, nameof(element));
+
+            var val = element.Attribute(attribute);
+            if (val is null) return false;
+
+            bool.TryParse(val.Value, out var b);
             return b;
         }
-        public static int GetIntAttribute(XmlNode node, string attribute)
+
+        public static bool GetBoolAttribute(this XmlNode? node, string attribute)
         {
-            if (node == null) return 0;
-            string val = node.Attributes[attribute]?.InnerText;
-            int i;
-            int.TryParse(val, out i);
+            if (node is null)
+                return false;
+            string? val = node.Attributes?[attribute]?.InnerText;
+            _ = bool.TryParse(val, out var b);
+            return b;
+        }
+        public static int GetIntAttribute(this XmlNode? node, string attribute)
+        {
+            if (node is null)
+                return 0;
+            string? val = node.Attributes?[attribute]?.InnerText;
+            _ = int.TryParse(val, out var i);
             return i;
         }
-        public static uint GetUIntAttribute(XmlNode node, string attribute)
+        public static uint GetUIntAttribute(this XmlNode? node, string attribute)
         {
-            if (node == null) return 0;
-            string val = node.Attributes[attribute]?.InnerText;
-            uint i;
-            uint.TryParse(val, out i);
+            if (node is null)
+                return 0;
+            string? val = node.Attributes?[attribute]?.InnerText;
+            _ = uint.TryParse(val, out var i);
             return i;
         }
-        public static ulong GetULongAttribute(XmlNode node, string attribute)
+        public static ulong GetULongAttribute(this XmlNode? node, string attribute)
         {
-            if (node == null) return 0;
-            string val = node.Attributes[attribute]?.InnerText;
-            ulong i;
-            ulong.TryParse(val, out i);
+            if (node is null)
+                return 0;
+            string? val = node.Attributes?[attribute]?.InnerText;
+            _ = ulong.TryParse(val, out var i);
             return i;
         }
-        public static float GetFloatAttribute(XmlNode node, string attribute)
+        public static float GetFloatAttribute(this XmlNode? node, string attribute)
         {
-            if (node == null) return 0;
-            string val = node.Attributes[attribute]?.InnerText;
-            float f;
-            FloatUtil.TryParse(val, out f);
+            if (node is null)
+                return 0;
+            string? val = node.Attributes?[attribute]?.InnerText;
+            _ = FloatUtil.TryParse(val, out var f);
             return f;
         }
 
-        public static string GetChildInnerText(XmlNode node, string name)
+        public static string? GetChildInnerText(this XmlNode? node, string name)
         {
-            if (node == null) return null;
+            if (node is null)
+                return null;
             return node.SelectSingleNode(name)?.InnerText;
         }
 
-        public static string GetChildInnerText(XElement node, string name) {
-            if (node == null) return null;
-            return node.Element(name).Value;
+        public static string? GetChildInnerText(this XElement? node, string name) {
+            if (node is null)
+                return null;
+            return node.Element(name)?.Value;
         }
 
         public static string GetChildInnerText(XmlReader reader, string name)
@@ -94,7 +122,7 @@ namespace CodeWalker
                 if (reader.IsEmptyElement)
                 {
                     reader.ReadStartElement();
-                    return "";
+                    return string.Empty;
                 }
                 return reader.ReadElementContentAsString();
             }
@@ -104,13 +132,15 @@ namespace CodeWalker
             }
         }
 
-        public static bool GetChildBoolInnerText(XElement node, string name)
+        public static bool GetChildBoolInnerText(this XElement? node, string name)
         {
-            if (node == null) return false;
-            string val = node.Element(name).Value;
+            if (node is null)
+                return false;
+            string? val = node.Element(name)?.Value;
+            if (string.IsNullOrEmpty(val))
+                return false;
 
-            bool b;
-            bool.TryParse(val, out b);
+            _ = bool.TryParse(val, out var b);
 
             return b;
         }
@@ -129,28 +159,28 @@ namespace CodeWalker
 
         }
 
-        public static bool GetChildBoolInnerText(XmlNode node, string name)
+        public static bool GetChildBoolInnerText(this XmlNode? node, string name)
         {
-            if (node == null) return false;
-            string val = node.SelectSingleNode(name)?.InnerText;
-            bool b;
-            bool.TryParse(val, out b);
+            if (node is null)
+                return false;
+            string? val = node.SelectSingleNode(name)?.InnerText;
+            _ = bool.TryParse(val, out var b);
             return b;
         }
-        public static int GetChildIntInnerText(XmlNode node, string name)
+        public static int GetChildIntInnerText(this XmlNode? node, string name)
         {
-            if (node == null) return 0;
-            string val = node.SelectSingleNode(name)?.InnerText;
-            int i;
-            int.TryParse(val, out i);
+            if (node is null)
+                return 0;
+            string? val = node.SelectSingleNode(name)?.InnerText;
+            _ = int.TryParse(val, out var i);
             return i;
         }
-        public static float GetChildFloatInnerText(XmlNode node, string name)
+        public static float GetChildFloatInnerText(this XmlNode? node, string name)
         {
-            if (node == null) return 0;
-            string val = node.SelectSingleNode(name)?.InnerText;
-            float f;
-            FloatUtil.TryParse(val, out f);
+            if (node is null)
+                return 0;
+            string? val = node.SelectSingleNode(name)?.InnerText;
+            _ = FloatUtil.TryParse(val, out var f);
             return f;
         }
 
@@ -163,22 +193,25 @@ namespace CodeWalker
 
         public static T GetChildEnumInnerText<T>(XmlNode node, string name) where T : struct
         {
-            if (node == null) return new T();
-            string val = node.SelectSingleNode(name)?.InnerText;
+            if (node is null)
+                return new T();
+
+            string? val = node.SelectSingleNode(name)?.InnerText;
             return GetEnumValue<T>(val);
         }
-        public static T GetEnumValue<T>(string val) where T : struct
+        public static T GetEnumValue<T>(string? val) where T : struct
         {
             if (string.IsNullOrEmpty(val))
             {
-                return default(T);
+                return default;
             }
             if (val.StartsWith("hash_", StringComparison.OrdinalIgnoreCase))
             {
                 //convert hash_12ABC to Unk_12345
-                var substr = val.Substring(5);
-                var uval = Convert.ToUInt32(substr, 16);
-                val = "Unk_" + uval.ToString();
+                //var substr = val.Substring(5);
+                //var uval = Convert.ToUInt32(substr, 16);
+                _ = int.TryParse(val.AsSpan(5), System.Globalization.NumberStyles.HexNumber, null, out var result);
+                val = $"Unk_{result}";
             }
             T enumval;
             Enum.TryParse(val, out enumval);
@@ -236,12 +269,13 @@ namespace CodeWalker
             string val = reader.GetAttribute(attribute);
             if (val?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                var subs = val.Substring(2);
-                i = Convert.ToUInt32(subs, 16);
+                //var subs = val.Substring(2);
+                //i = Convert.ToUInt32(subs, 16);
+                _ = uint.TryParse(val.AsSpan(2), System.Globalization.NumberStyles.HexNumber, null, out i);
             }
             else
             {
-                uint.TryParse(val, out i);
+                _ = uint.TryParse(val, out i);
             }
             return i;
         }
@@ -253,12 +287,13 @@ namespace CodeWalker
             uint i;
             if (val?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                var subs = val.Substring(2);
-                i = Convert.ToUInt32(subs, 16);
+                //var subs = val.Substring(2);
+                //i = Convert.ToUInt32(subs, 16);
+                _ = uint.TryParse(val.AsSpan(2), System.Globalization.NumberStyles.HexNumber, null, out i);
             }
             else
             {
-                uint.TryParse(val, out i);
+                _ = uint.TryParse(val, out i);
             }
             return i;
         }
@@ -269,12 +304,13 @@ namespace CodeWalker
             ulong i;
             if (val?.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ?? false)
             {
-                var subs = val.Substring(2);
-                i = Convert.ToUInt64(subs, 16);
+                //var subs = val.Substring(2);
+                //i = Convert.ToUInt64(subs, 16);
+                _ = ulong.TryParse(val.AsSpan(2), System.Globalization.NumberStyles.HexNumber, null, out i);
             }
             else
             {
-                ulong.TryParse(val, out i);
+                _ = ulong.TryParse(val, out i);
             }
             return i;
         }
@@ -298,22 +334,23 @@ namespace CodeWalker
             return f;
         }
 
-        public static float GetChildFloatAttribute(XmlNode node, string name, string attribute = "value")
+        public static float GetChildFloatAttribute(XmlNode? node, string name, string attribute = "value")
         {
-            if (node == null) return 0;
-            string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
+            if (node is null)
+                return 0;
+            string? val = node.SelectSingleNode(name)?.Attributes?[attribute]?.InnerText;
             float f;
             FloatUtil.TryParse(val, out f);
             return f;
         }
-        public static string GetChildStringAttribute(XmlNode node, string name, string attribute = "value")
+        public static string? GetChildStringAttribute(XmlNode node, string name, string attribute = "value")
         {
-            if (node == null) return string.Empty;
-            string val = node.SelectSingleNode(name)?.Attributes[attribute]?.InnerText;
+            if (node is null) return string.Empty;
+            string? val = node.SelectSingleNode(name)?.Attributes?[attribute]?.InnerText;
             return val;
         }
 
-        public static string GetChildStringAttribute(XmlReader reader, string name, string attribute = "value")
+        public static string? GetChildStringAttribute(XmlReader reader, string name, string attribute = "value")
         {
             ValidateReaderState(reader, name);
 
@@ -381,7 +418,19 @@ namespace CodeWalker
             return false;
         }
 
-        public static IEnumerable<XElement> IterateItems(XmlReader reader, string parentElementName)
+        public static void MoveToStartElement(this XmlReader reader, string name)
+        {
+            var startDepth = reader.Depth;
+            while (reader.Read() && startDepth <= reader.Depth)
+            {
+                if (reader.IsStartElement() && reader.Name == name)
+                {
+                    break;
+                }
+            }
+        }
+
+        public static IEnumerable<XElement> IterateItems(this XmlReader reader, string parentElementName)
         {
             ValidateReaderState(reader, parentElementName);
             reader.MoveToContent();
@@ -391,8 +440,9 @@ namespace CodeWalker
                 reader.ReadStartElement(parentElementName);
                 yield break;
             }
+            var startDepth = reader.Depth;
             reader.ReadStartElement(parentElementName);
-            while(reader.IsItemElement())
+            while(reader.IsItemElement() && startDepth < reader.Depth)
             {
                 if (XNode.ReadFrom(reader) is XElement el)
                 {
@@ -417,10 +467,11 @@ namespace CodeWalker
 
 
 
-        public static byte[] GetRawByteArray(XmlNode node, int fromBase = 16)
+        public static byte[] GetRawByteArray(XmlNode? node, int fromBase = 16)
         {
-            if (node == null) return new byte[0];
-            var data = new List<byte>();
+            if (node == null)
+                return [];
+            using var data = new PooledList<byte>();
             var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
             for (int i = 0; i < split.Length; i++)
             {
@@ -439,17 +490,18 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawByteArray(cnode, fromBase);
         }
-        public static byte[] GetChildRawByteArrayNullable(XmlNode node, string name, int fromBase = 16)
+        public static byte[]? GetChildRawByteArrayNullable(XmlNode node, string name, int fromBase = 16)
         {
             var cnode = node.SelectSingleNode(name);
             var arr = GetRawByteArray(cnode, fromBase);
-            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+            return arr.Length > 0 ? arr : null;
         }
 
-        public static ushort[] GetRawUshortArray(XmlNode node)
+        public static ushort[] GetRawUshortArray(XmlNode? node)
         {
-            if (node == null) return new ushort[0];
-            var data = new List<ushort>();
+            if (node is null)
+                return [];
+            using var data = new PooledList<ushort>();
             var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
             for (int i = 0; i < split.Length; i++)
             {
@@ -469,17 +521,18 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawUshortArray(cnode);
         }
-        public static ushort[] GetChildRawUshortArrayNullable(XmlNode node, string name)
+        public static ushort[]? GetChildRawUshortArrayNullable(XmlNode node, string name)
         {
             var cnode = node.SelectSingleNode(name);
             var arr = GetRawUshortArray(cnode);
-            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+            return arr.Length > 0 ? arr : null;
         }
 
-        public static uint[] GetRawUintArray(XmlNode node)
+        public static uint[] GetRawUintArray(XmlNode? node)
         {
-            if (node == null) return new uint[0];
-            var data = new List<uint>();
+            if (node == null)
+                return [];
+            using var data = new PooledList<uint>();
             var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
             for (int i = 0; i < split.Length; i++)
             {
@@ -499,17 +552,18 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawUintArray(cnode);
         }
-        public static uint[] GetChildRawUintArrayNullable(XmlNode node, string name)
+        public static uint[]? GetChildRawUintArrayNullable(XmlNode node, string name)
         {
             var cnode = node.SelectSingleNode(name);
             var arr = GetRawUintArray(cnode);
-            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+            return arr.Length > 0 ? arr : null;
         }
 
-        public static int[] GetRawIntArray(XmlNode node)
+        public static int[] GetRawIntArray(XmlNode? node)
         {
-            if (node == null) return new int[0];
-            var data = new List<int>();
+            if (node is null)
+                return [];
+            using var data = new PooledList<int>();
             var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");
             for (int i = 0; i < split.Length; i++)
             {
@@ -529,17 +583,18 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawIntArray(cnode);
         }
-        public static int[] GetChildRawIntArrayNullable(XmlNode node, string name)
+        public static int[]? GetChildRawIntArrayNullable(XmlNode node, string name)
         {
             var cnode = node.SelectSingleNode(name);
             var arr = GetRawIntArray(cnode);
             return ((arr != null) && (arr.Length > 0)) ? arr : null;
         }
 
-        public static float[] GetRawFloatArray(XmlNode node)
+        public static float[] GetRawFloatArray(XmlNode? node)
         {
-            if (node == null) return new float[0];
-            var items = new List<float>();
+            if (node is null)
+                return [];
+            using var items = new PooledList<float>();
             var split = Regex.Split(node.InnerText, @"[\s\r\n\t]");//node.InnerText.Split('\n');// 
             for (int i = 0; i < split.Length; i++)
             {
@@ -555,19 +610,20 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawFloatArray(cnode);
         }
-        public static float[] GetChildRawFloatArrayNullable(XmlNode node, string name)
+        public static float[]? GetChildRawFloatArrayNullable(XmlNode node, string name)
         {
             var cnode = node.SelectSingleNode(name);
             var arr = GetRawFloatArray(cnode);
-            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+            return arr.Length > 0 ? arr : null;
         }
 
-        public static Vector2[] GetRawVector2Array(XmlNode node)
+        public static Vector2[] GetRawVector2Array(XmlNode? node)
         {
-            if (node == null) return new Vector2[0];
+            if (node is null)
+                return [];
             float x = 0f;
             float y = 0f;
-            var items = new List<Vector2>();
+            using var items = new PooledList<Vector2>();
             var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
             for (int i = 0; i < split.Length; i++)
             {
@@ -604,13 +660,14 @@ namespace CodeWalker
             return GetRawVector2Array(cnode);
         }
 
-        public static Vector3[] GetRawVector3Array(XmlNode node)
+        public static Vector3[] GetRawVector3Array(XmlNode? node)
         {
-            if (node == null) return new Vector3[0];
+            if (node is null)
+                return [];
             float x = 0f;
             float y = 0f;
             float z = 0f;
-            var items = new List<Vector3>();
+            using var items = new PooledList<Vector3>();
             var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
             for (int i = 0; i < split.Length; i++)
             {
@@ -646,21 +703,20 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawVector3Array(cnode);
         }
-        public static Vector3[] GetChildRawVector3ArrayNullable(XmlNode node, string name)
+        public static Vector3[]? GetChildRawVector3ArrayNullable(XmlNode node, string name)
         {
             var cnode = node.SelectSingleNode(name);
             var arr = GetRawVector3Array(cnode);
-            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+            return arr.Length > 0 ? arr : null;
         }
 
-        public static Vector4[] GetRawVector4Array(XmlNode node)
+        public static Vector4[] GetRawVector4Array(XmlNode? node)
         {
-            if (node == null) return new Vector4[0];
-            float x = 0f;
-            float y = 0f;
+            if (node is null)
+                return [];
             float z = 0f;
             float w = 0f;
-            var items = new List<Vector4>();
+            using var items = new PooledList<Vector4>();
             var split = node.InnerText.Split('\n');// Regex.Split(node.InnerText, @"[\s\r\n\t]");
             for (int i = 0; i < split.Length; i++)
             {
@@ -668,11 +724,13 @@ namespace CodeWalker
                 if (string.IsNullOrEmpty(s)) continue;
                 var split2 = s.Split(',');// Regex.Split(s, @"[\s\t]");
                 int c = 0;
-                x = 0f; y = 0f;
+                float x = 0f;
+                float y = 0f;
                 for (int n = 0; n < split2.Length; n++)
                 {
                     var ts = split2[n]?.Trim();
-                    if (string.IsNullOrEmpty(ts)) continue;
+                    if (string.IsNullOrEmpty(ts))
+                        continue;
                     var f = FloatUtil.Parse(ts);
                     switch (c)
                     {
@@ -697,18 +755,21 @@ namespace CodeWalker
             var cnode = node.SelectSingleNode(name);
             return GetRawVector4Array(cnode);
         }
-        public static Vector4[] GetChildRawVector4ArrayNullable(XmlNode node, string name)
+        public static Vector4[]? GetChildRawVector4ArrayNullable(XmlNode node, string name)
         {
             var cnode = node.SelectSingleNode(name);
             var arr = GetRawVector4Array(cnode);
-            return ((arr != null) && (arr.Length > 0)) ? arr : null;
+            return arr.Length > 0 ? arr : null;
         }
 
-        public static Matrix GetMatrix(XmlNode node)
+        public static Matrix GetMatrix(XmlNode? node)
         {
-            if (node == null) return Matrix.Identity;
+            if (node is null)
+                return Matrix.Identity;
             var arr = GetRawFloatArray(node);
-            if ((arr == null) || (arr.Length != 16)) return Matrix.Identity;
+            if (arr.Length != 16)
+                return Matrix.Identity;
+
             return new Matrix(arr);
         }
         public static Matrix GetChildMatrix(XmlNode node, string name)
@@ -717,5 +778,46 @@ namespace CodeWalker
             return GetMatrix(cnode);
         }
 
+    }
+
+    public class XmlNameTableThreadSafe : NameTable
+    {
+        //private object _locker = new object();
+
+        public StringPool StringPool;
+        public XmlNameTableThreadSafe()
+            : this(256)
+        { }
+
+        public XmlNameTableThreadSafe(int stringPoolSize)
+            : base()
+        {
+            StringPool = new StringPool(stringPoolSize);
+        }
+
+        
+
+        public override string Add(string key)
+        {
+            return StringPool.GetOrAdd(key);
+        }
+
+        public override string Add(char[] key, int start, int len)
+        {
+            return StringPool.GetOrAdd(key.AsSpan(start, len));
+        }
+
+        public override string? Get(char[] key, int start, int len)
+        {
+            StringPool.TryGet(key.AsSpan(start, len), out var value);
+            return value;
+            //return stringPool.Get(key.AsSpan(start, len));
+        }
+
+        public override string? Get(string value)
+        {
+            StringPool.TryGet(value, out var result);
+            return result;
+        }
     }
 }

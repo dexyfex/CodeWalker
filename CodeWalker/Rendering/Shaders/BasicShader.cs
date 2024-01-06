@@ -13,6 +13,7 @@ using SharpDX;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
 using System.Diagnostics;
+using CodeWalker.Rendering.Utils;
 
 namespace CodeWalker.Rendering
 {
@@ -181,11 +182,14 @@ namespace CodeWalker.Rendering
         Matrix3_s[] defaultBoneMatrices;
         bool defaultBoneMatricesBound = false;
 
+        public ShaderManager _shaderManager;
+
         private Dictionary<VertexType, InputLayout> layouts = new Dictionary<VertexType, InputLayout>();
 
-        public BasicShader(Device device)
+        public BasicShader(Device device, ShaderManager shaderManager)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            _shaderManager = shaderManager;
+            string folder = ShaderManager.GetShaderFolder();
             byte[] vspnctbytes = File.ReadAllBytes(Path.Combine(folder, "BasicVS_PNCT.cso"));
             byte[] vspncttbytes = File.ReadAllBytes(Path.Combine(folder, "BasicVS_PNCTT.cso"));
             byte[] vspnctttbytes = File.ReadAllBytes(Path.Combine(folder, "BasicVS_PNCTTT.cso"));
@@ -215,32 +219,33 @@ namespace CodeWalker.Rendering
             byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "BasicPS.cso"));
             byte[] psdefbytes = File.ReadAllBytes(Path.Combine(folder, "BasicPS_Deferred.cso"));
 
-            basicvspnct = new VertexShader(device, vspnctbytes);
-            basicvspnctt = new VertexShader(device, vspncttbytes);
-            basicvspncttt = new VertexShader(device, vspnctttbytes);
-            basicvspncct = new VertexShader(device, vspncctbytes);
-            basicvspncctt = new VertexShader(device, vspnccttbytes);
-            basicvspnccttt = new VertexShader(device, vspncctttbytes);
-            basicvspnctx = new VertexShader(device, vspnctxbytes);
-            basicvspncctx = new VertexShader(device, vspncctxbytes);
-            basicvspncttx = new VertexShader(device, vspncttxbytes);
-            basicvspnccttx = new VertexShader(device, vspnccttxbytes);
-            basicvspnctttx = new VertexShader(device, vspnctttxbytes);
-            basicvspncctttx = new VertexShader(device, vspncctttxbytes);
-            basicvspbbnct = new VertexShader(device, vspbbnctbytes);
-            basicvspbbnctx = new VertexShader(device, vspbbnctxbytes);
-            basicvspbbnctt = new VertexShader(device, vspbbncttbytes);
-            basicvspbbncttt = new VertexShader(device, vspbbnctttbytes);
-            basicvspbbncct = new VertexShader(device, vspbbncctbytes);
-            basicvspbbncctx = new VertexShader(device, vspbbncctxbytes);
-            basicvspbbnccttx = new VertexShader(device, vspbbnccttxbytes);
-            basicvspbbncttx = new VertexShader(device, vspbbncttxbytes);
-            basicvsbox = new VertexShader(device, vsboxbytes);
-            basicvssphere = new VertexShader(device, vsspherebytes);
-            basicvscapsule = new VertexShader(device, vscapsulebytes);
-            basicvscylinder = new VertexShader(device, vscylinderbytes);
-            basicps = new PixelShader(device, psbytes);
-            basicpsdef = new PixelShader(device, psdefbytes);
+            basicvspnct = device.CreateVertexShader("BasicVS_PNCT.cso");
+            basicvspnctt = device.CreateVertexShader("BasicVS_PNCTT.cso");
+            basicvspncttt = device.CreateVertexShader("BasicVS_PNCTTT.cso");
+            basicvspncct = device.CreateVertexShader("BasicVS_PNCCT.cso");
+            basicvspncctt = device.CreateVertexShader("BasicVS_PNCCTT.cso");
+            basicvspnccttt = device.CreateVertexShader("BasicVS_PNCCTTT.cso");
+            basicvspnctx = device.CreateVertexShader("BasicVS_PNCTX.cso");
+            basicvspncctx = device.CreateVertexShader("BasicVS_PNCCTX.cso");
+            basicvspncttx = device.CreateVertexShader("BasicVS_PNCTTX.cso");
+            basicvspnccttx = device.CreateVertexShader("BasicVS_PNCCTTX.cso");
+            basicvspnctttx = device.CreateVertexShader("BasicVS_PNCTTTX.cso");
+            basicvspncctttx = device.CreateVertexShader("BasicVS_PNCCTTTX.cso");
+            basicvspbbnct = device.CreateVertexShader("BasicVS_PBBNCT.cso");
+            basicvspbbnctx = device.CreateVertexShader("BasicVS_PBBNCTX.cso");
+            basicvspbbnctt = device.CreateVertexShader("BasicVS_PBBNCTT.cso");
+            basicvspbbncttt = device.CreateVertexShader("BasicVS_PBBNCTTT.cso");
+            basicvspbbncct = device.CreateVertexShader("BasicVS_PBBNCCT.cso");
+            basicvspbbncctx = device.CreateVertexShader("BasicVS_PBBNCCTX.cso");
+            basicvspbbnccttx = device.CreateVertexShader("BasicVS_PBBNCCTTX.cso");
+            basicvspbbncttx = device.CreateVertexShader("BasicVS_PBBNCTTX.cso");
+
+            basicvsbox = device.CreateVertexShader("BasicVS_Box.cso");
+            basicvssphere = device.CreateVertexShader("BasicVS_Sphere.cso");
+            basicvscapsule = device.CreateVertexShader("BasicVS_Capsule.cso");
+            basicvscylinder = device.CreateVertexShader("BasicVS_Cylinder.cso");
+            basicps = device.CreatePixelShader("BasicPS.cso");
+            basicpsdef = device.CreatePixelShader("BasicPS_Deferred.cso");
 
             VSSceneVars = new GpuVarsBuffer<BasicShaderVSSceneVars>(device);
             VSEntityVars = new GpuVarsBuffer<BasicShaderVSEntityVars>(device);
@@ -361,9 +366,12 @@ namespace CodeWalker.Rendering
             defaultBoneMatrices = new Matrix3_s[255];
             for (int i = 0; i < 255; i++)
             {
-                defaultBoneMatrices[i].Row1 = Vector4.UnitX;
-                defaultBoneMatrices[i].Row2 = Vector4.UnitY;
-                defaultBoneMatrices[i].Row3 = Vector4.UnitZ;
+                defaultBoneMatrices[i] = new Matrix3_s
+                {
+                    Row1 = Vector4.UnitX,
+                    Row2 = Vector4.UnitY,
+                    Row3 = Vector4.UnitZ
+                };
             }
         }
 
@@ -491,13 +499,21 @@ namespace CodeWalker.Rendering
                     break;
 
             }
-            context.VertexShader.Set(vs);
+
+            if (context.VertexShader.Get() != vs)
+            {
+                context.VertexShader.Set(vs);
+            }
         }
 
 
         public override void SetShader(DeviceContext context)
         {
-            context.PixelShader.Set(Deferred ? basicpsdef : basicps);
+            var shader = Deferred ? basicpsdef : basicps;
+            if (context.PixelShader.Get() != shader)
+            {
+                context.PixelShader.Set(Deferred ? basicpsdef : basicps);
+            }
         }
 
         public override bool SetInputLayout(DeviceContext context, VertexType type)
@@ -512,7 +528,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             uint rendermode = 0;
             uint rendermodeind = 1;
@@ -554,10 +570,7 @@ namespace CodeWalker.Rendering
             PSSceneVars.Update(context);
             PSSceneVars.SetPSCBuffer(context, 0);
 
-            if (shadowmap != null)
-            {
-                shadowmap.SetFinalRenderResources(context);
-            }
+            shadowmap?.SetFinalRenderResources(context);
 
             if (!InstGlobalVars.Flag) //on the first frame, update the instance globals
             {
@@ -875,11 +888,14 @@ namespace CodeWalker.Rendering
 
             InstLocalVars.Vars.vecBatchAabbMin = batch.AABBMin;
             InstLocalVars.Vars.vecBatchAabbDelta = batch.AABBMax - batch.AABBMin;
-            InstLocalVars.Vars.vecPlayerPos = new Vector4(batch.Position - batch.CamRel, 1.0f);
+            Vector3.Subtract(ref batch.Position, ref batch.CamRel, out var result);
+            InstLocalVars.Vars.vecPlayerPos = new Vector4(result, 1.0f);
             InstLocalVars.Vars._vecCollParams = new Vector2(2.0f, -3.0f);//range, offset
             InstLocalVars.Vars.fadeAlphaDistUmTimer = new Vector4(0.0f);
             InstLocalVars.Vars.uMovementParams = new Vector4(0.0f);
-            InstLocalVars.Vars._fakedGrassNormal = new Vector4(Vector3.Normalize(-batch.CamRel), 0.0f);
+            var camRel = -batch.CamRel;
+            camRel.Normalize();
+            InstLocalVars.Vars._fakedGrassNormal = new Vector4(camRel, 0.0f);
             InstLocalVars.Vars.gScaleRange = gb.Batch.ScaleRange;
             InstLocalVars.Vars.gWindBendingGlobals = new Vector4(WindVector.X, WindVector.Y, 1.0f, 1.0f);
             InstLocalVars.Vars.gWindBendScaleVar = new Vector2(WindVector.Z, WindVector.W);

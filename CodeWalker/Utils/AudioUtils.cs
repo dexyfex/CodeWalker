@@ -28,7 +28,7 @@ namespace CodeWalker.Utils
             public float[] outputMatrix = new[] { 1.0f, 1.0f }; //left/right channel output levels
             public float trackLength;
         }
-        private AudioVoice[] voices = new AudioVoice[0];
+        private AudioVoice[] voices = Array.Empty<AudioVoice>();
 
         public enum PlayerState { Stopped, Playing, Paused };
         public PlayerState State { get; private set; } = PlayerState.Stopped;
@@ -282,7 +282,6 @@ namespace CodeWalker.Utils
             var awcentries = new Dictionary<uint, RpfFileEntry>();
             void addRpfDatRels(RpfFile rpffile)
             {
-                if (rpffile.AllEntries == null) return;
                 foreach (var entry in rpffile.AllEntries)
                 {
                     if (entry is RpfFileEntry)
@@ -305,7 +304,6 @@ namespace CodeWalker.Utils
             }
             void addRpfAwcs(RpfFile rpffile)
             {
-                if (rpffile.AllEntries == null) return;
                 foreach (var entry in rpffile.AllEntries)
                 {
                     if (entry is RpfFileEntry)
@@ -314,17 +312,21 @@ namespace CodeWalker.Utils
                         if (entry.IsExtension(".awc"))
                         {
                             var shortname = entry.ShortName;
-                            var parentname = entry.Parent?.ShortName ?? "";
-                            if (string.IsNullOrEmpty(parentname) && (entry.Parent?.File != null))
+                            var parentname = ReadOnlySpan<char>.Empty;
+                            if (entry.Parent is not null)
+                            {
+                                parentname = entry.Parent.ShortName;
+                            }
+                            if (parentname.IsEmpty && (entry.Parent?.File != null))
                             {
                                 parentname = entry.Parent.File.Name;
                                 int ind = parentname.LastIndexOf('.');
                                 if (ind > 0)
                                 {
-                                    parentname = parentname.Substring(0, ind);
+                                    parentname = parentname.Slice(0, ind);
                                 }
                             }
-                            var contname = parentname + "/" + shortname;
+                            var contname = parentname.ToString() + "/" + shortname.ToString();
                             var hash = JenkHash.GenHashLower(contname);
                             awcentries[hash] = fentry;
                         }
@@ -350,6 +352,8 @@ namespace CodeWalker.Utils
                 }
                 foreach (var dlcrpf in gameFileCache.DlcActiveRpfs) //load from current dlc rpfs
                 {
+                    if (dlcrpf.AllEntries is null || dlcrpf.AllEntries.Count == 0)
+                        continue;
                     addRpfDatRels(dlcrpf);
                     addRpfAwcs(dlcrpf);
                 }
@@ -361,7 +365,7 @@ namespace CodeWalker.Utils
             var gamedb = new Dictionary<uint, Dat151RelData>();
             foreach (var datentry in datrelentries.Values)
             {
-                var relfile = rpfman.GetFile<RelFile>(datentry);
+                var relfile = RpfManager.GetFile<RelFile>(datentry);
                 if (relfile?.RelDatas != null)
                 {
                     foreach (var rd in relfile.RelDatas)

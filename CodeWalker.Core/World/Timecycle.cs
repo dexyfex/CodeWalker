@@ -1,4 +1,5 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -31,17 +32,18 @@ namespace CodeWalker.World
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
         {
+            using var _ = new DisposableTimer("Timecycle Init");
             var rpfman = gameFileCache.RpfMan;
 
             string filename = "common.rpf\\data\\levels\\gta5\\time.xml";
 
             XmlDocument timexml = rpfman.GetFileXml(filename);
 
-            XmlElement time = timexml.DocumentElement;
-            XmlNode suninfo = time.SelectSingleNode("suninfo");
-            XmlNode mooninfo = time.SelectSingleNode("mooninfo");
-            XmlNodeList samples = time.SelectNodes("sample");
-            XmlNodeList regions = time.SelectNodes("region");
+            XmlElement? time = timexml.DocumentElement;
+            XmlNode? suninfo = time?.SelectSingleNode("suninfo");
+            XmlNode? mooninfo = time?.SelectSingleNode("mooninfo");
+            XmlNodeList? samples = time?.SelectNodes("sample");
+            XmlNodeList? regions = time?.SelectNodes("region");
 
             sun_roll = Xml.GetFloatAttribute(suninfo, "sun_roll");
             sun_yaw = Xml.GetFloatAttribute(suninfo, "sun_yaw");
@@ -51,18 +53,35 @@ namespace CodeWalker.World
             moon_wobble_offset = Xml.GetFloatAttribute(mooninfo, "moon_wobble_offset");
 
             Samples.Clear();
-            for (int i = 0; i < samples.Count; i++)
+            if (samples is not null)
             {
-                TimecycleSample tcs = new TimecycleSample();
-                tcs.Init(samples[i]);
-                Samples.Add(tcs);
+                Samples.EnsureCapacity(samples.Count);
+                for (int i = 0; i < samples.Count; i++)
+                {
+                    var sample = samples.Item(i);
+                    if (sample is not null)
+                    {
+                        TimecycleSample tcs = new TimecycleSample();
+                        tcs.Init(sample);
+                        Samples.Add(tcs);
+                    }
+                }
             }
 
             Regions.Clear();
-            for (int i = 0; i < regions.Count; i++)
+            if (regions is not null)
             {
-                Regions.Add(Xml.GetStringAttribute(regions[i], "name"));
+                Regions.EnsureCapacity(regions.Count);
+                for (int i = 0; i < regions.Count; i++)
+                {
+                    var attr = regions[i]?.GetStringAttribute("name");
+                    if (attr is not null)
+                    {
+                        Regions.Add(attr);
+                    }
+                }
             }
+
 
             Inited = true;
         }
@@ -95,13 +114,7 @@ namespace CodeWalker.World
             }
         }
 
-        public bool IsNightTime
-        {
-            get
-            {
-                return (CurrentHour < 6.0f) || (CurrentHour > 20.0f);
-            }
-        }
+        public bool IsNightTime => (CurrentHour < 6.0f) || (CurrentHour > 20.0f);
     }
 
     public class TimecycleSample
@@ -113,10 +126,10 @@ namespace CodeWalker.World
 
         public void Init(XmlNode node)
         {
-            name = Xml.GetStringAttribute(node, "name");
-            hour = Xml.GetFloatAttribute(node, "hour");
-            duration = Xml.GetFloatAttribute(node, "duration");
-            uw_tc_mod = Xml.GetStringAttribute(node, "uw_tc_mod");
+            name = node.GetStringAttribute("name");
+            hour = node.GetFloatAttribute("hour");
+            duration = node.GetFloatAttribute("duration");
+            uw_tc_mod = node.GetStringAttribute("uw_tc_mod");
         }
     }
 

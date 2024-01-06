@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Markup;
 
 namespace CodeWalker.Forms
 {
@@ -38,6 +39,7 @@ namespace CodeWalker.Forms
         Clouds clouds;
 
         public CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
+        public CancellationToken CancellationToken { get; }
 
         bool MouseLButtonDown = false;
         bool MouseRButtonDown = false;
@@ -47,7 +49,8 @@ namespace CodeWalker.Forms
         System.Drawing.Point MouseLastPoint;
         bool MouseInvert = Settings.Default.MouseInvert;
 
-        int VerticesCount = 0;
+        uint VerticesCount = 0;
+        uint PolyCount = 0;
 
 
 
@@ -131,7 +134,7 @@ namespace CodeWalker.Forms
 
         public ModelForm()
         {
-            if (this.DesignMode) return;
+            CancellationToken = CancellationTokenSource.Token;
             InitializeComponent();
 
             if (ExploreForm.Instance == null)
@@ -143,10 +146,10 @@ namespace CodeWalker.Forms
                 gameFileCache.LoadArchetypes = false;//to speed things up a little
                 gameFileCache.BuildExtendedJenkIndex = true;//to speed things up a little
                 gameFileCache.DoFullStringIndex = false;//to get all global text from DLC...
-                Task.Run(() => {
+                Task.Run(async () => {
                     try
                     {
-                        gameFileCache.Init();
+                        await gameFileCache.InitAsync();
                         if (DetailsPropertyGrid.SelectedObject is DrawableBase drawableBase)
                         {
                             UpdateDrawableUI(drawableBase);
@@ -298,7 +301,7 @@ namespace CodeWalker.Forms
             camera.TargetRotation.X = 0.5f * (float)Math.PI;
             camera.CurrentRotation.X = 0.5f * (float)Math.PI;
 
-            Renderer.shaders.deferred = false; //no point using this here yet
+            Renderer.Shaders.deferred = false; //no point using this here yet
 
 
             LoadSettings();
@@ -310,11 +313,17 @@ namespace CodeWalker.Forms
 
             frametimer.Start();
         }
-        public void CleanupScene()
+        public ValueTask CleanupScene()
         {
+            if (!CancellationTokenSource.IsCancellationRequested)
+            {
+                CancellationTokenSource.Cancel();
+            }
             formopen = false;
 
             Renderer.DeviceDestroyed();
+
+            return default;
 
             //int count = 0;
             //while (running && (count < 5000)) //wait for the content thread to exit gracefully
@@ -347,42 +356,47 @@ namespace CodeWalker.Forms
 
             if (Pauserendering) return;
 
-            if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
+            if (!await Renderer.RenderSyncRoot.WaitAsync(50))
             {
                 return;
             } //couldn't get a lock, try again next time
 
-            UpdateControlInputs(elapsed);
+            try
+            {
+                UpdateControlInputs(elapsed);
 
 
 
-            Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
+                Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
-            UpdateWidgets();
+                UpdateWidgets();
 
-            Renderer.BeginRender(context);
+                Renderer.BeginRender(context);
 
-            Renderer.RenderSkyAndClouds();
-
-
-            RenderSingleItem();
+                Renderer.RenderSkyAndClouds();
 
 
-            RenderGrid(context);
+                RenderSingleItem();
 
-            RenderLightSelection();
 
-            Renderer.RenderQueued();
+                RenderGrid(context);
 
-            Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
+                RenderLightSelection();
 
-            Renderer.RenderFinalPass();
+                Renderer.RenderQueued();
 
-            RenderWidgets();
+                Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
-            Renderer.EndRender();
+                Renderer.RenderFinalPass();
 
-            Monitor.Exit(Renderer.RenderSyncRoot);
+                RenderWidgets();
+
+                Renderer.EndRender();
+            }
+            finally
+            {
+                Renderer.RenderSyncRoot.Release();
+            }
         }
         public bool ConfirmQuit()
         {
@@ -465,9 +479,9 @@ namespace CodeWalker.Forms
 
                 bool rcItemsPending = Renderer.ContentThreadProc();
 
-                if (!(rcItemsPending)) //gameFileCache.ItemsStillPending || 
+                if (!rcItemsPending) //gameFileCache.ItemsStillPending || 
                 {
-                    await Task.Delay(ActiveForm == null ? 50 : 1).ConfigureAwait(false);
+                    await Task.Delay(ActiveForm == null ? 50 : 5).ConfigureAwait(false);
                 }
             }
 
@@ -484,7 +498,7 @@ namespace CodeWalker.Forms
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new Action(() => { InitAnimation(); }));
+                BeginInvoke(InitAnimation);
             }
             else
             {
@@ -496,7 +510,7 @@ namespace CodeWalker.Forms
                 List<string> ycdlist = new List<string>();
                 foreach (var ycde in ycds)
                 {
-                    ycdlist.Add(ycde.ShortName);
+                    ycdlist.Add(ycde.ShortName.ToString());
                 }
                 ClipDictComboBox.AutoCompleteCustomSource.AddRange(ycdlist.ToArray());
                 ClipDictComboBox.Text = "";
@@ -663,7 +677,7 @@ namespace CodeWalker.Forms
         }
         public void SetWidgetMode(WidgetMode mode)
         {
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 Widget.Mode = mode;
             }
@@ -915,17 +929,19 @@ namespace CodeWalker.Forms
             FileName = yft.Name;
             Yft = yft;
             rpfFileEntry = Yft.RpfFileEntry;
-            ModelHash = Yft.RpfFileEntry?.ShortNameHash ?? 0;
-            var name = Yft.RpfFileEntry?.ShortName;
-            if (name?.EndsWith("_hi", StringComparison.OrdinalIgnoreCase) ?? false)
+            if (rpfFileEntry is not null)
             {
-                ModelHash = JenkHash.GenHashLower(name.AsSpan(0, name.Length - 3));
+                ModelHash = Yft.RpfFileEntry.ShortNameHash;
+                var name = Yft.RpfFileEntry.ShortName;
+                if (name.EndsWith("_hi", StringComparison.OrdinalIgnoreCase))
+                {
+                    ModelHash = JenkHash.GenHashLower(name.Slice(0, name.Length - 3));
+                }
+                if (ModelHash != 0)
+                {
+                    ModelArchetype = TryGetArchetype(ModelHash);
+                }
             }
-            if (ModelHash != 0)
-            {
-                ModelArchetype = TryGetArchetype(ModelHash);
-            }
-
 
             var dr = yft.Fragment?.Drawable;
             if (dr != null)
@@ -1034,14 +1050,16 @@ namespace CodeWalker.Forms
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateStatus(text); }));
+                    BeginInvoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void LogError(string text)
@@ -1050,14 +1068,16 @@ namespace CodeWalker.Forms
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { LogError(text); }));
+                    Invoke(LogError, text);
                 }
                 else
                 {
                     ConsoleTextBox.AppendText(text + "\r\n");
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -1237,8 +1257,7 @@ namespace CodeWalker.Forms
                 AddDrawableModelsTreeNodes(drawable.DrawableModels?.VLow, "Very Low Detail", false);
                 //AddDrawableModelsTreeNodes(drawable.DrawableModels?.Extra, "X Detail", false);
 
-                var fdrawable = drawable as FragDrawable;
-                if (fdrawable != null)
+                if (drawable is FragDrawable fdrawable)
                 {
                     var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
                     if ((plod1 != null) && (plod1.Children?.data_items != null))
@@ -1367,6 +1386,7 @@ namespace CodeWalker.Forms
             dnode.Checked = check;
 
             VerticesCount = 0;
+            PolyCount = 0;
             AddDrawableModelsTreeNodes(drawable.DrawableModels?.High, "High Detail", true, dnode);
             AddDrawableModelsTreeNodes(drawable.DrawableModels?.Med, "Medium Detail", false, dnode);
             AddDrawableModelsTreeNodes(drawable.DrawableModels?.Low, "Low Detail", false, dnode);
@@ -1376,7 +1396,8 @@ namespace CodeWalker.Forms
         }
         private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check, TreeNode parentDrawableNode = null)
         {
-            if (models == null) return;
+            if (models is null)
+                return;
 
             for (int mi = 0; mi < models.Length; mi++)
             {
@@ -1396,12 +1417,14 @@ namespace CodeWalker.Forms
                     Renderer.SelectionModelDrawFlags[model] = false;
                 }
 
-                if (model.Geometries == null) continue;
+                if (model.Geometries is null || model.Geometries.Length == 0)
+                    continue;
 
                 foreach (var geom in model.Geometries)
                 {
                     var gname = geom.ToString();
                     VerticesCount += geom.VerticesCount;
+                    PolyCount += geom.IndicesCount / 3;
                     var gnode = mnode.Nodes.Add(gname);
                     gnode.Tag = geom;
                     gnode.Checked = true;// check;
@@ -1418,12 +1441,10 @@ namespace CodeWalker.Forms
                         {
                             var hash = pl.Hashes[ip];
                             var parm = pl.Parameters[ip];
-                            var tex = parm.Data as TextureBase;
-                            if (tex != null)
+                            if (parm.Data is TextureBase tex)
                             {
-                                var t = tex as Texture;
                                 var tstr = tex.Name.Trim();
-                                if (t != null)
+                                if (tex is Texture t)
                                 {
                                     tstr = string.Format("{0} ({1}x{2}, embedded)", tex.Name, t.Width, t.Height);
                                 }
@@ -1442,49 +1463,36 @@ namespace CodeWalker.Forms
         }
         private void UpdateSelectionDrawFlags(TreeNode node)
         {
-            //update the selection draw flags depending on tag and checked/unchecked
-            var drwbl = node.Tag as DrawableBase;
-            var model = node.Tag as DrawableModel;
-            var geom = node.Tag as DrawableGeometry;
             bool rem = node.Checked;
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
-                if (drwbl != null)
+                if (node.Tag is DrawableBase drwbl)
                 {
                     if (rem)
                     {
-                        if (DrawableDrawFlags.ContainsKey(drwbl))
-                        {
-                            DrawableDrawFlags.Remove(drwbl);
-                        }
+                        DrawableDrawFlags.Remove(drwbl);
                     }
                     else
                     {
                         DrawableDrawFlags[drwbl] = false;
                     }
                 }
-                if (model != null)
+                if (node.Tag is DrawableModel model)
                 {
                     if (rem)
                     {
-                        if (Renderer.SelectionModelDrawFlags.ContainsKey(model))
-                        {
-                            Renderer.SelectionModelDrawFlags.Remove(model);
-                        }
+                        Renderer.SelectionModelDrawFlags.Remove(model);
                     }
                     else
                     {
                         Renderer.SelectionModelDrawFlags[model] = false;
                     }
                 }
-                if (geom != null)
+                if (node.Tag is DrawableGeometry geom)
                 {
                     if (rem)
                     {
-                        if (Renderer.SelectionGeometryDrawFlags.ContainsKey(geom))
-                        {
-                            Renderer.SelectionGeometryDrawFlags.Remove(geom);
-                        }
+                        Renderer.SelectionGeometryDrawFlags.Remove(geom);
                     }
                     else
                     {
@@ -1530,7 +1538,8 @@ namespace CodeWalker.Forms
 
             foreach (var model in dwbl.AllModels)
             {
-                if (model?.Geometries == null) continue;
+                if (model?.Geometries is null || model.Geometries.Length == 0)
+                    continue;
                 foreach (var geom in model.Geometries)
                 {
                     geom.UpdateRenderableParameters = true;
@@ -1772,19 +1781,23 @@ namespace CodeWalker.Forms
 
 
 
-        private void Save(bool saveAs = false)
+        private async ValueTask SaveAsync(bool saveAs = false)
         {
             var editMode = ExploreForm.Instance?.EditMode ?? false;
 
             if (string.IsNullOrEmpty(FilePath))
             {
-                if (!editMode) saveAs = true;
-                if (rpfFileEntry == null) saveAs = true;
+                if (!editMode)
+                    saveAs = true;
+                if (this.rpfFileEntry == null)
+                    saveAs = true;
             }
             else
             {
-                if (FilePath.StartsWith(GTAFolder.CurrentGTAFolder, StringComparison.OrdinalIgnoreCase)) saveAs = true;
-                if (!File.Exists(FilePath)) saveAs = true;
+                if (FilePath.StartsWith(GTAFolder.CurrentGTAFolder, StringComparison.OrdinalIgnoreCase))
+                    saveAs = true;
+                if (!File.Exists(FilePath))
+                    saveAs = true;
             }
 
             var fn = FilePath;
@@ -1793,7 +1806,8 @@ namespace CodeWalker.Forms
                 if (!string.IsNullOrEmpty(fn))
                 {
                     var dir = new FileInfo(fn).DirectoryName;
-                    if (!Directory.Exists(dir)) dir = "";
+                    if (!Directory.Exists(dir))
+                        dir = "";
                     SaveFileDialog.InitialDirectory = dir;
                 }
                 SaveFileDialog.FileName = FileName;
@@ -1803,53 +1817,90 @@ namespace CodeWalker.Forms
                 {
                     fileExt = fileExt.Substring(1);
                 }
-                SaveFileDialog.Filter = fileExt.ToUpperInvariant() + " files|*." + fileExt + "|All files|*.*";
+                SaveFileDialog.Filter = $"{fileExt.ToUpperInvariant()} files|*.{fileExt}|Export XML|*.{fileExt}.xml|All files|*.*";
 
-                if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+                if (SaveFileDialog.ShowDialog() != DialogResult.OK)
+                    return;
                 fn = SaveFileDialog.FileName;
                 FilePath = fn;
             }
 
 
 
-            byte[] fileBytes = null;
+            byte[]? fileBytes = null;
+            RpfFileEntry? rpfFileEntry = null;
 
-#if !DEBUG
+            var exportXml = fn.EndsWith(".xml");
+            string xml = string.Empty;
+
             try
             {
-#endif
-            if (Ydr != null)
-            {
-                fileBytes = Ydr.Save();
-            }
-            else if (Ydd != null)
-            {
-                fileBytes = Ydd.Save();
-            }
-            else if (Yft != null)
-            {
-                fileBytes = Yft.Save();
-            }
-            else if (Ybn != null)
-            {
-                fileBytes = Ybn.Save();
-            }
-            else if (Ypt != null)
-            {
-                fileBytes = Ypt.Save();
-            }
-            else if (Ynv != null)
-            {
-                fileBytes = Ynv.Save();
-            }
-#if !DEBUG
+                if (Ydr != null)
+                {
+                    fileBytes = Ydr.Save();
+                    rpfFileEntry = Ydr.RpfFileEntry;
+                    if (exportXml)
+                    {
+                        xml = MetaXml.GetXml(Ydr, out _, Path.Join(Path.GetDirectoryName(fn), Ydr.RpfFileEntry.ShortName));
+                    }
+                }
+                else if (Ydd != null)
+                {
+                    fileBytes = Ydd.Save();
+                    rpfFileEntry = Ydd.RpfFileEntry;
+                    if (exportXml)
+                    {
+                        xml = MetaXml.GetXml(Ydd, out _, Path.Join(Path.GetDirectoryName(fn), Ydd.RpfFileEntry.ShortName));
+                    }
+                }
+                else if (Yft != null)
+                {
+                    fileBytes = Yft.Save();
+                    rpfFileEntry = Yft.RpfFileEntry;
+                    if (exportXml)
+                    {
+                        xml = MetaXml.GetXml(Yft, out _, Path.Join(Path.GetDirectoryName(fn), Yft.RpfFileEntry.ShortName));
+                    }
+                }
+                else if (Ybn != null)
+                {
+                    fileBytes = Ybn.Save();
+                    rpfFileEntry = Ybn.RpfFileEntry;
+                    if (exportXml)
+                    {
+                        xml = MetaXml.GetXml(Ybn, out _);
+                    }
+                }
+                else if (Ypt != null)
+                {
+                    fileBytes = Ypt.Save();
+                    rpfFileEntry = Ypt.RpfFileEntry;
+                    if (exportXml)
+                    {
+                        xml = MetaXml.GetXml(Ypt, out _, Path.Join(Path.GetDirectoryName(fn), Ypt.RpfFileEntry.ShortName));
+                    }
+                }
+                else if (Ynv != null)
+                {
+                    fileBytes = Ynv.Save();
+                    rpfFileEntry = Ypt.RpfFileEntry;
+                    if (exportXml)
+                    {
+                        xml = MetaXml.GetXml(Ynv, out _);
+                    }
+                }
+
+                if (exportXml)
+                {
+                    fileBytes = Encoding.UTF8.GetBytes(xml);
+                }
             }
             catch(Exception ex)
             {
+                Console.WriteLine(ex);
                 MessageBox.Show("Error saving file!\n" + ex.ToString());
                 return;
             }
-#endif
             if (fileBytes == null)
             {
                 MessageBox.Show("Error saving file!\n fileBytes was null!");
@@ -1857,11 +1908,11 @@ namespace CodeWalker.Forms
             }
 
 
-            var rpfSave = editMode && (rpfFileEntry?.Parent != null) && !saveAs;
+            var rpfSave = editMode && (this.rpfFileEntry?.Parent != null) && !saveAs;
 
-            if (rpfSave)
+            if (rpfSave && !exportXml)
             {
-                if (!rpfFileEntry.Path.StartsWith("mods", StringComparison.OrdinalIgnoreCase))
+                if (!this.rpfFileEntry.Path.StartsWith("mods", StringComparison.OrdinalIgnoreCase))
                 {
                     if (MessageBox.Show("This file is NOT located in the mods folder - Are you SURE you want to save this file?\r\nWARNING: This could cause permanent damage to your game!!!", "WARNING: Are you sure about this?", MessageBoxButtons.YesNo) != DialogResult.Yes)
                     {
@@ -1871,22 +1922,22 @@ namespace CodeWalker.Forms
 
                 try
                 {
-                    if (!(ExploreForm.EnsureRpfValidEncryption(rpfFileEntry.File))) return;
+                    if (!ExploreForm.EnsureRpfValidEncryption(this.rpfFileEntry.File))
+                        return;
 
-                    var newentry = RpfFile.CreateFile(rpfFileEntry.Parent, rpfFileEntry.Name, fileBytes);
-                    if (newentry != rpfFileEntry)
-                    { }
-                    rpfFileEntry = newentry;
+                    var newentry = RpfFile.CreateFile(this.rpfFileEntry.Parent, this.rpfFileEntry.Name, fileBytes);
+                    this.rpfFileEntry = newentry;
 
                     ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
-                    StatusLabel.Text = rpfFileEntry.Name + " saved successfully at " + DateTime.Now.ToString();
+                    StatusLabel.Text = $"{this.rpfFileEntry.Name} saved successfully at {DateTime.Now}";
 
                     //victory!
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error saving file to RPF! The RPF archive may be corrupted...\r\n" + ex.ToString(), "Really Bad Error");
+                    Console.WriteLine(ex);
                 }
 
             }
@@ -1894,22 +1945,38 @@ namespace CodeWalker.Forms
             {
                 if (string.IsNullOrEmpty(fn))
                 {
-                    fn = rpfFileEntry?.Path;
+                    fn = this.rpfFileEntry?.Path;
+                }
+                if (string.IsNullOrEmpty(fn))
+                {
+                    MessageBox.Show("File name is empty!", "Filename missing");
+                    return;
                 }
 
                 try
                 {
-                    File.WriteAllBytes(fn, fileBytes);
+                    if (!string.IsNullOrWhiteSpace(xml))
+                    {
+                        await File.WriteAllTextAsync(fn, xml);
+                    }
+                    else
+                    {
+                        await File.WriteAllBytesAsync(fn, fileBytes);
+                    }
 
                     fileName = Path.GetFileName(fn);
 
                     ExploreForm.RefreshMainListViewInvoke(); //update the file details in explorer...
 
-                    StatusLabel.Text = fileName + " saved successfully at " + DateTime.Now.ToString();
+                    this.InvokeIfRequired(() =>
+                    {
+                        StatusLabel.Text = $"{fileName} saved successfully at {DateTime.Now}";
+                    });
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Error writing file to disk!\n" + ex.ToString());
+                    Console.WriteLine(ex);
                     return;
                 }
             }
@@ -1924,22 +1991,26 @@ namespace CodeWalker.Forms
 
 
 
-        private void SaveAllTextures(bool includeEmbedded)
+        private async ValueTask SaveAllTexturesAsync(bool includeEmbedded)
         {
-            if (gameFileCache == null)
+            if (gameFileCache is null)
             {
                 MessageBox.Show("This operation requires GameFileCache to continue. This shouldn't happen!");
                 return;
             }
 
-            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK) return;
+            if (FolderBrowserDialog.ShowDialogNew() != DialogResult.OK)
+                return;
+
             string folderpath = FolderBrowserDialog.SelectedPath;
-            if (!folderpath.EndsWith("\\")) folderpath += "\\";
+            if (!folderpath.EndsWith('\\'))
+                folderpath += '\\';
 
-
-            var tryGetTextureFromYtd = new Func<uint, YtdFile, Texture>((texHash, ytd) => 
+            var tryGetTextureFromYtd = new Func<uint, YtdFile?, Texture?>((texHash, ytd) => 
             {
-                if (ytd == null) return null;
+                if (ytd is null)
+                    return null;
+
                 int tries = 0;
                 while (!ytd.Loaded && (tries < 500)) //wait upto ~5 sec
                 {
@@ -1952,7 +2023,7 @@ namespace CodeWalker.Forms
                 }
                 return null;
             });
-            var tryGetTexture = new Func<uint, uint, Texture>((texHash, txdHash) =>
+            var tryGetTexture = new Func<uint, uint, Texture?>((texHash, txdHash) =>
             {
                 if (txdHash != 0)
                 {
@@ -1976,7 +2047,7 @@ namespace CodeWalker.Forms
                             textures.Add(tex);
                         }
                     }
-                    if ((d?.Owner is YptFile ypt) && (ypt.PtfxList?.TextureDictionary?.Textures?.data_items != null))
+                    if (d?.Owner is YptFile ypt && ypt.PtfxList?.TextureDictionary?.Textures?.data_items != null)
                     {
                         foreach (var tex in ypt.PtfxList.TextureDictionary.Textures.data_items)
                         {
@@ -1989,7 +2060,7 @@ namespace CodeWalker.Forms
                 if (d?.ShaderGroup?.Shaders?.data_items == null) return;
 
                 var archhash = 0u;
-                if (d is Drawable dwbl)
+                if (d is Drawable dwbl && !string.IsNullOrEmpty(dwbl.Name))
                 {
                     var dname = dwbl.Name.ToLowerInvariant();
                     dname = dname.Replace(".#dr", "").Replace(".#dd", "");
@@ -2013,13 +2084,13 @@ namespace CodeWalker.Forms
 
                 foreach (var s in d.ShaderGroup.Shaders.data_items)
                 {
-                    if (s?.ParametersList?.Parameters == null) continue;
+                    if (s?.ParametersList?.Parameters is null)
+                        continue;
                     foreach (var p in s.ParametersList.Parameters)
                     {
-                        var t = p.Data as TextureBase;
-                        if (t == null) continue;
-                        var tex = t as Texture;
-                        if (tex != null)
+                        if (p.Data is not TextureBase t)
+                            continue;
+                        if (t is Texture tex)
                         {
                             if (includeEmbedded)
                             {
@@ -2030,28 +2101,28 @@ namespace CodeWalker.Forms
                         {
                             var texhash = t.NameHash;
                             tex = tryGetTexture(texhash, txdHash);
-                            if (tex == null)
+                            if (tex is null)
                             {
                                 var ptxdhash = gameFileCache.TryGetParentYtdHash(txdHash);
-                                while ((ptxdhash != 0) && (tex == null))
+                                while (ptxdhash != 0 && tex is null)
                                 {
                                     tex = tryGetTexture(texhash, ptxdhash);
-                                    if (tex == null)
+                                    if (tex is null)
                                     {
                                         ptxdhash = gameFileCache.TryGetParentYtdHash(ptxdhash);
                                     }
                                 }
-                                if (tex == null)
+                                if (tex is null)
                                 {
                                     var ytd = gameFileCache.TryGetTextureDictForTexture(texhash);
                                     tex = tryGetTextureFromYtd(texhash, ytd);
                                 }
-                                if (tex == null)
+                                if (tex is null)
                                 {
                                     texturesMissing.Add(t.Name);
                                 }
                             }
-                            if (tex != null)
+                            if (tex is not null)
                             {
                                 textures.Add(tex);
                             }
@@ -2060,30 +2131,30 @@ namespace CodeWalker.Forms
                 }
             });
 
-            if (Ydr != null)
+            if (Ydr is not null)
             {
                 collectTextures(Ydr.Drawable);
             }
-            if (Ydd?.Drawables != null)
+            if (Ydd?.Drawables is not null)
             {
                 foreach (var d in Ydd.Drawables)
                 {
                     collectTextures(d);
                 }
             }
-            if (Yft?.Fragment != null)
+            if (Yft?.Fragment is not null)
             {
                 var f = Yft.Fragment;
                 collectTextures(f.Drawable);
                 collectTextures(f.DrawableCloth);
-                if (f.DrawableArray?.data_items != null)
+                if (f.DrawableArray?.data_items is not null)
                 {
                     foreach (var d in f.DrawableArray.data_items)
                     {
                         collectTextures(d);
                     }
                 }
-                if (f.Cloths?.data_items != null)
+                if (f.Cloths?.data_items is not null)
                 {
                     foreach (var c in f.Cloths.data_items)
                     {
@@ -2091,7 +2162,7 @@ namespace CodeWalker.Forms
                     }
                 }
                 var fc = f.PhysicsLODGroup?.PhysicsLOD1?.Children?.data_items;
-                if (fc != null)
+                if (fc is not null)
                 {
                     foreach (var fcc in fc)
                     {
@@ -2100,7 +2171,7 @@ namespace CodeWalker.Forms
                     }
                 }
             }
-            if (Ypt?.DrawableDict != null)
+            if (Ypt?.DrawableDict is not null)
             {
                 foreach (var d in Ypt.DrawableDict.Values)
                 {
@@ -2114,29 +2185,30 @@ namespace CodeWalker.Forms
             {
                 try
                 {
-                    string fpath = folderpath + tex.Name + ".dds";
+                    string fpath = $"{folderpath}{tex.Name}.dds";
                     byte[] dds = DDSIO.GetDDSFile(tex);
-                    File.WriteAllBytes(fpath, dds);
+                    await File.WriteAllBytesAsync(fpath, dds);
                     successcount++;
                 }
                 catch(Exception ex)
                 {
                     errordds.Add(tex.Name ?? "???");
+                    Console.WriteLine(ex);
                 }
             }
 
             var sb = new StringBuilder();
             if (successcount > 0)
             {
-                sb.AppendLine(successcount.ToString() + " textures successfully exported.");
+                sb.AppendLine($"{successcount} textures successfully exported.");
             }
             if (texturesMissing.Count > 0)
             {
-                sb.AppendLine(texturesMissing.Count.ToString() + " textures weren't found!");
+                sb.AppendLine($"{texturesMissing.Count} textures weren't found!");
             }
             if (errordds.Count > 0)
             {
-                sb.AppendLine(errordds.Count.ToString() + " textures couldn't be converted to .dds!");
+                sb.AppendLine($"{errordds.Count} textures couldn't be converted to .dds!");
             }
             if (sb.Length > 0)
             {
@@ -2437,7 +2509,7 @@ namespace CodeWalker.Forms
 
         private void StatsUpdateTimer_Tick(object sender, EventArgs e)
         {
-            StatsLabel.Text = Renderer.GetStatusText() + $" verts: {VerticesCount}";
+            StatsLabel.Text = Renderer.GetStatusText() + $" verts: {VerticesCount}; tris: {PolyCount};";
 
             if (Renderer.timerunning)
             {
@@ -2509,17 +2581,22 @@ namespace CodeWalker.Forms
 
         private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            if (Renderer.Shaders is null)
+                return;
+            using(Renderer.RenderSyncRoot.WaitDisposable())
             {
-                Renderer.shaders.hdr = HDRRenderingCheckBox.Checked;
+                Renderer.Shaders.hdr = HDRRenderingCheckBox.Checked;
             }
         }
 
         private void ShadowsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            if (Renderer.Shaders is null)
+                return;
+
+            using(Renderer.RenderSyncRoot.WaitDisposable())
             {
-                Renderer.shaders.shadows = ShadowsCheckBox.Checked;
+                Renderer.Shaders.shadows = ShadowsCheckBox.Checked;
             }
         }
 
@@ -2539,7 +2616,7 @@ namespace CodeWalker.Forms
             int v = TimeOfDayTrackBar.Value;
             float fh = v / 60.0f;
             UpdateTimeOfDayLabel();
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 Renderer.timeofday = fh;
                 timecycle.SetTime(Renderer.timeofday);
@@ -2554,12 +2631,16 @@ namespace CodeWalker.Forms
 
         private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.wireframe = WireframeCheckBox.Checked;
+            if (Renderer.Shaders is null)
+                return;
+            Renderer.Shaders.wireframe = WireframeCheckBox.Checked;
         }
 
         private void AnisotropicFilteringCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+            if (Renderer.Shaders is null)
+                return;
+            Renderer.Shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
         }
 
         private void HDTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -2575,42 +2656,42 @@ namespace CodeWalker.Forms
             {
                 default:
                 case "Default":
-                    Renderer.shaders.RenderMode = WorldRenderMode.Default;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.Default;
                     break;
                 case "Single texture":
-                    Renderer.shaders.RenderMode = WorldRenderMode.SingleTexture;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.SingleTexture;
                     TextureSamplerComboBox.Enabled = true;
                     TextureCoordsComboBox.Enabled = true;
                     break;
                 case "Vertex normals":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexNormals;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexNormals;
                     break;
                 case "Vertex tangents":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexTangents;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexTangents;
                     break;
                 case "Vertex colour 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 1;
                     break;
                 case "Vertex colour 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 2;
                     break;
                 case "Vertex colour 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 3;
                     break;
                 case "Texture coord 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 1;
                     break;
                 case "Texture coord 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 2;
                     break;
                 case "Texture coord 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 3;
                     break;
             }
         }
@@ -2619,7 +2700,7 @@ namespace CodeWalker.Forms
         {
             if (TextureSamplerComboBox.SelectedItem is ShaderParamNames)
             {
-                Renderer.shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
+                Renderer.Shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
             }
         }
 
@@ -2629,13 +2710,13 @@ namespace CodeWalker.Forms
             {
                 default:
                 case "Texture coord 1":
-                    Renderer.shaders.RenderTextureSamplerCoord = 1;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 1;
                     break;
                 case "Texture coord 2":
-                    Renderer.shaders.RenderTextureSamplerCoord = 2;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 2;
                     break;
                 case "Texture coord 3":
-                    Renderer.shaders.RenderTextureSamplerCoord = 3;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 3;
                     break;
             }
         }
@@ -2687,39 +2768,39 @@ namespace CodeWalker.Forms
             StatusStrip.Visible = StatusBarCheckBox.Checked;
         }
 
-        private void SaveAllTexturesButton_Click(object sender, EventArgs e)
+        private async void SaveAllTexturesButton_Click(object sender, EventArgs e)
         {
-            SaveAllTextures(true);
+            await SaveAllTexturesAsync(true);
         }
 
-        private void SaveSharedTexturesButton_Click(object sender, EventArgs e)
+        private async void SaveSharedTexturesButton_Click(object sender, EventArgs e)
         {
-            SaveAllTextures(false);
+            await SaveAllTexturesAsync(false);
         }
 
-        private void SaveButton_ButtonClick(object sender, EventArgs e)
+        private async void SaveButton_ButtonClick(object sender, EventArgs e)
         {
-            Save();
+            await SaveAsync();
         }
 
-        private void SaveMenuButton_Click(object sender, EventArgs e)
+        private async void SaveMenuButton_Click(object sender, EventArgs e)
         {
-            Save();
+            await SaveAsync();
         }
 
-        private void SaveAsMenuButton_Click(object sender, EventArgs e)
+        private async void SaveAsMenuButton_Click(object sender, EventArgs e)
         {
-            Save(true);
+            await SaveAsync(true);
         }
 
-        private void SaveAllTexturesMenuButton_Click(object sender, EventArgs e)
+        private async void SaveAllTexturesMenuButton_Click(object sender, EventArgs e)
         {
-            SaveAllTextures(true);
+            await SaveAllTexturesAsync(true);
         }
 
-        private void SaveSharedTexturesMenuButton_Click(object sender, EventArgs e)
+        private async void SaveSharedTexturesMenuButton_Click(object sender, EventArgs e)
         {
-            SaveAllTextures(false);
+            await SaveAllTexturesAsync(false);
         }
 
         private void ClipDictComboBox_TextChanged(object sender, EventArgs e)
@@ -2739,7 +2820,7 @@ namespace CodeWalker.Forms
 
         private void DeferredShadingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.deferred = DeferredShadingCheckBox.Checked;
+            Renderer.Shaders.deferred = DeferredShadingCheckBox.Checked;
         }
 
         private void HDLightsCheckBox_CheckedChanged(object sender, EventArgs e)

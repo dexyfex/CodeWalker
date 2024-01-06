@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace CodeWalker.Core.Utils
@@ -18,12 +19,13 @@ namespace CodeWalker.Core.Utils
             this.form = form;
         }
 
-        public async void Init()
+        public void Init()
         {
             try
             {
                 using var client = new NamedPipeClientStream("codewalker");
-                client.Connect(100);
+                client.Connect(0);
+                client.Dispose();
                 return;
             }
             catch (Exception ex)
@@ -41,61 +43,91 @@ namespace CodeWalker.Core.Utils
 
         public async void StartServer()
         {
-            var server = new NamedPipeServerStream("codewalker", PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances);
-
-            var buffer = new byte[1024];
-
-            while (true)
+            try
             {
-                try
+                await Task.Run(async () =>
                 {
-                    await server.WaitForConnectionAsync();
-                    var read = await server.ReadAsync(buffer.AsMemory());
-                    if (read > 0)
+                    var server = new NamedPipeServerStream("codewalker", PipeDirection.InOut, NamedPipeServerStream.MaxAllowedServerInstances);
+
+                    var buffer = new byte[1024];
+
+                    while (true)
                     {
-                        var message = Encoding.UTF8.GetString(buffer, 0, read);
-
-                        Console.WriteLine(message);
-
-                        var args = message.Split(' ');
-                        if (args[0] == "explorer")
+                        try
                         {
-                            form.BeginInvoke(() =>
+                            await Task.Delay(50);
+                            await server.WaitForConnectionAsync();
+                            var read = await server.ReadAsync(buffer.AsMemory());
+                            if (read > 0)
                             {
-                                var f = new ExploreForm();
-                                f.Load += (sender, args) =>
+                                var message = Encoding.UTF8.GetString(buffer, 0, read);
+
+                                Console.WriteLine(message);
+
+                                var args = message.Split(' ');
+
+                                switch (args[0])
                                 {
-                                    f.WindowState = FormWindowState.Normal;
-                                    f.Activate();
-                                };
+                                    case "explorer":
+                                        form.BeginInvoke(() =>
+                                        {
+                                            var f = new ExploreForm();
+                                            f.Load += (sender, args) =>
+                                            {
+                                                f.WindowState = FormWindowState.Normal;
+                                                f.Activate();
+                                            };
 
-                                f.Show();
-                            });
-                        } else if (args[0] == "open-file")
-                        {
-                            try
-                            {
-                                var form = OpenAnyFile.OpenFilePath(string.Join(" ", args.AsSpan(1).ToArray()));
-                                form.Show();
-                                form.Activate();
+                                            f.Show();
+                                        });
+                                        break;
+                                    case "peds-mode":
+                                        form.BeginInvoke(() =>
+                                        {
+                                            var f = new PedsForm();
+                                            f.Load += (sender, args) =>
+                                            {
+                                                f.WindowState = FormWindowState.Normal;
+                                                f.Activate();
+                                            };
+
+                                            f.Show();
+                                        });
+                                        break;
+                                    case "open-file":
+                                        try
+                                        {
+                                            var form = OpenAnyFile.OpenFilePath(string.Join(" ", args.AsSpan(1).ToArray()));
+                                            form.Show();
+                                            form.Activate();
+                                        }
+                                        catch (NotImplementedException ex)
+                                        {
+                                            Console.WriteLine(ex);
+                                            MessageBox.Show("This file type is not yet supported!", ex.ToString());
+                                        }
+                                        break;
+                                }
                             }
-                            catch(NotImplementedException ex)
-                            {
-                                Console.WriteLine(ex);
-                                MessageBox.Show("Dit type bestand is op het moment nog niet ondersteund!", ex.ToString());
-                            }
+
+                            server.Disconnect();
                         }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    if (ex is not IOException)
-                    {
-                        throw;
-                    }
-                    server.Disconnect();
-                }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                            if (ex is not IOException)
+                            {
+                                throw;
+                            }
+                            server.Disconnect();
+                        }
 
+                    }
+                });
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
             }
         }
 
@@ -109,7 +141,7 @@ namespace CodeWalker.Core.Utils
             try
             {
                 using var client = new NamedPipeClientStream("codewalker");
-                client.Connect(100);
+                client.Connect(0);
 
                 var _buffer = Encoding.UTF8.GetBytes(message);
 

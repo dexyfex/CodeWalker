@@ -107,7 +107,7 @@ namespace CodeWalker.Rendering
 
         public CloudsShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "CloudsVS.cso"));
             byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "CloudsPS.cso"));
 
@@ -176,7 +176,7 @@ namespace CodeWalker.Rendering
             context.PixelShader.Set(ps);
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             CloudsLocalVars.Update(context);
             CloudsLocalVars.SetVSCBuffer(context, 0);

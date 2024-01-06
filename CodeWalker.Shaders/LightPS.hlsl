@@ -1,5 +1,6 @@
 #include "LightPS.hlsli"
 
+SamplerState TextureSS : register(s0);
 
 Texture2D DepthTex : register(t0);
 Texture2D DiffuseTex : register(t2);
@@ -18,7 +19,7 @@ float4 main(VS_Output input) : SV_TARGET
 {
     uint3 ssloc = uint3(input.Pos.xy, 0); //pixel location
     float depth = DepthTex.Load(ssloc).r;
-    if (depth == 0)
+    if (depth <= 9.99999997e-07)
         discard; //no existing pixel rendered here
     
     float4 diffuse = DiffuseTex.Load(ssloc);

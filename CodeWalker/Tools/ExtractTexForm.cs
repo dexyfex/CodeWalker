@@ -146,11 +146,11 @@ namespace CodeWalker.Tools
                             if (bytd && entry.IsExtension(".ytd"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YtdFile ytd = rpfman.GetFile<YtdFile>(entry);
-                                if (ytd == null) throw new Exception("Couldn't load file.");
-                                if (ytd.TextureDict == null) throw new Exception("Couldn't load texture dictionary.");
-                                if (ytd.TextureDict.Textures == null) throw new Exception("Couldn't load texture dictionary texture array.");
-                                if (ytd.TextureDict.Textures.data_items == null) throw new Exception("Texture dictionary had no entries...");
+                                YtdFile ytd = RpfManager.GetFile<YtdFile>(entry);
+                                if (ytd is null) throw new Exception("Couldn't load file.");
+                                if (ytd.TextureDict is null) throw new Exception("Couldn't load texture dictionary.");
+                                if (ytd.TextureDict.Textures is null) throw new Exception("Couldn't load texture dictionary texture array.");
+                                if (ytd.TextureDict.Textures.data_items is null) throw new Exception("Texture dictionary had no entries...");
                                 foreach (var tex in ytd.TextureDict.Textures.data_items)
                                 {
                                     SaveTexture(tex, entry, outputpath);
@@ -159,10 +159,10 @@ namespace CodeWalker.Tools
                             else if (bydr && entry.IsExtension(".ydr"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YdrFile ydr = rpfman.GetFile<YdrFile>(entry);
-                                if (ydr == null) throw new Exception("Couldn't load file.");
-                                if (ydr.Drawable == null) throw new Exception("Couldn't load drawable.");
-                                if (ydr.Drawable.ShaderGroup != null)
+                                YdrFile ydr = RpfManager.GetFile<YdrFile>(entry);
+                                if (ydr is null) throw new Exception("Couldn't load file.");
+                                if (ydr.Drawable is null) throw new Exception("Couldn't load drawable.");
+                                if (ydr.Drawable.ShaderGroup is not null)
                                 {
                                     var ydrtd = ydr.Drawable.ShaderGroup.TextureDictionary;
                                     if ((ydrtd != null) && (ydrtd.Textures != null) && (ydrtd.Textures.data_items != null))
@@ -177,7 +177,7 @@ namespace CodeWalker.Tools
                             else if (bydd && entry.IsExtension(".ydd"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YddFile ydd = rpfman.GetFile<YddFile>(entry);
+                                YddFile ydd = RpfManager.GetFile<YddFile>(entry);
                                 if (ydd == null) throw new Exception("Couldn't load file.");
                                 //if (ydd.DrawableDict == null) throw new Exception("Couldn't load drawable dictionary.");
                                 //if (ydd.DrawableDict.Drawables == null) throw new Exception("Drawable dictionary had no items...");
@@ -201,7 +201,7 @@ namespace CodeWalker.Tools
                             else if (byft && entry.IsExtension(".yft"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YftFile yft = rpfman.GetFile<YftFile>(entry);
+                                YftFile yft = RpfManager.GetFile<YftFile>(entry);
                                 if (yft == null) throw new Exception("Couldn't load file.");
                                 if (yft.Fragment == null) throw new Exception("Couldn't load fragment.");
                                 if (yft.Fragment.Drawable != null)

@@ -25,16 +25,17 @@ namespace CodeWalker
 {
     public partial class WorldForm : Form, DXForm
     {
-        public Form Form { get { return this; } } //for DXForm/DXManager use
+        public Form Form => this; //for DXForm/DXManager use
 
-        public Renderer Renderer {
+        public Renderer Renderer
+        {
             get
             {
                 return renderer ??= new Renderer(this, GameFileCache);
             }
             set => renderer = value;
         }
-        public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
+        public SemaphoreSlim RenderSyncRoot => Renderer.RenderSyncRoot;
 
         volatile bool formopen = false;
         volatile bool running = false;
@@ -49,24 +50,24 @@ namespace CodeWalker
         Clouds clouds;
 
         private Water water;
-        Water Water { get => water ??= new Water(); }
+        Water Water => water ??= new Water();
         private Trains trains;
-        Trains Trains { get => trains ??= new Trains(); }
+        Trains Trains => trains ??= new Trains();
         private Scenarios scenarios;
-        Scenarios Scenarios { get => scenarios ??= new Scenarios(); }
+        Scenarios Scenarios => scenarios ??= new Scenarios();
         private PopZones popZones;
-        PopZones PopZones { get => popZones ??= new PopZones(); }
+        PopZones PopZones => popZones ??= new PopZones();
         private Heightmaps heightmaps;
-        Heightmaps Heightmaps { get => heightmaps ??= new Heightmaps(); }
+        Heightmaps Heightmaps => heightmaps ??= new Heightmaps();
         private Watermaps watermaps;
-        Watermaps Watermaps { get => watermaps ??= new Watermaps(); }
+        Watermaps Watermaps => watermaps ??= new Watermaps();
         private AudioZones audioZones;
-        AudioZones AudioZones { get => audioZones ??= new AudioZones(); }
+        AudioZones AudioZones => audioZones ??= new AudioZones();
 
         public CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
-        public CancellationToken CancellationToken;
+        public CancellationToken CancellationToken { get; }
 
-        public Space Space { get => space ??= new Space(); }
+        public Space Space => space ??= new Space();
 
         bool MouseLButtonDown = false;
         bool MouseRButtonDown = false;
@@ -83,10 +84,9 @@ namespace CodeWalker
 
         Vector3 prevworldpos = new Vector3(0, 0, 100); //also the start pos
 
+        private GameFileCache? _gameFileCache;
+        public GameFileCache GameFileCache => _gameFileCache ??= GameFileCacheFactory.Instance;
 
-        private GameFileCache gameFileCache;
-        public GameFileCache GameFileCache { get => gameFileCache ??= GameFileCacheFactory.GetInstance(); }
-        
 
 
         WorldControlMode ControlMode = WorldControlMode.Free;
@@ -234,13 +234,16 @@ namespace CodeWalker
 
         public WorldForm()
         {
-
-            Task.Run(() => {
-                if (!GameFileCache.IsInited)
+            if (!GameFileCache.IsInited)
+            {
+                Task.Run(async () =>
                 {
-                    GameFileCache.Init();
-                }
-            });
+                    if (!GameFileCache.IsInited)
+                    {
+                        await GameFileCache.InitAsync();
+                    }
+                });
+            }
             CancellationToken = CancellationTokenSource.Token;
             InitializeComponent();
 
@@ -256,7 +259,7 @@ namespace CodeWalker
         }
 
 
-        private async ValueTask Init()
+        private ValueTask InitAsync()
         {
             //called from WorldForm_Load
 
@@ -265,7 +268,7 @@ namespace CodeWalker
             if (!initedOk)
             {
                 Close();
-                return;
+                return ValueTask.CompletedTask;
             }
 
 
@@ -274,7 +277,7 @@ namespace CodeWalker
             if (!GTAFolder.UpdateGTAFolder(true))
             {
                 Close();
-                return;
+                return ValueTask.CompletedTask;
             }
 
             Widget.Position = new Vector3(1.0f, 10.0f, 100.0f);
@@ -311,9 +314,11 @@ namespace CodeWalker
             }
             MarkerStyleComboBox.SelectedItem = MarkerIcon; //LoadSettings will handle this
             LocatorStyleComboBox.SelectedItem = LocatorIcon;
-            LocatorMarker = new MapMarker();
-            LocatorMarker.Icon = LocatorIcon;
-            LocatorMarker.IsMovable = true;
+            LocatorMarker = new MapMarker
+            {
+                Icon = LocatorIcon,
+                IsMovable = true
+            };
             //AddDefaultMarkers(); //some POI to start with
 
             ShaderParamNames[] texsamplers = RenderableGeometry.GetTextureSamplerList();
@@ -339,13 +344,32 @@ namespace CodeWalker
 
 
             Renderer.Start();
+
+            return ValueTask.CompletedTask;
         }
 
 
 
+        public static string GetIconFolder()
+        {
+            // Directory we're looking for.
+            var dirToFind = Path.Combine("icons");
+
+
+            if (!FileUtils.TryFindFolder(dirToFind, out var folder))
+            {
+                throw new FileNotFoundException($"Could not find '{dirToFind}' directory.");
+            }
+            else
+            {
+                return folder;
+            }
+        }
+
         private MapIcon AddIcon(string name, string filename, int texw, int texh, float centerx, float centery, float scale)
         {
-            string filepath = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "icons", filename);
+
+            string filepath = Path.Combine(GetIconFolder(), filename);
             try
             {
                 MapIcon mi = new MapIcon(name, filepath, texw, texh, centerx, centery, scale);
@@ -386,7 +410,7 @@ namespace CodeWalker
             }
 
             camera.FollowEntity = CamEntity;
-            CamEntity.Position = (startupviewmode!=2) ? prevworldpos : Vector3.Zero;
+            CamEntity.Position = (startupviewmode != 2) ? prevworldpos : Vector3.Zero;
             CamEntity.Orientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.Up, Vector3.ForwardLH);
 
             Space.AddPersistentEntity(PedEntity);
@@ -403,7 +427,7 @@ namespace CodeWalker
 
             frametimer.Start();
         }
-        public void CleanupScene()
+        public async ValueTask CleanupScene()
         {
             using var _ = new DisposableTimer("CleanupScene");
             if (!CancellationTokenSource.IsCancellationRequested)
@@ -425,7 +449,7 @@ namespace CodeWalker
             int count = 0;
             while (running && (count < 5000)) //wait for the content thread to exit gracefully
             {
-                Thread.Sleep(1);
+                await Task.Delay(1);
                 count++;
             }
         }
@@ -451,11 +475,12 @@ namespace CodeWalker
                 await Task.Delay((int)(0.016666 * elapsed) * 1000, CancellationToken);
             }
 
-            if (Pauserendering) return;
+            if (Pauserendering)
+                return;
 
             GameFileCache.BeginFrame();
 
-            if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
+            if (!Renderer.RenderSyncRoot.Wait(50))
             {
                 return;
             } //couldn't get a lock, try again next time
@@ -466,10 +491,7 @@ namespace CodeWalker
 
                 Space.Update(elapsed);
 
-                if (CutsceneForm != null)
-                {
-                    CutsceneForm.UpdateAnimation(elapsed);
-                }
+                CutsceneForm?.UpdateAnimation(elapsed);
 
                 Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
@@ -523,7 +545,7 @@ namespace CodeWalker
             }
             finally
             {
-                Monitor.Exit(Renderer.RenderSyncRoot);
+                Renderer.RenderSyncRoot.Release();
             }
 
             UpdateMarkerSelectionPanelInvoke();
@@ -749,15 +771,9 @@ namespace CodeWalker
                 spaceEnts = Space.TemporaryEntities;
             }
 
-            if (ProjectForm != null)
-            {
-                ProjectForm.GetVisibleYmaps(camera, renderworldVisibleYmapDict);
-            }
+            ProjectForm?.GetVisibleYmaps(camera, renderworldVisibleYmapDict);
 
-            if (CutsceneForm != null)
-            {
-                CutsceneForm.GetVisibleYmaps(camera, renderworldVisibleYmapDict);
-            }
+            CutsceneForm?.GetVisibleYmaps(camera, renderworldVisibleYmapDict);
 
             Renderer.RenderWorld(renderworldVisibleYmapDict, spaceEnts);
 
@@ -833,7 +849,7 @@ namespace CodeWalker
             foreach (var item in collisionitems)
             {
                 YbnFile ybn = GameFileCache.GetYbn(item.Name);
-                if ((ybn != null) && (ybn.Loaded))
+                if (ybn is not null && ybn.Loaded)
                 {
                     collisionybns.Add(ybn);
                 }
@@ -891,7 +907,7 @@ namespace CodeWalker
 
             ProjectForm?.GetVisibleWaterQuads<T>(camera, renderwaterquadlist);
 
-            if(SelectionMode == requiredMode) UpdateMouseHits(renderwaterquadlist);
+            if (SelectionMode == requiredMode) UpdateMouseHits(renderwaterquadlist);
 
             return renderwaterquadlist;
         }
@@ -996,7 +1012,8 @@ namespace CodeWalker
 
         private void RenderWorldWatermaps()
         {
-            if (!Watermaps.Inited) return;
+            if (!Watermaps.Inited)
+                return;
 
             //renderwatermaplist.Clear();
             //renderwatermaplist.AddRange(watermaps.Watermaps);
@@ -1011,7 +1028,8 @@ namespace CodeWalker
 
         private void RenderWorldAudioZones()
         {
-            if (!AudioZones.Inited) return;
+            if (!AudioZones.Inited)
+                return;
 
             renderaudfilelist.Clear();
             renderaudfilelist.AddRange(GameFileCache.AudioDatRelFiles);
@@ -1024,19 +1042,15 @@ namespace CodeWalker
             renderaudplacementslist.Clear();
             AudioZones.GetPlacements(renderaudfilelist, renderaudplacementslist);
 
-
-
             BoundingBox bbox = new BoundingBox();
             BoundingSphere bsph = new BoundingSphere();
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
+            Ray mray = new Ray(camera.MouseRay.Position + camera.Position, camera.MouseRay.Direction);
             float hitdist = float.MaxValue;
 
             MapBox lastHitOuterBox = new MapBox();
             MapSphere lastHitOuterSphere = new MapSphere();
-            MapBox mb = new MapBox();
-            MapSphere ms = new MapSphere();
+            //MapBox mb;
+            //MapSphere ms;
 
             for (int i = 0; i < renderaudplacementslist.Count; i++)
             {
@@ -1046,29 +1060,31 @@ namespace CodeWalker
                     case Dat151ZoneShape.Box:
                     case Dat151ZoneShape.Line:
 
-                        mb.CamRelPos = placement.InnerPos - camera.Position;
-                        mb.BBMin = placement.InnerMin;
-                        mb.BBMax = placement.InnerMax;
-                        mb.Orientation = placement.InnerOri;
-                        mb.Scale = Vector3.One;
+                        var mb = new MapBox(
+                            camRelPos: placement.InnerPos - camera.Position,
+                            bbMin: placement.InnerMin,
+                            bbMax: placement.InnerMax,
+                            orientation: placement.InnerOri,
+                            scale: Vector3.One
+                        );
                         Renderer.HilightBoxes.Add(mb);
 
                         if (renderaudioouterbounds)
                         {
-                            mb.CamRelPos = placement.OuterPos - camera.Position;
-                            mb.BBMin = placement.OuterMin;
-                            mb.BBMax = placement.OuterMax;
-                            mb.Orientation = placement.OuterOri;
-                            mb.Scale = Vector3.One;
+                            mb = new MapBox(
+                                placement.OuterPos - camera.Position,
+                                placement.OuterMin,
+                                placement.OuterMax,
+                                placement.OuterOri,
+                                Vector3.One
+                            );
                             Renderer.BoundingBoxes.Add(mb);
                         }
 
                         Vector3 hbcamrel = (placement.Position - camera.Position);
-                        Ray mraytrn = new Ray();
-                        mraytrn.Position = placement.OrientationInv.Multiply(camera.MouseRay.Position - hbcamrel);
-                        mraytrn.Direction = placement.OrientationInv.Multiply(mray.Direction);
-                        bbox.Minimum = placement.HitboxMin;
-                        bbox.Maximum = placement.HitboxMax;
+                        Ray mraytrn = new Ray(placement.OrientationInv.Multiply(camera.MouseRay.Position - hbcamrel), placement.OrientationInv.Multiply(in mray.Direction));
+
+                        bbox = new BoundingBox(placement.HitboxMin, placement.HitboxMax);
                         if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
                         {
                             CurMouseHit.Audio = placement;
@@ -1082,19 +1098,16 @@ namespace CodeWalker
 
                         if ((placement.InnerPos != Vector3.Zero) && (placement.OuterPos != Vector3.Zero))
                         {
-                            ms.CamRelPos = placement.InnerPos - camera.Position;
-                            ms.Radius = placement.InnerRadius;
+                            var ms = new MapSphere(placement.InnerPos - camera.Position, placement.InnerRadius);
                             Renderer.HilightSpheres.Add(ms);
 
                             if (renderaudioouterbounds)
                             {
-                                ms.CamRelPos = placement.OuterPos - camera.Position;
-                                ms.Radius = placement.OuterRadius;
+                                ms = new MapSphere(placement.OuterPos - camera.Position, placement.OuterRadius);
                                 Renderer.BoundingSpheres.Add(ms);
                             }
 
-                            bsph.Center = placement.Position;
-                            bsph.Radius = placement.HitSphereRad;
+                            bsph = new BoundingSphere(placement.Position, placement.HitSphereRad);
                             if (mray.Intersects(ref bsph, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
                             {
                                 CurMouseHit.Audio = placement;
@@ -1105,9 +1118,6 @@ namespace CodeWalker
                                 lastHitOuterSphere = ms; //highlight the outer sphere
                             }
                         }
-                        else
-                        { }
-
 
                         break;
                     default:
@@ -1139,8 +1149,7 @@ namespace CodeWalker
         {
             //start point for model view mode rendering
 
-            uint hash = 0;// JenkHash.GenHash(modelname);
-            if (!uint.TryParse(modelname, out hash)) //try use a hash directly
+            if (!uint.TryParse(modelname, out var hash)) //try use a hash directly
             {
                 hash = JenkHash.GenHash(modelname);
             }
@@ -1159,7 +1168,7 @@ namespace CodeWalker
             else
             {
                 YmapFile ymap = GameFileCache.GetYmap(hash);
-                if (ymap != null)
+                if (ymap is not null)
                 {
                     Renderer.RenderYmap(ymap);
                 }
@@ -1167,7 +1176,7 @@ namespace CodeWalker
                 {
                     //not a ymap... see if it's a ydr or yft
                     YdrFile ydr = GameFileCache.GetYdr(hash);
-                    if (ydr != null)
+                    if (ydr is not null)
                     {
                         if (ydr.Loaded)
                         {
@@ -1179,11 +1188,11 @@ namespace CodeWalker
                     else
                     {
                         YftFile yft = GameFileCache.GetYft(hash);
-                        if (yft != null)
+                        if (yft is not null)
                         {
                             if (yft.Loaded)
                             {
-                                if (yft.Fragment != null)
+                                if (yft.Fragment is not null)
                                 {
                                     var f = yft.Fragment;
 
@@ -1203,7 +1212,7 @@ namespace CodeWalker
                 }
             }
 
-            if ((selarch != null) && (seldrwbl == null))
+            if ((selarch is not null) && (seldrwbl is null))
             {
                 seldrwbl = GameFileCache.TryGetDrawable(selarch);
             }
@@ -1264,8 +1273,10 @@ namespace CodeWalker
                 UpdateMousedLabel(text);
             }
 
-            if(!CurMouseHit.HasHit)
-            { return; }
+            if (!CurMouseHit.HasHit)
+            {
+                return;
+            }
 
 
             BoundsShaderMode mode = BoundsShaderMode.Box;
@@ -1349,7 +1360,7 @@ namespace CodeWalker
                 var vertexSize = 0.1f;
                 Renderer.RenderSelectionCircle(vpos, vertexSize, 0xFFFFFFFF);
             }
-            if (CurMouseHit.CollisionPoly != null)
+            if (CurMouseHit.CollisionPoly is not null)
             {
                 Renderer.RenderSelectionCollisionPolyOutline(CurMouseHit.CollisionPoly, 0xFFFFFFFF, CurMouseHit.EntityDef);
             }
@@ -1442,7 +1453,7 @@ namespace CodeWalker
                 bbmax = cg.BBMax;
                 float arrowlen = cg._CCarGen.perpendicularLength;
                 float arrowrad = arrowlen * 0.066f;
-                Renderer.RenderSelectionArrowOutline(cg.Position, Vector3.UnitX, Vector3.UnitY, ori, arrowlen, arrowrad, cgrn);
+                Renderer.RenderSelectionArrowOutline(in cg.Position, in Vector3.UnitX, in Vector3.UnitY, in ori, arrowlen, arrowrad, cgrn);
 
                 if (!Renderer.rendercars)//only render selected car if not already rendering cars..
                 {
@@ -1452,35 +1463,35 @@ namespace CodeWalker
                     Renderer.RenderCar(cg.Position, cgori, cg._CCarGen.carModel, cg._CCarGen.popGroup);
                 }
             }
-            if (selectionItem.WaveQuad != null)
+            if (selectionItem.WaveQuad is not null)
             {
                 var quad = selectionItem.WaveQuad;
                 Vector3 quadArrowPos = new Vector3(quad.minX + (quad.maxX - quad.minX) * 0.5f, quad.minY + (quad.maxY - quad.minY) * 0.5f, 5);
-                Quaternion waveOri = quad.WaveOrientation;
+                ref Quaternion waveOri = ref quad.WaveOrientation;
                 float arrowlen = quad.Amplitude * 50;
                 float arrowrad = arrowlen * 0.066f;
-                Renderer.RenderSelectionArrowOutline(quadArrowPos, Vector3.UnitX, Vector3.UnitY, waveOri, arrowlen, arrowrad, cgrn);
+                Renderer.RenderSelectionArrowOutline(in quadArrowPos, in Vector3.UnitX, in Vector3.UnitY, in waveOri, arrowlen, arrowrad, cgrn);
             }
-            if (selectionItem.LodLight != null)
+            if (selectionItem.LodLight is not null)
             {
                 Renderer.RenderSelectionLodLight(selectionItem.LodLight);
 
-                if (selectionItem.LodLight.LodLights != null)
+                if (selectionItem.LodLight.LodLights is not null)
                 {
                     bbmin = selectionItem.LodLight.LodLights.BBMin;
                     bbmax = selectionItem.LodLight.LodLights.BBMax;
                 }
 
             }
-            if (selectionItem.PathNode != null)
+            if (selectionItem.PathNode is not null)
             {
                 camrel = selectionItem.PathNode.Position - camera.Position;
             }
-            if (selectionItem.TrainTrackNode != null)
+            if (selectionItem.TrainTrackNode is not null)
             {
                 camrel = selectionItem.TrainTrackNode.Position - camera.Position;
             }
-            if (selectionItem.ScenarioNode != null)
+            if (selectionItem.ScenarioNode is not null)
             {
                 camrel = selectionItem.ScenarioNode.Position - camera.Position;
 
@@ -1490,7 +1501,7 @@ namespace CodeWalker
                 ori = sn.Orientation;
                 float arrowlen = 2.0f;
                 float arrowrad = 0.25f;
-                Renderer.RenderSelectionArrowOutline(sn.Position, Vector3.UnitY, Vector3.UnitZ, ori, arrowlen, arrowrad, cgrn);
+                Renderer.RenderSelectionArrowOutline(in sn.Position, in Vector3.UnitY, in Vector3.UnitZ, in ori, arrowlen, arrowrad, cgrn);
 
                 MCScenarioPoint vpoint = sn.MyPoint ?? sn.ClusterMyPoint;
                 if ((vpoint != null) && (vpoint?.Type?.IsVehicle ?? false))
@@ -1525,7 +1536,7 @@ namespace CodeWalker
                 var se = selectionItem.ScenarioEdge;
                 var sn1 = se.NodeFrom;
                 var sn2 = se.NodeTo;
-                if ((sn1 != null) && (sn2 != null))
+                if (sn1 is not null && sn2 is not null)
                 {
                     var dirp = sn2.Position - sn1.Position;
                     float dl = dirp.Length();
@@ -1533,8 +1544,8 @@ namespace CodeWalker
                     Vector3 dup = Vector3.UnitZ;
                     var aori = Quaternion.Invert(Quaternion.RotationLookAtRH(dir, dup));
                     float arrowrad = 0.25f;
-                    float arrowlen = Math.Max(dl - arrowrad*5.0f, 0);
-                    Renderer.RenderSelectionArrowOutline(sn1.Position, -Vector3.UnitZ, Vector3.UnitY, aori, arrowlen, arrowrad, cblu);
+                    float arrowlen = Math.Max(dl - arrowrad * 5.0f, 0);
+                    Renderer.RenderSelectionArrowOutline(sn1.Position, -Vector3.UnitZ, in Vector3.UnitY, in aori, arrowlen, arrowrad, cblu);
                 }
             }
             if (selectionItem.MloEntityDef != null)
@@ -1543,8 +1554,7 @@ namespace CodeWalker
                 bbmax = selectionItem.AABB.Maximum;
                 var mlo = selectionItem.MloEntityDef;
                 var mlop = mlo.Position;
-                var mloa = mlo.Archetype as MloArchetype;
-                if (mloa != null)
+                if (mlo.Archetype is MloArchetype mloa)
                 {
                     VertexTypePC p1 = new VertexTypePC();
                     VertexTypePC p2 = new VertexTypePC();
@@ -1573,16 +1583,23 @@ namespace CodeWalker
                     }
                     if (mloa.rooms != null)
                     {
-                        MapBox wbox = new MapBox();
-                        wbox.Scale = Vector3.One;
+                        MapBox wbox = new MapBox
+                        {
+                            Scale = Vector3.One
+                        };
                         for (int ir = 0; ir < mloa.rooms.Length; ir++)
                         {
                             var room = mloa.rooms[ir];
 
-                            wbox.CamRelPos = mlop - camera.Position;
-                            wbox.BBMin = room._Data.bbMin;// + offset;
-                            wbox.BBMax = room._Data.bbMax;// + offset;
-                            wbox.Orientation = mlo.Orientation;
+                            wbox = new MapBox
+                            {
+                                Scale = Vector3.One,
+                                CamRelPos = mlop - camera.Position,
+                                BBMin = room._Data.bbMin,// + offset;
+                                BBMax = room._Data.bbMax,// + offset;
+                                Orientation = mlo.Orientation,
+                            };
+
                             if ((ir == 0) || (room.RoomName == "limbo"))
                             {
                                 bbmin = room._Data.bbMin;
@@ -1591,8 +1608,14 @@ namespace CodeWalker
                             }
                             else
                             {
-                                wbox.BBMin = room.BBMin_CW; //hack method to use CW calculated room AABBs, 
-                                wbox.BBMax = room.BBMax_CW; //R* ones are right size, but wrong position??
+                                wbox = new MapBox
+                                {
+                                    Scale = Vector3.One,
+                                    CamRelPos = mlop - camera.Position,
+                                    BBMin = room.BBMin_CW,//hack method to use CW calculated room AABBs, 
+                                    BBMax = room.BBMax_CW,//R* ones are right size, but wrong position??
+                                    Orientation = mlo.Orientation,
+                                };
                                 Renderer.WhiteBoxes.Add(wbox);
                             }
                         }
@@ -1671,19 +1694,23 @@ namespace CodeWalker
                 if (selectionItem.Audio.Shape == Dat151ZoneShape.Sphere)
                 {
                     mode = BoundsShaderMode.Sphere;
-                    MapSphere wsph = new MapSphere();
-                    wsph.CamRelPos = au.OuterPos - camera.Position;
-                    wsph.Radius = au.OuterRadius;
+                    MapSphere wsph = new MapSphere
+                    {
+                        CamRelPos = au.OuterPos - camera.Position,
+                        Radius = au.OuterRadius,
+                    };
                     Renderer.WhiteSpheres.Add(wsph);
                 }
                 else
                 {
-                    MapBox wbox = new MapBox();
-                    wbox.CamRelPos = au.OuterPos - camera.Position;
-                    wbox.BBMin = au.OuterMin;
-                    wbox.BBMax = au.OuterMax;
-                    wbox.Orientation = au.OuterOri;
-                    wbox.Scale = scale;
+                    MapBox wbox = new MapBox
+                    {
+                        CamRelPos = au.OuterPos - camera.Position,
+                        BBMin = au.OuterMin,
+                        BBMax = au.OuterMax,
+                        Orientation = au.OuterOri,
+                        Scale = scale,
+                    };
                     Renderer.WhiteBoxes.Add(wbox);
                 }
             }
@@ -1706,19 +1733,23 @@ namespace CodeWalker
 
             if (mode == BoundsShaderMode.Box)
             {
-                MapBox box = new MapBox();
-                box.CamRelPos = camrel;
-                box.BBMin = bbmin;
-                box.BBMax = bbmax;
-                box.Orientation = ori;
-                box.Scale = scale;
+                MapBox box = new MapBox
+                {
+                    CamRelPos = camrel,
+                    BBMin = bbmin,
+                    BBMax = bbmax,
+                    Orientation = ori,
+                    Scale = scale
+                };
                 Renderer.SelectionBoxes.Add(box);
             }
             else if (mode == BoundsShaderMode.Sphere)
             {
-                MapSphere sph = new MapSphere();
-                sph.CamRelPos = camrel;
-                sph.Radius = bsphrad;
+                MapSphere sph = new MapSphere
+                {
+                    CamRelPos = camrel,
+                    Radius = bsphrad
+                };
                 Renderer.SelectionSpheres.Add(sph);
             }
 
@@ -1782,13 +1813,13 @@ namespace CodeWalker
             float downlimit = 20.0f;
             Ray ray = new Ray(p, new Vector3(0, 0, -1.0f));
             ray.Position.Z += 0.1f;
-            SpaceRayIntersectResult hit = Space.RayIntersect(ray, downlimit);
+            SpaceRayIntersectResult hit = Space.RayIntersect(ref ray, downlimit);
             if (hit.Hit)
             {
                 return hit.Position;
             }
             ray.Position.Z += uplimit;
-            hit = Space.RayIntersect(ray, downlimit);
+            hit = Space.RayIntersect(ref ray, downlimit);
             if (hit.Hit)
             {
                 return hit.Position;
@@ -1972,7 +2003,7 @@ namespace CodeWalker
 
         public void UpdateCollisionBoundsGraphics(Bounds b)
         {
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 if (b is BoundBVH bvh)
                 {
@@ -2129,7 +2160,7 @@ namespace CodeWalker
         public Vector3 GetCameraPosition()
         {
             //currently used by ProjectForm when creating entities
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 return camera.Position;
             }
@@ -2137,7 +2168,7 @@ namespace CodeWalker
         public Vector3 GetCameraViewDir()
         {
             //currently used by ProjectForm when creating entities
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 return camera.ViewDirection;
             }
@@ -2174,86 +2205,58 @@ namespace CodeWalker
             MapBox b = new MapBox();
             Vector3 pos = Vector3.Zero;
             float size = 0.5f;
-            if (ext is MCExtensionDefLightEffect)
+            switch(ext)
             {
-                var le = ext as MCExtensionDefLightEffect;
-                pos = le.Data.offsetPosition;
+                case MCExtensionDefLightEffect le:
+                    pos = le.Data.offsetPosition;
+                    break;
+                case MCExtensionDefSpawnPointOverride spo:
+                    pos = spo.Data.offsetPosition;
+                    size = spo.Data.Radius;
+                    break;
+                case MCExtensionDefDoor door:
+                    pos = door.Data.offsetPosition;
+                    break;
+                case Mrage__phVerletClothCustomBounds cb:
+                    if (cb.CollisionData is not null && cb.CollisionData.Length > 0)
+                    {
+                        pos = cb.CollisionData[0].Data.Position;
+                    }
+                    break;
+                case MCExtensionDefParticleEffect pe:
+                    pos = pe.Data.offsetPosition;
+                    break;
+                case MCExtensionDefAudioCollisionSettings acs:
+                    pos = acs.Data.offsetPosition;
+                    break;
+                case MCExtensionDefAudioEmitter ae:
+                    pos = ae.Data.offsetPosition;
+                    break;
+                case MCExtensionDefSpawnPoint sp:
+                    pos = sp.Data.offsetPosition;
+                    break;
+                case MCExtensionDefExplosionEffect ee:
+                    pos = ee.Data.offsetPosition;
+                    break;
+                case MCExtensionDefLadder ld:
+                    pos = ld.Data.offsetPosition;
+                    break;
+                case MCExtensionDefBuoyancy bu:
+                    pos = bu.Data.offsetPosition;
+                    break;
+                case MCExtensionDefExpression exp:
+                    pos = exp.Data.offsetPosition;
+                    break;
+                case MCExtensionDefLightShaft ls:
+                    pos = ls.Data.offsetPosition;
+                    break;
+                case MCExtensionDefWindDisturbance wd:
+                    pos = wd.Data.offsetPosition;
+                    break;
+                case MCExtensionDefProcObject po:
+                    pos = po.Data.offsetPosition;
+                    break;
             }
-            else if (ext is MCExtensionDefSpawnPointOverride)
-            {
-                var spo = ext as MCExtensionDefSpawnPointOverride;
-                pos = spo.Data.offsetPosition;
-                size = spo.Data.Radius;
-            }
-            else if (ext is MCExtensionDefDoor)
-            {
-                var door = ext as MCExtensionDefDoor;
-                pos = door.Data.offsetPosition;
-            }
-            else if (ext is Mrage__phVerletClothCustomBounds)
-            {
-                var cb = ext as Mrage__phVerletClothCustomBounds;
-                if ((cb.CollisionData != null) && (cb.CollisionData.Length > 0))
-                {
-                    pos = cb.CollisionData[0].Data.Position;
-                }
-            }
-            else if (ext is MCExtensionDefParticleEffect)
-            {
-                var pe = ext as MCExtensionDefParticleEffect;
-                pos = pe.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefAudioCollisionSettings)
-            {
-                var acs = ext as MCExtensionDefAudioCollisionSettings;
-                pos = acs.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefAudioEmitter)
-            {
-                var ae = ext as MCExtensionDefAudioEmitter;
-                pos = ae.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefSpawnPoint)
-            {
-                var sp = ext as MCExtensionDefSpawnPoint;
-                pos = sp.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefExplosionEffect)
-            {
-                var ee = ext as MCExtensionDefExplosionEffect;
-                pos = ee.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefLadder)
-            {
-                var ld = ext as MCExtensionDefLadder;
-                pos = ld.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefBuoyancy)
-            {
-                var bu = ext as MCExtensionDefBuoyancy;
-                pos = bu.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefExpression)
-            {
-                var exp = ext as MCExtensionDefExpression;
-                pos = exp.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefLightShaft)
-            {
-                var ls = ext as MCExtensionDefLightShaft;
-                pos = ls.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefWindDisturbance)
-            {
-                var wd = ext as MCExtensionDefWindDisturbance;
-                pos = wd.Data.offsetPosition;
-            }
-            else if (ext is MCExtensionDefProcObject)
-            {
-                var po = ext as MCExtensionDefProcObject;
-                pos = po.Data.offsetPosition;
-            }
-
 
             b.BBMin = pos - size;
             b.BBMax = pos + size;
@@ -2265,7 +2268,8 @@ namespace CodeWalker
 
         private void SpawnTestEntity(bool cameraCenter = false)
         {
-            if (!Space.Inited) return;
+            if (!Space.Inited)
+                return;
 
             Vector3 dir = (cameraCenter ? camera.ViewDirection : camera.MouseRay.Direction);
             Vector3 ofs = (cameraCenter ? Vector3.Zero : camera.MouseRay.Position);
@@ -2277,29 +2281,33 @@ namespace CodeWalker
 
             if (arch == null) return;
 
-            CEntityDef cent = new CEntityDef();
-            cent.archetypeName = hash;
-            cent.rotation = new Vector4(0, 0, 0, 1);
-            cent.scaleXY = 1.0f;
-            cent.scaleZ = 1.0f;
-            cent.flags = 1572872;
-            cent.parentIndex = -1;
-            cent.lodDist = 200.0f;
-            cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
-            cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
-            cent.ambientOcclusionMultiplier = 255;
-            cent.artificialAmbientOcclusion = 255;
-            cent.position = pos;
+            CEntityDef cent = new CEntityDef
+            {
+                archetypeName = hash,
+                rotation = new Vector4(0, 0, 0, 1),
+                scaleXY = 1.0f,
+                scaleZ = 1.0f,
+                flags = 1572872,
+                parentIndex = -1,
+                lodDist = 200.0f,
+                lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD,
+                priorityLevel = rage__ePriorityLevel.PRI_REQUIRED,
+                ambientOcclusionMultiplier = 255,
+                artificialAmbientOcclusion = 255,
+                position = pos
+            };
 
-            YmapEntityDef ent = new YmapEntityDef(null, 0, ref cent);
+            YmapEntityDef ent = new YmapEntityDef(null, 0, cent);
 
             ent.SetArchetype(arch);
 
 
-            Entity e = new Entity();
-            e.Position = pos;
-            e.Velocity = vel;
-            e.Mass = 10.0f;
+            Entity e = new Entity
+            {
+                Position = pos,
+                Velocity = vel,
+                Mass = 10.0f
+            };
             e.Momentum = vel * e.Mass;
             e.EntityDef = ent;
             e.Radius = arch.BSRadius * 0.7f;
@@ -2307,7 +2315,7 @@ namespace CodeWalker
             e.Enabled = true;
             e.Lifetime = 20.0f;
 
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 Space.AddTemporaryEntity(e);
             }
@@ -2321,7 +2329,7 @@ namespace CodeWalker
             {
                 try
                 {
-                    Invoke(new Action(() => { SetControlMode(mode); }));
+                    Invoke(SetControlMode, mode);
                 }
                 catch (Exception ex)
                 {
@@ -2330,7 +2338,8 @@ namespace CodeWalker
                 return;
             }
 
-            if (mode == ControlMode) return;
+            if (mode == ControlMode)
+                return;
 
             bool wasfree = (ControlMode == WorldControlMode.Free || ControlBrushEnabled);
             bool isfree = (mode == WorldControlMode.Free || ControlBrushEnabled);
@@ -2387,7 +2396,7 @@ namespace CodeWalker
             //reset variables for beginning the mouse hit test
             CurMouseHit.Clear();
 
-         
+
             if (Input.CtrlPressed && ProjectForm != null && ProjectForm.CanPaintInstances())   // Get whether or not we can brush from the project form.
             {
                 ControlBrushEnabled = true;
@@ -2418,23 +2427,31 @@ namespace CodeWalker
 
 
         }
-        
+
+        public void GetSpaceMouseRay(out SpaceRayIntersectResult ret)
+        {
+            ret = new SpaceRayIntersectResult();
+            if (Space.Inited && Space.BoundsStore != null)
+            {
+                Ray mray = new Ray(camera.MouseRay.Position + camera.Position, camera.MouseRay.Direction);
+                ret = Space.RayIntersect(ref mray, float.MaxValue, collisionmeshlayers);
+            }
+        }
+
         public SpaceRayIntersectResult GetSpaceMouseRay()
         {
             SpaceRayIntersectResult ret = new SpaceRayIntersectResult();
             if (Space.Inited && Space.BoundsStore != null)
             {
-                Ray mray = new Ray();
-                mray.Position = camera.MouseRay.Position + camera.Position;
-                mray.Direction = camera.MouseRay.Direction;
-                return Space.RayIntersect(mray, float.MaxValue, collisionmeshlayers);
+                Ray mray = new Ray(camera.MouseRay.Position + camera.Position, camera.MouseRay.Direction);
+                return Space.RayIntersect(ref mray, float.MaxValue, collisionmeshlayers);
             }
             return ret;
         }
 
-        public SpaceRayIntersectResult Raycast(Ray ray)
+        public SpaceRayIntersectResult Raycast(ref Ray ray)
         {
-            return Space.RayIntersect(ray, float.MaxValue, collisionmeshlayers);
+            return Space.RayIntersect(ref ray, float.MaxValue, collisionmeshlayers);
         }
 
         private void UpdateMouseHits()
@@ -2478,7 +2495,7 @@ namespace CodeWalker
             //if ((SelectionMode == MapSelectionMode.Entity) && !MouseSelectEnabled) return; //performance improvement when not selecting entities...
 
             //test the selected entity/archetype for mouse hit.
-            
+
             //first test the bounding sphere for mouse hit..
             Quaternion orinv;
             Ray mraytrn;
@@ -2520,9 +2537,11 @@ namespace CodeWalker
             {
                 //transform the mouse ray into the entity space.
                 orinv = Quaternion.Invert(orientation);
-                mraytrn = new Ray();
-                mraytrn.Position = orinv.Multiply(camera.MouseRay.Position-camrel);
-                mraytrn.Direction = orinv.Multiply(camera.MouseRay.Direction);
+                mraytrn = new Ray
+                {
+                    Position = orinv.Multiply(camera.MouseRay.Position - camrel),
+                    Direction = orinv.Multiply(camera.MouseRay.Direction)
+                };
 
                 if (SelectionMode == MapSelectionMode.EntityExtension)
                 {
@@ -2555,7 +2574,7 @@ namespace CodeWalker
                 }
                 if (SelectionMode == MapSelectionMode.ArchetypeExtension)
                 {
-                    if ((arche != null) && (arche.Extensions != null))
+                    if (arche is not null && arche.Extensions.Length > 0)
                     {
                         for (int i = 0; i < arche.Extensions.Length; i++)
                         {
@@ -2589,7 +2608,9 @@ namespace CodeWalker
 
 
             if (!mousespherehit)
-            { return; } //no sphere hit, so no entity hit.
+            {
+                return;
+            } //no sphere hit, so no entity hit.
 
 
 
@@ -2611,9 +2632,11 @@ namespace CodeWalker
 
             //transform the mouse ray into the entity space.
             orinv = Quaternion.Invert(orientation);
-            mraytrn = new Ray();
-            mraytrn.Position = orinv.Multiply(camera.MouseRay.Position-camrel);
-            mraytrn.Direction = orinv.Multiply(camera.MouseRay.Direction);
+            mraytrn = new Ray
+            {
+                Position = orinv.Multiply(camera.MouseRay.Position - camrel),
+                Direction = orinv.Multiply(camera.MouseRay.Direction)
+            };
             hitdist = 0.0f;
 
 
@@ -2649,7 +2672,7 @@ namespace CodeWalker
                                     float r2 = b2.Length() * 0.5f;
                                     radsm = (r1 < (r2));// * 0.5f));
                                 }
-                                if ((nearer&&radsm) || radsm) usehit = true;
+                                if ((nearer && radsm) || radsm) usehit = true;
                             }
                         }
                         else if (j == 0) //no hit on model box
@@ -2691,7 +2714,7 @@ namespace CodeWalker
                             float r2 = CurMouseHit.Archetype.BSRadius;
                             radsm = (r1 <= (r2));// * 0.5f)); //prefer selecting smaller things
                         }
-                        if ((nearer&&radsm) || radsm)
+                        if ((nearer && radsm) || radsm)
                         {
                             outerhit = true;
                         }
@@ -2783,9 +2806,11 @@ namespace CodeWalker
             //find mouse hits for things like MLOs, time cycle mods, grass batches, and car generators in ymaps.
 
             BoundingBox bbox = new BoundingBox();
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
+            Ray mray = new Ray
+            {
+                Position = camera.MouseRay.Position + camera.Position,
+                Direction = camera.MouseRay.Direction
+            };
             float hitdist = float.MaxValue;
 
             float dmax = Renderer.renderboundsmaxdist;
@@ -2797,12 +2822,14 @@ namespace CodeWalker
                     var tcm = ymap.TimeCycleModifiers[i];
                     if ((((tcm.BBMin + tcm.BBMax) * 0.5f) - camera.Position).Length() > dmax) continue;
 
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = tcm.BBMin;
-                    mb.BBMax = tcm.BBMax;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = tcm.BBMin,
+                        BBMax = tcm.BBMax,
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
 
                     bbox.Minimum = mb.BBMin;
@@ -2821,18 +2848,22 @@ namespace CodeWalker
                 for (int i = 0; i < ymap.CarGenerators.Length; i++)
                 {
                     var cg = ymap.CarGenerators[i];
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = cg.Position - camera.Position;
-                    mb.BBMin = cg.BBMin;
-                    mb.BBMax = cg.BBMax;
-                    mb.Orientation = cg.Orientation;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = cg.Position - camera.Position,
+                        BBMin = cg.BBMin,
+                        BBMax = cg.BBMax,
+                        Orientation = cg.Orientation,
+                        Scale = Vector3.One,
+                    };
                     Renderer.BoundingBoxes.Add(mb);
 
                     Quaternion orinv = Quaternion.Invert(cg.Orientation);
-                    Ray mraytrn = new Ray();
-                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
-                    mraytrn.Direction = orinv.Multiply(mray.Direction);
+                    Ray mraytrn = new Ray
+                    {
+                        Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos),
+                        Direction = orinv.Multiply(mray.Direction)
+                    };
                     bbox.Minimum = mb.BBMin;
                     bbox.Maximum = mb.BBMax;
                     if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
@@ -2848,24 +2879,24 @@ namespace CodeWalker
                 }
 
             }
-            if ((SelectionMode == MapSelectionMode.MloInstance) && (ymap.MloEntities != null))
+            if ((SelectionMode == MapSelectionMode.MloInstance))
             {
-                for (int i = 0; i < ymap.MloEntities.Length; i++)
+                foreach(var ent in ymap.MloEntities)
                 {
-                    var ent = ymap.MloEntities[i];
-                    if (SelectedItem.MloEntityDef == ent) continue;
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = ent.Position - camera.Position;
-                    mb.BBMin = /*ent?.BBMin ??*/ new Vector3(-1.5f);
-                    mb.BBMax = /*ent?.BBMax ??*/ new Vector3(1.5f);
-                    mb.Orientation = ent?.Orientation ?? Quaternion.Identity;
-                    mb.Scale = /*ent?.Scale ??*/ Vector3.One;
+                    if (SelectedItem.MloEntityDef == ent)
+                        continue;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = ent.Position - camera.Position,
+                        BBMin = /*ent?.BBMin ??*/ new Vector3(-1.5f),
+                        BBMax = /*ent?.BBMax ??*/ new Vector3(1.5f),
+                        Orientation = ent?.Orientation ?? Quaternion.Identity,
+                        Scale = /*ent?.Scale ??*/ Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
 
                     Quaternion orinv = Quaternion.Invert(mb.Orientation);
-                    Ray mraytrn = new Ray();
-                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
-                    mraytrn.Direction = orinv.Multiply(mray.Direction);
+                    Ray mraytrn = new Ray(orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos), orinv.Multiply(mray.Direction));
                     bbox.Minimum = mb.BBMin;
                     bbox.Maximum = mb.BBMax;
                     if (mraytrn.Intersects(ref bbox, out hitdist) && (hitdist < CurMouseHit.HitDist) && (hitdist > 0))
@@ -2885,12 +2916,14 @@ namespace CodeWalker
                     var gb = ymap.GrassInstanceBatches[i];
                     if ((gb.Position - camera.Position).Length() > dmax) continue;
 
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = gb.AABBMin;
-                    mb.BBMax = gb.AABBMax;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = gb.AABBMin,
+                        BBMax = gb.AABBMax,
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
 
                     bbox.Minimum = mb.BBMin;
@@ -2910,12 +2943,14 @@ namespace CodeWalker
                 if ((((ll.BBMin + ll.BBMax) * 0.5f) - camera.Position).Length() <= dmax)
                 {
 
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = ll.BBMin;
-                    mb.BBMax = ll.BBMax;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = ll.BBMin,
+                        BBMax = ll.BBMax,
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
 
                     if (ll.BVH != null)
@@ -2929,12 +2964,14 @@ namespace CodeWalker
                 var dll = ymap.DistantLODLights;
                 if ((((dll.BBMin + dll.BBMax) * 0.5f) - camera.Position).Length() <= dmax)
                 {
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = dll.BBMin;
-                    mb.BBMax = dll.BBMax;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = dll.BBMin,
+                        BBMax = dll.BBMax,
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
                 }
             }
@@ -2947,18 +2984,22 @@ namespace CodeWalker
 
                     Renderer.RenderBasePath(bo);
 
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = bo.Position - camera.Position;
-                    mb.BBMin = bo.BBMin;
-                    mb.BBMax = bo.BBMax;
-                    mb.Orientation = bo.Orientation;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = bo.Position - camera.Position,
+                        BBMin = bo.BBMin,
+                        BBMax = bo.BBMax,
+                        Orientation = bo.Orientation,
+                        Scale = Vector3.One
+                    };
                     //Renderer.BoundingBoxes.Add(mb);
 
                     Quaternion orinv = Quaternion.Invert(bo.Orientation);
-                    Ray mraytrn = new Ray();
-                    mraytrn.Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos);
-                    mraytrn.Direction = orinv.Multiply(mray.Direction);
+                    Ray mraytrn = new Ray
+                    {
+                        Position = orinv.Multiply(camera.MouseRay.Position - mb.CamRelPos),
+                        Direction = orinv.Multiply(mray.Direction)
+                    };
                     bbox.Minimum = mb.BBMin;
                     bbox.Maximum = mb.BBMax;
                     if (mraytrn.Intersects(ref bbox, out float hd) && (hd < CurMouseHit.HitDist) && (hd > 0))
@@ -2997,26 +3038,30 @@ namespace CodeWalker
         private void UpdateMouseHits<T>(List<T> waterquads) where T : BaseWaterQuad
         {
             BoundingBox bbox = new BoundingBox();
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
+            Ray mray = new Ray
+            {
+                Position = camera.MouseRay.Position + camera.Position,
+                Direction = camera.MouseRay.Direction
+            };
             float hitdist;
 
 
             foreach (T quad in waterquads)
             {
-                MapBox mb = new MapBox();
-                mb.CamRelPos = -camera.Position;
-                mb.BBMin = new Vector3(quad.minX, quad.minY, quad.z ?? 0);
-                mb.BBMax = new Vector3(quad.maxX, quad.maxY, quad.z ?? 0);
-                mb.Orientation = Quaternion.Identity;
-                mb.Scale = Vector3.One;
+                MapBox mb = new MapBox
+                {
+                    CamRelPos = -camera.Position,
+                    BBMin = new Vector3(quad.minX, quad.minY, quad.z ?? 0),
+                    BBMax = new Vector3(quad.maxX, quad.maxY, quad.z ?? 0),
+                    Orientation = Quaternion.Identity,
+                    Scale = Vector3.One
+                };
                 Renderer.BoundingBoxes.Add(mb);
 
                 bbox.Minimum = mb.BBMin;
                 bbox.Maximum = mb.BBMax;
 
-                if(mray.Intersects(ref bbox, out hitdist) && hitdist > 0 && hitdist <= CurMouseHit.HitDist)
+                if (mray.Intersects(ref bbox, out hitdist) && hitdist > 0 && hitdist <= CurMouseHit.HitDist)
                 {
                     float curSize = CurMouseHit.AABB.Size.X * CurMouseHit.AABB.Size.Y;
                     float newSize = bbox.Size.X * bbox.Size.Y;
@@ -3037,9 +3082,11 @@ namespace CodeWalker
         {
             if (SelectionMode != MapSelectionMode.NavMesh) return;
 
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
+            Ray mray = new Ray
+            {
+                Position = camera.MouseRay.Position + camera.Position,
+                Direction = camera.MouseRay.Direction
+            };
 
             foreach (var ynv in ynvs)
             {
@@ -3048,12 +3095,14 @@ namespace CodeWalker
                     if (ynv.Nav == null) continue;
                     if (ynv.Nav.SectorTree == null) continue;
 
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = ynv.Nav.SectorTree.AABBMin.XYZ();
-                    mb.BBMax = ynv.Nav.SectorTree.AABBMax.XYZ();
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = ynv.Nav.SectorTree.AABBMin.XYZ(),
+                        BBMax = ynv.Nav.SectorTree.AABBMax.XYZ(),
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
                 }
 
@@ -3064,20 +3113,22 @@ namespace CodeWalker
                 //if ((CurMouseHit.NavPoint != null) || (CurMouseHit.NavPortal != null)) continue;
                 if ((ynv.Nav != null) && (ynv.Vertices != null) && (ynv.Indices != null) && (ynv.Polys != null))
                 {
-                    UpdateMouseHits(ynv, ynv.Nav.SectorTree, ynv.Nav.SectorTree, ref mray);
+                    UpdateMouseHits(ynv, ynv.Nav.SectorTree, ynv.Nav.SectorTree, in mray);
                 }
             }
 
         }
-        private void UpdateMouseHits(YnvFile ynv, NavMeshSector navsector, NavMeshSector rootsec, ref Ray mray)
+        private void UpdateMouseHits(YnvFile ynv, NavMeshSector navsector, NavMeshSector rootsec, in Ray mray)
         {
             if (navsector == null) return;
 
             float hitdist = float.MaxValue;
 
-            BoundingBox bbox = new BoundingBox();
-            bbox.Minimum = navsector.AABBMin.XYZ();
-            bbox.Maximum = navsector.AABBMax.XYZ();
+            BoundingBox bbox = new BoundingBox
+            {
+                Minimum = navsector.AABBMin.XYZ(),
+                Maximum = navsector.AABBMax.XYZ()
+            };
 
             if (rootsec != null) //apparently the Z values are incorrect :(
             {
@@ -3100,25 +3151,27 @@ namespace CodeWalker
 
                 if (navsector.SubTree1 != null)
                 {
-                    UpdateMouseHits(ynv, navsector.SubTree1, rootsec, ref mray);
+                    UpdateMouseHits(ynv, navsector.SubTree1, rootsec, in mray);
                 }
                 if (navsector.SubTree2 != null)
                 {
-                    UpdateMouseHits(ynv, navsector.SubTree2, rootsec, ref mray);
+                    UpdateMouseHits(ynv, navsector.SubTree2, rootsec, in mray);
                 }
                 if (navsector.SubTree3 != null)
                 {
-                    UpdateMouseHits(ynv, navsector.SubTree3, rootsec, ref mray);
+                    UpdateMouseHits(ynv, navsector.SubTree3, rootsec, in mray);
                 }
                 if (navsector.SubTree4 != null)
                 {
-                    UpdateMouseHits(ynv, navsector.SubTree4, rootsec, ref mray);
+                    UpdateMouseHits(ynv, navsector.SubTree4, rootsec, in mray);
                 }
                 if ((navsector.Data != null) && (navsector.Data.PolyIDs != null))
                 {
-                    BoundingBox cbox = new BoundingBox();
-                    cbox.Minimum = bbox.Minimum - camera.Position;
-                    cbox.Maximum = bbox.Maximum - camera.Position;
+                    BoundingBox cbox = new BoundingBox
+                    {
+                        Minimum = bbox.Minimum - camera.Position,
+                        Maximum = bbox.Maximum - camera.Position
+                    };
 
                     var polys = ynv.Polys;
                     var polyids = navsector.Data.PolyIDs;
@@ -3176,9 +3229,11 @@ namespace CodeWalker
         {
             if (SelectionMode != MapSelectionMode.Path) return;
 
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
+            Ray mray = new Ray
+            {
+                Position = camera.MouseRay.Position + camera.Position,
+                Direction = camera.MouseRay.Direction
+            };
 
             foreach (var ynd in ynds)
             {
@@ -3186,12 +3241,14 @@ namespace CodeWalker
                 {
                     float minz = (ynd.BVH != null) ? ynd.BVH.Box.Minimum.Z : 0.0f;
                     float maxz = (ynd.BVH != null) ? ynd.BVH.Box.Maximum.Z : 0.0f;
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = new Vector3(ynd.BBMin.X, ynd.BBMin.Y, minz);
-                    mb.BBMax = new Vector3(ynd.BBMax.X, ynd.BBMax.Y, maxz);
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = new Vector3(ynd.BBMin.X, ynd.BBMin.Y, minz),
+                        BBMax = new Vector3(ynd.BBMax.X, ynd.BBMax.Y, maxz),
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
                 }
 
@@ -3258,9 +3315,11 @@ namespace CodeWalker
         {
             if (SelectionMode != MapSelectionMode.TrainTrack) return;
 
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
+            Ray mray = new Ray
+            {
+                Position = camera.MouseRay.Position + camera.Position,
+                Direction = camera.MouseRay.Direction
+            };
 
             foreach (var track in tracks)
             {
@@ -3295,12 +3354,15 @@ namespace CodeWalker
                         float dl = dv.Length();
                         Vector3 dir = dv * (1.0f / dl);
                         Vector3 dup = Vector3.UnitZ;
-                        MapBox mb = new MapBox();
-                        mb.CamRelPos = n.Position - camera.Position;
-                        mb.BBMin = new Vector3(-linkrad, -linkrad, 0.0f);
-                        mb.BBMax = new Vector3(linkrad, linkrad, dl);
-                        mb.Orientation = Quaternion.Invert(Quaternion.RotationLookAtRH(dir, dup));
-                        mb.Scale = Vector3.One;
+                        MapBox mb = new MapBox
+                        {
+                            CamRelPos = n.Position - camera.Position,
+                            BBMin = new Vector3(-linkrad, -linkrad, 0.0f),
+                            BBMax = new Vector3(linkrad, linkrad, dl),
+                            Orientation = Quaternion.Invert(Quaternion.RotationLookAtRH(dir, dup)),
+                            Scale = Vector3.One,
+                        };
+
                         Renderer.BoundingBoxes.Add(mb);
                     }
                 }
@@ -3311,9 +3373,11 @@ namespace CodeWalker
         {
             if (SelectionMode != MapSelectionMode.Scenario) return;
 
-            Ray mray = new Ray();
-            mray.Position = camera.MouseRay.Position + camera.Position;
-            mray.Direction = camera.MouseRay.Direction;
+            Ray mray = new Ray
+            {
+                Position = camera.MouseRay.Position + camera.Position,
+                Direction = camera.MouseRay.Direction
+            };
 
             foreach (var scenario in scenarios)
             {
@@ -3322,12 +3386,14 @@ namespace CodeWalker
 
                 if (renderscenariobounds)
                 {
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = sr?.BVH?.Box.Minimum ?? Vector3.Zero;
-                    mb.BBMax = sr?.BVH?.Box.Maximum ?? Vector3.Zero;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = sr?.BVH?.Box.Minimum ?? Vector3.Zero,
+                        BBMax = sr?.BVH?.Box.Maximum ?? Vector3.Zero,
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     Renderer.BoundingBoxes.Add(mb);
                 }
 
@@ -3368,12 +3434,14 @@ namespace CodeWalker
                 var sr = SelectedItem.ScenarioNode.Ymt.ScenarioRegion;
                 //if (renderscenariobounds)
                 {
-                    MapBox mb = new MapBox();
-                    mb.CamRelPos = -camera.Position;
-                    mb.BBMin = sr?.BVH?.Box.Minimum ?? Vector3.Zero;
-                    mb.BBMax = sr?.BVH?.Box.Maximum ?? Vector3.Zero;
-                    mb.Orientation = Quaternion.Identity;
-                    mb.Scale = Vector3.One;
+                    MapBox mb = new MapBox
+                    {
+                        CamRelPos = -camera.Position,
+                        BBMin = sr?.BVH?.Box.Minimum ?? Vector3.Zero,
+                        BBMax = sr?.BVH?.Box.Maximum ?? Vector3.Zero,
+                        Orientation = Quaternion.Identity,
+                        Scale = Vector3.One
+                    };
                     if (renderscenariobounds)
                     {
                         Renderer.HilightBoxes.Add(mb);
@@ -3389,12 +3457,15 @@ namespace CodeWalker
                 {
 
                     //hilight the cluster itself
-                    MapBox mb = new MapBox();
-                    mb.Scale = Vector3.One;
-                    mb.BBMin = new Vector3(-0.5f);
-                    mb.BBMax = new Vector3(0.5f);
-                    mb.CamRelPos = ncl.Position - camera.Position;
-                    mb.Orientation = Quaternion.Identity;
+                    MapBox mb = new MapBox
+                    {
+                        Scale = Vector3.One,
+                        BBMin = new Vector3(-0.5f),
+                        BBMax = new Vector3(0.5f),
+                        CamRelPos = ncl.Position - camera.Position,
+                        Orientation = Quaternion.Identity,
+                    };
+
                     Renderer.HilightBoxes.Add(mb);
 
 
@@ -3404,12 +3475,14 @@ namespace CodeWalker
                         foreach (var clpoint in ncl.Points.MyPoints)
                         {
                             if (clpoint == n.ClusterMyPoint) continue; //don't highlight the selected node...
-                            mb = new MapBox();
-                            mb.Scale = Vector3.One;
-                            mb.BBMin = new Vector3(-0.5f);
-                            mb.BBMax = new Vector3(0.5f);
-                            mb.CamRelPos = clpoint.Position - camera.Position;
-                            mb.Orientation = clpoint.Orientation;
+                            mb = new MapBox
+                            {
+                                Scale = Vector3.One,
+                                BBMin = new Vector3(-0.5f),
+                                BBMax = new Vector3(0.5f),
+                                CamRelPos = clpoint.Position - camera.Position,
+                                Orientation = clpoint.Orientation,
+                            };
                             Renderer.BoundingBoxes.Add(mb);
                         }
                     }
@@ -3423,29 +3496,35 @@ namespace CodeWalker
 
 
         }
-        private void UpdateMouseHits(PathBVHNode pathbvhnode, ref Ray mray)
+        private void UpdateMouseHits(PathBVHNode pathbvhnode, in Ray mray)
         {
             float nrad = 0.5f;
             float hitdist = float.MaxValue;
 
-            BoundingSphere bsph = new BoundingSphere();
-            bsph.Radius = nrad;
+            BoundingSphere bsph = new BoundingSphere
+            {
+                Radius = nrad
+            };
 
-            BoundingBox bbox = new BoundingBox();
-            bbox.Minimum = pathbvhnode.Box.Minimum - nrad;
-            bbox.Maximum = pathbvhnode.Box.Maximum + nrad;
+            BoundingBox bbox = new BoundingBox
+            {
+                Minimum = pathbvhnode.Box.Minimum - nrad,
+                Maximum = pathbvhnode.Box.Maximum + nrad
+            };
 
-            BoundingBox nbox = new BoundingBox();
-            nbox.Minimum = new Vector3(-nrad);
-            nbox.Maximum = new Vector3(nrad);
+            BoundingBox nbox = new BoundingBox
+            {
+                Minimum = new Vector3(-nrad),
+                Maximum = new Vector3(nrad)
+            };
 
             float fhd;
             if (mray.Intersects(ref bbox, out fhd)) //ray intersects this node... check children for hits!
             {
                 if ((pathbvhnode.Node1 != null) && (pathbvhnode.Node2 != null)) //node is split. recurse
                 {
-                    UpdateMouseHits(pathbvhnode.Node1, ref mray);
-                    UpdateMouseHits(pathbvhnode.Node2, ref mray);
+                    UpdateMouseHits(pathbvhnode.Node1, in mray);
+                    UpdateMouseHits(pathbvhnode.Node2, in mray);
                 }
                 else if (pathbvhnode.Nodes != null) //leaf node. test contaned pathnodes
                 {
@@ -3470,9 +3549,9 @@ namespace CodeWalker
             }
         }
 
-        public void SelectObject(object obj, object parent = null, bool addSelection = false)
+        public void SelectObject(object? obj, object? parent = null, bool addSelection = false)
         {
-            if (obj == null)
+            if (obj is null)
             {
                 SelectItem(null, addSelection);
                 return;
@@ -3529,7 +3608,7 @@ namespace CodeWalker
             bool change = false;
             if (mhit != null)
             {
-                change = SelectedItem.CheckForChanges(mhitv); 
+                change = SelectedItem.CheckForChanges(mhitv);
             }
             else
             {
@@ -3640,33 +3719,31 @@ namespace CodeWalker
                 return;
             }
 
-            lock (Renderer.RenderSyncRoot) //drawflags is used when rendering.. need that lock
+
+            if (mhit.HasValue)
             {
-                if (mhit.HasValue)
+                SelectedItem = mhitv;
+            }
+            else
+            {
+                SelectedItem.Clear();
+            }
+
+            if (change)
+            {
+                if (!addSelection)
                 {
-                    SelectedItem = mhitv;
-                }
-                else
-                {
-                    SelectedItem.Clear();
+                    UpdateSelectionUI(true);
                 }
 
-                if (change)
+                Widget.Visible = SelectedItem.CanShowWidget;
+                if (Widget.Visible)
                 {
-                    if (!addSelection)
-                    {
-                        UpdateSelectionUI(true);
-                    }
-
-                    Widget.Visible = SelectedItem.CanShowWidget;
-                    if (Widget.Visible)
-                    {
-                        Widget.Position = SelectedItem.WidgetPosition;
-                        Widget.Rotation = SelectedItem.WidgetRotation;
-                        Widget.RotationWidget.EnableAxes = SelectedItem.WidgetRotationAxes;
-                        Widget.ScaleWidget.LockXY = SelectedItem.WidgetScaleLockXY;
-                        Widget.Scale = SelectedItem.WidgetScale;
-                    }
+                    Widget.Position = SelectedItem.WidgetPosition;
+                    Widget.Rotation = SelectedItem.WidgetRotation;
+                    Widget.RotationWidget.EnableAxes = SelectedItem.WidgetRotationAxes;
+                    Widget.ScaleWidget.LockXY = SelectedItem.WidgetScaleLockXY;
+                    Widget.Scale = SelectedItem.WidgetScale;
                 }
             }
             if (notifyProject && change && (ProjectForm != null) && (!addSelection || manualSelection))
@@ -3723,11 +3800,11 @@ namespace CodeWalker
                 {
                     if (wait)
                     {
-                        Invoke(new Action(() => { UpdateSelectionUI(wait); }));
+                        Invoke(UpdateSelectionUI, wait);
                     }
                     else
                     {
-                        BeginInvoke(new Action(() => { UpdateSelectionUI(wait); }));
+                        BeginInvoke(UpdateSelectionUI, wait);
                     }
                 }
                 else
@@ -3740,7 +3817,9 @@ namespace CodeWalker
                     }
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void SetSelectionUI(MapSelection item)
         {
@@ -4006,7 +4085,8 @@ namespace CodeWalker
         }
         private void AddSelectionDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check)
         {
-            if (models == null) return;
+            if (models is null)
+                return;
 
             for (int mi = 0; mi < models.Length; mi++)
             {
@@ -4024,7 +4104,8 @@ namespace CodeWalker
                     Renderer.SelectionModelDrawFlags[model] = false;
                 }
 
-                if (model.Geometries == null) continue;
+                if (model.Geometries is null || model.Geometries.Length == 0)
+                    continue;
 
                 foreach (var geom in model.Geometries)
                 {
@@ -4045,12 +4126,10 @@ namespace CodeWalker
                         {
                             var hash = pl.Hashes[ip];
                             var parm = pl.Parameters[ip];
-                            var tex = parm.Data as TextureBase;
-                            if (tex != null)
+                            if (parm.Data is TextureBase tex)
                             {
-                                var t = tex as Texture;
                                 var tstr = tex.Name.Trim();
-                                if (t != null)
+                                if (tex is Texture t)
                                 {
                                     tstr = string.Format("{0} ({1}x{2}, embedded)", tex.Name, t.Width, t.Height);
                                 }
@@ -4060,7 +4139,7 @@ namespace CodeWalker
                         }
                         tgnode.Expand();
                     }
-                    
+
                 }
 
                 mnode.Expand();
@@ -4154,7 +4233,7 @@ namespace CodeWalker
                 }
                 ToolbarProjectWindowButton.Checked = true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
@@ -4227,7 +4306,7 @@ namespace CodeWalker
         }
 
 
-        private void LoadWorld()
+        private async ValueTask LoadWorldAsync()
         {
 
             UpdateStatus("Loading timecycles...");
@@ -4252,7 +4331,7 @@ namespace CodeWalker
             Trains.Init(GameFileCache, UpdateStatus);
 
             UpdateStatus("Loading scenarios...");
-            Scenarios.Init(GameFileCache, UpdateStatus, timecycle);
+            await Scenarios.InitAsync(GameFileCache, UpdateStatus, timecycle);
 
             UpdateStatus("Loading popzones...");
             PopZones.Init(GameFileCache, UpdateStatus);
@@ -4267,7 +4346,7 @@ namespace CodeWalker
             AudioZones.Init(GameFileCache, UpdateStatus);
 
             UpdateStatus("Loading world...");
-            Space.Init(GameFileCache, UpdateStatus);
+            await Space.InitAsync(GameFileCache, UpdateStatus);
 
             UpdateStatus("World loaded");
 
@@ -4277,20 +4356,22 @@ namespace CodeWalker
 
         private void SetDlcLevel(string dlc, bool enable)
         {
-            if (!initialised) return;
+            if (!initialised)
+                return;
             Cursor = Cursors.WaitCursor;
-            Task.Run(() =>
+            _ = Task.Run(async () =>
             {
-                lock (Renderer.RenderSyncRoot)
+                using (Renderer.RenderSyncRoot.WaitDisposable())
                 {
                     if (GameFileCache.SetDlcLevel(dlc, enable))
                     {
-                        LoadWorld();
+                        await LoadWorldAsync();
                     }
                 }
-                Invoke(new Action(()=> {
+                Invoke(() =>
+                {
                     Cursor = Cursors.Default;
-                }));
+                });
             });
         }
 
@@ -4298,25 +4379,26 @@ namespace CodeWalker
         {
             if (!initialised) return;
             Cursor = Cursors.WaitCursor;
-            Task.Run(() =>
+            _ = Task.Run(async () =>
             {
-                lock (Renderer.RenderSyncRoot)
+                using (Renderer.RenderSyncRoot.WaitDisposable())
                 {
                     if (GameFileCache.SetModsEnabled(enable))
                     {
                         UpdateDlcListComboBox(GameFileCache.DlcNameList);
 
-                        LoadWorld();
+                        await LoadWorldAsync();
                     }
                 }
-                Invoke(new Action(() => {
+                Invoke(new Action(() =>
+                {
                     Cursor = Cursors.Default;
                 }));
             });
         }
 
 
-        private async void ContentThread()
+        private async Task ContentThread()
         {
             try
             {
@@ -4353,7 +4435,7 @@ namespace CodeWalker
                 }
                 if (!GameFileCache.IsInited)
                 {
-                    GameFileCache.Init();
+                    await GameFileCache.InitAsync();
                 }
 
                 UpdateDlcListComboBox(GameFileCache.DlcNameList);
@@ -4362,7 +4444,7 @@ namespace CodeWalker
 
 
 
-                LoadWorld();
+                await LoadWorldAsync();
 
 
 
@@ -4380,7 +4462,7 @@ namespace CodeWalker
 
                             if (!rcItemsPending)
                             {
-                                await Task.Delay(ActiveForm == null ? 50 : 1, CancellationToken).ConfigureAwait(false);
+                                await Task.Delay(ActiveForm == null ? 50 : 2, CancellationToken).ConfigureAwait(false);
                             }
                         }
                     }
@@ -4402,7 +4484,7 @@ namespace CodeWalker
 
                             if (!fcItemsPending)
                             {
-                                await Task.Delay(ActiveForm == null ? 50 : 1, CancellationToken).ConfigureAwait(false);
+                                await Task.Delay(ActiveForm == null ? 50 : 10, CancellationToken).ConfigureAwait(false);
                             }
                         }
                     }
@@ -4419,7 +4501,7 @@ namespace CodeWalker
                     Console.WriteLine("GameFileCache ContentThread stopped");
                 });
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Exception occured in content thread:\n{ex}");
             }
@@ -4436,22 +4518,23 @@ namespace CodeWalker
 
         private void UpdateStatus(string text)
         {
+            var elapsed = lastStatusUpdate.Elapsed;
+            if (elapsed < updateInterval)
+                return;
+            lastStatusUpdate.Restart();
             try
             {
-                var elapsed = lastStatusUpdate.Elapsed;
-                if (elapsed < updateInterval)
-                    return;
-                lastStatusUpdate.Restart();
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { doUpdateStatus(text); }));
+                    BeginInvoke(doUpdateStatus, text);
                 }
                 else
                 {
                     doUpdateStatus(text);
                 }
             }
-            catch(Exception ex) {
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex);
             }
         }
@@ -4461,7 +4544,7 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateMousedLabel(text); }));
+                    BeginInvoke(UpdateMousedLabel, text);
                 }
                 else
                 {
@@ -4479,7 +4562,7 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateWeatherTypesComboBox(weather); }));
+                    BeginInvoke(UpdateWeatherTypesComboBox, weather);
                 }
                 else
                 {
@@ -4508,7 +4591,7 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateCloudTypesComboBox(clouds); }));
+                    BeginInvoke(UpdateCloudTypesComboBox, clouds);
                 }
                 else
                 {
@@ -4539,7 +4622,7 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateDlcListComboBox(dlcnames); }));
+                    BeginInvoke(UpdateDlcListComboBox, dlcnames);
                 }
                 else
                 {
@@ -4568,7 +4651,7 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { LogError(text); }));
+                    Invoke(LogError, text);
                 }
                 else
                 {
@@ -4577,7 +4660,9 @@ namespace CodeWalker
                     //MessageBox.Show(text);
                 }
             }
-            catch (Exception ex) { Console.WriteLine(ex); }
+            catch (Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -4589,14 +4674,16 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateMarkerSelectionPanel(); }));
+                    BeginInvoke(UpdateMarkerSelectionPanel);
                 }
                 else
                 {
                     UpdateMarkerSelectionPanel();
                 }
             }
-            catch (Exception ex) { Console.WriteLine(ex); }
+            catch (Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void UpdateMarkerSelectionPanel()
         {
@@ -4820,10 +4907,10 @@ namespace CodeWalker
             Renderer.individualcloudfrag = s.Clouds;
             NaturalAmbientLightCheckBox.Checked = s.NatrualAmbientLight;
             ArtificialAmbientLightCheckBox.Checked = s.ArtificialAmbientLight;
-            
+
             SetTimeOfDay(s.TimeOfDay);
             Renderer.SetWeatherType(s.Weather);
-            
+
 
             EnableModsCheckBox.Checked = s.EnableMods;
             DlcLevelComboBox.Text = s.DLC;
@@ -4907,7 +4994,8 @@ namespace CodeWalker
 
         private void MarkUndoStart(Widget w)
         {
-            if (!SelectedItem.CanMarkUndo()) return;
+            if (!SelectedItem.CanMarkUndo())
+                return;
             if (Widget is TransformWidget)
             {
                 UndoStartPosition = Widget.Position;
@@ -4918,9 +5006,8 @@ namespace CodeWalker
         private void MarkUndoEnd(Widget w)
         {
             if (!SelectedItem.CanMarkUndo()) return;
-            TransformWidget tw = Widget as TransformWidget;
             UndoStep s = null;
-            if (tw != null)
+            if (Widget is TransformWidget tw)
             {
                 s = SelectedItem.CreateUndoStep(tw.Mode, UndoStartPosition, UndoStartRotation, UndoStartScale, this, EditEntityPivot);
             }
@@ -4995,7 +5082,7 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { EnableCacheDependentUI(); }));
+                    BeginInvoke(EnableCacheDependentUI);
                 }
                 else
                 {
@@ -5017,7 +5104,7 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { EnableDLCModsUI(); }));
+                    BeginInvoke(EnableDLCModsUI);
                 }
                 else
                 {
@@ -5026,7 +5113,9 @@ namespace CodeWalker
                     DlcLevelComboBox.Enabled = true;
                 }
             }
-            catch (Exception ex) { Console.WriteLine(ex); }
+            catch (Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -5119,91 +5208,91 @@ namespace CodeWalker
         }
 
 
-        private void New()
+        private async ValueTask New()
         {
             ShowProjectForm();
 
             if (ProjectForm.IsProjectLoaded)
             {
-                ProjectForm.NewYmap();
+                await ProjectForm.NewYmap();
             }
             else
             {
-                ProjectForm.NewProject();
+                await ProjectForm.NewProjectAsync();
             }
         }
-        private void NewProject()
+        private async ValueTask NewProject()
         {
             ShowProjectForm();
-            ProjectForm.NewProject();
+            await ProjectForm.NewProjectAsync();
         }
-        private void NewYmap()
+        private async ValueTask NewYmap()
         {
             ShowProjectForm();
-            ProjectForm.NewYmap();
+            await ProjectForm.NewYmap();
         }
-        private void NewYtyp()
+        private async ValueTask NewYtyp()
         {
             ShowProjectForm();
-            ProjectForm.NewYtyp();
+            await ProjectForm.NewYtyp();
         }
-        private void NewYbn()
+        private async ValueTask NewYbn()
         {
             ShowProjectForm();
-            ProjectForm.NewYbn();
+            await ProjectForm.NewYbn();
         }
-        private void NewYnd()
+        private async ValueTask NewYnd()
         {
             ShowProjectForm();
-            ProjectForm.NewYnd();
+            await ProjectForm.NewYnd();
         }
-        private void NewTrainTrack()
+        private async ValueTask NewTrainTrack()
         {
             ShowProjectForm();
-            ProjectForm.NewTrainTrack();
+            await ProjectForm.NewTrainTrack();
         }
-        private void NewScenario()
+        private async ValueTask NewScenario()
         {
             ShowProjectForm();
-            ProjectForm.NewScenario();
+            await ProjectForm.NewScenario();
         }
-        private void Open()
+        private async ValueTask Open()
         {
             ShowProjectForm();
 
             if (ProjectForm.IsProjectLoaded)
             {
-                ProjectForm.OpenFiles();
+                await ProjectForm.OpenFiles();
             }
             else
             {
-                ProjectForm.OpenProject();
+                await ProjectForm.OpenProject();
             }
         }
-        private void OpenProject()
+        private async ValueTask OpenProject()
         {
             ShowProjectForm();
-            ProjectForm.OpenProject();
+            await ProjectForm.OpenProject();
         }
-        private void OpenFiles()
+        private async ValueTask OpenFiles()
         {
             ShowProjectForm();
-            ProjectForm.OpenFiles();
+            await ProjectForm.OpenFiles();
         }
-        private void OpenFolder()
+        private async ValueTask OpenFolder()
         {
             ShowProjectForm();
-            ProjectForm.OpenFolder();
+            await ProjectForm.OpenFolder();
         }
-        private void Save()
+        private async ValueTask Save()
         {
             if (ProjectForm == null) return;
-            ProjectForm.Save();
+            await ProjectForm.Save();
         }
-        private void SaveAll()
+        private async ValueTask SaveAll()
         {
             if (ProjectForm == null) return;
-            ProjectForm.SaveAll();
+            await ProjectForm.SaveAll();
         }
 
 
@@ -5580,7 +5669,7 @@ namespace CodeWalker
             ToolbarRotateButton.Checked = false;
             ToolbarScaleButton.Checked = false;
 
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 switch (mode)
                 {
@@ -5611,14 +5700,13 @@ namespace CodeWalker
         {
             foreach (var child in ToolbarTransformSpaceButton.DropDownItems)
             {
-                var childi = child as ToolStripMenuItem;
-                if (childi != null)
+                if (child is ToolStripMenuItem childi)
                 {
                     childi.Checked = false;
                 }
             }
 
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 switch (space)
                 {
@@ -5679,8 +5767,7 @@ namespace CodeWalker
 
             foreach (var child in ToolbarSelectButton.DropDownItems)
             {
-                var childi = child as ToolStripMenuItem;
-                if (childi != null)
+                if (child is ToolStripMenuItem childi)
                 {
                     childi.Checked = false;
                 }
@@ -5784,8 +5871,7 @@ namespace CodeWalker
         {
             foreach (var child in ToolbarSnapButton.DropDownItems)
             {
-                var childi = child as ToolStripMenuItem;
-                if (childi != null)
+                if (child is ToolStripMenuItem childi)
                 {
                     childi.Checked = false;
                 }
@@ -5829,8 +5915,7 @@ namespace CodeWalker
 
             foreach (var child in ToolbarRotationSnappingButton.DropDownItems)
             {
-                var childi = child as ToolStripMenuItem;
-                if (childi != null)
+                if (child is ToolStripMenuItem childi)
                 {
                     childi.Checked = false;
                 }
@@ -5881,8 +5966,7 @@ namespace CodeWalker
         {
             foreach (var child in ToolbarCameraModeButton.DropDownItems)
             {
-                var childi = child as ToolStripMenuItem;
-                if (childi != null)
+                if (child is ToolStripMenuItem childi)
                 {
                     childi.Checked = false;
                 }
@@ -5943,9 +6027,11 @@ namespace CodeWalker
             {
                 try
                 {
-                    BeginInvoke(new Action(() => { ShowSubtitle(text, duration); }));
+                    BeginInvoke(ShowSubtitle, text, duration);
                 }
-                catch (Exception ex) { Console.WriteLine(ex); }
+                catch (Exception ex) {
+                    Console.WriteLine(ex);
+                }
                 return;
             }
 
@@ -5963,7 +6049,7 @@ namespace CodeWalker
         {
             float hour = minute / 60.0f;
             UpdateTimeOfDayLabel();
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 Renderer.SetTimeOfDay(hour);
             }
@@ -6069,7 +6155,7 @@ namespace CodeWalker
         private bool isRenderedLoaded = false;
         private async void WorldForm_Load(object sender, EventArgs e)
         {
-            await Init();
+            await InitAsync();
         }
 
         private void WorldForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -6129,7 +6215,8 @@ namespace CodeWalker
                                     MessageBox.Show("You cannot clone multiple path nodes at once", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                     GrabbedWidget.IsDragging = false;
                                     GrabbedWidget = null;
-                                } else
+                                }
+                                else
                                 {
                                     CloneItem();
                                 }
@@ -6614,7 +6701,7 @@ namespace CodeWalker
 
         private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.wireframe = WireframeCheckBox.Checked;
+            Renderer.Shaders.wireframe = WireframeCheckBox.Checked;
         }
 
         private void GrassCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -6691,7 +6778,7 @@ namespace CodeWalker
 
         private void PathsDepthClipCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.PathsDepthClip = PathsDepthClipCheckBox.Checked;
+            Renderer.Shaders.PathsDepthClip = PathsDepthClipCheckBox.Checked;
         }
 
         private void ErrorConsoleCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -6722,7 +6809,7 @@ namespace CodeWalker
             Cursor = Cursors.WaitCursor;
             Pauserendering = true;
 
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 try
                 {
@@ -6827,9 +6914,12 @@ namespace CodeWalker
 
         private void ShadowsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            if (Renderer.Shaders is null)
+                return;
+
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
-                Renderer.shaders.shadows = ShadowsCheckBox.Checked;
+                Renderer.Shaders.shadows = ShadowsCheckBox.Checked;
             }
         }
 
@@ -7068,42 +7158,42 @@ namespace CodeWalker
             {
                 default:
                 case "Default":
-                    Renderer.shaders.RenderMode = WorldRenderMode.Default;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.Default;
                     break;
                 case "Single texture":
-                    Renderer.shaders.RenderMode = WorldRenderMode.SingleTexture;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.SingleTexture;
                     TextureSamplerComboBox.Enabled = true;
                     TextureCoordsComboBox.Enabled = true;
                     break;
                 case "Vertex normals":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexNormals;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexNormals;
                     break;
                 case "Vertex tangents":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexTangents;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexTangents;
                     break;
                 case "Vertex colour 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 1;
                     break;
                 case "Vertex colour 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 2;
                     break;
                 case "Vertex colour 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 3;
                     break;
                 case "Texture coord 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 1;
                     break;
                 case "Texture coord 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 2;
                     break;
                 case "Texture coord 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 3;
                     break;
             }
         }
@@ -7112,7 +7202,7 @@ namespace CodeWalker
         {
             if (TextureSamplerComboBox.SelectedItem is ShaderParamNames)
             {
-                Renderer.shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
+                Renderer.Shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
             }
         }
 
@@ -7122,13 +7212,13 @@ namespace CodeWalker
             {
                 default:
                 case "Texture coord 1":
-                    Renderer.shaders.RenderTextureSamplerCoord = 1;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 1;
                     break;
                 case "Texture coord 2":
-                    Renderer.shaders.RenderTextureSamplerCoord = 2;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 2;
                     break;
                 case "Texture coord 3":
-                    Renderer.shaders.RenderTextureSamplerCoord = 3;
+                    Renderer.Shaders.RenderTextureSamplerCoord = 3;
                     break;
             }
 
@@ -7190,23 +7280,32 @@ namespace CodeWalker
 
         private void DeferredShadingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
-                Renderer.shaders.deferred = DeferredShadingCheckBox.Checked;
+                if (Renderer.Shaders is null)
+                    return;
+                Renderer.Shaders.deferred = DeferredShadingCheckBox.Checked;
             }
         }
 
         private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
-                Renderer.shaders.hdr = HDRRenderingCheckBox.Checked;
+                if (Renderer.Shaders is null)
+                    return;
+                Renderer.Shaders.hdr = HDRRenderingCheckBox.Checked;
             }
         }
 
         private void AnisotropicFilteringCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+            using (Renderer.RenderSyncRoot.WaitDisposable())
+            {
+                if (Renderer.Shaders is null)
+                    return;
+                Renderer.Shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+            }
         }
 
         private void WorldMaxLodComboBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -7275,7 +7374,7 @@ namespace CodeWalker
                 MessageBox.Show("Please close the Project Window before enabling or disabling mods.");
                 return;
             }
-            
+
             SetModsEnabled(EnableModsCheckBox.Checked);
         }
 
@@ -7284,7 +7383,11 @@ namespace CodeWalker
             if (!initialised) return;
             if (ProjectForm != null)
             {
-                MessageBox.Show("Please close the Project Window before enabling or disabling DLC.");
+                if (EnableDlcCheckBox.Checked != GameFileCache.EnableDlc)
+                {
+                    EnableDlcCheckBox.Checked = GameFileCache.EnableDlc;
+                    MessageBox.Show("Please close the Project Window before enabling or disabling DLC.");
+                }
                 return;
             }
 
@@ -7296,7 +7399,11 @@ namespace CodeWalker
             if (!initialised) return;
             if (ProjectForm != null)
             {
-                MessageBox.Show("Please close the Project Window before changing the DLC level.");
+                if (DlcLevelComboBox.SelectedIndex != DlcLevelComboBox.Items.IndexOf(GameFileCache.SelectedDlc))
+                {
+                    DlcLevelComboBox.SelectedIndex = DlcLevelComboBox.Items.IndexOf(GameFileCache.SelectedDlc);
+                    MessageBox.Show("Please close the Project Window before changing the DLC level.");
+                }
                 return;
             }
 
@@ -7374,7 +7481,7 @@ namespace CodeWalker
         {
             float det = ((float)MapViewDetailTrackBar.Value) * 0.1f;
             MapViewDetailLabel.Text = det.ToString("0.0#");
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 Renderer.MapViewDetail = det;
             }
@@ -7384,7 +7491,7 @@ namespace CodeWalker
         {
             float fov = FieldOfViewTrackBar.Value * 0.01f;
             FieldOfViewLabel.Text = fov.ToString("0.0#");
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 camera.FieldOfView = fov;
                 camera.UpdateProj = true;
@@ -7393,8 +7500,7 @@ namespace CodeWalker
 
         private void CloudParamComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            CloudAnimSetting setting = CloudParamComboBox.SelectedItem as CloudAnimSetting;
-            if (setting != null)
+            if (CloudParamComboBox.SelectedItem is CloudAnimSetting setting)
             {
                 float rng = setting.MaxValue - setting.MinValue;
                 float cval = (setting.CurrentValue - setting.MinValue) / rng;
@@ -7406,8 +7512,7 @@ namespace CodeWalker
 
         private void CloudParamTrackBar_Scroll(object sender, EventArgs e)
         {
-            CloudAnimSetting setting = CloudParamComboBox.SelectedItem as CloudAnimSetting;
-            if (setting != null)
+            if (CloudParamComboBox.SelectedItem is CloudAnimSetting setting)
             {
                 float rng = setting.MaxValue - setting.MinValue;
                 float fval = CloudParamTrackBar.Value / 200.0f;
@@ -7493,34 +7598,34 @@ namespace CodeWalker
             NewScenario();
         }
 
-        private void ToolbarOpenButton_ButtonClick(object sender, EventArgs e)
+        private async void ToolbarOpenButton_ButtonClick(object sender, EventArgs e)
         {
-            Open();
+            await Open();
         }
 
-        private void ToolbarOpenProjectButton_Click(object sender, EventArgs e)
+        private async void ToolbarOpenProjectButton_Click(object sender, EventArgs e)
         {
-            OpenProject();
+            await OpenProject();
         }
 
-        private void ToolbarOpenFilesButton_Click(object sender, EventArgs e)
+        private async void ToolbarOpenFilesButton_Click(object sender, EventArgs e)
         {
-            OpenFiles();
+            await OpenFiles();
         }
 
-        private void ToolbarOpenFolderButton_Click(object sender, EventArgs e)
+        private async void ToolbarOpenFolderButton_Click(object sender, EventArgs e)
         {
-            OpenFolder();
+            await OpenFolder();
         }
 
-        private void ToolbarSaveButton_Click(object sender, EventArgs e)
+        private async void ToolbarSaveButton_Click(object sender, EventArgs e)
         {
-            Save();
+            await Save();
         }
 
-        private void ToolbarSaveAllButton_Click(object sender, EventArgs e)
+        private async void ToolbarSaveAllButton_Click(object sender, EventArgs e)
         {
-            SaveAll();
+            await SaveAll();
         }
 
         private void ToolbarSelectButton_ButtonClick(object sender, EventArgs e)
@@ -7752,10 +7857,8 @@ namespace CodeWalker
 
         private void ToolbarUndoListButton_Click(object sender, EventArgs e)
         {
-            var tsi = sender as ToolStripItem;
-            if (tsi == null) return;
-            var step = tsi.Tag as UndoStep;
-            if (step == null) return;
+            if (sender is not ToolStripItem tsi) return;
+            if (tsi.Tag is not UndoStep step) return;
             if (UndoSteps.Count == 0) return;
             var cstep = UndoSteps.Peek();
             while (cstep != null)
@@ -7774,10 +7877,8 @@ namespace CodeWalker
 
         private void ToolbarRedoListButton_Click(object sender, EventArgs e)
         {
-            var tsi = sender as ToolStripItem;
-            if (tsi == null) return;
-            var step = tsi.Tag as UndoStep;
-            if (step == null) return;
+            if (sender is not ToolStripItem tsi) return;
+            if (tsi.Tag is not UndoStep step) return;
             if (RedoSteps.Count == 0) return;
             var cstep = RedoSteps.Peek();
             while (cstep != null)

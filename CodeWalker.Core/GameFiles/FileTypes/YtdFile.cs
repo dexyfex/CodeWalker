@@ -32,16 +32,25 @@ namespace CodeWalker.GameFiles
             Loaded = true;
         }
 
+        public async Task LoadAsync(byte[] data)
+        {
+            //direct load from a raw, compressed ytd file
+
+            await RpfFile.LoadResourceFileAsync(this, data, 13);
+
+            Loaded = true;
+        }
+
         public void Load(byte[] data, RpfFileEntry entry)
         {
             Name = entry.Name;
             RpfFileEntry = entry;
 
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                throw new Exception("File entry wasn't a resource! (is it binary data?)");
+                ThrowFileIsNotAResourceException();
+                return;
             }
 
             using var rd = new ResourceDataReader(resentry, data);
@@ -65,13 +74,8 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-        new public long MemoryUsage
-        {
-            get
-            {
-                return TextureDict.MemoryUsage;
-            }
-        }
+        public long PhysicalMemoryUsage => TextureDict.MemoryUsage;
+        public long VirtualMemoryUsage => 0;
     }
 
 

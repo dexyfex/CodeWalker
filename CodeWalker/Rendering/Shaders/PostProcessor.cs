@@ -47,7 +47,7 @@ namespace CodeWalker.Rendering
         public Vector4 avSampleWeights13;
         public Vector4 avSampleWeights14;
 
-        public Vector4 Get(int i)
+        public readonly Vector4 Get(int i)
         {
             switch (i)
             {
@@ -113,38 +113,38 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class PostProcessor
+    public class PostProcessor : IDisposable
     {
-        ComputeShader ReduceTo1DCS;
-        ComputeShader ReduceTo0DCS;
-        ComputeShader LumBlendCS;
-        ComputeShader BloomFilterBPHCS;
-        ComputeShader BloomFilterVCS;
-        PixelShader CopyPixelsPS;
-        VertexShader FinalPassVS;
-        PixelShader FinalPassPS;
-        UnitQuad FinalPassQuad;
-        InputLayout FinalPassLayout;
-        GpuVarsBuffer<PostProcessorReduceCSVars> ReduceCSVars;
-        GpuVarsBuffer<PostProcessorLumBlendCSVars> LumBlendCSVars;
-        GpuVarsBuffer<PostProcessorFilterBPHCSVars> FilterBPHCSVars;
-        GpuVarsBuffer<PostProcessorFilterVCSVars> FilterVCSVars;
-        GpuVarsBuffer<PostProcessorFinalPSVars> FinalPSVars;
+        ComputeShader? ReduceTo1DCS;
+        ComputeShader? ReduceTo0DCS;
+        ComputeShader? LumBlendCS;
+        ComputeShader? BloomFilterBPHCS;
+        ComputeShader? BloomFilterVCS;
+        PixelShader? CopyPixelsPS;
+        VertexShader? FinalPassVS;
+        PixelShader? FinalPassPS;
+        UnitQuad? FinalPassQuad;
+        InputLayout? FinalPassLayout;
+        GpuVarsBuffer<PostProcessorReduceCSVars>? ReduceCSVars;
+        GpuVarsBuffer<PostProcessorLumBlendCSVars>? LumBlendCSVars;
+        GpuVarsBuffer<PostProcessorFilterBPHCSVars>? FilterBPHCSVars;
+        GpuVarsBuffer<PostProcessorFilterVCSVars>? FilterVCSVars;
+        GpuVarsBuffer<PostProcessorFinalPSVars>? FinalPSVars;
 
-        GpuTexture Primary;
+        GpuTexture? Primary;
 
-        GpuBuffer<float> Reduction0;
-        GpuBuffer<float> Reduction1;
+        GpuBuffer<float>? Reduction0;
+        GpuBuffer<float>? Reduction1;
 
-        GpuBuffer<float> LumBlendResult;
+        GpuBuffer<float>? LumBlendResult;
 
-        GpuBuffer<Vector4> Bloom0;
-        GpuBuffer<Vector4> Bloom1;
-        GpuTexture Bloom;
+        GpuBuffer<Vector4>? Bloom0;
+        GpuBuffer<Vector4>? Bloom1;
+        GpuTexture? Bloom;
 
-        SamplerState SampleStatePoint;
-        SamplerState SampleStateLinear;
-        BlendState BlendState;
+        SamplerState? SampleStatePoint;
+        SamplerState? SampleStateLinear;
+        BlendState? BlendState;
         long WindowSizeVramUsage = 0;
         int Width = 0;
         int Height = 0;
@@ -166,7 +166,7 @@ namespace CodeWalker.Rendering
 
         RawViewportF[] vpOld = new RawViewportF[15];
 
-        DeferredScene DefScene;
+        DeferredScene? DefScene;
         bool UsePrimary = true;
 
         ShaderResourceView SceneColourSRV
@@ -187,7 +187,7 @@ namespace CodeWalker.Rendering
         {
             var device = dxman.device;
 
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] bReduceTo1DCS = File.ReadAllBytes(Path.Combine(folder, "PPReduceTo1DCS.cso"));
             byte[] bReduceTo0DCS = File.ReadAllBytes(Path.Combine(folder, "PPReduceTo0DCS.cso"));
             byte[] bLumBlendCS = File.ReadAllBytes(Path.Combine(folder, "PPLumBlendCS.cso"));
@@ -230,100 +230,73 @@ namespace CodeWalker.Rendering
             GetSampleWeights(ref FilterVCSVars.Vars.avSampleWeights, 3.0f, 1.25f); //init sample weights
             FilterBPHCSVars.Vars.avSampleWeights = FilterVCSVars.Vars.avSampleWeights;
         }
+        private bool isDisposed = false;
         public void Dispose()
         {
+            if (isDisposed)
+            {
+                return;
+            }
             DisposeBuffers();
 
-            if (BlendState != null)
-            {
-                BlendState.Dispose();
-                BlendState = null;
-            }
-            if (SampleStateLinear != null)
-            {
-                SampleStateLinear.Dispose();
-                SampleStateLinear = null;
-            }
-            if (SampleStatePoint != null)
-            {
-                SampleStatePoint.Dispose();
-                SampleStatePoint = null;
-            }
-            if (FinalPSVars != null)
-            {
-                FinalPSVars.Dispose();
-                FinalPSVars = null;
-            }
-            if (FilterVCSVars != null)
-            {
-                FilterVCSVars.Dispose();
-                FilterVCSVars = null;
-            }
-            if (FilterBPHCSVars != null)
-            {
-                FilterBPHCSVars.Dispose();
-                FilterBPHCSVars = null;
-            }
-            if (LumBlendCSVars != null)
-            {
-                LumBlendCSVars.Dispose();
-                LumBlendCSVars = null;
-            }
-            if (ReduceCSVars != null)
-            {
-                ReduceCSVars.Dispose();
-                ReduceCSVars = null;
-            }
-            if (FinalPassLayout != null)
-            {
-                FinalPassLayout.Dispose();
-                FinalPassLayout = null;
-            }
-            if (FinalPassQuad != null)
-            {
-                FinalPassQuad.Dispose();
-                FinalPassQuad = null;
-            }
-            if (FinalPassPS != null)
-            {
-                FinalPassPS.Dispose();
-                FinalPassPS = null;
-            }
-            if (FinalPassVS != null)
-            {
-                FinalPassVS.Dispose();
-                FinalPassVS = null;
-            }
-            if (CopyPixelsPS != null)
-            {
-                CopyPixelsPS.Dispose();
-                CopyPixelsPS = null;
-            }
-            if (BloomFilterVCS != null)
-            {
-                BloomFilterVCS.Dispose();
-                BloomFilterVCS = null;
-            }
-            if (BloomFilterBPHCS != null)
-            {
-                BloomFilterBPHCS.Dispose();
-                BloomFilterBPHCS = null;
-            }
-            if (LumBlendCS != null)
-            {
-                LumBlendCS.Dispose();
-                LumBlendCS = null;
-            }
-            if (ReduceTo0DCS != null)
-            {
-                ReduceTo0DCS.Dispose();
-                ReduceTo0DCS = null;
-            }
-            if (ReduceTo1DCS != null)
-            {
-                ReduceTo1DCS.Dispose();
-                ReduceTo1DCS = null;
-            }
+            BlendState?.Dispose();
+            BlendState = null;
+
+            SampleStateLinear?.Dispose();
+            SampleStateLinear = null;
+
+            SampleStatePoint?.Dispose();
+            SampleStatePoint = null;
+
+
+            FinalPSVars?.Dispose();
+            FinalPSVars = null;
+
+
+            FilterVCSVars?.Dispose();
+            FilterVCSVars = null;
+
+            FilterBPHCSVars?.Dispose();
+            FilterBPHCSVars = null;
+
+            LumBlendCSVars?.Dispose();
+            LumBlendCSVars = null;
+
+            ReduceCSVars?.Dispose();
+            ReduceCSVars = null;
+
+            FinalPassLayout?.Dispose();
+            FinalPassLayout = null;
+
+            FinalPassQuad?.Dispose();
+            FinalPassQuad = null;
+
+            FinalPassPS?.Dispose();
+            FinalPassPS = null;
+
+            FinalPassVS?.Dispose();
+            FinalPassVS = null;
+
+            CopyPixelsPS?.Dispose();
+            CopyPixelsPS = null;
+
+            BloomFilterVCS?.Dispose();
+            BloomFilterVCS = null;
+
+            BloomFilterBPHCS?.Dispose();
+            BloomFilterBPHCS = null;
+
+            LumBlendCS?.Dispose();
+            LumBlendCS = null;
+
+            ReduceTo0DCS?.Dispose();
+            ReduceTo0DCS = null;
+
+            ReduceTo1DCS?.Dispose();
+            ReduceTo1DCS = null;
+
+            isDisposed = true;
+            GC.SuppressFinalize(this);
         }
 
         public void OnWindowResize(DXManager dxman)
@@ -381,41 +354,27 @@ namespace CodeWalker.Rendering
         }
         public void DisposeBuffers()
         {
-            if (Bloom != null)
-            {
-                Bloom.Dispose();
-                Bloom = null;
-            }
-            if (Bloom0 != null)
-            {
-                Bloom0.Dispose();
-                Bloom0 = null;
-            }
-            if (Bloom1 != null)
-            {
-                Bloom1.Dispose();
-                Bloom1 = null;
-            }
-            if (LumBlendResult != null)
-            {
-                LumBlendResult.Dispose();
-                LumBlendResult = null;
-            }
-            if (Reduction0 != null)
-            {
-                Reduction0.Dispose();
-                Reduction0 = null;
-            }
-            if (Reduction1 != null)
-            {
-                Reduction1.Dispose();
-                Reduction1 = null;
-            }
-            if (Primary != null)
-            {
-                Primary.Dispose();
-                Primary = null;
-            }
+            Bloom?.Dispose();
+            Bloom = null;
+
+            Bloom0?.Dispose();
+            Bloom0 = null;
+
+            Bloom1?.Dispose();
+            Bloom1 = null;
+
+            LumBlendResult?.Dispose();
+            LumBlendResult = null;
+
+            Reduction0?.Dispose();
+            Reduction0 = null;
+
+            Reduction1?.Dispose();
+            Reduction1 = null;
+
+            Primary?.Dispose();
+            Primary = null;
+
             WindowSizeVramUsage = 0;
         }
 
@@ -424,19 +383,19 @@ namespace CodeWalker.Rendering
             Color4 clearColour = new Color4(0.2f, 0.4f, 0.6f, 0.0f);
             //Color4 clearColour = new Color4(0.0f, 0.0f, 0.0f, 0.0f);
 
-            Primary.Clear(context, clearColour);
+            Primary?.Clear(context, clearColour);
         }
         public void ClearDepth(DeviceContext context)
         {
-            Primary.ClearDepth(context);
+            Primary?.ClearDepth(context);
         }
         public void SetPrimary(DeviceContext context)
         {
-            Primary.SetRenderTarget(context);
+            Primary?.SetRenderTarget(context);
             context.Rasterizer.SetViewport(Viewport);
         }
 
-        public void Render(DXManager dxman, float elapsed, DeferredScene defScene)
+        public void Render(DXManager dxman, float elapsed, DeferredScene? defScene)
         {
             ElapsedTime = elapsed;
             DefScene = defScene;

@@ -5384,7 +5384,7 @@ namespace CodeWalker.GameFiles
         public static void WriteNodeRef(StringBuilder sb, int indent, string name, MrfNode node)
         {
             Indent(sb, indent);
-            sb.Append("<");
+            sb.Append('<');
             sb.Append(name);
             sb.Append(" ref=\"");
             sb.Append(HashString(node.Name));

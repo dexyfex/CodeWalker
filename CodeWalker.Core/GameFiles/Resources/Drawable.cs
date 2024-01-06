@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using Collections.Pooled;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static CodeWalker.GameFiles.MetaXmlBase;
 
 namespace CodeWalker.GameFiles
 {
@@ -444,7 +446,7 @@ namespace CodeWalker.GameFiles
             Count = Convert.ToInt32(parameters[0]);
             Owner = parameters[1] as ShaderFX;
 
-            var paras = new List<ShaderParameter>();
+            using var paras = new PooledList<ShaderParameter>();
             for (int i = 0; i < Count; i++)
             {
                 var p = new ShaderParameter();
@@ -478,7 +480,7 @@ namespace CodeWalker.GameFiles
 
             reader.Position += offset; //Vector4 data gets embedded here... but why pointers in params also???
 
-            var hashes = new List<MetaName>();
+            using var hashes = new PooledList<MetaName>();
             for (int i = 0; i < Count; i++)
             {
                 hashes.Add((MetaName)reader.ReadUInt32());
@@ -672,8 +674,8 @@ namespace CodeWalker.GameFiles
         }
         public void ReadXml(XmlNode node)
         {
-            var plist = new List<ShaderParameter>();
-            var hlist = new List<MetaName>();
+            using var plist = new PooledList<ShaderParameter>();
+            using var hlist = new PooledList<MetaName>();
             var pnodes = node.SelectNodes("Item");
             foreach (XmlNode pnode in pnodes)
             {
@@ -702,7 +704,7 @@ namespace CodeWalker.GameFiles
                 }
                 else if (type == "Array")
                 {
-                    var vecs = new List<Vector4>();
+                    using var vecs = new PooledList<Vector4>();
                     var inodes = pnode.SelectNodes("Value");
                     foreach (XmlNode inode in inodes)
                     {
@@ -749,7 +751,7 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
+            var list = new List<IResourceBlock>(Parameters.Length);
             list.AddRange(base.GetReferences());
 
             foreach (var x in Parameters)
@@ -763,9 +765,9 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            var list = new List<Tuple<long, IResourceBlock>>();
+            var list = new List<(long, IResourceBlock)>();
             list.AddRange(base.GetParts());
 
             long offset = Parameters.Length * 16;
@@ -775,15 +777,13 @@ namespace CodeWalker.GameFiles
             {
                 if (x.DataType != 0)
                 {
-                    var vecs = x.Data as Vector4[];
-                    if (vecs == null)
+                    if (x.Data is not Vector4[] vecs)
                     {
                         vecs = new[] { (Vector4)x.Data };
                     }
-                    if (vecs == null)
-                    { }
+
                     var block = new ResourceSystemStructBlock<Vector4>(vecs);
-                    list.Add(new Tuple<long, IResourceBlock>(offset, block));
+                    list.Add((offset, (IResourceBlock)block));
                     blist.Add(block);
                 }
                 else
@@ -802,10 +802,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Skeleton : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 112; }
-        }
+        public override long BlockLength => 112;
 
         // structure data
         public uint VFT { get; set; } = 1080114336;
@@ -1308,9 +1305,9 @@ namespace CodeWalker.GameFiles
                     m.Column4 = bone.TransformUnk;// new Vector4(0, 4, -3, 0);//???
 
                     var pbone = bone.Parent;
-                    while (pbone != null)
+                    while (pbone is not null)
                     {
-                        pos = pbone.Rotation.Multiply(pos /** pbone.Scale*/) + pbone.Translation;
+                        pos = pbone.Rotation.Multiply(in pos /** pbone.Scale*/) + pbone.Translation;
                         ori = pbone.Rotation * ori;
                         pbone = pbone.Parent;
                     }
@@ -1404,11 +1401,12 @@ namespace CodeWalker.GameFiles
             {
                 var bone = Bones.Items[i];
                 Matrix b = bone.SkinTransform;
-                Matrix3_s bt = new Matrix3_s();
-                bt.Row1 = b.Column1;
-                bt.Row2 = b.Column2;
-                bt.Row3 = b.Column3;
-                BoneTransforms[i] = bt;
+                BoneTransforms[i] = new Matrix3_s
+                {
+                    Row1 = b.Column1,
+                    Row2 = b.Column2,
+                    Row3 = b.Column3
+                };
             }
         }
 
@@ -1569,19 +1567,23 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            var list = new List<Tuple<long, IResourceBlock>>();
-            long length = 16;
-            if (Items != null)
+            if (Items is null || Items.Length == 0)
             {
-                foreach (var b in Items)
-                {
-                    list.Add(new Tuple<long, IResourceBlock>(length, b));
-                    length += b.BlockLength;
-                }
+                return Array.Empty<(long, IResourceBlock)>();
             }
-            return list.ToArray();
+
+            var result = new (long, IResourceBlock)[Items.Length];
+            long length = 16;
+
+            for (int i = 0; i < Items.Length; i++)
+            {
+                result[i] = (length, Items[i]);
+                length += Items[i].BlockLength;
+            }
+
+            return result;
         }
     }
 
@@ -2023,10 +2025,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class Bone : ResourceSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 80; }
-        }
+        public override long BlockLength => 80;
 
         // structure data
         public Quaternion Rotation { get; set; }
@@ -2047,9 +2046,9 @@ namespace CodeWalker.GameFiles
         // reference data
         public string Name { get; set; }
 
-        public Bone Parent { get; set; }
+        public Bone? Parent { get; set; }
 
-        private string_r NameBlock = null;
+        private string_r? NameBlock = null;
 
 
         //used by CW for animating skeletons.
@@ -2152,28 +2151,29 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (Name != null)
+            if (Name is null)
             {
-                NameBlock = (string_r)Name;
-                list.Add(NameBlock);
+                return Array.Empty<IResourceBlock>();
             }
-            return list.ToArray();
+
+            NameBlock = (string_r)Name;
+
+            return new[] { NameBlock };
         }
 
         public override string ToString()
         {
-            return Tag.ToString() + ": " + Name;
+            return $"{Tag}: {Name}";
         }
 
 
         public void UpdateAnimTransform()
         {
-            AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);
+            Matrix.AffineTransformation(1.0f, ref AnimRotation, ref AnimTranslation, out AnimTransform);
             AnimTransform.ScaleVector *= AnimScale;
-            if (Parent != null)
+            if (Parent is not null)
             {
-                AnimTransform = AnimTransform * Parent.AnimTransform;
+                AnimTransform *= Parent.AnimTransform;
             }
 
             ////AnimTransform = Matrix.AffineTransformation(1.0f, AnimRotation, AnimTranslation);//(local transform)
@@ -2237,12 +2237,10 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Joints : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class Joints : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 64; }
-        }
+        public override long BlockLength => 64;
 
         // structure data
         public uint VFT { get; set; } = 1080130656;
@@ -2262,8 +2260,8 @@ namespace CodeWalker.GameFiles
         public JointRotationLimit_s[] RotationLimits { get; set; }
         public JointTranslationLimit_s[] TranslationLimits { get; set; }
 
-        private ResourceSystemStructBlock<JointRotationLimit_s> RotationLimitsBlock = null; //for saving only
-        private ResourceSystemStructBlock<JointTranslationLimit_s> TranslationLimitsBlock = null;
+        private ResourceSystemStructBlock<JointRotationLimit_s>? RotationLimitsBlock = null; //for saving only
+        private ResourceSystemStructBlock<JointTranslationLimit_s>? TranslationLimitsBlock = null;
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -2283,8 +2281,8 @@ namespace CodeWalker.GameFiles
             this.Unknown_38h = reader.ReadUInt64();
 
             // read reference data
-            this.RotationLimits = reader.ReadStructsAt<JointRotationLimit_s>(this.RotationLimitsPointer, this.RotationLimitsCount);
-            this.TranslationLimits = reader.ReadStructsAt<JointTranslationLimit_s>(this.TranslationLimitsPointer, this.TranslationLimitsCount);
+            this.RotationLimits = reader.ReadStructsAt<JointRotationLimit_s>(this.RotationLimitsPointer, this.RotationLimitsCount) ?? Array.Empty<JointRotationLimit_s>();
+            this.TranslationLimits = reader.ReadStructsAt<JointTranslationLimit_s>(this.TranslationLimitsPointer, this.TranslationLimitsCount) ?? Array.Empty<JointTranslationLimit_s>();
 
             //if (Unknown_4h != 1)
             //{ }
@@ -2306,10 +2304,10 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.RotationLimitsPointer = (ulong)(this.RotationLimitsBlock != null ? this.RotationLimitsBlock.FilePosition : 0);
-            this.TranslationLimitsPointer = (ulong)(this.TranslationLimitsBlock != null ? this.TranslationLimitsBlock.FilePosition : 0);
-            this.RotationLimitsCount = (ushort)(this.RotationLimitsBlock != null ? this.RotationLimitsBlock.ItemCount : 0);
-            this.TranslationLimitsCount = (ushort)(this.TranslationLimitsBlock != null ? this.TranslationLimitsBlock.ItemCount : 0);
+            this.RotationLimitsPointer = (ulong)(this.RotationLimitsBlock is not null ? this.RotationLimitsBlock.FilePosition : 0);
+            this.TranslationLimitsPointer = (ulong)(this.TranslationLimitsBlock is not null ? this.TranslationLimitsBlock.FilePosition : 0);
+            this.RotationLimitsCount = (ushort)(this.RotationLimitsBlock is not null ? this.RotationLimitsBlock.ItemCount : 0);
+            this.TranslationLimitsCount = (ushort)(this.TranslationLimitsBlock is not null ? this.TranslationLimitsBlock.ItemCount : 0);
 
 
             // write structure data
@@ -2328,11 +2326,11 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            if (RotationLimits != null)
+            if (RotationLimits is not null && RotationLimits.Length > 0)
             {
                 YdrXml.WriteItemArray(sb, RotationLimits, indent, "RotationLimits");
             }
-            if (TranslationLimits != null)
+            if (TranslationLimits is not null && TranslationLimits.Length > 0)
             {
                 YdrXml.WriteItemArray(sb, TranslationLimits, indent, "TranslationLimits");
             }
@@ -2346,12 +2344,12 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (RotationLimits != null)
+            if (RotationLimits.Length > 0)
             {
                 RotationLimitsBlock = new ResourceSystemStructBlock<JointRotationLimit_s>(RotationLimits);
                 list.Add(RotationLimitsBlock);
             }
-            if (TranslationLimits != null)
+            if (TranslationLimits.Length > 0)
             {
                 TranslationLimitsBlock = new ResourceSystemStructBlock<JointTranslationLimit_s>(TranslationLimits);
                 list.Add(TranslationLimitsBlock);
@@ -2360,7 +2358,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct JointRotationLimit_s : IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct JointRotationLimit_s : IMetaXmlItem
     {
         // structure data
         public uint Unknown_0h { get; set; } // 0x00000000
@@ -2459,7 +2458,7 @@ namespace CodeWalker.GameFiles
             Unknown_BCh = 0x100;
         }
 
-        public void WriteXml(StringBuilder sb, int indent)
+        public readonly void WriteXml(StringBuilder sb, int indent)
         {
             YdrXml.ValueTag(sb, indent, "BoneId", BoneId.ToString());
             YdrXml.ValueTag(sb, indent, "UnknownA", Unknown_Ah.ToString());
@@ -2476,7 +2475,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public struct JointTranslationLimit_s : IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public struct JointTranslationLimit_s : IMetaXmlItem
     {
         public uint Unknown_0h { get; set; } // 0x00000000
         public uint Unknown_4h { get; set; } // 0x00000000
@@ -2491,7 +2491,7 @@ namespace CodeWalker.GameFiles
         public Vector3 Max { get; set; }
         public uint Unknown_3Ch { get; set; } // 0x00000000
 
-        public void WriteXml(StringBuilder sb, int indent)
+        public readonly void WriteXml(StringBuilder sb, int indent)
         {
             YdrXml.ValueTag(sb, indent, "BoneId", BoneId.ToString());
             YdrXml.SelfClosingTag(sb, indent, "Min " + FloatUtil.GetVector3XmlString(Min));
@@ -2509,7 +2509,8 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableModelsBlock : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class DrawableModelsBlock : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -2525,64 +2526,64 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public DrawableBase Owner;
+        public DrawableBase? Owner;
 
-        public DrawableModel[] High { get; set; }
-        public DrawableModel[] Med { get; set; }
-        public DrawableModel[] Low { get; set; }
-        public DrawableModel[] VLow { get; set; }
-        public DrawableModel[] Extra { get; set; } //shouldn't be used
+        public DrawableModel[]? High { get; set; }
+        public DrawableModel[]? Med { get; set; }
+        public DrawableModel[]? Low { get; set; }
+        public DrawableModel[]? VLow { get; set; }
+        public DrawableModel[]? Extra { get; set; } //shouldn't be used
 
-        public ResourcePointerListHeader HighHeader { get; set; }
-        public ResourcePointerListHeader MedHeader { get; set; }
-        public ResourcePointerListHeader LowHeader { get; set; }
-        public ResourcePointerListHeader VLowHeader { get; set; }
-        public ResourcePointerListHeader ExtraHeader { get; set; }
+        public ResourcePointerListHeader HighHeader;
+        public ResourcePointerListHeader MedHeader;
+        public ResourcePointerListHeader LowHeader;
+        public ResourcePointerListHeader VLowHeader;
+        public ResourcePointerListHeader ExtraHeader;
 
-        public ulong[] HighPointers { get; set; }
-        public ulong[] MedPointers { get; set; }
-        public ulong[] LowPointers { get; set; }
-        public ulong[] VLowPointers { get; set; }
-        public ulong[] ExtraPointers { get; set; }
+        public ulong[]? HighPointers { get; set; }
+        public ulong[]? MedPointers { get; set; }
+        public ulong[]? LowPointers { get; set; }
+        public ulong[]? VLowPointers { get; set; }
+        public ulong[]? ExtraPointers { get; set; }
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             Owner = parameters[0] as DrawableBase;
             var pos = (ulong)reader.Position;
-            var highPointer = (Owner?.DrawableModelsHighPointer ?? 0);
-            var medPointer = (Owner?.DrawableModelsMediumPointer ?? 0);
-            var lowPointer = (Owner?.DrawableModelsLowPointer ?? 0);
-            var vlowPointer = (Owner?.DrawableModelsVeryLowPointer ?? 0);
+            var highPointer = Owner?.DrawableModelsHighPointer ?? 0;
+            var medPointer = Owner?.DrawableModelsMediumPointer ?? 0;
+            var lowPointer = Owner?.DrawableModelsLowPointer ?? 0;
+            var vlowPointer = Owner?.DrawableModelsVeryLowPointer ?? 0;
             var extraPointer = (pos != highPointer) ? pos : 0;
 
             if (highPointer != 0)
             {
-                HighHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)highPointer);
+                reader.TryReadStructAt((long)highPointer, out HighHeader);
                 HighPointers = reader.ReadUlongsAt(HighHeader.Pointer, HighHeader.Capacity, false);
                 High = reader.ReadBlocks<DrawableModel>(HighPointers);
             }
             if (medPointer != 0)
             {
-                MedHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)medPointer);
+                reader.TryReadStructAt((long)medPointer, out MedHeader);
                 MedPointers = reader.ReadUlongsAt(MedHeader.Pointer, MedHeader.Capacity, false);
                 Med = reader.ReadBlocks<DrawableModel>(MedPointers);
             }
             if (lowPointer != 0)
             {
-                LowHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)lowPointer);
+                reader.TryReadStructAt((long)lowPointer, out LowHeader);
                 LowPointers = reader.ReadUlongsAt(LowHeader.Pointer, LowHeader.Capacity, false);
                 Low = reader.ReadBlocks<DrawableModel>(LowPointers);
             }
             if (vlowPointer != 0)
             {
-                VLowHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)vlowPointer);
+                reader.TryReadStructAt((long)vlowPointer, out VLowHeader);
                 VLowPointers = reader.ReadUlongsAt(VLowHeader.Pointer, VLowHeader.Capacity, false);
                 VLow = reader.ReadBlocks<DrawableModel>(VLowPointers);
             }
             if (extraPointer != 0)
             {
-                ExtraHeader = reader.ReadStructAt<ResourcePointerListHeader>((long)extraPointer);
+                reader.TryReadStructAt((long)extraPointer, out ExtraHeader);
                 ExtraPointers = reader.ReadUlongsAt(ExtraHeader.Pointer, ExtraHeader.Capacity, false);
                 Extra = reader.ReadBlocks<DrawableModel>(ExtraPointers);
             }
@@ -2656,32 +2657,39 @@ namespace CodeWalker.GameFiles
         }
 
 
-        private long Pad(long o) => ((16 - (o % 16)) % 16);
+        private long Pad(long o) => (16 - (o % 16)) % 16;
         private long HeaderLength(int listlength) => 16 + ((listlength) * 8);
-        private long ListLength(DrawableModel[] list, long o)
+        private long ListLength(DrawableModel[]? list, long o)
         {
-            if (list == null) return 0;
+            if (list is null)
+                return 0;
+
             long l = 0;
             l += HeaderLength(list.Length);
-            foreach (var m in list) l += Pad(l) + m.BlockLength;
+            foreach (var m in list)
+            {
+                l += Pad(l) + m.BlockLength;
+            }
             return Pad(o) + l;
         }
 
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            var parts = new List<Tuple<long, IResourceBlock>>();
+            var parts = new List<(long, IResourceBlock)>();
             parts.AddRange(base.GetParts());
 
-            void addParts(ref long p, DrawableModel[] a)
+            void addParts(ref long p, DrawableModel[]? a)
             {
-                if (a == null) return;
+                if (a is null)
+                    return;
+
                 p += Pad(p);
                 p += HeaderLength(a.Length);
                 foreach (var m in a)
                 {
                     p += Pad(p);
-                    parts.Add(new Tuple<long, IResourceBlock>(p, m));
+                    parts.Add((p, m));
                     p += m.BlockLength;
                 }
             }
@@ -2699,12 +2707,14 @@ namespace CodeWalker.GameFiles
 
         public long GetHighPointer()
         {
-            if (High == null) return 0;
+            if (High is null)
+                return 0;
             return FilePosition;
         }
         public long GetMedPointer()
         {
-            if (Med == null) return 0;
+            if (Med is null)
+                return 0;
             var p = FilePosition;
             p += ListLength(High, p);
             p += Pad(p);
@@ -2712,7 +2722,8 @@ namespace CodeWalker.GameFiles
         }
         public long GetLowPointer()
         {
-            if (Low == null) return 0;
+            if (Low is null)
+                return 0;
             var p = GetMedPointer();
             p += ListLength(Med, p);
             p += Pad(p);
@@ -2720,7 +2731,8 @@ namespace CodeWalker.GameFiles
         }
         public long GetVLowPointer()
         {
-            if (VLow == null) return 0;
+            if (VLow is null)
+                return 0;
             var p = GetLowPointer();
             p += ListLength(Low, p);
             p += Pad(p);
@@ -2728,7 +2740,8 @@ namespace CodeWalker.GameFiles
         }
         public long GetExtraPointer()
         {
-            if (Extra == null) return 0;
+            if (Extra is null)
+                return 0;
             var p = GetVLowPointer();
             p += ListLength(VLow, p);
             p += Pad(p);
@@ -2737,7 +2750,8 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableModel : ResourceSystemBlock, IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class DrawableModel : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength
         {
@@ -2752,8 +2766,8 @@ namespace CodeWalker.GameFiles
                 off += (GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32; //BoundsData
                 for (int i = 0; i < GeometriesCount1; i++)
                 {
-                    var geom = (Geometries != null) ? Geometries[i] : null;
-                    if (geom != null)
+                    var geom = (Geometries is not null && i < Geometries.Length) ? Geometries[i] : null;
+                    if (geom is not null)
                     {
                         off += ((16 - (off % 16)) % 16);
                         off += geom.BlockLength; //Geometries
@@ -2782,34 +2796,34 @@ namespace CodeWalker.GameFiles
 
         public byte BoneIndex
         {
-            get  { return (byte)((SkeletonBinding >> 24) & 0xFF); }
-            set { SkeletonBinding = (SkeletonBinding & 0x00FFFFFF) + ((value & 0xFFu) << 24); }
+            get => (byte)((SkeletonBinding >> 24) & 0xFF);
+            set => SkeletonBinding = (SkeletonBinding & 0x00FFFFFF) + ((value & 0xFFu) << 24);
         }
         public byte SkeletonBindUnk2 //always 0
         {
-            get { return (byte)((SkeletonBinding >> 16) & 0xFF); }
-            set { SkeletonBinding = (SkeletonBinding & 0xFF00FFFF) + ((value & 0xFFu) << 16); }
+            get => (byte)((SkeletonBinding >> 16) & 0xFF);
+            set => SkeletonBinding = (SkeletonBinding & 0xFF00FFFF) + ((value & 0xFFu) << 16);
         }
         public byte HasSkin //only 0 or 1
         {
-            get { return (byte)((SkeletonBinding >> 8) & 0xFF); }
-            set { SkeletonBinding = (SkeletonBinding & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+            get => (byte)((SkeletonBinding >> 8) & 0xFF);
+            set => SkeletonBinding = (SkeletonBinding & 0xFFFF00FF) + ((value & 0xFFu) << 8);
         }
         public byte SkeletonBindUnk1 //only 0 or 43 (in rare cases, see below)
         {
-            get { return (byte)((SkeletonBinding >> 0) & 0xFF); }
-            set { SkeletonBinding = (SkeletonBinding & 0xFFFFFF00) + ((value & 0xFFu) << 0); }
+            get => (byte)((SkeletonBinding >> 0) & 0xFF);
+            set => SkeletonBinding = (SkeletonBinding & 0xFFFFFF00) + ((value & 0xFFu) << 0);
         }
 
         public byte RenderMask
         {
-            get { return (byte)((RenderMaskFlags >> 0) & 0xFF); }
-            set { RenderMaskFlags = (ushort)((RenderMaskFlags & 0xFF00u) + ((value & 0xFFu) << 0)); }
+            get => (byte)((RenderMaskFlags >> 0) & 0xFF);
+            set => RenderMaskFlags = (ushort)((RenderMaskFlags & 0xFF00u) + ((value & 0xFFu) << 0));
         }
         public byte Flags
         {
-            get { return (byte)((RenderMaskFlags >> 8) & 0xFF); }
-            set { RenderMaskFlags = (ushort)((RenderMaskFlags & 0xFFu) + ((value & 0xFFu) << 8)); }
+            get => (byte)((RenderMaskFlags >> 8) & 0xFF);
+            set => RenderMaskFlags = (ushort)((RenderMaskFlags & 0xFFu) + ((value & 0xFFu) << 8));
         }
 
 
@@ -2871,20 +2885,20 @@ namespace CodeWalker.GameFiles
             this.RenderMaskFlags = reader.ReadUInt16();
             this.GeometriesCount3 = reader.ReadUInt16();
 
-            this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1, false);
-            this.GeometryPointers = reader.ReadUlongsAt(this.GeometriesPointer, this.GeometriesCount1, false);
-            this.BoundsData = reader.ReadStructsAt<AABB_s>(this.BoundsPointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1), false);
-            this.Geometries = reader.ReadBlocks<DrawableGeometry>(this.GeometryPointers);
+            this.ShaderMapping = reader.ReadUshortsAt(this.ShaderMappingPointer, this.GeometriesCount1, false) ?? Array.Empty<ushort>();
+            this.GeometryPointers = reader.ReadUlongsAt(this.GeometriesPointer, this.GeometriesCount1, false) ?? Array.Empty<ulong>();
+            this.BoundsData = reader.ReadStructsAt<AABB_s>(this.BoundsPointer, (uint)(this.GeometriesCount1 > 1 ? this.GeometriesCount1 + 1 : this.GeometriesCount1), false) ?? Array.Empty<AABB_s>();
+            this.Geometries = reader.ReadBlocks<DrawableGeometry>(this.GeometryPointers) ?? Array.Empty<DrawableGeometry>();
 
-            if (Geometries != null)
+            if (Geometries is not null)
             {
                 for (int i = 0; i < Geometries.Length; i++)
                 {
                     var geom = Geometries[i];
-                    if (geom != null)
+                    if (geom is not null)
                     {
-                        geom.ShaderID = ((ShaderMapping != null) && (i < ShaderMapping.Length)) ? ShaderMapping[i] : (ushort)0;
-                        geom.AABB = (BoundsData != null) ? ((BoundsData.Length > 1) && ((i + 1) < BoundsData.Length)) ? BoundsData[i + 1] : BoundsData[0] : new AABB_s();
+                        geom.ShaderID = ((ShaderMapping.Length > 0) && (i < ShaderMapping.Length)) ? ShaderMapping[i] : (ushort)0;
+                        geom.AABB = (BoundsData.Length > 0) ? ((BoundsData.Length > 1) && ((i + 1) < BoundsData.Length)) ? BoundsData[i + 1] : BoundsData[0] : new AABB_s();
                     }
                 }
             }
@@ -2953,7 +2967,7 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.GeometriesCount1 = (ushort)(this.Geometries != null ? this.Geometries.Length : 0);
+            this.GeometriesCount1 = (ushort)(this.Geometries?.Length ?? 0);
             this.GeometriesCount2 = this.GeometriesCount1;//is this correct?
             this.GeometriesCount3 = this.GeometriesCount1;//is this correct?
             
@@ -2971,8 +2985,8 @@ namespace CodeWalker.GameFiles
             this.GeometryPointers = new ulong[GeometriesCount1];
             for (int i = 0; i < GeometriesCount1; i++)
             {
-                var geom = (Geometries != null) ? Geometries[i] : null;
-                if (geom != null)
+                var geom = Geometries[i];
+                if (geom is not null)
                 {
                     off += pad(off);
                     this.GeometryPointers[i] = (ulong)off;
@@ -3019,8 +3033,8 @@ namespace CodeWalker.GameFiles
             }
             for (int i = 0; i < GeometriesCount1; i++)
             {
-                var geom = (Geometries != null) ? Geometries[i] : null;
-                if (geom != null)
+                var geom = Geometries[i];
+                if (geom is not null)
                 {
                     writer.WritePadding(16);
                     writer.WriteBlock(geom);
@@ -3036,7 +3050,7 @@ namespace CodeWalker.GameFiles
             YdrXml.ValueTag(sb, indent, "BoneIndex", BoneIndex.ToString());
             YdrXml.ValueTag(sb, indent, "Unknown1", SkeletonBindUnk1.ToString());
 
-            if (Geometries != null)
+            if (Geometries is not null)
             {
                 YdrXml.WriteItemArray(sb, Geometries, indent, "Geometries");
             }
@@ -3050,12 +3064,12 @@ namespace CodeWalker.GameFiles
             BoneIndex = (byte)Xml.GetChildUIntAttribute(node, "BoneIndex", "value");
             SkeletonBindUnk1 = (byte)Xml.GetChildUIntAttribute(node, "Unknown1", "value");
 
-            var aabbs = new List<AABB_s>();
-            var shids = new List<ushort>();
+            using var aabbs = new PooledList<AABB_s>();
+            using var shids = new PooledList<ushort>();
             var min = new Vector4(float.MaxValue);
             var max = new Vector4(float.MinValue);
             var geoms = XmlMeta.ReadItemArray<DrawableGeometry>(node, "Geometries");
-            if (geoms != null)
+            if (geoms is not null)
             {
                 Geometries = geoms;
                 foreach (var geom in geoms)
@@ -3069,18 +3083,18 @@ namespace CodeWalker.GameFiles
             }
             if (aabbs.Count > 1)
             {
-                var outeraabb = new AABB_s() { Min = min, Max = max };
+                var outeraabb = new AABB_s(min, max);
                 aabbs.Insert(0, outeraabb);
             }
 
-            BoundsData = (aabbs.Count > 0) ? aabbs.ToArray() : null;
-            ShaderMapping = (shids.Count > 0) ? shids.ToArray() : null;
+            BoundsData = (aabbs.Count > 0) ? aabbs.ToArray() : [];
+            ShaderMapping = (shids.Count > 0) ? shids.ToArray() : [];
         }
 
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            var parts = new List<Tuple<long, IResourceBlock>>();
+            var parts = new List<(long, IResourceBlock)>();
             parts.AddRange(base.GetParts());
 
             var off = (long)48;
@@ -3092,11 +3106,11 @@ namespace CodeWalker.GameFiles
             off += (GeometriesCount1 + ((GeometriesCount1 > 1) ? 1 : 0)) * 32; //BoundsData
             for (int i = 0; i < GeometriesCount1; i++)
             {
-                var geom = (Geometries != null) ? Geometries[i] : null;
+                var geom = (Geometries != null && i < Geometries.Length) ? Geometries[i] : null;
                 if (geom != null)
                 {
                     off += ((16 - (off % 16)) % 16);
-                    parts.Add(new Tuple<long, IResourceBlock>(off, geom));
+                    parts.Add((off, geom));
                     off += geom.BlockLength; //Geometries
                 }
             }
@@ -3106,19 +3120,21 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return "(" + (Geometries?.Length ?? 0).ToString() + " geometr" + ((Geometries?.Length ?? 0) != 1 ? "ies)" : "y)");
+            var suffix = (Geometries?.Length ?? 0) != 1 ? "ies" : "y";
+            return $"({Geometries?.Length ?? 0} geometr{suffix} {Geometries?.Sum(p => p.VerticesCount) ?? 0} verts)";
         }
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableGeometry : ResourceSystemBlock, IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class DrawableGeometry : ResourceSystemBlock, IMetaXmlItem
     {
         public override long BlockLength
         {
             get 
             {
                 long l = 152;
-                if (BoneIds != null)
+                if (BoneIds is not null)
                 {
                     if (BoneIds.Length > 4) l += 8;
                     l += (BoneIds.Length) * 2;
@@ -3155,11 +3171,11 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_90h; // 0x0000000000000000
 
         // reference data
-        public VertexBuffer VertexBuffer { get; set; }
-        public IndexBuffer IndexBuffer { get; set; }
-        public VertexData VertexData { get; set; }
-        public ushort[] BoneIds { get; set; }//embedded at the end of this struct
-        public ShaderFX Shader { get; set; }//written by parent DrawableBase, using ShaderID
+        public VertexBuffer? VertexBuffer { get; set; }
+        public IndexBuffer? IndexBuffer { get; set; }
+        public VertexData? VertexData { get; set; }
+        public ushort[]? BoneIds { get; set; }//embedded at the end of this struct
+        public ShaderFX? Shader { get; set; }//written by parent DrawableBase, using ShaderID
         public ushort ShaderID { get; set; }//read/written by parent model
         public AABB_s AABB { get; set; }//read/written by parent model
 
@@ -3204,7 +3220,7 @@ namespace CodeWalker.GameFiles
                 this.IndexBufferPointer // offset
             );
             this.BoneIds = reader.ReadUshortsAt(this.BoneIdsPointer, this.BoneIdsCount, false);
-            if (this.BoneIds != null) //skinned mesh bones to use? peds, also yft props...
+            if (this.BoneIds is not null) //skinned mesh bones to use? peds, also yft props...
             {
             }
             //if (BoneIdsPointer != 0)
@@ -3215,7 +3231,7 @@ namespace CodeWalker.GameFiles
             //    { }//no hit - interesting alignment, boneids array always packed after this struct
             //}
 
-            if (this.VertexBuffer != null)
+            if (this.VertexBuffer is not null)
             {
                 this.VertexData = this.VertexBuffer.Data1 ?? this.VertexBuffer.Data2;
 
@@ -3284,14 +3300,14 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.VertexBufferPointer = (ulong)(this.VertexBuffer != null ? this.VertexBuffer.FilePosition : 0);
-            this.IndexBufferPointer = (ulong)(this.IndexBuffer != null ? this.IndexBuffer.FilePosition : 0);
-            this.VertexDataPointer = (ulong)(this.VertexData != null ? this.VertexData.FilePosition : 0);
-            this.VerticesCount = (ushort)(this.VertexData != null ? this.VertexData.VertexCount : 0); //TODO: fix?
-            this.VertexStride = (ushort)(this.VertexBuffer != null ? this.VertexBuffer.VertexStride : 0); //TODO: fix?
-            this.IndicesCount = (this.IndexBuffer != null ? this.IndexBuffer.IndicesCount : 0); //TODO: fix?
-            this.TrianglesCount = this.IndicesCount / 3; //TODO: fix?
-            this.BoneIdsPointer = (BoneIds != null) ? (ulong)(writer.Position + 152 + ((BoneIds.Length > 4) ? 8 : 0)) : 0;
+            this.VertexBufferPointer = (ulong)(VertexBuffer?.FilePosition ?? 0);
+            this.IndexBufferPointer = (ulong)(IndexBuffer?.FilePosition ?? 0);
+            this.VertexDataPointer = (ulong)(VertexData?.FilePosition ?? 0);
+            this.VerticesCount = (ushort)(VertexData?.VertexCount ?? 0); //TODO: fix?
+            this.VertexStride = (ushort)(VertexBuffer?.VertexStride ?? 0); //TODO: fix?
+            this.IndicesCount = (IndexBuffer?.IndicesCount ?? 0); //TODO: fix?
+            this.TrianglesCount = IndicesCount / 3; //TODO: fix?
+            this.BoneIdsPointer = (BoneIds is not null) ? (ulong)(writer.Position + 152 + ((BoneIds.Length > 4) ? 8 : 0)) : 0;
             this.BoneIdsCount = (ushort)(BoneIds?.Length ?? 0);
             
 
@@ -3366,12 +3382,14 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node)
         {
             ShaderID = (ushort)Xml.GetChildUIntAttribute(node, "ShaderIndex", "value");
-            var aabb = new AABB_s();
-            aabb.Min = Xml.GetChildVector4Attributes(node, "BoundingBoxMin");
-            aabb.Max = Xml.GetChildVector4Attributes(node, "BoundingBoxMax");
+            var aabb = new AABB_s
+            {
+                Min = Xml.GetChildVector4Attributes(node, "BoundingBoxMin"),
+                Max = Xml.GetChildVector4Attributes(node, "BoundingBoxMax"),
+            };
             AABB = aabb;
             var bnode = node.SelectSingleNode("BoneIDs");
-            if (bnode != null)
+            if (bnode is not null)
             {
                 var astr = bnode.InnerText;
                 var arr = astr.Split(',');
@@ -3388,14 +3406,14 @@ namespace CodeWalker.GameFiles
                 BoneIds = (blist.Count > 0) ? blist.ToArray() : null;
             }
             var vnode = node.SelectSingleNode("VertexBuffer");
-            if (vnode != null)
+            if (vnode is not null)
             {
                 VertexBuffer = new VertexBuffer();
                 VertexBuffer.ReadXml(vnode);
                 VertexData = VertexBuffer.Data1 ?? VertexBuffer.Data2;
             }
             var inode = node.SelectSingleNode("IndexBuffer");
-            if (inode != null)
+            if (inode is not null)
             {
                 IndexBuffer = new IndexBuffer();
                 IndexBuffer.ReadXml(inode);
@@ -3405,9 +3423,12 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (VertexBuffer != null) list.Add(VertexBuffer);
-            if (IndexBuffer != null) list.Add(IndexBuffer);
-            if (VertexData != null) list.Add(VertexData);
+            if (VertexBuffer is not null)
+                list.Add(VertexBuffer);
+            if (IndexBuffer is not null)
+                list.Add(IndexBuffer);
+            if (VertexData is not null)
+                list.Add(VertexData);
             return list.ToArray();
         }
 
@@ -3417,12 +3438,10 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class VertexBuffer : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class VertexBuffer : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 128; }
-        }
+        public override long BlockLength => 128;
 
         // structure data
         public uint VFT { get; set; } = 1080153080;
@@ -3613,25 +3632,21 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (Data1 != null) list.Add(Data1);
-            if (Data2 != null) list.Add(Data2);
-            if (Info != null) list.Add(Info);
+            if (Data1 is not null)
+                list.Add(Data1);
+            if (Data2 is not null)
+                list.Add(Data2);
+            if (Info is not null)
+                list.Add(Info);
             return list.ToArray();
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class VertexData : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class VertexData : ResourceSystemBlock
     {
-
-
         //private int length = 0;
-        public override long BlockLength
-        {
-            get
-            {
-                return VertexBytes?.Length ?? 0; //this.length;
-            }
-        }
+        public override long BlockLength => VertexBytes?.Length ?? 0;
 
 
         public int VertexStride { get; set; }
@@ -3639,16 +3654,10 @@ namespace CodeWalker.GameFiles
         public VertexDeclaration Info { get; set; }
         public VertexType VertexType { get; set; }
 
-        public byte[] VertexBytes { get; set; }
+        public byte[]? VertexBytes { get; set; }
 
 
-        public long MemoryUsage
-        {
-            get
-            {
-                return (long)VertexCount * (long)VertexStride;
-            }
-        }
+        public long MemoryUsage => VertexCount * VertexStride;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -3684,7 +3693,7 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            if (VertexBytes != null)
+            if (VertexBytes is not null)
             {
                 writer.Write(VertexBytes); //not dealing with individual vertex data here any more!
             }
@@ -3727,7 +3736,8 @@ namespace CodeWalker.GameFiles
                     foreach (var row in rows)
                     {
                         var rowt = row.Trim();
-                        if (string.IsNullOrEmpty(rowt)) continue;
+                        if (string.IsNullOrEmpty(rowt))
+                            continue;
                         var cols = row.Split(coldelim, StringSplitOptions.RemoveEmptyEntries);
                         vstrs.Add(cols);
                     }
@@ -3825,162 +3835,163 @@ namespace CodeWalker.GameFiles
         }
         public void SetVector3(int v, int c, Vector3 val)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 12;//sizeof(Vector3)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 12;//sizeof(Vector3)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.GetBytes(val.X);
-                    var y = BitConverter.GetBytes(val.Y);
-                    var z = BitConverter.GetBytes(val.Z);
-                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 4);
-                    Buffer.BlockCopy(y, 0, VertexBytes, o + 4, 4);
-                    Buffer.BlockCopy(z, 0, VertexBytes, o + 8, 4);
-                }
+                var x = BitConverter.GetBytes(val.X);
+                var y = BitConverter.GetBytes(val.Y);
+                var z = BitConverter.GetBytes(val.Z);
+                Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 4);
+                Buffer.BlockCopy(y, 0, VertexBytes, o + 4, 4);
+                Buffer.BlockCopy(z, 0, VertexBytes, o + 8, 4);
             }
         }
         public void SetVector4(int v, int c, Vector4 val)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 16;//sizeof(Vector4)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 16;//sizeof(Vector4)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.GetBytes(val.X);
-                    var y = BitConverter.GetBytes(val.Y);
-                    var z = BitConverter.GetBytes(val.Z);
-                    var w = BitConverter.GetBytes(val.W);
-                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 4);
-                    Buffer.BlockCopy(y, 0, VertexBytes, o + 4, 4);
-                    Buffer.BlockCopy(z, 0, VertexBytes, o + 8, 4);
-                    Buffer.BlockCopy(w, 0, VertexBytes, o + 12, 4);
-                }
+                var x = BitConverter.GetBytes(val.X);
+                var y = BitConverter.GetBytes(val.Y);
+                var z = BitConverter.GetBytes(val.Z);
+                var w = BitConverter.GetBytes(val.W);
+                Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 4);
+                Buffer.BlockCopy(y, 0, VertexBytes, o + 4, 4);
+                Buffer.BlockCopy(z, 0, VertexBytes, o + 8, 4);
+                Buffer.BlockCopy(w, 0, VertexBytes, o + 12, 4);
             }
         }
         public void SetDec3N(int v, int c, Vector3 val)
         {
+            if (Info is null || VertexBytes is null)
+                return;
             //see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb322868(v%3Dvs.85)
-            if ((Info != null) && (VertexBytes != null))
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(Dec3N)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(Dec3N)
-                if (e <= VertexBytes.Length)
-                {
-                    var sx = (val.X < 0.0f);
-                    var sy = (val.X < 0.0f);
-                    var sz = (val.X < 0.0f);
-                    var x = Math.Min((uint)(Math.Abs(val.X) * 511.0f), 511);
-                    var y = Math.Min((uint)(Math.Abs(val.Y) * 511.0f), 511);
-                    var z = Math.Min((uint)(Math.Abs(val.Z) * 511.0f), 511);
-                    var ux = ((sx ? ~x : x) & 0x1FF) + (sx ? 0x200 : 0);
-                    var uy = ((sy ? ~y : y) & 0x1FF) + (sy ? 0x200 : 0);
-                    var uz = ((sz ? ~z : z) & 0x1FF) + (sz ? 0x200 : 0);
-                    var uw = 0u;
-                    var u = ux + (uy << 10) + (uz << 20) + (uw << 30);
-                    var b = BitConverter.GetBytes(u);
-                    Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
-                }
+                var sx = (val.X < 0.0f);
+                var sy = (val.X < 0.0f);
+                var sz = (val.X < 0.0f);
+                var x = Math.Min((uint)(Math.Abs(val.X) * 511.0f), 511);
+                var y = Math.Min((uint)(Math.Abs(val.Y) * 511.0f), 511);
+                var z = Math.Min((uint)(Math.Abs(val.Z) * 511.0f), 511);
+                var ux = ((sx ? ~x : x) & 0x1FF) + (sx ? 0x200 : 0);
+                var uy = ((sy ? ~y : y) & 0x1FF) + (sy ? 0x200 : 0);
+                var uz = ((sz ? ~z : z) & 0x1FF) + (sz ? 0x200 : 0);
+                var uw = 0u;
+                var u = ux + (uy << 10) + (uz << 20) + (uw << 30);
+                var b = BitConverter.GetBytes(u);
+                Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
             }
         }
         public void SetHalf2(int v, int c, Half2 val)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(Half2)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(Half2)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.GetBytes(val.X.RawValue);
-                    var y = BitConverter.GetBytes(val.Y.RawValue);
-                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 2);
-                    Buffer.BlockCopy(y, 0, VertexBytes, o + 2, 2);
-                }
+                var x = BitConverter.GetBytes(val.X.RawValue);
+                var y = BitConverter.GetBytes(val.Y.RawValue);
+                Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 2);
+                Buffer.BlockCopy(y, 0, VertexBytes, o + 2, 2);
             }
         }
         public void SetHalf4(int v, int c, Half4 val)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 8;//sizeof(Half4)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 8;//sizeof(Half4)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.GetBytes(val.X.RawValue);
-                    var y = BitConverter.GetBytes(val.Y.RawValue);
-                    var z = BitConverter.GetBytes(val.Z.RawValue);
-                    var w = BitConverter.GetBytes(val.W.RawValue);
-                    Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 2);
-                    Buffer.BlockCopy(y, 0, VertexBytes, o + 2, 2);
-                    Buffer.BlockCopy(z, 0, VertexBytes, o + 4, 2);
-                    Buffer.BlockCopy(w, 0, VertexBytes, o + 6, 2);
-                }
+                var x = BitConverter.GetBytes(val.X.RawValue);
+                var y = BitConverter.GetBytes(val.Y.RawValue);
+                var z = BitConverter.GetBytes(val.Z.RawValue);
+                var w = BitConverter.GetBytes(val.W.RawValue);
+                Buffer.BlockCopy(x, 0, VertexBytes, o + 0, 2);
+                Buffer.BlockCopy(y, 0, VertexBytes, o + 2, 2);
+                Buffer.BlockCopy(z, 0, VertexBytes, o + 4, 2);
+                Buffer.BlockCopy(w, 0, VertexBytes, o + 6, 2);
             }
         }
         public void SetColour(int v, int c, Color val)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(Color)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(Color)
-                if (e <= VertexBytes.Length)
-                {
-                    var u = val.ToRgba();
-                    var b = BitConverter.GetBytes(u);
-                    Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
-                }
+                var u = val.ToRgba();
+                var b = BitConverter.GetBytes(u);
+                Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
             }
         }
         public void SetUByte4(int v, int c, Color val)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(UByte4)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(UByte4)
-                if (e <= VertexBytes.Length)
-                {
-                    var u = val.ToRgba();
-                    var b = BitConverter.GetBytes(u);
-                    Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
-                }
+                var u = val.ToRgba();
+                var b = BitConverter.GetBytes(u);
+                Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
             }
         }
 
         public string GetString(int v, int c, string d = ", ")
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return string.Empty;
+
+            var ct = Info.GetComponentType(c);
+            switch (ct)
             {
-                var ct = Info.GetComponentType(c);
-                switch (ct)
-                {
-                    case VertexComponentType.Float: return FloatUtil.ToString(GetFloat(v, c));
-                    case VertexComponentType.Float2: return FloatUtil.GetVector2String(GetVector2(v, c), d);
-                    case VertexComponentType.Float3: return FloatUtil.GetVector3String(GetVector3(v, c), d);
-                    case VertexComponentType.Float4: return FloatUtil.GetVector4String(GetVector4(v, c), d);
-                    case VertexComponentType.Dec3N: return FloatUtil.GetVector3String(GetDec3N(v, c), d);
-                    case VertexComponentType.Half2: return FloatUtil.GetHalf2String(GetHalf2(v, c), d);
-                    case VertexComponentType.Half4: return FloatUtil.GetHalf4String(GetHalf4(v, c), d);
-                    case VertexComponentType.Colour: return FloatUtil.GetColourString(GetColour(v, c), d);
-                    case VertexComponentType.UByte4: return FloatUtil.GetColourString(GetUByte4(v, c), d);
-                    default:
-                        break;
-                }
+                case VertexComponentType.Float: return FloatUtil.ToString(GetFloat(v, c));
+                case VertexComponentType.Float2: return FloatUtil.GetVector2String(GetVector2(v, c), d);
+                case VertexComponentType.Float3: return FloatUtil.GetVector3String(GetVector3(v, c), d);
+                case VertexComponentType.Float4: return FloatUtil.GetVector4String(GetVector4(v, c), d);
+                case VertexComponentType.Dec3N: return FloatUtil.GetVector3String(GetDec3N(v, c), d);
+                case VertexComponentType.Half2: return FloatUtil.GetHalf2String(GetHalf2(v, c), d);
+                case VertexComponentType.Half4: return FloatUtil.GetHalf4String(GetHalf4(v, c), d);
+                case VertexComponentType.Colour: return FloatUtil.GetColourString(GetColour(v, c), d);
+                case VertexComponentType.UByte4: return FloatUtil.GetColourString(GetUByte4(v, c), d);
+                default:
+                    break;
             }
+
             return string.Empty;
         }
         public float GetFloat(int v, int c)
@@ -4001,151 +4012,153 @@ namespace CodeWalker.GameFiles
         }
         public Vector2 GetVector2(int v, int c)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return Vector2.Zero;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 8;//sizeof(Vector2)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 8;//sizeof(Vector2)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.ToSingle(VertexBytes, o + 0);
-                    var y = BitConverter.ToSingle(VertexBytes, o + 4);
-                    return new Vector2(x, y);
-                }
+                var x = BitConverter.ToSingle(VertexBytes, o + 0);
+                var y = BitConverter.ToSingle(VertexBytes, o + 4);
+                return new Vector2(x, y);
             }
+
             return Vector2.Zero;
         }
         public Vector3 GetVector3(int v, int c)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return Vector3.Zero;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 12;//sizeof(Vector3)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 12;//sizeof(Vector3)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.ToSingle(VertexBytes, o + 0);
-                    var y = BitConverter.ToSingle(VertexBytes, o + 4);
-                    var z = BitConverter.ToSingle(VertexBytes, o + 8);
-                    return new Vector3(x, y, z);
-                }
+                var x = BitConverter.ToSingle(VertexBytes, o + 0);
+                var y = BitConverter.ToSingle(VertexBytes, o + 4);
+                var z = BitConverter.ToSingle(VertexBytes, o + 8);
+                return new Vector3(x, y, z);
             }
             return Vector3.Zero;
         }
         public Vector4 GetVector4(int v, int c)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return Vector4.Zero;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 16;//sizeof(Vector4)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 16;//sizeof(Vector4)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.ToSingle(VertexBytes, o + 0);
-                    var y = BitConverter.ToSingle(VertexBytes, o + 4);
-                    var z = BitConverter.ToSingle(VertexBytes, o + 8);
-                    var w = BitConverter.ToSingle(VertexBytes, o + 12);
-                    return new Vector4(x, y, z, w);
-                }
+                var x = BitConverter.ToSingle(VertexBytes, o + 0);
+                var y = BitConverter.ToSingle(VertexBytes, o + 4);
+                var z = BitConverter.ToSingle(VertexBytes, o + 8);
+                var w = BitConverter.ToSingle(VertexBytes, o + 12);
+                return new Vector4(x, y, z, w);
             }
+
             return Vector4.Zero;
         }
         public Vector3 GetDec3N(int v, int c)
         {
+            if (Info is null || VertexBytes is null)
+                return Vector3.Zero;
+
             //see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb322868(v%3Dvs.85)
-            if ((Info != null) && (VertexBytes != null))
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(Dec3N)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(Dec3N)
-                if (e <= VertexBytes.Length)
-                {
-                    var u = BitConverter.ToUInt32(VertexBytes, o);
-                    var ux = (u >> 0) & 0x3FF;
-                    var uy = (u >> 10) & 0x3FF;
-                    var uz = (u >> 20) & 0x3FF;
-                    var uw = (u >> 30);
-                    var sx = (ux & 0x200) > 0;
-                    var sy = (uy & 0x200) > 0;
-                    var sz = (uz & 0x200) > 0;
-                    var x = ((sx ? ~ux : ux) & 0x1FF) / (sx ? -511.0f : 511.0f);
-                    var y = ((sy ? ~uy : uy) & 0x1FF) / (sy ? -511.0f : 511.0f);
-                    var z = ((sz ? ~uz : uz) & 0x1FF) / (sz ? -511.0f : 511.0f);
-                    return new Vector3(x, y, z);
-                }
+                var u = BitConverter.ToUInt32(VertexBytes, o);
+                var ux = (u >> 0) & 0x3FF;
+                var uy = (u >> 10) & 0x3FF;
+                var uz = (u >> 20) & 0x3FF;
+                var uw = (u >> 30);
+                var sx = (ux & 0x200) > 0;
+                var sy = (uy & 0x200) > 0;
+                var sz = (uz & 0x200) > 0;
+                var x = ((sx ? ~ux : ux) & 0x1FF) / (sx ? -511.0f : 511.0f);
+                var y = ((sy ? ~uy : uy) & 0x1FF) / (sy ? -511.0f : 511.0f);
+                var z = ((sz ? ~uz : uz) & 0x1FF) / (sz ? -511.0f : 511.0f);
+                return new Vector3(x, y, z);
             }
             return Vector3.Zero;
         }
         public Half2 GetHalf2(int v, int c)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return new Half2(0, 0);
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(Half2)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(Half2)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.ToUInt16(VertexBytes, o + 0);
-                    var y = BitConverter.ToUInt16(VertexBytes, o + 2);
-                    return new Half2(x, y);
-                }
+                var x = BitConverter.ToUInt16(VertexBytes, o + 0);
+                var y = BitConverter.ToUInt16(VertexBytes, o + 2);
+                return new Half2(x, y);
             }
             return new Half2(0, 0);
         }
         public Half4 GetHalf4(int v, int c)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return new Half4(0, 0, 0, 0);
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 8;//sizeof(Half4)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 8;//sizeof(Half4)
-                if (e <= VertexBytes.Length)
-                {
-                    var x = BitConverter.ToUInt16(VertexBytes, o + 0);
-                    var y = BitConverter.ToUInt16(VertexBytes, o + 2);
-                    var z = BitConverter.ToUInt16(VertexBytes, o + 4);
-                    var w = BitConverter.ToUInt16(VertexBytes, o + 6);
-                    return new Half4(x, y, z, w);
-                }
+                var x = BitConverter.ToUInt16(VertexBytes, o + 0);
+                var y = BitConverter.ToUInt16(VertexBytes, o + 2);
+                var z = BitConverter.ToUInt16(VertexBytes, o + 4);
+                var w = BitConverter.ToUInt16(VertexBytes, o + 6);
+                return new Half4(x, y, z, w);
             }
             return new Half4(0, 0, 0, 0);
         }
         public Color GetColour(int v, int c)
         {
-            if ((Info != null) && (VertexBytes != null))
+            if (Info is null || VertexBytes is null)
+                return Color.Black;
+
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(Color)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(Color)
-                if (e <= VertexBytes.Length)
-                {
-                    var rgba = BitConverter.ToUInt32(VertexBytes, o);
-                    return new Color(rgba);
-                }
+                var rgba = BitConverter.ToUInt32(VertexBytes, o);
+                return new Color(rgba);
             }
             return Color.Black;
         }
         public Color GetUByte4(int v, int c)
         {
+            if (Info is null || VertexBytes is null)
+                return new Color(0, 0, 0, 0);
+
             //Color is the same as UByte4 really
-            if ((Info != null) && (VertexBytes != null))
+            var s = Info.Stride;
+            var co = Info.GetComponentOffset(c);
+            var o = (v * s) + co;
+            var e = o + 4;//sizeof(UByte4)
+            if (e <= VertexBytes.Length)
             {
-                var s = Info.Stride;
-                var co = Info.GetComponentOffset(c);
-                var o = (v * s) + co;
-                var e = o + 4;//sizeof(UByte4)
-                if (e <= VertexBytes.Length)
-                {
-                    var rgba = BitConverter.ToUInt32(VertexBytes, o);
-                    return new Color(rgba);
-                }
+                var rgba = BitConverter.ToUInt32(VertexBytes, o);
+                return new Color(rgba);
             }
             return new Color(0, 0, 0, 0);
         }
@@ -4157,12 +4170,10 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class VertexDeclaration : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class VertexDeclaration : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 16; }
-        }
+        public override long BlockLength => 16;
 
         // structure data
         public uint Flags { get; set; }
@@ -4296,12 +4307,10 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class IndexBuffer : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class IndexBuffer : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 96; }
-        }
+        public override long BlockLength => 96;
 
         // structure data
         public uint VFT { get; set; } = 1080152408;
@@ -4401,15 +4410,15 @@ namespace CodeWalker.GameFiles
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            if (Indices != null)
+            if (Indices is not null && Indices.Length > 0)
             {
-                YdrXml.WriteRawArray(sb, Indices, indent, "Data", "", null, 24);
+                YdrXml.WriteRawArray(sb, Indices, indent, "Data", "", (FormatterRef<ushort>?)null, 24);
             }
         }
         public void ReadXml(XmlNode node)
         {
             var inode = node.SelectSingleNode("Data");
-            if (inode != null)
+            if (inode is not null)
             {
                 Indices = Xml.GetRawUshortArray(node);
                 IndicesCount = (uint)(Indices?.Length ?? 0);
@@ -4420,7 +4429,7 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
-            if (Indices != null)
+            if (Indices is not null)
             {
                 IndicesBlock = new ResourceSystemStructBlock<ushort>(Indices);
                 list.Add(IndicesBlock);
@@ -4437,17 +4446,14 @@ namespace CodeWalker.GameFiles
         Capsule = 4,
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class LightAttributes : ResourceSystemBlock, IMetaXmlItem
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class LightAttributes : ResourceSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 168; }
-        }
-
+        public override long BlockLength => 168;
         // structure data
         public uint Unknown_0h { get; set; } // 0x00000000
         public uint Unknown_4h { get; set; } // 0x00000000
-        public Vector3 Position { get; set; }
+        public Vector3 Position;
         public uint Unknown_14h { get; set; } // 0x00000000
         public byte ColorR { get; set; }
         public byte ColorG { get; set; }
@@ -4717,23 +4723,25 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableBase : ResourceFileBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class DrawableBase : ResourceFileBase
     {
-        private DrawableModel[] allModels;
+        private DrawableModel[]? allModels;
 
-        public override long BlockLength
-        {
-            get { return 168; }
-        }
+        public override long BlockLength => 168;
 
         // structure data
         public ulong ShaderGroupPointer { get; set; }
         public ulong SkeletonPointer { get; set; }
         public Vector3 BoundingCenter { get; set; }
         public float BoundingSphereRadius { get; set; }
-        public Vector3 BoundingBoxMin { get; set; }
+
+        public Vector3 _BoundingBoxMin;
+        public ref Vector3 BoundingBoxMin { get => ref _BoundingBoxMin; }
         public uint Unknown_3Ch { get; set; } = 0x7f800001;
-        public Vector3 BoundingBoxMax { get; set; }
+
+        public Vector3 _BoundingBoxMax;
+        public ref Vector3 BoundingBoxMax { get => ref _BoundingBoxMax; }
         public uint Unknown_4Ch { get; set; } = 0x7f800001;
         public ulong DrawableModelsHighPointer { get; set; }
         public ulong DrawableModelsMediumPointer { get; set; }
@@ -4755,43 +4763,43 @@ namespace CodeWalker.GameFiles
 
         public byte FlagsHigh
         {
-            get { return (byte)(RenderMaskFlagsHigh & 0xFF); }
-            set { RenderMaskFlagsHigh = (RenderMaskFlagsHigh & 0xFFFFFF00) + (value & 0xFFu); }
+            get => (byte)(RenderMaskFlagsHigh & 0xFF);
+            set => RenderMaskFlagsHigh = (RenderMaskFlagsHigh & 0xFFFFFF00) + (value & 0xFFu);
         }
         public byte FlagsMed
         {
-            get { return (byte)(RenderMaskFlagsMed & 0xFF); }
-            set { RenderMaskFlagsMed = (RenderMaskFlagsMed & 0xFFFFFF00) + (value & 0xFFu); }
+            get => (byte)(RenderMaskFlagsMed & 0xFF);
+            set => RenderMaskFlagsMed = (RenderMaskFlagsMed & 0xFFFFFF00) + (value & 0xFFu);
         }
         public byte FlagsLow
         {
-            get { return (byte)(RenderMaskFlagsLow & 0xFF); }
-            set { RenderMaskFlagsLow = (RenderMaskFlagsLow & 0xFFFFFF00) + (value & 0xFFu); }
+            get => (byte)(RenderMaskFlagsLow & 0xFF);
+            set => RenderMaskFlagsLow = (RenderMaskFlagsLow & 0xFFFFFF00) + (value & 0xFFu);
         }
         public byte FlagsVlow
         {
-            get { return (byte)(RenderMaskFlagsVlow & 0xFF); }
-            set { RenderMaskFlagsVlow = (RenderMaskFlagsVlow & 0xFFFFFF00) + (value & 0xFFu); }
+            get => (byte)(RenderMaskFlagsVlow & 0xFF);
+            set => RenderMaskFlagsVlow = (RenderMaskFlagsVlow & 0xFFFFFF00) + (value & 0xFFu);
         }
         public byte RenderMaskHigh
         {
-            get { return (byte)((RenderMaskFlagsHigh >> 8) & 0xFF); }
-            set { RenderMaskFlagsHigh = (RenderMaskFlagsHigh & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+            get => (byte)((RenderMaskFlagsHigh >> 8) & 0xFF);
+            set => RenderMaskFlagsHigh = (RenderMaskFlagsHigh & 0xFFFF00FF) + ((value & 0xFFu) << 8);
         }
         public byte RenderMaskMed
         {
-            get { return (byte)((RenderMaskFlagsMed >> 8) & 0xFF); }
-            set { RenderMaskFlagsMed = (RenderMaskFlagsMed & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+            get => (byte)((RenderMaskFlagsMed >> 8) & 0xFF);
+            set => RenderMaskFlagsMed = (RenderMaskFlagsMed & 0xFFFF00FF) + ((value & 0xFFu) << 8);
         }
         public byte RenderMaskLow
         {
-            get { return (byte)((RenderMaskFlagsLow >> 8) & 0xFF); }
-            set { RenderMaskFlagsLow = (RenderMaskFlagsLow & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+            get => (byte)((RenderMaskFlagsLow >> 8) & 0xFF);
+            set => RenderMaskFlagsLow = (RenderMaskFlagsLow & 0xFFFF00FF) + ((value & 0xFFu) << 8);
         }
         public byte RenderMaskVlow
         {
-            get { return (byte)((RenderMaskFlagsVlow >> 8) & 0xFF); }
-            set { RenderMaskFlagsVlow = (RenderMaskFlagsVlow & 0xFFFF00FF) + ((value & 0xFFu) << 8); }
+            get => (byte)((RenderMaskFlagsVlow >> 8) & 0xFF);
+            set => RenderMaskFlagsVlow = (RenderMaskFlagsVlow & 0xFFFF00FF) + ((value & 0xFFu) << 8);
         }
 
 
@@ -4809,7 +4817,7 @@ namespace CodeWalker.GameFiles
                 {
                     BuildAllModels();
                 }
-                return allModels;
+                return allModels!;
             }
             set => allModels = value;
         }
@@ -4817,14 +4825,16 @@ namespace CodeWalker.GameFiles
 
         public object Owner { get; set; }
 
-        public long MemoryUsage
+        public long MemoryUsage => PhysicalMemoryUsage + VirtualMemoryUsage;
+
+        public long VirtualMemoryUsage
         {
             get
             {
                 long val = 0;
                 if (AllModels != null)
                 {
-                    foreach(DrawableModel m in AllModels)
+                    foreach (DrawableModel m in AllModels)
                     {
                         if (m != null)
                         {
@@ -4832,13 +4842,12 @@ namespace CodeWalker.GameFiles
                         }
                     }
                 }
-                if ((ShaderGroup != null) && (ShaderGroup.TextureDictionary != null))
-                {
-                    val += ShaderGroup.TextureDictionary.MemoryUsage;
-                }
+
                 return val;
             }
         }
+
+        public long PhysicalMemoryUsage => ShaderGroup?.TextureDictionary?.MemoryUsage ?? 0;
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -5114,43 +5123,46 @@ namespace CodeWalker.GameFiles
             YdrXml.ValueTag(sb, indent, "FlagsMed", FlagsMed.ToString());
             YdrXml.ValueTag(sb, indent, "FlagsLow", FlagsLow.ToString());
             YdrXml.ValueTag(sb, indent, "FlagsVlow", FlagsVlow.ToString());
-            if (ShaderGroup != null)
+            if (ShaderGroup is not null)
             {
                 YdrXml.OpenTag(sb, indent, "ShaderGroup");
                 ShaderGroup.WriteXml(sb, indent + 1, ddsfolder);
                 YdrXml.CloseTag(sb, indent, "ShaderGroup");
             }
-            if (Skeleton != null)
+            if (Skeleton is not null)
             {
                 YdrXml.OpenTag(sb, indent, "Skeleton");
                 Skeleton.WriteXml(sb, indent + 1);
                 YdrXml.CloseTag(sb, indent, "Skeleton");
             }
-            if (Joints != null)
+            if (Joints is not null)
             {
                 YdrXml.OpenTag(sb, indent, "Joints");
                 Joints.WriteXml(sb, indent + 1);
                 YdrXml.CloseTag(sb, indent, "Joints");
             }
-            if (DrawableModels?.High != null)
+            if (DrawableModels is not null)
             {
-                YdrXml.WriteItemArray(sb, DrawableModels.High, indent, "DrawableModelsHigh");
-            }
-            if (DrawableModels?.Med != null)
-            {
-                YdrXml.WriteItemArray(sb, DrawableModels.Med, indent, "DrawableModelsMedium");
-            }
-            if (DrawableModels?.Low != null)
-            {
-                YdrXml.WriteItemArray(sb, DrawableModels.Low, indent, "DrawableModelsLow");
-            }
-            if (DrawableModels?.VLow != null)
-            {
-                YdrXml.WriteItemArray(sb, DrawableModels.VLow, indent, "DrawableModelsVeryLow");
-            }
-            if (DrawableModels?.Extra != null)//is this right? duplicates..?
-            {
-                YdrXml.WriteItemArray(sb, DrawableModels.Extra, indent, "DrawableModelsX");
+                if (DrawableModels.High is not null)
+                {
+                    YdrXml.WriteItemArray(sb, DrawableModels.High, indent, "DrawableModelsHigh");
+                }
+                if (DrawableModels.Med is not null)
+                {
+                    YdrXml.WriteItemArray(sb, DrawableModels.Med, indent, "DrawableModelsMedium");
+                }
+                if (DrawableModels.Low is not null)
+                {
+                    YdrXml.WriteItemArray(sb, DrawableModels.Low, indent, "DrawableModelsLow");
+                }
+                if (DrawableModels.VLow is not null)
+                {
+                    YdrXml.WriteItemArray(sb, DrawableModels.VLow, indent, "DrawableModelsVeryLow");
+                }
+                if (DrawableModels.Extra is not null)//is this right? duplicates..?
+                {
+                    YdrXml.WriteItemArray(sb, DrawableModels.Extra, indent, "DrawableModelsX");
+                }
             }
         }
         public virtual void ReadXml(XmlNode node, string ddsfolder)
@@ -5206,10 +5218,16 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (ShaderGroup != null) list.Add(ShaderGroup);
-            if (Skeleton != null) list.Add(Skeleton);
-            if (Joints != null) list.Add(Joints);
-            if (DrawableModels != null) list.Add(DrawableModels);
+
+            if (ShaderGroup is not null)
+                list.Add(ShaderGroup);
+            if (Skeleton is not null)
+                list.Add(Skeleton);
+            if (Joints is not null)
+                list.Add(Joints);
+            if (DrawableModels is not null)
+                list.Add(DrawableModels);
+
             return list.ToArray();
         }
 
@@ -5222,17 +5240,16 @@ namespace CodeWalker.GameFiles
             //}
 
             //map the shaders to the geometries
-            if (shaderGrp != null)
+            if (shaderGrp is not null)
             {
                 var shaders = shaderGrp.Shaders.data_items;
                 foreach (DrawableModel model in AllModels)
                 {
-                    if (model?.Geometries == null) continue;
+                    if (model?.Geometries is null)
+                        continue;
 
-                    int geomcount = model.Geometries.Length;
-                    for (int i = 0; i < geomcount; i++)
+                    foreach(var geom in model.Geometries)
                     {
-                        var geom = model.Geometries[i];
                         var sid = geom.ShaderID;
                         geom.Shader = (sid < shaders.Length) ? shaders[sid] : null;
                     }
@@ -5254,45 +5271,50 @@ namespace CodeWalker.GameFiles
                 return;
             }
             var length = (DrawableModels.High?.Length ?? 0) + (DrawableModels.Med?.Length ?? 0) + (DrawableModels.Low?.Length ?? 0) + (DrawableModels.VLow?.Length ?? 0);
+            if (length == 0)
+            {
+                allModels = Array.Empty<DrawableModel>();
+                return;
+            }
             allModels = new DrawableModel[length];
             var currIndex = 0;
-            if (DrawableModels.High != null)
+            if (DrawableModels.High is not null)
             {
-                for (int i = 0; i < DrawableModels.High.Length; i++)
+                foreach(var model in DrawableModels.High)
                 {
-                    allModels[currIndex] = DrawableModels.High[i];
+                    allModels[currIndex] = model;
                     currIndex++;
                 }
             }
-            if (DrawableModels.Med != null)
+            if (DrawableModels.Med is not null)
             {
-                for (int i = 0; i < DrawableModels.Med.Length; i++)
+                foreach(var model in DrawableModels.Med)
                 {
-                    allModels[currIndex] = DrawableModels.Med[i];
+                    allModels[currIndex] = model;
                     currIndex++;
                 }
             }
-            if (DrawableModels.Low != null)
+            if (DrawableModels.Low is not null)
             {
-                for (int i = 0; i < DrawableModels.Low.Length; i++)
+                foreach(var model in DrawableModels.Low)
                 {
-                    allModels[currIndex] = DrawableModels.Low[i];
+                    allModels[currIndex] = model;
                     currIndex++;
                 }
             }
-            if (DrawableModels.VLow != null)
+            if (DrawableModels.VLow is not null)
             {
-                for (int i = 0; i < DrawableModels.VLow.Length; i++)
+                foreach(var model in DrawableModels.VLow)
                 {
-                    allModels[currIndex] = DrawableModels.VLow[i];
+                    allModels[currIndex] = model;
                     currIndex++;
                 }
             }
-            if (DrawableModels.Extra != null)
+            if (DrawableModels.Extra is not null)
             {
-                for (int i = 0; i < DrawableModels.Extra.Length; i++)
+                foreach(var model in DrawableModels.Extra)
                 {
-                    allModels[currIndex] = DrawableModels.Extra[i];
+                    allModels[currIndex] = model;
                     currIndex++;
                 }
             }
@@ -5303,25 +5325,22 @@ namespace CodeWalker.GameFiles
             var vds = new Dictionary<ulong, VertexDeclaration>();
             foreach (DrawableModel model in AllModels)
             {
-                if (model.Geometries == null) continue;
+                if (model.Geometries is null)
+                    continue;
+
                 foreach (var geom in model.Geometries)
                 {
+                    if (geom.VertexBuffer is null)
+                        continue;
+
                     var info = geom.VertexBuffer.Info;
                     var declid = info.GetDeclarationId();
 
-                    if (!vds.ContainsKey(declid))
-                    {
-                        vds.Add(declid, info);
-                    }
-                    //else //debug test
-                    //{
-                    //    if ((VertexDecls[declid].Stride != info.Stride)||(VertexDecls[declid].Types != info.Types))
-                    //    {
-                    //    }
-                    //}
+                    _ = vds.TryAdd(declid, info);
                 }
             }
-            VertexDecls = new Dictionary<ulong, VertexDeclaration>(vds);
+
+            VertexDecls = vds;
         }
 
 
@@ -5332,31 +5351,20 @@ namespace CodeWalker.GameFiles
             var lmask = BuildRenderMask(DrawableModels?.Low);
             var vmask = BuildRenderMask(DrawableModels?.VLow);
 
-            ////just testing
-            //if (hmask != RenderMaskHigh)
-            //{ }//no hit
-            //if (mmask != RenderMaskMed)
-            //{ }//no hit
-            //if (lmask != RenderMaskLow)
-            //{ }//no hit
-            //if (vmask != RenderMaskVlow)
-            //{ }//no hit
-
             RenderMaskHigh = hmask;
             RenderMaskMed = mmask;
             RenderMaskLow = lmask;
             RenderMaskVlow = vmask;
 
         }
-        private byte BuildRenderMask(DrawableModel[] models)
+        private byte BuildRenderMask(DrawableModel[]? models)
         {
+            if (models is null)
+                return 0;
             byte mask = 0;
-            if (models != null)
+            foreach (var model in models)
             {
-                foreach (var model in models)
-                {
-                    mask = (byte)(mask | model.RenderMask);
-                }
+                mask = (byte)(mask | model.RenderMask);
             }
             return mask;
         }
@@ -5364,7 +5372,7 @@ namespace CodeWalker.GameFiles
 
         public DrawableBase ShallowCopy()
         {
-            DrawableBase r = null;
+            DrawableBase? r = null;
             if (this is FragDrawable fd)
             {
                 var f = new FragDrawable();
@@ -5431,12 +5439,10 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Drawable : DrawableBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class Drawable : DrawableBase
     {
-        public override long BlockLength
-        {
-            get { return 208; }
-        }
+        public override long BlockLength => 208;
 
         // structure data
         public ulong NamePointer { get; set; }
@@ -5445,14 +5451,14 @@ namespace CodeWalker.GameFiles
         public ulong BoundPointer { get; set; }
 
         // reference data
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public uint Hash { get; set; }
         public Bounds Bound { get; set; }
 
         public string ErrorMessage { get; set; }
 
 
-        private string_r NameBlock = null;//only used when saving..
+        private string_r? NameBlock = null;//only used when saving..
 
 
 #if DEBUG
@@ -5472,7 +5478,6 @@ namespace CodeWalker.GameFiles
 
             try
             {
-
                 // read reference data
                 this.Name = reader.ReadStringAt(//BlockAt<string_r>(
                     this.NamePointer // offset
@@ -5486,16 +5491,11 @@ namespace CodeWalker.GameFiles
                 {
                     Bound.Owner = this;
                 }
-
             }
             catch (Exception ex) 
             {
                 ErrorMessage = ex.ToString();
             }
-
-            if (UnkPointer != 0)
-            { }
-
 
 #if DEBUG
             Analyzer = new ResourceAnalyzer(reader);
@@ -5567,34 +5567,33 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (Name != null)
+            if (Name is not null)
             {
                 NameBlock = (string_r)Name;
                 list.Add(NameBlock);
             }
-            if (Bound != null) list.Add(Bound);
+            if (Bound is not null)
+                list.Add(Bound);
             return list.ToArray();
         }
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0xB0, LightAttributes),
-            };
+            return [
+                (0xB0, LightAttributes),
+            ];
         }
 
 
-        public override string ToString()
+        public override string? ToString()
         {
             return Name;
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawablePtfx : DrawableBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class DrawablePtfx : DrawableBase
     {
-        public override long BlockLength
-        {
-            get { return 176; }
-        }
+        public override long BlockLength => 176;
 
         // structure data
         public ulong UnkPointer { get; set; }
@@ -5606,9 +5605,6 @@ namespace CodeWalker.GameFiles
 
             // read structure data
             this.UnkPointer = reader.ReadUInt64();
-
-            if (UnkPointer != 0)
-            { }
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -5642,12 +5638,10 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawablePtfxDictionary : ResourceFileBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class DrawablePtfxDictionary : ResourceFileBase
     {
-        public override long BlockLength
-        {
-            get { return 64; }
-        }
+        public override long BlockLength => 64;
 
         // structure data
         public ulong Unknown_10h; // 0x0000000000000000
@@ -5666,9 +5660,7 @@ namespace CodeWalker.GameFiles
         public uint[] Hashes { get; set; }
         public ResourcePointerArray64<DrawablePtfx> Drawables { get; set; }
 
-
         private ResourceSystemStructBlock<uint> HashesBlock = null;//only used for saving
-
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -5689,16 +5681,8 @@ namespace CodeWalker.GameFiles
             // read reference data
             this.Hashes = reader.ReadUintsAt(this.HashesPointer, this.HashesCount1);
             this.Drawables = reader.ReadBlockAt<ResourcePointerArray64<DrawablePtfx>>(this.DrawablesPointer, this.DrawablesCount1);
-
-            //if (Unknown_10h != 0)
-            //{ }
-            //if (Unknown_18h != 1)
-            //{ }
-            //if (Unknown_2Ch != 0)
-            //{ }
-            //if (Unknown_3Ch != 0)
-            //{ }
         }
+
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
@@ -5764,7 +5748,8 @@ namespace CodeWalker.GameFiles
         }
         public static void WriteXmlNode(DrawablePtfxDictionary d, StringBuilder sb, int indent, string ddsfolder, string name = "DrawableDictionary")
         {
-            if (d == null) return;
+            if (d == null)
+                return;
             YddXml.OpenTag(sb, indent, name);
             d.WriteXml(sb, indent + 1, ddsfolder);
             YddXml.CloseTag(sb, indent, name);
@@ -5785,17 +5770,16 @@ namespace CodeWalker.GameFiles
                 HashesBlock = new ResourceSystemStructBlock<uint>(Hashes);
                 list.Add(HashesBlock);
             }
-            if (Drawables != null) list.Add(Drawables);
+            if (Drawables != null)
+                list.Add(Drawables);
             return list.ToArray();
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class DrawableDictionary : ResourceFileBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class DrawableDictionary : ResourceFileBase
     {
-        public override long BlockLength
-        {
-            get { return 64; }
-        }
+        public override long BlockLength => 64;
 
         // structure data
         public ulong Unknown_10h; // 0x0000000000000000
@@ -5828,6 +5812,38 @@ namespace CodeWalker.GameFiles
                     foreach(var drawable in Drawables.data_items)
                     {
                         val += drawable.MemoryUsage;
+                    }
+                }
+                return val;
+            }
+        }
+
+        public long PhysicalMemoryUsage
+        {
+            get
+            {
+                long val = 0;
+                if (Drawables?.data_items != null)
+                {
+                    foreach (var drawable in Drawables.data_items)
+                    {
+                        val += drawable.PhysicalMemoryUsage;
+                    }
+                }
+                return val;
+            }
+        }
+
+        public long VirtualMemoryUsage
+        {
+            get
+            {
+                long val = 0;
+                if (Drawables?.data_items != null)
+                {
+                    foreach (var drawable in Drawables.data_items)
+                    {
+                        val += drawable.VirtualMemoryUsage;
                     }
                 }
                 return val;
@@ -5959,6 +5975,4 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-
-
 }

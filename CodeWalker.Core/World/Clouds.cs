@@ -1,4 +1,5 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -73,6 +74,7 @@ namespace CodeWalker.World
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus, Weather weather)
         {
+            using var _ = new DisposableTimer("Clouds Init");
             Weather = weather;
             Timecycle = weather.Timecycle;
             var rpfman = gameFileCache.RpfMan;
@@ -121,8 +123,7 @@ namespace CodeWalker.World
             XmlNodeList frags = xml.SelectNodes("mCloudHatFrags/Item");
             foreach (XmlNode node in frags)
             {
-                XmlElement fragel = node as XmlElement;
-                if (fragel != null)
+                if (node is XmlElement fragel)
                 {
                     CloudHatFrag frag = new CloudHatFrag();
                     frag.Init(fragel);
@@ -136,7 +137,7 @@ namespace CodeWalker.World
             AltitudeScrollScaler = Xml.GetChildFloatAttribute(xml, "mAltitudeScrollScaler", "value");
         }
 
-        public CloudHatFrag FindFrag(string name)
+        public CloudHatFrag? FindFrag(string name)
         {
             for (int i = 0; i < CloudHatFrags.Length; i++)
             {
@@ -179,8 +180,7 @@ namespace CodeWalker.World
             XmlNodeList layersxml = xml.SelectNodes("mLayers/Item");
             foreach (XmlNode node in layersxml)
             {
-                XmlElement layerel = node as XmlElement;
-                if (layerel != null)
+                if (node is XmlElement layerel)
                 {
                     CloudHatFragLayer layer = new CloudHatFragLayer();
                     layer.Init(layerel);
@@ -298,8 +298,7 @@ namespace CodeWalker.World
             XmlNodeList mapxml = xml.SelectNodes("SettingsMap/Item");
             foreach (XmlNode node in mapxml)
             {
-                XmlElement itemel = node as XmlElement;
-                if (itemel != null)
+                if (node is XmlElement itemel)
                 {
                     CloudSettingsMapItem item = new CloudSettingsMapItem();
                     item.Init(itemel);

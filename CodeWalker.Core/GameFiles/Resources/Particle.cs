@@ -453,11 +453,11 @@ namespace CodeWalker.GameFiles
             ParticleRules.data_items = rules.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, ParticleRuleNameHashes),
-                new Tuple<long, IResourceBlock>(0x30, ParticleRules)
+            return new (long, IResourceBlock)[] {
+                (0x20, ParticleRuleNameHashes),
+                (0x30, ParticleRules)
             };
         }
     }
@@ -551,11 +551,11 @@ namespace CodeWalker.GameFiles
             EffectRules.data_items = rules.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, EffectRuleNameHashes),
-                new Tuple<long, IResourceBlock>(0x30, EffectRules)
+            return new (long, IResourceBlock)[] {
+                (0x20, EffectRuleNameHashes),
+                (0x30, EffectRules)
             };
         }
     }
@@ -652,11 +652,11 @@ namespace CodeWalker.GameFiles
             EmitterRules.data_items = rules.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, EmitterRuleNameHashes),
-                new Tuple<long, IResourceBlock>(0x30, EmitterRules)
+            return new (long, IResourceBlock)[] {
+                (0x20, EmitterRuleNameHashes),
+                (0x30, EmitterRules)
             };
         }
     }
@@ -1439,19 +1439,19 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(88, Spawner1),
-                new Tuple<long, IResourceBlock>(96, Spawner2),
-                new Tuple<long, IResourceBlock>(0x128, BehaviourList1),
-                new Tuple<long, IResourceBlock>(0x138, BehaviourList2),
-                new Tuple<long, IResourceBlock>(0x148, BehaviourList3),
-                new Tuple<long, IResourceBlock>(0x158, BehaviourList4),
-                new Tuple<long, IResourceBlock>(0x168, BehaviourList5),
-                new Tuple<long, IResourceBlock>(0x188, UnknownList1),
-                new Tuple<long, IResourceBlock>(0x1F0, ShaderVars),
-                new Tuple<long, IResourceBlock>(0x210, Drawables)
+            return new (long, IResourceBlock)[] {
+                (88, Spawner1),
+                (96, Spawner2),
+                (0x128, BehaviourList1),
+                (0x138, BehaviourList2),
+                (0x148, BehaviourList3),
+                (0x158, BehaviourList4),
+                (0x168, BehaviourList5),
+                (0x188, UnknownList1),
+                (0x1F0, ShaderVars),
+                (0x210, Drawables)
             };
         }
 
@@ -1556,10 +1556,10 @@ namespace CodeWalker.GameFiles
             Unknown_40h.data_items = XmlMeta.ReadHashItemArray(node, "Unknown40");
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x40, Unknown_40h)
+            return new (long, IResourceBlock)[] {
+                (0x40, Unknown_40h)
             };
         }
 
@@ -2685,14 +2685,14 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(192, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(480, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(624, KeyframeProp3),
-                new Tuple<long, IResourceBlock>(768, KeyframeProp4)
+            return new (long, IResourceBlock)[] {
+                (192, KeyframeProp0),
+                (336, KeyframeProp1),
+                (480, KeyframeProp2),
+                (624, KeyframeProp3),
+                (768, KeyframeProp4)
             };
         }
 
@@ -3134,12 +3134,12 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0, EventEmitterFlags),
-                new Tuple<long, IResourceBlock>(0x10, Unknown_10h),
-                new Tuple<long, IResourceBlock>(0x28, Unknown_28h)
+            return new (long, IResourceBlock)[] {
+                (0, EventEmitterFlags),
+                (0x10, Unknown_10h),
+                (0x28, Unknown_28h)
             };
         }
 
@@ -3307,10 +3307,10 @@ namespace CodeWalker.GameFiles
             Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleUnknown3>(node, "Items");
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0, Unknown_0h)
+            return new (long, IResourceBlock)[] {
+                (0, Unknown_0h)
             };
         }
 
@@ -3397,10 +3397,10 @@ namespace CodeWalker.GameFiles
             Unknown_0h.data_items = XmlMeta.ReadItemArray<ParticleKeyframePropValue>(node, "Keyframes");
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0, Unknown_0h)
+            return new (long, IResourceBlock)[] {
+                (0, Unknown_0h)
             };
         }
 
@@ -3675,19 +3675,19 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(120, KeyframeProps1[0]),
-                new Tuple<long, IResourceBlock>(264, KeyframeProps1[1]),
-                new Tuple<long, IResourceBlock>(408, KeyframeProps1[2]),
-                new Tuple<long, IResourceBlock>(552, KeyframeProps1[3]),
-                new Tuple<long, IResourceBlock>(696, KeyframeProps1[4]),
-                new Tuple<long, IResourceBlock>(840, KeyframeProps1[5]),
-                new Tuple<long, IResourceBlock>(984, KeyframeProps1[6]),
-                new Tuple<long, IResourceBlock>(1128, KeyframeProps1[7]),
-                new Tuple<long, IResourceBlock>(1272, KeyframeProps1[8]),
-                new Tuple<long, IResourceBlock>(1416, KeyframeProps1[9]),
+            return new (long, IResourceBlock)[] {
+                (120, KeyframeProps1[0]),
+                (264, KeyframeProps1[1]),
+                (408, KeyframeProps1[2]),
+                (552, KeyframeProps1[3]),
+                (696, KeyframeProps1[4]),
+                (840, KeyframeProps1[5]),
+                (984, KeyframeProps1[6]),
+                (1128, KeyframeProps1[7]),
+                (1272, KeyframeProps1[8]),
+                (1416, KeyframeProps1[9]),
             };
         }
 
@@ -3728,13 +3728,15 @@ namespace CodeWalker.GameFiles
         public override string ToString()
         {
             var str = ParticleKeyframeProp.GetName(Hash);
-            if (!string.IsNullOrEmpty(str)) return str;
+            if (!string.IsNullOrEmpty(str))
+                return str;
             return YptXml.HashString((MetaHash)Hash);
         }
 
         public string ToCleanString()
         {
-            if (Hash == 0) return string.Empty;
+            if (Hash == 0)
+                return string.Empty;
             return ToString();
         }
 
@@ -3754,7 +3756,8 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] public class ParticleKeyframeProp : ResourceSystemBlock, IMetaXmlItem
+    [TC(typeof(EXP))]
+    public class ParticleKeyframeProp : ResourceSystemBlock, IMetaXmlItem
     {
         // datBase
         // ptxKeyframeProp
@@ -3917,16 +3920,16 @@ namespace CodeWalker.GameFiles
 
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x70, Values)
+            return new (long, IResourceBlock)[] {
+                (0x70, Values)
             };
         }
 
         public override string ToString()
         {
-            return Name.ToString() + " (" + (Values?.data_items?.Length ?? 0).ToString() + " values)";
+            return $"{Name} ({ Values?.data_items?.Length ?? 0} values)";
         }
 
 
@@ -4014,10 +4017,12 @@ namespace CodeWalker.GameFiles
                 d[0x851d3d14] = "ptxAttractorDomain:m_sizeInnerKFP";
                 NameDict = d;
             }
+
             if (NameDict.TryGetValue(hash, out string str))
             {
                 return str;
             }
+
             return YptXml.HashString((MetaHash)hash);
         }
         private static Dictionary<uint, string> NameDict;
@@ -4193,7 +4198,8 @@ namespace CodeWalker.GameFiles
         Attractor = 3,
     }
 
-    [TC(typeof(EXP))] public class ParticleDomain : ResourceSystemBlock, IResourceXXSystemBlock, IMetaXmlItem
+    [TC(typeof(EXP))]
+    public class ParticleDomain : ResourceSystemBlock, IResourceXXSystemBlock, IMetaXmlItem
     {
         // datBase
         // ptxDomain
@@ -4397,21 +4403,21 @@ namespace CodeWalker.GameFiles
         }
         public static void WriteXmlNode(ParticleDomain d, StringBuilder sb, int indent, string name)
         {
-            if (d != null)
+            if (d is not null)
             {
                 YptXml.OpenTag(sb, indent, name);
                 d.WriteXml(sb, indent + 1);
                 YptXml.CloseTag(sb, indent, name);
             }
         }
-        public static ParticleDomain ReadXmlNode(XmlNode node)
+        public static ParticleDomain? ReadXmlNode(XmlNode node)
         {
             if (node != null)
             {
                 var typestr = Xml.GetChildStringAttribute(node, "Type");
                 var type = Xml.GetEnumValue<ParticleDomainType>(typestr);
                 var s = Create(type);
-                if (s != null)
+                if (s is not null)
                 {
                     s.ReadXml(node);
                 }
@@ -4420,19 +4426,19 @@ namespace CodeWalker.GameFiles
             return null;
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
             KeyframeProps.ManualCountOverride = true;
             KeyframeProps.ManualReferenceOverride = true;
             KeyframeProps.EntriesCount = 4;
             KeyframeProps.EntriesCapacity = 16;
 
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(24, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(168, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(312, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(456, KeyframeProp3),
-                new Tuple<long, IResourceBlock>(0x260, KeyframeProps)
+            return new (long, IResourceBlock)[] {
+                (24, KeyframeProp0),
+                (168, KeyframeProp1),
+                (312, KeyframeProp2),
+                (456, KeyframeProp3),
+                (0x260, KeyframeProps)
             };
         }
 
@@ -4591,14 +4597,14 @@ namespace CodeWalker.GameFiles
                 YptXml.CloseTag(sb, indent, name);
             }
         }
-        public static ParticleBehaviour ReadXmlNode(XmlNode node)
+        public static ParticleBehaviour? ReadXmlNode(XmlNode node)
         {
             if (node != null)
             {
                 var typestr = Xml.GetChildStringAttribute(node, "Type");
                 var type = Xml.GetEnumValue<ParticleBehaviourType>(typestr);
                 var s = Create(type);
-                if (s != null)
+                if (s is not null)
                 {
                     s.ReadXml(node);
                 }
@@ -4673,10 +4679,10 @@ namespace CodeWalker.GameFiles
 
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x10, KeyframeProps)
+            return new (long, IResourceBlock)[] {
+                (0x10, KeyframeProps)
             };
         }
 
@@ -4814,12 +4820,12 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x10, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1)
+            return new (long, IResourceBlock)[] {
+                (0x10, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1)
             };
         }
     }
@@ -5011,14 +5017,14 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1, KeyframeProp2, KeyframeProp3);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(480, KeyframeProp3)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1),
+                (336, KeyframeProp2),
+                (480, KeyframeProp3)
             };
         }
     }
@@ -5154,14 +5160,14 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1, KeyframeProp2, KeyframeProp3);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(480, KeyframeProp3)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1),
+                (336, KeyframeProp2),
+                (480, KeyframeProp3)
             };
         }
     }
@@ -5263,12 +5269,12 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1)
             };
         }
     }
@@ -5344,11 +5350,11 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0)
             };
         }
     }
@@ -5496,12 +5502,12 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1)
             };
         }
     }
@@ -5622,11 +5628,11 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0)
             };
         }
     }
@@ -5746,13 +5752,13 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1, KeyframeProp2);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp2)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1),
+                (336, KeyframeProp2)
             };
         }
     }
@@ -6146,11 +6152,11 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0)
             };
         }
     }
@@ -6405,19 +6411,19 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1, KeyframeProp2, KeyframeProp3, KeyframeProp4, KeyframeProp5, KeyframeProp6, KeyframeProp7, KeyframeProp8);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(480, KeyframeProp3),
-                new Tuple<long, IResourceBlock>(624, KeyframeProp4),
-                new Tuple<long, IResourceBlock>(768, KeyframeProp5),
-                new Tuple<long, IResourceBlock>(912, KeyframeProp6),
-                new Tuple<long, IResourceBlock>(1056, KeyframeProp7),
-                new Tuple<long, IResourceBlock>(1200, KeyframeProp8)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1),
+                (336, KeyframeProp2),
+                (480, KeyframeProp3),
+                (624, KeyframeProp4),
+                (768, KeyframeProp5),
+                (912, KeyframeProp6),
+                (1056, KeyframeProp7),
+                (1200, KeyframeProp8)
             };
         }
     }
@@ -6706,12 +6712,12 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1)
             };
         }
     }
@@ -6825,12 +6831,12 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1)
             };
         }
     }
@@ -6956,14 +6962,14 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1, KeyframeProp2, KeyframeProp3);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(480, KeyframeProp3)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1),
+                (336, KeyframeProp2),
+                (480, KeyframeProp3)
             };
         }
     }
@@ -7016,11 +7022,11 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0)
             };
         }
     }
@@ -7215,11 +7221,11 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0)
             };
         }
     }
@@ -7415,17 +7421,17 @@ namespace CodeWalker.GameFiles
             CreateKeyframeProps(KeyframeProp0, KeyframeProp1, KeyframeProp2, KeyframeProp3, KeyframeProp4, KeyframeProp5, KeyframeProp6);
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, KeyframeProps),
-                new Tuple<long, IResourceBlock>(48, KeyframeProp0),
-                new Tuple<long, IResourceBlock>(192, KeyframeProp1),
-                new Tuple<long, IResourceBlock>(336, KeyframeProp2),
-                new Tuple<long, IResourceBlock>(480, KeyframeProp3),
-                new Tuple<long, IResourceBlock>(624, KeyframeProp4),
-                new Tuple<long, IResourceBlock>(768, KeyframeProp5),
-                new Tuple<long, IResourceBlock>(912, KeyframeProp6)
+            return new (long, IResourceBlock)[] {
+                (16, KeyframeProps),
+                (48, KeyframeProp0),
+                (192, KeyframeProp1),
+                (336, KeyframeProp2),
+                (480, KeyframeProp3),
+                (624, KeyframeProp4),
+                (768, KeyframeProp5),
+                (912, KeyframeProp6)
             };
         }
     }
@@ -8113,8 +8119,10 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
-            if (Texture != null) list.Add(Texture);
-            if (TextureName != null) list.Add(TextureName);
+            if (Texture != null)
+                list.Add(Texture);
+            if (TextureName != null)
+                list.Add(TextureName);
             return list.ToArray();
         }
     }
@@ -8199,10 +8207,10 @@ namespace CodeWalker.GameFiles
             Items.data_items = XmlMeta.ReadItemArray<ParticleShaderVarKeyframeItem>(node, "Items");
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x28, Items)
+            return new (long, IResourceBlock)[] {
+                (0x28, Items)
             };
         }
     }

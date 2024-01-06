@@ -1,4 +1,9 @@
-﻿using CodeWalker.World;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.World;
+using Collections.Pooled;
+using CommunityToolkit.Diagnostics;
+using CommunityToolkit.HighPerformance;
+using Microsoft.Extensions.ObjectPool;
 using SharpDX;
 using System;
 using System.Collections;
@@ -16,11 +21,11 @@ namespace CodeWalker.GameFiles
 {
     public class VehiclesFile : GameFile, PackedFile
     {
-        private static XmlNameTable cachedNameTable = new NameTable();
+        private static XmlNameTableThreadSafe cachedNameTable = new XmlNameTableThreadSafe(256);
 
         public string ResidentTxd { get; set; }
-        public List<VehicleInitData> InitDatas { get; set; }
-        public Dictionary<string, string> TxdRelationships { get; set; }
+        public PooledList<VehicleInitData> InitDatas { get; set; }
+        public PooledDictionary<string, string> TxdRelationships { get; set; }
 
 
 
@@ -114,9 +119,14 @@ namespace CodeWalker.GameFiles
 
         private void LoadInitDatas(XmlDocument xmldoc)
         {
-            XmlNodeList items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/InitDatas/Item | CVehicleModelInfo__InitDataList/InitDatas/item");
+            XmlNodeList? items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/InitDatas/Item | CVehicleModelInfo__InitDataList/InitDatas/item");
 
-            InitDatas = new List<VehicleInitData>(items.Count);
+            if (items is null)
+            {
+                return;
+            }
+
+            InitDatas = new PooledList<VehicleInitData>(items.Count);
             for (int i = 0; i < items.Count; i++)
             {
                 var node = items[i];
@@ -130,10 +140,11 @@ namespace CodeWalker.GameFiles
         {
             if (!reader.IsStartElement() || reader.Name != "InitDatas")
             {
-                throw new InvalidOperationException("XmlReader is not at start element of \"InitDatas\"");
+                ThrowHelper.ThrowInvalidOperationException("XmlReader is not at start element of \"InitDatas\"");
+                return;
             }
 
-            InitDatas = new List<VehicleInitData>();
+            InitDatas = new PooledList<VehicleInitData>();
 
             reader.ReadStartElement("InitDatas");
 
@@ -152,52 +163,58 @@ namespace CodeWalker.GameFiles
         {
             if (reader.IsEmptyElement)
             {
-                TxdRelationships = new Dictionary<string, string>();
                 reader.ReadStartElement();
                 return;
             }
-            TxdRelationships = new Dictionary<string, string>();
+            TxdRelationships ??= new PooledDictionary<string, string>();
+            TxdRelationships.Clear();
 
-            foreach(var item in Xml.IterateItems(reader, "txdRelationships"))
+            foreach (var item in Xml.IterateItems(reader, "txdRelationships"))
             {
                 var childstr = item.Element("child")?.Value;
                 var parentstr = item.Element("parent")?.Value;
 
-                if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
+                if (!string.IsNullOrEmpty(parentstr) && !string.IsNullOrEmpty(childstr))
                 {
-                    if (!TxdRelationships.ContainsKey(childstr))
-                    {
-                        TxdRelationships.Add(childstr, parentstr);
-                    }
+                    _ = TxdRelationships.TryAdd(childstr, parentstr);
                 }
             }
         }
 
         private void LoadTxdRelationships(XmlDocument xmldoc)
         {
-            XmlNodeList items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/txdRelationships/Item | CVehicleModelInfo__InitDataList/txdRelationships/item");
+            XmlNodeList? items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/txdRelationships/Item | CVehicleModelInfo__InitDataList/txdRelationships/item");
+            if (items is null || items.Count == 0)
+            {
+                TxdRelationships.Clear();
+                return;
+            }
 
-            TxdRelationships = new Dictionary<string, string>();
+            TxdRelationships ??= new PooledDictionary<string, string>();
+            TxdRelationships.Clear();
             for (int i = 0; i < items.Count; i++)
             {
                 string parentstr = Xml.GetChildInnerText(items[i], "parent");
                 string childstr = Xml.GetChildInnerText(items[i], "child");
 
-                if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
+                if (!string.IsNullOrEmpty(parentstr) && !string.IsNullOrEmpty(childstr))
                 {
-                    if (!TxdRelationships.ContainsKey(childstr))
-                    {
-                        TxdRelationships.Add(childstr, parentstr);
-                    }
-                    else
-                    { }
+                    _ = TxdRelationships.TryAdd(childstr, parentstr);
                 }
             }
+        }
+
+        public override void Dispose()
+        {
+            InitDatas?.Dispose();
+            TxdRelationships?.Dispose();
+            base.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 
 
-    public class VehicleInitData
+    public record VehicleInitData
     {
         
         public string modelName { get; set; }                   //<modelName>impaler3</modelName>
@@ -455,7 +472,20 @@ namespace CodeWalker.GameFiles
                                 damageOffsetScale = Xml.GetChildFloatAttribute(reader, "damageOffsetScale");
                                 break;
                             case "diffuseTint":
-                                diffuseTint = new Color4(Convert.ToUInt32(Xml.GetChildStringAttribute(reader, "diffuseTint", "value").Replace("0x", ""), 16)); ;
+                                var str = Xml.GetChildStringAttribute(reader, "diffuseTint", "value").AsSpan();
+                                if (str.StartsWith("0x"))
+                                {
+                                    str = str.Slice(2);
+                                }
+
+                                if (str.IsEmpty)
+                                {
+                                    diffuseTint = new Color4();
+                                } else
+                                {
+                                    diffuseTint = new Color4(uint.Parse(str, System.Globalization.NumberStyles.HexNumber));
+                                }
+                                
                                 break;
                             case "steerWheelMult":
                                 steerWheelMult = Xml.GetChildFloatAttribute(reader, "steerWheelMult");
@@ -530,20 +560,25 @@ namespace CodeWalker.GameFiles
                                     break;
                                 }
 
-                                var _drivers = new List<VehicleDriver>();
-
-                                foreach (var item in Xml.IterateItems(reader, "drivers"))
+                                using (var _drivers = new PooledList<VehicleDriver>())
                                 {
-                                    var driver = new VehicleDriver();
-                                    driver.driverName = item.Element("driverName")?.Value ?? string.Empty;
-                                    driver.npcName = item.Element("npcName")?.Value ?? string.Empty;
-
-                                    if (!string.IsNullOrEmpty(driver.npcName) || !string.IsNullOrEmpty(driver.driverName))
+                                    foreach (var item in Xml.IterateItems(reader, "drivers"))
                                     {
-                                        _drivers.Add(driver);
+                                        var driver = new VehicleDriver
+                                        {
+                                            DriverName = item.Element("driverName")?.Value ?? string.Empty,
+                                            NpcName = item.Element("npcName")?.Value ?? string.Empty,
+                                        };
+
+
+                                        if (!string.IsNullOrEmpty(driver.NpcName) || !string.IsNullOrEmpty(driver.DriverName))
+                                        {
+                                            _drivers.Add(driver);
+                                        }
                                     }
+                                    drivers = _drivers.ToArray();
                                 }
-                                drivers = _drivers.ToArray();
+
                                 break;
                             case "doorsWithCollisionWhenClosed":
                                 doorsWithCollisionWhenClosed = GetStringItemArray(reader, "doorsWithCollisionWhenClosed");
@@ -602,7 +637,8 @@ namespace CodeWalker.GameFiles
                                             else if (reader.Name == "ThresholdMult")
                                             {
                                                 pOverrideRagdollThreshold.ThresholdMult = Xml.GetChildFloatAttribute(reader, "ThresholdMult", "value");
-                                            } else
+                                            }
+                                            else
                                             {
                                                 break;
                                             }
@@ -722,10 +758,11 @@ namespace CodeWalker.GameFiles
                     for (int i = 0; i < items.Count; i++)
                     {
                         var item = items[i];
-                        var driver = new VehicleDriver();
-                        driver.driverName = Xml.GetChildInnerText(item, "driverName");
-                        driver.npcName = Xml.GetChildInnerText(item, "npcName");
-                        drivers[i] = driver;
+                        drivers[i] = new VehicleDriver
+                        {
+                            DriverName = Xml.GetChildInnerText(item, "driverName"),
+                            NpcName = Xml.GetChildInnerText(item, "npcName")
+                        };
                     }
                 }
             }
@@ -760,26 +797,34 @@ namespace CodeWalker.GameFiles
             firstPersonDrivebyData = GetStringItemArray(node, "firstPersonDrivebyData");
         }
 
-        private string[] GetStringItemArray(XmlNode node, string childName)
+        private string[]? GetStringItemArray(XmlNode node, string childName)
         {
             var cnode = node.SelectSingleNode(childName);
-            if (cnode == null) return null;
+            if (cnode == null)
+                return null;
             var items = cnode.SelectNodes("Item");
-            if (items == null) return null;
-            getStringArrayList.Clear();
-            foreach (XmlNode inode in items)
+            if (items == null)
+                return null;
+
+            lock(getStringArrayList)
             {
-                var istr = inode.InnerText;
-                if (!string.IsNullOrEmpty(istr))
+                getStringArrayList.Clear();
+                foreach (XmlNode inode in items)
                 {
-                    getStringArrayList.Add(istr);
+                    var istr = inode.InnerText;
+                    if (!string.IsNullOrEmpty(istr))
+                    {
+                        getStringArrayList.Add(istr);
+                    }
                 }
+
+                if (getStringArrayList.Count == 0)
+                    return null;
+                return getStringArrayList.ToArray();
             }
-            if (getStringArrayList.Count == 0) return null;
-            return getStringArrayList.ToArray();
         }
 
-        private string[] GetStringItemArray(XmlReader node, string childName)
+        private string[]? GetStringItemArray(XmlReader node, string childName)
         {
             if (node.IsEmptyElement)
             {
@@ -807,70 +852,79 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        private string[] GetStringArray(string ldastr, char delimiter)
+        private string[]? GetStringArray(string ldastr, char delimiter)
         {
-            var ldarr = ldastr?.Split(delimiter);
-            if (ldarr == null) return null;
+            if (string.IsNullOrEmpty(ldastr))
+            {
+                return null;
+            }
             lock(getStringArrayList)
             {
                 getStringArrayList.Clear();
-                foreach (var ldstr in ldarr)
+                foreach (var ldstr in ldastr.EnumerateSplit(delimiter))
                 {
-                    var ldt = ldstr?.Trim();
-                    if (!string.IsNullOrEmpty(ldt))
+                    var ldt = ldstr.Trim();
+                    if (!ldt.IsEmpty)
                     {
-                        getStringArrayList.Add(ldt);
+                        getStringArrayList.Add(ldt.ToString());
                     }
                 }
-                if (getStringArrayList.Count == 0) return null;
+                if (getStringArrayList.Count == 0)
+                    return null;
                 return getStringArrayList.ToArray();
             }
         }
 
-        private string[] GetStringArray(XmlNode node, string childName, char delimiter)
+        private string[]? GetStringArray(XmlNode node, string childName, char delimiter)
         {
             var ldastr = Xml.GetChildInnerText(node, childName);
             return GetStringArray(ldastr, delimiter);
         }
 
-        private string[] GetStringArray(XmlReader reader, string childName, char delimiter)
+        private string[]? GetStringArray(XmlReader reader, string childName, char delimiter)
         {
             var ldastr = Xml.GetChildInnerText(reader, childName);
             return GetStringArray(ldastr, delimiter);
         }
 
-        [SkipLocalsInit]
-        private float[] GetFloatArray(string ldastr, char delimiter)
+        private float[]? GetFloatArray(string ldastr, char delimiter)
         {
-            var ldarr = ldastr?.Split(delimiter);
-            if (ldarr == null) return null;
-            Span<float> floats = stackalloc float[ldarr.Length];
-            var i = 0;
-            foreach (var ldstr in ldarr)
+            if (string.IsNullOrEmpty(ldastr))
             {
-                var ldt = ldstr?.Trim();
-                if (!string.IsNullOrEmpty(ldt) && FloatUtil.TryParse(ldt, out var f))
-                {
-                    floats[i] = f;
-                    i++;
-                }
+                return [];
             }
-            if (i == 0) return null;
+            var ldarr = ldastr.Split(delimiter);
+            if (ldarr == null)
+                return [];
 
-            var result = new float[i];
+            lock (getFloatArrayList)
+            {
+                getFloatArrayList.Clear();
+                foreach (var ldstr in ldastr.EnumerateSplit(delimiter))
+                {
+                    var ldt = ldstr.Trim();
+                    if (!ldt.IsEmpty && FloatUtil.TryParse(ldt, out var f))
+                    {
+                        getFloatArrayList.Add(f);
+                    }
+                }
 
-            floats.Slice(0, i).CopyTo(result);
+                if (getFloatArrayList.Count == 0)
+                {
+                    return [];
+                }
 
-            return result;
+                return getFloatArrayList.ToArray();
+            }
         }
 
-        private float[] GetFloatArray(XmlNode node, string childName, char delimiter)
+        private float[]? GetFloatArray(XmlNode node, string childName, char delimiter)
         {
             var ldastr = Xml.GetChildInnerText(node, childName);
             return GetFloatArray(ldastr, delimiter);
         }
 
-        private float[] GetFloatArray(XmlReader reader, string childName, char delimiter)
+        private float[]? GetFloatArray(XmlReader reader, string childName, char delimiter)
         {
             var ldastr = Xml.GetChildInnerText(reader, childName);
             return GetFloatArray(ldastr, delimiter);
@@ -884,282 +938,28 @@ namespace CodeWalker.GameFiles
         {
             return modelName;
         }
-
-        public override bool Equals(object obj)
-        {
-            return obj is VehicleInitData data &&
-                   modelName == data.modelName &&
-                   txdName == data.txdName &&
-                   handlingId == data.handlingId &&
-                   gameName == data.gameName &&
-                   vehicleMakeName == data.vehicleMakeName &&
-                   expressionDictName == data.expressionDictName &&
-                   expressionName == data.expressionName &&
-                   animConvRoofDictName == data.animConvRoofDictName &&
-                   animConvRoofName == data.animConvRoofName &&
-                   animConvRoofWindowsAffected == data.animConvRoofWindowsAffected &&
-                   ptfxAssetName == data.ptfxAssetName &&
-                   audioNameHash == data.audioNameHash &&
-                   layout == data.layout &&
-                   coverBoundOffsets == data.coverBoundOffsets &&
-                   explosionInfo == data.explosionInfo &&
-                   scenarioLayout == data.scenarioLayout &&
-                   cameraName == data.cameraName &&
-                   aimCameraName == data.aimCameraName &&
-                   bonnetCameraName == data.bonnetCameraName &&
-                   povCameraName == data.povCameraName &&
-                   FirstPersonDriveByIKOffset.Equals(data.FirstPersonDriveByIKOffset) &&
-                   FirstPersonDriveByUnarmedIKOffset.Equals(data.FirstPersonDriveByUnarmedIKOffset) &&
-                   FirstPersonProjectileDriveByIKOffset.Equals(data.FirstPersonProjectileDriveByIKOffset) &&
-                   FirstPersonProjectileDriveByPassengerIKOffset.Equals(data.FirstPersonProjectileDriveByPassengerIKOffset) &&
-                   FirstPersonDriveByRightPassengerIKOffset.Equals(data.FirstPersonDriveByRightPassengerIKOffset) &&
-                   FirstPersonDriveByRightPassengerUnarmedIKOffset.Equals(data.FirstPersonDriveByRightPassengerUnarmedIKOffset) &&
-                   FirstPersonMobilePhoneOffset.Equals(data.FirstPersonMobilePhoneOffset) &&
-                   FirstPersonPassengerMobilePhoneOffset.Equals(data.FirstPersonPassengerMobilePhoneOffset) &&
-                   PovCameraOffset.Equals(data.PovCameraOffset) &&
-                   PovCameraVerticalAdjustmentForRollCage.Equals(data.PovCameraVerticalAdjustmentForRollCage) &&
-                   PovPassengerCameraOffset.Equals(data.PovPassengerCameraOffset) &&
-                   PovRearPassengerCameraOffset.Equals(data.PovRearPassengerCameraOffset) &&
-                   vfxInfoName == data.vfxInfoName &&
-                   shouldUseCinematicViewMode == data.shouldUseCinematicViewMode &&
-                   shouldCameraTransitionOnClimbUpDown == data.shouldCameraTransitionOnClimbUpDown &&
-                   shouldCameraIgnoreExiting == data.shouldCameraIgnoreExiting &&
-                   AllowPretendOccupants == data.AllowPretendOccupants &&
-                   AllowJoyriding == data.AllowJoyriding &&
-                   AllowSundayDriving == data.AllowSundayDriving &&
-                   AllowBodyColorMapping == data.AllowBodyColorMapping &&
-                   wheelScale == data.wheelScale &&
-                   wheelScaleRear == data.wheelScaleRear &&
-                   dirtLevelMin == data.dirtLevelMin &&
-                   dirtLevelMax == data.dirtLevelMax &&
-                   envEffScaleMin == data.envEffScaleMin &&
-                   envEffScaleMax == data.envEffScaleMax &&
-                   envEffScaleMin2 == data.envEffScaleMin2 &&
-                   envEffScaleMax2 == data.envEffScaleMax2 &&
-                   damageMapScale == data.damageMapScale &&
-                   damageOffsetScale == data.damageOffsetScale &&
-                   diffuseTint.Equals(data.diffuseTint) &&
-                   steerWheelMult == data.steerWheelMult &&
-                   HDTextureDist == data.HDTextureDist &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(lodDistances, data.lodDistances) &&
-                   minSeatHeight == data.minSeatHeight &&
-                   identicalModelSpawnDistance == data.identicalModelSpawnDistance &&
-                   maxNumOfSameColor == data.maxNumOfSameColor &&
-                   defaultBodyHealth == data.defaultBodyHealth &&
-                   pretendOccupantsScale == data.pretendOccupantsScale &&
-                   visibleSpawnDistScale == data.visibleSpawnDistScale &&
-                   trackerPathWidth == data.trackerPathWidth &&
-                   weaponForceMult == data.weaponForceMult &&
-                   frequency == data.frequency &&
-                   swankness == data.swankness &&
-                   maxNum == data.maxNum &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(flags, data.flags) &&
-                   type == data.type &&
-                   plateType == data.plateType &&
-                   dashboardType == data.dashboardType &&
-                   vehicleClass == data.vehicleClass &&
-                   wheelType == data.wheelType &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(trailers, data.trailers) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(additionalTrailers, data.additionalTrailers) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(drivers, data.drivers) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(extraIncludes, data.extraIncludes) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(doorsWithCollisionWhenClosed, data.doorsWithCollisionWhenClosed) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(driveableDoors, data.driveableDoors) &&
-                   bumpersNeedToCollideWithMap == data.bumpersNeedToCollideWithMap &&
-                   needsRopeTexture == data.needsRopeTexture &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(requiredExtras, data.requiredExtras) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(rewards, data.rewards) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(cinematicPartCamera, data.cinematicPartCamera) &&
-                   NmBraceOverrideSet == data.NmBraceOverrideSet &&
-                   buoyancySphereOffset.Equals(data.buoyancySphereOffset) &&
-                   buoyancySphereSizeScale == data.buoyancySphereSizeScale &&
-                   EqualityComparer<VehicleOverrideRagdollThreshold>.Default.Equals(pOverrideRagdollThreshold, data.pOverrideRagdollThreshold) &&
-                   StructuralComparisons.StructuralEqualityComparer.Equals(firstPersonDrivebyData, data.firstPersonDrivebyData);
-        }
-
-        public override int GetHashCode()
-        {
-            int hashCode = 1102137281;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(modelName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(txdName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(handlingId);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(gameName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(vehicleMakeName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(expressionDictName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(expressionName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(animConvRoofDictName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(animConvRoofName);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(animConvRoofWindowsAffected);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ptfxAssetName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(audioNameHash);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(layout);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(coverBoundOffsets);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(explosionInfo);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(scenarioLayout);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(cameraName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(aimCameraName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(bonnetCameraName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(povCameraName);
-            hashCode = hashCode * -1521134295 + FirstPersonDriveByIKOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + FirstPersonDriveByUnarmedIKOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + FirstPersonProjectileDriveByIKOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + FirstPersonProjectileDriveByPassengerIKOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + FirstPersonDriveByRightPassengerIKOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + FirstPersonDriveByRightPassengerUnarmedIKOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + FirstPersonMobilePhoneOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + FirstPersonPassengerMobilePhoneOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + PovCameraOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + PovCameraVerticalAdjustmentForRollCage.GetHashCode();
-            hashCode = hashCode * -1521134295 + PovPassengerCameraOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + PovRearPassengerCameraOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(vfxInfoName);
-            hashCode = hashCode * -1521134295 + shouldUseCinematicViewMode.GetHashCode();
-            hashCode = hashCode * -1521134295 + shouldCameraTransitionOnClimbUpDown.GetHashCode();
-            hashCode = hashCode * -1521134295 + shouldCameraIgnoreExiting.GetHashCode();
-            hashCode = hashCode * -1521134295 + AllowPretendOccupants.GetHashCode();
-            hashCode = hashCode * -1521134295 + AllowJoyriding.GetHashCode();
-            hashCode = hashCode * -1521134295 + AllowSundayDriving.GetHashCode();
-            hashCode = hashCode * -1521134295 + AllowBodyColorMapping.GetHashCode();
-            hashCode = hashCode * -1521134295 + wheelScale.GetHashCode();
-            hashCode = hashCode * -1521134295 + wheelScaleRear.GetHashCode();
-            hashCode = hashCode * -1521134295 + dirtLevelMin.GetHashCode();
-            hashCode = hashCode * -1521134295 + dirtLevelMax.GetHashCode();
-            hashCode = hashCode * -1521134295 + envEffScaleMin.GetHashCode();
-            hashCode = hashCode * -1521134295 + envEffScaleMax.GetHashCode();
-            hashCode = hashCode * -1521134295 + envEffScaleMin2.GetHashCode();
-            hashCode = hashCode * -1521134295 + envEffScaleMax2.GetHashCode();
-            hashCode = hashCode * -1521134295 + damageMapScale.GetHashCode();
-            hashCode = hashCode * -1521134295 + damageOffsetScale.GetHashCode();
-            hashCode = hashCode * -1521134295 + diffuseTint.GetHashCode();
-            hashCode = hashCode * -1521134295 + steerWheelMult.GetHashCode();
-            hashCode = hashCode * -1521134295 + HDTextureDist.GetHashCode();
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(lodDistances);
-            hashCode = hashCode * -1521134295 + minSeatHeight.GetHashCode();
-            hashCode = hashCode * -1521134295 + identicalModelSpawnDistance.GetHashCode();
-            hashCode = hashCode * -1521134295 + maxNumOfSameColor.GetHashCode();
-            hashCode = hashCode * -1521134295 + defaultBodyHealth.GetHashCode();
-            hashCode = hashCode * -1521134295 + pretendOccupantsScale.GetHashCode();
-            hashCode = hashCode * -1521134295 + visibleSpawnDistScale.GetHashCode();
-            hashCode = hashCode * -1521134295 + trackerPathWidth.GetHashCode();
-            hashCode = hashCode * -1521134295 + weaponForceMult.GetHashCode();
-            hashCode = hashCode * -1521134295 + frequency.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(swankness);
-            hashCode = hashCode * -1521134295 + maxNum.GetHashCode();
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(flags);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(type);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(plateType);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(dashboardType);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(vehicleClass);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(wheelType);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(trailers);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(additionalTrailers);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(drivers);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(extraIncludes);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(doorsWithCollisionWhenClosed);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(driveableDoors);
-            hashCode = hashCode * -1521134295 + bumpersNeedToCollideWithMap.GetHashCode();
-            hashCode = hashCode * -1521134295 + needsRopeTexture.GetHashCode();
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(requiredExtras);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(rewards);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(cinematicPartCamera);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(NmBraceOverrideSet);
-            hashCode = hashCode * -1521134295 + buoyancySphereOffset.GetHashCode();
-            hashCode = hashCode * -1521134295 + buoyancySphereSizeScale.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<VehicleOverrideRagdollThreshold>.Default.GetHashCode(pOverrideRagdollThreshold);
-            hashCode = hashCode * -1521134295 + StructuralComparisons.StructuralEqualityComparer.GetHashCode(firstPersonDrivebyData);
-            return hashCode;
-        }
-
-        public static bool operator ==(VehicleInitData left, VehicleInitData right)
-        {
-            return EqualityComparer<VehicleInitData>.Default.Equals(left, right);
-        }
-
-        public static bool operator !=(VehicleInitData left, VehicleInitData right)
-        {
-            return !(left == right);
-        }
     }
 
-    public class VehicleOverrideRagdollThreshold : IEquatable<VehicleOverrideRagdollThreshold>
+    public record VehicleOverrideRagdollThreshold : IEquatable<VehicleOverrideRagdollThreshold>
     {
         public int MinComponent { get; set; }
         public int MaxComponent { get; set; }
         public float ThresholdMult { get; set; }
 
-        public override bool Equals(object obj)
-        {
-            return obj is VehicleOverrideRagdollThreshold threshold && Equals(threshold);
-        }
-
-        public bool Equals(VehicleOverrideRagdollThreshold other)
-        {
-            return MinComponent == other.MinComponent &&
-                   MaxComponent == other.MaxComponent &&
-                   ThresholdMult == other.ThresholdMult;
-        }
-
-        public override int GetHashCode()
-        {
-            int hashCode = 1172526364;
-            hashCode = hashCode * -1521134295 + MinComponent.GetHashCode();
-            hashCode = hashCode * -1521134295 + MaxComponent.GetHashCode();
-            hashCode = hashCode * -1521134295 + ThresholdMult.GetHashCode();
-            return hashCode;
-        }
-
         public override string ToString()
         {
-            return MinComponent.ToString() + ", " + MaxComponent.ToString() + ", " + ThresholdMult.ToString();
-        }
-
-        public static bool operator ==(VehicleOverrideRagdollThreshold left, VehicleOverrideRagdollThreshold right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(VehicleOverrideRagdollThreshold left, VehicleOverrideRagdollThreshold right)
-        {
-            return !(left == right);
+            return $"{MinComponent}, {MaxComponent}, {ThresholdMult}";
         }
     }
-    public class VehicleDriver : IEquatable<VehicleDriver>
+
+    public readonly record struct VehicleDriver : IEquatable<VehicleDriver>
     {
-        public string driverName { get; set; }
-        public string npcName { get; set; }
-
-        public override bool Equals(object obj)
-        {
-            return obj is VehicleDriver driver && Equals(driver);
-        }
-
-        public bool Equals(VehicleDriver other)
-        {
-            return driverName == other.driverName &&
-                   npcName == other.npcName;
-        }
-
-        public override int GetHashCode()
-        {
-            int hashCode = -1906737521;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(driverName);
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(npcName);
-            return hashCode;
-        }
+        public string DriverName { get; init; }
+        public string NpcName { get; init; }
 
         public override string ToString()
         {
-            return driverName + ", " + npcName;
-        }
-
-        public static bool operator ==(VehicleDriver left, VehicleDriver right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(VehicleDriver left, VehicleDriver right)
-        {
-            return !(left == right);
+            return $"{DriverName}, {NpcName}";
         }
     }
 

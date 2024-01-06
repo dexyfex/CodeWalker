@@ -60,14 +60,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { UpdateStatus(text); }));
+                    Invoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void RPFScanComplete()
         {
@@ -75,15 +77,17 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { RPFScanComplete(); }));
+                    Invoke(RPFScanComplete);
                 }
                 else
                 {
-                    StatusLabel.Text = "Ready";
+                    UpdateStatus("Ready");
                     //RpfSearchPanel.Enabled = true;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -226,14 +230,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { FileSearchAddResult(result); }));
+                    Invoke(FileSearchAddResult, result);
                 }
                 else
                 {
                     FileSearchResultsTextBox.AppendText(result + "\r\n");
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void FileSearchComplete()
@@ -242,14 +248,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { FileSearchComplete(); }));
+                    Invoke(FileSearchComplete);
                 }
                 else
                 {
                     FileSearchPanel.Enabled = true;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void FileSearchAbortButton_Click(object sender, EventArgs e)
@@ -301,7 +309,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { RpfSearchAddResult(result); }));
+                    Invoke(RpfSearchAddResult, result);
                 }
                 else
                 {
@@ -309,7 +317,9 @@ namespace CodeWalker.Tools
                     RpfSearchResultsListView.VirtualListSize = RpfSearchResults.Count;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void RpfSearch()
@@ -432,8 +442,7 @@ namespace CodeWalker.Tools
                             return;
                         }
 
-                        RpfFileEntry fentry = entry as RpfFileEntry;
-                        if (fentry == null) continue;
+                        if (entry is not RpfFileEntry fentry) continue;
 
                         curfile++;
 
@@ -518,7 +527,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { RpfSearchComplete(); }));
+                    Invoke(RpfSearchComplete);
                 }
                 else
                 {
@@ -533,7 +542,9 @@ namespace CodeWalker.Tools
                     RpfSearchSaveResultsButton.Enabled = true;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void RpfSearchButton_Click(object sender, EventArgs e)
@@ -640,11 +651,9 @@ namespace CodeWalker.Tools
             RpfSelectedOffset = offset;
             RpfSelectedLength = length;
 
-            RpfFileEntry rfe = entry as RpfFileEntry;
-            if (rfe == null)
+            if (entry is not RpfFileEntry rfe)
             {
-                RpfDirectoryEntry rde = entry as RpfDirectoryEntry;
-                if (rde != null)
+                if (entry is RpfDirectoryEntry rde)
                 {
                     FileInfoLabel.Text = rde.Path + " (Directory)";
                     DataTextBox.Text = "[Please select a data file]";
@@ -847,16 +856,16 @@ namespace CodeWalker.Tools
                     int poslim = pos + charsperln;
                     hexb.Clear();
                     texb.Clear();
-                    hexb.AppendFormat("{0:X4}: ", pos);
+                    hexb.Append($"{pos:X4}: ");
                     for (int c = pos; c < poslim; c++)
                     {
                         if (c < data.Length)
                         {
                             byte b = data[c];
-                            hexb.AppendFormat("{0:X2} ", b);
+                            hexb.Append($"{b:X2} ");
                             if (char.IsControl((char)b))
                             {
-                                texb.Append(".");
+                                texb.Append('.');
                             }
                             else
                             {
@@ -866,13 +875,13 @@ namespace CodeWalker.Tools
                         else
                         {
                             hexb.Append("   ");
-                            texb.Append(" ");
+                            texb.Append(' ');
                         }
                     }
 
                     if (i == selline) selstartc = finb.Length;
 
-                    finb.AppendLine(hexb.ToString() + "| " + texb.ToString());
+                    finb.AppendLine($"{hexb}| {texb}");
 
                     if (i == selline) selendc = finb.Length - 1;
                 }
@@ -912,8 +921,7 @@ namespace CodeWalker.Tools
                 return;
             }
 
-            RpfFileEntry rfe = RpfSelectedEntry as RpfFileEntry;
-            if (rfe == null)
+            if (RpfSelectedEntry is not RpfFileEntry rfe)
             {
                 MessageBox.Show("Please select a file to export.");
                 return;
@@ -933,13 +941,12 @@ namespace CodeWalker.Tools
                 }
 
 
-                RpfResourceFileEntry rrfe = rfe as RpfResourceFileEntry;
-                if (rrfe != null) //add resource header if this is a resource file.
+                if (rfe is RpfResourceFileEntry rrfe) //add resource header if this is a resource file.
                 {
                     data = ResourceBuilder.AddResourceHeader(rrfe, data);
                 }
 
-                if (data == null)
+                if (data is null)
                 {
                     MessageBox.Show("Error extracting file! " + rfe.File.LastError);
                     return;

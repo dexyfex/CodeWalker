@@ -94,7 +94,7 @@ namespace CodeWalker.Utils
 
     public class ConsoleStream : TextWriter
     {
-        private readonly List<TextWriter> _writers;
+        private readonly List<TextWriter?> _writers;
 
         public ConsoleStream(params TextWriter[] streams)
         {
@@ -116,15 +116,19 @@ namespace CodeWalker.Utils
 
         public override void Write(char ch)
         {
+            var checkNull = false;
             for (int i = 0; i < _writers.Count; i++)
             {
+                var writer = _writers[i];
+                if (writer is null)
+                    continue;
                 try
                 {
-                    _writers[i].Write(ch);
+                    writer.Write(ch);
                 }
                 catch (ObjectDisposedException)
                 {
-                    _writers.Remove(_writers[i]);
+                    _writers[i] = null;
                     // handle exception here
                 }
                 catch (IOException)
@@ -132,13 +136,18 @@ namespace CodeWalker.Utils
                     // handle exception here
                 }
             }
+
+            if (checkNull)
+            {
+                _writers.RemoveAll(p => p is null);
+            }
         }
 
         public override void Write(string value)
         {
             foreach (var writer in _writers)
             {
-                writer.Write(value);
+                writer?.Write(value);
             }
         }
 
@@ -150,16 +159,20 @@ namespace CodeWalker.Utils
 
         public override void WriteLine(string value)
         {
+            var checkNull = false;
             for (int i = 0; i < _writers.Count; i++)
             {
+                var writer = _writers[i];
+                if (writer is null)
+                    continue;
                 try
                 {
-                    _writers[i].WriteLine(value);
-                    _writers[i].Flush();
+                    writer.WriteLine(value);
+                    writer.Flush();
                 }
                 catch (ObjectDisposedException)
                 {
-                    _writers.Remove(_writers[i]);
+                    _writers[i] = null;
                     // handle exception here
                 }
                 catch (IOException)
@@ -167,26 +180,40 @@ namespace CodeWalker.Utils
                     // handle exception here
                 }
             }
+            if (checkNull)
+            {
+                _writers.RemoveAll(p => p is null);
+            }
         }
 
         public override void WriteLine(object value)
         {
+            var checkNull = false;
             for (int i = 0; i < _writers.Count; i++)
             {
+                var writer = _writers[i];
+                if (writer is null)
+                    continue;
                 try
                 {
-                    _writers[i].WriteLine(value);
-                    _writers[i].Flush();
+                    writer.WriteLine(value);
+                    writer.Flush();
                 }
                 catch (ObjectDisposedException)
                 {
-                    _writers.Remove(_writers[i]);
+                    checkNull = true;
+                    _writers[i] = null;
                     // handle exception here
                 }
                 catch (IOException)
                 {
                     // handle exception here
                 }
+            }
+
+            if (checkNull)
+            {
+                _writers.RemoveAll(p => p is null);
             }
         }
 
@@ -195,7 +222,7 @@ namespace CodeWalker.Utils
             base.Close();
             foreach(var writer in _writers)
             {
-                writer.Close();
+                writer?.Close();
             }
             _writers.Clear();
         }

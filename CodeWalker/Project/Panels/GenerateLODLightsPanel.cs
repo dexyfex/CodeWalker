@@ -45,14 +45,16 @@ namespace CodeWalker.Project.Panels
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { GenerateComplete(); }));
+                    Invoke(GenerateComplete);
                 }
                 else
                 {
                     GenerateButton.Enabled = true;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -62,14 +64,16 @@ namespace CodeWalker.Project.Panels
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { UpdateStatus(text); }));
+                    Invoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -90,17 +94,19 @@ namespace CodeWalker.Project.Panels
 
             var pname = NameTextBox.Text;
 
-            Task.Run(() =>
+            _ = Task.Run(async () =>
             {
 
                 var lights = new List<Light>();
 
                 foreach (var ymap in projectYmaps)
                 {
-                    if (ymap?.AllEntities == null) continue;
+                    if (ymap.AllEntities.Length == 0)
+                        continue;
                     foreach (var ent in ymap.AllEntities)
                     {
-                        if (ent.Archetype == null) continue;
+                        if (ent.Archetype is null)
+                            continue;
 
                         bool waiting = false;
                         var dwbl = gameFileCache.TryGetDrawable(ent.Archetype, out waiting);
@@ -275,10 +281,10 @@ namespace CodeWalker.Project.Panels
 
                 UpdateStatus("Adding new ymap files to project...");
 
-                ProjectForm.Invoke((MethodInvoker)delegate
+                await ProjectForm.Invoke(async () =>
                 {
-                    ProjectForm.AddYmapToProject(lodymap);
-                    ProjectForm.AddYmapToProject(distymap);
+                    await ProjectForm.AddYmapToProjectAsync(lodymap);
+                    await ProjectForm.AddYmapToProjectAsync(distymap);
                 });
 
                 var stats = "";

@@ -1,6 +1,7 @@
 ﻿using CodeWalker.GameFiles;
 using CodeWalker.Rendering;
 using CodeWalker.Utils;
+using Collections.Pooled;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -116,8 +117,7 @@ namespace CodeWalker.World
                         AudioDatabase.Init(GameFileCache);
                     }
 
-                    var entry = dditem?.RpfEntry as RpfFileEntry;
-                    if (entry != null)
+                    if (dditem?.RpfEntry is RpfFileEntry entry)
                     {
 
                         cutFile = new CutFile(entry);
@@ -139,10 +139,12 @@ namespace CodeWalker.World
             {
                 try
                 {
-                    Invoke(new Action(() => { CutsceneLoaded(cs); }));
+                    Invoke(CutsceneLoaded, cs);
                 }
-                catch
-                { }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
                 return;
             }
 
@@ -290,7 +292,8 @@ namespace CodeWalker.World
 
         private void CutsceneForm_Load(object sender, EventArgs e)
         {
-            if (!GameFileCache.IsInited) return;//what to do here?
+            if (!GameFileCache.IsInited)
+                return;//what to do here?
 
             var rpfman = GameFileCache.RpfMan;
             var rpflist = rpfman.AllRpfs; //loadedOnly ? gfc.ActiveMapRpfFiles.Values.ToList() :
@@ -498,7 +501,7 @@ namespace CodeWalker.World
         public int NextCameraCut { get; set; } = 0;
         public int NextConcatData { get; set; } = 0;
 
-        public Gxt2File Gxt2File { get; set; } = null;
+        public Gxt2File? Gxt2File { get; set; } = null;
 
         public Vector3 Position { get; set; }
         public Quaternion Rotation { get; set; }
@@ -544,13 +547,13 @@ namespace CodeWalker.World
         private void LoadYcds()
         {
             int cutListCount = (CameraCutList?.Length ?? 0) + 1;
-            var shortName = CutFile.FileEntry?.ShortName ?? "";
+            var shortName = CutFile.FileEntry.ShortName;
             Ycds = new YcdFile[cutListCount];
-            if (!string.IsNullOrEmpty(shortName))
+            if (!shortName.IsEmpty)
             {
                 for (int i = 0; i < cutListCount; i++)
                 {
-                    var ycdname = shortName + "-" + i.ToString();
+                    var ycdname = shortName.ToString() + "-" + i.ToString();
                     var ycdhash = JenkHash.GenHashLower(ycdname);
                     var ycd = GameFileCache.GetYcd(ycdhash);
                     while ((ycd != null) && (!ycd.Loaded))
@@ -609,33 +612,40 @@ namespace CodeWalker.World
 
             void updateObjectTransform(CutsceneObject obj, ClipMapEntry cme, ushort boneTag, byte posTrack, byte rotTrack)
             {
-                if (cme != null)
+                if (cme is null)
+                    return;
+
+                if (cme.Clip is ClipAnimation canim)
                 {
-                    if (cme.Clip is ClipAnimation canim)
+                    if (canim.Animation is not null)
                     {
-                        if (canim.Animation != null)
-                        {
-                            var t = canim.GetPlaybackTime(cutOffset);
-                            var f = canim.Animation.GetFramePosition(t);
-                            var p = canim.Animation.FindBoneIndex(boneTag, posTrack);
-                            var r = canim.Animation.FindBoneIndex(boneTag, rotTrack);
-                            if (p >= 0) obj.Position = canim.Animation.EvaluateVector4(f, p, true).XYZ();
-                            if (r >= 0) obj.Rotation = canim.Animation.EvaluateQuaternion(f, r, true);
-                        }
+                        var playbackTime = canim.GetPlaybackTime(cutOffset);
+                        var framePosition = canim.Animation.GetFramePosition(playbackTime);
+                        var p = canim.Animation.FindBoneIndex(boneTag, posTrack);
+                        var r = canim.Animation.FindBoneIndex(boneTag, rotTrack);
+                        if (p >= 0)
+                            obj.Position = canim.Animation.EvaluateVector4(in framePosition, p, true).XYZ();
+                        if (r >= 0)
+                            obj.Rotation = canim.Animation.EvaluateQuaternion(in framePosition, r, true);
                     }
-                    else if (cme.Clip is ClipAnimationList alist)
+                }
+                else if (cme.Clip is ClipAnimationList alist)
+                {
+                    if (alist.Animations?.Data is not null)
                     {
-                        if (alist.Animations?.Data != null)
+                        foreach (var anim in alist.Animations.Data)
                         {
-                            foreach (var anim in alist.Animations.Data)
-                            {
-                                var t = anim.GetPlaybackTime(cutOffset);
-                                var f = anim.Animation.GetFramePosition(t);
-                                var p = anim.Animation.FindBoneIndex(boneTag, posTrack);
-                                var r = anim.Animation.FindBoneIndex(boneTag, rotTrack);
-                                if (p >= 0) obj.Position = anim.Animation.EvaluateVector4(f, p, true).XYZ();
-                                if (r >= 0) obj.Rotation = anim.Animation.EvaluateQuaternion(f, r, true);
-                            }
+                            if (anim.Animation is null)
+                                continue;
+
+                            var t = anim.GetPlaybackTime(cutOffset);
+                            var f = anim.Animation.GetFramePosition(t);
+                            var p = anim.Animation.FindBoneIndex(boneTag, posTrack);
+                            var r = anim.Animation.FindBoneIndex(boneTag, rotTrack);
+                            if (p >= 0)
+                                obj.Position = anim.Animation.EvaluateVector4(in f, p, true).XYZ();
+                            if (r >= 0)
+                                obj.Rotation = anim.Animation.EvaluateQuaternion(in f, r, true);
                         }
                     }
                 }
@@ -647,7 +657,7 @@ namespace CodeWalker.World
             var ycd = (cutIndex < (Ycds?.Length ?? 0)) ? Ycds[cutIndex] : null;
             if (ycd?.CutsceneMap != null)
             {
-                ClipMapEntry cme = null;
+                ClipMapEntry? cme = null;
 
                 if (CameraObject != null)
                 {
@@ -672,15 +682,16 @@ namespace CodeWalker.World
                 {
                     foreach (var obj in SceneObjects.Values)
                     {
-                        if (obj.Enabled == false) continue;
+                        if (obj.Enabled == false)
+                            continue;
 
                         var pos = Position;
                         var rot = Rotation;
-                        var animate = (obj.Ped != null) || (obj.Prop != null) || (obj.Vehicle != null) || (obj.Weapon != null);
+                        var animate = obj.Ped is not null || obj.Prop is not null || obj.Vehicle is not null || obj.Weapon is not null;
                         if (animate)
                         {
                             ycd.CutsceneMap.TryGetValue(obj.AnimHash, out cme);
-                            if (cme != null)
+                            if (cme is not null)
                             {
                                 cme.OverridePlayTime = true;
                                 cme.PlayTime = cutOffset;
@@ -690,25 +701,25 @@ namespace CodeWalker.World
                             }
                             obj.AnimClip = cme;
                         }
-                        if (obj.Ped != null)
+                        if (obj.Ped is not null)
                         {
                             obj.Ped.Position = pos;
                             obj.Ped.Rotation = rot;
                             obj.Ped.UpdateEntity();
                             obj.Ped.AnimClip = cme;
                         }
-                        if (obj.Prop != null)
+                        if (obj.Prop is not null)
                         {
                             obj.Prop.Position = pos;
                             obj.Prop.Orientation = rot;
                         }
-                        if (obj.Vehicle != null)
+                        if (obj.Vehicle is not null)
                         {
                             obj.Vehicle.Position = pos;
                             obj.Vehicle.Rotation = rot;
                             obj.Vehicle.UpdateEntity();
                         }
-                        if (obj.Weapon != null)
+                        if (obj.Weapon is not null)
                         {
                             obj.Weapon.Position = pos;
                             obj.Weapon.Rotation = rot;
@@ -875,8 +886,7 @@ namespace CodeWalker.World
 
         private void LoadScene(CutEvent e)
         {
-            var args = e.EventArgs as CutLoadSceneEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutLoadSceneEventArgs args)
             { return; }
 
 
@@ -886,23 +896,19 @@ namespace CodeWalker.World
         }
         private void LoadAnimation(CutEvent e)
         {
-            var args = e.EventArgs as CutNameEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutNameEventArgs args)
             { return; }
 
         }
         private void LoadAudio(CutEvent e)
         {
-            var args = e.EventArgs as CutNameEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutNameEventArgs args)
             { return; }
 
-            var obje = e as CutObjectIdEvent;
-            if (obje == null)
+            if (e is not CutObjectIdEvent obje)
             { return; }
 
-            var obj = obje.Object as CutAudioObject;
-            if (obj == null)
+            if (obje.Object is not CutAudioObject obj)
             { return; }
 
             if (Seeking) return;
@@ -931,8 +937,7 @@ namespace CodeWalker.World
         }
         private void LoadModels(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdListEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutObjectIdListEventArgs args)
             { return; }
 
             if (args.iObjectIdList == null) return;
@@ -952,15 +957,13 @@ namespace CodeWalker.World
         }
         private void LoadParticles(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdListEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutObjectIdListEventArgs args)
             { return; }
 
         }
         private void LoadOverlays(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdListEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutObjectIdListEventArgs args)
             { return; }
 
         }
@@ -971,8 +974,7 @@ namespace CodeWalker.World
             if (Gxt2File != null)
             { }
 
-            var args = e.EventArgs as CutFinalNameEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutFinalNameEventArgs args)
             { return; }
 
             var namel = args.cName?.ToLowerInvariant();
@@ -983,13 +985,12 @@ namespace CodeWalker.World
 
             if (gxt2entry != null) //probably should do this load async
             {
-                Gxt2File = GameFileCache.RpfMan.GetFile<Gxt2File>(gxt2entry);
+                Gxt2File = RpfManager.GetFile<Gxt2File>(gxt2entry);
 
-                if (Gxt2File != null)
+                if (Gxt2File is not null)
                 {
-                    for (int i = 0; i < Gxt2File.TextEntries.Length; i++)
+                    foreach(var te in Gxt2File.TextEntries)
                     {
-                        var te = Gxt2File.TextEntries[i];
                         GlobalText.Ensure(te.Text, te.Hash);
                     }
                 }
@@ -998,8 +999,7 @@ namespace CodeWalker.World
         }
         private void UnloadModels(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectIdListEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutObjectIdListEventArgs args)
             { return; }
 
             if (args.iObjectIdList == null) return;
@@ -1008,7 +1008,7 @@ namespace CodeWalker.World
             {
                 CutsceneObject obj = null;
                 SceneObjects.TryGetValue(objid, out obj);
-                if (obj != null)
+                if (obj is not null)
                 {
                     obj.Enabled = false;
                 }
@@ -1019,8 +1019,7 @@ namespace CodeWalker.World
         }
         private void EnableHideObject(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
             CutsceneObject cso = null;
             SceneObjects.TryGetValue(oe.iObjectId, out cso);
@@ -1034,8 +1033,7 @@ namespace CodeWalker.World
         }
         private void EnableBlockBounds(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
         }
         private void EnableScreenFade(CutEvent e)
@@ -1043,8 +1041,7 @@ namespace CodeWalker.World
         }
         private void EnableAnimation(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
         }
         private void EnableParticleEffect(CutEvent e)
@@ -1055,15 +1052,13 @@ namespace CodeWalker.World
         }
         private void EnableAudio(CutEvent e)
         {
-            var args = e.EventArgs as CutNameEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutNameEventArgs args)
             { return; }
 
         }
         private void EnableCamera(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
         }
         private void EnableLight(CutEvent e)
@@ -1071,8 +1066,7 @@ namespace CodeWalker.World
         }
         private void DisableHideObject(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
             CutsceneObject cso = null;
             SceneObjects.TryGetValue(oe.iObjectId, out cso);
@@ -1083,8 +1077,7 @@ namespace CodeWalker.World
         }
         private void DisableBlockBounds(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
         }
         private void DisableScreenFade(CutEvent e)
@@ -1092,8 +1085,7 @@ namespace CodeWalker.World
         }
         private void DisableAnimation(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
         }
         private void DisableParticleEffect(CutEvent e)
@@ -1104,15 +1096,13 @@ namespace CodeWalker.World
         }
         private void DisableAudio(CutEvent e)
         {
-            var args = e.EventArgs as CutNameEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutNameEventArgs args)
             { return; }
 
         }
         private void DisableCamera(CutEvent e)
         {
-            var oe = e as CutObjectIdEvent;
-            if (oe == null) return;
+            if (e is not CutObjectIdEvent oe) return;
 
         }
         private void DisableLight(CutEvent e)
@@ -1120,8 +1110,7 @@ namespace CodeWalker.World
         }
         private void Subtitle(CutEvent e)
         {
-            var args = e.EventArgs as CutSubtitleEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutSubtitleEventArgs args)
             { return; }
 
             if (!EnableSubtitles) return;
@@ -1143,12 +1132,10 @@ namespace CodeWalker.World
         }
         private void PedVariation(CutEvent e)
         {
-            var args = e.EventArgs as CutObjectVariationEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutObjectVariationEventArgs args)
             { return; }
 
-            var oe = e as CutObjectIdEvent;
-            if (oe == null)
+            if (e is not CutObjectIdEvent oe)
             { return; }
 
             if (Seeking) return; //this gets a bit messy when seeking backwards
@@ -1172,12 +1159,10 @@ namespace CodeWalker.World
         }
         private void CameraCut(CutEvent e)
         {
-            var args = e.EventArgs as CutCameraCutEventArgs;
-            if (args == null)
+            if (e.EventArgs is not CutCameraCutEventArgs args)
             { return; }
 
-            var oe = e as CutObjectIdEvent;
-            if (oe == null)
+            if (e is not CutObjectIdEvent oe)
             { return; }
 
 
@@ -1404,8 +1389,8 @@ namespace CodeWalker.World
             //how to know the correct name/hash to use?
             //sound name in the format: cutscenes_name_mastered_only
             var name = aud.cName.ToCleanString().ToLowerInvariant().Replace(".wav", "");
-            var soundname = "cutscenes_" + name + "_mastered";
-            var soundname2 = "cutscenes_" + name + "_mastered_only";
+            var soundname = $"cutscenes_{name}n_mastered";
+            var soundname2 = $"cutscenes_{name}_mastered_only";
             uint soundhash = JenkHash.GenHash(soundname);
             uint soundhash2 = JenkHash.GenHash(soundname2);
 
@@ -1428,8 +1413,8 @@ namespace CodeWalker.World
                 MetaHash awchash = 0;
                 AwcFile awc = null;
 
-                var streaminfs = new List<Dat54SimpleSound>();
-                var streamlist = new List<AwcStream>();
+                using var streaminfs = new PooledList<Dat54SimpleSound>();
+                using var streamlist = new PooledList<AwcStream>();
 
                 foreach (var chan in strsnd.ChildSounds)
                 {
@@ -1475,7 +1460,7 @@ namespace CodeWalker.World
                     var streaminf = streaminfs[i];
                     var left = 1.0f;
                     var right = 1.0f;
-                    switch (streaminf.Header?.Pan ?? 0)
+                    switch (streaminf.Header.Pan)
                     {
                         case 0://center/default
                             left = 1.0f;

@@ -59,8 +59,7 @@ namespace CodeWalker.GameFiles
             FilePath = Name;
 
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry != null)
+            if (entry is RpfResourceFileEntry resentry)
             {
                 using var rd = new ResourceDataReader(resentry, data);
 
@@ -80,12 +79,10 @@ namespace CodeWalker.GameFiles
             }
 
 
-            MemoryStream ms = new MemoryStream(data);
-
-            if (RbfFile.IsRBF(ms))
+            if (RbfFile.IsRBF(data.AsSpan(0, 4)))
             {
                 Rbf = new RbfFile();
-                var rbfstruct = Rbf.Load(ms);
+                var rbfstruct = Rbf.Load(data);
 
                 if (rbfstruct.Name == "CMapParentTxds")
                 {
@@ -97,29 +94,23 @@ namespace CodeWalker.GameFiles
                 Loaded = true;
                 return;
             }
-            if (PsoFile.IsPSO(ms))
+            else if (PsoFile.IsPSO(data.AsSpan(0, 4)))
             {
                 Pso = new PsoFile();
-                Pso.Load(ms);
+                Pso.Load(data);
 
                 //PsoTypes.EnsurePsoTypes(Pso);
 
                 var root = PsoTypes.GetRootEntry(Pso);
-                if (root != null)
+
+                if (root.NameHash == MetaName.CScenarioPointManifest)
                 {
-                    if (root.NameHash == MetaName.CScenarioPointManifest)
-                    {
-                        LoadScenarioPointManifest(Pso);
-                    }
+                    LoadScenarioPointManifest(Pso);
                 }
 
 
                 Loaded = true;
                 return;
-            }
-            else
-            {
-
             }
 
 
@@ -134,29 +125,29 @@ namespace CodeWalker.GameFiles
             ContentType = YmtFileContentType.MapParentTxds;
 
             CMapParentTxds = new Dictionary<string, string>();
+
+            if (rbfstruct.Children is null || rbfstruct.Children.Count == 0)
+                return;
+
             //StringBuilder sblist = new StringBuilder();
             foreach(var child in rbfstruct.Children)
             {
-                var childstruct = child as RbfStructure;
-                if ((childstruct != null) && (childstruct.Name == "txdRelationships"))
+                if (child is RbfStructure childstruct && childstruct.Name == "txdRelationships" && childstruct.Children is not null)
                 {
                     foreach (var txdrel in childstruct.Children)
                     {
-                        var txdrelstruct = txdrel as RbfStructure;
-                        if ((txdrelstruct != null) && (txdrelstruct.Name == "item"))
+                        if (txdrel is RbfStructure txdrelstruct && txdrelstruct.Name == "item" && txdrelstruct.Children is not null)
                         {
                             string parentstr = string.Empty;
                             string childstr = string.Empty;
-                            foreach(var item in txdrelstruct.Children)
+                            foreach (var item in txdrelstruct.Children)
                             {
-                                var itemstruct = item as RbfStructure;
-                                if ((itemstruct != null))
+                                if (item is RbfStructure itemstruct)
                                 {
-                                    var strbytes = itemstruct.Children[0] as RbfBytes;
                                     string thisstr = string.Empty;
-                                    if (strbytes != null)
+                                    if (itemstruct.Children is not null && itemstruct.Children[0] is RbfBytes strbytes)
                                     {
-                                        thisstr = Encoding.ASCII.GetString(strbytes.Value).Replace("\0", "");
+                                        thisstr = strbytes.GetNullTerminatedString();
                                     }
                                     switch (item.Name)
                                     {
@@ -170,15 +161,9 @@ namespace CodeWalker.GameFiles
                                 }
 
                             }
-                            if((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
+                            if (!string.IsNullOrEmpty(parentstr) && !string.IsNullOrEmpty(childstr))
                             {
-                                if (!CMapParentTxds.ContainsKey(childstr))
-                                {
-                                    CMapParentTxds.Add(childstr, parentstr);
-                                }
-                                else
-                                {
-                                }
+                                _ = CMapParentTxds.TryAdd(childstr, parentstr);
                                 //sblist.AppendLine(childstr + ": " + parentstr);
                             }
                         }
@@ -211,7 +196,7 @@ namespace CodeWalker.GameFiles
 
             CScenarioPointRegion = new MCScenarioPointRegion();
             CScenarioPointRegion.Ymt = this;
-            CScenarioPointRegion.Load(meta, cdata);
+            CScenarioPointRegion.Load(meta, in cdata);
 
 
             ScenarioRegion = new ScenarioRegion();
@@ -225,33 +210,32 @@ namespace CodeWalker.GameFiles
 
 
 
-        public byte[] Save()
+        public byte[]? Save()
         {
 
-            switch (ContentType)
+            return ContentType switch
             {
-                case YmtFileContentType.MapParentTxds: return SaveMapParentTxds();
-                case YmtFileContentType.ScenarioPointManifest: return SaveScenarioPointManifest();
-                case YmtFileContentType.ScenarioPointRegion: return SaveScenarioPointRegion();
-            }
-
-            return null;
+                YmtFileContentType.MapParentTxds => SaveMapParentTxds(),
+                YmtFileContentType.ScenarioPointManifest => SaveScenarioPointManifest(),
+                YmtFileContentType.ScenarioPointRegion => SaveScenarioPointRegion(),
+                _ => null,
+            };
         }
 
 
-        private byte[] SaveMapParentTxds()
+        private byte[]? SaveMapParentTxds()
         {
             return null;
         }
 
-        private byte[] SaveScenarioPointManifest()
+        private byte[]? SaveScenarioPointManifest()
         {
             return null;
         }
 
-        private byte[] SaveScenarioPointRegion()
+        private byte[]? SaveScenarioPointRegion()
         {
-            if (ScenarioRegion != null)
+            if (ScenarioRegion is not null)
             {
                 return ScenarioRegion.Save();
             }
@@ -267,7 +251,7 @@ namespace CodeWalker.GameFiles
 
         private void LogSaveWarning(string w)
         {
-            if (SaveWarnings == null) SaveWarnings = new List<string>();
+            SaveWarnings ??= new List<string>();
             SaveWarnings.Add(w);
         }
 
@@ -276,10 +260,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public override string ToString()
-        {
-            return RpfFileEntry.ToString();
-        }
+        public override string? ToString() => RpfFileEntry?.ToString();
     }
 
 
@@ -300,10 +281,11 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class YmtScenarioPointManifest
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class YmtScenarioPointManifest
     {
         public CScenarioPointManifest _Data;
-        public CScenarioPointManifest Data { get { return _Data; } set { _Data = value; } }
+        public CScenarioPointManifest Data { get => _Data; init => _Data = value; }
 
         public CScenarioPointRegionDef[] RegionDefs { get; set; }
         public CScenarioPointGroup[] Groups { get; set; }
@@ -312,10 +294,10 @@ namespace CodeWalker.GameFiles
 
         public void Load(PsoFile pso)
         {
-            Data = PsoTypes.GetRootItem<CScenarioPointManifest>(pso);
-            RegionDefs = PsoTypes.ConvertDataArray<CScenarioPointRegionDef>(pso, _Data.RegionDefs);
-            Groups = PsoTypes.ConvertDataArray<CScenarioPointGroup>(pso, _Data.Groups);
-            InteriorNames = PsoTypes.GetHashArray(pso, _Data.InteriorNames);
+            _Data = PsoTypes.GetRootItem<CScenarioPointManifest>(pso);
+            RegionDefs = PsoTypes.ConvertDataArray<CScenarioPointRegionDef>(pso, in _Data._RegionDefs);
+            Groups = PsoTypes.ConvertDataArray<CScenarioPointGroup>(pso, in _Data._Groups);
+            InteriorNames = PsoTypes.GetHashArray(pso, in _Data._InteriorNames);
         }
 
     }

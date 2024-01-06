@@ -31,6 +31,7 @@ namespace CodeWalker.GameFiles
                 case TextureFormat.D3DFMT_L8: format = Format.R8_UNorm; break;
                 case TextureFormat.D3DFMT_A8R8G8B8: format = Format.B8G8R8A8_UNorm; break;
                 case TextureFormat.D3DFMT_X8R8G8B8: format = Format.B8G8R8X8_UNorm; break;
+                case TextureFormat.D3DFMT_A16R16G16B16: format = Format.R16G16B16A16_UNorm; break;
             }
             return format;
         }
@@ -54,6 +55,7 @@ namespace CodeWalker.GameFiles
                 case TextureFormat.D3DFMT_L8: return 8;// R8_UNorm
                 case TextureFormat.D3DFMT_A8R8G8B8: return 32;// B8G8R8A8_UNorm
                 case TextureFormat.D3DFMT_X8R8G8B8: return 32;// B8G8R8X8_UNorm
+                case TextureFormat.D3DFMT_A16R16G16B16: return 32;
 
                 default: return 0;
             }

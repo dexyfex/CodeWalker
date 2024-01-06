@@ -32,7 +32,7 @@ namespace CodeWalker.GameFiles
                 type = (MetaName)(uint)GetHash(node.Name);
             }
 
-            var infos = PsoTypes.GetStructureInfo(type);
+            var infos = PsoTypesStructureInfo.GetStructureInfo(type);
             if (infos != null)
             {
                 byte[] data = new byte[infos.StructureLength];
@@ -49,7 +49,7 @@ namespace CodeWalker.GameFiles
 
                 Array.Clear(data, 0, infos.StructureLength); //shouldn't really be necessary...
 
-                PsoStructureEntryInfo arrEntry = null;
+                PsoStructureEntryInfo arrEntry = default;
 
 
                 //if (isRoot)
@@ -78,7 +78,7 @@ namespace CodeWalker.GameFiles
                     {
                         case PsoDataType.Array:
                             {
-                                TraverseArray(cnode, pb, entry, arrEntry, arrayResults, data, infos);
+                                TraverseArray(cnode, pb, in entry, in arrEntry, in arrayResults, data, infos);
                                 break;
                             }
                         case PsoDataType.Structure:
@@ -110,8 +110,8 @@ namespace CodeWalker.GameFiles
 
                                             var bptr = pb.AddItem(stype, struc);
                                             var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset);
-                                            ptr.SwapEnd();
-                                            var ptrb = MetaTypes.ConvertToBytes(ptr);
+                                            ptr = ptr.SwapEnd();
+                                            var ptrb = MetaTypes.ConvertToBytes(in ptr);
 
                                             Buffer.BlockCopy(ptrb, 0, data, entry.DataOffset, ptrb.Length);
 
@@ -263,24 +263,16 @@ namespace CodeWalker.GameFiles
                                 //uint fCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
                                 uint fEntry = (entry.ReferenceKey & 0xFFF);
                                 var fEnt = (fEntry != 0xFFF) ? infos.GetEntry((int)fEntry) : null;
-                                PsoEnumInfo flagsInfo = null;
+                                PsoEnumInfo? flagsInfo = null;
                                 MetaName fEnum = (MetaName)(fEnt?.ReferenceKey ?? 0);
-                                if ((fEnt != null) && (fEnt.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO))
+                                if (fEnt is not null && (fEnt?.EntryNameHash == (MetaName)MetaTypeName.ARRAYINFO))
                                 {
-                                    flagsInfo = PsoTypes.GetEnumInfo(fEnum);
-                                }
-                                if (flagsInfo == null)
-                                {
-                                    if (fEntry != 0xFFF)
-                                    { }
-                                    //flagsInfo = PsoTypes.GetEnumInfo(entry.EntryNameHash);
+                                    flagsInfo = PsoTypesEnumInfo.GetEnumInfo(fEnum);
                                 }
                                 if (flagsInfo != null)
                                 {
                                     pb.AddEnumInfo(flagsInfo.IndexInfo.NameHash);
                                 }
-                                else
-                                { }//error?
 
                                 switch (entry.Unk_5h)
                                 {
@@ -377,11 +369,8 @@ namespace CodeWalker.GameFiles
 
             var xStruct = pb.AddMapNodeStructureInfo((MetaName)mapreftype2.ReferenceKey);
             var xName = xStruct.IndexInfo.NameHash;
-            var kEntry = xStruct?.FindEntry(MetaName.Key);
-            var iEntry = xStruct?.FindEntry(MetaName.Item);
-
-            if (kEntry.Type != PsoDataType.String)
-            { }
+            var kEntry = xStruct?.FindEntry(MetaName.Key) ?? default;
+            var iEntry = xStruct?.FindEntry(MetaName.Item) ?? default;
 
 
 
@@ -408,8 +397,8 @@ namespace CodeWalker.GameFiles
                 {
                     //normal ARRAYINFO with pointer value
                     var itemptr = pb.AddItemPtr(thash, strucBytes);
-                    itemptr.SwapEnd(); //big schmigg
-                    var ptrbytes = MetaTypes.ConvertToBytes(itemptr);
+                    itemptr = itemptr.SwapEnd(); //big schmigg
+                    var ptrbytes = MetaTypes.ConvertToBytes(in itemptr);
                     Buffer.BlockCopy(ptrbytes, 0, nodeBytes, iEntry.DataOffset, ptrbytes.Length);
                 }
 
@@ -425,7 +414,7 @@ namespace CodeWalker.GameFiles
             arrayResults.Structures[entry.DataOffset + 8] = pb.AddItemArrayPtr(xName, nodesData.ToArray());  //pb.AddPointerArray(nodeptrs);
         }
 
-        private static void TraverseArray(XmlNode node, PsoBuilder pb, PsoStructureEntryInfo entry, PsoStructureEntryInfo arrEntry, PsoArrayResults results, byte[] data, PsoStructureInfo structInfo)
+        private static void TraverseArray(XmlNode node, PsoBuilder pb, in PsoStructureEntryInfo entry, in PsoStructureEntryInfo arrEntry, in PsoArrayResults results, byte[] data, PsoStructureInfo structInfo)
         {
             int offset = entry.DataOffset;
             uint aCount = (entry.ReferenceKey >> 16) & 0x0000FFFF;
@@ -643,20 +632,17 @@ namespace CodeWalker.GameFiles
 
                         if (arrEntry.ReferenceKey != 0)
                         {
-                            var _infos = PsoTypes.GetEnumInfo((MetaName)arrEntry.ReferenceKey);
+                            var _infos = PsoTypesEnumInfo.GetEnumInfo((MetaName)arrEntry.ReferenceKey);
                             pb.AddEnumInfo(_infos.IndexInfo.NameHash);
 
                             var values = new uint[hashes.Length];
                             for (int i = 0; i < hashes.Length; i++)
                             {
                                 var enumname = (MetaName)MetaTypes.SwapBytes(hashes[i]);//yeah swap it back to little endian..!
-                                var enuminf = _infos.FindEntryByName(enumname);
-                                if (enuminf != null)
+                                if (_infos.TryFindEntryByName(enumname, out var enuminf))
                                 {
                                     values[i] = MetaTypes.SwapBytes((uint)enuminf.EntryKey);
                                 }
-                                else
-                                { } //error?
                             }
 
                             if (embedded)
@@ -682,18 +668,19 @@ namespace CodeWalker.GameFiles
                         var rk1 = arrEntry.ReferenceKey & 0x0000FFFF;
                         if (rk0 > 0) //should be count of items
                         {
-                            var subarrEntry = structInfo.GetEntry((int)rk1);
-                            var subarrType = (MetaName)subarrEntry.ReferenceKey;
+                            var subarrEntry = structInfo.GetEntry((int)rk1) ?? throw new InvalidOperationException("SubarrEntry not found!");
+                            //var subarrType = (MetaName)subarrEntry.ReferenceKey;
 
-                            var origOffset = arrEntry.DataOffset;
-                            arrEntry.DataOffset = entry.DataOffset;//slight hack for traversing array array
+                            //var origOffset = arrEntry.DataOffset;
+                            var _arrEntry = arrEntry;
+                            _arrEntry = _arrEntry with { DataOffset = entry.DataOffset };//slight hack for traversing array array
                             foreach (XmlNode cnode in node.ChildNodes)
                             {
-                                TraverseArray(cnode, pb, arrEntry, subarrEntry, results, data, structInfo);
+                                TraverseArray(cnode, pb, in arrEntry, in subarrEntry, in results, data, structInfo);
 
-                                arrEntry.DataOffset += 16;//ptr size... todo: what if not pointer array?
+                                _arrEntry = _arrEntry with { DataOffset = (ushort)(arrEntry.DataOffset + 16) };//ptr size... todo: what if not pointer array?
                             }
-                            arrEntry.DataOffset = origOffset;
+                            //arrEntry = arrEntry with { DataOffset = origOffset };
 
 
                         }
@@ -748,9 +735,8 @@ namespace CodeWalker.GameFiles
                     if (!string.IsNullOrEmpty(str))
                     {
                         var bptr = pb.AddString(str);
-                        var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset);
-                        ptr.SwapEnd();
-                        var val = MetaTypes.ConvertToBytes(ptr);
+                        var ptr = new PsoPOINTER(bptr.BlockID, bptr.Offset).SwapEnd();
+                        var val = MetaTypes.ConvertToBytes(in ptr);
                         Buffer.BlockCopy(val, 0, data, entry.DataOffset, val.Length);
                     }
                     break;
@@ -758,9 +744,8 @@ namespace CodeWalker.GameFiles
                     if (!string.IsNullOrEmpty(str))
                     {
                         var bptr = pb.AddString(str);
-                        var ptr = new CharPointer(bptr.Pointer, str.Length);
-                        ptr.SwapEnd();
-                        var val = MetaTypes.ConvertToBytes(ptr);
+                        var ptr = new CharPointer(bptr.Pointer, str.Length).SwapEnd();
+                        var val = MetaTypes.ConvertToBytes(in ptr);
                         Buffer.BlockCopy(val, 0, data, entry.DataOffset, val.Length);
                     }
                     break;
@@ -816,7 +801,7 @@ namespace CodeWalker.GameFiles
                     if (struc != null)
                     {
                         var ptr = pb.AddItemPtr(type, struc);
-                        ptr.SwapEnd(); //big schmigg
+                        ptr = ptr.SwapEnd(); //big schmigg
                         ptrs.Add(ptr);
                     }
                     else
@@ -1107,7 +1092,7 @@ namespace CodeWalker.GameFiles
 
         private static int GetEnumInt(MetaName type, string enumString, PsoDataType dataType)
         {
-            var infos = PsoTypes.GetEnumInfo(type);
+            var infos = PsoTypesEnumInfo.GetEnumInfo(type);
 
             if (infos == null)
             {
@@ -1175,69 +1160,61 @@ namespace CodeWalker.GameFiles
         public Dictionary<int, Array_Vector3> Float_XYZs;
         public Dictionary<int, Array_uint> Hashes;
 
-        public void WriteArrays(byte[] data)
+        public readonly void WriteArrays(byte[] data)
         {
             foreach (KeyValuePair<int, Array_Structure> ptr in Structures)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
 
             foreach (KeyValuePair<int, Array_StructurePointer> ptr in StructurePointers)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
 
             foreach (KeyValuePair<int, Array_uint> ptr in UInts)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
 
             foreach (KeyValuePair<int, Array_ushort> ptr in UShorts)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
 
             foreach (KeyValuePair<int, Array_byte> ptr in UBytes)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
 
             foreach (KeyValuePair<int, Array_float> ptr in Floats)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
 
             foreach (KeyValuePair<int, Array_Vector3> ptr in Float_XYZs)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
 
             foreach (KeyValuePair<int, Array_uint> ptr in Hashes)
             {
-                var val = ptr.Value;
-                val.SwapEnd();
-                var _data = MetaTypes.ConvertToBytes(val);
+                var val = ptr.Value.SwapEnd();
+                var _data = MetaTypes.ConvertToBytes(in val);
                 Buffer.BlockCopy(_data, 0, data, ptr.Key, _data.Length);
             }
         }

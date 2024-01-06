@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.Core.Utils;
 
-[EventSource(Name = "CodeWalker-Diagnostics")]
+[EventSource(Name = "CodeWalker-Diagnostics", Guid = "911cf260-f98c-5a05-7f16-f11db360be50")]
 public class ETWEvents : EventSource
 {
     public static class Keywords
@@ -25,7 +25,7 @@ public class ETWEvents : EventSource
     }
 
 
-    public ETWEvents(bool throwOnEventWriteErrors) : base(throwOnEventWriteErrors)
+    private ETWEvents(bool throwOnEventWriteErrors) : base(throwOnEventWriteErrors)
     { }
 
     [Event(1, Message = "Starting up.", Keywords = Keywords.Performance, Level = EventLevel.Informational)]
@@ -33,11 +33,32 @@ public class ETWEvents : EventSource
         WriteEvent(1);
     }
 
-    [Event(2, Message = "Creating form {0}", Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
-    public void CreatingForm(string form) { WriteEvent(2, form); }
+    [Event(2, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void CreatingFormStart(string form) { WriteEvent(2, form); }
+    [Event(3, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void CreatingFormStop() { WriteEvent(3); }
 
-    [Event(3, Message = "Loading form {0}", Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
-    public void LoadingForm(string form) { WriteEvent(3, form); }
+    [Event(4, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void LoadingForm(string form) { WriteEvent(4, form); }
+
+    [Event(5, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void RefreshingMainTreeViewStart(string path) { WriteEvent(5, path); }
+    [Event(6, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void RefreshingMainTreeViewStop() { WriteEvent(6); }
+
+    [Event(7, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void RefreshMainTreeViewStart() { WriteEvent(7); }
+    [Event(8, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void RefreshMainTreeViewStop() { WriteEvent(8); }
+
+    [Event(9, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void InitFileCacheStart() {
+        WriteEvent(9);
+    }
+    [Event(10, Keywords = Keywords.Performance | Keywords.StateChanges, Level = EventLevel.Verbose)]
+    public void InitFileCacheStop() { WriteEvent(10); }
+
+
 
     public static readonly ETWEvents Log = new ETWEvents(true);
 }

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static CodeWalker.Utils.DDSIO;
 
 namespace CodeWalker.GameFiles
 {
@@ -136,11 +137,11 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x20, TextureNameHashes),
-                new Tuple<long, IResourceBlock>(0x30, Textures)
+            return new (long, IResourceBlock)[] {
+                (0x20, TextureNameHashes),
+                (0x30, Textures)
             };
         }
 
@@ -422,27 +423,20 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (!string.IsNullOrEmpty(Name))
-            {
-                NameBlock = (string_r)Name;
-                list.Add(NameBlock);
-            }
-            return list.ToArray();
+            if (string.IsNullOrEmpty(Name))
+                return [];
+
+            NameBlock = (string_r)Name;
+            return [NameBlock];
         }
 
-        public override string ToString()
-        {
-            return "TextureBase: " + Name;
-        }
+        public override string ToString() => $"TextureBase: {Name}";
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Texture : TextureBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class Texture : TextureBase
     {
-        public override long BlockLength
-        {
-            get { return 144; }
-        }
+        public override long BlockLength => 144;
 
         // structure data
         public ushort Width { get; set; }
@@ -469,18 +463,7 @@ namespace CodeWalker.GameFiles
         // reference data
         public TextureData Data { get; set; }
 
-        public long MemoryUsage
-        {
-            get
-            {
-                long val = 0;
-                if (Data != null)
-                {
-                    val += Data.FullData.LongLength;
-                }
-                return val;
-            }
-        }
+        public long MemoryUsage => Data?.FullData?.LongLength ?? 0;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -560,7 +543,9 @@ namespace CodeWalker.GameFiles
                     File.WriteAllBytes(filepath, dds);
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         public override void ReadXml(XmlNode node, string ddsfolder)
         {
@@ -608,26 +593,19 @@ namespace CodeWalker.GameFiles
 
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>(base.GetReferences());
-            list.Add(Data);
+            var list = new List<IResourceBlock>(base.GetReferences())
+            {
+                Data
+            };
             return list.ToArray();
         }
 
-        public override string ToString()
-        {
-            return "Texture: " + Width.ToString() + "x" + Height.ToString() + ": " + Name;
-        }
+        public override string ToString() => $"Texture: {Width}x{Height}: {Name}";
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureData : ResourceGraphicsBlock
     {
-        public override long BlockLength
-        {
-            get
-            {
-                return FullData.Length;
-            }
-        }
+        public override long BlockLength => FullData.Length;
 
         public byte[] FullData { get; set; }
 
@@ -636,17 +614,34 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            //uint format = Convert.ToUInt32(parameters[0]);
-            //int Width = Convert.ToInt32(parameters[1]);
+            uint format = Convert.ToUInt32(parameters[0]);
+
+            var dxgiFormat = DDSIO.GetDXGIFormat((TextureFormat)format);
+
+            int Width = Convert.ToInt32(parameters[1]);
             int Height = Convert.ToInt32(parameters[2]);
             int Levels = Convert.ToInt32(parameters[3]);
             int Stride = Convert.ToInt32(parameters[4]);
 
+            int div = 1;
             int fullLength = 0;
             int length = Stride * Height;
             for (int i = 0; i < Levels; i++)
             {
-                fullLength += Math.Max(length, 4 * 4);
+                //var thisLength = Math.Max(length, 4 * 4);
+                //if (thisLength % 16 != 0)
+                //{
+                //    thisLength += (16 - (thisLength % 16));
+                //}
+
+                var width = Math.Max(Width / div, 1);
+                var height = Math.Max(Height / div, 1);
+
+                DXTex.ComputePitch(dxgiFormat, width, height, out var ddsRowPitch, out var ddsSlicePitch, 0);
+
+                div *= 2;
+
+                fullLength += ddsSlicePitch;
                 length /= 4;
             }
 
@@ -670,6 +665,7 @@ namespace CodeWalker.GameFiles
         D3DFMT_A1R5G5B5 = 25,
         D3DFMT_A8 = 28,
         D3DFMT_A8B8G8R8 = 32,
+        D3DFMT_A16R16G16B16 = 36,
         D3DFMT_L8 = 50,
 
         // fourCC

@@ -89,7 +89,7 @@ namespace CodeWalker.Rendering
 
         public CableShader(Device device)
         {
-            string folder = Path.Combine(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName), "Shaders");
+            string folder = ShaderManager.GetShaderFolder();
             byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "CableVS.cso"));
             byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "CablePS.cso"));
             byte[] psdefbytes = File.ReadAllBytes(Path.Combine(folder, "CablePS_Deferred.cso"));
@@ -158,7 +158,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             uint rendermode = 0;
             uint rendermodeind = 1;
@@ -197,10 +197,7 @@ namespace CodeWalker.Rendering
             PSSceneVars.Update(context);
             PSSceneVars.SetPSCBuffer(context, 0);
 
-            if (shadowmap != null)
-            {
-                shadowmap.SetFinalRenderResources(context);
-            }
+            shadowmap?.SetFinalRenderResources(context);
         }
 
         public override void SetEntityVars(DeviceContext context, ref RenderableInst rend)

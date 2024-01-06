@@ -1,5 +1,6 @@
 ﻿using CodeWalker.GameFiles;
 using CodeWalker.World;
+using CommunityToolkit.HighPerformance;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,7 +10,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace CodeWalker.Project.Panels
@@ -29,292 +32,315 @@ namespace CodeWalker.Project.Panels
         }
 
 
-        public void LoadProjectTree(ProjectFile projectFile)
+        public void LoadProjectTree(ProjectFile? projectFile)
         {
-            ProjectTreeView.Nodes.Clear();
-
-            CurrentProjectFile = projectFile;
-            if (CurrentProjectFile == null) return;
-
-            var pcstr = CurrentProjectFile.HasChanged ? "*" : "";
-
-            var projnode = ProjectTreeView.Nodes.Add(pcstr + CurrentProjectFile.Name);
-            projnode.Tag = CurrentProjectFile;
-
-
-            if (CurrentProjectFile.YmapFiles.Count > 0)
+            if (InvokeRequired)
             {
-                var ymapsnode = projnode.Nodes.Add("Ymap Files");
-                ymapsnode.Name = "Ymap";
-
-                foreach (var ymapfile in CurrentProjectFile.YmapFiles)
-                {
-                    var ycstr = ymapfile.HasChanged ? "*" : "";
-                    string name = ymapfile.Name;
-                    if (ymapfile.RpfFileEntry != null)
-                    {
-                        name = ymapfile.RpfFileEntry.Name;
-                    }
-                    var ymapnode = ymapsnode.Nodes.Add(ycstr + name);
-                    ymapnode.Tag = ymapfile;
-
-                    LoadYmapTreeNodes(ymapfile, ymapnode);
-
-                    JenkIndex.EnsureBoth(name);
-                    JenkIndex.EnsureBoth(Path.GetFileNameWithoutExtension(name));
-                }
-                ymapsnode.Expand();
+                Invoke(LoadProjectTree, projectFile);
+                return;
             }
-
-            if (CurrentProjectFile.YtypFiles.Count > 0)
+            ProjectTreeView.BeginUpdate();
+            ProjectTreeView.SuspendLayout();
+            try
             {
-                var ytypsnode = projnode.Nodes.Add("Ytyp Files");
-                ytypsnode.Name = "Ytyp";
+                ProjectTreeView.Nodes.Clear();
 
-                foreach (var ytypfile in CurrentProjectFile.YtypFiles)
+                CurrentProjectFile = projectFile;
+                if (CurrentProjectFile is null)
+                    return;
+
+                var pcstr = CurrentProjectFile.HasChanged ? "*" : "";
+
+                var projnode = ProjectTreeView.Nodes.Add(pcstr + CurrentProjectFile.Name);
+                projnode.Tag = CurrentProjectFile;
+
+
+                if (CurrentProjectFile.YmapFiles.Count > 0)
                 {
-                    var ycstr = ytypfile.HasChanged ? "*" : "";
-                    string name = ytypfile.Name;
-                    if (ytypfile.RpfFileEntry != null)
+                    var ymapsnode = projnode.Nodes.Add("Ymap Files");
+                    ymapsnode.Name = "Ymap";
+
+                    foreach (var ymapfile in CurrentProjectFile.YmapFiles)
                     {
-                        name = ytypfile.RpfFileEntry.Name;
+                        var ycstr = ymapfile.HasChanged ? "*" : "";
+                        string name = ymapfile.Name;
+                        if (ymapfile.RpfFileEntry != null)
+                        {
+                            name = ymapfile.RpfFileEntry.Name;
+                        }
+                        var ymapnode = ymapsnode.Nodes.Add(ycstr + name);
+                        ymapnode.Tag = ymapfile;
+
+                        LoadYmapTreeNodes(ymapfile, ymapnode);
+
+                        JenkIndex.EnsureBoth(name);
+                        JenkIndex.EnsureBoth(Path.GetFileNameWithoutExtension(name));
                     }
-                    var ytypnode = ytypsnode.Nodes.Add(ycstr + name);
-                    ytypnode.Tag = ytypfile;
-
-                    LoadYtypTreeNodes(ytypfile, ytypnode);
-
-                    JenkIndex.EnsureBoth(name);
-                    JenkIndex.EnsureBoth(Path.GetFileNameWithoutExtension(name));
+                    ymapsnode.Expand();
                 }
-                ytypsnode.Expand();
-            }
 
-            if (CurrentProjectFile.YbnFiles.Count > 0)
+                if (CurrentProjectFile.YtypFiles.Count > 0)
+                {
+                    var ytypsnode = projnode.Nodes.Add("Ytyp Files");
+                    ytypsnode.Name = "Ytyp";
+
+                    foreach (var ytypfile in CurrentProjectFile.YtypFiles)
+                    {
+                        var ycstr = ytypfile.HasChanged ? "*" : "";
+                        string name = ytypfile.Name;
+                        if (ytypfile.RpfFileEntry != null)
+                        {
+                            name = ytypfile.RpfFileEntry.Name;
+                        }
+                        var ytypnode = ytypsnode.Nodes.Add(ycstr + name);
+                        ytypnode.Tag = ytypfile;
+
+                        LoadYtypTreeNodes(ytypfile, ytypnode);
+
+                        JenkIndex.EnsureBoth(name);
+                        JenkIndex.EnsureBoth(Path.GetFileNameWithoutExtension(name));
+                    }
+                    ytypsnode.Expand();
+                }
+
+                if (CurrentProjectFile.YbnFiles.Count > 0)
+                {
+                    var ybnsnode = projnode.Nodes.Add("Ybn Files");
+                    ybnsnode.Name = "Ybn";
+
+                    foreach (var ybnfile in CurrentProjectFile.YbnFiles)
+                    {
+                        var ycstr = ybnfile.HasChanged ? "*" : "";
+                        string name = ybnfile.Name;
+                        if (ybnfile.RpfFileEntry != null)
+                        {
+                            name = ybnfile.RpfFileEntry.Name;
+                        }
+                        var yndnode = ybnsnode.Nodes.Add(ycstr + name);
+                        yndnode.Tag = ybnfile;
+
+                        LoadYbnTreeNodes(ybnfile, yndnode);
+                    }
+                    ybnsnode.Expand();
+                }
+
+                if (CurrentProjectFile.YndFiles.Count > 0)
+                {
+                    var yndsnode = projnode.Nodes.Add("Ynd Files");
+                    yndsnode.Name = "Ynd";
+
+                    foreach (var yndfile in CurrentProjectFile.YndFiles)
+                    {
+                        var ycstr = yndfile.HasChanged ? "*" : "";
+                        string name = yndfile.Name;
+                        if (yndfile.RpfFileEntry != null)
+                        {
+                            name = yndfile.RpfFileEntry.Name;
+                        }
+                        var yndnode = yndsnode.Nodes.Add(ycstr + name);
+                        yndnode.Tag = yndfile;
+
+                        LoadYndTreeNodes(yndfile, yndnode);
+                    }
+                    yndsnode.Expand();
+                }
+
+                if (CurrentProjectFile.YnvFiles.Count > 0)
+                {
+                    var ynvsnode = projnode.Nodes.Add("Ynv Files");
+                    ynvsnode.Name = "Ynv";
+
+                    foreach (var ynvfile in CurrentProjectFile.YnvFiles)
+                    {
+                        var ycstr = ynvfile.HasChanged ? "*" : "";
+                        string name = ynvfile.Name;
+                        if (ynvfile.RpfFileEntry != null)
+                        {
+                            name = ynvfile.RpfFileEntry.Name;
+                        }
+                        var ynvnode = ynvsnode.Nodes.Add(ycstr + name);
+                        ynvnode.Tag = ynvfile;
+
+                        LoadYnvTreeNodes(ynvfile, ynvnode);
+                    }
+                    ynvsnode.Expand();
+                }
+
+                if (CurrentProjectFile.TrainsFiles.Count > 0)
+                {
+                    var trainsnode = projnode.Nodes.Add("Trains Files");
+                    trainsnode.Name = "Trains";
+
+                    foreach (var trainfile in CurrentProjectFile.TrainsFiles)
+                    {
+                        var tcstr = trainfile.HasChanged ? "*" : "";
+                        string name = trainfile.Name;
+                        if (trainfile.RpfFileEntry != null)
+                        {
+                            name = trainfile.RpfFileEntry.Name;
+                        }
+                        var trainnode = trainsnode.Nodes.Add(tcstr + name);
+                        trainnode.Tag = trainfile;
+
+                        LoadTrainTrackTreeNodes(trainfile, trainnode);
+                    }
+                    trainsnode.Expand();
+                }
+
+                if (CurrentProjectFile.ScenarioFiles.Count > 0)
+                {
+                    var scenariosnode = projnode.Nodes.Add("Scenario Files");
+                    scenariosnode.Name = "Scenarios";
+
+                    foreach (var scenariofile in CurrentProjectFile.ScenarioFiles)
+                    {
+                        var scstr = scenariofile.HasChanged ? "*" : "";
+                        string name = scenariofile.Name;
+                        if (scenariofile.RpfFileEntry != null)
+                        {
+                            name = scenariofile.RpfFileEntry.Name;
+                        }
+                        var scenarionode = scenariosnode.Nodes.Add(scstr + name);
+                        scenarionode.Tag = scenariofile;
+
+                        LoadScenarioTreeNodes(scenariofile, scenarionode);
+                    }
+                    scenariosnode.Expand();
+                }
+
+                if (CurrentProjectFile.AudioRelFiles.Count > 0)
+                {
+                    var audiorelsnode = projnode.Nodes.Add("Audio Rel Files");
+                    audiorelsnode.Name = "AudioRels";
+
+                    foreach (var audiorelfile in CurrentProjectFile.AudioRelFiles)
+                    {
+                        var acstr = audiorelfile.HasChanged ? "*" : "";
+                        string name = audiorelfile.Name;
+                        if (audiorelfile.RpfFileEntry != null)
+                        {
+                            name = audiorelfile.RpfFileEntry.Name;
+                        }
+                        var audiorelnode = audiorelsnode.Nodes.Add(acstr + name);
+                        audiorelnode.Tag = audiorelfile;
+
+                        LoadAudioRelTreeNodes(audiorelfile, audiorelnode);
+                    }
+                    audiorelsnode.Expand();
+                }
+
+                if (CurrentProjectFile.YdrFiles.Count > 0)
+                {
+                    var ydrsnode = projnode.Nodes.Add("Ydr Files");
+                    ydrsnode.Name = "Ydr";
+
+                    foreach (var ydrfile in CurrentProjectFile.YdrFiles)
+                    {
+                        var ycstr = "";// ydrfile.HasChanged ? "*" : "";
+                        string name = ydrfile.Name;
+                        if (ydrfile.RpfFileEntry != null)
+                        {
+                            name = ydrfile.RpfFileEntry.Name;
+                        }
+                        var ydrnode = ydrsnode.Nodes.Add(ycstr + name);
+                        ydrnode.Tag = ydrfile;
+
+                        //LoadYdrTreeNodes(ydrfile, ydrnode);
+                    }
+                    ydrsnode.Expand();
+                }
+
+                if (CurrentProjectFile.YddFiles.Count > 0)
+                {
+                    var yddsnode = projnode.Nodes.Add("Ydd Files");
+                    yddsnode.Name = "Ydd";
+
+                    foreach (var yddfile in CurrentProjectFile.YddFiles)
+                    {
+                        var ycstr = "";// yddfile.HasChanged ? "*" : "";
+                        string name = yddfile.Name;
+                        if (yddfile.RpfFileEntry != null)
+                        {
+                            name = yddfile.RpfFileEntry.Name;
+                        }
+                        var yddnode = yddsnode.Nodes.Add(ycstr + name);
+                        yddnode.Tag = yddfile;
+
+                        //LoadYddTreeNodes(yddfile, yddnode);
+                    }
+                    yddsnode.Expand();
+                }
+
+                if (CurrentProjectFile.YftFiles.Count > 0)
+                {
+                    var yftsnode = projnode.Nodes.Add("Yft Files");
+                    yftsnode.Name = "Yft";
+
+                    foreach (var yftfile in CurrentProjectFile.YftFiles)
+                    {
+                        var ycstr = "";// yftfile.HasChanged ? "*" : "";
+                        string name = yftfile.Name;
+                        if (yftfile.RpfFileEntry != null)
+                        {
+                            name = yftfile.RpfFileEntry.Name;
+                        }
+                        var yftnode = yftsnode.Nodes.Add(ycstr + name);
+                        yftnode.Tag = yftfile;
+
+                        //LoadYftTreeNodes(yftfile, yftnode);
+                    }
+                    yftsnode.Expand();
+                }
+
+                if (CurrentProjectFile.YtdFiles.Count > 0)
+                {
+                    var ytdsnode = projnode.Nodes.Add("Ytd Files");
+                    ytdsnode.Name = "Ytd";
+
+                    foreach (var ytdfile in CurrentProjectFile.YtdFiles)
+                    {
+                        var ycstr = "";// ytdfile.HasChanged ? "*" : "";
+                        string name = ytdfile.Name;
+                        if (ytdfile.RpfFileEntry != null)
+                        {
+                            name = ytdfile.RpfFileEntry.Name;
+                        }
+                        var ytdnode = ytdsnode.Nodes.Add(ycstr + name);
+                        ytdnode.Tag = ytdfile;
+
+                        //LoadYtdTreeNodes(ytdfile, ytdnode);
+                    }
+                    ytdsnode.Expand();
+                }
+
+                projnode.Expand();
+            }
+            finally
             {
-                var ybnsnode = projnode.Nodes.Add("Ybn Files");
-                ybnsnode.Name = "Ybn";
-
-                foreach (var ybnfile in CurrentProjectFile.YbnFiles)
-                {
-                    var ycstr = ybnfile.HasChanged ? "*" : "";
-                    string name = ybnfile.Name;
-                    if (ybnfile.RpfFileEntry != null)
-                    {
-                        name = ybnfile.RpfFileEntry.Name;
-                    }
-                    var yndnode = ybnsnode.Nodes.Add(ycstr + name);
-                    yndnode.Tag = ybnfile;
-
-                    LoadYbnTreeNodes(ybnfile, yndnode);
-                }
-                ybnsnode.Expand();
+                ProjectTreeView.EndUpdate();
+                ProjectTreeView.ResumeLayout();
             }
-
-            if (CurrentProjectFile.YndFiles.Count > 0)
-            {
-                var yndsnode = projnode.Nodes.Add("Ynd Files");
-                yndsnode.Name = "Ynd";
-
-                foreach (var yndfile in CurrentProjectFile.YndFiles)
-                {
-                    var ycstr = yndfile.HasChanged ? "*" : "";
-                    string name = yndfile.Name;
-                    if (yndfile.RpfFileEntry != null)
-                    {
-                        name = yndfile.RpfFileEntry.Name;
-                    }
-                    var yndnode = yndsnode.Nodes.Add(ycstr + name);
-                    yndnode.Tag = yndfile;
-
-                    LoadYndTreeNodes(yndfile, yndnode);
-                }
-                yndsnode.Expand();
-            }
-
-            if (CurrentProjectFile.YnvFiles.Count > 0)
-            {
-                var ynvsnode = projnode.Nodes.Add("Ynv Files");
-                ynvsnode.Name = "Ynv";
-
-                foreach (var ynvfile in CurrentProjectFile.YnvFiles)
-                {
-                    var ycstr = ynvfile.HasChanged ? "*" : "";
-                    string name = ynvfile.Name;
-                    if (ynvfile.RpfFileEntry != null)
-                    {
-                        name = ynvfile.RpfFileEntry.Name;
-                    }
-                    var ynvnode = ynvsnode.Nodes.Add(ycstr + name);
-                    ynvnode.Tag = ynvfile;
-
-                    LoadYnvTreeNodes(ynvfile, ynvnode);
-                }
-                ynvsnode.Expand();
-            }
-
-            if (CurrentProjectFile.TrainsFiles.Count > 0)
-            {
-                var trainsnode = projnode.Nodes.Add("Trains Files");
-                trainsnode.Name = "Trains";
-
-                foreach (var trainfile in CurrentProjectFile.TrainsFiles)
-                {
-                    var tcstr = trainfile.HasChanged ? "*" : "";
-                    string name = trainfile.Name;
-                    if (trainfile.RpfFileEntry != null)
-                    {
-                        name = trainfile.RpfFileEntry.Name;
-                    }
-                    var trainnode = trainsnode.Nodes.Add(tcstr + name);
-                    trainnode.Tag = trainfile;
-
-                    LoadTrainTrackTreeNodes(trainfile, trainnode);
-                }
-                trainsnode.Expand();
-            }
-
-            if (CurrentProjectFile.ScenarioFiles.Count > 0)
-            {
-                var scenariosnode = projnode.Nodes.Add("Scenario Files");
-                scenariosnode.Name = "Scenarios";
-
-                foreach (var scenariofile in CurrentProjectFile.ScenarioFiles)
-                {
-                    var scstr = scenariofile.HasChanged ? "*" : "";
-                    string name = scenariofile.Name;
-                    if (scenariofile.RpfFileEntry != null)
-                    {
-                        name = scenariofile.RpfFileEntry.Name;
-                    }
-                    var scenarionode = scenariosnode.Nodes.Add(scstr + name);
-                    scenarionode.Tag = scenariofile;
-
-                    LoadScenarioTreeNodes(scenariofile, scenarionode);
-                }
-                scenariosnode.Expand();
-            }
-
-            if (CurrentProjectFile.AudioRelFiles.Count > 0)
-            {
-                var audiorelsnode = projnode.Nodes.Add("Audio Rel Files");
-                audiorelsnode.Name = "AudioRels";
-
-                foreach (var audiorelfile in CurrentProjectFile.AudioRelFiles)
-                {
-                    var acstr = audiorelfile.HasChanged ? "*" : "";
-                    string name = audiorelfile.Name;
-                    if (audiorelfile.RpfFileEntry != null)
-                    {
-                        name = audiorelfile.RpfFileEntry.Name;
-                    }
-                    var audiorelnode = audiorelsnode.Nodes.Add(acstr + name);
-                    audiorelnode.Tag = audiorelfile;
-
-                    LoadAudioRelTreeNodes(audiorelfile, audiorelnode);
-                }
-                audiorelsnode.Expand();
-            }
-
-            if (CurrentProjectFile.YdrFiles.Count > 0)
-            {
-                var ydrsnode = projnode.Nodes.Add("Ydr Files");
-                ydrsnode.Name = "Ydr";
-
-                foreach (var ydrfile in CurrentProjectFile.YdrFiles)
-                {
-                    var ycstr = "";// ydrfile.HasChanged ? "*" : "";
-                    string name = ydrfile.Name;
-                    if (ydrfile.RpfFileEntry != null)
-                    {
-                        name = ydrfile.RpfFileEntry.Name;
-                    }
-                    var ydrnode = ydrsnode.Nodes.Add(ycstr + name);
-                    ydrnode.Tag = ydrfile;
-
-                    //LoadYdrTreeNodes(ydrfile, ydrnode);
-                }
-                ydrsnode.Expand();
-            }
-
-            if (CurrentProjectFile.YddFiles.Count > 0)
-            {
-                var yddsnode = projnode.Nodes.Add("Ydd Files");
-                yddsnode.Name = "Ydd";
-
-                foreach (var yddfile in CurrentProjectFile.YddFiles)
-                {
-                    var ycstr = "";// yddfile.HasChanged ? "*" : "";
-                    string name = yddfile.Name;
-                    if (yddfile.RpfFileEntry != null)
-                    {
-                        name = yddfile.RpfFileEntry.Name;
-                    }
-                    var yddnode = yddsnode.Nodes.Add(ycstr + name);
-                    yddnode.Tag = yddfile;
-
-                    //LoadYddTreeNodes(yddfile, yddnode);
-                }
-                yddsnode.Expand();
-            }
-
-            if (CurrentProjectFile.YftFiles.Count > 0)
-            {
-                var yftsnode = projnode.Nodes.Add("Yft Files");
-                yftsnode.Name = "Yft";
-
-                foreach (var yftfile in CurrentProjectFile.YftFiles)
-                {
-                    var ycstr = "";// yftfile.HasChanged ? "*" : "";
-                    string name = yftfile.Name;
-                    if (yftfile.RpfFileEntry != null)
-                    {
-                        name = yftfile.RpfFileEntry.Name;
-                    }
-                    var yftnode = yftsnode.Nodes.Add(ycstr + name);
-                    yftnode.Tag = yftfile;
-
-                    //LoadYftTreeNodes(yftfile, yftnode);
-                }
-                yftsnode.Expand();
-            }
-
-            if (CurrentProjectFile.YtdFiles.Count > 0)
-            {
-                var ytdsnode = projnode.Nodes.Add("Ytd Files");
-                ytdsnode.Name = "Ytd";
-
-                foreach (var ytdfile in CurrentProjectFile.YtdFiles)
-                {
-                    var ycstr = "";// ytdfile.HasChanged ? "*" : "";
-                    string name = ytdfile.Name;
-                    if (ytdfile.RpfFileEntry != null)
-                    {
-                        name = ytdfile.RpfFileEntry.Name;
-                    }
-                    var ytdnode = ytdsnode.Nodes.Add(ycstr + name);
-                    ytdnode.Tag = ytdfile;
-
-                    //LoadYtdTreeNodes(ytdfile, ytdnode);
-                }
-                ytdsnode.Expand();
-            }
-
-            projnode.Expand();
-
         }
 
         private void LoadYmapTreeNodes(YmapFile ymap, TreeNode node)
         {
-            if (ymap == null) return;
+            if (ymap is null)
+                return;
 
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Entities and CarGens
+            if (!string.IsNullOrEmpty(node.Name))
+                return; //named nodes are eg Entities and CarGens
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadYmapTreeNodes, ymap, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
-            if ((ymap.AllEntities != null) && (ymap.AllEntities.Length > 0))
+            if (ymap.AllEntities.Length > 0)
             {
-                var entsnode = node.Nodes.Add("Entities (" + ymap.AllEntities.Length.ToString() + ")");
+                var entsnode = node.Nodes.Add($"Entities ({ymap.AllEntities.Length})");
                 entsnode.Name = "Entities";
                 entsnode.Tag = ymap;
                 var ents = ymap.AllEntities;
@@ -331,9 +357,9 @@ namespace CodeWalker.Project.Panels
                     enode.Tag = ent;
                 }
             }
-            if ((ymap.CarGenerators != null) && (ymap.CarGenerators.Length > 0))
+            if (ymap.CarGenerators != null && ymap.CarGenerators.Length > 0)
             {
-                var cargensnode = node.Nodes.Add("Car Generators (" + ymap.CarGenerators.Length.ToString() + ")");
+                var cargensnode = node.Nodes.Add($"Car Generators ({ymap.CarGenerators.Length})");
                 cargensnode.Name = "CarGens";
                 cargensnode.Tag = ymap;
                 var cargens = ymap.CarGenerators;
@@ -344,9 +370,9 @@ namespace CodeWalker.Project.Panels
                     ccgnode.Tag = cargen;
                 }
             }
-            if ((ymap.LODLights?.LodLights != null) && (ymap.LODLights.LodLights.Length > 0))
+            if (ymap.LODLights?.LodLights != null && ymap.LODLights.LodLights.Length > 0)
             {
-                var lodlightsnode = node.Nodes.Add("LOD Lights (" + ymap.LODLights.LodLights.Length.ToString() + ")");
+                var lodlightsnode = node.Nodes.Add($"LOD Lights ({ymap.LODLights.LodLights.Length})");
                 lodlightsnode.Name = "LodLights";
                 lodlightsnode.Tag = ymap;
                 var lodlights = ymap.LODLights.LodLights;
@@ -357,9 +383,9 @@ namespace CodeWalker.Project.Panels
                     llnode.Tag = lodlight;
                 }
             }
-            if ((ymap.BoxOccluders != null) && (ymap.BoxOccluders.Length > 0))
+            if (ymap.BoxOccluders != null && ymap.BoxOccluders.Length > 0)
             {
-                var boxocclsnode = node.Nodes.Add("Box Occluders (" + ymap.BoxOccluders.Length.ToString() + ")");
+                var boxocclsnode = node.Nodes.Add($"Box Occluders ({ymap.BoxOccluders.Length})");
                 boxocclsnode.Name = "BoxOccluders";
                 boxocclsnode.Tag = ymap;
                 var boxes = ymap.BoxOccluders;
@@ -370,9 +396,9 @@ namespace CodeWalker.Project.Panels
                     boxnode.Tag = box;
                 }
             }
-            if ((ymap.OccludeModels != null) && (ymap.OccludeModels.Length > 0))
+            if (ymap.OccludeModels != null && ymap.OccludeModels.Length > 0)
             {
-                var occlmodsnode = node.Nodes.Add("Occlude Models (" + ymap.OccludeModels.Length.ToString() + ")");
+                var occlmodsnode = node.Nodes.Add($"Occlude Models ({ymap.OccludeModels.Length})");
                 occlmodsnode.Name = "OccludeModels";
                 occlmodsnode.Tag = ymap;
                 var models = ymap.OccludeModels;
@@ -383,9 +409,9 @@ namespace CodeWalker.Project.Panels
                     modnode.Tag = model;
                 }
             }
-            if ((ymap.GrassInstanceBatches != null) && (ymap.GrassInstanceBatches.Length > 0))
+            if (ymap.GrassInstanceBatches != null && ymap.GrassInstanceBatches.Length > 0)
             {
-                var grassbatchesnodes = node.Nodes.Add("Grass Batches (" + ymap.GrassInstanceBatches.Length.ToString() + ")");
+                var grassbatchesnodes = node.Nodes.Add($"Grass Batches ({ymap.GrassInstanceBatches.Length})");
                 grassbatchesnodes.Name = "GrassBatches";
                 grassbatchesnodes.Tag = ymap;
                 var grassbatches = ymap.GrassInstanceBatches;
@@ -400,15 +426,23 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadYtypTreeNodes(YtypFile ytyp, TreeNode node)
         {
-            if (ytyp == null) return;
+            if (ytyp is null)
+                return;
 
-            if (!string.IsNullOrEmpty(node.Name)) return;
+            if (!string.IsNullOrEmpty(node.Name))
+                return;
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadYtypTreeNodes, ytyp, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
-            if ((ytyp.AllArchetypes != null) && (ytyp.AllArchetypes.Length > 0))
+            if (ytyp.AllArchetypes.Length > 0)
             {
-                var archetypesnode = node.Nodes.Add("Archetypes (" + ytyp.AllArchetypes.Length.ToString() + ")");
+                var archetypesnode = node.Nodes.Add($"Archetypes ({ytyp.AllArchetypes.Length})");
                 archetypesnode.Name = "Archetypes";
                 archetypesnode.Tag = ytyp;
                 var archetypes = ytyp.AllArchetypes;
@@ -424,14 +458,14 @@ namespace CodeWalker.Project.Panels
                         var entities = mlo.entities;
                         var entsets = mlo.entitySets;
                         var portals = mlo.portals;
-                        if ((rooms != null) && (rooms.Length > 0))
+                        if (rooms is not null && rooms.Length > 0)
                         {
-                            var roomsnode = tarch.Nodes.Add("Rooms (" + rooms.Length.ToString() + ")");
+                            var roomsnode = tarch.Nodes.Add($"Rooms ({rooms.Length})");
                             roomsnode.Name = "Rooms";
                             for (int j = 0; j < rooms.Length; j++)
                             {
                                 var room = rooms[j];
-                                var roomnode = roomsnode.Nodes.Add(room.Index.ToString() + ": " + room.RoomName);
+                                var roomnode = roomsnode.Nodes.Add($"{room.Index}: {room.RoomName}");
                                 roomnode.Tag = room;
                                 var roomentities = room.AttachedObjects;
                                 if ((roomentities != null) && (entities != null))
@@ -449,9 +483,9 @@ namespace CodeWalker.Project.Panels
                                 }
                             }
                         }
-                        if ((portals != null) && (portals.Length > 0))
+                        if (portals != null && portals.Length > 0)
                         {
-                            var portalsnode = tarch.Nodes.Add("Portals (" + portals.Length.ToString() + ")");
+                            var portalsnode = tarch.Nodes.Add($"Portals ({portals.Length})");
                             portalsnode.Name = "Portals";
                             for (int j = 0; j < portals.Length; j++)
                             {
@@ -476,7 +510,7 @@ namespace CodeWalker.Project.Panels
                         }
                         if ((entsets != null) && (entsets.Length > 0))
                         {
-                            var setsnode = tarch.Nodes.Add("Entity Sets (" + entsets.Length.ToString() + ")");
+                            var setsnode = tarch.Nodes.Add($"Entity Sets ({entsets.Length})");
                             setsnode.Name = "EntitySets";
                             for (int j = 0; j < entsets.Length; j++)
                             {
@@ -505,9 +539,17 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadYbnTreeNodes(YbnFile ybn, TreeNode node)
         {
-            if (ybn == null) return;
+            if (ybn == null)
+                return;
 
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Nodes
+            if (!string.IsNullOrEmpty(node.Name))
+                return; //named nodes are eg Nodes
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadYbnTreeNodes, ybn, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
@@ -519,7 +561,11 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadYbnBoundsTreeNode(Bounds b, TreeNode node)
         {
-
+            if (InvokeRequired)
+            {
+                Invoke(LoadYbnBoundsTreeNode, b, node);
+                return;
+            }
             var boundsnode = node.Nodes.Add(b.Type.ToString());
             boundsnode.Tag = b;
 
@@ -553,9 +599,17 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadYndTreeNodes(YndFile ynd, TreeNode node)
         {
-            if (ynd == null) return;
+            if (ynd == null)
+                return;
 
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Nodes
+            if (!string.IsNullOrEmpty(node.Name))
+                return; //named nodes are eg Nodes
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadYndTreeNodes, ynd, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
@@ -579,9 +633,17 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadYnvTreeNodes(YnvFile ynv, TreeNode node)//TODO!
         {
-            if (ynv == null) return;
+            if (ynv == null)
+                return;
 
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Polygons
+            if (!string.IsNullOrEmpty(node.Name))
+                return; //named nodes are eg Polygons
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadYnvTreeNodes, ynv, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
@@ -603,17 +665,25 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadTrainTrackTreeNodes(TrainTrack track, TreeNode node)
         {
-            if (track == null) return;
+            if (track == null)
+                return;
 
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Nodes
+            if (!string.IsNullOrEmpty(node.Name))
+                return; //named nodes are eg Nodes
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadTrainTrackTreeNodes, track, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
 
 
-            if ((track.Nodes != null) && (track.Nodes.Count > 0))
+            if (track.Nodes != null && track.Nodes.Count > 0)
             {
-                var nodesnode = node.Nodes.Add("Nodes (" + track.Nodes.Count.ToString() + ")");
+                var nodesnode = node.Nodes.Add($"Nodes ({track.Nodes.Count})");
                 nodesnode.Name = "Nodes";
                 nodesnode.Tag = track;
                 var nodes = track.Nodes;
@@ -628,16 +698,25 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadScenarioTreeNodes(YmtFile ymt, TreeNode node)
         {
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Points
+            if (!string.IsNullOrEmpty(node.Name))
+                return; //named nodes are eg Points
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadScenarioTreeNodes, ymt, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
             var region = ymt?.ScenarioRegion;
 
-            if (region == null) return;
+            if (region == null)
+                return;
 
             var nodes = region.Nodes;
-            if ((nodes == null) || (nodes.Count == 0)) return;
+            if (nodes == null || nodes.Count == 0)
+                return;
 
             var pointsnode = node.Nodes.Add("Points (" + nodes.Count.ToString() + ")");
             pointsnode.Name = "Points";
@@ -700,12 +779,20 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadAudioRelTreeNodes(RelFile rel, TreeNode node)
         {
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Zones, Emitters
+            if (!string.IsNullOrEmpty(node.Name))
+                return; //named nodes are eg Zones, Emitters
+
+            if (InvokeRequired)
+            {
+                Invoke(LoadAudioRelTreeNodes, rel, node);
+                return;
+            }
 
             node.Nodes.Clear();
 
 
-            if (rel.RelDatasSorted == null) return; //nothing to see here
+            if (rel.RelDatas == null)
+                return; //nothing to see here
 
 
             var zones = new List<Dat151AmbientZone>();
@@ -717,29 +804,29 @@ namespace CodeWalker.Project.Panels
 
             foreach (var reldata in rel.RelDatasSorted)
             {
-                if (reldata is Dat151AmbientZone)
+                if (reldata is Dat151AmbientZone dat151AmbientZone)
                 {
-                    zones.Add(reldata as Dat151AmbientZone);
+                    zones.Add(dat151AmbientZone);
                 }
-                if (reldata is Dat151AmbientRule)
+                if (reldata is Dat151AmbientRule dat151AmbientRule)
                 {
-                    emitters.Add(reldata as Dat151AmbientRule);
+                    emitters.Add(dat151AmbientRule);
                 }
-                if (reldata is Dat151AmbientZoneList)
+                if (reldata is Dat151AmbientZoneList dat151AmbientZoneList)
                 {
-                    zonelists.Add(reldata as Dat151AmbientZoneList);
+                    zonelists.Add(dat151AmbientZoneList);
                 }
-                if (reldata is Dat151StaticEmitterList)
+                if (reldata is Dat151StaticEmitterList dat151StaticEmitterList)
                 {
-                    emitterlists.Add(reldata as Dat151StaticEmitterList);
+                    emitterlists.Add(dat151StaticEmitterList);
                 }
-                if (reldata is Dat151Interior)
+                if (reldata is Dat151Interior dat151Interior)
                 {
-                    interiors.Add(reldata as Dat151Interior);
+                    interiors.Add(dat151Interior);
                 }
-                if (reldata is Dat151InteriorRoom)
+                if (reldata is Dat151InteriorRoom dat151InteriorRoom)
                 {
-                    interiorrooms.Add(reldata as Dat151InteriorRoom);
+                    interiorrooms.Add(dat151InteriorRoom);
                 }
             }
 
@@ -835,15 +922,23 @@ namespace CodeWalker.Project.Panels
 
         public void SetProjectHasChanged(bool changed)
         {
-            if ((ProjectTreeView.Nodes.Count > 0) && (CurrentProjectFile != null))
+            if (ProjectTreeView.Nodes.Count > 0 && CurrentProjectFile != null)
             {
-                //first node is the project...
-                string changestr = changed ? "*" : "";
-                ProjectTreeView.Nodes[0].Text = changestr + CurrentProjectFile.Name;
+                this.InvokeIfRequired(() =>
+                {
+                    //first node is the project...
+                    string changestr = changed ? "*" : "";
+                    ProjectTreeView.Nodes[0].Text = changestr + CurrentProjectFile.Name;
+                });
             }
         }
         public void SetYmapHasChanged(YmapFile ymap, bool changed)
         {
+            if (InvokeRequired)
+            {
+                Invoke(SetYmapHasChanged, ymap, changed);
+                return;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -868,6 +963,11 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYtypHasChanged(YtypFile ytyp, bool changed)
         {
+            if (InvokeRequired)
+            {
+                Invoke(SetYtypHasChanged, ytyp, changed);
+                return;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -892,6 +992,11 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYbnHasChanged(YbnFile ybn, bool changed)
         {
+            if (InvokeRequired)
+            {
+                Invoke(SetYbnHasChanged, ybn, changed);
+                return;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -916,6 +1021,11 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYndHasChanged(YndFile ynd, bool changed)
         {
+            if (InvokeRequired)
+            {
+                Invoke(SetYndHasChanged, ynd, changed);
+                return;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -940,6 +1050,11 @@ namespace CodeWalker.Project.Panels
         }
         public void SetYnvHasChanged(YnvFile ynv, bool changed)
         {
+            if (InvokeRequired)
+            {
+                Invoke(SetYnvHasChanged, ynv, changed);
+                return;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -964,6 +1079,11 @@ namespace CodeWalker.Project.Panels
         }
         public void SetTrainTrackHasChanged(TrainTrack track, bool changed)
         {
+            if (InvokeRequired)
+            {
+                Invoke(SetTrainTrackHasChanged, track, changed);
+                return;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -988,6 +1108,11 @@ namespace CodeWalker.Project.Panels
         }
         public void SetScenarioHasChanged(YmtFile scenario, bool changed)
         {
+            if (InvokeRequired)
+            {
+                Invoke(SetScenarioHasChanged, scenario, changed);
+                return;
+            }
             if (ProjectTreeView.Nodes.Count > 0)
             {
                 var pnode = ProjectTreeView.Nodes[0];
@@ -1057,47 +1182,56 @@ namespace CodeWalker.Project.Panels
 
 
 
-        private TreeNode GetChildTreeNode(TreeNode node, string name)
+        private TreeNode? GetChildTreeNode(TreeNode? node, string name)
         {
-            if (node == null) return null;
+            if (node is null)
+                return null;
             var nodes = node.Nodes.Find(name, false);
-            if ((nodes == null) || (nodes.Length != 1)) return null;
+            if (nodes is null || nodes.Length != 1)
+                return null;
             return nodes[0];
         }
-        public TreeNode FindYmapTreeNode(YmapFile ymap)
+        public TreeNode? FindYmapTreeNode(YmapFile ymap)
         {
-            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            if (ProjectTreeView.Nodes.Count <= 0)
+                return null;
             var projnode = ProjectTreeView.Nodes[0];
             var ymapsnode = GetChildTreeNode(projnode, "Ymap");
-            if (ymapsnode == null) return null;
+            if (ymapsnode is null)
+                return null;
             for (int i = 0; i < ymapsnode.Nodes.Count; i++)
             {
                 var ymapnode = ymapsnode.Nodes[i];
-                if (ymapnode.Tag == ymap) return ymapnode;
+                if (ymapnode.Tag == ymap)
+                    return ymapnode;
             }
             return null;
         }
-        public TreeNode FindEntityTreeNode(YmapEntityDef ent)
+        public TreeNode? FindEntityTreeNode(YmapEntityDef ent)
         {
-            if (ent == null) return null;
-            TreeNode ymapnode = FindYmapTreeNode(ent.Ymap);
-            if (ymapnode == null) return null;
+            if (ent == null)
+                return null;
+            var ymapnode = FindYmapTreeNode(ent.Ymap);
+            if (ymapnode == null)
+                return null;
             var entsnode = GetChildTreeNode(ymapnode, "Entities");
-            if (entsnode == null) return null;
+            if (entsnode == null)
+                return null;
             for (int i = 0; i < entsnode.Nodes.Count; i++)
             {
                 TreeNode entnode = entsnode.Nodes[i];
-                if (entnode.Tag == ent) return entnode;
+                if (entnode.Tag == ent)
+                    return entnode;
             }
             return null;
         }
-        public TreeNode FindCarGenTreeNode(YmapCarGen cargen)
+        public TreeNode? FindCarGenTreeNode(YmapCarGen cargen)
         {
-            if (cargen == null) return null;
-            TreeNode ymapnode = FindYmapTreeNode(cargen.Ymap);
-            if (ymapnode == null) return null;
+            if (cargen is null) return null;
+            var ymapnode = FindYmapTreeNode(cargen.Ymap);
+            if (ymapnode is null) return null;
             var cargensnode = GetChildTreeNode(ymapnode, "CarGens");
-            if (cargensnode == null) return null;
+            if (cargensnode is null) return null;
             for (int i = 0; i < cargensnode.Nodes.Count; i++)
             {
                 TreeNode cargennode = cargensnode.Nodes[i];
@@ -1105,303 +1239,373 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindLodLightTreeNode(YmapLODLight lodlight)
+        public TreeNode? FindLodLightTreeNode(YmapLODLight lodlight)
         {
-            if (lodlight == null) return null;
-            TreeNode ymapnode = FindYmapTreeNode(lodlight.Ymap);
-            if (ymapnode == null) return null;
+            if (lodlight is null)
+                return null;
+            var ymapnode = FindYmapTreeNode(lodlight.Ymap);
+            if (ymapnode is null)
+                return null;
             var lodlightsnode = GetChildTreeNode(ymapnode, "LodLights");
-            if (lodlightsnode == null) return null;
+            if (lodlightsnode is null)
+                return null;
             for (int i = 0; i < lodlightsnode.Nodes.Count; i++)
             {
                 TreeNode lodlightnode = lodlightsnode.Nodes[i];
-                if (lodlightnode.Tag == lodlight) return lodlightnode;
+                if (lodlightnode.Tag == lodlight)
+                    return lodlightnode;
             }
             return null;
         }
-        public TreeNode FindBoxOccluderTreeNode(YmapBoxOccluder box)
+        public TreeNode? FindBoxOccluderTreeNode(YmapBoxOccluder box)
         {
-            if (box == null) return null;
-            TreeNode ymapnode = FindYmapTreeNode(box.Ymap);
-            if (ymapnode == null) return null;
+            if (box is null)
+                return null;
+            var ymapnode = FindYmapTreeNode(box.Ymap);
+            if (ymapnode is null)
+                return null;
             var boxesnode = GetChildTreeNode(ymapnode, "BoxOccluders");
-            if (boxesnode == null) return null;
+            if (boxesnode is null)
+                return null;
             for (int i = 0; i < boxesnode.Nodes.Count; i++)
             {
                 TreeNode boxnode = boxesnode.Nodes[i];
-                if (boxnode.Tag == box) return boxnode;
+                if (boxnode.Tag == box)
+                    return boxnode;
             }
             return null;
         }
-        public TreeNode FindOccludeModelTreeNode(YmapOccludeModel model)
+        public TreeNode? FindOccludeModelTreeNode(YmapOccludeModel model)
         {
-            if (model == null) return null;
-            TreeNode ymapnode = FindYmapTreeNode(model.Ymap);
-            if (ymapnode == null) return null;
+            if (model is null)
+                return null;
+            var ymapnode = FindYmapTreeNode(model.Ymap);
+            if (ymapnode is null)
+                return null;
             var modelsnode = GetChildTreeNode(ymapnode, "OccludeModels");
-            if (modelsnode == null) return null;
+            if (modelsnode is null)
+                return null;
             for (int i = 0; i < modelsnode.Nodes.Count; i++)
             {
                 TreeNode modelnode = modelsnode.Nodes[i];
-                if (modelnode.Tag == model) return modelnode;
+                if (modelnode.Tag == model)
+                    return modelnode;
             }
             return null;
         }
-        public TreeNode FindOccludeModelTriangleTreeNode(YmapOccludeModelTriangle tri)
+        public TreeNode? FindOccludeModelTriangleTreeNode(YmapOccludeModelTriangle tri)
         {
-            if (tri == null) return null;
-            TreeNode ymapnode = FindYmapTreeNode(tri.Ymap);
-            if (ymapnode == null) return null;
+            if (tri is null)
+                return null;
+            var ymapnode = FindYmapTreeNode(tri.Ymap);
+            if (ymapnode is null)
+                return null;
             var modelsnode = GetChildTreeNode(ymapnode, "OccludeModels");
-            if (modelsnode == null) return null;
+            if (modelsnode is null)
+                return null;
             for (int i = 0; i < modelsnode.Nodes.Count; i++)
             {
                 TreeNode modelnode = modelsnode.Nodes[i];
-                if (modelnode.Tag == tri.Model) return modelnode;
+                if (modelnode.Tag == tri.Model)
+                    return modelnode;
             }
             return null;
         }
-        public TreeNode FindGrassTreeNode(YmapGrassInstanceBatch batch)
+        public TreeNode? FindGrassTreeNode(YmapGrassInstanceBatch batch)
         {
-            if (batch == null) return null;
-            TreeNode ymapnode = FindYmapTreeNode(batch.Ymap);
-            if (ymapnode == null) return null;
+            if (batch is null)
+                return null;
+            var ymapnode = FindYmapTreeNode(batch.Ymap);
+            if (ymapnode is null)
+                return null;
             var batchnode = GetChildTreeNode(ymapnode, "GrassBatches");
-            if (batchnode == null) return null;
+            if (batchnode is null)
+                return null;
             for (int i = 0; i < batchnode.Nodes.Count; i++)
             {
                 TreeNode grassnode = batchnode.Nodes[i];
-                if (grassnode.Tag == batch) return grassnode;
+                if (grassnode.Tag == batch)
+                    return grassnode;
             }
             return null;
         }
-        public TreeNode FindYtypTreeNode(YtypFile ytyp)
+        public TreeNode? FindYtypTreeNode(YtypFile ytyp)
         {
-            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            if (ProjectTreeView.Nodes.Count <= 0)
+                return null;
+
             var projnode = ProjectTreeView.Nodes[0];
             var ytypsnode = GetChildTreeNode(projnode, "Ytyp");
-            if (ytypsnode == null) return null;
+            if (ytypsnode is null)
+                return null;
+
             for (int i = 0; i < ytypsnode.Nodes.Count; i++)
             {
                 var ytypnode = ytypsnode.Nodes[i];
-                if (ytypnode.Tag == ytyp) return ytypnode;
+                if (ytypnode.Tag == ytyp)
+                    return ytypnode;
             }
             return null;
         }
-        public TreeNode FindArchetypeTreeNode(Archetype archetype)
+        public TreeNode? FindArchetypeTreeNode(Archetype archetype)
         {
-            if (archetype == null) return null;
+            if (archetype is null)
+                return null;
+
             var ytypnode = FindYtypTreeNode(archetype.Ytyp);
-            if (ytypnode == null) return null;
+            if (ytypnode is null)
+                return null;
+
             var archetypenode = GetChildTreeNode(ytypnode, "Archetypes");
-            if (archetypenode == null) return null;
+            if (archetypenode is null)
+                return null;
+
             for (int i = 0; i < archetypenode.Nodes.Count; i++)
             {
                 var archnode = archetypenode.Nodes[i];
-                if (archnode.Tag == archetype) return archnode;
+                if (archnode.Tag == archetype)
+                    return archnode;
             }
             return null;
         }
-        public TreeNode FindMloRoomTreeNode(MCMloRoomDef room)
+        public TreeNode? FindMloRoomTreeNode(MCMloRoomDef room)
         {
-            if (room == null) return null;
+            if (room is null)
+                return null;
 
             var mloarchetypenode = FindArchetypeTreeNode(room.OwnerMlo);
-            if (mloarchetypenode != null)
+            if (mloarchetypenode is not null)
             {
                 var roomsnode = GetChildTreeNode(mloarchetypenode, "Rooms");
-                if (roomsnode == null) return null;
+                if (roomsnode is null)
+                    return null;
 
                 for (int j = 0; j < roomsnode.Nodes.Count; j++)
                 {
                     var roomnode = roomsnode.Nodes[j];
-                    if (roomnode.Tag == room) return roomnode;
+                    if (roomnode.Tag == room)
+                        return roomnode;
                 }
             }
 
             return null;
         }
-        public TreeNode FindMloPortalTreeNode(MCMloPortalDef portal)
+        public TreeNode? FindMloPortalTreeNode(MCMloPortalDef? portal)
         {
-            if (portal == null) return null;
+            if (portal is null)
+                return null;
 
             var mloarchetypenode = FindArchetypeTreeNode(portal.OwnerMlo);
-            if (mloarchetypenode != null)
+            if (mloarchetypenode is not null)
             {
                 var portalsnode = GetChildTreeNode(mloarchetypenode, "Portals");
-                if (portalsnode == null) return null;
+                if (portalsnode is null)
+                    return null;
 
                 for (int j = 0; j < portalsnode.Nodes.Count; j++)
                 {
                     var portalnode = portalsnode.Nodes[j];
-                    if (portalnode.Tag == portal) return portalnode;
+                    if (portalnode.Tag == portal)
+                        return portalnode;
                 }
             }
 
             return null;
         }
-        public TreeNode FindMloEntitySetTreeNode(MCMloEntitySet entset)
+        public TreeNode? FindMloEntitySetTreeNode(MCMloEntitySet? entset)
         {
-            if (entset == null) return null;
+            if (entset is null)
+                return null;
 
             var mloarchetypenode = FindArchetypeTreeNode(entset.OwnerMlo);
-            if (mloarchetypenode != null)
+            if (mloarchetypenode is not null)
             {
                 var entsetsnode = GetChildTreeNode(mloarchetypenode, "EntitySets");
-                if (entsetsnode == null) return null;
+                if (entsetsnode is null)
+                    return null;
 
                 for (int j = 0; j < entsetsnode.Nodes.Count; j++)
                 {
                     var entsetnode = entsetsnode.Nodes[j];
-                    if (entsetnode.Tag == entset) return entsetnode;
+                    if (entsetnode.Tag == entset)
+                        return entsetnode;
                 }
             }
 
             return null;
         }
-        public TreeNode FindMloEntityTreeNode(MCEntityDef ent)
+        public TreeNode? FindMloEntityTreeNode(MCEntityDef? ent)
         {
-            var entityroom = ent?.OwnerMlo?.GetEntityRoom(ent);
-            if (entityroom != null)
+            if (ent is null)
+                return null;
+
+            var entityroom = ent.OwnerMlo?.GetEntityRoom(ent);
+            if (entityroom is not null)
             {
                 var roomnode = FindMloRoomTreeNode(entityroom);
-                if (roomnode != null)
+                if (roomnode is not null)
                 {
                     for (var k = 0; k < roomnode.Nodes.Count; k++)
                     {
                         var entitynode = roomnode.Nodes[k];
-                        if (entitynode.Tag == ent) return entitynode;
+                        if (entitynode.Tag == ent)
+                            return entitynode;
                     }
                 }
             }
 
-            var entityportal = ent?.OwnerMlo?.GetEntityPortal(ent);
-            if (entityportal != null)
+            var entityportal = ent.OwnerMlo?.GetEntityPortal(ent);
+            if (entityportal is not null)
             {
                 var portalnode = FindMloPortalTreeNode(entityportal);
-                if (portalnode != null)
+                if (portalnode is not null)
                 {
                     for (var k = 0; k < portalnode.Nodes.Count; k++)
                     {
                         var entitynode = portalnode.Nodes[k];
-                        if (entitynode.Tag == ent) return entitynode;
+                        if (entitynode.Tag == ent)
+                            return entitynode;
                     }
                 }
             }
 
-            var entityset = ent?.OwnerMlo?.GetEntitySet(ent);
-            if (entityset != null)
+            var entityset = ent.OwnerMlo?.GetEntitySet(ent);
+            if (entityset is not null)
             {
                 var setnode = FindMloEntitySetTreeNode(entityset);
-                if (setnode != null)
+                if (setnode is not null)
                 {
                     for (var k = 0; k < setnode.Nodes.Count; k++)
                     {
                         var entitynode = setnode.Nodes[k];
-                        if (entitynode.Tag == ent) return entitynode;
+                        if (entitynode.Tag == ent)
+                            return entitynode;
                     }
                 }
             }
 
             return null;
         }
-        public TreeNode FindYbnTreeNode(YbnFile ybn)
+        public TreeNode? FindYbnTreeNode(YbnFile ybn)
         {
-            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            if (ProjectTreeView.Nodes.Count <= 0)
+                return null;
             var projnode = ProjectTreeView.Nodes[0];
             var ybnsnode = GetChildTreeNode(projnode, "Ybn");
-            if (ybnsnode == null) return null;
+            if (ybnsnode == null)
+                return null;
             for (int i = 0; i < ybnsnode.Nodes.Count; i++)
             {
                 var ybnnode = ybnsnode.Nodes[i];
-                if (ybnnode.Tag == ybn) return ybnnode;
+                if (ybnnode.Tag == ybn)
+                    return ybnnode;
             }
             return null;
         }
-        public TreeNode FindCollisionBoundsTreeNode(Bounds b)
+        public TreeNode? FindCollisionBoundsTreeNode(Bounds b)
         {
-            if (b == null) return null;
+            if (b == null)
+                return null;
             var bnode = (b.Parent != null) ? FindCollisionBoundsTreeNode(b.Parent) : FindYbnTreeNode(b.GetRootYbn());
-            if (bnode == null) return null;
+            if (bnode == null)
+                return null;
             for (int i = 0; i < bnode.Nodes.Count; i++)
             {
                 var nnode = bnode.Nodes[i];
-                if (nnode.Tag == b) return nnode;
+                if (nnode.Tag == b)
+                    return nnode;
             }
             return null;
         }
-        public TreeNode FindCollisionPolyTreeNode(BoundPolygon p)
+        public TreeNode? FindCollisionPolyTreeNode(BoundPolygon p)
         {
-            if (p == null) return null;
+            if (p == null)
+                return null;
             var ybnnode = FindCollisionBoundsTreeNode(p.Owner);
             var polynode = GetChildTreeNode(ybnnode, "EditPoly");
-            if (polynode == null) return null;
+            if (polynode == null)
+                return null;
             polynode.Tag = p;
             return polynode;
         }
-        public TreeNode FindCollisionVertexTreeNode(BoundVertex v)
+        public TreeNode? FindCollisionVertexTreeNode(BoundVertex v)
         {
-            if (v == null) return null;
+            if (v == null)
+                return null;
             var ybnnode = FindCollisionBoundsTreeNode(v.Owner);
             var vertnode = GetChildTreeNode(ybnnode, "EditVertex");
-            if (vertnode == null) return null;
+            if (vertnode == null)
+                return null;
             vertnode.Tag = v;
             return vertnode;
         }
-        public TreeNode FindYndTreeNode(YndFile ynd)
+        public TreeNode? FindYndTreeNode(YndFile ynd)
         {
-            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            if (ProjectTreeView.Nodes.Count <= 0)
+                return null;
             var projnode = ProjectTreeView.Nodes[0];
             var yndsnode = GetChildTreeNode(projnode, "Ynd");
-            if (yndsnode == null) return null;
+            if (yndsnode == null)
+                return null;
             for (int i = 0; i < yndsnode.Nodes.Count; i++)
             {
                 var yndnode = yndsnode.Nodes[i];
-                if (yndnode.Tag == ynd) return yndnode;
+                if (yndnode.Tag == ynd)
+                    return yndnode;
             }
             return null;
         }
-        public TreeNode FindPathNodeTreeNode(YndNode n)
+        public TreeNode? FindPathNodeTreeNode(YndNode n)
         {
-            if (n == null) return null;
-            TreeNode yndnode = FindYndTreeNode(n.Ynd);
+            if (n == null)
+                return null;
+            var yndnode = FindYndTreeNode(n.Ynd);
             var nodesnode = GetChildTreeNode(yndnode, "Nodes");
-            if (nodesnode == null) return null;
+            if (nodesnode == null)
+                return null;
             for (int i = 0; i < nodesnode.Nodes.Count; i++)
             {
                 TreeNode nnode = nodesnode.Nodes[i];
-                if (nnode.Tag == n) return nnode;
+                if (nnode.Tag == n)
+                    return nnode;
             }
             return null;
         }
-        public TreeNode FindYnvTreeNode(YnvFile ynv)
+        public TreeNode? FindYnvTreeNode(YnvFile ynv)
         {
-            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            if (ProjectTreeView.Nodes.Count <= 0)
+                return null;
             var projnode = ProjectTreeView.Nodes[0];
             var ynvsnode = GetChildTreeNode(projnode, "Ynv");
-            if (ynvsnode == null) return null;
+            if (ynvsnode == null)
+                return null;
             for (int i = 0; i < ynvsnode.Nodes.Count; i++)
             {
                 var yndnode = ynvsnode.Nodes[i];
-                if (yndnode.Tag == ynv) return yndnode;
+                if (yndnode.Tag == ynv)
+                    return yndnode;
             }
             return null;
         }
-        public TreeNode FindNavPolyTreeNode(YnvPoly p)
+        public TreeNode? FindNavPolyTreeNode(YnvPoly p)
         {
-            if (p == null) return null;
-            TreeNode ynvnode = FindYnvTreeNode(p.Ynv);
+            if (p == null)
+                return null;
+            var ynvnode = FindYnvTreeNode(p.Ynv);
             var polynode = GetChildTreeNode(ynvnode, "EditPoly");
-            if (polynode == null) return null;
+            if (polynode == null)
+                return null;
             polynode.Tag = p;
             return polynode;
         }
-        public TreeNode FindNavPointTreeNode(YnvPoint p)
+        public TreeNode? FindNavPointTreeNode(YnvPoint p)
         {
-            if (p == null) return null;
-            TreeNode ynvnode = FindYnvTreeNode(p.Ynv);
+            if (p == null)
+                return null;
+            var ynvnode = FindYnvTreeNode(p.Ynv);
             var pointnode = GetChildTreeNode(ynvnode, "EditPoint");
-            if (pointnode == null) return null;
+            if (pointnode == null)
+                return null;
             pointnode.Tag = p;
             return pointnode;
             //for (int i = 0; i < pointsnode.Nodes.Count; i++)
@@ -1411,12 +1615,14 @@ namespace CodeWalker.Project.Panels
             //}
             //return null;
         }
-        public TreeNode FindNavPortalTreeNode(YnvPortal p)
+        public TreeNode? FindNavPortalTreeNode(YnvPortal p)
         {
-            if (p == null) return null;
-            TreeNode ynvnode = FindYnvTreeNode(p.Ynv);
+            if (p == null)
+                return null;
+            var ynvnode = FindYnvTreeNode(p.Ynv);
             var portalnode = GetChildTreeNode(ynvnode, "EditPortal");
-            if (portalnode == null) return null;
+            if (portalnode == null)
+                return null;
             portalnode.Tag = p;
             return portalnode;
             //for (int i = 0; i < portalsnode.Nodes.Count; i++)
@@ -1426,7 +1632,7 @@ namespace CodeWalker.Project.Panels
             //}
             //return null;
         }
-        public TreeNode FindTrainTrackTreeNode(TrainTrack track)
+        public TreeNode? FindTrainTrackTreeNode(TrainTrack track)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
             var projnode = ProjectTreeView.Nodes[0];
@@ -1439,7 +1645,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindTrainNodeTreeNode(TrainTrackNode n)
+        public TreeNode? FindTrainNodeTreeNode(TrainTrackNode n)
         {
             if (n == null) return null;
             TreeNode tracknode = FindTrainTrackTreeNode(n.Track);
@@ -1452,7 +1658,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindScenarioTreeNode(YmtFile ymt)
+        public TreeNode? FindScenarioTreeNode(YmtFile ymt)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
             var projnode = ProjectTreeView.Nodes[0];
@@ -1465,7 +1671,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindScenarioNodeTreeNode(ScenarioNode p)
+        public TreeNode? FindScenarioNodeTreeNode(ScenarioNode p)
         {
             if (p == null) return null;
             TreeNode ymtnode = FindScenarioTreeNode(p.Ymt);
@@ -1478,7 +1684,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioRelTreeNode(RelFile rel)
+        public TreeNode? FindAudioRelTreeNode(RelFile rel)
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
             var projnode = ProjectTreeView.Nodes[0];
@@ -1491,7 +1697,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioZoneTreeNode(AudioPlacement zone)
+        public TreeNode? FindAudioZoneTreeNode(AudioPlacement zone)
         {
             if (zone == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(zone.RelFile);
@@ -1505,7 +1711,7 @@ namespace CodeWalker.Project.Panels
             }
             return zonenode;
         }
-        public TreeNode FindAudioEmitterTreeNode(AudioPlacement emitter)
+        public TreeNode? FindAudioEmitterTreeNode(AudioPlacement emitter)
         {
             if (emitter == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(emitter.RelFile);
@@ -1519,7 +1725,7 @@ namespace CodeWalker.Project.Panels
             }
             return zonenode;
         }
-        public TreeNode FindAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        public TreeNode? FindAudioZoneListTreeNode(Dat151AmbientZoneList list)
         {
             if (list == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(list.Rel);
@@ -1532,7 +1738,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioEmitterListTreeNode(Dat151StaticEmitterList list)
+        public TreeNode? FindAudioEmitterListTreeNode(Dat151StaticEmitterList list)
         {
             if (list == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(list.Rel);
@@ -1545,7 +1751,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioInteriorTreeNode(Dat151Interior interior)
+        public TreeNode? FindAudioInteriorTreeNode(Dat151Interior interior)
         {
             if (interior == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(interior.Rel);
@@ -1558,7 +1764,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
+        public TreeNode? FindAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
         {
             if (room == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(room.Rel);
@@ -1582,7 +1788,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectYmapTreeNode(YmapFile ymap)
         {
-            TreeNode ymapnode = FindYmapTreeNode(ymap);
+            var ymapnode = FindYmapTreeNode(ymap);
             if (ymapnode != null)
             {
                 if (ProjectTreeView.SelectedNode == ymapnode)
@@ -1597,7 +1803,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectEntityTreeNode(YmapEntityDef ent)
         {
-            TreeNode entnode = FindEntityTreeNode(ent);
+            var entnode = FindEntityTreeNode(ent);
             if (entnode != null)
             {
                 if (ProjectTreeView.SelectedNode == entnode)
@@ -1612,7 +1818,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectCarGenTreeNode(YmapCarGen cargen)
         {
-            TreeNode cargennode = FindCarGenTreeNode(cargen);
+            var cargennode = FindCarGenTreeNode(cargen);
             if (cargennode != null)
             {
                 if (ProjectTreeView.SelectedNode == cargennode)
@@ -1627,7 +1833,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectLodLightTreeNode(YmapLODLight lodlight)
         {
-            TreeNode lodlightnode = FindLodLightTreeNode(lodlight);
+            var lodlightnode = FindLodLightTreeNode(lodlight);
             if (lodlightnode != null)
             {
                 if (ProjectTreeView.SelectedNode == lodlightnode)
@@ -1642,7 +1848,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectBoxOccluderTreeNode(YmapBoxOccluder box)
         {
-            TreeNode boxnode = FindBoxOccluderTreeNode(box);
+            var boxnode = FindBoxOccluderTreeNode(box);
             if (boxnode != null)
             {
                 if (ProjectTreeView.SelectedNode == boxnode)
@@ -1657,7 +1863,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectOccludeModelTreeNode(YmapOccludeModel model)
         {
-            TreeNode modelnode = FindOccludeModelTreeNode(model);
+            var modelnode = FindOccludeModelTreeNode(model);
             if (modelnode != null)
             {
                 if (ProjectTreeView.SelectedNode == modelnode)
@@ -1672,7 +1878,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectOccludeModelTriangleTreeNode(YmapOccludeModelTriangle tri)
         {
-            TreeNode trinode = FindOccludeModelTriangleTreeNode(tri);
+            var trinode = FindOccludeModelTriangleTreeNode(tri);
             if (trinode != null)
             {
                 if (ProjectTreeView.SelectedNode == trinode)
@@ -1689,7 +1895,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectGrassBatchTreeNode(YmapGrassInstanceBatch grassBatch)
         {
-            TreeNode grassNode = FindGrassTreeNode(grassBatch);
+            var grassNode = FindGrassTreeNode(grassBatch);
             if (grassNode != null)
             {
                 if (ProjectTreeView.SelectedNode == grassNode)
@@ -1704,7 +1910,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectMloEntityTreeNode(MCEntityDef ent)
         {
-            TreeNode entnode = FindMloEntityTreeNode(ent);
+            var entnode = FindMloEntityTreeNode(ent);
             if (entnode != null)
             {
                 if (ProjectTreeView.SelectedNode == entnode)
@@ -1719,7 +1925,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectMloRoomTreeNode(MCMloRoomDef room)
         {
-            TreeNode roomnode = FindMloRoomTreeNode(room);
+            var roomnode = FindMloRoomTreeNode(room);
             if (roomnode != null)
             {
                 if (ProjectTreeView.SelectedNode == roomnode)
@@ -1734,7 +1940,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectMloPortalTreeNode(MCMloPortalDef portal)
         {
-            TreeNode portalnode = FindMloPortalTreeNode(portal);
+            var portalnode = FindMloPortalTreeNode(portal);
             if (portalnode != null)
             {
                 if (ProjectTreeView.SelectedNode == portalnode)
@@ -1749,7 +1955,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectMloEntitySetTreeNode(MCMloEntitySet set)
         {
-            TreeNode setnode = FindMloEntitySetTreeNode(set);
+            var setnode = FindMloEntitySetTreeNode(set);
             if (setnode != null)
             {
                 if (ProjectTreeView.SelectedNode == setnode)
@@ -1764,7 +1970,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectArchetypeTreeNode(Archetype archetype)
         {
-            TreeNode archetypenode = FindArchetypeTreeNode(archetype);
+            var archetypenode = FindArchetypeTreeNode(archetype);
             if (archetypenode != null)
             {
                 if (ProjectTreeView.SelectedNode == archetypenode)
@@ -1779,7 +1985,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectCollisionBoundsTreeNode(Bounds bounds)
         {
-            TreeNode tnode = FindCollisionBoundsTreeNode(bounds);
+            var tnode = FindCollisionBoundsTreeNode(bounds);
             if (tnode == null)
             {
                 tnode = FindYbnTreeNode(bounds?.GetRootYbn());
@@ -1798,7 +2004,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectCollisionPolyTreeNode(BoundPolygon poly)
         {
-            TreeNode tnode = FindCollisionPolyTreeNode(poly);
+            var tnode = FindCollisionPolyTreeNode(poly);
             if (tnode == null)
             {
                 tnode = FindCollisionBoundsTreeNode(poly?.Owner);
@@ -1821,7 +2027,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectCollisionVertexTreeNode(BoundVertex vert)
         {
-            TreeNode tnode = FindCollisionVertexTreeNode(vert);
+            var tnode = FindCollisionVertexTreeNode(vert);
             if (tnode == null)
             {
                 tnode = FindCollisionBoundsTreeNode(vert?.Owner);
@@ -1844,7 +2050,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectPathNodeTreeNode(YndNode node)
         {
-            TreeNode tnode = FindPathNodeTreeNode(node);
+            var tnode = FindPathNodeTreeNode(node);
             if (tnode == null)
             {
                 tnode = FindYndTreeNode(node?.Ynd);
@@ -1863,7 +2069,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectNavPolyTreeNode(YnvPoly poly)
         {
-            TreeNode tnode = FindNavPolyTreeNode(poly);
+            var tnode = FindNavPolyTreeNode(poly);
             if (tnode == null)
             {
                 tnode = FindYnvTreeNode(poly?.Ynv);
@@ -1882,7 +2088,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectNavPointTreeNode(YnvPoint point)
         {
-            TreeNode tnode = FindNavPointTreeNode(point);
+            var tnode = FindNavPointTreeNode(point);
             if (tnode == null)
             {
                 tnode = FindYnvTreeNode(point?.Ynv);
@@ -1901,7 +2107,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectNavPortalTreeNode(YnvPortal portal)
         {
-            TreeNode tnode = FindNavPortalTreeNode(portal);
+            var tnode = FindNavPortalTreeNode(portal);
             if (tnode == null)
             {
                 tnode = FindYnvTreeNode(portal?.Ynv);
@@ -1920,7 +2126,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectTrainNodeTreeNode(TrainTrackNode node)
         {
-            TreeNode tnode = FindTrainNodeTreeNode(node);
+            var tnode = FindTrainNodeTreeNode(node);
             if (tnode == null)
             {
                 tnode = FindTrainTrackTreeNode(node?.Track);
@@ -1939,7 +2145,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectScenarioTreeNode(YmtFile scenario)
         {
-            TreeNode tnode = FindScenarioTreeNode(scenario);
+            var tnode = FindScenarioTreeNode(scenario);
             if (tnode != null)
             {
                 if (ProjectTreeView.SelectedNode == tnode)
@@ -1954,7 +2160,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectScenarioNodeTreeNode(ScenarioNode node)
         {
-            TreeNode tnode = FindScenarioNodeTreeNode(node);
+            var tnode = FindScenarioNodeTreeNode(node);
             if (tnode == null)
             {
                 tnode = FindScenarioTreeNode(node?.Ymt);
@@ -1973,7 +2179,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectAudioRelTreeNode(RelFile rel)
         {
-            TreeNode tnode = FindAudioRelTreeNode(rel);
+            var tnode = FindAudioRelTreeNode(rel);
             if (tnode != null)
             {
                 if (ProjectTreeView.SelectedNode == tnode)
@@ -1988,7 +2194,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectAudioZoneTreeNode(AudioPlacement zone)
         {
-            TreeNode tnode = FindAudioZoneTreeNode(zone);
+            var tnode = FindAudioZoneTreeNode(zone);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(zone?.RelFile);
@@ -2007,7 +2213,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectAudioEmitterTreeNode(AudioPlacement emitter)
         {
-            TreeNode tnode = FindAudioEmitterTreeNode(emitter);
+            var tnode = FindAudioEmitterTreeNode(emitter);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(emitter?.RelFile);
@@ -2026,7 +2232,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectAudioZoneListTreeNode(Dat151AmbientZoneList list)
         {
-            TreeNode tnode = FindAudioZoneListTreeNode(list);
+            var tnode = FindAudioZoneListTreeNode(list);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(list?.Rel);
@@ -2045,7 +2251,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectAudioEmitterListTreeNode(Dat151StaticEmitterList list)
         {
-            TreeNode tnode = FindAudioEmitterListTreeNode(list);
+            var tnode = FindAudioEmitterListTreeNode(list);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(list?.Rel);
@@ -2064,7 +2270,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectAudioInteriorTreeNode(Dat151Interior interior)
         {
-            TreeNode tnode = FindAudioInteriorTreeNode(interior);
+            var tnode = FindAudioInteriorTreeNode(interior);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(interior?.Rel);
@@ -2083,7 +2289,7 @@ namespace CodeWalker.Project.Panels
         }
         public void TrySelectAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
         {
-            TreeNode tnode = FindAudioInteriorRoomTreeNode(room);
+            var tnode = FindAudioInteriorRoomTreeNode(room);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(room?.Rel);
@@ -2104,11 +2310,12 @@ namespace CodeWalker.Project.Panels
 
 
 
-        public void UpdateYmapTreeNode(YmapFile ymap)
+        public async ValueTask UpdateYmapTreeNode(YmapFile ymap)
         {
             var tn = FindYmapTreeNode(ymap);
             if (tn != null)
             {
+                await this.SwitchToUi();
                 tn.Text = ymap.RpfFileEntry?.Name ?? ymap.Name;
             }
         }
@@ -2117,7 +2324,10 @@ namespace CodeWalker.Project.Panels
             var tn = FindYtypTreeNode(ytyp);
             if (tn != null)
             {
-                tn.Text = ytyp.RpfFileEntry?.Name ?? ytyp.Name;
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Text = ytyp.RpfFileEntry?.Name ?? ytyp.Name;
+                });
             }
         }
         public void UpdateYbnTreeNode(YbnFile ybn)
@@ -2125,7 +2335,10 @@ namespace CodeWalker.Project.Panels
             var tn = FindYbnTreeNode(ybn);
             if (tn != null)
             {
-                tn.Text = ybn.RpfFileEntry?.Name ?? ybn.Name;
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Text = ybn.RpfFileEntry?.Name ?? ybn.Name;
+                });
             }
         }
         public void UpdateYndTreeNode(YndFile ynd)
@@ -2133,66 +2346,65 @@ namespace CodeWalker.Project.Panels
             var tn = FindYndTreeNode(ynd);
             if (tn != null)
             {
-                tn.Text = ynd.RpfFileEntry?.Name ?? ynd.Name;
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Text = ynd.RpfFileEntry?.Name ?? ynd.Name;
+                });
             }
         }
-        public void UpdateYnvTreeNode(YnvFile ynv)
+        public async ValueTask UpdateYnvTreeNode(YnvFile ynv)
         {
             var tn = FindYnvTreeNode(ynv);
             if (tn != null)
             {
+                await this.SwitchToUi();
                 tn.Text = ynv.RpfFileEntry?.Name ?? ynv.Name;
             }
         }
-        public void UpdateTrainTrackTreeNode(TrainTrack track)
+        public async ValueTask UpdateTrainTrackTreeNode(TrainTrack track)
         {
             var tn = FindTrainTrackTreeNode(track);
             if (tn != null)
             {
+                await this.SwitchToUi();
                 tn.Text = track.RpfFileEntry?.Name ?? track.Name;
             }
         }
-        public void UpdateScenarioTreeNode(YmtFile scenarios)
+        public async ValueTask UpdateScenarioTreeNode(YmtFile scenarios)
         {
             var tn = FindScenarioTreeNode(scenarios);
             if (tn != null)
             {
+                await this.SwitchToUi();
                 tn.Text = scenarios.RpfFileEntry?.Name ?? scenarios.Name;
             }
         }
-        public void UpdateAudioRelTreeNode(RelFile rel)
+        public async ValueTask UpdateAudioRelTreeNode(RelFile rel)
         {
             var tn = FindAudioRelTreeNode(rel);
             if (tn != null)
             {
+                await this.SwitchToUi();
                 tn.Text = rel.RpfFileEntry?.Name ?? rel.Name;
             }
         }
-        public void UpdateArchetypeTreeNode(Archetype archetype)
+        public async ValueTask UpdateArchetypeTreeNode(Archetype archetype)
         {
             var tn = FindArchetypeTreeNode(archetype);
             if (tn != null)
             {
+                await this.SwitchToUi();
                 tn.Text = archetype._BaseArchetypeDef.ToString();
             }
         }
         public void UpdateEntityTreeNode(YmapEntityDef ent)
         {
-            if (ent == null) return;
-            var tn = FindEntityTreeNode(ent);
-            var name = ent.CEntityDef.archetypeName.ToString();
-            if (tn != null)
+            if (ent == null)
+                return;
+            this.InvokeIfRequired(() =>
             {
-                if (ProjectForm.displayentityindexes)
-                    tn.Text = $"[{tn.Index}] {name}";
-                else
-                    tn.Text = name;
-            }
-            else
-            {
-                var instance = ent.MloParent?.MloInstance;
-                var mcent = instance?.TryGetArchetypeEntity(ent);
-                tn = FindMloEntityTreeNode(mcent);
+                var tn = FindEntityTreeNode(ent);
+                var name = ent.CEntityDef.archetypeName.ToString();
                 if (tn != null)
                 {
                     if (ProjectForm.displayentityindexes)
@@ -2200,77 +2412,111 @@ namespace CodeWalker.Project.Panels
                     else
                         tn.Text = name;
                 }
-            }
+                else
+                {
+                    var instance = ent.MloParent?.MloInstance;
+                    var mcent = instance?.TryGetArchetypeEntity(ent);
+                    tn = FindMloEntityTreeNode(mcent);
+                    if (tn != null)
+                    {
+                        if (ProjectForm.displayentityindexes)
+                            tn.Text = $"[{tn.Index}] {name}";
+                        else
+                            tn.Text = name;
+                    }
+                }
+            });
         }
+
+        public void UpdateTreeNodeText(TreeNode node, string text)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(UpdateTreeNodeText, node, text);
+                return;
+            }
+
+            node.Text = text;
+        }
+
         public void UpdateCarGenTreeNode(YmapCarGen cargen)
         {
             var tn = FindCarGenTreeNode(cargen);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = cargen.ToString();
+                UpdateTreeNodeText(tn, cargen.ToString());
             }
         }
+
         public void UpdateLodLightTreeNode(YmapLODLight lodlight)
         {
             var tn = FindLodLightTreeNode(lodlight);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = lodlight.ToString();
+                UpdateTreeNodeText(tn, lodlight.ToString());
             }
         }
+
         public void UpdateBoxOccluderTreeNode(YmapBoxOccluder box)
         {
             var tn = FindBoxOccluderTreeNode(box);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = box.ToString();
+                UpdateTreeNodeText(tn, box.ToString());
             }
         }
+
         public void UpdateOccludeModelTreeNode(YmapOccludeModel model)
         {
             var tn = FindOccludeModelTreeNode(model);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = model.ToString();
+                UpdateTreeNodeText(tn, model.ToString());
             }
         }
+
         public void UpdatePathNodeTreeNode(YndNode node)
         {
             var tn = FindPathNodeTreeNode(node);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = node._RawData.ToString();
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Text = node._RawData.ToString();
+                });
             }
         }
+
         public void UpdateNavPolyTreeNode(YnvPoly poly)
         {
             var tn = FindNavPolyTreeNode(poly);
-            if (tn != null)
+            if (tn is not null)
             {
             }
         }
+
         public void UpdateTrainNodeTreeNode(TrainTrackNode node)
         {
             var tn = FindTrainNodeTreeNode(node);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = node.ToString();
+                UpdateTreeNodeText(tn, node.ToString());
             }
         }
         public void UpdateScenarioNodeTreeNode(ScenarioNode node)
         {
             var tn = FindScenarioNodeTreeNode(node);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = node.MedTypeName + ": " + node.StringText;
+                UpdateTreeNodeText(tn, $"{node.MedTypeName}: {node.StringText}");
             }
         }
         public void UpdateAudioZoneTreeNode(AudioPlacement zone)
         {
             var tn = FindAudioZoneTreeNode(zone);
-            if (tn != null)
+            if (tn is not null)
             {
-                tn.Text = zone.NameHash.ToString();
+                UpdateTreeNodeText(tn, zone.NameHash.ToString());
             }
         }
         public void UpdateAudioEmitterTreeNode(AudioPlacement emitter)
@@ -2278,7 +2524,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioEmitterTreeNode(emitter);
             if (tn != null)
             {
-                tn.Text = emitter.NameHash.ToString();
+                UpdateTreeNodeText(tn, emitter.NameHash.ToString());
             }
         }
         public void UpdateAudioZoneListTreeNode(Dat151AmbientZoneList list)
@@ -2286,7 +2532,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioZoneListTreeNode(list);
             if (tn != null)
             {
-                tn.Text = list.NameHash.ToString();
+                UpdateTreeNodeText(tn, list.NameHash.ToString());
             }
         }
         public void UpdateAudioEmitterListTreeNode(Dat151StaticEmitterList list)
@@ -2294,7 +2540,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioEmitterListTreeNode(list);
             if (tn != null)
             {
-                tn.Text = list.NameHash.ToString();
+                UpdateTreeNodeText(tn, list.NameHash.ToString());
             }
         }
         public void UpdateAudioInteriorTreeNode(Dat151Interior interior)
@@ -2302,7 +2548,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioInteriorTreeNode(interior);
             if (tn != null)
             {
-                tn.Text = interior.NameHash.ToString();
+                UpdateTreeNodeText(tn, interior.NameHash.ToString());
             }
         }
         public void UpdateAudioInteriorRoomTreeNode(Dat151InteriorRoom room)
@@ -2310,81 +2556,91 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioInteriorRoomTreeNode(room);
             if (tn != null)
             {
-                tn.Text = room.NameHash.ToString();
+                UpdateTreeNodeText(tn, room.NameHash.ToString());
             }
         }
-
-
 
         public void RemoveEntityTreeNode(YmapEntityDef ent)
         {
             var tn = FindEntityTreeNode(ent);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Text = "Entities (" + ent.Ymap.AllEntities.Length.ToString() + ")";
-                tn.Parent.Nodes.Remove(tn);
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Parent.Text = $"Entities ({ent.Ymap.AllEntities.Length})";
+                    tn.Parent.Nodes.Remove(tn);
+                });
             }
         }
         public void RemoveCarGenTreeNode(YmapCarGen cargen)
         {
             var tn = FindCarGenTreeNode(cargen);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent != null)
             {
-                tn.Parent.Text = "Car Generators (" + cargen.Ymap.CarGenerators.Length.ToString() + ")";
-                tn.Parent.Nodes.Remove(tn);
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Parent.Text = $"Car Generators ({cargen.Ymap.CarGenerators.Length})";
+                    tn.Parent.Nodes.Remove(tn);
+                });
             }
         }
         public void RemoveLodLightTreeNode(YmapLODLight lodlight)
         {
             var lodlights = lodlight?.LodLights?.LodLights;
             var tn = FindLodLightTreeNode(lodlight);
-            if ((tn != null) && (tn.Parent != null) && (lodlights != null))
+            if (tn?.Parent != null && lodlights is not null && lodlights.Length > 0)
             {
-                var pn = tn.Parent;
-                var yn = pn.Parent;
-                yn.Nodes.Remove(pn);
-                pn = yn.Nodes.Add("LOD Lights (" + (lodlights?.Length.ToString() ?? "0") + ")");
-                pn.Name = "LodLights";
-                pn.Tag = lodlight.LodLights.Ymap;
-                foreach (var ll in lodlights)
+                this.InvokeIfRequired(() =>
                 {
-                    var ntn = pn.Nodes.Add(ll.ToString());
-                    ntn.Tag = ll;
-                }
+                    var pn = tn.Parent;
+                    var yn = pn.Parent;
+                    yn.Nodes.Remove(pn);
+                    pn = yn.Nodes.Add($"LOD Lights ({lodlights.Length})");
+                    pn.Name = "LodLights";
+                    pn.Tag = lodlight.LodLights.Ymap;
+                    foreach (var ll in lodlights)
+                    {
+                        var ntn = pn.Nodes.Add(ll.ToString());
+                        ntn.Tag = ll;
+                    }
+                });
             }
         }
         public void RemoveBoxOccluderTreeNode(YmapBoxOccluder box)
         {
             var ymap = box?.Ymap;
             var tn = FindBoxOccluderTreeNode(box);
-            if ((tn != null) && (tn.Parent != null) && (box != null))
+            if (tn?.Parent != null && box != null)
             {
-                var pn = tn.Parent;
-                var yn = pn.Parent;
-                yn.Nodes.Remove(pn);
-                pn = yn.Nodes.Add("Box Occluders (" + (ymap?.BoxOccluders?.Length.ToString() ?? "0") + ")");
-                pn.Name = "BoxOccluders";
-                pn.Tag = ymap;
-                if (ymap.BoxOccluders != null)
+                this.InvokeIfRequired(() =>
                 {
-                    foreach (var b in ymap.BoxOccluders)
+                    var pn = tn.Parent;
+                    var yn = pn.Parent;
+                    yn.Nodes.Remove(pn);
+                    pn = yn.Nodes.Add($"Box Occluders ({ymap?.BoxOccluders?.Length ?? 0})");
+                    pn.Name = "BoxOccluders";
+                    pn.Tag = ymap;
+                    if (ymap.BoxOccluders != null)
                     {
-                        var ntn = pn.Nodes.Add(b.ToString());
-                        ntn.Tag = b;
+                        foreach (var b in ymap.BoxOccluders)
+                        {
+                            var ntn = pn.Nodes.Add(b.ToString());
+                            ntn.Tag = b;
+                        }
                     }
-                }
+                });
             }
         }
         public void RemoveOccludeModelTreeNode(YmapOccludeModel model)
         {
-            var ymap = model?.Ymap;
+            var ymap = model.Ymap;
             var tn = FindOccludeModelTreeNode(model);
-            if ((tn != null) && (tn.Parent != null) && (model != null))
+            if (tn?.Parent is not null && model is not null)
             {
                 var pn = tn.Parent;
                 var yn = pn.Parent;
                 yn.Nodes.Remove(pn);
-                pn = yn.Nodes.Add("Occlude Models (" + (ymap?.OccludeModels?.Length.ToString() ?? "0") + ")");
+                pn = yn.Nodes.Add($"Occlude Models ({ymap?.OccludeModels?.Length ?? 0})");
                 pn.Name = "OccludeModels";
                 pn.Tag = ymap;
                 if (ymap.OccludeModels != null)
@@ -2400,27 +2656,36 @@ namespace CodeWalker.Project.Panels
         public void RemoveGrassBatchTreeNode(YmapGrassInstanceBatch batch)
         {
             var tn = FindGrassTreeNode(batch);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Text = "Grass Batches (" + batch.Ymap.GrassInstanceBatches.Length.ToString() + ")";
-                tn.Parent.Nodes.Remove(tn);
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Parent.Text = $"Grass Batches ({batch.Ymap.GrassInstanceBatches.Length})";
+                    tn.Parent.Nodes.Remove(tn);
+                });
             }
         }
         public void RemoveArchetypeTreeNode(Archetype archetype)
         {
             var tn = FindArchetypeTreeNode(archetype);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Text = "Archetypes (" + archetype.Ytyp.AllArchetypes.Length.ToString() + ")";
-                tn.Parent.Nodes.Remove(tn);
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Parent.Text = $"Archetypes ({archetype.Ytyp.AllArchetypes.Length})";
+                    tn.Parent.Nodes.Remove(tn);
+                });
             }
         }
         public void RemoveMloEntityTreeNode(MCEntityDef ent)
         {
             var tn = FindMloEntityTreeNode(ent);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Nodes.Remove(tn);
+                this.InvokeIfRequired(() =>
+                {
+                    tn.Parent.Nodes.Remove(tn);
+                });
             }
         }
         public void RemoveMloRoomTreeNode(MCMloRoomDef room)
@@ -2428,7 +2693,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindMloRoomTreeNode(room);
             if ((tn != null) && (tn.Parent != null))
             {
-                tn.Parent.Text = "Rooms (" + (room.OwnerMlo?.rooms?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Text = $"Rooms ({room.OwnerMlo?.rooms?.Length ?? 0})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2437,23 +2702,23 @@ namespace CodeWalker.Project.Panels
             var tn = FindMloPortalTreeNode(portal);
             if ((tn != null) && (tn.Parent != null))
             {
-                tn.Parent.Text = "Portals (" + (portal.OwnerMlo?.portals?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Text = $"Portals ({portal.OwnerMlo?.portals?.Length ?? 0})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
         public void RemoveMloEntitySetTreeNode(MCMloEntitySet set)
         {
             var tn = FindMloEntitySetTreeNode(set);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Text = "Entity Sets (" + (set.OwnerMlo?.entitySets?.Length.ToString() ?? "0") + ")";
+                tn.Parent.Text = $"Entity Sets ({set.OwnerMlo?.entitySets?.Length ?? 0})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
         public void RemoveCollisionBoundsTreeNode(Bounds bounds)
         {
             var tn = FindCollisionBoundsTreeNode(bounds);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
                 tn.Parent.Nodes.Remove(tn);
             }
@@ -2461,27 +2726,27 @@ namespace CodeWalker.Project.Panels
         public void RemovePathNodeTreeNode(YndNode node)
         {
             var tn = FindPathNodeTreeNode(node);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Text = "Nodes (" + node.Ynd.Nodes.Length.ToString() + ")";
+                tn.Parent.Text = $"Nodes ({node.Ynd.Nodes.Length})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
         public void RemoveTrainNodeTreeNode(TrainTrackNode node)
         {
             var tn = FindTrainNodeTreeNode(node);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Text = "Nodes (" + node.Track.Nodes.Count.ToString() + ")";
+                tn.Parent.Text = $"Nodes ({node.Track?.Nodes.Count ?? 0})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
         public void RemoveScenarioNodeTreeNode(ScenarioNode node)
         {
             var tn = FindScenarioNodeTreeNode(node);
-            if ((tn != null) && (tn.Parent != null))
+            if (tn?.Parent is not null)
             {
-                tn.Parent.Text = "Points (" + (node.Ymt?.ScenarioRegion?.Nodes?.Count ?? 0).ToString() + ")";
+                tn.Parent.Text = $"Points ({node.Ymt?.ScenarioRegion?.Nodes?.Count ?? 0})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2499,7 +2764,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Ambient Zones (" + zones.Count.ToString() + ")";
+                tn.Parent.Text = $"Ambient Zones ({zones.Count})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2517,7 +2782,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Ambient Emitters (" + emitters.Count.ToString() + ")";
+                tn.Parent.Text = $"Ambient Emitters ({emitters.Count})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2535,7 +2800,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Ambient Zone Lists (" + zonelists.Count.ToString() + ")";
+                tn.Parent.Text = $"Ambient Zone Lists ({zonelists.Count})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2553,7 +2818,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Ambient Emitter Lists (" + emitterlists.Count.ToString() + ")";
+                tn.Parent.Text = $"Ambient Emitter Lists ({emitterlists.Count})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2571,7 +2836,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Interiors (" + interiors.Count.ToString() + ")";
+                tn.Parent.Text = $"Interiors ({interiors.Count})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2589,7 +2854,7 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Interior Rooms (" + interiors.Count.ToString() + ")";
+                tn.Parent.Text = $"Interior Rooms ({interiors.Count})";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
@@ -2715,10 +2980,10 @@ namespace CodeWalker.Project.Panels
                 e.Effect = DragDropEffects.All;
         }
 
-        private void ProjectTreeView_DragDrop(object sender, DragEventArgs e)
+        private async void ProjectTreeView_DragDrop(object sender, DragEventArgs e)
         {
             string[] files = (string[]) e.Data.GetData(DataFormats.FileDrop);
-            ProjectForm.OpenFiles(files);
+            await ProjectForm.OpenFiles(files);
 
         }
 

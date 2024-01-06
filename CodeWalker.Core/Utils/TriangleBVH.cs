@@ -1,4 +1,5 @@
-﻿using SharpDX;
+﻿using Collections.Pooled;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,17 +11,18 @@ namespace CodeWalker
 
         public TriangleBVH(TriangleBVHItem[] tris, int depth = 8)
         {
-            if (tris == null) return;
+            if (tris is null || tris.Length == 0)
+                return;
             var min = new Vector3(float.MaxValue);
             var max = new Vector3(float.MinValue);
             for (int i = 0; i < tris.Length; i++)
             {
                 var tri = tris[i];
                 tri.UpdateBox();
-                min = Vector3.Min(min, tri.Box.Minimum);
-                max = Vector3.Max(max, tri.Box.Maximum);
+                Vector3.Min(ref min, ref tri.Box.Minimum, out min);
+                Vector3.Max(ref max, ref tri.Box.Maximum, out max);
             }
-            Box = new BoundingBox(min, max);
+            _Box = new BoundingBox(min, max);
 
             Build(tris, depth);
 
@@ -30,9 +32,11 @@ namespace CodeWalker
     public class TriangleBVHNode
     {
         public TriangleBVHItem[] Triangles { get; set; }
-        public TriangleBVHNode Node1 { get; set; }
-        public TriangleBVHNode Node2 { get; set; }
-        public BoundingBox Box { get; set; }
+        public TriangleBVHNode? Node1 { get; set; }
+        public TriangleBVHNode? Node2 { get; set; }
+
+        public BoundingBox _Box;
+        public BoundingBox Box => _Box;
 
         public void Build(TriangleBVHItem[] tris, int depth)
         {
@@ -45,10 +49,10 @@ namespace CodeWalker
             }
             else
             {
-                var min = Box.Minimum;
-                var max = Box.Maximum;
-                var cen = Box.Center;
-                var siz = Box.Size;
+                var min = _Box.Minimum;
+                var max = _Box.Maximum;
+                var cen = _Box.Center;
+                var siz = _Box.Size;
                 BoundingBox b1, b2;
                 if ((siz.X >= siz.Y) && (siz.X >= siz.Z))
                 {
@@ -65,16 +69,16 @@ namespace CodeWalker
                     b1 = new BoundingBox(min, new Vector3(max.X, max.Y, cen.Z));
                     b2 = new BoundingBox(new Vector3(min.X, min.Y, cen.Z), max);
                 }
-                var l1 = new List<TriangleBVHItem>();
-                var l2 = new List<TriangleBVHItem>();
+                using var l1 = new PooledList<TriangleBVHItem>();
+                using var l2 = new PooledList<TriangleBVHItem>();
                 for (int i = 0; i < tris.Length; i++)
                 {
                     var tri = tris[i];
-                    if (tri.Box.Contains(b1) != ContainmentType.Disjoint)// (tri.Box.Intersects(b1))
+                    if (tri.Box.Contains(ref b1) != ContainmentType.Disjoint)// (tri.Box.Intersects(b1))
                     {
                         l1.Add(tri);
                     }
-                    if (tri.Box.Contains(b2) != ContainmentType.Disjoint)// (tri.Box.Intersects(b2))
+                    if (tri.Box.Contains(ref b2) != ContainmentType.Disjoint)// (tri.Box.Intersects(b2))
                     {
                         l2.Add(tri);
                     }
@@ -82,54 +86,51 @@ namespace CodeWalker
                 if (l1.Count > 0)
                 {
                     Node1 = new TriangleBVHNode();
-                    Node1.Box = b1;
+                    Node1._Box = b1;
                     Node1.Build(l1.ToArray(), depth - 1);
                 }
                 if (l2.Count > 0)
                 {
                     Node2 = new TriangleBVHNode();
-                    Node2.Box = b2;
+                    Node2._Box = b2;
                     Node2.Build(l2.ToArray(), depth - 1);
                 }
             }
         }
 
 
-        public TriangleBVHItem RayIntersect(ref Ray ray, ref float hitdist)
+        public TriangleBVHItem? RayIntersect(ref Ray ray, ref float hitdist)
         {
-            if (ray.Intersects(Box) == false) return null;
+            if (!ray.Intersects(ref _Box))
+                return null;
 
-            TriangleBVHItem hit = null;
-            if (Triangles != null)
+            TriangleBVHItem? hit = null;
+            if (Triangles is not null)
             {
-                for (int i = 0; i < Triangles.Length; i++)
+                foreach(var tri in Triangles)
                 {
-                    var tri = Triangles[i];
-                    var v1 = tri.Corner1;
-                    var v2 = tri.Corner2;
-                    var v3 = tri.Corner3;
-                    if (ray.Intersects(ref v1, ref v2, ref v3, out float d) && (d < hitdist) && (d > 0))
+                    if (ray.Intersects(ref tri.Corner1, ref tri.Corner2, ref tri.Corner3, out float d) && d < hitdist && d > 0)
                     {
                         hitdist = d;
                         hit = tri;
                     }
                 }
             }
-            if (Node1 != null)
+            if (Node1 is not null)
             {
                 var hd = hitdist;
                 var h = Node1.RayIntersect(ref ray, ref hd);
-                if ((h != null) && (hd < hitdist))
+                if (h != null && hd < hitdist)
                 {
                     hitdist = hd;
                     hit = h;
                 }
             }
-            if (Node2 != null)
+            if (Node2 is not null)
             {
                 var hd = hitdist;
                 var h = Node2.RayIntersect(ref ray, ref hd);
-                if ((h != null) && (hd < hitdist))
+                if (h != null && hd < hitdist)
                 {
                     hitdist = hd;
                     hit = h;
@@ -143,17 +144,14 @@ namespace CodeWalker
 
     public abstract class TriangleBVHItem
     {
-        public Vector3 Corner1 { get; set; }
-        public Vector3 Corner2 { get; set; }
-        public Vector3 Corner3 { get; set; }
-        public BoundingBox Box { get; set; }
+        public Vector3 Corner1;
+        public Vector3 Corner2;
+        public Vector3 Corner3;
+        public BoundingBox Box;
 
         public Vector3 Center
         {
-            get
-            {
-                return (Corner1 + Corner2 + Corner3) * 0.3333333f;
-            }
+            get => (Corner1 + Corner2 + Corner3) * 0.3333333f;
             set
             {
                 var delta = value - Center;
@@ -164,13 +162,10 @@ namespace CodeWalker
         }
         public Quaternion Orientation 
         {
-            get
-            {
-                return _Orientation;
-            }
+            get => _Orientation;
             set
             {
-                var inv = Quaternion.Invert(_Orientation);
+                Quaternion.Invert(ref _Orientation, out var inv);
                 var delta = value * inv;
                 var cen = Center;
                 Corner1 = cen + delta.Multiply(Corner1 - cen);
@@ -182,13 +177,10 @@ namespace CodeWalker
         private Quaternion _Orientation = Quaternion.Identity;
         public Vector3 Scale
         {
-            get
-            {
-                return _Scale;
-            }
+            get => _Scale;
             set
             {
-                var inv = Quaternion.Invert(_Orientation);
+                Quaternion.Invert(ref _Orientation, out var inv);
                 var delta = value / _Scale;
                 var cen = Center;
                 Corner1 = cen + _Orientation.Multiply(inv.Multiply(Corner1 - cen) * delta);
@@ -203,12 +195,12 @@ namespace CodeWalker
         {
             var min = new Vector3(float.MaxValue);
             var max = new Vector3(float.MinValue);
-            min = Vector3.Min(min, Corner1);
-            min = Vector3.Min(min, Corner2);
-            min = Vector3.Min(min, Corner3);
-            max = Vector3.Max(max, Corner1);
-            max = Vector3.Max(max, Corner2);
-            max = Vector3.Max(max, Corner3);
+            Vector3.Min(ref min, ref Corner1, out min);
+            Vector3.Min(ref min, ref Corner2, out min);
+            Vector3.Min(ref min, ref Corner3, out min);
+            Vector3.Max(ref max, ref Corner1, out max);
+            Vector3.Max(ref max, ref Corner2, out max);
+            Vector3.Max(ref max, ref Corner3, out max);
             Box = new BoundingBox(min, max);
         }
 

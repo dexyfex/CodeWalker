@@ -110,7 +110,7 @@ namespace CodeWalker
                     var vc = g.VertexData.VertexCount;
                     for (int i = 0; i < vc; i++)
                     {
-                        var vp = MetaTypes.ConvertData<Vector3>(vb, i * vs);//position offset should always be 0!
+                        MetaTypes.TryConvertData<Vector3>(vb, i * vs, out var vp);
                         allVerts.Add(vp);
                         bbMin = Vector3.Min(bbMin, vp);
                         bbMax = Vector3.Max(bbMax, vp);
@@ -228,7 +228,6 @@ namespace CodeWalker
 
         private FbxModel TryConvertModel(FbxNode mnode)
         {
-
             FbxNode geonode = null;
             var matnodes = new List<FbxNode>();
             foreach (var cnode in mnode.Connections)
@@ -250,10 +249,8 @@ namespace CodeWalker
                 return null; //need atleast one material...
 
             var fnEdges = geonode["Edges"]?.Value as int[];//do we need this? maybe for collision/navmesh
-            var fnVerts = geonode["Vertices"]?.Value as double[];
-            var fnIndices = geonode["PolygonVertexIndex"]?.Value as int[];
 
-            if ((fnVerts == null) || (fnIndices == null))
+            if ((geonode["Vertices"]?.Value is not double[] fnVerts) || (geonode["PolygonVertexIndex"]?.Value is not int[] fnIndices))
             { return null; } //no mesh data.. abort!
 
             var fnNormals = new List<FbxNode>();
@@ -476,12 +473,18 @@ namespace CodeWalker
             if (dGeomAABBs.Count > 1)//need to include whole model AABB first, if more than one geometry..
             {
                 var dGeomAABBs2 = new List<AABB_s>();
-                dModelAABB.Min = new Vector4(float.MaxValue);
-                dModelAABB.Max = new Vector4(float.MinValue);
+                dModelAABB = new AABB_s
+                {
+                    Min = new Vector4(float.MaxValue),
+                    Max = new Vector4(float.MinValue),
+                };
                 foreach (var aabb in dGeomAABBs)
                 {
-                    dModelAABB.Min = Vector4.Min(dModelAABB.Min, aabb.Min);
-                    dModelAABB.Max = Vector4.Max(dModelAABB.Max, aabb.Max);
+                    dModelAABB = new AABB_s
+                    {
+                        Min = Vector4.Min(dModelAABB.Min, aabb.Min),
+                        Max = Vector4.Max(dModelAABB.Max, aabb.Max)
+                    };
                 }
                 dGeomAABBs2.Add(dModelAABB);
                 dGeomAABBs2.AddRange(dGeomAABBs);
@@ -577,13 +580,20 @@ namespace CodeWalker
 
             if (vList.Count > 0)
             {
-                aabb.Min = new Vector4(float.MaxValue);
-                aabb.Max = new Vector4(float.MinValue);
+                aabb = new AABB_s
+                {
+                    Min = new Vector4(float.MaxValue),
+                    Max = new Vector4(float.MinValue),
+                };
                 foreach (var vert in vList)
                 {
                     var v = new Vector4(vert.Position, vert.Position.X);
-                    aabb.Min = Vector4.Min(aabb.Min, v);
-                    aabb.Max = Vector4.Max(aabb.Max, v);
+
+                    aabb = new AABB_s
+                    {
+                        Min = Vector4.Min(aabb.Min, v),
+                        Max = Vector4.Max(aabb.Max, v)
+                    };
                 }
             }
 
@@ -664,15 +674,9 @@ namespace CodeWalker
                 {
                     texConns.Add(conn);
                     var texName = GetStringFromObjectList(conn.Properties, 1)?.Replace("Texture::", "");
-                    var ftexName = conn["FileName"]?.Value as string;
-                    if (ftexName != null)
+                    if (conn["FileName"]?.Value is string ftexName)
                     {
-                        try
-                        {
-                            texName = Path.GetFileNameWithoutExtension(ftexName);
-                        }
-                        catch
-                        { }
+                        texName = Path.GetFileNameWithoutExtension(ftexName);
                     }
                     texNames.Add(texName);
                 }
@@ -959,7 +963,7 @@ namespace CodeWalker
         }
         private void WriteBytes<T>(T val, int offset) where T : struct
         {
-            var data = MetaTypes.ConvertToBytes(val);
+            var data = MetaTypes.ConvertToBytes(in val);
             for (int i = 0; i < data.Length; i++)
             {
                 Bytes[offset + i] = data[i];
