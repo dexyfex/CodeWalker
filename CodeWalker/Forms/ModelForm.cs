@@ -1147,7 +1147,7 @@ namespace CodeWalker.Forms
             int ih = (int)fh;
             int im = v - (ih * 60);
             if (ih == 24) ih = 0;
-            TimeOfDayLabel.Text = string.Format("{0:00}:{1:00}", ih, im);
+            TimeOfDayLabel.Text = $"{ih:00}:{im:00}";
         }
 
 
@@ -1432,7 +1432,7 @@ namespace CodeWalker.Forms
                     var tgnode = tmnode.Nodes.Add(gname);
                     tgnode.Tag = geom;
 
-                    if ((geom.Shader != null) && (geom.Shader.ParametersList != null) && (geom.Shader.ParametersList.Hashes != null))
+                    if (geom.Shader?.ParametersList?.Hashes is not null)
                     {
                         var pl = geom.Shader.ParametersList;
                         var h = pl.Hashes;
@@ -1446,9 +1446,9 @@ namespace CodeWalker.Forms
                                 var tstr = tex.Name.Trim();
                                 if (tex is Texture t)
                                 {
-                                    tstr = string.Format("{0} ({1}x{2}, embedded)", tex.Name, t.Width, t.Height);
+                                    tstr = $"{tex.Name} ({t.Width}x{t.Height}, embedded)";
                                 }
-                                var tnode = tgnode.Nodes.Add(hash.ToString().Trim() + ": " + tstr);
+                                var tnode = tgnode.Nodes.Add($"{hash}: {tstr}");
                                 tnode.Tag = tex;
                             }
                         }

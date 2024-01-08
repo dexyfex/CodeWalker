@@ -1,6 +1,7 @@
 ﻿using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.Utils;
+using CommunityToolkit.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -64,20 +65,17 @@ namespace CodeWalker.Tools
         }
 
 
-        private void UpdateExtractStatus(string text)
+        private async void UpdateExtractStatus(string text)
         {
             try
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { UpdateExtractStatus(text); }));
-                }
-                else
-                {
-                    ExtractStatusLabel.Text = text;
-                }
+                await this.SwitchToUiContext();
+                ExtractStatusLabel.Text = text;
             }
-            catch { }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         private void ExtractButton_Click(object sender, EventArgs e)
@@ -91,12 +89,12 @@ namespace CodeWalker.Tools
             }
             if (!Directory.Exists(FolderTextBox.Text))
             {
-                MessageBox.Show("Folder doesn't exist: " + FolderTextBox.Text);
+                MessageBox.Show($"Folder doesn't exist: {FolderTextBox.Text}");
                 return;
             }
             if (!Directory.Exists(OutputFolderTextBox.Text))
             {
-                MessageBox.Show("Folder doesn't exist: " + OutputFolderTextBox.Text);
+                MessageBox.Show($"Folder doesn't exist: {OutputFolderTextBox.Text}");
                 return;
             }
             //if (Directory.GetFiles(OutputFolderTextBox.Text, "*.ysc", SearchOption.AllDirectories).Length > 0)
@@ -118,7 +116,7 @@ namespace CodeWalker.Tools
             bool bydd = YddCheckBox.Checked;
             bool byft = YftCheckBox.Checked;
 
-            Task.Run(() =>
+            Task.Run(async () =>
             {
 
                 UpdateExtractStatus("Keys loaded.");
@@ -146,22 +144,39 @@ namespace CodeWalker.Tools
                             if (bytd && entry.IsExtension(".ytd"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YtdFile ytd = RpfManager.GetFile<YtdFile>(entry);
-                                if (ytd is null) throw new Exception("Couldn't load file.");
-                                if (ytd.TextureDict is null) throw new Exception("Couldn't load texture dictionary.");
-                                if (ytd.TextureDict.Textures is null) throw new Exception("Couldn't load texture dictionary texture array.");
-                                if (ytd.TextureDict.Textures.data_items is null) throw new Exception("Texture dictionary had no entries...");
+                                YtdFile? ytd = await RpfManager.GetFileAsync<YtdFile>(entry);
+                                if (ytd is null)
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException($"Couldn't load ytd file {entry.Path ?? entry.File.Path}");
+                                }
+                                if (ytd.TextureDict is null)
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException($"Couldn't load texture dictionary for file {entry.Path ?? entry.File.Path}");
+                                }
+                                if (ytd.TextureDict.Textures is null)
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException($"Couldn't load texture dictionary texture array for file {entry.Path ?? entry.File.Path}");
+                                }
+                                if (ytd.TextureDict.Textures.data_items is null)
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException($"Texture dictionary had no entries... for file {entry.Path ?? entry.File.Path}");
+                                }
                                 foreach (var tex in ytd.TextureDict.Textures.data_items)
                                 {
-                                    SaveTexture(tex, entry, outputpath);
+                                    await SaveTextureAsync(tex, entry, outputpath);
                                 }
                             }
                             else if (bydr && entry.IsExtension(".ydr"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YdrFile ydr = RpfManager.GetFile<YdrFile>(entry);
-                                if (ydr is null) throw new Exception("Couldn't load file.");
-                                if (ydr.Drawable is null) throw new Exception("Couldn't load drawable.");
+                                YdrFile? ydr = await RpfManager.GetFileAsync<YdrFile>(entry);
+                                if (ydr is null)
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException($"Couldn't load ydr file {entry.Path ?? entry.File.Path}");
+                                }
+                                if (ydr.Drawable is null) {
+                                    ThrowHelper.ThrowInvalidOperationException($"Couldn't load drawable. array for file {entry.Path ?? entry.File.Path}");
+                                }
                                 if (ydr.Drawable.ShaderGroup is not null)
                                 {
                                     var ydrtd = ydr.Drawable.ShaderGroup.TextureDictionary;
@@ -169,7 +184,7 @@ namespace CodeWalker.Tools
                                     {
                                         foreach (var tex in ydrtd.Textures.data_items)
                                         {
-                                            SaveTexture(tex, entry, outputpath);
+                                            await SaveTextureAsync(tex, entry, outputpath);
                                         }
                                     }
                                 }
@@ -177,22 +192,30 @@ namespace CodeWalker.Tools
                             else if (bydd && entry.IsExtension(".ydd"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YddFile ydd = RpfManager.GetFile<YddFile>(entry);
-                                if (ydd == null) throw new Exception("Couldn't load file.");
+                                YddFile? ydd = await RpfManager.GetFileAsync<YddFile>(entry);
+
+                                if (ydd is null)
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException($"Couldn't load ydd file {entry.Path ?? entry.File.Path}");
+                                }
+
                                 //if (ydd.DrawableDict == null) throw new Exception("Couldn't load drawable dictionary.");
                                 //if (ydd.DrawableDict.Drawables == null) throw new Exception("Drawable dictionary had no items...");
                                 //if (ydd.DrawableDict.Drawables.data_items == null) throw new Exception("Drawable dictionary had no items...");
-                                if ((ydd.Dict==null)||(ydd.Dict.Count==0)) throw new Exception("Drawable dictionary had no items...");
+                                if (ydd.Dict is null || ydd.Dict.Count == 0)
+                                {
+                                    ThrowHelper.ThrowInvalidDataException("Drawable dictionary has no items...");
+                                }
                                 foreach (var drawable in ydd.Dict.Values)
                                 {
                                     if (drawable.ShaderGroup != null)
                                     {
                                         var ydrtd = drawable.ShaderGroup.TextureDictionary;
-                                        if ((ydrtd != null) && (ydrtd.Textures != null) && (ydrtd.Textures.data_items != null))
+                                        if (ydrtd?.Textures?.data_items != null)
                                         {
                                             foreach (var tex in ydrtd.Textures.data_items)
                                             {
-                                                SaveTexture(tex, entry, outputpath);
+                                                await SaveTextureAsync(tex, entry, outputpath);
                                             }
                                         }
                                     }
@@ -201,9 +224,15 @@ namespace CodeWalker.Tools
                             else if (byft && entry.IsExtension(".yft"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                YftFile yft = RpfManager.GetFile<YftFile>(entry);
-                                if (yft == null) throw new Exception("Couldn't load file.");
-                                if (yft.Fragment == null) throw new Exception("Couldn't load fragment.");
+                                YftFile? yft = await RpfManager.GetFileAsync<YftFile>(entry);
+                                if (yft is null)
+                                {
+                                    ThrowHelper.ThrowInvalidOperationException($"Couldn't load yft file {entry.Path ?? entry.File.Path}");
+                                }
+                                if (yft.Fragment is null)
+                                {
+                                    ThrowHelper.ThrowInvalidDataException($"Couldn't load fragment for file {entry.Path ?? entry.File.Path}");
+                                }
                                 if (yft.Fragment.Drawable != null)
                                 {
                                     if (yft.Fragment.Drawable.ShaderGroup != null)
@@ -213,7 +242,7 @@ namespace CodeWalker.Tools
                                         {
                                             foreach (var tex in ydrtd.Textures.data_items)
                                             {
-                                                SaveTexture(tex, entry, outputpath);
+                                                await SaveTextureAsync(tex, entry, outputpath);
                                             }
                                         }
                                     }
@@ -222,7 +251,8 @@ namespace CodeWalker.Tools
                         }
                         catch (Exception ex)
                         {
-                            string err = entry.Name + ": " + ex.Message;
+                            Console.WriteLine(ex);
+                            string err = $"{entry.Name}: {ex.Message}";
                             UpdateExtractStatus(err);
                             errsb.AppendLine(err);
                         }
@@ -237,14 +267,14 @@ namespace CodeWalker.Tools
             });
         }
 
-        private void SaveTexture(Texture tex, RpfEntry entry, string folder)
+        private static async Task SaveTextureAsync(Texture tex, RpfEntry entry, string folder)
         {
 
             //DirectXTex
 
             byte[] dds = DDSIO.GetDDSFile(tex);
 
-            string bpath = folder + "\\" + entry.Name + "_" + tex.Name;
+            string bpath = $"{folder}\\{entry.Name}_{tex.Name}";
             string fpath = bpath + ".dds";
             int c = 1;
             while (File.Exists(fpath))
@@ -253,8 +283,7 @@ namespace CodeWalker.Tools
                 c++;
             }
 
-            File.WriteAllBytes(fpath, dds);
-
+            await File.WriteAllBytesAsync(fpath, dds);
         }
 
 

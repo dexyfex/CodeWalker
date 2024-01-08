@@ -105,6 +105,12 @@ namespace CodeWalker.GameFiles
         //public float Unknown_23 { get; set; }
         //public float Unknown_24 { get; set; }
 
+        public Matrix3_s(Vector4 row1, Vector4 row2, Vector4 row3)
+        {
+            Row1 = row1;
+            Row2 = row2;
+            Row3 = row3;
+        }
 
         public Matrix3_s(float[] a)
         {
@@ -215,8 +221,8 @@ namespace CodeWalker.GameFiles
             return new Matrix(Column1.X, Column1.Y, Column1.Z, 0, Column2.X, Column2.Y, Column2.Z, 0, Column3.X, Column3.Y, Column3.Z, 0, Column4.X, Column4.Y, Column4.Z, 1);
         }
 
-        public static Matrix4F_s Identity => new Matrix4F_s(true);
-        public static Matrix4F_s Zero => new Matrix4F_s(false);
+        public readonly static Matrix4F_s Identity = new Matrix4F_s(true);
+        public readonly static Matrix4F_s Zero = new Matrix4F_s(false);
     }
 
 

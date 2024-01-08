@@ -1,4 +1,6 @@
-﻿using Collections.Pooled;
+﻿using CodeWalker.GameFiles;
+using Collections.Pooled;
+using CommunityToolkit.Diagnostics;
 using CommunityToolkit.HighPerformance.Buffers;
 using Microsoft.Extensions.ObjectPool;
 using System;
@@ -19,28 +21,46 @@ namespace CodeWalker.Core.Utils
 
     public class PooledListObjectPolicy<T> : PooledObjectPolicy<PooledList<T>>
     {
+        private readonly ClearMode clearMode;
+        public PooledListObjectPolicy(ClearMode _clearMode = ClearMode.Auto)
+        {
+            clearMode = _clearMode;
+        }
         public PooledList<T> Get()
         {
-            return new PooledList<T>();
+            return new PooledList<T>(clearMode);
         }
 
         public override PooledList<T> Create()
         {
-            return new PooledList<T>();
+            return new PooledList<T>(clearMode);
         }
 
         public override bool Return(PooledList<T> list)
         {
-            foreach (var entry in list.Span)
-            {
-                if (entry is IDisposable disposable)
-                    disposable.Dispose();
-                if (entry is IResettable resettable)
-                    resettable.TryReset();
-            }
-
             list.Clear();
             return true;
+        }
+    }
+
+    public static class PooledListPool<T>
+    {
+        private static readonly ObjectPool<PooledList<T>> s_shared = ObjectPool.Create(new PooledListObjectPolicy<T>(ClearMode.Never));
+        public static ObjectPool<PooledList<T>> Shared => s_shared;
+    }
+
+    public static class PooledListExtensions
+    {
+        public static int EnsureCapacity<T>(this PooledList<T> list, int capacity)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 0, nameof(capacity));
+
+            if (list.Capacity < capacity)
+            {
+                list.Capacity = capacity;
+            }
+
+            return list.Capacity;
         }
     }
 

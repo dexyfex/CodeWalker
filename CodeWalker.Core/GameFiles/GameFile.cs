@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
@@ -14,45 +15,43 @@ namespace CodeWalker.GameFiles
     public static class LoadState
     {
         public const int None = 0;
-        public const int Loaded = 1;
-        public const int LoadQueued = 2;
+        public const int Loaded = 1 << 0;
+        public const int LoadQueued = 1 << 1;
+        public const int Disposed = 1 << 2;
+
+        public static bool ToggleFlag(ref int currentValue, int flagToToggle, bool value)
+        {
+            if (value)
+            {
+                return (Interlocked.Or(ref currentValue, flagToToggle) & flagToToggle) == 0;
+            }
+            else
+            {
+                return (Interlocked.And(ref currentValue, ~flagToToggle) & flagToToggle) == flagToToggle;
+            }
+        }
     }
+
     public abstract class GameFile : Cacheable<GameFileCacheKey>, IDisposable
     {
         public byte LoadAttempts = 0;
 
         public int loadState = (int)LoadState.None;
 
-        [NotifyParentProperty(true)]
         public bool LoadQueued { 
             get => (loadState & LoadState.LoadQueued) == LoadState.LoadQueued;
-            set {
-                if (value)
-                {
-                    Interlocked.Or(ref loadState, LoadState.LoadQueued);
-                }
-                else
-                {
-                    Interlocked.And(ref loadState, ~LoadState.LoadQueued);
-                }
-            }
+            set => SetLoadQueued(value);
         }
 
-        [NotifyParentProperty(true)]
         public bool Loaded
         {
             get => (loadState & LoadState.Loaded) == LoadState.Loaded;
-            set
-            {
-                if (value)
-                {
-                    Interlocked.Or(ref loadState, LoadState.Loaded);
-                }
-                else
-                {
-                    Interlocked.And(ref loadState, ~LoadState.Loaded);
-                }
-            }
+            set => SetLoaded(value);
+        }
+
+        public bool IsDisposed {
+            get => (loadState & LoadState.Disposed) == LoadState.Disposed;
+            set => SetDisposed(value);
         }
 
         public DateTime LastLoadTime = DateTime.MinValue;
@@ -60,7 +59,6 @@ namespace CodeWalker.GameFiles
         public string Name { get; set; }
         public string FilePath { get; set; } //used by the project form.
         public GameFileType Type { get; set; }
-        public bool IsDisposed { get; set; } = false;
 
 
 
@@ -84,29 +82,11 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public bool SetLoadQueued(bool value)
-        {
-            if (value)
-            {
-                return (Interlocked.Or(ref loadState, LoadState.LoadQueued) & LoadState.LoadQueued) == 0;
-            }
-            else
-            {
-                return (Interlocked.And(ref loadState, ~LoadState.LoadQueued) & LoadState.LoadQueued) == LoadState.LoadQueued;
-            }
-        }
+        public bool SetLoadQueued(bool value) => LoadState.ToggleFlag(ref loadState, LoadState.LoadQueued, value);
 
-        public bool SetLoaded(bool value)
-        {
-            if (value)
-            {
-                return (Interlocked.Or(ref loadState, LoadState.Loaded) & LoadState.Loaded) == 0;
-            }
-            else
-            {
-                return (Interlocked.And(ref loadState, ~LoadState.Loaded) & LoadState.Loaded) == LoadState.Loaded;
-            }
-        }
+        public bool SetLoaded(bool value) => LoadState.ToggleFlag(ref loadState, LoadState.Loaded, value);
+
+        public bool SetDisposed(bool value) => LoadState.ToggleFlag(ref loadState, LoadState.Disposed, value);
 
         public override string ToString() => string.IsNullOrEmpty(Name) ? JenkIndex.GetString(Key.Hash) : Name;
 
@@ -188,6 +168,7 @@ namespace CodeWalker.GameFiles
         DistantLights = 30,
         Ypdb = 31,
         PedShopMeta = 32,
+        None = 33,
     }
 
 

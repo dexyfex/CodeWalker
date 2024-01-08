@@ -859,8 +859,10 @@ namespace CodeWalker.GameFiles
                 for (uint i = 0; i < 8; i++)
                 {
                     var th = h + (i << 29);
-                    if (!string.IsNullOrEmpty(JenkIndex.TryGetString(th))) return th;
-                    if (MetaNames.TryGetString(th, out string str)) return th;
+                    if (JenkIndex.TryGetString(th, out _))
+                        return th;
+                    if (MetaNames.TryGetString(th, out _))
+                        return th;
                 }
                 return h;
             }
@@ -869,13 +871,16 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                if (CachedName != null) return CachedName;
+                if (CachedName is not null)
+                    return CachedName;
+
                 var ha = HashAdjusted;
-                var str = JenkIndex.TryGetString(ha);
-                if (!string.IsNullOrEmpty(str)) CachedName = str;
-                else if (MetaNames.TryGetString(ha, out str)) CachedName = str;
-                else CachedName = "0x" + Hash.Hex;
-                return CachedName;
+                if (JenkIndex.TryGetString(ha, out CachedName))
+                    return CachedName;
+                else if (MetaNames.TryGetString(ha, out CachedName))
+                    return CachedName;
+                else
+                    return CachedName = $"0x{Hash.Hex}";
             }
         }
         private string CachedName;

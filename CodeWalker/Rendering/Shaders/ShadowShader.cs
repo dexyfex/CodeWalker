@@ -167,12 +167,7 @@ namespace CodeWalker.Rendering
             defaultBoneMatrices = new Matrix3_s[255];
             for (int i = 0; i < 255; i++)
             {
-                defaultBoneMatrices[i] = new Matrix3_s
-                {
-                    Row1 = Vector4.UnitX,
-                    Row2 = Vector4.UnitY,
-                    Row3 = Vector4.UnitZ
-                };
+                defaultBoneMatrices[i] = new Matrix3_s(Vector4.UnitX, Vector4.UnitY, Vector4.UnitZ);
             }
 
         }

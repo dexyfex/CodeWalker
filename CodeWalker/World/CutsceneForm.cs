@@ -767,7 +767,7 @@ namespace CodeWalker.World
                 {
                     if (obj.Enabled == false) continue;
 
-                    if (obj.HideEntity != null)
+                    if (obj.HideEntity is not null)
                     {
                         renderer.RenderHideEntity(obj.HideEntity);
                     }

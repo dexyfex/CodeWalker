@@ -3300,16 +3300,7 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" v3=\"{4}\" f1=\"{5}\" f2=\"{6}\" f3=\"{7}\"", 
-                Type,
-                MaterialIndex,
-                vertIndex1, 
-                vertIndex2, 
-                vertIndex3,
-                vertFlag1 ? 1 : 0,
-                vertFlag2 ? 1 : 0,
-                vertFlag3 ? 1 : 0
-                );
+            var s = $"{Type} m=\"{MaterialIndex}\" v1=\"{vertIndex1}\" v2=\"{vertIndex2}\" v3=\"{vertIndex3}\" f1=\"{(vertFlag1 ? 1 : 0)}\" f2=\"{(vertFlag2 ? 1 : 0)}\" f3=\"{(vertFlag3 ? 1 : 0)}\"";
             YbnXml.SelfClosingTag(sb, indent, s);
         }
         public override void ReadXml(XmlNode node)
@@ -3324,7 +3315,7 @@ namespace CodeWalker.GameFiles
         }
         public override string ToString()
         {
-            return base.ToString() + ": " + vertIndex1.ToString() + ", " + vertIndex2.ToString() + ", " + vertIndex3.ToString();
+            return $"{base.ToString()}: {vertIndex1}, {vertIndex2}, {vertIndex3}";
         }
     }
     [TC(typeof(EXP))] public class BoundPolygonSphere : BoundPolygon
@@ -3335,20 +3326,8 @@ namespace CodeWalker.GameFiles
         public uint unused0 { get; set; }
         public uint unused1 { get; set; }
 
-        public override Vector3 BoxMin
-        {
-            get
-            {
-                return Position - sphereRadius;
-            }
-        }
-        public override Vector3 BoxMax
-        {
-            get
-            {
-                return Position + sphereRadius;
-            }
-        }
+        public override Vector3 BoxMin => Position - sphereRadius;
+        public override Vector3 BoxMax => Position + sphereRadius;
         public override Vector3 Scale
         {
             get
@@ -3571,13 +3550,7 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            var s = string.Format("{0} m=\"{1}\" v1=\"{2}\" v2=\"{3}\" radius=\"{4}\"",
-                Type,
-                MaterialIndex,
-                capsuleIndex1,
-                capsuleIndex2,
-                FloatUtil.ToString(capsuleRadius)
-                );
+            var s = $"{Type} m=\"{MaterialIndex}\" v1=\"{capsuleIndex1}\" v2=\"{capsuleIndex2}\" radius=\"{FloatUtil.ToString(capsuleRadius)}\"";
             YbnXml.SelfClosingTag(sb, indent, s);
         }
         public override void ReadXml(XmlNode node)
@@ -3587,10 +3560,7 @@ namespace CodeWalker.GameFiles
             capsuleIndex2 = (ushort)Xml.GetUIntAttribute(node, "v2");
             capsuleRadius = Xml.GetFloatAttribute(node, "radius");
         }
-        public override string ToString()
-        {
-            return base.ToString() + ": " + capsuleIndex1.ToString() + ", " + capsuleIndex2.ToString() + ", " + capsuleRadius.ToString();
-        }
+        public override string ToString() => $"{base.ToString()}: {capsuleIndex1}, {capsuleIndex2}, {capsuleRadius}";
     }
     [TC(typeof(EXP))] public class BoundPolygonBox : BoundPolygon
     {
@@ -3790,10 +3760,7 @@ namespace CodeWalker.GameFiles
             boxIndex3 = (short)Xml.GetIntAttribute(node, "v3");
             boxIndex4 = (short)Xml.GetIntAttribute(node, "v4");
         }
-        public override string ToString()
-        {
-            return base.ToString() + ": " + boxIndex1.ToString() + ", " + boxIndex2.ToString() + ", " + boxIndex3.ToString() + ", " + boxIndex4.ToString();
-        }
+        public override string ToString() => $"{base.ToString()}: {boxIndex1}, {boxIndex2}, {boxIndex3}, {boxIndex4}";
     }
     [TC(typeof(EXP))] public class BoundPolygonCylinder : BoundPolygon
     {
@@ -3815,20 +3782,8 @@ namespace CodeWalker.GameFiles
             set { if (Owner != null) Owner.SetVertexPos(cylinderIndex2, value); }
         }
 
-        public override Vector3 BoxMin
-        {
-            get
-            {
-                return Vector3.Min(Vertex1, Vertex2) - cylinderRadius;//not perfect but meh
-            }
-        }
-        public override Vector3 BoxMax
-        {
-            get
-            {
-                return Vector3.Max(Vertex1, Vertex2) + cylinderRadius;//not perfect but meh
-            }
-        }
+        public override Vector3 BoxMin => Vector3.Min(Vertex1, Vertex2) - cylinderRadius;//not perfect but meh
+        public override Vector3 BoxMax => Vector3.Max(Vertex1, Vertex2) + cylinderRadius;//not perfect but meh
         public override Vector3 Scale
         {
             get
@@ -3853,10 +3808,7 @@ namespace CodeWalker.GameFiles
         }
         public override Vector3 Position
         {
-            get
-            {
-                return (Vertex1 + Vertex2) * 0.5f;
-            }
+            get => (Vertex1 + Vertex2) * 0.5f;
             set
             {
                 var offset = value - Position;
@@ -3962,10 +3914,7 @@ namespace CodeWalker.GameFiles
             cylinderIndex2 = (ushort)Xml.GetUIntAttribute(node, "v2");
             cylinderRadius = Xml.GetFloatAttribute(node, "radius");
         }
-        public override string ToString()
-        {
-            return base.ToString() + ": " + cylinderIndex1.ToString() + ", " + cylinderIndex2.ToString() + ", " + cylinderRadius.ToString();
-        }
+        public override string ToString() => $"{base.ToString()}: {cylinderIndex1}, {cylinderIndex2}, {cylinderRadius}";
     }
 
 
@@ -4311,10 +4260,7 @@ namespace CodeWalker.GameFiles
             set { MaxX = (short)value.X; MaxY = (short)value.Y; MaxZ = (short)value.Z; }
         }
 
-        public override readonly string ToString()
-        {
-            return $"{NodeIndex1}, {NodeIndex2}  ({NodeIndex2 - NodeIndex1} nodes)";
-        }
+        public override readonly string ToString() => $"{NodeIndex1}, {NodeIndex2}  ({NodeIndex2 - NodeIndex1} nodes)";
     }
     [TC(typeof(EXP))]
     public struct BVHNode_s
@@ -4339,10 +4285,7 @@ namespace CodeWalker.GameFiles
             set { MaxX = (short)value.X; MaxY = (short)value.Y; MaxZ = (short)value.Z; }
         }
 
-        public override readonly string ToString()
-        {
-            return $"{ItemId}: {ItemCount}";
-        }
+        public override readonly string ToString() => $"{ItemId}: {ItemCount}";
     }
 
 
@@ -4851,46 +4794,34 @@ namespace CodeWalker.GameFiles
             return !(left == right);
         }
     }
-    [TC(typeof(EXP))] public struct BoundMaterialColour
+
+    [TC(typeof(EXP))]
+    public struct BoundMaterialColour
     {
         public byte R { get; set; }
         public byte G { get; set; }
         public byte B { get; set; }
         public byte A { get; set; } //GIMS EVO saves this as "opacity" 0-100
-        public override string ToString()
-        {
-            //return Type.ToString() + ", " + Unk0.ToString() + ", " + Unk1.ToString() + ", " + Unk2.ToString();
-            return R.ToString() + ", " + G.ToString() + ", " + B.ToString() + ", " + A.ToString();
-        }
+        public override string ToString() => $"{R}, {G}, {B}, {A}";
+        //return Type.ToString() + ", " + Unk0.ToString() + ", " + Unk1.ToString() + ", " + Unk2.ToString();
     }
-    [TC(typeof(EXP))] public struct BoundsMaterialType
+
+    [TC(typeof(EXP))]
+    public struct BoundsMaterialType
     {
         public byte Index { get; set; }
 
-        public BoundsMaterialData MaterialData
-        {
-            get
-            {
-                return BoundsMaterialTypes.GetMaterial(this);
-            }
-        }
+        public BoundsMaterialData MaterialData => BoundsMaterialTypes.GetMaterial(this);
 
-        public override string ToString()
-        {
-            return BoundsMaterialTypes.GetMaterialName(this);
-        }
+        public override string ToString() => BoundsMaterialTypes.GetMaterialName(this);
 
-        public static implicit operator byte(BoundsMaterialType matType)
-        {
-            return matType.Index;  //implicit conversion
-        }
+        public static implicit operator byte(BoundsMaterialType matType) => matType.Index;
 
-        public static implicit operator BoundsMaterialType(byte b)
-        {
-            return new BoundsMaterialType() { Index = b };
-        }
+        public static implicit operator BoundsMaterialType(byte b) => new BoundsMaterialType() { Index = b };
     }
-    [TC(typeof(EXP))] public class BoundsMaterialData
+
+    [TC(typeof(EXP))]
+    public class BoundsMaterialData
     {
         public string Name { get; set; }
         public string Filter { get; set; }
@@ -4918,10 +4849,7 @@ namespace CodeWalker.GameFiles
 
         public Color Colour { get; set; }
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
     }
 
     public static class BoundsMaterialTypes

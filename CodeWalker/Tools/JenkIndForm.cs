@@ -167,7 +167,7 @@ namespace CodeWalker.Tools
 
             if (hasstr && hastxt)
             {
-                MatchTextBox.Text = string.Format("JenkIndex match:\r\n{0}\r\nGlobalText match:\r\n{1}", str, txt);
+                MatchTextBox.Text = $"JenkIndex match:\r\n{str}\r\nGlobalText match:\r\n{txt}";
             }
             else if (hasstr)
             {

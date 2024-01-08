@@ -2,10 +2,13 @@
 using CodeWalker.GameFiles;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
+using Microsoft.Extensions.ObjectPool;
 using SharpDX;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -60,34 +63,32 @@ namespace CodeWalker.World
             GameFileCache = gameFileCache;
 
 
+            var task = Task.Run(() => InitNodeGrid("Space Init"));
+
             updateStatus?.Invoke("Scanning manifests...");
 
-            InitManifestData();
+            InitManifestData("Space Init");
 
 
             updateStatus?.Invoke("Scanning caches...");
 
-            await InitCacheDataAsync();
+            await InitCacheDataAsync("Space Init");
 
 
             updateStatus?.Invoke("Building map data store...");
 
-            InitMapDataStore();
+            InitMapDataStore("Space Init");
 
 
             updateStatus?.Invoke("Building bounds store...");
 
-            InitBoundsStore();
-
-
-            updateStatus?.Invoke("Loading paths...");
-
-            InitNodeGrid();
-
+            InitBoundsStore("Space Init");
 
             updateStatus?.Invoke("Loading nav meshes...");
 
-            InitNavGrid();
+            InitNavGrid("Space Init");
+
+            await task;
 
 
             Inited = true;
@@ -95,9 +96,9 @@ namespace CodeWalker.World
         }
 
 
-        private void InitManifestData()
+        private void InitManifestData([CallerMemberName] string callerName = "")
         {
-            using var _ = new DisposableTimer("InitManifestData");
+            using var _ = new DisposableTimer($"{callerName} -> {nameof(InitManifestData)}");
             interiorLookup.Clear();
             interiorManifest.Clear();
             ymaptimes.Clear();
@@ -105,7 +106,7 @@ namespace CodeWalker.World
             dataGroupDict.Clear();
 
             var manifests = GameFileCache.AllManifests;
-            foreach (var manifest in manifests)
+            foreach (var manifest in manifests.AsSpan())
             {
                 //build interior lookup - maps child->parent interior bounds
 
@@ -166,10 +167,10 @@ namespace CodeWalker.World
 
         }
 
-        private async Task InitCacheDataAsync()
+        private async Task InitCacheDataAsync([CallerMemberName] string callerName = "")
         {
             //build the grid from the cached data
-            using var _ = new DisposableTimer("InitCacheDataAsync");
+            using var _ = new DisposableTimer($"{callerName} -> {nameof(InitCacheDataAsync)}");
             var caches = GameFileCache.AllCacheFiles;
             nodedict = new Dictionary<MetaHash, MapDataStoreNode>(6000);
             //List<BoundsStoreItem> intlist = new List<BoundsStoreItem>();
@@ -252,8 +253,8 @@ namespace CodeWalker.World
 
 
 
-            using var ymapTimer = new DisposableTimer("ymaps");
-            using var ybnTimer = new DisposableTimer("ybns");
+            using var ymapTimer = new DisposableTimer("ymaps", false);
+            using var ybnTimer = new DisposableTimer("ybns", false);
             using(new DisposableTimer("maprpfs.Values"))
             {
                 //try and generate the cache data for uncached ymaps... mainly for mod maps!
@@ -264,6 +265,7 @@ namespace CodeWalker.World
                     {
                         if (entry.IsExtension(".ymap"))
                         {
+                            ymapTimer.Stopwatch.Start();
                             if (!nodedict.ContainsKey(new MetaHash(entry.ShortNameHash)))
                             {
                                 //non-cached ymap. mostly only mods... but some interesting test things also
@@ -277,9 +279,11 @@ namespace CodeWalker.World
                                     }
                                 }
                             }
+                            ymapTimer.Stopwatch.Stop();
                         }
                         if (entry.IsExtension(".ybn"))
                         {
+                            ybnTimer.Stopwatch.Start();
                             MetaHash ehash = new MetaHash(entry.ShortNameHash);
                             if (!usedboundsdict.ContainsKey(ehash))
                             {
@@ -297,6 +301,7 @@ namespace CodeWalker.World
                                     }
                                 }
                             }
+                            ybnTimer.Stopwatch.Stop();
                         }
                     }
                 }
@@ -306,33 +311,29 @@ namespace CodeWalker.World
 
         }
 
-        private void InitMapDataStore()
+        private void InitMapDataStore([CallerMemberName] string callerName = "")
         {
-            using var _ = new DisposableTimer("InitMapDataStore");
+            using var _ = new DisposableTimer($"{callerName} -> {nameof(InitMapDataStore)}");
             MapDataStore = new SpaceMapDataStore();
 
             MapDataStore.Init(nodedict.Values);
 
         }
 
-        private void InitBoundsStore()
+        private void InitBoundsStore([CallerMemberName] string callerName = "")
         {
-            using var _ = new DisposableTimer("InitBoundsStore");
+            using var _ = new DisposableTimer($"{callerName} -> {nameof(InitBoundsStore)}");
             BoundsStore = new SpaceBoundsStore();
 
             BoundsStore.Init(boundsdict.Values);
-
         }
 
-        private void InitNodeGrid()
+        private Dictionary<uint, RpfFileEntry> GetYndEntries()
         {
-            using var _ = new DisposableTimer("InitNodeGrid");
-            NodeGrid = new SpaceNodeGrid();
-            AllYnds.Clear();
-
+            using var addRpfYndTimer = new DisposableTimer($"{nameof(InitNodeGrid)} -> AddRpfYnds");
             var rpfman = GameFileCache.RpfMan;
             Dictionary<uint, RpfFileEntry> yndentries = new Dictionary<uint, RpfFileEntry>();
-            foreach (var rpffile in GameFileCache.BaseRpfs) //load nodes from base rpfs
+            foreach (var rpffile in GameFileCache.BaseRpfs.AsSpan()) //load nodes from base rpfs
             {
                 AddRpfYnds(rpffile, yndentries);
             }
@@ -341,27 +342,39 @@ namespace CodeWalker.World
                 var updrpf = rpfman.FindRpfFile("update\\update.rpf"); //load nodes from patch area...
                 if (updrpf is not null)
                 {
-                    foreach (var rpffile in updrpf.Children)
+                    foreach (var rpffile in updrpf.Children.Span)
                     {
                         AddRpfYnds(rpffile, yndentries);
                     }
                 }
-                foreach (var dlcrpf in GameFileCache.DlcActiveRpfs) //load nodes from current dlc rpfs
+                foreach (var dlcrpf in GameFileCache.DlcActiveRpfs.AsSpan()) //load nodes from current dlc rpfs
                 {
                     if (dlcrpf.Path.StartsWith("x64", StringComparison.OrdinalIgnoreCase))
                         continue; //don't override update.rpf YNDs with x64 ones! *hack
-                    foreach (var rpffile in dlcrpf.Children)
+                    foreach (var rpffile in dlcrpf.Children.Span)
                     {
                         AddRpfYnds(rpffile, yndentries);
                     }
                 }
             }
 
+            return yndentries;
+        }
+
+        private async Task InitNodeGrid([CallerMemberName] string callerName = "")
+        {
+            using var _ = new DisposableTimer($"{callerName} -> {nameof(InitNodeGrid)}");
+            NodeGrid = new SpaceNodeGrid();
+            AllYnds.Clear();
+
+            var yndentries = GetYndEntries();
+
+            var addRpfYndTimer = new DisposableTimer($"{nameof(InitNodeGrid)} -> BuildNodeGrid");
 
             Vector3 corner = new Vector3(-8192, -8192, -2048);
             Vector3 cellsize = new Vector3(512, 512, 4096);
 
-            for (int x = 0; x < NodeGrid.CellCountX; x++)
+            await Parallel.ForAsync(0, NodeGrid.CellCountX, async (x, cancellationToken) =>
             {
                 for (int y = 0; y < NodeGrid.CellCountY; y++)
                 {
@@ -370,14 +383,17 @@ namespace CodeWalker.World
                     uint fnhash = JenkHash.GenHash(fname);
                     if (yndentries.TryGetValue(fnhash, out RpfFileEntry? fentry))
                     {
-                        cell.Ynd = RpfManager.GetFile<YndFile>(fentry);
+                        cell.Ynd = await RpfManager.GetFileAsync<YndFile>(fentry);
                         cell.Ynd.BBMin = corner + (cellsize * new Vector3(x, y, 0));
                         cell.Ynd.BBMax = cell.Ynd.BBMin + cellsize;
                         cell.Ynd.CellX = x;
                         cell.Ynd.CellY = y;
                         cell.Ynd.Loaded = true;
 
-                        AllYnds[fnhash] = cell.Ynd;
+                        lock(AllYnds)
+                        {
+                            AllYnds[fnhash] = cell.Ynd;
+                        }
 
 
                         #region node flags test
@@ -458,19 +474,24 @@ namespace CodeWalker.World
 
                     }
                 }
-            }
+            });
 
+            addRpfYndTimer.Dispose();
+            addRpfYndTimer = new DisposableTimer($"{nameof(InitNodeGrid)} -> BuildYndData");
             //join the dots....
             //StringBuilder sb = new StringBuilder();
-            List<EditorVertex> tverts = new List<EditorVertex>();
-            using PooledList<YndLink> tlinks = new PooledList<YndLink>();
-            using PooledList<YndLink> nlinks = new PooledList<YndLink>();
-            foreach (var ynd in AllYnds.Values)
-            {
-                BuildYndData(ynd, tverts, tlinks, nlinks);
+            var allYnds = AllYnds.Values.ToArray();
 
-                //sb.Append(ynd.nodestr);
-            }
+            Parallel.ForEach(allYnds, BuildYndData);
+
+            //foreach (var ynd in AllYnds.Values)
+            //{
+            //    BuildYndData(ynd);
+
+            //    //sb.Append(ynd.nodestr);
+            //}
+
+            addRpfYndTimer.Dispose();
 
             //string str = sb.ToString();
         }
@@ -482,11 +503,12 @@ namespace CodeWalker.World
             NodeGrid.UpdateYnd(ynd);
         }
 
-        private void AddRpfYnds(RpfFile rpffile, Dictionary<uint, RpfFileEntry> yndentries)
+        private static void AddRpfYnds(RpfFile rpffile, Dictionary<uint, RpfFileEntry> yndentries)
         {
             if (rpffile.AllEntries is null)
                 return;
-            foreach (var entry in rpffile.AllEntries)
+
+            foreach (var entry in rpffile.AllEntries.Span)
             {
                 if (entry is RpfFileEntry fentry)
                 {
@@ -498,19 +520,20 @@ namespace CodeWalker.World
             }
         }
 
-        public void BuildYndLinks(YndFile ynd, IList<YndLink>? tlinks = null, IList<YndLink>? nlinks = null)
+        public void BuildYndLinks(YndFile ynd)
         {
             var ynodes = ynd.Nodes;
             var nodes = ynd.NodeDictionary?.Nodes;
             var links = ynd.NodeDictionary?.Links;
-            if (ynodes is null || nodes is null || links is null) return;
+            if (ynodes is null || nodes is null || links is null)
+                return;
 
             int nodecount = ynodes.Length;
 
 
             //build the links arrays.
-            tlinks ??= new PooledList<YndLink>();
-            nlinks ??= new PooledList<YndLink>();
+            var tlinks = PooledListPool<YndLink>.Shared.Get();
+            var nlinks = PooledListPool<YndLink>.Shared.Get();
 
             tlinks.Clear();
             for (int i = 0; i < nodecount; i++)
@@ -524,24 +547,24 @@ namespace CodeWalker.World
                     var llid = linkid + l;
                     if (llid >= links.Length) continue;
                     var link = links[llid];
-                    YndNode tnode;
+                    YndNode? tnode;
                     if (link.AreaID == node.AreaID)
                     {
                         if (link.NodeID >= ynodes.Length)
-                        { continue; }
+                            continue;
+
                         tnode = ynodes[link.NodeID];
                     }
                     else
                     {
                         tnode = NodeGrid.GetYndNode(link.AreaID, link.NodeID);
                         if (tnode == null)
-                        { continue; }
-                        if ((Math.Abs(tnode.Ynd.CellX - ynd.CellX) > 1) || (Math.Abs(tnode.Ynd.CellY - ynd.CellY) > 1))
-                        { /*continue;*/ } //non-adjacent cell? seems to be the carrier problem...
+                            continue;
+                        //if ((Math.Abs(tnode.Ynd.CellX - ynd.CellX) > 1) || (Math.Abs(tnode.Ynd.CellY - ynd.CellY) > 1))
+                        //{ /*continue;*/ } //non-adjacent cell? seems to be the carrier problem...
                     }
 
-                    YndLink yl = new YndLink();
-                    yl.Init(ynd, node, tnode, link);
+                    YndLink yl = new YndLink(ynd, node, tnode, link);
                     tlinks.Add(yl);
                     nlinks.Add(yl);
                 }
@@ -549,10 +572,13 @@ namespace CodeWalker.World
             }
             ynd.Links = tlinks.ToArray();
 
+            PooledListPool<YndLink>.Shared.Return(tlinks);
+            PooledListPool<YndLink>.Shared.Return(nlinks);
         }
-        public void BuildYndVerts(YndFile ynd, YndNode[]? selectedNodes, IList<EditorVertex>? tverts = null)
+
+        public void BuildYndVerts(YndFile ynd, YndNode[]? selectedNodes = null)
         {
-            var laneColour = (uint) new Color4(0f, 0f, 1f, 1f).ToRgba();
+            var laneColour = 4294901760; // (uint) new Color4(0f, 0f, 1f, 1f).ToRgba();
             var ynodes = ynd.Nodes;
             if (ynodes is null)
                 return;
@@ -560,7 +586,7 @@ namespace CodeWalker.World
             int nodecount = ynodes.Length;
 
             //build the main linked vertex array (used by the renderable to draw the lines).
-            tverts ??= new PooledList<EditorVertex>();
+            var tverts = PooledListPool<EditorVertex>.Shared.Get();
             tverts.Clear();
             for (int i = 0; i < nodecount; i++)
             {
@@ -569,14 +595,12 @@ namespace CodeWalker.World
                     continue;
 
 
-                var nvert = new EditorVertex(node.Position, (uint)node.Colour.ToRgba());
+                var nvert = new EditorVertex(node.Position, (uint)node.ColourRgba);
 
-
-                for (int l = 0; l < node.Links.Length; l++)
+                foreach(var yl in node.Links)
                 {
-                    YndLink yl = node.Links[l];
                     var laneDir = yl.GetDirection();
-                    var laneDirCross = Vector3.Cross(laneDir, Vector3.UnitZ);
+                    var laneDirCross = Vectors.Cross(in laneDir, in Vector3.UnitZ);
                     var laneWidth = yl.GetLaneWidth();
                     var laneHalfWidth = laneWidth / 2;
                     var offset = yl.IsTwoWay()
@@ -587,9 +611,9 @@ namespace CodeWalker.World
 
                     var tnode = yl.Node2;
 
-                    if (tnode == null)
+                    if (tnode is null)
                         continue; //invalid links could hit here
-                    var tvert = new EditorVertex(tnode.Position, (uint)tnode.Colour.ToRgba());
+                    var tvert = new EditorVertex(tnode.Position, (uint)tnode.ColourRgba);
 
                     tverts.Add(nvert);
                     tverts.Add(tvert);
@@ -619,6 +643,8 @@ namespace CodeWalker.World
             }
             ynd.LinkedVerts = tverts.ToArray();
 
+            PooledListPool<EditorVertex>.Shared.Return(tverts);
+
             ynd.UpdateTriangleVertices(selectedNodes);
         }
         public void BuildYndJuncs(YndFile ynd)
@@ -631,8 +657,7 @@ namespace CodeWalker.World
                 for (int i = 0; i < junccount; i++)
                 {
                     var junc = yjuncs[i];
-                    var cell = NodeGrid.GetCell(junc.RefData.AreaID);
-                    if (cell?.Ynd?.Nodes is null)
+                    if (!NodeGrid.TryGetCell(junc.RefData.AreaID, out var cell) || cell?.Ynd?.Nodes is null)
                         continue;
 
                     var jynd = cell.Ynd;
@@ -656,15 +681,14 @@ namespace CodeWalker.World
             }
 
         }
-        public void BuildYndData(YndFile ynd, IList<EditorVertex>? tverts = null, IList<YndLink>? tlinks = null, IList<YndLink>? nlinks = null)
+        public void BuildYndData(YndFile ynd)
         {
-
-            BuildYndLinks(ynd, tlinks, nlinks);
+            ArgumentNullException.ThrowIfNull(ynd, nameof(ynd));
+            BuildYndLinks(ynd);
 
             BuildYndJuncs(ynd);
 
-            BuildYndVerts(ynd, null, tverts);
-
+            BuildYndVerts(ynd);
         }
 
         public YndFile[] GetYndFilesThatDependOnYndFile(YndFile file)
@@ -723,9 +747,9 @@ namespace CodeWalker.World
         }
 
 
-        private void InitNavGrid()
+        private void InitNavGrid([CallerMemberName] string callerName = "")
         {
-            using var _ = new DisposableTimer("InitNavGrid");
+            using var _ = new DisposableTimer($"{callerName} -> InitNavGrid");
             NavGrid = new SpaceNavGrid();
 
             var rpfman = GameFileCache.RpfMan;
@@ -774,16 +798,14 @@ namespace CodeWalker.World
 
         private void AddRpfYnvs(RpfFile rpffile, Dictionary<uint, RpfFileEntry> ynventries)
         {
-            if (rpffile.AllEntries == null) return;
-            foreach (var entry in rpffile.AllEntries)
+            if (rpffile.AllEntries is null)
+                return;
+            foreach (var entry in rpffile.AllEntries.Span)
             {
-                if (entry is RpfFileEntry)
+                if (entry is RpfFileEntry fentry)
                 {
-                    RpfFileEntry fentry = entry as RpfFileEntry;
                     if (entry.IsExtension(".ynv"))
                     {
-                        if (ynventries.ContainsKey(entry.NameHash))
-                        { }
                         ynventries[entry.NameHash] = fentry;
                     }
                 }
@@ -794,10 +816,13 @@ namespace CodeWalker.World
 
         public void Update(float elapsed)
         {
-            if (!Inited) return;
-            if (BoundsStore == null) return;
+            if (!Inited)
+                return;
+            if (BoundsStore is null)
+                return;
 
-            if (elapsed > 0.1f) elapsed = 0.1f;
+            if (elapsed > 0.1f)
+                elapsed = 0.1f;
 
 
             Collisions.Clear();
@@ -806,11 +831,13 @@ namespace CodeWalker.World
             EnabledEntities.Clear();
             foreach (var e in PersistentEntities)
             {
-                if (e.Enabled) EnabledEntities.Add(e);
+                if (e.Enabled)
+                    EnabledEntities.Add(e);
             }
             foreach (var e in TemporaryEntities)
             {
-                if (e.Enabled) EnabledEntities.Add(e);
+                if (e.Enabled)
+                    EnabledEntities.Add(e);
             }
 
 
@@ -1044,9 +1071,9 @@ namespace CodeWalker.World
             {
                 if (ymapweathertypes.TryGetValue(ymaphash, out var weathers))
                 {
-                    for (int i = 0; i < weathers.Length; i++)
+                    foreach(var _weather in weathers)
                     {
-                        if (weathers[i] == weather)
+                        if (_weather == weather)
                             return true;
                     }
                     return false;
@@ -1057,10 +1084,9 @@ namespace CodeWalker.World
 
         public void GetVisibleYmaps(Camera cam, int hour, MetaHash weather, Dictionary<MetaHash, YmapFile> ymaps)
         {
-            if (!Inited)
+            if (!Inited || MapDataStore is null)
                 return;
-            if (MapDataStore is null)
-                return;
+
             CurrentHour = hour;
             CurrentWeather = weather;
             var items = MapDataStore.GetItems(in cam.Position);
@@ -1156,7 +1182,7 @@ namespace CodeWalker.World
                     {
                         var hash = cell.YnvEntry.ShortNameHash;
                         var ynv = (hash > 0) ? GameFileCache.GetYnv(hash) : null;
-                        if ((ynv != null) && (ynv.Loaded))
+                        if (ynv != null && ynv.Loaded)
                         {
                             ynvs.Add(ynv);
                         }
@@ -1196,8 +1222,8 @@ namespace CodeWalker.World
                         continue;
                     } //already a closer hit
 
-                    YbnFile ybn = GameFileCache.GetYbn(bound.Name);
-                    if (ybn == null)
+                    YbnFile? ybn = GameFileCache.GetYbn(bound.Name);
+                    if (ybn is null)
                     {
                         continue;
                     } //ybn not found?
@@ -1917,10 +1943,7 @@ namespace CodeWalker.World
         {
             RootNode = new SpaceBoundsStoreNode();
             RootNode.Owner = this;
-            foreach (var item in items)
-            {
-                RootNode.Add(item);
-            }
+            RootNode.AddRange(items);
             RootNode.TrySplit(SplitThreshold);
         }
 
@@ -1932,6 +1955,7 @@ namespace CodeWalker.World
 
             return VisibleItems;
         }
+
         public List<BoundsStoreItem> GetItems(ref Ray ray, bool[]? layers = null)
         {
             VisibleItems.Clear();
@@ -1941,44 +1965,58 @@ namespace CodeWalker.World
             return VisibleItems;
         }
     }
+
     public class SpaceBoundsStoreNode
     {
-        public SpaceBoundsStore Owner = null;
-        public SpaceBoundsStoreNode[] Children = null;
-        public List<BoundsStoreItem> Items = null;
+        public SpaceBoundsStore? Owner = null;
+        public SpaceBoundsStoreNode[]? Children = null;
+        public PooledList<BoundsStoreItem>? Items = null;
         public Vector3 BBMin = new Vector3(float.MaxValue);
         public Vector3 BBMax = new Vector3(float.MinValue);
         public int Depth = 0;
 
         public void Add(BoundsStoreItem item)
         {
-            if (Items == null)
-            {
-                Items = new List<BoundsStoreItem>();
-            }
-            BBMin = Vector3.Min(BBMin, item.Min);
-            BBMax = Vector3.Max(BBMax, item.Max);
+            Items ??= PooledListPool<BoundsStoreItem>.Shared.Get();
+
+            Vectors.Min(in BBMin, in item.Min, out BBMin);
+            Vectors.Max(in BBMax, in item.Max, out BBMax);
             Items.Add(item);
+        }
+
+        public void AddRange(IEnumerable<BoundsStoreItem> items)
+        {
+            Items ??= PooledListPool<BoundsStoreItem>.Shared.Get();
+            if (items.TryGetNonEnumeratedCount(out var count))
+            {
+                Items.EnsureCapacity(Items.Count + count);
+            }
+            foreach (var item in items)
+            {
+                Vectors.Min(in BBMin, in item.Min, out BBMin);
+                Vectors.Max(in BBMax, in item.Max, out BBMax);
+                Items.Add(item);
+            }
         }
 
         public void TrySplit(int threshold)
         {
-            if ((Items == null) || (Items.Count <= threshold))
-            { return; }
+            if (Items is null || Items.Count <= threshold)
+                return;
 
             Children = new SpaceBoundsStoreNode[4];
 
-            var newItems = new List<BoundsStoreItem>();
+            var newItems = PooledListPool<BoundsStoreItem>.Shared.Get();
 
             var ncen = (BBMax + BBMin) * 0.5f;
             var next = (BBMax - BBMin) * 0.5f;
             var nsiz = Math.Max(next.X, next.Y);
             var nsizh = nsiz * 0.5f;
 
-            foreach (var item in Items)
+            foreach (var item in Items.Span)
             {
-                var imin = item.Min;
-                var imax = item.Max;
+                ref readonly var imin = ref item.Min;
+                ref readonly var imax = ref item.Max;
                 var icen = (imax + imin) * 0.5f;
                 var iext = (imax - imin) * 0.5f;
                 var isiz = Math.Max(iext.X, iext.Y);
@@ -1991,7 +2029,7 @@ namespace CodeWalker.World
                 {
                     var cind = ((icen.X > ncen.X) ? 1 : 0) + ((icen.Y > ncen.Y) ? 2 : 0);
                     var c = Children[cind];
-                    if (c == null)
+                    if (c is null)
                     {
                         c = new SpaceBoundsStoreNode();
                         c.Owner = Owner;
@@ -2007,25 +2045,28 @@ namespace CodeWalker.World
                 Children[i]?.TrySplit(threshold);
             }
 
+            if (Items is not null)
+            {
+                PooledListPool<BoundsStoreItem>.Shared.Return(Items);
+            }
+
             Items = newItems;
         }
 
-        public void GetItems(in Vector3 min, in Vector3 max, List<BoundsStoreItem> items, bool[] layers = null)
+        public void GetItems(in Vector3 min, in Vector3 max, List<BoundsStoreItem> items, bool[]? layers = null)
         {
-            if ((max.X >= BBMin.X) && (min.X <= BBMax.X) && (max.Y >= BBMin.Y) && (min.Y <= BBMax.Y))
+            if (max.X >= BBMin.X && min.X <= BBMax.X && max.Y >= BBMin.Y && min.Y <= BBMax.Y)
             {
                 if (Items != null)
                 {
-                    for (int i = 0; i < Items.Count; i++)
+                    foreach(var item in Items.Span)
                     {
-                        var item = Items[i];
-
-                        if ((layers != null) && (item.Layer < 3) && (!layers[item.Layer]))
+                        if (layers is not null && item.Layer < 3 && !layers[item.Layer])
                         {
                             continue;
                         }
 
-                        if ((max.X >= item.Min.X) && (min.X <= item.Max.X) && (max.Y >= item.Min.Y) && (min.Y <= item.Max.Y))
+                        if (max.X >= item.Min.X && min.X <= item.Max.X && max.Y >= item.Min.Y && min.Y <= item.Max.Y)
                         {
                             items.Add(item);
                         }
@@ -2040,6 +2081,7 @@ namespace CodeWalker.World
                 }
             }
         }
+
         public void GetItems(ref Ray ray, List<BoundsStoreItem> items, bool[]? layers = null)
         {
             var box = new BoundingBox(BBMin, BBMax);
@@ -2047,10 +2089,8 @@ namespace CodeWalker.World
             {
                 if (Items is not null)
                 {
-                    for (int i = 0; i < Items.Count; i++)
+                    foreach(var item in Items.Span)
                     {
-                        var item = Items[i];
-
                         if (layers is not null && item.Layer < 3 && !layers[item.Layer])
                         {
                             continue;
@@ -2101,15 +2141,29 @@ namespace CodeWalker.World
             }
         }
 
-        public SpaceNodeGridCell GetCell(int id)
+        public SpaceNodeGridCell? GetCell(int id)
         {
             int x = id % CellCountX;
             int y = id / CellCountX;
-            if ((x >= 0) && (x < CellCountX) && (y >= 0) && (y < CellCountY))
+            if (x >= 0 && x < CellCountX && y >= 0 && y < CellCountY)
             {
                 return Cells[x, y];
             }
             return null;
+        }
+
+        public bool TryGetCell(int id, [MaybeNullWhen(false)] out SpaceNodeGridCell cell)
+        {
+            int x = id % CellCountX;
+            int y = id / CellCountX;
+            if (x >= 0 && x < CellCountX && y >= 0 && y < CellCountY)
+            {
+                cell = Cells[x, y];
+                return true;
+            }
+
+            cell = default;
+            return false;
         }
 
         public SpaceNodeGridCell? GetCellForPosition(in Vector3 position)
@@ -2117,7 +2171,7 @@ namespace CodeWalker.World
             var x = (int)((position.X - CornerX) / CellSize);
             var y = (int)((position.Y - CornerY) / CellSize);
 
-            if ((x >= 0) && (x < CellCountX) && (y >= 0) && (y < CellCountY))
+            if (x >= 0 && x < CellCountX && y >= 0 && y < CellCountY)
             {
                 return Cells[x, y];
             }
@@ -2128,11 +2182,14 @@ namespace CodeWalker.World
 
         public YndNode? GetYndNode(ushort areaid, ushort nodeid)
         {
-            var cell = GetCell(areaid);
-            if (cell?.Ynd?.Nodes is null)
+            if (!TryGetCell(areaid, out var cell) || cell?.Ynd?.Nodes is null)
+            {
                 return null;
+            }
+
             if (nodeid >= cell.Ynd.Nodes.Length)
-            { return null; }
+                return null;
+
             return cell.Ynd.Nodes[nodeid];
         }
 
@@ -2160,7 +2217,7 @@ namespace CodeWalker.World
         public int Y;
         public int ID;
 
-        public YndFile Ynd;
+        public YndFile? Ynd;
 
         public SpaceNodeGridCell(int x, int y)
         {

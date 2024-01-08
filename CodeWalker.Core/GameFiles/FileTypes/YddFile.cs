@@ -11,10 +11,10 @@ namespace CodeWalker.GameFiles
 {
     [TypeConverter(typeof(ExpandableObjectConverter))] public class YddFile : GameFile, PackedFile
     {
-        public DrawableDictionary DrawableDict { get; set; }
+        public DrawableDictionary? DrawableDict { get; set; }
 
-        public Dictionary<uint, Drawable> Dict { get; set; }
-        public Drawable[] Drawables { get; set; }
+        public Dictionary<uint, Drawable>? Dict { get; set; }
+        public Drawable[]? Drawables { get; set; }
 
         public YddFile() : base(null, GameFileType.Ydd)
         {

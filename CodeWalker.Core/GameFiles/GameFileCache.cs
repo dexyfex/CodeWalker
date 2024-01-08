@@ -1052,11 +1052,12 @@ namespace CodeWalker.GameFiles
             YftDict ??= new Dictionary<uint, RpfFileEntry>(40000);
             YcdDict ??= new Dictionary<uint, RpfFileEntry>(20000);
             YedDict ??= new Dictionary<uint, RpfFileEntry>(300);
-            foreach (var rpffile in AllRpfs)
+            foreach (var rpffile in AllRpfs.AsSpan())
             {
                 if (rpffile.AllEntries is null)
                     continue;
-                foreach (var entry in rpffile.AllEntries)
+
+                foreach (var entry in rpffile.AllEntries.Span)
                 {
                     if (entry is RpfFileEntry fentry)
                     {
@@ -1106,7 +1107,7 @@ namespace CodeWalker.GameFiles
             {
                 if (rpffile.AllEntries is null)
                     continue;
-                foreach (var entry in rpffile.AllEntries)
+                foreach (var entry in rpffile.AllEntries.Span)
                 {
                     if (entry is RpfFileEntry fentry)
                     {
@@ -3415,9 +3416,6 @@ namespace CodeWalker.GameFiles
             }
 
             var csv = sb.ToString();
-
-
-
         }
 
 

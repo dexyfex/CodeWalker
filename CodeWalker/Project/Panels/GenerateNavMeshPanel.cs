@@ -812,11 +812,7 @@ namespace CodeWalker.Project.Panels
                     });
                 }
 
-
-
-                var statf = "{0} hit tests, {1} hits, {2} new polys";
-                var stats = string.Format(statf, hitTestCount, hitCount, newCount);
-                UpdateStatus("Process complete. " + stats);
+                UpdateStatus($"Process complete. {hitTestCount} hit tests, {hitCount} hits, {newCount} new polys");
                 GenerateComplete();
             });
         }

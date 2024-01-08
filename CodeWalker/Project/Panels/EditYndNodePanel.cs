@@ -78,7 +78,7 @@ namespace CodeWalker.Project.Panels
             else
             {
                 populatingui = true;
-                var n = CurrentPathNode.RawData;
+                var n = CurrentPathNode._RawData;
                 //YndNodePanel.Enabled = true;
                 PathNodeDeleteButton.Enabled = ProjectForm.YndExistsInProject(CurrentYndFile);
                 PathNodeAddToProjectButton.Enabled = !PathNodeDeleteButton.Enabled;

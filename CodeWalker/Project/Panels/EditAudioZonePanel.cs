@@ -102,7 +102,7 @@ namespace CodeWalker.Project.Panels
                 UnkVec1TextBox.Text = FloatUtil.GetVector4String(z.UnkVec1);
                 UnkVec2TextBox.Text = FloatUtil.GetVector4String(z.UnkVec2);
                 UnkVec3TextBox.Text = FloatUtil.GetVector2String(z.UnkVec3);
-                UnkBytesTextBox.Text = string.Format("{0}, {1}, {2}", z.Unk14, z.Unk15, z.Unk16);
+                UnkBytesTextBox.Text = $"{z.Unk14}, {z.Unk15}, {z.Unk16}";
                 Flags0TextBox.Text = z.Flags0.Hex;
                 Flags1TextBox.Text = z.Flags1.Hex;
                 Unk13TextBox.Text = z.Unk13.Hex;
@@ -110,7 +110,7 @@ namespace CodeWalker.Project.Panels
                 SceneTextBox.Text = z.Scene.ToString();
 
                 StringBuilder sb = new StringBuilder();
-                if (z.Rules != null)
+                if (z.Rules is not null)
                 {
                     foreach (var hash in z.Rules)
                     {

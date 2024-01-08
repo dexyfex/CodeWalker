@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.GameFiles
 {
-    public struct FileCounts
+    public record struct FileCounts
     {
         public uint Rpfs;
         public uint Files;
@@ -53,16 +53,6 @@ namespace CodeWalker.GameFiles
                 Resources = a.Resources + b.Resources,
                 BinaryFiles = a.BinaryFiles + b.BinaryFiles
             };
-        }
-
-        public static bool operator ==(in FileCounts left, in FileCounts right)
-        {
-            return left.Equals(in right);
-        }
-
-        public static bool operator !=(in FileCounts left, in FileCounts right)
-        {
-            return !(left == right);
         }
     }
 
@@ -284,7 +274,6 @@ namespace CodeWalker.GameFiles
                 {
                     rfe.IsEncrypted = rfe.IsExtension(".ysc");//any other way to know..?
                 }
-
 
                 allEntries.Add(e);
             }
@@ -548,11 +537,18 @@ namespace CodeWalker.GameFiles
 
                 }
             }
+        }
 
-
-
-
-
+        private Dictionary<string, RpfEntry[]>? FilesByFileType;
+        public RpfEntry[] GetFilesByFileType(string ext)
+        {
+            FilesByFileType ??= new Dictionary<string, RpfEntry[]>();
+            if (!FilesByFileType.TryGetValue(ext, out var entries))
+            {
+                entries = AllEntries.Where(p => p.IsExtension(ext)).ToArray();
+                FilesByFileType[ext] = entries;
+            }
+            return entries;
         }
 
 

@@ -1938,7 +1938,7 @@ namespace CodeWalker.Rendering
                 {
                     var rndbl = GetArchetypeRenderable(ent.Archetype);
                     ent.LodManagerRenderable = rndbl;
-                    if (rndbl != null)
+                    if (rndbl is not null)
                     {
                         RenderEntities.Add(ent);
                     }
@@ -2427,22 +2427,21 @@ namespace CodeWalker.Rendering
 
 
 
-        private Renderable GetArchetypeRenderable(Archetype arch)
+        private Renderable? GetArchetypeRenderable(Archetype arch)
         {
-            if (arch == null)
+            if (arch is null)
                 return null;
 
-            Renderable rndbl = null;
-            if (!ArchetypeRenderables.TryGetValue(arch, out rndbl))
+            if (!ArchetypeRenderables.TryGetValue(arch, out Renderable? rndbl))
             {
                 var drawable = gameFileCache.TryGetDrawable(arch);
                 rndbl = TryGetRenderable(arch, drawable);
-                if (rndbl != null && rndbl.IsLoaded)
+                if (rndbl is not null && rndbl.IsLoaded)
                 {
                     ArchetypeRenderables[arch] = rndbl;
                 }
             }
-            if ((rndbl != null) && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
+            if (rndbl is not null && rndbl.IsLoaded && (rndbl.AllTexturesLoaded || !waitforchildrentoload))
             {
                 return rndbl;
             }
@@ -2454,9 +2453,7 @@ namespace CodeWalker.Rendering
 
         public void RenderYmap(YmapFile ymap)
         {
-            if (ymap is null)
-                return;
-            if (!ymap.Loaded)
+            if (ymap is null || !ymap.Loaded)
                 return;
 
             if (ymap.AllEntities.Length > 0 && ymap.RootEntities.Length > 0)
@@ -2493,15 +2490,15 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            if (rendercars && ymap.CarGenerators != null && ymap.CarGenerators.Length > 0)
+            if (rendercars && ymap.CarGenerators is not null && ymap.CarGenerators.Length > 0)
             {
                 RenderYmapCarGenerators(ymap);
             }
-            if (rendergrass && ymap.GrassInstanceBatches != null && ymap.GrassInstanceBatches.Length > 0)
+            if (rendergrass && ymap.GrassInstanceBatches is not null && ymap.GrassInstanceBatches.Length > 0)
             {
                 RenderYmapGrass(ymap);
             }
-            if (renderdistlodlights && timecycle.IsNightTime && ymap.DistantLODLights != null)
+            if (renderdistlodlights && timecycle.IsNightTime && ymap.DistantLODLights is not null)
             {
                 RenderYmapDistantLODLights(ymap);
             }
@@ -2715,14 +2712,13 @@ namespace CodeWalker.Rendering
             var maxdist = 200 * renderworldDetailDistMult;
             var maxdist2 = maxdist * maxdist;
 
-            for (int i = 0; i < ymap.CarGenerators.Length; i++)
+            foreach(var cg in ymap.CarGenerators)
             {
-                var cg = ymap.CarGenerators[i];
-
                 var bscent = cg.Position - camera.Position;
                 float bsrad = cg._CCarGen.perpendicularLength;
                 if (bscent.LengthSquared() > maxdist2)
                     continue; //don't render distant cars..
+
                 if (!camera.ViewFrustum.ContainsSphereNoClipNoOpt(ref bscent, bsrad))
                 {
                     continue; //frustum cull cars...
@@ -2737,297 +2733,296 @@ namespace CodeWalker.Rendering
 
         }
 
+        private void RenderWheels(Archetype? arch, YmapEntityDef ent, FragType fragment, uint txdhash = 0, ClipMapEntry? animClip = null)
+        {
+            if (fragment.PhysicsLODGroup?.PhysicsLOD1?.Children?.data_items is null)
+                return;
+
+            var pl1 = fragment.PhysicsLODGroup.PhysicsLOD1;
+            //var groupnames = pl1?.GroupNames?.data_items;
+            //var groups = pl1.Groups?.data_items;
+
+            FragDrawable? wheel_f = null;
+            FragDrawable? wheel_r = null;
 
 
+            foreach (var pch in pl1.Children.data_items)
+            {
+                //var groupname = pch.GroupNameHash;
+                //if ((pl1.Groups?.data_items != null) && (i < pl1.Groups.data_items.Length))
+                //{
+                //    //var group = pl1.Groups.data_items[i];
+                //}
+
+                if (pch.Drawable1 is not null && pch.Drawable1.AllModels.Length != 0)
+                {
+
+                    switch (pch.BoneTag)
+                    {
+                        case 27922: //wheel_lf
+                        case 26418: //wheel_rf
+                            wheel_f = pch.Drawable1;
+                            break;
+                        case 29921: //wheel_lm1
+                        case 29922: //wheel_lm2
+                        case 29923: //wheel_lm3
+                        case 27902: //wheel_lr
+                        case 5857:  //wheel_rm1
+                        case 5858:  //wheel_rm2
+                        case 5859:  //wheel_rm3
+                        case 26398: //wheel_rr
+                            wheel_r = pch.Drawable1;
+                            break;
+                        default:
+
+                            RenderDrawable(pch.Drawable1, arch, ent, txdhash, null, null, animClip);
+
+                            break;
+                    }
+
+                }
+                else
+                { }
+                if (pch.Drawable2 is not null && pch.Drawable2.AllModels.Length != 0)
+                {
+                    RenderDrawable(pch.Drawable2, arch, ent, txdhash, null, null, animClip);
+                }
+                else
+                { }
+            }
+
+            if (wheel_f is not null || wheel_r != null)
+            {
+                for (int i = 0; i < pl1.Children.data_items.Length; i++)
+                {
+                    var pch = pl1.Children.data_items[i];
+                    FragDrawable dwbl = pch.Drawable1;
+                    FragDrawable? dwblcopy = null;
+                    switch (pch.BoneTag)
+                    {
+                        case 27922: //wheel_lf
+                        case 26418: //wheel_rf
+                            dwblcopy = wheel_f ?? wheel_r;
+                            break;
+                        case 29921: //wheel_lm1
+                        case 29922: //wheel_lm2
+                        case 29923: //wheel_lm3
+                        case 27902: //wheel_lr
+                        case 5857:  //wheel_rm1
+                        case 5858:  //wheel_rm2
+                        case 5859:  //wheel_rm3
+                        case 26398: //wheel_rr
+                            dwblcopy = wheel_r ?? wheel_f;
+                            break;
+                        default:
+                            break;
+                    }
+                    //switch (pch.GroupNameHash)
+                    //{
+                    //    case 3311608449: //wheel_lf
+                    //    case 1705452237: //wheel_lm1
+                    //    case 1415282742: //wheel_lm2
+                    //    case 3392433122: //wheel_lm3
+                    //    case 133671269:  //wheel_rf
+                    //    case 2908525601: //wheel_rm1
+                    //    case 2835549038: //wheel_rm2
+                    //    case 4148013026: //wheel_rm3
+                    //        dwblcopy = wheel_f != null ? wheel_f : wheel_r;
+                    //        break;
+                    //    case 1695736278: //wheel_lr
+                    //    case 1670111368: //wheel_rr
+                    //        dwblcopy = wheel_r != null ? wheel_r : wheel_f;
+                    //        break;
+                    //    default:
+                    //        break;
+                    //}
+
+                    if (dwblcopy is not null)
+                    {
+                        if (dwbl is not null)
+                        {
+                            if (dwbl != dwblcopy && dwbl.AllModels.Length == 0)
+                            {
+                                dwbl.Owner = dwblcopy;
+                                dwbl.AllModels = dwblcopy.AllModels; //hopefully this is all that's need to render, otherwise drawable is actually getting edited!
+                                //dwbl.DrawableModelsHigh = dwblcopy.DrawableModelsHigh;
+                                //dwbl.DrawableModelsMedium = dwblcopy.DrawableModelsMedium;
+                                //dwbl.DrawableModelsLow = dwblcopy.DrawableModelsLow;
+                                //dwbl.DrawableModelsVeryLow = dwblcopy.DrawableModelsVeryLow;
+                                //dwbl.VertexDecls = dwblcopy.VertexDecls;
+                            }
+
+                            RenderDrawable(dwbl, arch, ent, txdhash /*, null, null, animClip*/);
+
+                        }
+                        else
+                        { }
+                    }
+                    else
+                    { }
+                }
+            }
+        }
 
 
-        public bool RenderFragment(Archetype arch, YmapEntityDef ent, FragType f, uint txdhash = 0, ClipMapEntry animClip = null)
+        private static readonly uint ColourBlue = (uint)Color.Blue.ToRgba();
+        private static readonly uint ColourRed = (uint)Color.Red.ToRgba();
+        private void RenderFragmentWindows(Archetype? arch, YmapEntityDef ent, FragType fragment, uint txdhash = 0, ClipMapEntry? animClip = null)
+        {
+            if (!renderfragwindows)
+                return;
+
+            var eori = Quaternion.Identity;
+            var epos = Vector3.Zero;
+            if (ent is not null)
+            {
+                eori = ent.Orientation;
+                epos = ent.Position;
+            }
+
+            if (fragment.GlassWindows?.data_items is not null)
+            {
+                foreach(var gw in fragment.GlassWindows.data_items)
+                {
+                    var projt = gw.ProjectionRow1;//row0? or row3? maybe investigate more
+                    var proju = gw.ProjectionRow2;//row1 of XYZ>UV projection
+                    var projv = gw.ProjectionRow3;//row2 of XYZ>UV projection
+                    //var unk01 = new Vector2(gw.UnkFloat13, gw.UnkFloat14);//offset?
+                    //var unk02 = new Vector2(gw.UnkFloat15, gw.UnkFloat16);//scale? sum of this and above often gives integers eg 1, 6
+                    //var thick = gw.Thickness; //thickness of the glass
+                    //var unkuv = new Vector2(gw.UnkFloat18, gw.UnkFloat19); //another scale in UV space..?
+                    //var tangt = gw.Tangent;//direction of surface tangent
+                    //var bones = f.Drawable?.Skeleton?.Bones?.Items; //todo: use bones instead?
+                    var grp = gw.Group;
+                    var grplod = gw.GroupLOD;
+                    var xforms = grplod?.FragTransforms?.Matrices;
+                    var xoffs = Vector3.Zero;
+                    if (grp is not null && xforms is not null && grp.ChildIndex < xforms.Length && grplod is not null)
+                    {
+                        var xform = xforms[grp.ChildIndex];
+                        xoffs = xform.TranslationVector + grplod.PositionOffset;
+                    }
+                    var m = new Matrix(
+                        projt.X, projt.Y, projt.Z, 0,
+                        proju.X, proju.Y, proju.Z, 0,
+                        projv.X, projv.Y, projv.Z, 0,
+                        xoffs.X, xoffs.Y, xoffs.Z, 1
+                    );
+                    //m.Row1 = new Vector4(projt, 0);
+                    //m.Row2 = new Vector4(proju, 0);
+                    //m.Row3 = new Vector4(projv, 0);
+                    //m.Row4 = new Vector4(xoffs, 1);
+
+                    var v0 = m.Multiply(new Vector3(1, 0, 0));
+                    var v1 = m.Multiply(new Vector3(1, 0, 1));
+                    var v2 = m.Multiply(new Vector3(1, 1, 1));
+                    var v3 = m.Multiply(new Vector3(1, 1, 0));
+                    var c0 = eori.Multiply(in v0) + epos;
+                    var c1 = eori.Multiply(in v1) + epos;
+                    var c2 = eori.Multiply(in v2) + epos;
+                    var c3 = eori.Multiply(in v3) + epos;
+                    RenderSelectionLine(in c0, in c1, ColourBlue);
+                    RenderSelectionLine(in c1, in c2, ColourBlue);
+                    RenderSelectionLine(in c2, in c3, ColourBlue);
+                    RenderSelectionLine(in c3, in c0, ColourBlue);
+                    //RenderSelectionLine(c0, c0 + tangt, colred);
+                }
+            }
+            if (fragment.VehicleGlassWindows?.Windows is not null)
+            {
+                foreach(var vgw in fragment.VehicleGlassWindows.Windows)
+                {
+                    //var grp = vgw.Group;
+                    //var grplod = vgw.GroupLOD;
+                    var m = vgw.Projection;
+                    m.M44 = 1.0f;
+                    m.Transpose();
+                    m.Invert();//ouch
+                    var min = (new Vector3(0, 0, 0));
+                    var max = (new Vector3(vgw.ShatterMapWidth, vgw.ItemDataCount, 1));
+                    var v0 = m.MultiplyW(new Vector3(min.X, min.Y, 0));
+                    var v1 = m.MultiplyW(new Vector3(min.X, max.Y, 0));
+                    var v2 = m.MultiplyW(new Vector3(max.X, max.Y, 0));
+                    var v3 = m.MultiplyW(new Vector3(max.X, min.Y, 0));
+                    var c0 = eori.Multiply(in v0) + epos;
+                    var c1 = eori.Multiply(in v1) + epos;
+                    var c2 = eori.Multiply(in v2) + epos;
+                    var c3 = eori.Multiply(in v3) + epos;
+                    RenderSelectionLine(in c0, in c1, ColourBlue);
+                    RenderSelectionLine(in c1, in c2, ColourBlue);
+                    RenderSelectionLine(in c2, in c3, ColourBlue);
+                    RenderSelectionLine(in c3, in c0, ColourBlue);
+                    if (vgw.ShatterMap != null)
+                    {
+                        var width = vgw.ShatterMapWidth;
+                        var height = vgw.ShatterMap.Length;
+                        for (int y = 0; y < height; y++)
+                        {
+                            var smr = vgw.ShatterMap[y];
+                            for (int x = 0; x < width; x++)
+                            {
+                                var v = smr.GetValue(x);
+                                if (v < 0 || v > 255)
+                                    continue;
+                                var col = (uint)(new Color(v, v, v, 127).ToRgba());
+                                v0 = m.MultiplyW(new Vector3(x, y, 0));
+                                v1 = m.MultiplyW(new Vector3(x, y + 1, 0));
+                                v2 = m.MultiplyW(new Vector3(x + 1, y + 1, 0));
+                                v3 = m.MultiplyW(new Vector3(x + 1, y, 0));
+                                c0 = eori.Multiply(v0) + epos;
+                                c1 = eori.Multiply(v1) + epos;
+                                c2 = eori.Multiply(v2) + epos;
+                                c3 = eori.Multiply(v3) + epos;
+                                RenderSelectionQuad(c0, c1, c2, c3, col);//extra ouch
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        public bool RenderFragment(Archetype? arch, YmapEntityDef ent, FragType fragment, uint txdhash = 0, ClipMapEntry? animClip = null)
         {
 
-            RenderDrawable(f.Drawable, arch, ent, txdhash, null, null, animClip);
+            RenderDrawable(fragment.Drawable, arch, ent, txdhash, null, null, animClip);
 
-            if (f.DrawableCloth != null) //cloth
+            if (fragment.DrawableCloth is not null) //cloth
             {
-                RenderDrawable(f.DrawableCloth, arch, ent, txdhash, null, null, animClip);
+                RenderDrawable(fragment.DrawableCloth, arch, ent, txdhash, null, null, animClip);
             }
 
             //vehicle wheels...
-            if ((f.PhysicsLODGroup != null) && (f.PhysicsLODGroup.PhysicsLOD1 != null))
+            RenderWheels(arch, ent, fragment, txdhash, animClip);
+
+            bool isselected = SelectionFlagsTestAll || (fragment.Drawable == SelectedDrawable);
+            if (isselected && fragment.DrawableArray?.data_items is not null)
             {
-                var pl1 = f.PhysicsLODGroup.PhysicsLOD1;
-                //var groupnames = pl1?.GroupNames?.data_items;
-                var groups = pl1?.Groups?.data_items;
-
-                FragDrawable wheel_f = null;
-                FragDrawable wheel_r = null;
-
-                if (pl1.Children?.data_items != null)
+                foreach(var draw in fragment.DrawableArray.data_items)
                 {
-                    for (int i = 0; i < pl1.Children.data_items.Length; i++)
-                    {
-                        var pch = pl1.Children.data_items[i];
-
-                        //var groupname = pch.GroupNameHash;
-                        //if ((pl1.Groups?.data_items != null) && (i < pl1.Groups.data_items.Length))
-                        //{
-                        //    //var group = pl1.Groups.data_items[i];
-                        //}
-
-                        if ((pch.Drawable1 != null) && (pch.Drawable1.AllModels.Length != 0))
-                        {
-
-                            switch (pch.BoneTag)
-                            {
-                                case 27922: //wheel_lf
-                                case 26418: //wheel_rf
-                                    wheel_f = pch.Drawable1;
-                                    break;
-                                case 29921: //wheel_lm1
-                                case 29922: //wheel_lm2
-                                case 29923: //wheel_lm3
-                                case 27902: //wheel_lr
-                                case 5857:  //wheel_rm1
-                                case 5858:  //wheel_rm2
-                                case 5859:  //wheel_rm3
-                                case 26398: //wheel_rr
-                                    wheel_r = pch.Drawable1;
-                                    break;
-                                default:
-
-                                    RenderDrawable(pch.Drawable1, arch, ent, txdhash, null, null, animClip);
-
-                                    break;
-                            }
-
-                        }
-                        else
-                        { }
-                        if ((pch.Drawable2 != null) && (pch.Drawable2.AllModels.Length != 0))
-                        {
-                            RenderDrawable(pch.Drawable2, arch, ent, txdhash, null, null, animClip);
-                        }
-                        else
-                        { }
-                    }
-
-                    if ((wheel_f != null) || (wheel_r != null))
-                    {
-                        for (int i = 0; i < pl1.Children.data_items.Length; i++)
-                        {
-                            var pch = pl1.Children.data_items[i];
-                            FragDrawable dwbl = pch.Drawable1;
-                            FragDrawable dwblcopy = null;
-                            switch (pch.BoneTag)
-                            {
-                                case 27922: //wheel_lf
-                                case 26418: //wheel_rf
-                                    dwblcopy = wheel_f != null ? wheel_f : wheel_r;
-                                    break;
-                                case 29921: //wheel_lm1
-                                case 29922: //wheel_lm2
-                                case 29923: //wheel_lm3
-                                case 27902: //wheel_lr
-                                case 5857:  //wheel_rm1
-                                case 5858:  //wheel_rm2
-                                case 5859:  //wheel_rm3
-                                case 26398: //wheel_rr
-                                    dwblcopy = wheel_r != null ? wheel_r : wheel_f;
-                                    break;
-                                default:
-                                    break;
-                            }
-                            //switch (pch.GroupNameHash)
-                            //{
-                            //    case 3311608449: //wheel_lf
-                            //    case 1705452237: //wheel_lm1
-                            //    case 1415282742: //wheel_lm2
-                            //    case 3392433122: //wheel_lm3
-                            //    case 133671269:  //wheel_rf
-                            //    case 2908525601: //wheel_rm1
-                            //    case 2835549038: //wheel_rm2
-                            //    case 4148013026: //wheel_rm3
-                            //        dwblcopy = wheel_f != null ? wheel_f : wheel_r;
-                            //        break;
-                            //    case 1695736278: //wheel_lr
-                            //    case 1670111368: //wheel_rr
-                            //        dwblcopy = wheel_r != null ? wheel_r : wheel_f;
-                            //        break;
-                            //    default:
-                            //        break;
-                            //}
-
-                            if (dwblcopy != null)
-                            {
-                                if (dwbl != null)
-                                {
-                                    if ((dwbl != dwblcopy) && (dwbl.AllModels.Length == 0))
-                                    {
-                                        dwbl.Owner = dwblcopy;
-                                        dwbl.AllModels = dwblcopy.AllModels; //hopefully this is all that's need to render, otherwise drawable is actually getting edited!
-                                        //dwbl.DrawableModelsHigh = dwblcopy.DrawableModelsHigh;
-                                        //dwbl.DrawableModelsMedium = dwblcopy.DrawableModelsMedium;
-                                        //dwbl.DrawableModelsLow = dwblcopy.DrawableModelsLow;
-                                        //dwbl.DrawableModelsVeryLow = dwblcopy.DrawableModelsVeryLow;
-                                        //dwbl.VertexDecls = dwblcopy.VertexDecls;
-                                    }
-
-                                    RenderDrawable(dwbl, arch, ent, txdhash /*, null, null, animClip*/);
-
-                                }
-                                else
-                                { }
-                            }
-                            else
-                            { }
-                        }
-                    }
-
+                    RenderDrawable(draw, arch, ent, txdhash, null, null, animClip);
                 }
             }
 
-
-            bool isselected = SelectionFlagsTestAll || (f.Drawable == SelectedDrawable);
-            if (isselected)
-            {
-                var darr = f.DrawableArray?.data_items;
-                if (darr != null)
-                {
-                    for (int i = 0; i < darr.Length; i++)
-                    {
-                        RenderDrawable(darr[i], arch, ent, txdhash, null, null, animClip);
-                    }
-                }
-            }
-
-
-
-            if (renderfragwindows)
-            {
-                var colblu = (uint)(new Color(0, 0, 255, 255).ToRgba());
-                var colred = (uint)(new Color(255, 0, 0, 255).ToRgba());
-                var eori = Quaternion.Identity;
-                var epos = Vector3.Zero;
-                if (ent != null)
-                {
-                    eori = ent.Orientation;
-                    epos = ent.Position;
-                }
-
-                if (f.GlassWindows?.data_items != null)
-                {
-                    for (int i = 0; i < f.GlassWindows.data_items.Length; i++)
-                    {
-                        var gw = f.GlassWindows.data_items[i];
-                        var projt = gw.ProjectionRow1;//row0? or row3? maybe investigate more
-                        var proju = gw.ProjectionRow2;//row1 of XYZ>UV projection
-                        var projv = gw.ProjectionRow3;//row2 of XYZ>UV projection
-                        //var unk01 = new Vector2(gw.UnkFloat13, gw.UnkFloat14);//offset?
-                        //var unk02 = new Vector2(gw.UnkFloat15, gw.UnkFloat16);//scale? sum of this and above often gives integers eg 1, 6
-                        //var thick = gw.Thickness; //thickness of the glass
-                        //var unkuv = new Vector2(gw.UnkFloat18, gw.UnkFloat19); //another scale in UV space..?
-                        //var tangt = gw.Tangent;//direction of surface tangent
-                        //var bones = f.Drawable?.Skeleton?.Bones?.Items; //todo: use bones instead?
-                        var grp = gw.Group;
-                        var grplod = gw.GroupLOD;
-                        var xforms = grplod?.FragTransforms?.Matrices;
-                        var xoffs = Vector3.Zero;
-                        if ((grp != null) && (xforms != null) && (grp.ChildIndex < xforms.Length) && (grplod != null))
-                        {
-                            var xform = xforms[grp.ChildIndex];
-                            xoffs = xform.TranslationVector + grplod.PositionOffset;
-                        }
-                        var m = new Matrix();
-                        m.Row1 = new Vector4(projt, 0);
-                        m.Row2 = new Vector4(proju, 0);
-                        m.Row3 = new Vector4(projv, 0);
-                        m.Row4 = new Vector4(xoffs, 1);
-                        var v0 = m.Multiply(new Vector3(1, 0, 0));
-                        var v1 = m.Multiply(new Vector3(1, 0, 1));
-                        var v2 = m.Multiply(new Vector3(1, 1, 1));
-                        var v3 = m.Multiply(new Vector3(1, 1, 0));
-                        var c0 = eori.Multiply(v0) + epos;
-                        var c1 = eori.Multiply(v1) + epos;
-                        var c2 = eori.Multiply(v2) + epos;
-                        var c3 = eori.Multiply(v3) + epos;
-                        RenderSelectionLine(c0, c1, colblu);
-                        RenderSelectionLine(c1, c2, colblu);
-                        RenderSelectionLine(c2, c3, colblu);
-                        RenderSelectionLine(c3, c0, colblu);
-                        //RenderSelectionLine(c0, c0 + tangt, colred);
-                    }
-                }
-                if (f.VehicleGlassWindows?.Windows != null)
-                {
-                    for (int i = 0; i < f.VehicleGlassWindows.Windows.Length; i++)
-                    {
-                        var vgw = f.VehicleGlassWindows.Windows[i];
-                        //var grp = vgw.Group;
-                        //var grplod = vgw.GroupLOD;
-                        var m = vgw.Projection;
-                        m.M44 = 1.0f;
-                        m.Transpose();
-                        m.Invert();//ouch
-                        var min = (new Vector3(0, 0, 0));
-                        var max = (new Vector3(vgw.ShatterMapWidth, vgw.ItemDataCount, 1));
-                        var v0 = m.MultiplyW(new Vector3(min.X, min.Y, 0));
-                        var v1 = m.MultiplyW(new Vector3(min.X, max.Y, 0));
-                        var v2 = m.MultiplyW(new Vector3(max.X, max.Y, 0));
-                        var v3 = m.MultiplyW(new Vector3(max.X, min.Y, 0));
-                        var c0 = eori.Multiply(v0) + epos;
-                        var c1 = eori.Multiply(v1) + epos;
-                        var c2 = eori.Multiply(v2) + epos;
-                        var c3 = eori.Multiply(v3) + epos;
-                        RenderSelectionLine(c0, c1, colblu);
-                        RenderSelectionLine(c1, c2, colblu);
-                        RenderSelectionLine(c2, c3, colblu);
-                        RenderSelectionLine(c3, c0, colblu);
-                        if (vgw.ShatterMap != null)
-                        {
-                            var width = vgw.ShatterMapWidth;
-                            var height = vgw.ShatterMap.Length;
-                            for (int y = 0; y < height; y++)
-                            {
-                                var smr = vgw.ShatterMap[y];
-                                for (int x = 0; x < width; x++)
-                                {
-                                    var v = smr.GetValue(x);
-                                    if (v < 0 || v > 255)
-                                        continue;
-                                    var col = (uint)(new Color(v, v, v, 127).ToRgba());
-                                    v0 = m.MultiplyW(new Vector3(x, y, 0));
-                                    v1 = m.MultiplyW(new Vector3(x, y+1, 0));
-                                    v2 = m.MultiplyW(new Vector3(x+1, y+1, 0));
-                                    v3 = m.MultiplyW(new Vector3(x+1, y, 0));
-                                    c0 = eori.Multiply(v0) + epos;
-                                    c1 = eori.Multiply(v1) + epos;
-                                    c2 = eori.Multiply(v2) + epos;
-                                    c3 = eori.Multiply(v3) + epos;
-                                    RenderSelectionQuad(c0, c1, c2, c3, col);//extra ouch
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-
+            RenderFragmentWindows(arch, ent, fragment, txdhash, animClip);
 
             return true;
         }
 
-        public bool RenderArchetype(Archetype arche, YmapEntityDef entity, Renderable rndbl = null, bool cull = true, ClipMapEntry animClip = null)
+        public bool RenderArchetype(Archetype arche, YmapEntityDef entity, Renderable? rndbl = null, bool cull = true, ClipMapEntry? animClip = null)
         {
             //enqueue a single archetype for rendering.
 
-            if (arche == null) return false;
+            if (arche is null)
+                return false;
 
-            Vector3 entpos = (entity != null) ? entity.Position : Vector3.Zero;
+            Vector3 entpos = (entity is not null) ? entity.Position : Vector3.Zero;
             Vector3 camrel = entpos - camera.Position;
 
             Quaternion orientation = Quaternion.Identity;
             Vector3 scale = Vector3.One;
             Vector3 bscent = camrel;
-            if (entity != null)
+            if (entity is not null)
             {
                 orientation = entity.Orientation;
                 scale = entity.Scale;
@@ -3051,19 +3046,14 @@ namespace CodeWalker.Rendering
 
             if (boundsmode == BoundsShaderMode.Sphere)
             {
-                if ((bsrad < renderboundsmaxrad) && (dist < renderboundsmaxdist))
+                if (bsrad < renderboundsmaxrad && dist < renderboundsmaxdist)
                 {
-                    MapSphere ms = new MapSphere
-                    {
-                        CamRelPos = bscent,
-                        Radius = bsrad,
-                    };
-                    BoundingSpheres.Add(ms);
+                    BoundingSpheres.Add(new MapSphere(bscent, bsrad));
                 }
             }
             if (boundsmode == BoundsShaderMode.Box)
             {
-                if ((dist < renderboundsmaxdist))
+                if (dist < renderboundsmaxdist)
                 {
                     BoundingBoxes.Add(
                         new MapBox(
@@ -3077,16 +3067,13 @@ namespace CodeWalker.Rendering
                 }
             }
 
-
-
-            bool res = false;
-            if (rndbl == null)
+            if (rndbl is null)
             {
                 var drawable = gameFileCache.TryGetDrawable(arche);
                 rndbl = TryGetRenderable(arche, drawable);
             }
 
-            if (rndbl == null || !rndbl.IsLoaded)
+            if (rndbl is null || !rndbl.IsLoaded)
             {
                 return false;
             }
@@ -3099,14 +3086,14 @@ namespace CodeWalker.Rendering
             }
 
 
-            res = RenderRenderable(rndbl, arche, entity);
+            bool res = RenderRenderable(rndbl, arche, entity);
 
 
             //fragments have extra drawables! need to render those too... TODO: handle fragments properly...
             if (rndbl.Key is FragDrawable fd)
             {
                 var frag = fd.OwnerFragment;
-                if ((frag != null) && (frag.DrawableCloth != null)) //cloth...
+                if (frag is not null && frag.DrawableCloth != null) //cloth...
                 {
                     rndbl = TryGetRenderable(arche, frag.DrawableCloth);
                     if (rndbl != null && rndbl.IsLoaded)
@@ -3121,14 +3108,14 @@ namespace CodeWalker.Rendering
             return res;
         }
 
-        public bool RenderDrawable(DrawableBase drawable, Archetype arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary? txdExtra = null, Texture? diffOverride = null, ClipMapEntry? animClip = null, ClothInstance? cloth = null, Expression? expr = null)
+        public bool RenderDrawable(DrawableBase drawable, Archetype? arche, YmapEntityDef entity, uint txdHash = 0, TextureDictionary? txdExtra = null, Texture? diffOverride = null, ClipMapEntry? animClip = null, ClothInstance? cloth = null, Expression? expr = null)
         {
             //enqueue a single drawable for rendering.
 
             if (drawable is null)
                 return false;
 
-            Renderable rndbl = TryGetRenderable(arche, drawable, txdHash, txdExtra, diffOverride);
+            Renderable? rndbl = TryGetRenderable(arche, drawable, txdHash, txdExtra, diffOverride);
             if (rndbl is null || !rndbl.IsLoaded)
                 return false;
 
@@ -3176,11 +3163,10 @@ namespace CodeWalker.Rendering
             Vector3 bbmax = (arche != null) ? arche.BBMax : rndbl.Key.BoundingBoxMax;
             Vector3 bscen = (arche != null) ? arche.BSCenter : rndbl.Key.BoundingCenter;
             float radius = (arche != null) ? arche.BSRadius : rndbl.Key.BoundingSphereRadius;
-            float distance = 0;//(camrel + bscen).Length();
-            bool interiorent = false;
             bool castshadow = true;
 
-            if (entity != null)
+            float distance;
+            if (entity is not null)
             {
                 position = entity.Position;
                 scale = entity.Scale;
@@ -3191,8 +3177,7 @@ namespace CodeWalker.Rendering
                 bscen = entity.BSCenter;
                 camrel += position;
                 distance = entity.Distance;
-                castshadow = (entity.MloParent == null);//don't cast sun/moon shadows if this is an interior entity - optimisation!
-                interiorent = (entity.MloParent != null);
+                castshadow = (entity.MloParent is null);//don't cast sun/moon shadows if this is an interior entity - optimisation!
             }
             else
             {
@@ -3213,7 +3198,7 @@ namespace CodeWalker.Rendering
             {
                 rndbl.UpdateAnims(currentRealTime);
             }
-            if (rndbl.Cloth != null)
+            if (rndbl.Cloth is not null)
             {
                 rndbl.Cloth.Update(currentRealTime);
             }
@@ -3246,7 +3231,7 @@ namespace CodeWalker.Rendering
                 RenderSkeleton(rndbl, entity);
             }
 
-            if (renderlights && Shaders.deferred && (rndbl.Lights != null))
+            if (renderlights && Shaders.deferred && rndbl.Lights is not null)
             {
                 entity?.EnsureLights(rndbl.Key);
 
@@ -3286,7 +3271,7 @@ namespace CodeWalker.Rendering
 
 
             bool retval = true;// false;
-            if ((rndbl.AllTexturesLoaded || !waitforchildrentoload))
+            if (rndbl.AllTexturesLoaded || !waitforchildrentoload)
             {
                 RenderableGeometryInst rginst = new RenderableGeometryInst();
                 rginst.Inst.Renderable = rndbl;
@@ -3305,10 +3290,8 @@ namespace CodeWalker.Rendering
 
                 RenderableModel[] models = isselected ? rndbl.HDModels : rndbl.GetModels(distance);
 
-                for (int mi = 0; mi < models.Length; mi++)
+                foreach(var model in models)
                 {
-                    var model = models[mi];
-
                     if (isselected)
                     {
                         if (SelectionModelDrawFlags.ContainsKey(model.DrawableModel))
@@ -3322,9 +3305,8 @@ namespace CodeWalker.Rendering
                         continue;
                     } //filter out reflection proxy models...
 
-                    for (int gi = 0; gi < model.Geometries.Length; gi++)
+                    foreach(var geom in model.Geometries)
                     {
-                        var geom = model.Geometries[gi];
                         var dgeom = geom.DrawableGeom;
 
                         if (dgeom.UpdateRenderableParameters) //when edited by material editor
@@ -3361,21 +3343,18 @@ namespace CodeWalker.Rendering
             return retval;
         }
 
-
-
-
-        public void RenderCar(Vector3 pos, Quaternion ori, MetaHash modelHash, MetaHash modelSetHash, bool valign = false)
+        public void RenderCar(Vector3 pos, in Quaternion ori, MetaHash modelHash, MetaHash modelSetHash, bool valign = false)
         {
 
             uint carhash = modelHash;
-            if ((carhash == 0) && (modelSetHash != 0))
+            if (carhash == 0 && modelSetHash != 0)
             {
                 //find the pop group... and choose a vehicle..
                 var stypes = Scenarios.ScenarioTypes;
-                if (stypes != null)
+                if (stypes is not null)
                 {
                     var modelset = stypes.GetVehicleModelSet(modelSetHash);
-                    if ((modelset != null) && (modelset.Models != null) && (modelset.Models.Length > 0))
+                    if (modelset is not null && modelset.Models is not null && modelset.Models.Length > 0)
                     {
                         carhash = JenkHash.GenHash(modelset.Models[0].NameLower);
                     }
@@ -3383,8 +3362,8 @@ namespace CodeWalker.Rendering
             }
             if (carhash == 0) carhash = 418536135; //"infernus"
 
-            YftFile caryft = gameFileCache.GetYft(carhash);
-            if ((caryft != null) && (caryft.Loaded) && (caryft.Fragment != null))
+            YftFile? caryft = gameFileCache.GetYft(carhash);
+            if (caryft is not null && caryft.Loaded && caryft.Fragment is not null)
             {
                 if (valign)
                 {
@@ -3515,15 +3494,14 @@ namespace CodeWalker.Rendering
             {
                 RenderDrawable(drawable, null, ped.RenderEntity, 0, td, texture, ac, cloth, expr);
             }
-
-
         }
 
 
         public void RenderHideEntity(YmapEntityDef ent)
         {
-            var hash = ent?.EntityHash ?? 0;
-            if (hash == 0) return;
+            var hash = ent.EntityHash;
+            if (hash == 0)
+                return;
 
             HideEntities[hash] = ent;
         }
@@ -3601,7 +3579,7 @@ namespace CodeWalker.Rendering
 
 
 
-        private Renderable? TryGetRenderable(Archetype arche, DrawableBase drawable, uint txdHash = 0, TextureDictionary? txdExtra = null, Texture? diffOverride = null)
+        private Renderable? TryGetRenderable(Archetype? arche, DrawableBase drawable, uint txdHash = 0, TextureDictionary? txdExtra = null, Texture? diffOverride = null)
         {
             if (drawable is null)
                 return null;
@@ -3628,7 +3606,7 @@ namespace CodeWalker.Rendering
             if (rndbl is null)
                 return null;
 
-            if ((clipDict != 0) && (rndbl.ClipDict == null))
+            if (clipDict != 0 && rndbl.ClipDict is null)
             {
                 var ycd = gameFileCache.GetYcd(clipDict);
                 if (ycd is not null && ycd.Loaded)
@@ -3753,7 +3731,7 @@ namespace CodeWalker.Rendering
 
                 foreach (var geom in model.Geometries)
                 {
-                    if (geom.Textures != null)
+                    if (geom.HasTextures)
                     {
                         for (int i = 0; i < geom.Textures.Length; i++)
                         {
@@ -3863,7 +3841,7 @@ namespace CodeWalker.Rendering
                             RenderableTexture? rhdtex = null;
                             if (renderhdtextures)
                             {
-                                Texture hdtex = geom.TexturesHD[i];
+                                Texture? hdtex = geom.TexturesHD[i];
                                 if (hdtex is null)
                                 {
                                     //look for a replacement HD texture...
@@ -3919,6 +3897,7 @@ namespace CodeWalker.Rendering
         public readonly Archetype Archetype = archetype;
         public readonly YmapEntityDef Entity = entity;
     }
+
     public readonly struct RenderedBoundComposite(RenderableBoundComposite boundComp, YmapEntityDef entity)
     {
         public readonly RenderableBoundComposite BoundComp = boundComp;
@@ -4006,7 +3985,7 @@ namespace CodeWalker.Rendering
                     }
                     if (ymap.Parent != pymap)
                     {
-                        Console.WriteLine($"Connected ymap {ymap.Name} to parent {pymap.Name}");
+                        Console.WriteLine($"Connected ymap {ymap.Name} {ymap.FilePath} to parent {pymap.Name} {pymap.FilePath}");
                         ymap.ConnectToParent(pymap);
                     }
                 }
@@ -4025,8 +4004,11 @@ namespace CodeWalker.Rendering
             {
                 var ymap = CurrentYmaps[remYmap];
                 CurrentYmaps.Remove(remYmap);
+
+                Console.WriteLine($"Removing ymap {ymap.Name} {ymap.FilePath}");
+
                 var remEnts = ymap.LodManagerOldEntities ?? ymap.AllEntities;
-                if (remEnts != null)    // remove this ymap's entities from the tree.....
+                if (remEnts is not null)    // remove this ymap's entities from the tree.....
                 {
                     for (int i = 0; i < remEnts.Length; i++)
                     {
@@ -4063,11 +4045,14 @@ namespace CodeWalker.Rendering
                 }
                 if (ymap._CMapData.parent != 0 && ymap.Parent is null) //skip adding ymaps until parents are available
                 {
+                    // We have to make sure to re-add children when map get's reloaded (this breaks LOD's for project files otherwise)
+                    CurrentYmaps.Remove(key, out _);
                     continue;
                 }
                 if (CurrentYmaps.TryAdd(key, ymap))
                 {
-                    foreach(var ent in ymap.AllEntities)
+                    Console.WriteLine($"Adding ymap {ymap.Name} {ymap.FilePath}");
+                    foreach (var ent in ymap.AllEntities)
                     {
                         if (ent.Parent is not null)
                         {

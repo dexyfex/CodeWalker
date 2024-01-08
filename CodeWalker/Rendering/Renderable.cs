@@ -13,6 +13,7 @@ using SharpDX;
 using System.Threading;
 using System.Diagnostics;
 using Collections.Pooled;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeWalker.Rendering
 {
@@ -76,11 +77,11 @@ namespace CodeWalker.Rendering
         public YtdFile[]? HDtxds;
         public bool AllTexturesLoaded = false;
 
-        public RenderableModel[] HDModels = Array.Empty<RenderableModel>();
+        public RenderableModel[] HDModels = [];
         public RenderableModel[]? MedModels;
         public RenderableModel[]? LowModels;
         public RenderableModel[]? VlowModels;
-        public RenderableModel[] AllModels = Array.Empty<RenderableModel>();
+        public RenderableModel[] AllModels = [];
 
         public float LodDistanceHigh;
         public float LodDistanceMed;
@@ -96,9 +97,9 @@ namespace CodeWalker.Rendering
 
         public bool HasAnims = false;
         public double CurrentAnimTime = 0;
-        public YcdFile ClipDict;
-        public ClipMapEntry ClipMapEntry;
-        public Expression Expression;
+        public YcdFile? ClipDict;
+        public ClipMapEntry? ClipMapEntry;
+        public Expression? Expression;
         public Dictionary<ushort, RenderableModel>? ModelBoneLinks;
 
         public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
@@ -370,19 +371,19 @@ namespace CodeWalker.Rendering
         {
             if (distance > LodDistanceVLow)
             {
-                return Array.Empty<RenderableModel>();
+                return [];
             }
             else if (distance > LodDistanceLow)
             {
-                return VlowModels ?? Array.Empty<RenderableModel>();
+                return VlowModels ?? [];
             }
             else if (distance > LodDistanceMed)
             {
-                return LowModels ?? Array.Empty<RenderableModel>();
+                return LowModels ?? [];
             }
             else if (distance > LodDistanceHigh)
             {
-                return MedModels ?? Array.Empty<RenderableModel>();
+                return MedModels ?? [];
             }
             else
             {
@@ -434,7 +435,7 @@ namespace CodeWalker.Rendering
             LoadQueued = false;
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             return Key.ToString();
         }
@@ -442,48 +443,46 @@ namespace CodeWalker.Rendering
 
         public void ResetBoneTransforms()
         {
-            if (Skeleton == null) return;
+            if (Skeleton is null)
+                return;
             Skeleton.ResetBoneTransforms();
             UpdateBoneTransforms();
         }
         private void UpdateBoneTransforms()
         {
-            if (Skeleton?.Bones?.Items == null) return;
+            if (Skeleton?.Bones?.Items is null)
+                return;
 
             Skeleton.UpdateBoneTransforms();
 
             var bones = Skeleton.Bones?.Items;
             var bonetransforms = Skeleton.BoneTransforms;
+            if (AllModels is null || AllModels.Length == 0 || bones is null)
+                return;
 
-            var drawbl = Key;
-            if (AllModels == null) return;
-            for (int i = 0; i < AllModels.Length; i++)
+            foreach(var model in AllModels)
             {
-                var model = AllModels[i];
-                if (model?.Geometries == null) continue;
-                for (int g = 0; g < model.Geometries.Length; g++)
+                if (model?.Geometries is null)
+                    continue;
+
+                foreach(var geom in model.Geometries)
                 {
-                    var geom = model.Geometries[g];
                     var boneids = geom?.DrawableGeom?.BoneIds;
-                    if (boneids == null) continue;
+                    if (boneids is null)
+                        continue;
+
                     if (boneids.Length != bones.Length)
                     {
                         var idc = boneids.Length;
-                        if (geom.BoneTransforms == null)
-                        {
-                            geom.BoneTransforms = new Matrix3_s[idc];
-                        }
+                        geom.BoneTransforms ??= new Matrix3_s[idc];
+
                         for (int b = 0; b < idc; b++)
                         {
                             var id = boneids[b];
                             if (id < bonetransforms.Length)
                             {
                                 geom.BoneTransforms[b] = bonetransforms[id];
-                                if (id != b)
-                                { }
                             }
-                            else
-                            { }
                         }
                     }
                 }
@@ -500,12 +499,13 @@ namespace CodeWalker.Rendering
                 realTime = ClipMapEntry.PlayTime;
             }
 
-            if (CurrentAnimTime == realTime) return;//already updated this!
+            if (CurrentAnimTime == realTime)
+                return;//already updated this!
             CurrentAnimTime = realTime;
 
             EnableRootMotion = ClipMapEntry?.EnableRootMotion ?? false;
 
-            if (ClipMapEntry != null)
+            if (ClipMapEntry is not null)
             {
                 UpdateAnim(ClipMapEntry); //animate skeleton/models
             }
@@ -551,15 +551,7 @@ namespace CodeWalker.Rendering
         }
         private void UpdateAnim(Animation anim, float t)
         { 
-            if (anim is null)
-            {
-                return;
-            }
-            if (anim.BoneIds?.data_items is null)
-            {
-                return;
-            }
-            if (anim.Sequences?.data_items is null)
+            if (anim?.BoneIds?.data_items is null || anim.Sequences?.data_items is null)
             {
                 return;
             }
@@ -567,8 +559,6 @@ namespace CodeWalker.Rendering
             bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
 
             var frame = anim.GetFramePosition(t);
-
-            var dwbl = this.Key;
             var skel = Skeleton;
             var bones = skel?.BonesSorted;//.Bones?.Items;//
             if (bones is null)
@@ -585,19 +575,15 @@ namespace CodeWalker.Rendering
                 var boneid = boneiditem.BoneId;
                 var track = boneiditem.Track;
 
-                if (Expression?.BoneTracksDict != null)
+                if (Expression?.BoneTracksDict is not null)
                 {
-                    var exprbt = new ExpressionTrack() { BoneId = boneid, Track = track, Flags = boneiditem.Unk0 };
-                    var exprbtmap = exprbt;
-
-                    if ((track == 24) || (track == 25) || (track == 26))
+                    if (track == 24 || track == 25 || track == 26)
                     {
-                        if (Expression.BoneTracksDict.TryGetValue(exprbt, out exprbtmap))
+                        var exprbt = new ExpressionTrack() { BoneId = boneid, Track = track, Flags = boneiditem.Unk0 };
+                        if (Expression.BoneTracksDict.TryGetValue(exprbt, out var exprbtmap))
                         {
                             boneid = exprbtmap.BoneId;
                         }
-                        else
-                        { }
                     }
                 }
 
@@ -676,21 +662,20 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            for (int i = 0; i < bones.Length; i++)
+            foreach(var bone in bones)
             {
-                var bone = bones[i];
                 var tag = bone.Tag;
-                switch (bone.Tag)
+                tag = tag switch
                 {
-                    case 23639: tag = 58271; break; //RB_L_ThighRoll: SKEL_L_Thigh
-                    case 6442:  tag = 51826; break; //RB_R_ThighRoll: SKEL_R_Thigh
-                    //case 61007: tag = 61163; break; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
-                    //case 5232: tag = 45509; break; //RB_L_ArmRoll: SKEL_L_UpperArm
-                }
-                if ((tag != bone.Tag) && (tag != bone.Parent?.Tag))
+                    23639 => (ushort)58271,
+                    6442 => (ushort)51826,
+                    //61007 => 61163; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
+                    //5232 => 45509; //RB_L_ArmRoll: SKEL_L_UpperArm
+                    _ => tag,
+                };
+                if (tag != bone.Tag && tag != bone.Parent?.Tag)
                 {
-                    var obone = bone;
-                    if (skel.BonesMap.TryGetValue(tag, out obone))
+                    if (skel.BonesMap.TryGetValue(tag, out var obone))
                     {
                         bone.AnimRotation = obone.AnimRotation;
                     }
@@ -699,9 +684,8 @@ namespace CodeWalker.Rendering
 
             if (ModelBoneLinks is not null)
             {
-                for (int i = 0; i < bones.Length; i++)
+                foreach (var bone in bones)
                 {
-                    var bone = bones[i];
                     bone.UpdateAnimTransform();
                     bone.UpdateSkinTransform();
 
@@ -713,7 +697,6 @@ namespace CodeWalker.Rendering
                         continue;
 
                     bmodel.Transform = bone.AnimTransform;
-
                 }
             }
         }
@@ -871,11 +854,11 @@ namespace CodeWalker.Rendering
         public uint VertexDataSize { get; set; }
         public uint IndexDataSize { get; set; }
         public uint TotalDataSize { get; set; }
-        public TextureBase[] Textures;
-        public Texture[] TexturesHD;
-        public RenderableTexture?[]? RenderableTextures;
-        public RenderableTexture?[]? RenderableTexturesHD;
-        public ShaderParamNames[] TextureParamHashes;
+        public TextureBase[]? Textures;
+        public Texture?[]? TexturesHD { get; set; }
+        public RenderableTexture?[]? RenderableTextures { get; set; }
+        public RenderableTexture?[]? RenderableTexturesHD { get; set; }
+        public ShaderParamNames[]? TextureParamHashes { get; set; }
         public PrimitiveTopology Topology { get; set; }
         public bool IsFragment = false;
         public bool IsEmissive { get; set; } = false;
@@ -904,11 +887,14 @@ namespace CodeWalker.Rendering
         public float HeightOpacity { get; set; } = 0; //for terrainfoam
         public bool HDTextureEnable = true;
         public bool globalAnimUVEnable = false;
-        public ClipMapEntry ClipMapEntryUV = null;
+        public ClipMapEntry? ClipMapEntryUV = null;
         public bool isHair = false;
         public bool disableRendering = false;
 
-        public Matrix3_s[] BoneTransforms = null;
+        public Matrix3_s[]? BoneTransforms = null;
+
+        [MemberNotNullWhen(true, nameof(Textures), nameof(RenderableTextures), nameof(RenderableTexturesHD), nameof(TexturesHD), nameof(TextureParamHashes))]
+        public bool HasTextures => Textures is not null;
 
         public static ShaderParamNames[] GetTextureSamplerList()
         {
@@ -1128,8 +1114,6 @@ namespace CodeWalker.Rendering
                     RenderableTexturesHD = new RenderableTexture[texs.Count]; //these will get populated at render time.
                 }
             }
-
-
         }
 
         public void Load(Device device)

@@ -8,6 +8,18 @@ using CodeWalker.GameFiles;
 
 namespace CodeWalker
 {
+    public static class Matrices
+    {
+        public static Matrix FromVectors(in Vector4 row1, in Vector4 row2, in Vector4 row3, in Vector4 row4)
+        {
+            return new Matrix(
+                row1.X, row1.Y, row1.Z, row1.Z,
+                row2.X, row2.Y, row2.Z, row2.Z,
+                row3.X, row3.Y, row3.Z, row3.Z,
+                row4.X, row4.Y, row4.Z, row4.Z
+            );
+        }
+    }
     public static class Vectors
     {
         public static Vector3 XYZ(in this Vector4 v)

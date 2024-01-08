@@ -297,8 +297,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return string.Format("{0}, {1}, {2}",
-                    Start, Count, Offset);
+                return $"{Start}, {Count}, {Offset}";
             }
         }
 
@@ -399,7 +398,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return string.Format("{0} - Size: {1},  Pos: {2}", Type, Size, Position);
+                return $"{Type} - Size: {Size},  Pos: {Position}";
             }
         }
         public class WaterFlow : WaterItem

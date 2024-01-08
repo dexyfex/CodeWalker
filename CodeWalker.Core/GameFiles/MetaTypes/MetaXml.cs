@@ -1907,18 +1907,9 @@ namespace CodeWalker.GameFiles
 
     }
 
-    public class StringBuilderPooledObjectPolicyLogged : StringBuilderPooledObjectPolicy
-    {
-        public override bool Return(StringBuilder obj)
-        {
-            Console.WriteLine($"StringBuilder returned with capacity: {obj.Capacity} {obj.Length}");
-            return base.Return(obj);
-        }
-    }
-
     public class MetaXmlBase
     {
-        public static ObjectPool<StringBuilder> StringBuilderPool = ObjectPool.Create<StringBuilder>(new StringBuilderPooledObjectPolicyLogged { MaximumRetainedCapacity = 4 * 1024 * 1024, InitialCapacity = 1024 * 32 });
+        public static ObjectPool<StringBuilder> StringBuilderPool = ObjectPool.Create<StringBuilder>(new StringBuilderPooledObjectPolicy { MaximumRetainedCapacity = 4 * 1024 * 1024, InitialCapacity = 1024 * 32 });
         public const string XmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 

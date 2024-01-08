@@ -292,7 +292,7 @@ namespace CodeWalker
                             BoundsMaterialTypes.Init(FileCache);
 
                             UpdateStatus?.Invoke("Loading scenario types...");
-                            Scenarios.EnsureScenarioTypes(FileCache);
+                            await Scenarios.EnsureScenarioTypes(FileCache);
 
                             UpdateStatus?.Invoke("File cache loaded.");
                         }
@@ -2548,7 +2548,8 @@ namespace CodeWalker
                                 collectDrawable(drawable);
                                 collectTextures(drawable);
                             }
-                        } else if (entry.IsExtension(".ytd"))
+                        }
+                        else if (entry.IsExtension(".ytd"))
                         {
                             UpdateStatus?.Invoke(entry.Path);
                             YtdFile ytd = RpfFile.GetFile<YtdFile>(entry, fileData);
@@ -2605,7 +2606,7 @@ namespace CodeWalker
                 foreach (var tp in texparams)
                 {
                     //MetaXml.WriteCustomItemArray(sb, tp.Value.Textures, 3, "Texture");
-                    MetaXml.OpenTag(sb, 3, string.Format(otstr, ((ShaderParamNames)tp.Key).ToString(), "Texture"));
+                    MetaXml.OpenTag(sb, 3, $"Item name=\"{(ShaderParamNames)tp.Key}\"");
 
                     foreach(var texture in tp.Value.Textures)
                     {
@@ -2618,15 +2619,15 @@ namespace CodeWalker
                 {
                     var svp = s.GetSortedList(vp.Value);
                     var defval = svp.FirstOrDefault();
-                    MetaXml.SelfClosingTag(sb, 3, string.Format(otstr, ((ShaderParamNames)vp.Key).ToString(), "Vector") + " " + FloatUtil.GetVector4XmlString(defval));
+                    MetaXml.SelfClosingTag(sb, 3, $"Item name=\"{(ShaderParamNames)vp.Key}\" type=\"Vector\" {FloatUtil.GetVector4XmlString(in defval)}");
                 }
                 foreach (var ap in arrparams)
                 {
                     var defval = ap.Value.FirstOrDefault();
-                    MetaXml.OpenTag(sb, 3, string.Format(otstr, ((ShaderParamNames)ap.Key).ToString(), "Array"));
+                    MetaXml.OpenTag(sb, 3, $"Item name=\"{(ShaderParamNames)ap.Key}\" type=\"Array\"");
                     foreach (var vec in defval)
                     {
-                        MetaXml.SelfClosingTag(sb, 4, "Value " + FloatUtil.GetVector4XmlString(vec));
+                        MetaXml.SelfClosingTag(sb, 4, $"Value {FloatUtil.GetVector4XmlString(in vec)}");
                     }
                     MetaXml.CloseTag(sb, 3, "Item");
                 }
@@ -5248,7 +5249,15 @@ namespace CodeWalker
                     ImageIndex = 1; //FOLDER imageIndex
                     var ic = fld.GetItemCount();
                     fileSize = ic;
-                    fileSizeText = $"{ic} item{((ic != 1) ? "s" : "")}";
+                    if (ic != 1)
+                    {
+                        fileSizeText = $"{ic} items";
+                    }
+                    else
+                    {
+                        fileSizeText = $"{ic} item";
+                    }
+                    
                 }
             }
             else

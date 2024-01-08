@@ -1091,7 +1091,7 @@ namespace CodeWalker
             int ih = (int)fh;
             int im = v - (ih * 60);
             if (ih == 24) ih = 0;
-            TimeOfDayLabel.Text = string.Format("{0:00}:{1:00}", ih, im);
+            TimeOfDayLabel.Text = $"{ih:00}:{im:00}";
         }
 
 

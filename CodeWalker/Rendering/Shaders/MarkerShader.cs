@@ -76,7 +76,6 @@ namespace CodeWalker.Rendering
                 MinimumLod = 0,
                 MipLodBias = 0,
             });
-
         }
 
 

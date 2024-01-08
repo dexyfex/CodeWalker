@@ -13,6 +13,9 @@ using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.HighPerformance;
 using Collections.Pooled;
 using System.Threading;
+using System.Collections;
+using System.Globalization;
+using CodeWalker.Core.Utils.TypeConverters;
 
 namespace CodeWalker.GameFiles;
 
@@ -41,7 +44,7 @@ public class YmapFile : GameFile, PackedFile
     public YmapEntityDef[] RootEntities { get; set; } = [];
     public YmapEntityDef[] MloEntities { get; set; } = [];
 
-    private WeakReference<YmapFile> parent = new WeakReference<YmapFile>(null);
+    private WeakReference<YmapFile?> parent = new WeakReference<YmapFile?>(null);
 
     public YmapFile? Parent
     {
@@ -49,6 +52,12 @@ public class YmapFile : GameFile, PackedFile
         {
             if (!parent.TryGetTarget(out var target))
             {
+                return null;
+            }
+
+            if (target is not null && target.IsDisposed)
+            {
+                parent.SetTarget(null);
                 return null;
             }
 
@@ -296,9 +305,9 @@ public class YmapFile : GameFile, PackedFile
         {
 
             //build the entity hierarchy.
-            List<YmapEntityDef> roots = new List<YmapEntityDef>(instcount);
-            List<YmapEntityDef> alldefs = new List<YmapEntityDef>(instcount);
-            List<YmapEntityDef> mlodefs = null;
+            var roots = PooledListPool<YmapEntityDef>.Shared.Get();
+            var alldefs = PooledListPool<YmapEntityDef>.Shared.Get();
+            YmapEntityDef[]? mlodefs = null;
 
             if (CEntityDefs.Length > 0)
             {
@@ -310,7 +319,7 @@ public class YmapFile : GameFile, PackedFile
             }
             if (CMloInstanceDefs.Length > 0)
             {
-                mlodefs = new List<YmapEntityDef>(CMloInstanceDefs.Length);
+                mlodefs = new YmapEntityDef[CMloInstanceDefs.Length];
                 for (int i = 0; i < CMloInstanceDefs.Length; i++)
                 {
                     YmapEntityDef d = new YmapEntityDef(this, i, CMloInstanceDefs[i]);
@@ -320,29 +329,31 @@ public class YmapFile : GameFile, PackedFile
                         d.MloInstance.defaultEntitySets = defentsets;
                     }
                     alldefs.Add(d);
-                    mlodefs.Add(d);
+                    mlodefs[i] = d;
                 }
             }
 
+            var allEntities = alldefs.ToArray();
+            PooledListPool<YmapEntityDef>.Shared.Return(alldefs);
+            MloEntities = mlodefs ?? [];
+            AllEntities = allEntities;
 
-            for (int i = 0; i < alldefs.Count; i++)
+            foreach(var d in allEntities)
             {
-                YmapEntityDef d = alldefs[i];
                 int pind = d._CEntityDef.parentIndex;
                 bool isroot = false;
-                if ((pind < 0) || (pind >= alldefs.Count) || d.LodInParentYmap)
+                if (pind < 0 || pind >= allEntities.Length || d.LodInParentYmap)
                 {
                     isroot = true;
                 }
                 else
                 {
-                    YmapEntityDef p = alldefs[pind];
+                    YmapEntityDef p = allEntities[pind];
                     if ((p._CEntityDef.lodLevel <= d._CEntityDef.lodLevel) ||
                         ((p._CEntityDef.lodLevel == rage__eLodType.LODTYPES_DEPTH_ORPHANHD) &&
                          (d._CEntityDef.lodLevel != rage__eLodType.LODTYPES_DEPTH_ORPHANHD)))
                     {
                         isroot = true;
-                        p = null;
                     }
                 }
 
@@ -352,22 +363,24 @@ public class YmapFile : GameFile, PackedFile
                 }
                 else
                 {
-                    YmapEntityDef p = alldefs[pind];
+                    YmapEntityDef p = allEntities[pind];
                     p.AddChild(d);
                 }
             }
-            for (int i = 0; i < alldefs.Count; i++)
+
+            foreach(var d in allEntities)
             {
-                alldefs[i].ChildListToArray();
+                d.ChildListToArray();
             }
 
-            AllEntities = alldefs.ToArray();
+            
             RootEntities = roots.ToArray();
-            MloEntities = mlodefs?.ToArray() ?? Array.Empty<YmapEntityDef>();
 
-            foreach(var ent in AllEntities)
+            PooledListPool<YmapEntityDef>.Shared.Return(roots);
+
+            foreach(var ent in allEntities)
             {
-                ent.Extensions = MetaTypes.GetExtensions(Meta, in ent._CEntityDef.extensions) ?? Array.Empty<MetaWrapper>();
+                ent.Extensions = MetaTypes.GetExtensions(Meta, in ent._CEntityDef.extensions) ?? [];
             }
         }
 
@@ -963,7 +976,7 @@ public class YmapFile : GameFile, PackedFile
             if (pind >= 0) //connect root entities to parents if they have them..
             {
                     
-                if (pymap.AllEntities != null && pymap.AllEntities.Length > 0)
+                if (pymap.AllEntities is not null && pymap.AllEntities.Length > 0)
                 {
                     if (pind < pymap.AllEntities.Length)
                     {
@@ -1740,7 +1753,11 @@ public class YmapEntityDef
 
     public uint EntityHash { get; set; } = 0; //used by CW as a unique position+name identifier
 
-    public LinkedList<YmapEntityDef> LodManagerChildren { get; set; } = null;
+    [TypeConverter(typeof(LinkedListConverter<YmapEntityDef>))]
+    public LinkedList<YmapEntityDef>? LodManagerChildren { get; set; } = null;
+
+    public YmapEntityDef[]? LodManagerChildrenDisp => LodManagerChildren?.ToArray();
+
     public object LodManagerRenderable = null;
 
 
@@ -2079,7 +2096,8 @@ public class YmapEntityDef
 
     public void ChildListToArray()
     {
-        if (ChildList == null) return;
+        if (ChildList is null || ChildList.Count == 0)
+            return;
         //if (Children == null)
         //{
         Children = ChildList.ToArray();

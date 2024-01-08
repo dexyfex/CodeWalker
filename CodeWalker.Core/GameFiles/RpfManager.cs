@@ -64,13 +64,15 @@ namespace CodeWalker.GameFiles
             BaseRpfs = new List<RpfFile>(1300);
             ModRpfs = new List<RpfFile>(0);
             DlcRpfs = new List<RpfFile>(3500);
-            AllRpfs = new List<RpfFile>(5000);
+            AllRpfs ??= new List<RpfFile>(0);
             DlcNoModRpfs = new List<RpfFile>(3500);
             AllNoModRpfs = new List<RpfFile>(5000);
-            RpfDict = new Dictionary<string, RpfFile>(DefaultRpfDictCapacity, StringComparer.OrdinalIgnoreCase);
-            EntryDict = new Dictionary<string, RpfEntry>(DefaultEntryDictCapacity, StringComparer.OrdinalIgnoreCase);
+            RpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
+            EntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
             ModRpfDict = new Dictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
             ModEntryDict = new Dictionary<string, RpfEntry>(StringComparer.OrdinalIgnoreCase);
+
+            FileCounts _fileCounts = default;
 
             var rpfs = new ConcurrentBag<RpfFile>();
             Parallel.ForEach(allfiles, (rpfpath) =>
@@ -79,21 +81,27 @@ namespace CodeWalker.GameFiles
                 {
                     RpfFile rf = new RpfFile(rpfpath, rpfpath.Replace(replpath, ""));
 
-                    if (ExcludePaths != null)
+                    if (ExcludePaths is not null)
                     {
                         bool excl = false;
-                        for (int i = 0; i < ExcludePaths.Length; i++)
+                        foreach(var path in ExcludePaths)
                         {
-                            if (rf.Path.StartsWith(ExcludePaths[i], StringComparison.OrdinalIgnoreCase))
+                            if (rf.Path.StartsWith(path, StringComparison.OrdinalIgnoreCase))
                             {
                                 excl = true;
                                 break;
                             }
                         }
-                        if (excl) return; //skip files in exclude paths.
+                        if (excl)
+                            return; //skip files in exclude paths.
                     }
 
-                    rf.ScanStructure(updateStatus, errorLog, out _);
+                    rf.ScanStructure(updateStatus, errorLog, out var fileCounts);
+
+                    lock(this)
+                    {
+                        _fileCounts += fileCounts;
+                    }
 
                     if (rf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
                     {
@@ -115,13 +123,12 @@ namespace CodeWalker.GameFiles
                 return rpf.AllEntries?.Count ?? 0 + rpf.Children?.Sum(calculateSum) ?? 0;
             }
 
-            var minCapacity = rpfs.Sum(calculateSum);
-            if (minCapacity > AllRpfs.Capacity)
-            {
-                AllRpfs.Capacity = minCapacity;
-            }
+            AllRpfs.EnsureCapacity((int)_fileCounts.Rpfs);
+            RpfDict.EnsureCapacity((int)_fileCounts.Rpfs);
+            AllNoModRpfs.EnsureCapacity((int)_fileCounts.Rpfs);
+            EntryDict.EnsureCapacity((int)_fileCounts.Rpfs + (int)_fileCounts.Files);
 
-            foreach(var rpf in rpfs)
+            foreach (var rpf in rpfs)
             {
                 AddRpfFile(rpf, false, false);
             }
@@ -142,8 +149,7 @@ namespace CodeWalker.GameFiles
                 IsInited = true;
             }
 
-
-
+            Console.WriteLine($"fileCounts: {_fileCounts}");
             Console.WriteLine($"AllRpfs: {AllRpfs.Count}; RpfDict: {RpfDict.Count}; EntryDict: {EntryDict.Count}; BaseRpfs: {BaseRpfs.Count}; ModRpfs: {ModRpfs.Count}; DlcRpfs: {DlcRpfs.Count}; DlcNoModRpfs: {DlcNoModRpfs.Count}; AllNoModRpfs: {AllNoModRpfs.Count}; ModRpfDict: {ModRpfDict.Count}; ModEntryDict: {ModEntryDict.Count}");
         }
 
@@ -191,7 +197,7 @@ namespace CodeWalker.GameFiles
             isdlc = isdlc || (file.Name.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase) && (file.Name.StartsWith("dlc", StringComparison.OrdinalIgnoreCase) || file.Name.Equals("update.rpf", StringComparison.OrdinalIgnoreCase)));
             ismod = ismod || (file.Path.StartsWith("mods\\", StringComparison.OrdinalIgnoreCase));
 
-            if (file.AllEntries != null)
+            if (file.AllEntries is not null)
             {
                 AllRpfs.Add(file);
                 if (!ismod)
@@ -237,7 +243,7 @@ namespace CodeWalker.GameFiles
                             }
                             else
                             {
-                                EntryDict[entry.Path] = entry;
+                                _ = EntryDict.TryAdd(entry.Path, entry);
                             }
 
                         }
@@ -246,7 +252,7 @@ namespace CodeWalker.GameFiles
                     {
                         file.LastError = ex.ToString();
                         file.LastException = ex;
-                        ErrorLog?.Invoke(entry.Path + ": " + ex.ToString());
+                        ErrorLog?.Invoke($"{entry.Path}: {ex}");
                     }
                 }
             }

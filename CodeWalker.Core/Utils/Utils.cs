@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -21,8 +22,31 @@ namespace CodeWalker
 
     public static class TextUtil
     {
+        static string[] sizeSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
 
-        public static string GetBytesReadable(long i)
+        public static string GetBytesReadable(long size)
+        {
+            //shamelessly stolen from stackoverflow, and a bit mangled
+
+            // Returns the human-readable file size for an arbitrary, 64-bit file size 
+            // The default format is "0.### XB", e.g. "4.2 KB" or "1.434 GB"
+            // Get absolute value
+            Debug.Assert(sizeSuffixes.Length > 0);
+
+            if (size == 0)
+            {
+                return "0 B";
+            }
+
+            var absSize = Math.Abs(size);
+            var fpPower = Math.Log(absSize, 1024);
+            var intPower = (int)fpPower;
+            var normSize = absSize / Math.Pow(1024, intPower);
+
+            return $"{normSize:G4} {sizeSuffixes[intPower]}";
+        }
+
+        public static string GetBytesReadableOld(long i)
         {
             //shamelessly stolen from stackoverflow, and a bit mangled
 

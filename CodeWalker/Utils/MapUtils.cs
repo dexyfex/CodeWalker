@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using SharpDX;
 using SharpDX.Direct3D11;
 using CodeWalker.Utils;
+using CodeWalker.Core.Utils;
 
 namespace CodeWalker
 {
@@ -49,7 +50,7 @@ namespace CodeWalker
             }
             catch (Exception ex)
             {
-                errorAction("Could not load map icon " + Filepath + " for " + Name + "!\n\n" + ex.ToString());
+                errorAction($"Could not load map icon {Filepath} for {Name}!\n\n{ex}");
             }
         }
 
@@ -75,42 +76,48 @@ namespace CodeWalker
 
     public class MapMarker
     {
-        public MapIcon Icon { get; set; }
+        public MapIcon? Icon { get; set; }
         public Vector3 WorldPos { get; set; } //actual world pos
         public Vector3 CamRelPos { get; set; } //updated per frame
         public Vector3 ScreenPos { get; set; } //position on screen (updated per frame)
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         public List<string> Properties { get; set; } //additional data
         public bool IsMovable { get; set; }
         public float Distance { get; set; } //length of CamRelPos, updated per frame
 
-        public void Parse(string s)
+        public void Parse(ReadOnlySpan<char> s)
         {
             Vector3 p = new Vector3(0.0f);
-            string[] ss = s.Split(',');
-            if (ss.Length > 1)
+
+            var enumerator = s.EnumerateSplit(',');
+
+            if (!enumerator.MoveNext())
+                return;
+
+            FloatUtil.TryParse(enumerator.Current.Trim(), out p.X);
+
+            if (!enumerator.MoveNext())
+                return;
+            
+            FloatUtil.TryParse(enumerator.Current.Trim(), out p.Y);
+
+            if (enumerator.MoveNext())
             {
-                FloatUtil.TryParse(ss[0].Trim(), out p.X);
-                FloatUtil.TryParse(ss[1].Trim(), out p.Y);
+                FloatUtil.TryParse(enumerator.Current.Trim(), out p.Z);
             }
-            if (ss.Length > 2)
-            {
-                FloatUtil.TryParse(ss[2].Trim(), out p.Z);
-            }
-            if (ss.Length > 3)
-            {
-                Name = ss[3].Trim();
-            }
-            else
-            {
-                Name = string.Empty;
-            }
-            for (int i = 4; i < ss.Length; i++)
-            {
-                if (Properties == null) Properties = new List<string>();
-                Properties.Add(ss[i].Trim());
-            }
+
             WorldPos = p;
+
+            if (enumerator.MoveNext())
+            {
+                Name = enumerator.Current.Trim().ToString();
+            }
+
+            while(enumerator.MoveNext())
+            {
+                Properties ??= new List<string>();
+                Properties.Add(enumerator.Current.Trim().ToString());
+            }
         }
 
         public override string ToString()
@@ -118,12 +125,12 @@ namespace CodeWalker
             string cstr = Get3DWorldPosString();
             if (!string.IsNullOrEmpty(Name))
             {
-                cstr += ", " + Name;
-                if (Properties != null)
+                cstr += $", {Name}";
+                if (Properties is not null)
                 {
                     foreach (string prop in Properties)
                     {
-                        cstr += ", " + prop;
+                        cstr += $", {prop}";
                     }
                 }
             }
@@ -132,11 +139,11 @@ namespace CodeWalker
 
         public string Get2DWorldPosString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}", WorldPos.X, WorldPos.Y);
+            return string.Create(CultureInfo.InvariantCulture, $"{WorldPos.X}, {WorldPos.Y}");
         }
         public string Get3DWorldPosString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}, {2}", WorldPos.X, WorldPos.Y, WorldPos.Z);
+            return string.Create(CultureInfo.InvariantCulture, $"{WorldPos.X}, {WorldPos.Y}, {WorldPos.Z}");
         }
 
 

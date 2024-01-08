@@ -28,7 +28,6 @@ namespace CodeWalker.Rendering.Utils
             }
             else
             {
-                Console.WriteLine(folder);
                 return folder;
             }
         }

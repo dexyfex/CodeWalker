@@ -112,7 +112,9 @@ namespace CodeWalker.Tools
             string searchfolder = FileSearchFolderTextBox.Text;
             AbortOperation = false;
 
-            if (InProgress) return;
+            if (InProgress)
+                return;
+
             if (searchfolder.Length == 0)
             {
                 MessageBox.Show("Please select a folder...");
@@ -165,10 +167,10 @@ namespace CodeWalker.Tools
 
             InProgress = true;
 
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
 
-                FileSearchAddResult("Searching " + searchfolder + "...");
+                FileSearchAddResult($"Searching {searchfolder}...");
 
                 string[] filenames = Directory.GetFiles(searchfolder);
 
@@ -195,13 +197,13 @@ namespace CodeWalker.Tools
 
                         if (hitlen1 == bytelen)
                         {
-                            FileSearchAddResult(finf.Name + ":" + (i - bytelen));
+                            FileSearchAddResult($"{finf.Name}:{i - bytelen}");
                             matchcount++;
                             hitlen1 = 0;
                         }
                         if (hitlen2 == bytelen)
                         {
-                            FileSearchAddResult(finf.Name + ":" + (i - bytelen));
+                            FileSearchAddResult($"{finf.Name}:{i - bytelen}");
                             matchcount++;
                             hitlen2 = 0;
                         }
@@ -218,7 +220,7 @@ namespace CodeWalker.Tools
 
                 }
 
-                FileSearchAddResult(string.Format("Search complete. {0} results found.", matchcount));
+                FileSearchAddResult($"Search complete. {matchcount} results found.");
                 FileSearchComplete();
                 InProgress = false;
             });
@@ -479,7 +481,7 @@ namespace CodeWalker.Tools
                             { continue; }
                         }
 
-                        UpdateStatus(string.Format("{0} - Searching {1}/{2} : {3}", duration.ToString(@"hh\:mm\:ss"), curfile, totfiles, fentry.Path));
+                        UpdateStatus($"{duration:hh\\:mm\\:ss} - Searching {curfile}/{totfiles} : {fentry.Path}");
 
                         byte[] filebytes = fentry.File.ExtractFile(fentry);
                         if (filebytes == null) continue;
@@ -655,7 +657,7 @@ namespace CodeWalker.Tools
             {
                 if (entry is RpfDirectoryEntry rde)
                 {
-                    FileInfoLabel.Text = rde.Path + " (Directory)";
+                    FileInfoLabel.Text = $"{rde.Path} (Directory)";
                     DataTextBox.Text = "[Please select a data file]";
                 }
                 else
@@ -678,7 +680,7 @@ namespace CodeWalker.Tools
             byte[] data = rfe.File.ExtractFile(rfe);
 
             int datalen = (data != null) ? data.Length : 0;
-            FileInfoLabel.Text = rfe.Path + " (" + typestr + " file)  -  " + TextUtil.GetBytesReadable(datalen);
+            FileInfoLabel.Text = $"{rfe.Path} ({typestr} file)  -  {TextUtil.GetBytesReadable(datalen)}";
 
 
             if (ShowLargeFileContentsCheckBox.Checked || (datalen < 524287)) //512K

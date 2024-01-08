@@ -1,4 +1,5 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -96,7 +97,7 @@ namespace CodeWalker.World
             JenkIndex.Ensure(namel);
             nameHash = JenkHash.GenHash(namel);
 
-            List<TimecycleModValue> vals = new List<TimecycleModValue>();
+            var vals = PooledListPool<TimecycleModValue>.Shared.Get();
             foreach (XmlNode valnode in node.ChildNodes)
             {
                 if (!(valnode is XmlElement)) continue;
@@ -108,7 +109,7 @@ namespace CodeWalker.World
                 Dict[val.name] = val;
             }
             Values = vals.ToArray();
-
+            PooledListPool<TimecycleModValue>.Shared.Return(vals);
         }
 
         public override string ToString()

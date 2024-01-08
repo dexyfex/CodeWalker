@@ -292,6 +292,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
+    [SkipLocalsInit]
     public static class JenkIndex
     {
         //public static ConcurrentDictionary<uint, string> Index = new ConcurrentDictionary<uint, string>(Environment.ProcessorCount * 2, 2000000);
@@ -400,6 +401,7 @@ namespace CodeWalker.GameFiles
             }
             return res;
         }
+
         public static string TryGetString(uint hash)
         {
             string res;
@@ -417,8 +419,5 @@ namespace CodeWalker.GameFiles
             var res = Index.Values;
             return res;
         }
-
     }
-
-
 }

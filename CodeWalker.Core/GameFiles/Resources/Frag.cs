@@ -98,7 +98,7 @@ namespace CodeWalker.GameFiles
         public string Name { get; set; }
         public FragBoneTransforms BoneTransforms { get; set; }
         public ResourcePointerArray64<FragGlassWindow> GlassWindows { get; set; }
-        public FragPhysicsLODGroup PhysicsLODGroup { get; set; }
+        public FragPhysicsLODGroup? PhysicsLODGroup { get; set; }
         public FragDrawable DrawableCloth { get; set; }
         public FragVehicleGlassWindows VehicleGlassWindows { get; set; }
 
@@ -1995,10 +1995,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragPhysicsLODGroup : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         // structure data
         public uint VFT { get; set; } = 1080055472;
@@ -2010,9 +2007,9 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_28h; // 0x0000000000000000
 
         // reference data
-        public FragPhysicsLOD PhysicsLOD1 { get; set; }
-        public FragPhysicsLOD PhysicsLOD2 { get; set; }
-        public FragPhysicsLOD PhysicsLOD3 { get; set; }
+        public FragPhysicsLOD? PhysicsLOD1 { get; set; }
+        public FragPhysicsLOD? PhysicsLOD2 { get; set; }
+        public FragPhysicsLOD? PhysicsLOD3 { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -2167,8 +2164,8 @@ namespace CodeWalker.GameFiles
         public FragPhysArticulatedBodyType ArticulatedBodyType { get; set; }
         public float[] ChildrenUnkFloats { get; set; }
         public FragPhysGroupNamesBlock GroupNames { get; set; }
-        public ResourcePointerArray64<FragPhysTypeGroup> Groups { get; set; }
-        public ResourcePointerArray64<FragPhysTypeChild> Children { get; set; }
+        public ResourcePointerArray64<FragPhysTypeGroup>? Groups { get; set; }
+        public ResourcePointerArray64<FragPhysTypeChild>? Children { get; set; }
         public FragPhysArchetype Archetype1 { get; set; }
         public FragPhysArchetype Archetype2 { get; set; }
         public Bounds Bound { get; set; }

@@ -8,11 +8,14 @@ using CodeWalker.Core.Utils;
 using CodeWalker.GameFiles;
 using Collections.Pooled;
 using CommunityToolkit.HighPerformance;
+using Iced.Intel;
 using SharpDX;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -127,7 +130,7 @@ namespace CodeWalker.Benchmarks
             }
         }
 
-        [Params(10, 100, 1000)]
+        [Params(1000)]
         public int Length { get; set; } = 10000;
 
         [Params(100)]
@@ -147,9 +150,13 @@ namespace CodeWalker.Benchmarks
 
         private int randomValue;
 
-        private uint[] ushorts = new uint[0];
+        private byte[] bytes = new byte[16];
 
         private string Str = "iakslgbhfibnrihbderpiugaehigoI BIHGVUIVDSOUFVBOUADGBOIUYfgiuywetrg872q13rh9872`134tgyihsbaopuJGUIYODGBFIOUFgvbouailksdbhnfp";
+
+        private char[] chars1 = new char[0];
+
+        private Vector3 WorldPos;
 
         [GlobalSetup]
         public void Setup()
@@ -159,19 +166,39 @@ namespace CodeWalker.Benchmarks
             valueByte = 0;
             valueUint = 0;
 
-            ushorts = new uint[Length];
-
+            Str = "";
             for (int i = 0; i < Length; i++)
             {
-                ushorts[i] = (uint)random.Next(0, int.MaxValue);
+                if (random.Next(0, 10) <= 1)
+                {
+                    Str += random.Next('A', 'Z');
+                } else
+                {
+                    Str += random.Next('a', 'z');
+                }
             }
 
-            var hashes = MemoryMarshal.Cast<uint, MetaHash>(ushorts);
+            chars1 = Str.ToCharArray();
 
-            for (int i = 0; i < Length; i++)
-            {
-                Console.WriteLine($"{ushorts[i]} -> {hashes[i]}");
-            }
+
+                //float f0 = Flags0.Value / 255.0f;
+                //float f1 = Flags1.Value / 255.0f;
+                //float f2 = Flags2.Value / 255.0f;
+                //var c = new Color4(f0, f1, f2, 1.0f);
+
+            var c = new Color4(0.0f, 0.0f, 0.0f, 0.5f);
+
+            // Shortcut
+            Console.WriteLine(GetBytesReadable(1234));
+            Console.WriteLine(GetBytesReadableNew(1234));
+
+            Console.WriteLine(GetBytesReadable(100234));
+            Console.WriteLine(GetBytesReadableNew(100234));
+
+            Console.WriteLine(GetBytesReadable(long.MaxValue));
+            Console.WriteLine(GetBytesReadableNew(long.MaxValue));
+
+            WorldPos = new Vector3(random.NextFloat(float.MinValue, float.MaxValue), random.NextFloat(float.MinValue, float.MaxValue), random.NextFloat(float.MinValue, float.MaxValue));
 
             //Console.WriteLine("Setup done");
 
@@ -244,6 +271,234 @@ namespace CodeWalker.Benchmarks
         //{
         //    return Str.AsSpan().IndexOf('\0');
         //}
+
+        public static string GetBytesReadable(long i)
+        {
+            //shamelessly stolen from stackoverflow, and a bit mangled
+
+            // Returns the human-readable file size for an arbitrary, 64-bit file size 
+            // The default format is "0.### XB", e.g. "4.2 KB" or "1.434 GB"
+            // Get absolute value
+            long absolute_i = Math.Abs(i);
+            // Determine the suffix and readable value
+            string suffix;
+            double readable;
+            if (absolute_i >= 0x1000000000000000) // Exabyte
+            {
+                suffix = "EB";
+                readable = (i >> 50);
+            }
+            else if (absolute_i >= 0x4000000000000) // Petabyte
+            {
+                suffix = "PB";
+                readable = (i >> 40);
+            }
+            else if (absolute_i >= 0x10000000000) // Terabyte
+            {
+                suffix = "TB";
+                readable = (i >> 30);
+            }
+            else if (absolute_i >= 0x40000000) // Gigabyte
+            {
+                suffix = "GB";
+                readable = (i >> 20);
+            }
+            else if (absolute_i >= 0x100000) // Megabyte
+            {
+                suffix = "MB";
+                readable = (i >> 10);
+            }
+            else if (absolute_i >= 0x400) // Kilobyte
+            {
+                suffix = "KB";
+                readable = i;
+            }
+            else
+            {
+                return i.ToString("0 bytes"); // Byte
+            }
+            // Divide by 1024 to get fractional value
+            readable = (readable / 1024);
+
+            string fmt = "0.### ";
+            if (readable > 1000)
+            {
+                fmt = "0";
+            }
+            else if (readable > 100)
+            {
+                fmt = "0.#";
+            }
+            else if (readable > 10)
+            {
+                fmt = "0.##";
+            }
+
+            // Return formatted number with suffix
+            return $"{readable.ToString(fmt)}{suffix}";
+        }
+
+        static string[] sizeSuffixes = ["B", "KB", "MB", "GB", "TB", "PB", "EB"];
+
+        public static string GetBytesReadableNew(long size)
+        {
+            //shamelessly stolen from stackoverflow, and a bit mangled
+
+            // Returns the human-readable file size for an arbitrary, 64-bit file size 
+            // The default format is "0.### XB", e.g. "4.2 KB" or "1.434 GB"
+            // Get absolute value
+            Debug.Assert(sizeSuffixes.Length > 0);
+
+            if (size == 0)
+            {
+                return $"{0:0.#} {sizeSuffixes[0]}";
+            }
+
+            var absSize = Math.Abs(size);
+            var fpPower = Math.Log(absSize, 1024);
+            var intPower = (int)fpPower;
+            var normSize = absSize / Math.Pow(1024, intPower);
+
+            return $"{normSize:G4} {sizeSuffixes[intPower]}";
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static byte ToLower(char c)
+        {
+            return ToLower((byte)c);
+            //return (c >= 'A' && c <= 'Z') ? (byte)(c - 'A' + 'a') : (byte)c;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static byte ToLower(byte c)
+        {
+            return ('A' <= c && c <= 'Z') ? (byte)(c | 0x20) : c;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static byte ToLowerDirect(char c)
+        {
+            return (byte)(('A' <= c && c <= 'Z') ? (byte)(c | 0x20) : (byte)c);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static uint GenHashLower(ReadOnlySpan<char> data)
+        {
+            uint h = 0;
+            foreach (var b in data)
+            {
+                h += ToLower(b);
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
+
+            return h;
+        }
+
+        [SkipLocalsInit]
+        public static void WriteDataOneGo(Span<byte> data)
+        {
+            Unsafe.WriteUnaligned(ref data[0], new Int128(ulong.MaxValue, ulong.MaxValue));
+        }
+
+        [SkipLocalsInit]
+        public static void WriteData(Span<byte> data)
+        {
+            Unsafe.WriteUnaligned<ulong>(ref data[0], ulong.MaxValue);
+            Unsafe.WriteUnaligned<ulong>(ref data[8], ulong.MaxValue);
+        }
+
+        [SkipLocalsInit]
+        public static void WriteDataOld(Span<byte> data)
+        {
+            Unsafe.WriteUnaligned<ulong>(ref MemoryMarshal.GetReference(data[..8]), ulong.MaxValue);
+            Unsafe.WriteUnaligned<ulong>(ref MemoryMarshal.GetReference(data.Slice(8, 8)), ulong.MaxValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static uint GenHashLowerDirect(ReadOnlySpan<char> data)
+        {
+            uint h = 0;
+            foreach (var b in data)
+            {
+                h += ToLowerDirect(b);
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
+
+            return h;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static uint GenHashLowerVectorized(Span<char> data)
+        {
+            Ascii.ToLowerInPlace(data, out _);
+
+            uint h = 0;
+            for (int i = 0; i < data.Length; i++)
+            {
+                h += (byte)data[i];
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
+
+            return h;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static uint GenHashLowerVectorized(ReadOnlySpan<char> data)
+        {
+            Span<char> chars = stackalloc char[data.Length];
+
+            Ascii.ToLower(data, chars, out _);
+
+            uint h = 0;
+            foreach (var b in chars)
+            {
+                h += (byte)b;
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
+
+            return h;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SkipLocalsInit]
+        public static uint GenHashLower(string data)
+        {
+            uint h = 0;
+            foreach (var b in data)
+            {
+                h += ToLower(b);
+                h += h << 10;
+                h ^= h >> 6;
+            }
+            h += h << 3;
+            h ^= h >> 11;
+            h += h << 15;
+
+            return h;
+        }
 
         private PooledList<SimpleType3> getPooledListClass()
         {
@@ -343,22 +598,25 @@ namespace CodeWalker.Benchmarks
             }
         }
 
-
-
         [Benchmark]
-        public void ReverseEndianness()
+        [SkipLocalsInit]
+        public void WriteData()
         {
-            //BinaryPrimitives.ReverseEndianness(MemoryMarshal.Cast<float, uint>(ushorts), MemoryMarshal.Cast<float, uint>(ushorts));
+            WriteData(bytes);
         }
 
         [Benchmark]
-        public void SwapBytes()
+        [SkipLocalsInit]
+        public void WriteDataOld()
         {
-            var _ushorts = ushorts;
-            for (int i = 0; i < _ushorts.Length; i++)
-            {
-                _ushorts[i] = MetaTypes.SwapBytes(_ushorts[i]);
-            }
+            WriteDataOld(bytes);
+        }
+
+        [Benchmark]
+        [SkipLocalsInit]
+        public void WriteDataOneGo()
+        {
+            WriteDataOneGo(bytes);
         }
     }
 }

@@ -1931,64 +1931,71 @@ namespace CodeWalker.GameFiles
                 return null; //couldn't find the strings data section.
             }
 
-            using PooledList<string> strings = new PooledList<string>();
-            var currentblock = startblock;
-            int currentblockind = startblockind;
-            while (currentblock != null)
+            PooledList<string> strings = PooledListPool<string>.Shared.Get();
+            try
             {
-                //read strings from the block.
-                int startindex = 0;
-                int endindex = 0;
-                var data = currentblock.Data;
-                foreach(var span in data.AsSpan().EnumerateSplit((byte)0))
+                var currentblock = startblock;
+                int currentblockind = startblockind;
+                while (currentblock != null)
                 {
-                    if (!span.IsEmpty)
+                    //read strings from the block.
+                    int startindex = 0;
+                    int endindex = 0;
+                    var data = currentblock.Data;
+                    foreach (var span in data.AsSpan().EnumerateSplit((byte)0))
                     {
-                        string str = Encoding.ASCII.GetStringPooled(span);
-                        strings.Add(str);
+                        if (!span.IsEmpty)
+                        {
+                            string str = Encoding.ASCII.GetStringPooled(span);
+                            strings.Add(str);
+                        }
                     }
+                    //for (int b = 0; b < data.Length; b++)
+                    //{
+                    //    if (data[b] == 0)
+                    //    {
+                    //        startindex = endindex;
+                    //        endindex = b;
+                    //        if (endindex > startindex)
+                    //        {
+                    //            string str = Encoding.ASCII.GetString(data.AsSpan(startindex, endindex - startindex));
+                    //            strings.Add(str);
+                    //            endindex++; //start next string after the 0.
+                    //        }
+                    //    }
+                    //}
+                    //if (endindex != data.Length - 1)
+                    //{
+                    //    startindex = endindex;
+                    //    endindex = data.Length - 1;
+                    //    if (endindex > startindex)
+                    //    {
+                    //        string str = Encoding.ASCII.GetString(data.AsSpan(startindex, endindex - startindex));
+                    //        strings.Add(str);
+                    //        strings2.Add(str);
+                    //    }
+                    //}
+
+                    currentblockind++;
+                    if (currentblockind >= datablocks.Count)
+                        break; //last block, can't go any further
+
+                    currentblock = datablocks[currentblockind];
+                    if (currentblock.StructureNameHash != (MetaName)MetaTypeName.STRING)
+                        break; //not the right block type, can't go further
                 }
-                //for (int b = 0; b < data.Length; b++)
-                //{
-                //    if (data[b] == 0)
-                //    {
-                //        startindex = endindex;
-                //        endindex = b;
-                //        if (endindex > startindex)
-                //        {
-                //            string str = Encoding.ASCII.GetString(data.AsSpan(startindex, endindex - startindex));
-                //            strings.Add(str);
-                //            endindex++; //start next string after the 0.
-                //        }
-                //    }
-                //}
-                //if (endindex != data.Length - 1)
-                //{
-                //    startindex = endindex;
-                //    endindex = data.Length - 1;
-                //    if (endindex > startindex)
-                //    {
-                //        string str = Encoding.ASCII.GetString(data.AsSpan(startindex, endindex - startindex));
-                //        strings.Add(str);
-                //        strings2.Add(str);
-                //    }
-                //}
 
-                currentblockind++;
-                if (currentblockind >= datablocks.Count)
-                    break; //last block, can't go any further
 
-                currentblock = datablocks[currentblockind];
-                if (currentblock.StructureNameHash != (MetaName)MetaTypeName.STRING)
-                    break; //not the right block type, can't go further
+                if (strings.Count <= 0)
+                {
+                    return null; //don't return empty array...
+                }
+                return strings.ToArray();
             }
-
-
-            if (strings.Count <= 0)
+            finally
             {
-                return null; //don't return empty array...
+                PooledListPool<string>.Shared.Return(strings);
             }
-            return strings.ToArray();
         }
 
         [SkipLocalsInit]
@@ -4921,7 +4928,7 @@ namespace CodeWalker.GameFiles
         public void AddScenarioPoint(MCExtensionDefSpawnPoint p)
         {
             List<MCExtensionDefSpawnPoint> newpoints = new List<MCExtensionDefSpawnPoint>();
-            if (ScenarioPoints != null)
+            if (ScenarioPoints is not null)
             {
                 newpoints.AddRange(ScenarioPoints);
             }

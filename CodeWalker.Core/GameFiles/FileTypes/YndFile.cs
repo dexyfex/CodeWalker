@@ -1,5 +1,7 @@
-﻿using CodeWalker.World;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.World;
 using Collections.Pooled;
+using Microsoft.Extensions.ObjectPool;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -226,9 +228,7 @@ namespace CodeWalker.GameFiles
                     Nodes = new YndNode[nodes.Length];
                     for (int i = 0; i < nodes.Length; i++)
                     {
-                        var n = new YndNode();
-                        n.Init(this, nodes[i]);
-                        Nodes[i] = n;
+                        Nodes[i] = new YndNode(this, nodes[i]);
                     }
                 }
                 if (NodeDictionary.JunctionRefs is not null && NodeDictionary.Junctions is not null)
@@ -254,17 +254,17 @@ namespace CodeWalker.GameFiles
         public YndNode AddNode()
         {
             int cnt = Nodes?.Length ?? 0;
-            YndNode yn = new YndNode();
             Node n = new Node();
             n.AreaID = (ushort)AreaID;
             n.NodeID = (ushort)(Nodes?.Length ?? 0);
-            yn.Init(this, n);
+
+            YndNode yn = new YndNode(this, n);
 
             int ncnt = cnt + 1;
             YndNode[] nnodes = new YndNode[ncnt];
             for (int i = 0; i < cnt; i++)
             {
-                nnodes[i] = Nodes[i];
+                nnodes[i] = Nodes![i];
             }
             nnodes[cnt] = yn;
             Nodes = nnodes;
@@ -419,7 +419,7 @@ namespace CodeWalker.GameFiles
         {
             if (Nodes is null || Nodes.Length == 0)
             {
-                NodePositions = Array.Empty<Vector4>();
+                NodePositions = [];
                 return;
             }
             int cnt = Nodes.Length;
@@ -441,72 +441,69 @@ namespace CodeWalker.GameFiles
 
         private void UpdateLinkTriangleVertices()
         {
-            //build triangles for the path links display
-            int vc = 0;
-            if (Links != null)
+            if (Links is null || Nodes is null)
             {
-                vc = Links.Length * 6;
+                TriangleVerts = [];
+                return;
             }
 
-            using PooledList<EditorVertex> verts = new PooledList<EditorVertex>(vc);
-            //EditorVertex v0 = new EditorVertex();
-            //EditorVertex v1 = new EditorVertex();
-            //EditorVertex v2 = new EditorVertex();
-            //EditorVertex v3 = new EditorVertex();
-            if (Links is not null && Nodes is not null)
+            //build triangles for the path links display
+
+            PooledList<EditorVertex> verts = PooledListPool<EditorVertex>.Shared.Get();
+
+            var vectorZero = Vector3.Zero;
+
+            foreach (var node in Nodes)
             {
-                foreach (var node in Nodes)
+                if (node.Links is null)
                 {
-                    if (node.Links is null)
+                    continue;
+                }
+
+                foreach (var link in node.Links)
+                {
+                    ref var p0 = ref link.Node1.Position;
+                    ref var p1 = ref link.Node2.Position;
+                    var dir = link.GetDirection();
+                    var ax = Vectors.Cross(in dir, in Vector3.UnitZ);
+
+                    float lanestot = link.LaneCountForward + link.LaneCountBackward;
+                    //float backfrac = Math.Min(Math.Max(link.LaneCountBackward / lanestot, 0.1f), 0.9f);
+                    //float lanewidth = 7.0f;
+                    //float inner = totwidth*(backfrac-0.5f);
+                    //float outer = totwidth*0.5f;
+
+                    float lanewidth = link.GetLaneWidth();
+
+                    float inner = link.LaneOffset * lanewidth;// 0.0f;
+                    float outer = inner + lanewidth * link.LaneCountForward;
+
+                    float totwidth = lanestot * lanewidth;
+                    float halfwidth = totwidth * 0.5f;
+                    if (link.LaneCountBackward == 0)
                     {
-                        continue;
+                        inner -= halfwidth;
+                        outer -= halfwidth;
+                    }
+                    if (link.LaneCountForward == 0)
+                    {
+                        inner += halfwidth;
+                        outer += halfwidth;
                     }
 
-                    foreach (var link in node.Links)
-                    {
-                        var p0 = link.Node1?.Position ?? Vector3.Zero;
-                        var p1 = link.Node2?.Position ?? Vector3.Zero;
-                        var dir = link.GetDirection();
-                        var ax = Vector3.Cross(dir, Vector3.UnitZ);
+                    var c = link.GetColourUint();
 
-                        float lanestot = link.LaneCountForward + link.LaneCountBackward;
-                        //float backfrac = Math.Min(Math.Max(link.LaneCountBackward / lanestot, 0.1f), 0.9f);
-                        //float lanewidth = 7.0f;
-                        //float inner = totwidth*(backfrac-0.5f);
-                        //float outer = totwidth*0.5f;
+                    var v0 = new EditorVertex(p1 + ax * inner, c);
+                    var v1 = new EditorVertex(p0 + ax * inner, c);
+                    var v2 = new EditorVertex(p1 + ax * outer, c);
+                    var v3 = new EditorVertex(p0 + ax * outer, c);
 
-                        float lanewidth = link.GetLaneWidth();
-
-                        float inner = link.LaneOffset * lanewidth;// 0.0f;
-                        float outer = inner + lanewidth * link.LaneCountForward;
-
-                        float totwidth = lanestot * lanewidth;
-                        float halfwidth = totwidth * 0.5f;
-                        if (link.LaneCountBackward == 0)
-                        {
-                            inner -= halfwidth;
-                            outer -= halfwidth;
-                        }
-                        if (link.LaneCountForward == 0)
-                        {
-                            inner += halfwidth;
-                            outer += halfwidth;
-                        }
-
-                        var c = (uint)link.GetColour().ToRgba();
-
-                        var v0 = new EditorVertex(p1 + ax * inner, c);
-                        var v1 = new EditorVertex(p0 + ax * inner, c);
-                        var v2 = new EditorVertex(p1 + ax * outer, c);
-                        var v3 = new EditorVertex(p0 + ax * outer, c);
-
-                        verts.Add(v0);
-                        verts.Add(v1);
-                        verts.Add(v2);
-                        verts.Add(v2);
-                        verts.Add(v1);
-                        verts.Add(v3);
-                    }
+                    verts.Add(v0);
+                    verts.Add(v1);
+                    verts.Add(v2);
+                    verts.Add(v2);
+                    verts.Add(v1);
+                    verts.Add(v3);
                 }
             }
 
@@ -519,17 +516,19 @@ namespace CodeWalker.GameFiles
             {
                 TriangleVerts = [];
             }
+
+            PooledListPool<EditorVertex>.Shared.Return(verts);
         }
 
         private void UpdateJunctionTriangleVertices(YndNode[]? selectedNodes)
         {
-            if (selectedNodes is null)
+            if (selectedNodes is null || selectedNodes.Length == 0)
             {
                 return;
             }
 
             //build triangles for the junctions bytes display....
-            using PooledList<EditorVertex> verts = new PooledList<EditorVertex>();
+            PooledList<EditorVertex> verts = PooledListPool<EditorVertex>.Shared.Get();
             EditorVertex v0;
             EditorVertex v1;
             EditorVertex v2;
@@ -537,10 +536,9 @@ namespace CodeWalker.GameFiles
 
             foreach (var node in selectedNodes)
             {
-                if (node.Ynd != this)
+                if (node.Ynd != this || node.Junction is null)
                     continue;
-                if (node.Junction is null)
-                    continue;
+
                 var j = node.Junction;
                 var d = j.Heightmap;
                 if (d is null)
@@ -604,6 +602,8 @@ namespace CodeWalker.GameFiles
                     TriangleVerts = vertsarr;
                 }
             }
+
+            PooledListPool<EditorVertex>.Shared.Return(verts);
         }
 
 
@@ -725,7 +725,9 @@ namespace CodeWalker.GameFiles
         public ref Vector3 Position => ref _Position;
         public int LinkCount { get; set; }
         public int LinkCountUnk { get; set; }
-        public YndLink[]? Links { get; set; }
+
+        private YndLink[]? _links;
+        public YndLink[]? Links { get => _links; set => _links = value; }
 
         public ushort AreaID { get => _RawData.AreaID; set => _RawData.AreaID = value; }
         public ushort NodeID { get => _RawData.NodeID; set => _RawData.NodeID = value; }
@@ -737,7 +739,9 @@ namespace CodeWalker.GameFiles
         public FlagsByte Flags4 { get => _RawData.Flags4; set => _RawData.Flags4 = value; }
         public TextHash StreetName { get => _RawData.StreetName; set => _RawData.StreetName = value; }
 
-        public Color4 Colour { get; set; }
+        public Color4 Colour => new Color4(ColourRgba);
+
+        public uint ColourRgba { get; set; }
 
         public YndJunction Junction { get; set; }
         public bool HasJunction;
@@ -875,17 +879,16 @@ namespace CodeWalker.GameFiles
         public bool IsPedNode => IsSpecialTypeAPedNode(Special);// If Special is 10, 14 or 18 this is a ped node.
 
 
-        public void Init(YndFile ynd, Node node)
+        public YndNode(YndFile ynd, Node node)
         {
             Ynd = ynd;
-            RawData = node;
+            _RawData = node;
             Position = new Vector3(node.PositionX / 4.0f, node.PositionY / 4.0f, node.PositionZ / 32.0f);
 
             LinkCount = node.LinkCountFlags.Value >> 3;
             LinkCountUnk = node.LinkCountFlags.Value & 7;
 
-            Colour = GetColour();
-
+            ColourRgba = (uint)GetColour().ToRgba();
         }
 
         public Color4 GetColour()
@@ -995,13 +998,10 @@ namespace CodeWalker.GameFiles
 
         public YndLink AddLink(YndNode? tonode = null, bool bidirectional = true)
         {
-            if (Links == null)
-            {
-                Links = Array.Empty<YndLink>();
-            }
+            Links ??= [];
 
             var existing = Links.FirstOrDefault(el => el.Node2 == tonode);
-            if (existing != null)
+            if (existing is not null)
             {
                 return existing;
             }
@@ -1026,15 +1026,10 @@ namespace CodeWalker.GameFiles
             }
             l.UpdateLength();
 
-            int cnt = Links?.Length ?? 0;
+            int cnt = Links.Length;
             int ncnt = cnt + 1;
-            YndLink[] nlinks = new YndLink[ncnt];
-            for (int i = 0; i < cnt; i++)
-            {
-                nlinks[i] = Links[i];
-            }
-            nlinks[cnt] = l;
-            Links = nlinks;
+            Array.Resize(ref _links, ncnt);
+            _links[cnt] = l;
             LinkCount = ncnt;
 
             if (bidirectional)
@@ -1168,15 +1163,15 @@ namespace CodeWalker.GameFiles
 
             if (AreaID != expectedArea?.ID)
             {
-                var nodeYnd = space.NodeGrid.GetCell(AreaID).Ynd;
                 var newYnd = expectedArea?.Ynd;
                 if (newYnd is null)
                 {
                     SetPosition(oldPosition);
-                    affectedFiles = Array.Empty<YndFile>();
+                    affectedFiles = [];
                     return;
                 }
 
+                var nodeYnd = space.NodeGrid.GetCell(AreaID)?.Ynd;
                 if ((nodeYnd is null) ||
                     nodeYnd.RemoveYndNode(space, this, false, out var affectedFilesFromDelete))
                 {
@@ -1207,10 +1202,7 @@ namespace CodeWalker.GameFiles
 
         public void GenerateYndNodeJunctionHeightMap(Space space)
         {
-            if (Junction == null)
-            {
-                Junction = new YndJunction();
-            }
+            Junction ??= new YndJunction();
 
             var junc = Junction;
             var maxZ = junc.MaxZ / 32f;
@@ -1279,7 +1271,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class YndLink
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class YndLink
     {
         public YndFile Ynd { get; set; }
         public YndNode Node1 { get; set; }
@@ -1296,11 +1289,11 @@ namespace CodeWalker.GameFiles
         }
 
         public NodeLink _RawData;
-        public NodeLink RawData { get { return _RawData; } set { _RawData = value; } }
-        public FlagsByte Flags0 { get { return _RawData.Flags0; } set { _RawData.Flags0 = value; } }
-        public FlagsByte Flags1 { get { return _RawData.Flags1; } set { _RawData.Flags1 = value; } }
-        public FlagsByte Flags2 { get { return _RawData.Flags2; } set { _RawData.Flags2 = value; } }
-        public FlagsByte LinkLength { get { return _RawData.LinkLength; } set { _RawData.LinkLength = value; } }
+        public NodeLink RawData { get => _RawData; set => _RawData = value; }
+        public FlagsByte Flags0 { get => _RawData.Flags0; set => _RawData.Flags0 = value; }
+        public FlagsByte Flags1 { get => _RawData.Flags1; set => _RawData.Flags1 = value; }
+        public FlagsByte Flags2 { get => _RawData.Flags2; set => _RawData.Flags2 = value; }
+        public FlagsByte LinkLength { get => _RawData.LinkLength; set => _RawData.LinkLength = value; }
 
         public int LaneCountForward
         {
@@ -1333,15 +1326,18 @@ namespace CodeWalker.GameFiles
             set => Flags2 = value ? (byte)(Flags2 | 2) : (byte)(Flags2 &~ 2);
         }
 
+        public YndLink()
+        {
+            
+        }
 
-        public void Init(YndFile ynd, YndNode node1, YndNode node2, NodeLink link)
+        public YndLink(YndFile ynd, YndNode node1, YndNode node2, NodeLink link)
         {
             Ynd = ynd;
             Node1 = node1;
             Node2 = node2;
-            RawData = link;
+            _RawData = link;
         }
-
 
         public void UpdateLength()
         {
@@ -1398,6 +1394,54 @@ namespace CodeWalker.GameFiles
             Node2?.CheckIfJunction();
         }
 
+        public uint GetColourUint()
+        {
+            if (Shortcut)
+            {
+                // new Color4(0.0f, 0.2f, 0.2f, 0.5f);
+                return 2134061824;
+            }
+
+            var node1 = Node1;
+            var node2 = Node2;
+
+            if (node1.IsDisabledUnk0
+                || node1.IsDisabledUnk1
+                || node2.IsDisabledUnk0
+                || node2.IsDisabledUnk1)
+            {
+                if (node1.OffRoad || node2.OffRoad)
+                {
+                    return 2130772741;
+                }
+
+                return 2130706437;
+            }
+
+            if (node1.IsPedNode || node2.IsPedNode)
+            {
+                return 2130716211;
+            }
+
+            if (node1.OffRoad || node2.OffRoad)
+            {
+                return 2131371825;
+            }
+
+            if (DontUseForNavigation)
+            {
+                return 2134048819;
+            }
+
+            if (LaneCountForward == 0)
+            {
+                return 2130706559;
+            }
+
+
+            return 2130719488;
+        }
+
         public Color4 GetColour()
         {
             //float f0 = Flags0.Value / 255.0f;
@@ -1414,29 +1458,33 @@ namespace CodeWalker.GameFiles
                 return c;
             }
 
-            if (Node1.IsDisabledUnk0 
-                || Node1.IsDisabledUnk1 
-                || Node2.IsDisabledUnk0 
-                || Node2.IsDisabledUnk1)
+            var node1 = Node1;
+            var node2 = Node2;
+
+            if (node1.IsDisabledUnk0 
+                || node1.IsDisabledUnk1 
+                || node2.IsDisabledUnk0 
+                || node2.IsDisabledUnk1)
             {
-                if (Node1.OffRoad || Node2.OffRoad)
+                c.Red = 0.02f;
+
+                if (node1.OffRoad || node2.OffRoad)
                 {
-                    c.Red = 0.0196f;
                     c.Green = 0.0156f;
                     c.Blue = 0.0043f;
                 }
-                c.Red = 0.02f;
+
                 return c;
             }
 
-            if (Node1.IsPedNode || Node2.IsPedNode)
+            if (node1.IsPedNode || node2.IsPedNode)
             {
                 c.Red = 0.2f;
                 c.Green = 0.15f;
                 return c;
             }
 
-            if (Node1.OffRoad || Node2.OffRoad)
+            if (node1.OffRoad || node2.OffRoad)
             {
                 c.Red = 0.196f;
                 c.Green = 0.156f;
@@ -1706,7 +1754,7 @@ namespace CodeWalker.GameFiles
             Sphere.Radius = (Box.Maximum - Box.Minimum).Length() * 0.5f;
         }
 
-
+        private static ObjectPool<PooledList<BasePathNode>> basePathNodeListPool => PooledListPool<BasePathNode>.Shared;
         public void Build()
         {
             if (Nodes == null || Nodes.Length == 0 || Nodes.Length <= Threshold || Depth >= MaxDepth)
@@ -1715,9 +1763,9 @@ namespace CodeWalker.GameFiles
             Vector3 avgsum = Vector3.Zero;
             foreach (var node in Nodes)
             {
-                avgsum += node.Position;
+                Vector3.Add(ref node.Position, ref avgsum, out avgsum);
             }
-            Vector3 avg = avgsum * Nodes.Length;
+            Vector3 avg = avgsum / Nodes.Length;
 
             int countx = 0, county = 0, countz = 0;
             foreach (var node in Nodes)
@@ -1735,14 +1783,16 @@ namespace CodeWalker.GameFiles
             int dy = Math.Abs(target - county);
             int dz = Math.Abs(target - countz);
 
-            int axis = -1;
+            int axis;
             if ((dx <= dy) && (dx <= dz)) axis = 0; //x seems best
             else if (dy <= dz) axis = 1; //y seems best
             else axis = 2; //z seems best
 
 
-            using PooledList<BasePathNode> l1 = new PooledList<BasePathNode>(Nodes.Length);
-            using PooledList<BasePathNode> l2 = new PooledList<BasePathNode>(Nodes.Length);
+            PooledList<BasePathNode> l1 = PooledListPool<BasePathNode>.Shared.Get();
+            PooledList<BasePathNode> l2 = PooledListPool<BasePathNode>.Shared.Get();
+            l1.Clear();
+            l2.Clear();
             foreach (var node in Nodes)
             {
                 var s = axis switch
@@ -1759,13 +1809,19 @@ namespace CodeWalker.GameFiles
 
             var cdepth = Depth + 1;
 
+            var nodesL1 = l1.ToArray();
+            PooledListPool<BasePathNode>.Shared.Return(l1);
+            var nodesL2 = l2.ToArray();
+            PooledListPool<BasePathNode>.Shared.Return(l2);
+
             Node1 = new PathBVHNode
             {
                 Depth = cdepth,
                 MaxDepth = MaxDepth,
                 Threshold = Threshold,
-                Nodes = l1.ToArray(),
+                Nodes = nodesL1,
             };
+
             Node1.CalcBounds();
             Node1.Build();
 
@@ -1774,7 +1830,7 @@ namespace CodeWalker.GameFiles
                 Depth = cdepth,
                 MaxDepth = MaxDepth,
                 Threshold = Threshold,
-                Nodes = l2.ToArray(),
+                Nodes = nodesL2,
             };
             Node2.CalcBounds();
             Node2.Build();

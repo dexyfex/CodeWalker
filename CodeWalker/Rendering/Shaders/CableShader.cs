@@ -106,11 +106,8 @@ namespace CodeWalker.Rendering
             PSSceneVars = new GpuVarsBuffer<CableShaderPSSceneVars>(device);
             PSGeomVars = new GpuVarsBuffer<CableShaderPSGeomVars>(device);
 
-
             //supported layout - requires Position, Normal, Colour, Texcoord
             layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.Default)));
-
-
 
             texsampler = new SamplerState(device, new SamplerStateDescription()
             {

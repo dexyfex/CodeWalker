@@ -40,6 +40,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CodeWalker.GameFiles
 {
+    [SkipLocalsInit]
     public class GTACrypto
     {
 
@@ -232,8 +233,8 @@ namespace CodeWalker.GameFiles
                 table[15][data[15]] ^
                 key[3];
 
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data[..8]), x1 | (ulong)x2 << 32);
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(8, 8)), x3 | (ulong)x4 << 32);
+            Unsafe.WriteUnaligned(ref data[0], x1 | (ulong)x2 << 32);
+            Unsafe.WriteUnaligned(ref data[8], x3 | (ulong)x4 << 32);
 
             //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data[..4]), x1);
             //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(4, 4)), x2);
@@ -271,8 +272,8 @@ namespace CodeWalker.GameFiles
                 table[12][data[12]] ^
                 key[3];
 
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data[..8]), x1 | (ulong)x2 << 32);
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(8, 8)), x3 | (ulong)x4 << 32);
+            Unsafe.WriteUnaligned(ref data[0], x1 | (ulong)x2 << 32);
+            Unsafe.WriteUnaligned(ref data[8], x3 | (ulong)x4 << 32);
 
             //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data[..4]), x1);
             //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(4, 4)), x2);

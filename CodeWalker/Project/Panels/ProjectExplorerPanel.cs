@@ -615,16 +615,16 @@ namespace CodeWalker.Project.Panels
 
 
 
-            if ((ynd.Nodes != null) && (ynd.Nodes.Length > 0))
+            if (ynd.Nodes is not null && ynd.Nodes.Length > 0)
             {
-                var nodesnode = node.Nodes.Add("Nodes (" + ynd.Nodes.Length.ToString() + ")");
+                var nodesnode = node.Nodes.Add($"Nodes ({ynd.Nodes.Length})");
                 nodesnode.Name = "Nodes";
                 nodesnode.Tag = ynd;
                 var nodes = ynd.Nodes;
                 for (int i = 0; i < nodes.Length; i++)
                 {
                     var ynode = nodes[i];
-                    var nnode = ynode.RawData;
+                    var nnode = ynode._RawData;
                     var tnode = nodesnode.Nodes.Add(nnode.ToString());
                     tnode.Tag = ynode;
                 }
@@ -2315,7 +2315,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindYmapTreeNode(ymap);
             if (tn != null)
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 tn.Text = ymap.RpfFileEntry?.Name ?? ymap.Name;
             }
         }
@@ -2357,7 +2357,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindYnvTreeNode(ynv);
             if (tn != null)
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 tn.Text = ynv.RpfFileEntry?.Name ?? ynv.Name;
             }
         }
@@ -2366,7 +2366,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindTrainTrackTreeNode(track);
             if (tn != null)
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 tn.Text = track.RpfFileEntry?.Name ?? track.Name;
             }
         }
@@ -2375,7 +2375,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindScenarioTreeNode(scenarios);
             if (tn != null)
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 tn.Text = scenarios.RpfFileEntry?.Name ?? scenarios.Name;
             }
         }
@@ -2384,7 +2384,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindAudioRelTreeNode(rel);
             if (tn != null)
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 tn.Text = rel.RpfFileEntry?.Name ?? rel.Name;
             }
         }
@@ -2393,7 +2393,7 @@ namespace CodeWalker.Project.Panels
             var tn = FindArchetypeTreeNode(archetype);
             if (tn != null)
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 tn.Text = archetype._BaseArchetypeDef.ToString();
             }
         }

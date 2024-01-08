@@ -1171,7 +1171,7 @@ namespace CodeWalker.GameFiles
                             }
                             catch (Exception ex)
                             {
-                                UpdateStatus?.Invoke("Error! " + ex.ToString());
+                                UpdateStatus?.Invoke($"Error! {ex}");
                                 errorfiles.Add(entry);
                             }
                             if (xmltest && (ybn != null) && (ybn.Bounds != null))
@@ -1179,18 +1179,16 @@ namespace CodeWalker.GameFiles
                                 var xml = YbnXml.GetXml(ybn);
                                 var ybn2 = XmlYbn.GetYbn(xml);
                                 var xml2 = YbnXml.GetXml(ybn2);
-                                if (xml.Length != xml2.Length)
-                                { }
                             }
                             if (savetest && (ybn != null) && (ybn.Bounds != null))
                             {
                                 if (entry is not RpfFileEntry fentry)
-                                { continue; } //shouldn't happen
+                                    continue; //shouldn't happen
 
                                 var bytes = ybn.Save();
 
                                 if (!reloadtest)
-                                { continue; }
+                                    continue;
 
                                 string origlen = TextUtil.GetBytesReadable(fentry.FileSize);
                                 string bytelen = TextUtil.GetBytesReadable(bytes.Length);
@@ -1200,9 +1198,9 @@ namespace CodeWalker.GameFiles
                                 RpfFile.LoadResourceFile(ybn2, bytes, 43);
 
                                 if (ybn2.Bounds == null)
-                                { continue; }
+                                    continue;
                                 if (ybn2.Bounds.Type != ybn.Bounds.Type)
-                                { continue; }
+                                    continue;
 
                                 //quick check of roundtrip
                                 switch (ybn2.Bounds.Type)
@@ -1211,30 +1209,30 @@ namespace CodeWalker.GameFiles
                                         {
                                             var a = ybn.Bounds as BoundSphere;
                                             if (ybn2.Bounds is not BoundSphere b)
-                                            { continue; }
+                                                continue;
                                             break;
                                         }
                                     case BoundsType.Capsule:
                                         {
                                             var a = ybn.Bounds as BoundCapsule;
                                             if (ybn2.Bounds is not BoundCapsule b)
-                                            { continue; }
+                                                continue;
                                             break;
                                         }
                                     case BoundsType.Box:
                                         {
                                             var a = ybn.Bounds as BoundBox;
                                             if (ybn2.Bounds is not BoundBox b)
-                                            { continue; }
+                                                continue;
                                             break;
                                         }
                                     case BoundsType.Geometry:
                                         {
                                             var a = ybn.Bounds as BoundGeometry;
                                             if (ybn2.Bounds is not BoundGeometry b)
-                                            { continue; }
+                                                continue;
                                             if (a.Polygons?.Length != b.Polygons?.Length)
-                                            { continue; }
+                                                continue;
                                             for (int i = 0; i < a.Polygons.Length; i++)
                                             {
                                                 var pa = a.Polygons[i];
@@ -1248,17 +1246,15 @@ namespace CodeWalker.GameFiles
                                         {
                                             var a = ybn.Bounds as BoundBVH;
                                             if (ybn2.Bounds is not BoundBVH b)
-                                            { continue; }
+                                                continue;
                                             if (a.BVH?.Nodes?.data_items?.Length != b.BVH?.Nodes?.data_items?.Length)
                                             { }
                                             if (a.Polygons?.Length != b.Polygons?.Length)
-                                            { continue; }
+                                                continue;
                                             for (int i = 0; i < a.Polygons.Length; i++)
                                             {
                                                 var pa = a.Polygons[i];
                                                 var pb = b.Polygons[i];
-                                                if (pa.Type != pb.Type)
-                                                { }
                                             }
                                             break;
                                         }
@@ -1275,7 +1271,7 @@ namespace CodeWalker.GameFiles
                                         {
                                             var a = ybn.Bounds as BoundDisc;
                                             if (ybn2.Bounds is not BoundDisc b)
-                                            { continue; }
+                                                continue;
                                             break;
                                         }
                                     case BoundsType.Cylinder:

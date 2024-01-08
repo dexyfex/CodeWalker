@@ -884,7 +884,8 @@ namespace CodeWalker.Project
             }
 
 
-            if (Bounds != sel.CollisionBounds) wf.SelectObject(Bounds);
+            if (Bounds != sel.CollisionBounds)
+                wf.SelectObject(Bounds);
             wf.SetWidgetPosition(p);
 
             UpdateGraphics(wf);

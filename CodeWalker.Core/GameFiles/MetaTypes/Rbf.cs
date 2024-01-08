@@ -450,7 +450,6 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class RbfStructure : IRbfType, IDisposable
     {
-        private static ObjectPool<PooledList<IRbfType>> listPool = ObjectPool.Create(new DefaultPooledObjectPolicy<PooledList<IRbfType>>());
         public string Name { get; set; }
 
         public PooledList<IRbfType>? Children { get; set; }
@@ -519,13 +518,13 @@ namespace CodeWalker.GameFiles
 
         internal void AddChild(IRbfType value)
         {
-            Children ??= listPool.Get();
+            Children ??= PooledListPool<IRbfType>.Shared.Get();
             Children.Add(value);
         }
 
         internal void AddAttribute(IRbfType value)
         {
-            Attributes ??= listPool.Get();
+            Attributes ??= PooledListPool<IRbfType>.Shared.Get();
             Attributes.Add(value);
         }
 
@@ -546,11 +545,11 @@ namespace CodeWalker.GameFiles
         {
             if (Children is PooledList<IRbfType> children)
             {
-                listPool.Return(children);
+                PooledListPool<IRbfType>.Shared.Return(children);
             }
             if (Attributes is PooledList<IRbfType> attributes)
             {
-                listPool.Return(attributes);
+                PooledListPool<IRbfType>.Shared.Return(attributes);
             }
 
             GC.SuppressFinalize(this);

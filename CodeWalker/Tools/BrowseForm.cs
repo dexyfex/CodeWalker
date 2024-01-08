@@ -1097,7 +1097,7 @@ namespace CodeWalker.Tools
                             { continue; }
                         }
 
-                        UpdateStatus(string.Format("{0} - Searching {1}/{2} : {3}", duration.ToString(@"hh\:mm\:ss"), curfile, totfiles, fentry.Path));
+                        UpdateStatus($"{duration:hh\\:mm\\:ss} - Searching {curfile}/{totfiles} : {fentry.Path}");
 
                         byte[] filebytes = fentry.File.ExtractFile(fentry);
                         if (filebytes == null) continue;

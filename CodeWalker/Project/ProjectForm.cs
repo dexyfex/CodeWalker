@@ -34,7 +34,7 @@ namespace CodeWalker.Project
         public RpfManager RpfMan { get; private set; }
 
 
-        public bool IsProjectLoaded => CurrentProjectFile != null;
+        public bool IsProjectLoaded => CurrentProjectFile is not null;
         public ProjectFile? CurrentProjectFile;
 
         private MapSelection[]? CurrentMulti;
@@ -99,17 +99,17 @@ namespace CodeWalker.Project
 
         public readonly object ProjectSyncRoot = new object();
 
-        private Dictionary<string, YbnFile> visibleybns = new Dictionary<string, YbnFile>(StringComparer.OrdinalIgnoreCase);
-        private Dictionary<int, YndFile> visibleynds = new Dictionary<int, YndFile>();
-        private Dictionary<int, YnvFile> visibleynvs = new Dictionary<int, YnvFile>();
-        private Dictionary<string, TrainTrack> visibletrains = new Dictionary<string, TrainTrack>(StringComparer.OrdinalIgnoreCase);
-        private Dictionary<string, YmtFile> visiblescenarios = new Dictionary<string, YmtFile>(StringComparer.OrdinalIgnoreCase);
-        private Dictionary<uint, YmapEntityDef> visiblemloentities = new Dictionary<uint, YmapEntityDef>();
-        private Dictionary<uint, RelFile> visibleaudiofiles = new Dictionary<uint, RelFile>();
+        private readonly Dictionary<string, YbnFile> visibleybns = new Dictionary<string, YbnFile>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<int, YndFile> visibleynds = new Dictionary<int, YndFile>();
+        private readonly Dictionary<int, YnvFile> visibleynvs = new Dictionary<int, YnvFile>();
+        private readonly Dictionary<string, TrainTrack> visibletrains = new Dictionary<string, TrainTrack>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, YmtFile> visiblescenarios = new Dictionary<string, YmtFile>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<uint, YmapEntityDef> visiblemloentities = new Dictionary<uint, YmapEntityDef>();
+        private readonly Dictionary<uint, RelFile> visibleaudiofiles = new Dictionary<uint, RelFile>();
 
-        private Dictionary<uint, YbnFile> projectybns = new Dictionary<uint, YbnFile>();//used for handling interior ybns
+        private readonly Dictionary<uint, YbnFile> projectybns = new Dictionary<uint, YbnFile>();//used for handling interior ybns
 
-        private List<YmapEntityDef> interiorslist = new List<YmapEntityDef>(); //used for handling interiors ybns
+        private readonly List<YmapEntityDef> interiorslist = new List<YmapEntityDef>(); //used for handling interiors ybns
 
         private bool ShowProjectItemInProcess = false;
 
@@ -120,7 +120,7 @@ namespace CodeWalker.Project
 
             InitializeComponent();
 
-            SetTheme(Settings.Default.ProjectWindowTheme, false);
+            _ = SetTheme(Settings.Default.ProjectWindowTheme, false);
             ShowDefaultPanels();
 
             if (!GameFileCache.IsInited)
@@ -264,15 +264,23 @@ namespace CodeWalker.Project
             return null;
         }
 
-        public void ShowDefaultPanels()
+        public async void ShowDefaultPanels()
         {
-            ShowProjectExplorer();
-            ShowWelcomePanel();
+            try
+            {
+                await ShowProjectExplorer();
+                await ShowWelcomePanel();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
-        public void ShowProjectExplorer()
+        public async ValueTask ShowProjectExplorer()
         {
-            if ((ProjectExplorer == null) || (ProjectExplorer.IsDisposed) || (ProjectExplorer.Disposing))
+            await this.SwitchToUiContext();
+            if (ProjectExplorer is null || ProjectExplorer.IsDisposed || ProjectExplorer.Disposing)
             {
                 ProjectExplorer = new ProjectExplorerPanel(this);
                 ProjectExplorer.OnItemSelected += ProjectExplorer_OnItemSelected;
@@ -285,8 +293,9 @@ namespace CodeWalker.Project
                 ProjectExplorer.Show();
             }
         }
-        public void ShowWelcomePanel()
+        public async ValueTask ShowWelcomePanel()
         {
+            await this.SwitchToUiContext();
             ShowPreviewPanel(() => new WelcomePanel());
         }
         public void ShowPreviewPanel<T>(Func<T> createFunc, Action<T>? updateAction = null) where T : ProjectPanel
@@ -7498,7 +7507,7 @@ namespace CodeWalker.Project
             var curybn = bounds?.GetRootYbn();
             var eray = mray;
 
-            if (hidegtavmap && (curybn != null))
+            if (hidegtavmap && (curybn is not null))
             {
                 curHit.Clear();
             }
@@ -7506,7 +7515,7 @@ namespace CodeWalker.Project
 
             lock (ProjectSyncRoot)
             {
-                if (renderitems && (CurrentProjectFile != null))
+                if (renderitems && CurrentProjectFile is not null)
                 {
                     for (int i = 0; i < CurrentProjectFile.YbnFiles.Count; i++)
                     {
@@ -8707,8 +8716,6 @@ namespace CodeWalker.Project
             await ymap.LoadAsync(data);
 
             ymap.InitYmapEntityArchetypes(GameFileCache); //this needs to be done after calling YmapFile.Load()
-
-            GameFileCache?.AddProjectFile(ymap);
         }
         private async Task LoadYtypFromFileAsync(YtypFile ytyp, string filename)
         {

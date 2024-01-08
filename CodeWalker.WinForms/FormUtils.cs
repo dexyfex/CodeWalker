@@ -503,7 +503,7 @@ namespace CodeWalker
             action?.Invoke(args);
         }
 
-        public static SwitchToUiAwaitable SwitchToUi(this Form form)
+        public static SwitchToUiAwaitable SwitchToUiContext(this Form form)
         {
             return new SwitchToUiAwaitable(form);
         }

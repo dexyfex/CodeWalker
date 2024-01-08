@@ -162,7 +162,7 @@ namespace CodeWalker.World
             LastUpdate.Restart();
             try
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 ArchetypeSearchStatusLabel.Text = text;
             }
             catch(Exception ex)
@@ -175,7 +175,7 @@ namespace CodeWalker.World
         {
             try
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 if (ArchetypeResults.Contains(arch))
                     return;
                 ArchetypeResults.Add(arch);
@@ -191,7 +191,7 @@ namespace CodeWalker.World
         {
             try
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 ArchetypeSearchTextBox.Enabled = true;
                 ArchetypeSearchButton.Enabled = true;
                 ArchetypeSearchAbortButton.Enabled = false;
@@ -416,7 +416,7 @@ namespace CodeWalker.World
             LastUpdate.Restart();
             try
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 EntitySearchStatusLabel.Text = text;
             }
             catch (Exception ex)
@@ -429,7 +429,7 @@ namespace CodeWalker.World
         {
             try
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 if (EntityResults.Contains(ent))
                     return;
                 EntityResults.Add(ent);
@@ -445,7 +445,7 @@ namespace CodeWalker.World
         {
             try
             {
-                await this.SwitchToUi();
+                await this.SwitchToUiContext();
                 EntitySearchTextBox.Enabled = true;
                 EntitySearchButton.Enabled = true;
                 EntitySearchAbortButton.Enabled = false;
