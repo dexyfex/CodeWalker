@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using WeifenLuo.WinFormsUI.Docking;
 using Point = System.Drawing.Point;
 
@@ -240,34 +243,52 @@ namespace CodeWalker
         {
             if (Environment.OSVersion.Version.Major >= 6)
             {
-                var ofd = new OpenFileDialog();
-                ofd.Filter = "Folders|\n";
-                ofd.AddExtension = false;
-                ofd.CheckFileExists = false;
+                var ofd = new OpenFolderDialog();
+                //ofd.Filter = "Folders|\n";
+                //ofd.AddExtension = false;
+                //ofd.CheckFileExists = false;
                 ofd.DereferenceLinks = true;
                 ofd.Multiselect = false;
                 ofd.InitialDirectory = fbd.SelectedPath;
 
-                int result = 0;
-                var ns = "System.Windows.Forms";
-                var asmb = Assembly.GetAssembly(typeof(OpenFileDialog));
-                var dialogint = GetType(asmb, ns, "FileDialogNative.IFileDialog");
-                var dialog = Call(typeof(OpenFileDialog), ofd, "CreateVistaDialog");
-                Call(typeof(OpenFileDialog), ofd, "OnBeforeVistaDialog", dialog);
-                var options = Convert.ToUInt32(Call(typeof(FileDialog), ofd, "GetOptions"));
-                options |= Convert.ToUInt32(GetEnumValue(asmb, ns, "FileDialogNative.FOS", "FOS_PICKFOLDERS"));
-                Call(dialogint, dialog, "SetOptions", options);
-                var pfde = New(asmb, ns, "FileDialog.VistaDialogEvents", ofd);
-                var parameters = new object[] { pfde, (uint)0 };
-                Call(dialogint, dialog, "Advise", parameters);
-                var adviseres = Convert.ToUInt32(parameters[1]);
-                try { result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner)); }
-                finally { Call(dialogint, dialog, "Unadvise", adviseres); }
-                GC.KeepAlive(pfde);
+                ofd.ValidateNames = true;
 
-                fbd.SelectedPath = ofd.FileName;
+                var result = ofd.ShowDialog() ?? false;
 
-                return (result == 0) ? DialogResult.OK : DialogResult.Cancel;
+                //int result = 0;
+                //var ns = "MS.Internal.AppModel";
+                //var asmb = Assembly.Load("System.Windows.Forms.Primitives");
+                ////var asmb = Assembly.LoadWithPartialName("PresentationFramework");
+                //var dialogint = asmb.GetType("Interop+Shell32+IFileDialog");
+                ////var dialogint = GetType(asmb, ns, "IFileDialog");
+                //var dialog = Call(typeof(OpenFileDialog), ofd, "CreateVistaDialog");
+                //Call(typeof(OpenFileDialog), ofd, "OnBeforeVistaDialog", dialog);
+                //var options = Convert.ToUInt32(Call(typeof(FileDialog), ofd, "GetOptions"));
+
+                //var enumValue = GetEnumValue("System.Windows.Forms.Primitives", "Interop+Shell32+FOS", "PICKFOLDERS");
+                //options |= Convert.ToUInt32(enumValue);
+
+                //Call(dialogint, dialog, "SetOptions", options);
+                //dynamic pfde = New("System.Windows.Forms", "System.Windows.Forms.FileDialog+VistaDialogEvents", ofd);
+                //var parameters = new object[] { pfde, (uint)0 };
+                //Call(dialogint, dialog, "Advise", parameters);
+                //var adviseres = Convert.ToUInt32(parameters[1]);
+                //try {
+                //    result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner));
+                //}
+                //finally {
+                //    //pfde.Dispose();
+                //    Call(dialogint, dialog, "Unadvise", adviseres);
+                //}
+                //GC.KeepAlive(pfde);
+
+                
+
+                fbd.SelectedPath = ofd.FolderName;
+
+                //return (result == 0) ? DialogResult.OK : DialogResult.Cancel;
+
+                return result ? DialogResult.OK : DialogResult.Cancel;
             }
             else
             {
@@ -290,18 +311,50 @@ namespace CodeWalker
             }
             return type;
         }
+
         private static object Call(Type type, object obj, string func, params object[] parameters)
         {
             var mi = type.GetMethod(func, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            if (mi == null) return null;
-            return mi.Invoke(obj, parameters);
+            if (mi == null)
+                return null;
+            try
+            {
+                return mi.Invoke(obj, parameters);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Exception occured while invoking method {type} {func}");
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
         }
+
+        private static object GetEnumValue(string assemblyName, string typeName, string name)
+        {
+            var type = Type.GetType($"{typeName}, {assemblyName}");
+            var fieldInfo = type.GetField(name);
+            return fieldInfo.GetValue(null);
+        }
+
         private static object GetEnumValue(Assembly asmb, string ns, string typeName, string name)
         {
             var type = GetType(asmb, ns, typeName);
             var fieldInfo = type.GetField(name);
             return fieldInfo.GetValue(null);
         }
+
+        private static object New(string assemblyName, string typeName, params object[] parameters)
+        {
+            var type = Type.GetType($"{typeName}, {assemblyName}");
+            var ctorInfos = type.GetConstructors();
+            foreach (ConstructorInfo ci in ctorInfos)
+            {
+                try { return ci.Invoke(parameters); }
+                catch { }
+            }
+            return null;
+        }
+
         private static object New(Assembly asmb, string ns, string name, params object[] parameters)
         {
             var type = GetType(asmb, ns, name);
@@ -425,6 +478,55 @@ namespace CodeWalker
 
     }
 
+
+    public static class InvokeExtensions
+    {
+        public static void InvokeIfRequired(this Form form, System.Windows.Forms.MethodInvoker method)
+        {
+            if (form.InvokeRequired)
+            {
+                form.Invoke(method);
+                return;
+            }
+
+            method?.Invoke();
+        }
+
+        public static void InvokeIfRequired(this Form form, Action<object[]> action, params object[] args)
+        {
+            if (form.InvokeRequired)
+            {
+                form.Invoke(action, args);
+                return;
+            }
+
+            action?.Invoke(args);
+        }
+
+        public static SwitchToUiAwaitable SwitchToUiContext(this Form form)
+        {
+            return new SwitchToUiAwaitable(form);
+        }
+
+        public readonly struct SwitchToUiAwaitable(Form form) : INotifyCompletion
+        {
+            public SwitchToUiAwaitable GetAwaiter()
+            {
+                return this;
+            }
+
+            public void GetResult()
+            {
+            }
+
+            public bool IsCompleted => !form.InvokeRequired;
+
+            public void OnCompleted(Action continuation)
+            {
+                form.BeginInvoke(continuation);
+            }
+        }
+    }
 
 
     //unused

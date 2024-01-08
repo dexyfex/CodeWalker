@@ -1,4 +1,6 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
+using Collections.Pooled;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -18,21 +20,18 @@ namespace CodeWalker.World
         {
             return NodePositions;
         }
-        public EditorVertex[] GetPathVertices()
-        {
-            return null;
-        }
         public EditorVertex[] GetTriangleVertices()
         {
             return TriangleVerts;
         }
 
-        public Vector4[] NodePositions;
-        public EditorVertex[] TriangleVerts;
+        public Vector4[] NodePositions = [];
+        public EditorVertex[] TriangleVerts = [];
 
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
         {
+            using var _ = new DisposableTimer("Watermaps Init");
             Inited = false;
 
             GameFileCache = gameFileCache;
@@ -61,8 +60,8 @@ namespace CodeWalker.World
         public void BuildVertices()
         {
 
-            var vlist = new List<EditorVertex>();
-            var nlist = new List<Vector4>();
+            using var vlist = new PooledList<EditorVertex>();
+            using var nlist = new PooledList<Vector4>();
 
             foreach (var wmf in WatermapFiles)
             {
@@ -73,26 +72,18 @@ namespace CodeWalker.World
             {
                 TriangleVerts = vlist.ToArray();
             }
-            else
-            {
-                TriangleVerts = null;
-            }
             if (nlist.Count > 0)
             {
                 NodePositions = nlist.ToArray();
             }
-            else
-            {
-                NodePositions = null;
-            }
 
         }
-        private void BuildWatermapVertices(WatermapFile wmf, List<EditorVertex> vl, List<Vector4> nl)
+        private void BuildWatermapVertices(WatermapFile wmf, IList<EditorVertex> vl, IList<Vector4> nl)
         {
-            var v1 = new EditorVertex();
-            var v2 = new EditorVertex();
-            var v3 = new EditorVertex();
-            var v4 = new EditorVertex();
+            EditorVertex v1;
+            EditorVertex v2;
+            EditorVertex v3;
+            EditorVertex v4;
 
             uint cblu = (uint)new Color(0, 0, 128, 60).ToRgba();
 
@@ -121,41 +112,44 @@ namespace CodeWalker.World
             uint getColour(int o)
             {
                 var harr = wmf.GridWatermapRefs[o];
-                if (harr == null) return cblu;
-                if (harr.Length == 0) return cblu;
+                if (harr == null)
+                    return cblu;
+                if (harr.Length == 0)
+                    return cblu;
                 var i0 = harr[0].Item;
-                if (i0 == null) return cblu;
+                if (i0 == null)
+                    return cblu;
                 var c = i0.Colour;
                 c.A = 128;
                 return (uint)c.ToRgba();
             }
-            var w = wmf.Width;
-            var h = wmf.Height;
-            var min = new Vector3(wmf.CornerX, wmf.CornerY, 0.0f);
-            var step = new Vector3(wmf.TileX, -wmf.TileY, 1.0f);
+            //var w = wmf.Width;
+            //var h = wmf.Height;
+            //var min = new Vector3(wmf.CornerX, wmf.CornerY, 0.0f);
+            //var step = new Vector3(wmf.TileX, -wmf.TileY, 1.0f);
             //var siz = new Vector3(w, h, 1) * step;
-            for (int yi = 1; yi < h; yi++)
-            {
-                var yo = yi - 1;
-                for (int xi = 1; xi < w; xi++)
-                {
-                    var xo = xi - 1;
-                    var o1 = yi * w + xo;
-                    var o2 = yi * w + xi;
-                    var o3 = yo * w + xo;
-                    var o4 = yo * w + xi;
-                    v1.Position = min + step * new Vector3(xo, yi, getHeight(o1));
-                    v2.Position = min + step * new Vector3(xi, yi, getHeight(o2));
-                    v3.Position = min + step * new Vector3(xo, yo, getHeight(o3));
-                    v4.Position = min + step * new Vector3(xi, yo, getHeight(o4));
-                    v1.Colour = getColour(o1);
-                    v2.Colour = getColour(o2);
-                    v3.Colour = getColour(o3);
-                    v4.Colour = getColour(o4);
-                    //vl.Add(v1); vl.Add(v2); vl.Add(v3);
-                    //vl.Add(v3); vl.Add(v2); vl.Add(v4);
-                }
-            }
+            //for (int yi = 1; yi < h; yi++)
+            //{
+            //    var yo = yi - 1;
+            //    for (int xi = 1; xi < w; xi++)
+            //    {
+            //        var xo = xi - 1;
+            //        var o1 = yi * w + xo;
+            //        var o2 = yi * w + xi;
+            //        var o3 = yo * w + xo;
+            //        var o4 = yo * w + xi;
+            //        v1.Position = min + step * new Vector3(xo, yi, getHeight(o1));
+            //        v2.Position = min + step * new Vector3(xi, yi, getHeight(o2));
+            //        v3.Position = min + step * new Vector3(xo, yo, getHeight(o3));
+            //        v4.Position = min + step * new Vector3(xi, yo, getHeight(o4));
+            //        v1.Colour = getColour(o1);
+            //        v2.Colour = getColour(o2);
+            //        v3.Colour = getColour(o3);
+            //        v4.Colour = getColour(o4);
+            //        //vl.Add(v1); vl.Add(v2); vl.Add(v3);
+            //        //vl.Add(v3); vl.Add(v2); vl.Add(v4);
+            //    }
+            //}
             //for (int y = 0; y < h; y++)
             //{
             //    for (int x = 0; x < w; x++)
@@ -166,23 +160,23 @@ namespace CodeWalker.World
             //}
 
 
-            void addQuad(Quad q)
+            void addQuad(in Quad q, uint color)
             {
-                v1.Position = q.P1;
-                v2.Position = q.P2;
-                v3.Position = q.P3;
-                v4.Position = q.P4;
-                vl.Add(v1); vl.Add(v2); vl.Add(v3);
+                v1 = new EditorVertex(q.P1, color);
+                v2 = new EditorVertex(q.P2, color);
+                v3 = new EditorVertex(q.P3, color);
+                v4 = new EditorVertex(q.P4, color);
+                vl.Add(new EditorVertex()); vl.Add(v2); vl.Add(v3);
                 vl.Add(v3); vl.Add(v2); vl.Add(v4);
             }
-            void addRivEnd(Vector3 p, Vector3 s, Vector3 d, float r)
+            void addRivEnd(in Vector3 p, in Vector3 s, in Vector3 d, float r, uint color)
             {
-                v1.Position = p;
-                v2.Position = p + s * r;
-                v3.Position = p + d * r;
-                v4.Position = p - s * r;
-                vl.Add(v1); vl.Add(v2); vl.Add(v3);
-                vl.Add(v1); vl.Add(v3); vl.Add(v4);
+                v1 = new EditorVertex(p, color);
+                v2 = new EditorVertex(p + s * r, color);
+                v3 = new EditorVertex(p + d * r, color);
+                v4 = new EditorVertex(p - s * r, color);
+                vl.Add(new EditorVertex()); vl.Add(v2); vl.Add(v3);
+                vl.Add(new EditorVertex()); vl.Add(v3); vl.Add(v4);
             }
             var rivers = wmf.Rivers;
             if (rivers != null)
@@ -195,7 +189,7 @@ namespace CodeWalker.World
                     var rwid = 20.0f;
                     var rc = river.Colour;
                     rc.A = 128;
-                    v1.Colour = v2.Colour = v3.Colour = v4.Colour = (uint)rc.ToRgba();
+                    var riverColor = (uint)rc.ToRgba();
                     var quads = new Quad[river.Vectors.Length - 1];
                     var li = river.Vectors.Length - 1;
                     for (int i = 1; i < river.Vectors.Length; i++)
@@ -215,8 +209,8 @@ namespace CodeWalker.World
                         quads[o].P2 = vo.XYZ() + sid*rwid;
                         quads[o].P3 = vi.XYZ() - sid*rwid;
                         quads[o].P4 = vi.XYZ() + sid*rwid;
-                        if (i == 1) addRivEnd(vo.XYZ(), -sid, -dir, rwid);
-                        if (i == li) addRivEnd(vi.XYZ(), sid, dir, rwid);
+                        if (i == 1) addRivEnd(vo.XYZ(), -sid, -dir, rwid, riverColor);
+                        if (i == li) addRivEnd(vi.XYZ(), in sid, in dir, rwid, riverColor);
                     }
                     for (int i = 1; i < quads.Length; i++)
                     {
@@ -226,7 +220,7 @@ namespace CodeWalker.World
                     }
                     for (int i = 0; i < quads.Length; i++)
                     {
-                        addQuad(quads[i]);
+                        addQuad(in quads[i], riverColor);
                     }
                 }
             }
@@ -241,17 +235,19 @@ namespace CodeWalker.World
                     var lp = lake.Position;
                     var lc = lake.Colour;
                     lc.A = 128;
-                    v1.Colour = v2.Colour = v3.Colour = v4.Colour = (uint)lc.ToRgba();
+                    var lakeColor = (uint)lc.ToRgba();
                     for (int i = 0; i < lake.Vectors.Length; i++)
                     {
                         var vi = lake.Vectors[i];
                         var vp = new Vector3(vi.X, vi.Y, lp.Z);
-                        var q = new Quad();
-                        q.P1 = vp + new Vector3(vi.Z, -vi.W, 0);
-                        q.P2 = vp + new Vector3(vi.Z, vi.W, 0);
-                        q.P3 = vp + new Vector3(-vi.Z, -vi.W, 0);
-                        q.P4 = vp + new Vector3(-vi.Z, vi.W, 0);
-                        addQuad(q);
+                        var q = new Quad
+                        {
+                            P1 = vp + new Vector3(vi.Z, -vi.W, 0),
+                            P2 = vp + new Vector3(vi.Z, vi.W, 0),
+                            P3 = vp + new Vector3(-vi.Z, -vi.W, 0),
+                            P4 = vp + new Vector3(-vi.Z, vi.W, 0),
+                        };
+                        addQuad(in q, lakeColor);
                     }
                 }
             }
@@ -264,13 +260,14 @@ namespace CodeWalker.World
                     var ps = pool.Size;
                     var pc = pool.Colour;
                     pc.A = 128;
-                    v1.Colour = v2.Colour = v3.Colour = v4.Colour = (uint)pc.ToRgba();
-                    var q = new Quad();
-                    q.P1 = pp + new Vector3(ps.X, -ps.Y, 0);
-                    q.P2 = pp + new Vector3(ps.X, ps.Y, 0);
-                    q.P3 = pp + new Vector3(-ps.X, -ps.Y, 0);
-                    q.P4 = pp + new Vector3(-ps.X, ps.Y, 0);
-                    addQuad(q);
+                    var q = new Quad
+                    {
+                        P1 = pp + new Vector3(ps.X, -ps.Y, 0),
+                        P2 = pp + new Vector3(ps.X, ps.Y, 0),
+                        P3 = pp + new Vector3(-ps.X, -ps.Y, 0),
+                        P4 = pp + new Vector3(-ps.X, ps.Y, 0)
+                    };
+                    addQuad(in q, (uint)pc.ToRgba());
                 }
             }
 

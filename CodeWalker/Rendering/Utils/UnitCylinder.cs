@@ -9,6 +9,7 @@ using SharpDX.Direct3D11;
 using Device = SharpDX.Direct3D11.Device;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using SharpDX.DXGI;
+using Collections.Pooled;
 
 namespace CodeWalker.Rendering
 {
@@ -20,17 +21,11 @@ namespace CodeWalker.Rendering
         private VertexBufferBinding vbbinding;
         private int indexcount;
 
-        private struct SphTri
+        private readonly struct SphTri(int i1, int i2, int i3)
         {
-            public int v1;
-            public int v2;
-            public int v3;
-            public SphTri(int i1, int i2, int i3)
-            {
-                v1 = i1;
-                v2 = i2;
-                v3 = i3;
-            }
+            public readonly int v1 = i1;
+            public readonly int v2 = i2;
+            public readonly int v3 = i3;
         }
 
         public UnitCylinder(Device device, byte[] vsbytes, int detail)
@@ -44,9 +39,9 @@ namespace CodeWalker.Rendering
 
 
 
-            List<Vector4> verts = new List<Vector4>();
+            using var verts = new PooledList<Vector4>();
             Dictionary<Vector4, int> vdict = new Dictionary<Vector4, int>();
-            List<SphTri> curtris = new List<SphTri>();
+            using var curtris = new PooledList<SphTri>();
             //List<SphTri> nxttris = new List<SphTri>();
 
             verts.Add(new Vector4(0.0f, 0.0f, 0.0f, 0.0f));//top end (translated by VS!)
@@ -108,8 +103,8 @@ namespace CodeWalker.Rendering
 
 
 
-            List<uint> idata = new List<uint>();
-            foreach (var tri in curtris)
+            using var idata = new PooledList<uint>();
+            foreach (ref var tri in curtris.Span)
             {
                 idata.Add((uint)tri.v1);
                 idata.Add((uint)tri.v2);

@@ -1,22 +1,31 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.World;
+using Collections.Pooled;
+using CommunityToolkit.Diagnostics;
 using SharpDX;
 using SharpDX.Direct3D11;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeWalker.Rendering
 {
-    public class ShaderManager
+    public class ShaderManager : IDisposable
     {
         private DXManager DXMan;
 
         private int GeometryCount;
         public int RenderedGeometries;
+
+        private int VerticesCount;
+        public int RenderedVeritices;
 
         private Device Device;
 
@@ -36,8 +45,8 @@ namespace CodeWalker.Rendering
 
 
 
-        public DeferredScene DefScene { get; set; }
-        public PostProcessor HDR { get; set; }
+        public DeferredScene? DefScene { get; set; }
+        public PostProcessor? HDR { get; set; }
         public BasicShader Basic { get; set; }
         public CableShader Cable { get; set; }
         public WaterShader Water { get; set; }
@@ -53,7 +62,7 @@ namespace CodeWalker.Rendering
         public WidgetShader Widgets { get; set; }
 
         public bool shadows = Settings.Default.Shadows;
-        public Shadowmap Shadowmap { get; set; }
+        public Shadowmap? Shadowmap { get; set; }
         List<RenderableGeometryInst> shadowcasters = new List<RenderableGeometryInst>();
         List<RenderableGeometryInst> shadowbatch = new List<RenderableGeometryInst>();
         List<ShaderBatch> shadowbatches = new List<ShaderBatch>();
@@ -122,7 +131,7 @@ namespace CodeWalker.Rendering
             DXMan = dxman;
 
             //HDR = new PostProcessor(dxman);
-            Basic = new BasicShader(device);
+            Basic = new BasicShader(device, this);
             Cable = new CableShader(device);
             Water = new WaterShader(device);
             Terrain = new TerrainShader(device);
@@ -148,7 +157,7 @@ namespace CodeWalker.Rendering
                 IsFrontCounterClockwise = true,
                 IsMultisampleEnabled = true,
                 IsScissorEnabled = false,
-                SlopeScaledDepthBias = 0.0f
+                SlopeScaledDepthBias = 0.0f,
             };
             rsSolid = new RasterizerState(device, rsd);
             rsd.FillMode = FillMode.Wireframe;
@@ -157,6 +166,7 @@ namespace CodeWalker.Rendering
             rsWireframeDblSided = new RasterizerState(device, rsd);
             rsd.FillMode = FillMode.Solid;
             rsSolidDblSided = new RasterizerState(device, rsd);
+            rsd.CullMode = CullMode.Back;
 
 
             BlendStateDescription bsd = new BlendStateDescription()
@@ -203,6 +213,7 @@ namespace CodeWalker.Rendering
                     PassOperation = StencilOperation.Zero
                 },
                 IsDepthEnabled = true,
+                
                 IsStencilEnabled = false,
                 StencilReadMask = 0,
                 StencilWriteMask = 0
@@ -218,12 +229,37 @@ namespace CodeWalker.Rendering
             dsDisableAll = new DepthStencilState(device, dsd);
         }
 
+        /// <summary>
+        /// Attempts to find the shaders folder in the directory tree
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
+        public static string GetShaderFolder()
+        {
+            // Directory we're looking for.
+            var dirToFind = Path.Combine("Shaders");
 
+
+            if (!FileUtils.TryFindFolder(dirToFind, out var folder))
+            {
+                throw new FileNotFoundException($"Could not find '{dirToFind}' directory.");
+            }
+            else
+            {
+                return folder;
+            }
+        }
+
+        ~ShaderManager()
+        {
+            Console.WriteLine("Finalizer called on ShaderManager, this is not supposed to happen, is a Dispose call missing?");
+            Dispose();
+        }
 
         public void Dispose()
         {
-            if (disposed) return;
-            disposed = true;
+            if (disposed)
+                return;
 
             dsEnabled.Dispose();
             dsDisableWriteRev.Dispose();
@@ -262,14 +298,16 @@ namespace CodeWalker.Rendering
             if (HDR != null)
             {
                 HDR.Dispose();
-                HDR = null;
             }
 
             if (Shadowmap != null)
             {
                 Shadowmap.Dispose();
-                Shadowmap = null;
             }
+
+            disposed = true;
+
+            GC.SuppressFinalize(this);
         }
 
 
@@ -286,38 +324,39 @@ namespace CodeWalker.Rendering
 
         public void BeginFrame(DeviceContext context, double currentRealTime, float elapsedTime)
         {
-            if (disposed) return;
+            if (disposed)
+                return;
 
             CurrentRealTime = currentRealTime;
             CurrentElapsedTime = elapsedTime;
 
             shadowcasters.Clear();
-            if (shadows && (Shadowmap == null))
+            if (shadows && Shadowmap is null)
             {
                 Shadowmap = new Shadowmap(Device);
             }
-            if (!shadows && (Shadowmap != null))
+            if (!shadows && Shadowmap != null)
             {
                 Shadowmap.Dispose();
                 Shadowmap = null;
             }
-            if (hdr && (HDR == null))
+            if (hdr && HDR is null)
             {
                 HDR = new PostProcessor(DXMan);
                 HDR.OnWindowResize(DXMan);
                 HDR.LumBlendSpeed = hdrLumBlendSpeed;
             }
-            if (!hdr && (HDR != null))
+            if (!hdr && HDR is not null)
             {
                 HDR.Dispose();
                 HDR = null;
             }
-            if (deferred && (DefScene == null))
+            if (deferred && DefScene is null)
             {
-                DefScene = new DeferredScene(DXMan);
+                DefScene = new DeferredScene(DXMan, this);
                 DefScene.OnWindowResize(DXMan);
             }
-            if (!deferred && (DefScene != null))
+            if (!deferred && DefScene != null)
             {
                 DefScene.Dispose();
                 DefScene = null;
@@ -338,22 +377,22 @@ namespace CodeWalker.Rendering
             RenderWaterQuads.Clear();
 
 
-            if (DefScene != null)
+            if (DefScene is not null)
             {
                 DefScene.Clear(context);
                 DefScene.ClearDepth(context);
             }
-            if (HDR != null)
+            if (HDR is not null)
             {
                 HDR.Clear(context);
                 HDR.ClearDepth(context);
             }
 
-            if (DefScene != null)
+            if (DefScene is not null)
             {
                 DefScene.SetSceneColour(context);
             }
-            else if (HDR != null)
+            else if (HDR is not null)
             {
                 HDR.SetPrimary(context); //for rendering some things before shadowmaps... (eg sky)
             }
@@ -403,9 +442,17 @@ namespace CodeWalker.Rendering
             return null;
         }
 
+        public Stopwatch lastLodUpdate = Stopwatch.StartNew();
         public void RenderQueued(DeviceContext context, Camera camera, Vector4 wind)
         {
+            bool updateLods = false;
+            if (lastLodUpdate.Elapsed.TotalSeconds > 1.0)
+            {
+                updateLods = true;
+                lastLodUpdate.Restart();
+            }
             GeometryCount = 0;
+            VerticesCount = 0;
             Camera = camera;
 
 
@@ -441,11 +488,11 @@ namespace CodeWalker.Rendering
             }
 
 
-            if (DefScene != null)
+            if (DefScene is not null)
             {
                 DefScene.SetGBuffers(context);
             }
-            else if (HDR != null)
+            else if (HDR is not null)
             {
                 HDR.SetPrimary(context);
             }
@@ -586,20 +633,20 @@ namespace CodeWalker.Rendering
 
                 DefScene.SetSceneColour(context);
 
-                DefScene.RenderLights(context, camera, Shadowmap, GlobalLights);
+                DefScene.RenderLights(context, camera, Shadowmap, GlobalLights, updateLods);
 
                 if (RenderLODLights.Count > 0) //LOD lights pass
                 {
                     context.OutputMerger.BlendState = bsAdd; //additive blend for lights...
                     context.OutputMerger.DepthStencilState = dsDisableWriteRev;//only render parts behind or at surface
-                    DefScene.RenderLights(context, camera, RenderLODLights);
+                    DefScene.RenderLights(context, camera, RenderLODLights, updateLods);
                 }
 
                 if (RenderLights.Count > 0)
                 {
                     context.OutputMerger.BlendState = bsAdd; //additive blend for lights...
                     context.OutputMerger.DepthStencilState = dsDisableWriteRev;//only render parts behind or at surface
-                    DefScene.RenderLights(context, camera, RenderLights);
+                    DefScene.RenderLights(context, camera, RenderLights, updateLods);
                 }
             }
 
@@ -662,7 +709,7 @@ namespace CodeWalker.Rendering
 
 
             RenderedGeometries = GeometryCount;
-
+            RenderedVeritices = VerticesCount;
         }
 
         public void RenderFinalPass(DeviceContext context)
@@ -671,9 +718,9 @@ namespace CodeWalker.Rendering
             context.OutputMerger.BlendState = bsDefault;
             context.OutputMerger.DepthStencilState = dsDisableAll;
 
-            if (HDR != null)
+            if (HDR is not null)
             {
-                if ((DefScene?.SSAASampleCount ?? 1) > 1)
+                if (DefScene is not null && DefScene.SSAASampleCount > 1)
                 {
                     HDR.SetPrimary(context);
                     DefScene.SSAAPass(context);
@@ -681,7 +728,7 @@ namespace CodeWalker.Rendering
 
                 HDR.Render(DXMan, CurrentElapsedTime, DefScene);
             }
-            else if (DefScene != null)
+            else if (DefScene is not null)
             {
                 DXMan.SetDefaultRenderTarget(context);
                 DefScene.SSAAPass(context);
@@ -765,7 +812,7 @@ namespace CodeWalker.Rendering
         }
 
 
-        private void RenderGeometryBatches(DeviceContext context, List<ShaderBatch> batches, Shader shader)
+        private void RenderGeometryBatches(DeviceContext context, IList<ShaderBatch> batches, Shader shader)
         {
             shader.SetShader(context);
             shader.SetSceneVars(context, Camera, Shadowmap, GlobalLights);
@@ -775,7 +822,7 @@ namespace CodeWalker.Rendering
             }
             shader.UnbindResources(context);
         }
-        private void RenderGeometryBatch(DeviceContext context, List<RenderableGeometryInst> batch, Shader shader)
+        private void RenderGeometryBatch(DeviceContext context, IList<RenderableGeometryInst> batch, Shader shader)
         {
             GeometryCount += batch.Count;
 
@@ -788,6 +835,11 @@ namespace CodeWalker.Rendering
                 var geom = batch[i];
                 var gmodel = geom.Geom.Owner;
                 shader.SetEntityVars(context, ref geom.Inst);
+                
+                if (shader != Shadow)
+                {
+                    VerticesCount += geom.Geom.VertexCount;
+                }
 
                 if (gmodel != model)
                 {
@@ -829,6 +881,7 @@ namespace CodeWalker.Rendering
 
             foreach (var geom in batch)
             {
+                VerticesCount += geom.Geom.VertexCount;
                 Basic.RenderBoundGeom(context, geom);
             }
 
@@ -838,43 +891,47 @@ namespace CodeWalker.Rendering
         private void RenderInstancedBatch(DeviceContext context, RenderableInstanceBatchInst batch)
         {
             Basic.SetInstanceVars(context, batch.Batch);
+            VertexType? vertexType = null;
 
-            if (batch.Renderable.HDModels.Length > 1)
-            { }
-
-            foreach (var model in batch.Renderable.HDModels)
+            for(int i = 0; i < batch.Renderable.HDModels.Length; i++)
             {
-                if (model.Geometries.Length > 1)
-                { }
+                var model = batch.Renderable.HDModels[i];
+                if (model.Geometries.Length == 0)
+                    continue;
 
                 Basic.SetModelVars(context, model);
                 foreach (var geom in model.Geometries)
                 {
-                    if (Basic.SetInputLayout(context, geom.VertexType))
+                    if (vertexType == geom.VertexType || Basic.SetInputLayout(context, geom.VertexType))
                     {
+                        vertexType = geom.VertexType;
                         Basic.SetGeomVars(context, geom);
                         geom.RenderInstanced(context, batch.Batch.InstanceCount);
                     }
                 }
             }
+
         }
 
 
 
-        public void Enqueue(ref RenderableGeometryInst geom)
+        public void Enqueue(in RenderableGeometryInst geom)
         {
             var shader = geom.Geom.DrawableGeom.Shader;
 
-            var b = (shader!=null) ? shader.RenderBucket : 0; //rage render bucket?
+            var b = shader?.RenderBucket ?? 0; //rage render bucket?
 
             var bucket = EnsureRenderBucket(b);
 
-            ShaderBatch batch = null;
-            ShaderKey key = new ShaderKey();
-            key.ShaderName = (shader!=null) ? shader.Name : new MetaHash(0);
-            key.ShaderFile = (shader!=null) ? shader.FileName : new MetaHash(0);
+            if (bucket is null)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(b), b, "Bucket doesn't exist");
+                return;
+            }
 
-            if (!bucket.Batches.TryGetValue(key, out batch))
+            ShaderKey key = new ShaderKey(shader?.Name ?? default, shader?.FileName ?? default);
+
+            if (!bucket.Batches.TryGetValue(key, out var batch))
             {
                 batch = new ShaderBatch(key);
                 bucket.Batches.Add(key, batch);
@@ -882,15 +939,15 @@ namespace CodeWalker.Rendering
 
             batch.Geometries.Add(geom);
         }
-        public void Enqueue(ref RenderableLightInst light)
+        public void Enqueue(in RenderableLightInst light)
         {
             RenderLights.Add(light);
         }
-        public void Enqueue(ref RenderableBoundGeometryInst geom)
+        public void Enqueue(in RenderableBoundGeometryInst geom)
         {
             RenderBoundGeoms.Add(geom);
         }
-        public void Enqueue(ref RenderableInstanceBatchInst batch)
+        public void Enqueue(in RenderableInstanceBatchInst batch)
         {
             RenderInstBatches.Add(batch);
         }
@@ -912,9 +969,9 @@ namespace CodeWalker.Rendering
         }
 
 
-        public ShaderRenderBucket EnsureRenderBucket(int index)
+        public ShaderRenderBucket? EnsureRenderBucket(int index)
         {
-            ShaderRenderBucket bucket = null;
+            ShaderRenderBucket? bucket = null;
             while (index >= RenderBuckets.Count)
             {
                 RenderBuckets.Add(new ShaderRenderBucket(RenderBuckets.Count));
@@ -954,7 +1011,7 @@ namespace CodeWalker.Rendering
 
         public void ClearDepth(DeviceContext context, bool firstpass = true)
         {
-            if ((HDR != null) && firstpass)
+            if (HDR is not null && firstpass)
             {
                 HDR.ClearDepth(context);
             }
@@ -1014,14 +1071,8 @@ namespace CodeWalker.Rendering
         {
             Width = w;
             Height = h;
-            if (DefScene != null)
-            {
-                DefScene.OnWindowResize(DXMan);
-            }
-            if (HDR != null)
-            {
-                HDR.OnWindowResize(DXMan);
-            }
+            DefScene?.OnWindowResize(DXMan);
+            HDR?.OnWindowResize(DXMan);
         }
     }
 
@@ -1041,14 +1092,52 @@ namespace CodeWalker.Rendering
     }
 
 
-    public struct ShaderKey
+    public readonly struct ShaderKey : IEquatable<ShaderKey>
     {
-        public MetaHash ShaderName;
-        public MetaHash ShaderFile;
+        public readonly MetaHash ShaderName;
+        public readonly MetaHash ShaderFile;
+
+        public ShaderKey()
+        {
+            ShaderName = new MetaHash();
+            ShaderFile = new MetaHash();
+        }
+
+        public ShaderKey(MetaHash shaderName, MetaHash shaderFile)
+        {
+            ShaderName = shaderName;
+            ShaderFile = shaderFile;
+        }
 
         public override string ToString()
         {
             return ShaderFile.ToString() + ": " + ShaderName.ToString();
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is ShaderKey key && Equals(key);
+        }
+
+        public bool Equals(ShaderKey other)
+        {
+            return ShaderName.Equals(other.ShaderName) &&
+                   ShaderFile.Equals(other.ShaderFile);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(ShaderName, ShaderFile);
+        }
+
+        public static bool operator ==(ShaderKey left, ShaderKey right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(ShaderKey left, ShaderKey right)
+        {
+            return !(left == right);
         }
     }
     public class ShaderRenderBucket
@@ -1097,9 +1186,10 @@ namespace CodeWalker.Rendering
             ClothBatches.Clear();
             VehicleBatches.Clear();
 
-            foreach (var kvp in Batches)
+            foreach (var kvp in Batches.Where(p => p.Value.Geometries.Count > 0).OrderBy(p => p.Value.Geometries.Average(p => p.Inst.Distance)))
             {
-                if (kvp.Value.Geometries.Count == 0) continue;
+                if (kvp.Value.Geometries.Count == 0)
+                    continue;
 
                 List<ShaderBatch> b = null;
                 switch (kvp.Key.ShaderFile.Hash)

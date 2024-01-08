@@ -683,7 +683,8 @@ namespace CodeWalker.GameFiles
         public static string ReadString(BinaryReader br)
         {
             byte sl = br.ReadByte();
-            if (sl == 0) return string.Empty;
+            if (sl == 0)
+                return string.Empty;
             byte[] ba = br.ReadBytes(sl);
             return (sl > 1) ? Encoding.ASCII.GetString(ba, 0, sl - 1) : string.Empty;
         }
@@ -1073,8 +1074,10 @@ namespace CodeWalker.GameFiles
                         var filepath = Path.Combine(csofolder, fname);
                         File.WriteAllBytes(filepath, ByteCode);
                     }
-                    catch
-                    { }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
                 }
             }
         }
@@ -1186,7 +1189,7 @@ namespace CodeWalker.GameFiles
             SlotGS = br.ReadUInt16(); //6, 5
             SlotHS = br.ReadUInt16(); //6, 5
             Name = FxcFile.ReadString(br); // <fxc name> _locals   //"rage_matrices", "misc_globals", "lighting_globals", "more_stuff"
-            JenkIndex.Ensure(Name?.ToLowerInvariant()); //why not :P
+            JenkIndex.EnsureLower(Name); //why not :P
         }
         public void Write(BinaryWriter bw)
         {
@@ -1840,7 +1843,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Type.ToString() + ", " + Value.ToString();
+            return $"{Type}, {Value}";
         }
     }
 
@@ -1856,18 +1859,25 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(FxcFile fxc, string outputFolder = "")
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if ((fxc != null) && (fxc.Shaders != null))
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                var name = "Effects";
-                OpenTag(sb, 0, name);
-                fxc.WriteXml(sb, 1, outputFolder);
-                CloseTag(sb, 0, name);
-            }
+                sb.AppendLine(XmlHeader);
 
-            return sb.ToString();
+                if ((fxc != null) && (fxc.Shaders != null))
+                {
+                    var name = "Effects";
+                    OpenTag(sb, 0, name);
+                    fxc.WriteXml(sb, 1, outputFolder);
+                    CloseTag(sb, 0, name);
+                }
+
+                return sb.ToString();
+            }
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
 
     }

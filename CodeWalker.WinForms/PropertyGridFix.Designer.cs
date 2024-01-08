@@ -1,6 +1,8 @@
-﻿namespace CodeWalker.WinForms
+﻿using System.Windows.Forms;
+
+namespace CodeWalker.WinForms
 {
-    partial class PropertyGridFix
+    public partial class PropertyGridFix : PropertyGrid
     {
         /// <summary>
         /// Required designer variable.

@@ -133,14 +133,14 @@ namespace CodeWalker.Project.Panels
                     { continue; } //ybn not found?
                     if (!ybn.Loaded) //ybn not loaded yet...
                     {
-                        UpdateStatus("Loading ybn: " + boundsitem.Name.ToString() + " ...");
+                        UpdateStatus($"Loading ybn: {boundsitem.Name} ...");
                         int waitCount = 0;
                         while (!ybn.Loaded)
                         {
                             waitCount++;
                             if (waitCount > 10000)
                             {
-                                UpdateStatus("Timeout waiting for ybn " + boundsitem.Name.ToString() + " to load!");
+                                UpdateStatus($"Timeout waiting for ybn {boundsitem.Name} to load!");
                                 Thread.Sleep(1000); //just to let the message display for a second...
                                 break;
                             }
@@ -170,7 +170,7 @@ namespace CodeWalker.Project.Panels
                         var vcoffset = new Vector3(vx, vy, 0) * density;
                         ray.Position = bmin + vcoffset;
                         ray.Position.Z = bmax.Z + 1.0f;//start the ray at the top of the cell
-                        var intres = space.RayIntersect(ray, float.MaxValue, layers);
+                        var intres = space.RayIntersect(ref ray, float.MaxValue, layers);
                         hitTestCount++;
                         while (intres.Hit)// && (intres.HitDist > 0))
                         {
@@ -197,7 +197,7 @@ namespace CodeWalker.Project.Panels
                             }
                             //continue down until no more hits..... step by 3m
                             ray.Position.Z = intres.Position.Z - 3.0f;
-                            intres = space.RayIntersect(ray, float.MaxValue, layers);
+                            intres = space.RayIntersect(ref ray, float.MaxValue, layers);
                         }
                         vgrid.EndCell(vx, vy);
                     }
@@ -812,11 +812,7 @@ namespace CodeWalker.Project.Panels
                     });
                 }
 
-
-
-                var statf = "{0} hit tests, {1} hits, {2} new polys";
-                var stats = string.Format(statf, hitTestCount, hitCount, newCount);
-                UpdateStatus("Process complete. " + stats);
+                UpdateStatus($"Process complete. {hitTestCount} hit tests, {hitCount} hits, {newCount} new polys");
                 GenerateComplete();
             });
         }
@@ -2123,7 +2119,10 @@ namespace CodeWalker.Project.Panels
                     GenerateButton.Enabled = true;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -2133,14 +2132,17 @@ namespace CodeWalker.Project.Panels
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateStatus(text); }));
+                    BeginInvoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
 

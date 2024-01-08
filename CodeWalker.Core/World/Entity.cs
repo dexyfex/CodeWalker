@@ -108,7 +108,7 @@ namespace CodeWalker.World
                     Vector3 raydir = new Vector3(0.0f, 0.0f, -1.0f);
                     Vector3 rayoff = new Vector3(0.0f, 0.0f, 0.0f);
                     Ray ray = new Ray(targetpos + Center + rayoff, raydir);
-                    var rayhit = Space.RayIntersect(ray, 1.0f);
+                    var rayhit = Space.RayIntersect(ref ray, 1.0f);
                     if (rayhit.Hit)
                     {
                         if (rayhit.HitDist > 0)
@@ -164,12 +164,12 @@ namespace CodeWalker.World
 
                 var raydir = new Vector3(0.0f, 0.0f, -1.0f);
                 var ray = new Ray(Position, raydir);
-                var rayhit = Space.RayIntersect(ray, float.MaxValue);
+                var rayhit = Space.RayIntersect(ref ray, float.MaxValue);
                 if (!rayhit.Hit && rayhit.TestComplete)
                 {
                     //must be under the map? try to find the ground...
                     ray.Position = Position + new Vector3(0.0f, 0.0f, 1000.0f);
-                    rayhit = Space.RayIntersect(ray, float.MaxValue);
+                    rayhit = Space.RayIntersect(ref ray, float.MaxValue);
                     if (rayhit.Hit)
                     {
                         Position = rayhit.Position + new Vector3(0.0f, 0.0f, Radius) - Center;

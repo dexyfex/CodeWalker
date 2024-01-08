@@ -96,20 +96,34 @@
 
 
 using CodeWalker.GameFiles;
+using DirectXTexNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CodeWalker.Utils
 {
+    public class AssertionFailedException : Exception
+    {
+        public AssertionFailedException() : base("Assertion failed")
+        {
+        }
+
+        public AssertionFailedException(string message) : base(message)
+        {
+        }
+
+        public AssertionFailedException(string message, Exception inner) : base(message, inner)
+        {
+        }
+    }
 
     public static class DDSIO
     {
-
-
         public static byte[] GetPixels(Texture texture, int mip)
         {
             //dexyfex version
@@ -127,11 +141,6 @@ namespace CodeWalker.Utils
             int ddsRowPitch, ddsSlicePitch;
             DXTex.ComputePitch(meta.format, i0.width, i0.height, out ddsRowPitch, out ddsSlicePitch, 0);
 
-            if (i0.slicePitch == ddsSlicePitch)
-            { }
-            else
-            { }
-
             int w = i0.width;
             int h = i0.height;
             int imglen = i0.slicePitch;// h * i0.rowPitch;
@@ -139,59 +148,102 @@ namespace CodeWalker.Utils
             byte[] px = null;// = new byte[w * h * 4];
 
             if (i0.pixels + imglen > img.Data.Length)
-            { throw new Exception("Mipmap not in texture!"); }
+            {
+                throw new Exception("Mipmap not in texture!");
+            }
 
             Buffer.BlockCopy(img.Data, i0.pixels, imgdata, 0, imglen);
 
             bool swaprb = true;
 
-            switch (format)
+            if (TexHelper.Instance.IsCompressed((DirectXTexNet.DXGI_FORMAT)format))
             {
-                // compressed
-                case DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM: // TextureFormat.D3DFMT_DXT1
-                    px = DecompressDxt1(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM: // TextureFormat.D3DFMT_DXT3
-                    px = DecompressDxt3(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM: // TextureFormat.D3DFMT_DXT5
-                    px = DecompressDxt5(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM: // TextureFormat.D3DFMT_ATI1
-                    px = DecompressBC4(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM: // TextureFormat.D3DFMT_ATI2
-                    px = DecompressBC5(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM: // TextureFormat.D3DFMT_BC7
-                    //BC7 TODO!!
-                    break;
-
-                // uncompressed
-                case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: // TextureFormat.D3DFMT_A1R5G5B5
-                    px = ConvertBGR5A1ToRGBA8(imgdata, w, h); //needs testing
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM:       // TextureFormat.D3DFMT_A8
-                    px = ConvertA8ToRGBA8(imgdata, w, h);
-                    swaprb = false;
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: // TextureFormat.D3DFMT_A8B8G8R8
-                    px = imgdata;
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM:       // TextureFormat.D3DFMT_L8
-                    px = ConvertR8ToRGBA8(imgdata, w, h);
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: // TextureFormat.D3DFMT_A8R8G8B8
-                    px = imgdata;
-                    swaprb = false;
-                    break;
-                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: // TextureFormat.D3DFMT_X8R8G8B8
-                    px = imgdata;
-                    swaprb = false;
-                    break;
-                default:
-                    break; //shouldn't get here...
+                px = Decompress(imgdata, w, h, format);
             }
+            else
+            {
+                switch (format)
+                {
+                    case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: // TextureFormat.D3DFMT_A1R5G5B5
+                        px = ConvertBGR5A1ToRGBA8(imgdata, w, h); //needs testing
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM:       // TextureFormat.D3DFMT_A8
+                        px = ConvertA8ToRGBA8(imgdata, w, h);
+                        swaprb = false;
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: // TextureFormat.D3DFMT_A8B8G8R8
+                    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_TYPELESS:
+                        px = imgdata;
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM:       // TextureFormat.D3DFMT_L8
+                        px = ConvertR8ToRGBA8(imgdata, w, h);
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: // TextureFormat.D3DFMT_A8R8G8B8
+                        px = imgdata;
+                        swaprb = false;
+                        break;
+                    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: // TextureFormat.D3DFMT_X8R8G8B8
+                        px = imgdata;
+                        swaprb = false;
+                        break;
+                    default:
+                        px = imgdata;
+                        break;
+                }
+            }
+
+
+            
+
+            //switch (format)
+            //{
+            //    // compressed
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM: // TextureFormat.D3DFMT_DXT1
+            //        px = DecompressDxt1(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM: // TextureFormat.D3DFMT_DXT3
+            //        px = DecompressDxt3(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM: // TextureFormat.D3DFMT_DXT5
+            //        px = DecompressDxt5(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM: // TextureFormat.D3DFMT_ATI1
+            //        px = Decompress(imgdata, w, h, DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM: // TextureFormat.D3DFMT_ATI2
+            //        px = Decompress(imgdata, w, h, DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM: // TextureFormat.D3DFMT_BC7
+            //        px = Decompress(imgdata, w, h, DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM);
+            //        //BC7 TODO!!
+            //        break;
+
+            //    // uncompressed
+            //    case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: // TextureFormat.D3DFMT_A1R5G5B5
+            //        px = ConvertBGR5A1ToRGBA8(imgdata, w, h); //needs testing
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM:       // TextureFormat.D3DFMT_A8
+            //        px = ConvertA8ToRGBA8(imgdata, w, h);
+            //        swaprb = false;
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: // TextureFormat.D3DFMT_A8B8G8R8
+            //    case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_TYPELESS:
+            //        px = imgdata;
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM:       // TextureFormat.D3DFMT_L8
+            //        px = ConvertR8ToRGBA8(imgdata, w, h);
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: // TextureFormat.D3DFMT_A8R8G8B8
+            //        px = imgdata;
+            //        swaprb = false;
+            //        break;
+            //    case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: // TextureFormat.D3DFMT_X8R8G8B8
+            //        px = imgdata;
+            //        swaprb = false;
+            //        break;
+            //    default:
+            //        break; //shouldn't get here...
+            //}
 
             if (swaprb && (px != null))
             {
@@ -221,8 +273,8 @@ namespace CodeWalker.Utils
 
 
 
-            MemoryStream ms = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(ms);
+            using MemoryStream ms = new MemoryStream(texture.Data.FullData.Length + 128);
+            using BinaryWriter bw = new BinaryWriter(ms);
 
             int nimages = img.MipMapLevels;
 
@@ -353,8 +405,8 @@ namespace CodeWalker.Utils
                     throw new Exception("Unsupported texture dimension");
             }
 
-
             byte[] buff = ms.GetBuffer();
+
             byte[] outbuf = new byte[ms.Length]; //need to copy to the right size buffer for File.WriteAllBytes().
             Array.Copy(buff, outbuf, outbuf.Length);
 
@@ -476,51 +528,59 @@ namespace CodeWalker.Utils
 
 
 
-        private static TextureFormat GetTextureFormat(DXGI_FORMAT f)
+        public static TextureFormat GetTextureFormat(this DXGI_FORMAT f)
         {
             var format = (TextureFormat)0;
             switch (f)
             {
                 // compressed
-                case DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM: format = TextureFormat.D3DFMT_DXT1; break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM: format = TextureFormat.D3DFMT_DXT3; break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM: format = TextureFormat.D3DFMT_DXT5; break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM: format = TextureFormat.D3DFMT_ATI1; break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM: format = TextureFormat.D3DFMT_ATI2; break;
-                case DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM: format = TextureFormat.D3DFMT_BC7; break;
+                case DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM: return TextureFormat.D3DFMT_DXT1;
+                case DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM: return TextureFormat.D3DFMT_DXT3;
+                case DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM: return TextureFormat.D3DFMT_DXT5;
+                case DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM: return TextureFormat.D3DFMT_ATI1;
+                case DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM: return TextureFormat.D3DFMT_ATI2;
+                case DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM: return TextureFormat.D3DFMT_BC7;
 
                 // uncompressed
-                case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: format = TextureFormat.D3DFMT_A1R5G5B5; break;
-                case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM: format = TextureFormat.D3DFMT_A8; break;
-                case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: format = TextureFormat.D3DFMT_A8B8G8R8; break;
-                case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM: format = TextureFormat.D3DFMT_L8; break;
-                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: format = TextureFormat.D3DFMT_A8R8G8B8; break;
-                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: format = TextureFormat.D3DFMT_X8R8G8B8; break;
+                case DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM: return TextureFormat.D3DFMT_A1R5G5B5;
+                case DXGI_FORMAT.DXGI_FORMAT_A8_UNORM: return TextureFormat.D3DFMT_A8;
+                case DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM: return TextureFormat.D3DFMT_A8B8G8R8;
+                case DXGI_FORMAT.DXGI_FORMAT_R8_UNORM: return TextureFormat.D3DFMT_L8;
+                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM: return TextureFormat.D3DFMT_A8R8G8B8;
+                case DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM: return TextureFormat.D3DFMT_X8R8G8B8;
+                case DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_UNORM: return TextureFormat.D3DFMT_A16R16G16B16;
             }
             return format;
         }
 
-        private static DXGI_FORMAT GetDXGIFormat(TextureFormat f)
+        public static DXGI_FORMAT GetDXGIFormat(this TextureFormat f)
         {
             var format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
             switch (f)
             {
                 // compressed
-                case TextureFormat.D3DFMT_DXT1: format = DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM; break;
-                case TextureFormat.D3DFMT_DXT3: format = DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM; break;
-                case TextureFormat.D3DFMT_DXT5: format = DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM; break;
-                case TextureFormat.D3DFMT_ATI1: format = DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM; break;
-                case TextureFormat.D3DFMT_ATI2: format = DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM; break;
-                case TextureFormat.D3DFMT_BC7: format = DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM; break;
+                case TextureFormat.D3DFMT_DXT1: return DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM;
+                case TextureFormat.D3DFMT_DXT3: return DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM;
+                case TextureFormat.D3DFMT_DXT5: return DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM;
+                case TextureFormat.D3DFMT_ATI1: return DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM;
+                case TextureFormat.D3DFMT_ATI2: return DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM;
+                case TextureFormat.D3DFMT_BC7: return DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM;
 
                 // uncompressed
-                case TextureFormat.D3DFMT_A1R5G5B5: format = DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM; break;
-                case TextureFormat.D3DFMT_A8: format = DXGI_FORMAT.DXGI_FORMAT_A8_UNORM; break;
-                case TextureFormat.D3DFMT_A8B8G8R8: format = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM; break;
-                case TextureFormat.D3DFMT_L8: format = DXGI_FORMAT.DXGI_FORMAT_R8_UNORM; break;
-                case TextureFormat.D3DFMT_A8R8G8B8: format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM; break;
-                case TextureFormat.D3DFMT_X8R8G8B8: format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM; break;
+                case TextureFormat.D3DFMT_A1R5G5B5: return DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM;
+                case TextureFormat.D3DFMT_A8: return DXGI_FORMAT.DXGI_FORMAT_A8_UNORM;
+                case TextureFormat.D3DFMT_A8B8G8R8: return DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
+                case TextureFormat.D3DFMT_L8: return DXGI_FORMAT.DXGI_FORMAT_R8_UNORM;
+                case TextureFormat.D3DFMT_A8R8G8B8: return DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM;
+                case TextureFormat.D3DFMT_X8R8G8B8: return DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM;
+                case TextureFormat.D3DFMT_A16R16G16B16: return DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_UNORM;
             }
+
+            if (format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN)
+            {
+                Console.WriteLine($"Format: {f} ({(int)f}) is unknown!");
+            }
+
             return format;
         }
 
@@ -544,12 +604,15 @@ namespace CodeWalker.Utils
             int add = 0;
             for (int i = 0; i < img.MipMapLevels; i++)
             {
-                images[i].width = img.Width / div;
-                images[i].height = img.Height / div;
+                images[i].width = Math.Max(img.Width / div, 1);
+                images[i].height = Math.Max(img.Height / div, 1);
                 images[i].format = format; //(DXGI_FORMAT)img.Format;
                 images[i].pixels = buf + add;
 
-                DXTex.ComputePitch(images[i].format, images[i].width, images[i].height, out images[i].rowPitch, out images[i].slicePitch, 0);
+                DXTex.ComputePitch(images[i].format, images[i].width, images[i].height, out var rowPitch, out var slicePitch, 0);
+                images[i].rowPitch = (int)rowPitch;
+                images[i].slicePitch = (int)slicePitch;
+                //DXTex.ComputePitch(images[i].format, images[i].width, images[i].height, out images[i].rowPitch, out images[i].slicePitch, 0);
 
                 add += images[i].slicePitch;
                 div *= 2;
@@ -773,7 +836,7 @@ namespace CodeWalker.Utils
                         break;
 
                     default:
-                        assert(IsValid(fmt));
+                        assert(IsValid(fmt), $"{fmt} ({(int)fmt}) is not a valid texture format");
                         assert(!IsCompressed(fmt) && !IsPacked(fmt) && !IsPlanar(fmt));
                         {
 
@@ -904,11 +967,17 @@ namespace CodeWalker.Utils
                 }
             }
 
-            public static void assert(bool b)
+            public static void assert(bool b, string message = null)
             {
                 if (!b)
                 {
-                    throw new Exception();
+                    if (message is null)
+                    {
+                        throw new AssertionFailedException();
+                    } else
+                    {
+                        throw new AssertionFailedException(message);
+                    }
                 }
             }
 
@@ -2620,6 +2689,48 @@ namespace CodeWalker.Utils
             }
         }
 
+        public static unsafe byte[] Decompress(Byte[] data, int width, int height, DXGI_FORMAT format)
+        {
+            Console.WriteLine(format);
+            Console.WriteLine(width);
+            Console.WriteLine(height);
+
+            long inputRowPitch;
+            long inputSlicePitch;
+            TexHelper.Instance.ComputePitch((DirectXTexNet.DXGI_FORMAT)format, width, height, out inputRowPitch, out inputSlicePitch, DirectXTexNet.CP_FLAGS.NONE);
+
+            DirectXTexNet.DXGI_FORMAT FormatDecompressed;
+
+            if (format.ToString().Contains("SRGB"))
+                FormatDecompressed = DirectXTexNet.DXGI_FORMAT.R8G8B8A8_UNORM_SRGB;
+            else
+                FormatDecompressed = DirectXTexNet.DXGI_FORMAT.R8G8B8A8_UNORM;
+
+            byte* buf;
+            buf = (byte*)Marshal.AllocHGlobal((int)inputSlicePitch);
+            Marshal.Copy(data, 0, (IntPtr)buf, (int)inputSlicePitch);
+
+            DirectXTexNet.Image inputImage = new DirectXTexNet.Image(
+                width, height, (DirectXTexNet.DXGI_FORMAT)format, inputRowPitch,
+                inputSlicePitch, (IntPtr)buf, null);
+
+            DirectXTexNet.TexMetadata texMetadata = new DirectXTexNet.TexMetadata(width, height, 1, 1, 1, 0, 0,
+                (DirectXTexNet.DXGI_FORMAT)format, DirectXTexNet.TEX_DIMENSION.TEXTURE2D);
+
+            ScratchImage scratchImage = TexHelper.Instance.InitializeTemporary(
+                new DirectXTexNet.Image[] { inputImage }, texMetadata, null);
+
+            using (var decomp = scratchImage.Decompress(0, FormatDecompressed))
+            {
+                byte[] result = new byte[4 * width * height];
+                Marshal.Copy(decomp.GetImage(0).Pixels, result, 0, result.Length);
+
+                inputImage = null;
+                scratchImage.Dispose();
+
+                return result;
+            }
+        }
 
         internal static byte[] DecompressBC5(byte[] imageData, int width, int height)
         {

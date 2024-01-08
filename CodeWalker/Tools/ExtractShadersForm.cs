@@ -109,8 +109,11 @@ namespace CodeWalker.Tools
 
 
 
-                RpfManager rpfman = new RpfManager();
-                rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
+                RpfManager rpfman = RpfManager.GetInstance();
+                if (!rpfman.IsInited)
+                {
+                    rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
+                }
 
 
                 UpdateExtractStatus("Beginning shader extraction...");
@@ -127,10 +130,10 @@ namespace CodeWalker.Tools
                         }
                         try
                         {
-                            if (entry.NameLower.EndsWith(".fxc"))
+                            if (entry.IsExtension(".fxc"))
                             {
                                 UpdateExtractStatus(entry.Path);
-                                FxcFile fxc = rpfman.GetFile<FxcFile>(entry);
+                                FxcFile fxc = RpfManager.GetFile<FxcFile>(entry);
                                 if (fxc == null) throw new Exception("Couldn't load file.");
 
                                 string basepath = outputpath + "\\" + rpf.Name.Replace(".rpf", "");
@@ -212,7 +215,10 @@ namespace CodeWalker.Tools
                     ExtractStatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
     }

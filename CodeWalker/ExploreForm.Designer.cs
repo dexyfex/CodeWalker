@@ -1,4 +1,9 @@
-﻿namespace CodeWalker
+﻿using CodeWalker.Core.Utils;
+using System;
+
+using CodeWalker.WinForms;
+
+namespace CodeWalker
 {
     partial class ExploreForm
     {
@@ -13,11 +18,13 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
+            using var _ = new DisposableTimer("ExploreForm Dipose");
+            base.Dispose(disposing);
+            MainListView.Dispose();
             if (disposing && (components != null))
             {
                 components.Dispose();
             }
-            base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
@@ -119,6 +126,7 @@
             this.ListContextViewHexMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextExportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextExtractShadersMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractUncompressedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractAllMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -158,6 +166,7 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
+            this.openConsoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -409,6 +418,7 @@
             this.ViewSmallIconsMenu,
             this.ViewListMenu,
             this.ViewDetailsMenu,
+            this.openConsoleToolStripMenuItem,
             this.toolStripSeparator11,
             this.ViewThemeMenu});
             this.ViewMenu.Name = "ViewMenu";
@@ -418,21 +428,21 @@
             // ViewLargeIconsMenu
             // 
             this.ViewLargeIconsMenu.Name = "ViewLargeIconsMenu";
-            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewLargeIconsMenu.Text = "Large Icons";
             this.ViewLargeIconsMenu.Click += new System.EventHandler(this.ViewLargeIconsMenu_Click);
             // 
             // ViewSmallIconsMenu
             // 
             this.ViewSmallIconsMenu.Name = "ViewSmallIconsMenu";
-            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewSmallIconsMenu.Text = "Small Icons";
             this.ViewSmallIconsMenu.Click += new System.EventHandler(this.ViewSmallIconsMenu_Click);
             // 
             // ViewListMenu
             // 
             this.ViewListMenu.Name = "ViewListMenu";
-            this.ViewListMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewListMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewListMenu.Text = "List";
             this.ViewListMenu.Click += new System.EventHandler(this.ViewListMenu_Click);
             // 
@@ -441,14 +451,14 @@
             this.ViewDetailsMenu.Checked = true;
             this.ViewDetailsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewDetailsMenu.Name = "ViewDetailsMenu";
-            this.ViewDetailsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewDetailsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewDetailsMenu.Text = "Details";
             this.ViewDetailsMenu.Click += new System.EventHandler(this.ViewDetailsMenu_Click);
             // 
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(131, 6);
+            this.toolStripSeparator11.Size = new System.Drawing.Size(177, 6);
             // 
             // ViewThemeMenu
             // 
@@ -458,7 +468,7 @@
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
-            this.ViewThemeMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewThemeMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewThemeMenu.Text = "Theme";
             // 
             // ViewThemeWindowsMenu
@@ -506,35 +516,35 @@
             // ToolsBinSearchMenu
             // 
             this.ToolsBinSearchMenu.Name = "ToolsBinSearchMenu";
-            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsBinSearchMenu.Text = "Binary Search...";
             this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
             // 
             // ToolsAudioExplorerMenu
             // 
             this.ToolsAudioExplorerMenu.Name = "ToolsAudioExplorerMenu";
-            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsAudioExplorerMenu.Text = "Audio Explorer";
             this.ToolsAudioExplorerMenu.Click += new System.EventHandler(this.ToolsAudioExplorerMenu_Click);
             // 
             // ToolsRpfBrowserMenu
             // 
             this.ToolsRpfBrowserMenu.Name = "ToolsRpfBrowserMenu";
-            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsRpfBrowserMenu.Text = "Old RPF Browser";
             this.ToolsRpfBrowserMenu.Click += new System.EventHandler(this.ToolsRpfBrowserMenu_Click);
             // 
             // ToolsJenkGenMenu
             // 
             this.ToolsJenkGenMenu.Name = "ToolsJenkGenMenu";
-            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsJenkGenMenu.Text = "JenkGen";
             this.ToolsJenkGenMenu.Click += new System.EventHandler(this.ToolsJenkGenMenu_Click);
             // 
             // ToolsJenkIndMenu
             // 
             this.ToolsJenkIndMenu.Name = "ToolsJenkIndMenu";
-            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsJenkIndMenu.Text = "JenkInd";
             this.ToolsJenkIndMenu.Click += new System.EventHandler(this.ToolsJenkIndMenu_Click);
             // 
@@ -986,6 +996,7 @@
             this.ListContextViewMenu,
             this.ListContextViewHexMenu,
             this.toolStripSeparator2,
+            this.ListContextExtractShadersMenu,
             this.ListContextExportXmlMenu,
             this.ListContextExtractRawMenu,
             this.ListContextExtractUncompressedMenu,
@@ -1043,6 +1054,12 @@
             this.ListContextExportXmlMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextExportXmlMenu.Text = "Export XML...";
             this.ListContextExportXmlMenu.Click += new System.EventHandler(this.ListContextExportXmlMenu_Click);
+            this.ListContextExtractShadersMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextExportXmlMenu.Image")));
+            this.ListContextExtractShadersMenu.Name = "ListContextExportShadersMenu";
+            this.ListContextExtractShadersMenu.ShortcutKeyDisplayString = "Ctrl+S";
+            this.ListContextExtractShadersMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextExtractShadersMenu.Text = "Export Shaders...";
+            this.ListContextExtractShadersMenu.Click += new System.EventHandler(this.ListContextExportShaders_Click);
             // 
             // ListContextExtractRawMenu
             // 
@@ -1308,6 +1325,13 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
+            // openConsoleToolStripMenuItem
+            // 
+            this.openConsoleToolStripMenuItem.Name = "openConsoleToolStripMenuItem";
+            this.openConsoleToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openConsoleToolStripMenuItem.Text = "Open Console";
+            this.openConsoleToolStripMenuItem.Click += new System.EventHandler(this.ViewConsoleMenu_Click);
+            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1383,6 +1407,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem ListContextExportXmlMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextExtractAllMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextExtractShadersMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextImportSeparator;
         private System.Windows.Forms.ToolStripMenuItem ListContextCopyPathMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextEditSeparator;
@@ -1476,5 +1501,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
         private System.Windows.Forms.ToolStripMenuItem ListContextNewYtdFileMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsAudioExplorerMenu;
+        private System.Windows.Forms.ToolStripMenuItem openConsoleToolStripMenuItem;
     }
 }

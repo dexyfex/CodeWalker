@@ -48,14 +48,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { UpdateExtractStatus(text); }));
+                    Invoke(UpdateExtractStatus, text);
                 }
                 else
                 {
                     ExtractStatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void OutputFolderTextBox_TextChanged(object sender, EventArgs e)
@@ -121,7 +123,7 @@ namespace CodeWalker.Tools
 
 
 
-                RpfManager rpfman = new RpfManager();
+                RpfManager rpfman = RpfManager.GetInstance();
                 rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
 
 
@@ -142,11 +144,11 @@ namespace CodeWalker.Tools
                             bool extract = false;
                             if (endswith)
                             {
-                                extract = entry.NameLower.EndsWith(matchstr);
+                                extract = entry.Name.EndsWith(matchstr, StringComparison.OrdinalIgnoreCase);
                             }
                             else
                             {
-                                extract = entry.NameLower.Contains(matchstr);
+                                extract = entry.Name.Contains(matchstr, StringComparison.OrdinalIgnoreCase);
                             }
                             var fentry = entry as RpfFileEntry;
                             if (fentry == null)
@@ -164,8 +166,7 @@ namespace CodeWalker.Tools
                                     data = ResourceBuilder.Compress(data);
                                 }
 
-                                RpfResourceFileEntry rrfe = fentry as RpfResourceFileEntry;
-                                if (rrfe != null) //add resource header if this is a resource file.
+                                if (fentry is RpfResourceFileEntry rrfe) //add resource header if this is a resource file.
                                 {
                                     data = ResourceBuilder.AddResourceHeader(rrfe, data);
                                 }

@@ -1,4 +1,5 @@
-﻿/*
+﻿
+/*
     Copyright(c) 2015 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,19 +23,31 @@
 
 //shamelessly stolen
 
+using CommunityToolkit.HighPerformance.Helpers;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CodeWalker.GameFiles
 {
+    [SkipLocalsInit]
     public class GTACrypto
     {
 
-
+        public static byte[] DecryptAES(byte[] data, int length)
+        {
+            return DecryptAESData(data, GTA5Keys.PC_AES_KEY, length, 1);
+        }
         public static byte[] DecryptAES(byte[] data)
         {
             return DecryptAESData(data, GTA5Keys.PC_AES_KEY);
@@ -46,25 +59,41 @@ namespace CodeWalker.GameFiles
 
         public static byte[] DecryptAESData(byte[] data, byte[] key, int rounds = 1)
         {
-            var rijndael = Rijndael.Create();
-            rijndael.KeySize = 256;
-            rijndael.Key = key;
-            rijndael.BlockSize = 128;
-            rijndael.Mode = CipherMode.ECB;
-            rijndael.Padding = PaddingMode.None;
+            return DecryptAESData(data, key, data.Length, rounds);
+        }
 
-            var buffer = (byte[])data.Clone();
-            var length = data.Length - data.Length % 16;
+        public static byte[] DecryptAESData(byte[] data, byte[] key, int length, int rounds = 1)
+        {
+            using var aes = Aes.Create();
+            aes.KeySize = 256;
+            aes.Key = key;
+            aes.BlockSize = 128;
+            aes.Mode = CipherMode.ECB;
+            aes.Padding = PaddingMode.None;
+            //var rijndael = Rijndael.Create();
+            //rijndael.KeySize = 256;
+            //rijndael.Key = key;
+            //rijndael.BlockSize = 128;
+            //rijndael.Mode = CipherMode.ECB;
+            //rijndael.Padding = PaddingMode.None;
+
+            length = length - length % 16;
 
             // decrypt...
             if (length > 0)
             {
-                var decryptor = rijndael.CreateDecryptor();
+                using var decryptorAes = aes.CreateDecryptor();
                 for (var roundIndex = 0; roundIndex < rounds; roundIndex++)
-                    decryptor.TransformBlock(buffer, 0, length, buffer, 0);
+                {
+                    decryptorAes.TransformBlock(data, 0, length, data, 0);
+                }
+
+                //var decryptor = rijndael.CreateDecryptor();
+                //for (var roundIndex = 0; roundIndex < rounds; roundIndex++)
+                //    decryptor.TransformBlock(data, 0, length, data, 0);
             }
 
-            return buffer;
+            return data;
         }
         public static byte[] EncryptAESData(byte[] data, byte[] key, int rounds = 1)
         {
@@ -83,7 +112,9 @@ namespace CodeWalker.GameFiles
             {
                 var encryptor = rijndael.CreateEncryptor();
                 for (var roundIndex = 0; roundIndex < rounds; roundIndex++)
+                {
                     encryptor.TransformBlock(buffer, 0, length, buffer, 0);
+                }
             }
 
             return buffer;
@@ -92,72 +123,90 @@ namespace CodeWalker.GameFiles
 
 
 
-
-        public static byte[] GetNGKey(string name, uint length)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint[][] GetNGKey(string name, uint length)
         {
             uint hash = GTA5Hash.CalculateHash(name);
             uint keyidx = (hash + length + (101 - 40)) % 0x65;
             return GTA5Keys.PC_NG_KEYS[keyidx];
         }
 
-
-        public static byte[] DecryptNG(byte[] data, string name, uint length)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNG(byte[] data, string name, uint fileSize, int offset = 0, int? length = null)
         {
-            byte[] key = GetNGKey(name, length);
-            return DecryptNG(data, key);
+            var key = GetNGKey(name, fileSize);
+            length ??= data.Length;
+            DecryptNG(data.AsMemory(offset, length.Value), key);
         }
 
-        public static byte[] DecryptNG(byte[] data, byte[] key)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNG(Memory<byte> data, string name, uint fileSize)
         {
-            var decryptedData = new byte[data.Length];
-
-            var keyuints = new uint[key.Length / 4];
-            Buffer.BlockCopy(key, 0, keyuints, 0, key.Length);
-
-            for (int blockIndex = 0; blockIndex < data.Length / 16; blockIndex++)
-            {
-                var encryptedBlock = new byte[16];
-                Array.Copy(data, 16 * blockIndex, encryptedBlock, 0, 16);
-                var decryptedBlock = DecryptNGBlock(encryptedBlock, keyuints);
-                Array.Copy(decryptedBlock, 0, decryptedData, 16 * blockIndex, 16);
-            }
-
-            if (data.Length % 16 != 0)
-            {
-                var left = data.Length % 16;
-                Buffer.BlockCopy(data, data.Length - left, decryptedData, data.Length - left, left);
-            }
-
-            return decryptedData;
+            var key = GetNGKey(name, fileSize);
+            DecryptNG(data, key);
         }
 
-        public static byte[] DecryptNGBlock(byte[] data, uint[] key)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe static void DecryptNG(byte[] data, uint[][] key, int offset = 0, int? length = null)
         {
-            var buffer = data;
-
-            // prepare key...
-            var subKeys = new uint[17][];
-            for (int i = 0; i < 17; i++)
-            {
-                subKeys[i] = new uint[4];
-                subKeys[i][0] = key[4 * i + 0];
-                subKeys[i][1] = key[4 * i + 1];
-                subKeys[i][2] = key[4 * i + 2];
-                subKeys[i][3] = key[4 * i + 3];
-            }
-
-            buffer = DecryptNGRoundA(buffer, subKeys[0], GTA5Keys.PC_NG_DECRYPT_TABLES[0]);
-            buffer = DecryptNGRoundA(buffer, subKeys[1], GTA5Keys.PC_NG_DECRYPT_TABLES[1]);
-            for (int k = 2; k <= 15; k++)
-                buffer = DecryptNGRoundB(buffer, subKeys[k], GTA5Keys.PC_NG_DECRYPT_TABLES[k]);
-            buffer = DecryptNGRoundA(buffer, subKeys[16], GTA5Keys.PC_NG_DECRYPT_TABLES[16]);
-
-            return buffer;
+            length ??= data.Length;
+            DecryptNG(data.AsMemory(offset, length.Value), key);
         }
 
+        public readonly struct DecryptNGBLock : IAction
+        {
+            private readonly Memory<byte> arr;
+            private readonly uint[][] key;
 
-        // round 1,2,16
-        public static byte[] DecryptNGRoundA(byte[] data, uint[] key, uint[][] table)
+            public DecryptNGBLock(Memory<byte> array, uint[][] key)
+            {
+                this.arr = array;
+                this.key = key;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Invoke(int blockIndex)
+            {
+                DecryptNGBlock(arr.Slice(16 * blockIndex, 16).Span, key);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNG(in Memory<byte> data, uint[][] key)
+        {
+            var action = new DecryptNGBLock(data, key);
+            ParallelHelper.For(new Range(0, data.Length / 16), in action, 25);
+            //for (int blockIndex = 0; blockIndex < data.Length / 16; blockIndex++)
+            //{
+            //    DecryptNGBlock(data.Slice(16 * blockIndex, 16), key);
+            //}
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNGBlock(Span<byte> data, uint[][] key)
+        {
+            DecryptNGRoundA(data, key[0], GTA5Keys.PC_NG_DECRYPT_TABLES[0]);
+            DecryptNGRoundA(data, key[1], GTA5Keys.PC_NG_DECRYPT_TABLES[1]);
+            //for (int k = 2; k <= 15; k++)
+            DecryptNGRoundB(data, key[2], GTA5Keys.PC_NG_DECRYPT_TABLES[2]);
+            DecryptNGRoundB(data, key[3], GTA5Keys.PC_NG_DECRYPT_TABLES[3]);
+            DecryptNGRoundB(data, key[4], GTA5Keys.PC_NG_DECRYPT_TABLES[4]);
+            DecryptNGRoundB(data, key[5], GTA5Keys.PC_NG_DECRYPT_TABLES[5]);
+            DecryptNGRoundB(data, key[6], GTA5Keys.PC_NG_DECRYPT_TABLES[6]);
+            DecryptNGRoundB(data, key[7], GTA5Keys.PC_NG_DECRYPT_TABLES[7]);
+            DecryptNGRoundB(data, key[8], GTA5Keys.PC_NG_DECRYPT_TABLES[8]);
+            DecryptNGRoundB(data, key[9], GTA5Keys.PC_NG_DECRYPT_TABLES[9]);
+            DecryptNGRoundB(data, key[10], GTA5Keys.PC_NG_DECRYPT_TABLES[10]);
+            DecryptNGRoundB(data, key[11], GTA5Keys.PC_NG_DECRYPT_TABLES[11]);
+            DecryptNGRoundB(data, key[12], GTA5Keys.PC_NG_DECRYPT_TABLES[12]);
+            DecryptNGRoundB(data, key[13], GTA5Keys.PC_NG_DECRYPT_TABLES[13]);
+            DecryptNGRoundB(data, key[14], GTA5Keys.PC_NG_DECRYPT_TABLES[14]);
+            DecryptNGRoundB(data, key[15], GTA5Keys.PC_NG_DECRYPT_TABLES[15]);
+            DecryptNGRoundA(data, key[16], GTA5Keys.PC_NG_DECRYPT_TABLES[16]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DecryptNGRoundA(Span<byte> data, uint[] key, uint[][] table)
         {
             var x1 =
                 table[0][data[0]] ^
@@ -184,18 +233,19 @@ namespace CodeWalker.GameFiles
                 table[15][data[15]] ^
                 key[3];
 
-            var result = new byte[16];
-            Array.Copy(BitConverter.GetBytes(x1), 0, result, 0, 4);
-            Array.Copy(BitConverter.GetBytes(x2), 0, result, 4, 4);
-            Array.Copy(BitConverter.GetBytes(x3), 0, result, 8, 4);
-            Array.Copy(BitConverter.GetBytes(x4), 0, result, 12, 4);
-            return result;
+            Unsafe.WriteUnaligned(ref data[0], x1 | (ulong)x2 << 32);
+            Unsafe.WriteUnaligned(ref data[8], x3 | (ulong)x4 << 32);
+
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data[..4]), x1);
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(4, 4)), x2);
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(8, 4)), x3);
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(12, 4)), x4);
         }
-
-
 
         // round 3-15
-        public static byte[] DecryptNGRoundB(byte[] data, uint[] key, uint[][] table)
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe static void DecryptNGRoundB(Span<byte> data, Span<uint> key, uint[][] table)
         {
             var x1 =
                 table[0][data[0]] ^
@@ -222,34 +272,14 @@ namespace CodeWalker.GameFiles
                 table[12][data[12]] ^
                 key[3];
 
-            //var result = new byte[16];
-            //Array.Copy(BitConverter.GetBytes(x1), 0, result, 0, 4);
-            //Array.Copy(BitConverter.GetBytes(x2), 0, result, 4, 4);
-            //Array.Copy(BitConverter.GetBytes(x3), 0, result, 8, 4);
-            //Array.Copy(BitConverter.GetBytes(x4), 0, result, 12, 4);
-            //return result;
+            Unsafe.WriteUnaligned(ref data[0], x1 | (ulong)x2 << 32);
+            Unsafe.WriteUnaligned(ref data[8], x3 | (ulong)x4 << 32);
 
-            var result = new byte[16];
-            result[0] = (byte)((x1 >> 0) & 0xFF);
-            result[1] = (byte)((x1 >> 8) & 0xFF);
-            result[2] = (byte)((x1 >> 16) & 0xFF);
-            result[3] = (byte)((x1 >> 24) & 0xFF);
-            result[4] = (byte)((x2 >> 0) & 0xFF);
-            result[5] = (byte)((x2 >> 8) & 0xFF);
-            result[6] = (byte)((x2 >> 16) & 0xFF);
-            result[7] = (byte)((x2 >> 24) & 0xFF);
-            result[8] = (byte)((x3 >> 0) & 0xFF);
-            result[9] = (byte)((x3 >> 8) & 0xFF);
-            result[10] = (byte)((x3 >> 16) & 0xFF);
-            result[11] = (byte)((x3 >> 24) & 0xFF);
-            result[12] = (byte)((x4 >> 0) & 0xFF);
-            result[13] = (byte)((x4 >> 8) & 0xFF);
-            result[14] = (byte)((x4 >> 16) & 0xFF);
-            result[15] = (byte)((x4 >> 24) & 0xFF);
-            return result;
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data[..4]), x1);
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(4, 4)), x2);
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(8, 4)), x3);
+            //Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(data.Slice(12, 4)), x4);
         }
-
-
 
 
 
@@ -267,11 +297,11 @@ namespace CodeWalker.GameFiles
 
         public static byte[] EncryptNG(byte[] data, string name, uint length)
         {
-            byte[] key = GetNGKey(name, length);
+            var key = GetNGKey(name, length);
             return EncryptNG(data, key);
         }
 
-        public static byte[] EncryptNG(byte[] data, byte[] key)
+        public static byte[] EncryptNG(byte[] data, uint[][] key)
         {
             if ((GTA5Keys.PC_NG_ENCRYPT_TABLES == null) || (GTA5Keys.PC_NG_ENCRYPT_LUTs == null))
             {
@@ -280,14 +310,11 @@ namespace CodeWalker.GameFiles
 
             var encryptedData = new byte[data.Length];
 
-            var keyuints = new uint[key.Length / 4];
-            Buffer.BlockCopy(key, 0, keyuints, 0, key.Length);
-
             for (int blockIndex = 0; blockIndex < data.Length / 16; blockIndex++)
             {
                 byte[] decryptedBlock = new byte[16];
                 Array.Copy(data, 16 * blockIndex, decryptedBlock, 0, 16);
-                byte[] encryptedBlock = EncryptBlock(decryptedBlock, keyuints);
+                byte[] encryptedBlock = EncryptBlock(decryptedBlock, key);
                 Array.Copy(encryptedBlock, 0, encryptedData, 16 * blockIndex, 16);
             }
 
@@ -300,26 +327,15 @@ namespace CodeWalker.GameFiles
             return encryptedData;
         }
 
-        public static byte[] EncryptBlock(byte[] data, uint[] key)
+        public static byte[] EncryptBlock(byte[] data, uint[][] key)
         {
             var buffer = data;
 
-            // prepare key...
-            var subKeys = new uint[17][];
-            for (int i = 0; i < 17; i++)
-            {
-                subKeys[i] = new uint[4];
-                subKeys[i][0] = key[4 * i + 0];
-                subKeys[i][1] = key[4 * i + 1];
-                subKeys[i][2] = key[4 * i + 2];
-                subKeys[i][3] = key[4 * i + 3];
-            }
-
-            buffer = EncryptRoundA(buffer, subKeys[16], GTA5Keys.PC_NG_ENCRYPT_TABLES[16]);
+            buffer = EncryptRoundA(buffer, key[16], GTA5Keys.PC_NG_ENCRYPT_TABLES[16]);
             for (int k = 15; k >= 2; k--)
-                buffer = EncryptRoundB_LUT(buffer, subKeys[k], GTA5Keys.PC_NG_ENCRYPT_LUTs[k]);
-            buffer = EncryptRoundA(buffer, subKeys[1], GTA5Keys.PC_NG_ENCRYPT_TABLES[1]);
-            buffer = EncryptRoundA(buffer, subKeys[0], GTA5Keys.PC_NG_ENCRYPT_TABLES[0]);
+                buffer = EncryptRoundB_LUT(buffer, key[k], GTA5Keys.PC_NG_ENCRYPT_LUTs[k]);
+            buffer = EncryptRoundA(buffer, key[1], GTA5Keys.PC_NG_ENCRYPT_TABLES[1]);
+            buffer = EncryptRoundA(buffer, key[0], GTA5Keys.PC_NG_ENCRYPT_TABLES[0]);
 
             return buffer;
         }

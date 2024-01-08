@@ -92,32 +92,37 @@ namespace CodeWalker.Project.Panels
             else
             {
                 populatingui = true;
-                var md = Ymap.CMapData;
-                if (md.name.Hash == 0)
+                try
                 {
-                    string name = Path.GetFileNameWithoutExtension(Ymap.Name);
-                    JenkIndex.Ensure(name);
-                    md.name = new MetaHash(JenkHash.GenHash(name));
+                    var md = Ymap.CMapData;
+                    if (md.name.Hash == 0)
+                    {
+                        string name = Path.GetFileNameWithoutExtension(Ymap.Name);
+                        JenkIndex.Ensure(name);
+                        md.name = new MetaHash(JenkHash.GenHash(name));
+                    }
+
+                    var project = ProjectForm?.CurrentProjectFile;
+
+                    YmapNameTextBox.Text = md.name.ToString();
+                    YmapNameHashLabel.Text = "Hash: " + md.name.Hash.ToString();
+                    YmapParentTextBox.Text = md.parent.ToString();
+                    YmapParentHashLabel.Text = "Hash: " + md.parent.Hash.ToString();
+                    YmapEntitiesExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMin);
+                    YmapEntitiesExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMax);
+                    YmapStreamingExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMin);
+                    YmapStreamingExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMax);
+                    YmapFileLocationTextBox.Text = Ymap.RpfFileEntry?.Path ?? Ymap.FilePath;
+                    YmapProjectPathTextBox.Text = (project != null) ? project.GetRelativePath(Ymap.FilePath) : Ymap.FilePath;
+
+                    UpdateYmapFlagsUI(true, true);
+
+                    UpdateYmapPhysicsDictionariesUI();
                 }
-
-                var project = ProjectForm?.CurrentProjectFile;
-
-                YmapNameTextBox.Text = md.name.ToString();
-                YmapNameHashLabel.Text = "Hash: " + md.name.Hash.ToString();
-                YmapParentTextBox.Text = md.parent.ToString();
-                YmapParentHashLabel.Text = "Hash: " + md.parent.Hash.ToString();
-                YmapEntitiesExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMin);
-                YmapEntitiesExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMax);
-                YmapStreamingExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMin);
-                YmapStreamingExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMax);
-                YmapFileLocationTextBox.Text = Ymap.RpfFileEntry?.Path ?? Ymap.FilePath;
-                YmapProjectPathTextBox.Text = (project != null) ? project.GetRelativePath(Ymap.FilePath) : Ymap.FilePath;
-
-                UpdateYmapFlagsUI(true, true);
-
-                UpdateYmapPhysicsDictionariesUI();
-
-                populatingui = false;
+                finally
+                {
+                    populatingui = false;
+                }
 
                 ////struct CMapData:
                 //MetaHash name { get; set; } //8   8: Hash: 0: name
@@ -147,7 +152,8 @@ namespace CodeWalker.Project.Panels
 
         private void UpdateYmapFlagsUI(bool updateCheckboxes, bool updateTextboxes)
         {
-            if (Ymap == null) return;
+            if (Ymap == null)
+                return;
 
             var md = Ymap.CMapData;
             var flags = md.flags;
@@ -179,7 +185,7 @@ namespace CodeWalker.Project.Panels
 
         private void UpdateYmapPhysicsDictionariesUI()
         {
-            if ((Ymap == null) || (Ymap.physicsDictionaries == null))
+            if (Ymap?.physicsDictionaries == null || Ymap.physicsDictionaries.Length == 0)
             {
                 YmapPhysicsDictionariesTextBox.Text = string.Empty;
             }
@@ -202,8 +208,10 @@ namespace CodeWalker.Project.Panels
 
         private void SetYmapPhysicsDictionariesFromTextbox()
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
 
             List<MetaHash> hashes = new List<MetaHash>();
 
@@ -235,8 +243,10 @@ namespace CodeWalker.Project.Panels
 
         private void SetYmapFlagsFromCheckBoxes()
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
 
             uint flags = 0;
             uint contentFlags = 0;
@@ -272,14 +282,22 @@ namespace CodeWalker.Project.Panels
             }
 
             populatingui = true;
-            UpdateYmapFlagsUI(false, true); //update textbox
-            populatingui = false;
+            try
+            {
+                UpdateYmapFlagsUI(false, true); //update textbox
+            }
+            finally
+            {
+                populatingui = false;
+            }
         }
 
         private void SetYmapFlagsFromTextBoxes()
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
 
             uint flags = 0;
             uint contentFlags = 0;
@@ -301,14 +319,22 @@ namespace CodeWalker.Project.Panels
             }
 
             populatingui = true;
-            UpdateYmapFlagsUI(true, false); //update checkboxes
-            populatingui = false;
+            try
+            {
+                UpdateYmapFlagsUI(true, false); //update checkboxes
+            }
+            finally
+            {
+                populatingui = false;
+            }
         }
 
         private void CalcYmapFlags()
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
 
             lock (ProjectForm.ProjectSyncRoot)
             {
@@ -319,14 +345,21 @@ namespace CodeWalker.Project.Panels
             }
 
             populatingui = true;
-            UpdateYmapFlagsUI(true, true); //update checkboxes and textboxes
-            populatingui = false;
+            try
+            {
+                UpdateYmapFlagsUI(true, true); //update checkboxes and textboxes
+            } finally
+            {
+                populatingui = false;
+            }
         }
 
         private void CalcYmapExtents()
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
 
             lock (ProjectForm.ProjectSyncRoot)
             {
@@ -337,18 +370,24 @@ namespace CodeWalker.Project.Panels
             }
 
             populatingui = true;
-            var md = Ymap.CMapData;
-            YmapEntitiesExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMin);
-            YmapEntitiesExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMax);
-            YmapStreamingExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMin);
-            YmapStreamingExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMax);
-            populatingui = false;
+            try
+            {
+                var md = Ymap.CMapData;
+                YmapEntitiesExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMin);
+                YmapEntitiesExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.entitiesExtentsMax);
+                YmapStreamingExtentsMinTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMin);
+                YmapStreamingExtentsMaxTextBox.Text = FloatUtil.GetVector3String(md.streamingExtentsMax);
+            } finally
+            {
+                populatingui = false;
+            }
         }
 
 
         private void YmapNameTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
+            if (populatingui)
+                return;
             uint hash = 0;
             string name = YmapNameTextBox.Text;
             if (!uint.TryParse(name, out hash))//don't re-hash hashes
@@ -492,8 +531,10 @@ namespace CodeWalker.Project.Panels
 
         private void YmapEntitiesExtentsMinTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
             Vector3 v = FloatUtil.ParseVector3String(YmapEntitiesExtentsMinTextBox.Text);
             lock (ProjectForm.ProjectSyncRoot)
             {
@@ -507,8 +548,10 @@ namespace CodeWalker.Project.Panels
 
         private void YmapEntitiesExtentsMaxTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
             Vector3 v = FloatUtil.ParseVector3String(YmapEntitiesExtentsMaxTextBox.Text);
             lock (ProjectForm.ProjectSyncRoot)
             {
@@ -522,8 +565,10 @@ namespace CodeWalker.Project.Panels
 
         private void YmapStreamingExtentsMinTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
             Vector3 v = FloatUtil.ParseVector3String(YmapStreamingExtentsMinTextBox.Text);
             lock (ProjectForm.ProjectSyncRoot)
             {
@@ -537,8 +582,10 @@ namespace CodeWalker.Project.Panels
 
         private void YmapStreamingExtentsMaxTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (Ymap == null) return;
+            if (populatingui)
+                return;
+            if (Ymap == null)
+                return;
             Vector3 v = FloatUtil.ParseVector3String(YmapStreamingExtentsMaxTextBox.Text);
             lock (ProjectForm.ProjectSyncRoot)
             {

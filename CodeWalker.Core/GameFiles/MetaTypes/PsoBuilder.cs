@@ -46,7 +46,7 @@ namespace CodeWalker.GameFiles
 
         public PsoBuilderPointer AddItem<T>(MetaName type, T item) where T : struct
         {
-            byte[] data = MetaTypes.ConvertToBytes(item);
+            byte[] data = MetaTypes.ConvertToBytes(in item);
             return AddItem(type, data);
         }
 
@@ -62,10 +62,12 @@ namespace CodeWalker.GameFiles
             //    data = newdata; //make sure item size is multiple of 16... so pointers don't need sub offsets!
             //}
             int idx = block.AddItem(data);
-            PsoBuilderPointer r = new PsoBuilderPointer();
-            r.BlockID = block.Index + 1;
-            r.Offset = (idx * data.Length);
-            r.Length = data.Length;
+            PsoBuilderPointer r = new PsoBuilderPointer
+            {
+                BlockID = block.Index + 1,
+                Offset = (idx * data.Length),
+                Length = data.Length
+            };
             return r;
         }
 
@@ -89,10 +91,12 @@ namespace CodeWalker.GameFiles
             Buffer.BlockCopy(data, 0, newdata, 0, datalen);
             int offs = block.TotalSize;
             int idx = block.AddItem(newdata);
-            PsoBuilderPointer r = new PsoBuilderPointer();
-            r.BlockID = block.Index + 1;
-            r.Offset = offs; //(idx * data.Length);;
-            r.Length = length;
+            PsoBuilderPointer r = new PsoBuilderPointer
+            {
+                BlockID = block.Index + 1,
+                Offset = offs, //(idx * data.Length);;
+                Length = length
+            };
             return r;
         }
 
@@ -148,10 +152,12 @@ namespace CodeWalker.GameFiles
         {
             if ((arr == null) || (arr.Length == 0)) return new Array_StructurePointer();
             var ptr = AddItemArray((MetaName)MetaTypeName.PsoPOINTER, arr);
-            Array_StructurePointer sp = new Array_StructurePointer();
-            sp.Count1 = (ushort)arr.Length;
-            sp.Count2 = sp.Count1;
-            sp.Pointer = ptr.Pointer;
+            Array_StructurePointer sp = new Array_StructurePointer
+            {
+                Count1 = (ushort)arr.Length,
+                Count2 = (ushort)arr.Length,
+                Pointer = ptr.Pointer,
+            };
             return sp;
         }
 
@@ -172,10 +178,12 @@ namespace CodeWalker.GameFiles
             Buffer.BlockCopy(data, 0, newdata, 0, datalen);
             int offs = block.TotalSize;
             int idx = block.AddItem(newdata);
-            PsoBuilderPointer r = new PsoBuilderPointer();
-            r.BlockID = block.Index + 1;
-            r.Offset = offs;// (idx * data.Length);
-            r.Length = datalen; //actual length of string.
+            PsoBuilderPointer r = new PsoBuilderPointer
+            {
+                BlockID = block.Index + 1,
+                Offset = offs,// (idx * data.Length);
+                Length = datalen //actual length of string.
+            };
             return r;
         }
 
@@ -248,7 +256,7 @@ namespace CodeWalker.GameFiles
         {
             if (!StructureInfos.ContainsKey(name))
             {
-                PsoStructureInfo si = PsoTypes.GetStructureInfo(name);
+                PsoStructureInfo si = PsoTypesStructureInfo.GetStructureInfo(name);
                 if (si != null)
                 {
                     StructureInfos[name] = si;
@@ -259,7 +267,7 @@ namespace CodeWalker.GameFiles
         {
             if (!EnumInfos.ContainsKey(name))
             {
-                PsoEnumInfo ei = PsoTypes.GetEnumInfo(name);
+                PsoEnumInfo ei = PsoTypesEnumInfo.GetEnumInfo(name);
                 if (ei != null)
                 {
                     EnumInfos[name] = ei;
@@ -274,7 +282,7 @@ namespace CodeWalker.GameFiles
 
             if (valType == 0)
             {
-                inf = PsoTypes.GetStructureInfo((MetaName)MetaTypeName.ARRAYINFO); //default ARRAYINFO with pointer
+                inf = PsoTypesStructureInfo.GetStructureInfo((MetaName)MetaTypeName.ARRAYINFO); //default ARRAYINFO with pointer
                 if (!StructureInfos.ContainsKey(inf.IndexInfo.NameHash))
                 {
                     StructureInfos[inf.IndexInfo.NameHash] = inf;
@@ -282,7 +290,7 @@ namespace CodeWalker.GameFiles
                 return inf;
             }
 
-            var structInfo = PsoTypes.GetStructureInfo(valType);
+            var structInfo = PsoTypesStructureInfo.GetStructureInfo(valType);
             if (structInfo == null)
             { }//error?
 
@@ -396,8 +404,7 @@ namespace CodeWalker.GameFiles
             pso.SchemaSection.EntriesIdx = new PsoElementIndexInfo[schEntries.Count];
             for (int i = 0; i < schEntries.Count; i++)
             {
-                pso.SchemaSection.EntriesIdx[i] = new PsoElementIndexInfo();
-                pso.SchemaSection.EntriesIdx[i].NameHash = schEntries[i].IndexInfo.NameHash;
+                pso.SchemaSection.EntriesIdx[i] = new PsoElementIndexInfo(schEntries[i].IndexInfo.NameHash, 0);
             }
 
             if (STRFStrings.Count > 0)
@@ -422,10 +429,12 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < Blocks.Count; i++)
             {
                 var b = Blocks[i];
-                var e = new PsoDataMappingEntry();
-                e.NameHash = b.StructureNameHash;
-                e.Length = b.TotalSize;
-                e.Offset = offset;
+                var e = new PsoDataMappingEntry
+                {
+                    NameHash = b.StructureNameHash,
+                    Length = b.TotalSize,
+                    Offset = offset
+                };
                 offset += b.TotalSize;
                 pso.DataMapSection.Entries[i] = e;
             }
@@ -454,13 +463,7 @@ namespace CodeWalker.GameFiles
             return idx;
         }
 
-        public uint BasePointer
-        {
-            get
-            {
-                return (((uint)Index + 1) & 0xFFF);
-            }
-        }
+        public uint BasePointer => (((uint)Index + 1) & 0xFFF);
 
 
         //public MetaDataBlock GetMetaDataBlock()
@@ -484,16 +487,16 @@ namespace CodeWalker.GameFiles
 
     }
 
-    public struct PsoBuilderPointer
+    public readonly struct PsoBuilderPointer
     {
-        public int BlockID { get; set; } //1-based id
-        public int Offset { get; set; } //byte offset
-        public int Length { get; set; } //for temp use...
+        public int BlockID { get; init; } //1-based id
+        public int Offset { get; init; } //byte offset
+        public int Length { get; init; } //for temp use...
         public uint Pointer
         {
             get
             {
-                uint bidx = (((uint)BlockID) & 0xFFF);
+                uint bidx = ((uint)BlockID) & 0xFFF;
                 uint offs = (((uint)Offset) & 0xFFFFF) << 12;
                 return bidx + offs;
             }

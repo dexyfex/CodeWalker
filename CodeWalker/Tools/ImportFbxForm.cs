@@ -91,7 +91,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { ConvertComplete(); }));
+                    BeginInvoke(ConvertComplete);
                 }
                 else
                 {
@@ -100,7 +100,10 @@ namespace CodeWalker.Tools
                     Close();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
         public void UpdateStatus(string text)
@@ -109,14 +112,17 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateStatus(text); }));
+                    BeginInvoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
 
 

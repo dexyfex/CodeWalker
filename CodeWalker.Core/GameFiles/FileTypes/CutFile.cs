@@ -9,6 +9,7 @@ using System.Xml;
 
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using Collections.Pooled;
 
 namespace CodeWalker.GameFiles
 {
@@ -33,12 +34,10 @@ namespace CodeWalker.GameFiles
         {
             FileEntry = entry;
 
-            MemoryStream ms = new MemoryStream(data);
-
-            if (PsoFile.IsPSO(ms))
+            if (PsoFile.IsPSO(data.AsSpan(0, 4)))
             {
                 Pso = new PsoFile();
-                Pso.Load(ms);
+                Pso.Load(data);
 
                 var xml = PsoXml.GetXml(Pso);
                 XmlDocument doc = new XmlDocument();
@@ -47,10 +46,6 @@ namespace CodeWalker.GameFiles
 
                 CutsceneFile2 = new CutsceneFile2();
                 CutsceneFile2.ReadXml(node);
-
-            }
-            else
-            {
 
             }
         }
@@ -228,7 +223,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public static CutBase ConstructObject(string type)
+        public static CutBase? ConstructObject(string type)
         {
             switch (type)
             {
@@ -279,7 +274,7 @@ namespace CodeWalker.GameFiles
                 default: return null;
             }
         }
-        public static T ReadObject<T>(XmlNode node, string name) where T : IMetaXmlItem, new()
+        public static T? ReadObject<T>(XmlNode node, string name) where T : IMetaXmlItem, new()
         {
             var onode = node.SelectSingleNode(name);
             if (onode != null)
@@ -288,7 +283,7 @@ namespace CodeWalker.GameFiles
                 o.ReadXml(onode);
                 return o;
             }
-            return default(T);
+            return default;
         }
         public static object[] ReadObjectArray(XmlNode node, string name)
         {
@@ -298,7 +293,7 @@ namespace CodeWalker.GameFiles
                 var inodes = aNode.SelectNodes("Item");
                 if (inodes?.Count > 0)
                 {
-                    var oList = new List<object>();
+                    using var oList = new PooledList<object>();
                     foreach (XmlNode inode in inodes)
                     {
                         var type = Xml.GetStringAttribute(inode, "type");

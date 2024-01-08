@@ -1,10 +1,14 @@
-﻿using SharpDX;
+﻿using CodeWalker.Core.Utils;
+using Collections.Pooled;
+using Microsoft.Extensions.ObjectPool;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -27,33 +31,40 @@ namespace CodeWalker.GameFiles
         public CInteriorProxy[] AllCInteriorProxies { get; set; }
         public BoundsStoreItem[] AllBoundsStoreItems { get; set; }
 
+        [SkipLocalsInit]
         public void Load(byte[] data, RpfFileEntry entry)
         {
             FileEntry = entry;
 
-            MemoryStream ms = new MemoryStream(data);
-            BinaryReader br = new BinaryReader(ms);
+            using MemoryStream ms = new MemoryStream(data);
+            using BinaryReader br = new BinaryReader(ms);
 
-            StringBuilder sb = new StringBuilder();
+            Span<char> charArr = stackalloc char[100];
+
+            var length = 0;
             for (int i = 0; (i < 100) && (i < data.Length); i++)
             {
                 //read version string.
                 byte b = data[i];
-                if (b == 0) break;
-                sb.Append((char)b);
+                if (b == 0)
+                {
+                    break;
+                }
+
+                charArr[i] = (char)b;
+                length++;
             }
-            Version = sb.ToString().Replace("[VERSION]", "").Replace("\r", "").Replace("\n", "");
-            sb.Clear();
+            Version = new string(charArr.Slice(0, length)).Replace("[VERSION]", "").Replace("\r", "").Replace("\n", "");
+            length = 0;
             int lastn = 0;
             int lspos = 0;
             uint structcount = 0;
             uint modlen;
             bool indates = false;
-            List<string> lines = new List<string>();
-            var dates = new List<CacheFileDate>();
-            var allMapNodes = new List<MapDataStoreNode>();
-            var allCInteriorProxies = new List<CInteriorProxy>();
-            var allBoundsStoreItems = new List<BoundsStoreItem>();
+            using var dates = new PooledList<CacheFileDate>();
+            var allMapNodes = PooledListPool<MapDataStoreNode>.Shared.Get();
+            using var allCInteriorProxies = new PooledList<CInteriorProxy>();;
+            using var allBoundsStoreItems = new PooledList<BoundsStoreItem>();
             for (int i = 100; i < data.Length; i++)
             {
                 byte b = data[i];
@@ -62,9 +73,7 @@ namespace CodeWalker.GameFiles
                 if (b == 0xA)
                 {
                     lastn = i;
-                    string line = sb.ToString();
-                    lines.Add(line);
-                    switch (line)
+                    switch (charArr.Slice(0, length))
                     {
                         case "<fileDates>":
                             indates = true;
@@ -98,8 +107,6 @@ namespace CodeWalker.GameFiles
                             {
                                 allCInteriorProxies.Add(new CInteriorProxy(br));
                             }
-                            if (allCInteriorProxies.Count != structcount)
-                            { }//all pass here
                             i += (int)(modlen + 4);
                             break;
                         case "BoundsStore":
@@ -111,25 +118,23 @@ namespace CodeWalker.GameFiles
                             {
                                 allBoundsStoreItems.Add(new BoundsStoreItem(br));
                             }
-                            if (allBoundsStoreItems.Count != structcount)
-                            { }//all pass here
                             i += (int)(modlen + 4);
                             break;
                         default:
-                            if (!indates)
-                            { } //just testing
-                            else
+                            if (indates)
                             {
+                                string line = new string(charArr.Slice(0, length));
                                 dates.Add(new CacheFileDate(line));//eg: 2740459947 (hash of: platform:/data/cdimages/scaleform_frontend.rpf) 130680580712018938 8944
                             }
                             break;
                     }
 
-                    sb.Clear();
+                    length = 0;
                 }
                 else
                 {
-                    sb.Append((char)b);
+                    charArr[length] = (char)b;
+                    length++;
                 }
             }
             FileDates = dates.ToArray();
@@ -137,8 +142,10 @@ namespace CodeWalker.GameFiles
             AllCInteriorProxies = allCInteriorProxies.ToArray();
             AllBoundsStoreItems = allBoundsStoreItems.ToArray();
 
+            PooledListPool<MapDataStoreNode>.Shared.Return(allMapNodes);
+
             MapNodeDict = new Dictionary<uint, MapDataStoreNode>();
-            var rootMapNodes = new List<MapDataStoreNode>();
+            var rootMapNodes = PooledListPool<MapDataStoreNode>.Shared.Get();
             foreach (var mapnode in AllMapNodes)
             {
                 MapNodeDict[mapnode.Name] = mapnode;
@@ -146,33 +153,26 @@ namespace CodeWalker.GameFiles
                 {
                     rootMapNodes.Add(mapnode);
                 }
-                if (mapnode.UnkExtra != null)
-                { }//notsure what to do with this
             }
             foreach (var mapnode in AllMapNodes)
             {
-                MapDataStoreNode pnode;
-                if (MapNodeDict.TryGetValue(mapnode.ParentName, out pnode))
+                if (MapNodeDict.TryGetValue(mapnode.ParentName, out MapDataStoreNode pnode))
                 {
                     pnode.AddChildToList(mapnode);
                 }
-                else if ((mapnode.ParentName != 0))
-                { }
             }
             foreach (var mapnode in AllMapNodes)
             {
                 mapnode.ChildrenListToArray();
             }
             RootMapNodes = rootMapNodes.ToArray();
+            PooledListPool<MapDataStoreNode>.Shared.Return(rootMapNodes);
 
 
 
             BoundsStoreDict = new Dictionary<MetaHash, BoundsStoreItem>();
             foreach (BoundsStoreItem item in AllBoundsStoreItems)
             {
-                BoundsStoreItem mbsi = null;
-                if (BoundsStoreDict.TryGetValue(item.Name, out mbsi))
-                { }
                 BoundsStoreDict[item.Name] = item;
             }
 
@@ -190,14 +190,11 @@ namespace CodeWalker.GameFiles
                 {
                     mnode.AddInteriorToList(prx);
                 }
-                else
-                { }
             }
             foreach (var mapnode in AllMapNodes)
             {
                 mapnode.InteriorProxyListToArray();
             }
-
 
             br.Dispose();
             ms.Dispose();
@@ -401,7 +398,7 @@ namespace CodeWalker.GameFiles
 
         public string ToCacheFileString()
         {
-            return FileName.Hash.ToString() + " " + TimeStamp.ToFileTimeUtc().ToString() + " " + FileID.ToString();
+            return $"{FileName.Hash} {TimeStamp.ToFileTimeUtc()} {FileID}";
         }
 
         public void WriteXml(StringBuilder sb, int indent)
@@ -419,15 +416,18 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return FileName.ToString() + ", " + TimeStamp.ToString() + ", " + FileID.ToString();
+            return $"{FileName}, {TimeStamp}, {FileID}";
         }
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class BoundsStoreItem : IMetaXmlItem
     {
         public MetaHash Name { get; set; }
-        public Vector3 Min { get; set; }
-        public Vector3 Max { get; set; }
+        public Vector3 _Min;
+        public ref Vector3 Min => ref _Min;
+
+        public Vector3 _Max;
+        public ref Vector3 Max => ref _Max;
         public uint Layer { get; set; }
 
         public BoundsStoreItem()
@@ -472,10 +472,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Name.ToString() + ", " +
-                   Min.ToString() + ", " +
-                   Max.ToString() + ", " +
-                   Layer.ToString();
+            return $"{Name}, {Min}, {Max}, {Layer}";
         }
     }
 
@@ -769,19 +766,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Unk01.ToString() + ", " +
-                   Unk02.ToString() + ", " +
-                   Unk03.ToString() + ", " +
-                   Name.ToString() + ", " +
-                   Parent.ToString() + ", " +
-                   Position.ToString() + ", " +
-                   Orientation.ToString() + ", " +
-                   BBMin.ToString() + ", " +
-                   BBMax.ToString() + ", " +
-                   Unk11.ToString() + ", " +
-                   Unk12.ToString() + ", " +
-                   Unk13.ToString() + ", " +
-                   Unk14.ToString();
+            return $"{Unk01}, {Unk02}, {Unk03}, {Name}, {Parent}, {Position}, {Orientation}, {BBMin}, {BBMax}, {Unk11}, {Unk12}, {Unk13}, {Unk14}";
         }
     }
 
@@ -790,10 +775,10 @@ namespace CodeWalker.GameFiles
         public MetaHash Name { get; set; }
         public MetaHash ParentName { get; set; }
         public uint ContentFlags { get; set; }
-        public Vector3 streamingExtentsMin { get; set; }
-        public Vector3 streamingExtentsMax { get; set; }
-        public Vector3 entitiesExtentsMin { get; set; }
-        public Vector3 entitiesExtentsMax { get; set; }
+        public Vector3 streamingExtentsMin;
+        public Vector3 streamingExtentsMax;
+        public Vector3 entitiesExtentsMin;
+        public Vector3 entitiesExtentsMax;
         public byte Unk1 { get; set; }
         public byte Unk2 { get; set; }
         public byte Unk3 { get; set; }
@@ -802,10 +787,10 @@ namespace CodeWalker.GameFiles
         public MapDataStoreNodeExtra UnkExtra { get; set; }
 
         public MapDataStoreNode[] Children { get; set; }
-        private List<MapDataStoreNode> ChildrenList; //used when building the array
+        private PooledList<MapDataStoreNode>? ChildrenList; //used when building the array
 
         public CInteriorProxy[] InteriorProxies { get; set; }
-        private List<CInteriorProxy> InteriorProxyList;
+        private PooledList<CInteriorProxy>? InteriorProxyList;
 
         public MapDataStoreNode()
         { }
@@ -832,15 +817,6 @@ namespace CodeWalker.GameFiles
             Unk2 = br.ReadByte(); //lod flag? - primary map files
             Unk3 = br.ReadByte(); //slod flag?
             Unk4 = br.ReadByte();
-
-            if (Unk1 != 0)
-            { }
-            if (Unk2 != 0)
-            { }
-            if (Unk3 != 0)
-            { }
-            if (Unk4 != 0)
-            { } //no hits here now..
 
             //if (Unk4 == 0xFE)
             //{
@@ -903,49 +879,38 @@ namespace CodeWalker.GameFiles
             Unk4 = (byte)Xml.GetChildUIntAttribute(node, "unk4");
         }
 
-
         public void AddChildToList(MapDataStoreNode child)
         {
-            if (ChildrenList == null)
-            {
-                ChildrenList = new List<MapDataStoreNode>();
-            }
+            ChildrenList ??= PooledListPool<MapDataStoreNode>.Shared.Get();
             ChildrenList.Add(child);
         }
         public void ChildrenListToArray()
         {
-            if (ChildrenList != null)
+            if (ChildrenList is not null)
             {
                 Children = ChildrenList.ToArray();
+                PooledListPool<MapDataStoreNode>.Shared.Return(ChildrenList);
                 ChildrenList = null; //plz get this GC
             }
         }
         public void AddInteriorToList(CInteriorProxy iprx)
         {
-            if (InteriorProxyList == null)
-            {
-                InteriorProxyList = new List<CInteriorProxy>();
-            }
+            InteriorProxyList ??= PooledListPool<CInteriorProxy>.Shared.Get();
             InteriorProxyList.Add(iprx);
         }
         public void InteriorProxyListToArray()
         {
-            if (InteriorProxyList != null)
+            if (InteriorProxyList is not null)
             {
                 InteriorProxies = InteriorProxyList.ToArray();
+                PooledListPool<CInteriorProxy>.Shared.Return(InteriorProxyList);
                 InteriorProxyList = null; //plz get this GC
             }
         }
 
         public override string ToString()
         {
-            return Name.ToString() + ", " +
-                   ParentName.ToString() + ", " +
-                   ContentFlags.ToString() + ", " +
-                   streamingExtentsMin.ToString() + ", " +
-                   streamingExtentsMax.ToString() + ", " +
-                   entitiesExtentsMin.ToString() + ", " +
-                   entitiesExtentsMax.ToString();// + ", " +
+            return $"{Name}, {ParentName}, {ContentFlags}, {streamingExtentsMin}, {streamingExtentsMax}, {entitiesExtentsMin}, {entitiesExtentsMax}";// + ", " +
         }
     }
 
@@ -966,16 +931,24 @@ namespace CodeWalker.GameFiles
         {
             get
             {
-                StringBuilder sb = new StringBuilder();
-                if (Unk02 != null)
+                if (Unk02 is null)
+                    return string.Empty;
+
+                StringBuilder sb = MetaXmlBase.StringBuilderPool.Get();
+                try
                 {
-                    for (int i = 0; i < Unk02.Length; i++)
+                    foreach (var b in Unk02)
                     {
-                        if (Unk02[i] == 0) break;
-                        sb.Append((char)Unk02[i]);
+                        if (b == 0)
+                            break;
+                        sb.Append((char)b);
                     }
+                    return sb.ToString();
                 }
-                return sb.ToString();
+                finally
+                {
+                    MetaXmlBase.StringBuilderPool.Return(sb);
+                }
             }
         }
 
@@ -1021,7 +994,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Unk01.ToString() + ", " + Unk02str;
+            return $"{Unk01}, {Unk02str}";
         }
     }
 
@@ -1032,21 +1005,28 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(CacheDatFile cdf)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if (cdf != null)
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                var name = "CacheFile";
+                sb.AppendLine(XmlHeader);
 
-                OpenTag(sb, 0, name);
+                if (cdf != null)
+                {
+                    var name = "CacheFile";
 
-                cdf.WriteXml(sb, 1);
+                    OpenTag(sb, 0, name);
 
-                CloseTag(sb, 0, name);
+                    cdf.WriteXml(sb, 1);
+
+                    CloseTag(sb, 0, name);
+                }
+
+                return sb.ToString();
             }
-
-            return sb.ToString();
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
 
 

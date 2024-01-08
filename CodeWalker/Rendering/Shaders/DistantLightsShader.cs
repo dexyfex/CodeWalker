@@ -12,6 +12,7 @@ using Device = SharpDX.Direct3D11.Device;
 using Buffer = SharpDX.Direct3D11.Buffer;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -23,7 +24,7 @@ namespace CodeWalker.Rendering
         public float Pad0;
     }
 
-    public class DistantLightsShader : Shader
+    public class DistantLightsShader : Shader, IDisposable
     {
         bool disposed = false;
 
@@ -41,8 +42,9 @@ namespace CodeWalker.Rendering
 
         public DistantLightsShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\DistantLightsVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\DistantLightsPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "DistantLightsVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "DistantLightsPS.cso"));
 
             lightsvs = new VertexShader(device, vsbytes);
             lightsps = new PixelShader(device, psbytes);
@@ -86,7 +88,7 @@ namespace CodeWalker.Rendering
             context.InputAssembler.InputLayout = layout;
             return true;
         }
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             VSSceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             VSSceneVars.Vars.ViewInv = Matrix.Transpose(camera.ViewInvMatrix);

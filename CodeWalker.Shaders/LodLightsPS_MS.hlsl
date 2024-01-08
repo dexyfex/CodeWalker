@@ -26,7 +26,8 @@ float4 main(VS_Output input) : SV_TARGET
     for (int i = 0; i < sc; i++)
     {
         float depth = DepthTex.Load(ssloc, i);
-        if (depth == 0) continue; //no existing subpixel rendered here
+        if (depth == 0)
+            continue; //no existing subpixel rendered here
     
         float4 diffuse = DiffuseTex.Load(ssloc, i);
         float4 normal = NormalTex.Load(ssloc, i);
@@ -38,15 +39,16 @@ float4 main(VS_Output input) : SV_TARGET
         float3 norm = normal.xyz * 2 - 1;
     
         float4 colour = DeferredLODLight(camRel, norm, diffuse, specular, irradiance, input.IID);
+        if (colour.a <= 0)
+            discard;
         
         c += colour;
-        d += depth;
     }
     
     c *= SampleMult;
-    d *= SampleMult;
     
-    if (d <= 0) discard;
+    if (c.a <= 0)
+        discard;
 
     return c;
 }

@@ -12,6 +12,7 @@ using CodeWalker.GameFiles;
 using System.IO;
 using SharpDX.DXGI;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -71,9 +72,10 @@ namespace CodeWalker.Rendering
 
         public BoundsShader(Device device)
         {
-            byte[] spherevsbytes = File.ReadAllBytes("Shaders\\BoundingSphereVS.cso");
-            byte[] boxvsbytes = File.ReadAllBytes("Shaders\\BoundingBoxVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\BoundsPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] spherevsbytes = File.ReadAllBytes(Path.Combine(folder, "BoundingSphereVS.cso"));
+            byte[] boxvsbytes = File.ReadAllBytes(Path.Combine(folder, "BoundingBoxVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "BoundsPS.cso"));
 
             spherevs = new VertexShader(device, spherevsbytes);
             boxvs = new VertexShader(device, boxvsbytes);
@@ -124,7 +126,7 @@ namespace CodeWalker.Rendering
             return true;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             switch (mode)
             {

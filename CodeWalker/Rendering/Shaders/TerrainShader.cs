@@ -12,6 +12,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 using SharpDX;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -101,15 +102,16 @@ namespace CodeWalker.Rendering
 
         public TerrainShader(Device device)
         {
-            byte[] vspncct = File.ReadAllBytes("Shaders\\TerrainVS_PNCCT.cso");
-            byte[] vspncctt = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTT.cso");
-            byte[] vspnccttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTTX.cso");
-            byte[] vspncctttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTTTX.cso");
-            byte[] vspncctx = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTX.cso");
-            byte[] vspnctttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTTX.cso");
-            byte[] vspncttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTX.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\TerrainPS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\TerrainPS_Deferred.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vspncct = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCT.cso"));
+            byte[] vspncctt = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCTT.cso"));
+            byte[] vspnccttx = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCTTX.cso"));
+            byte[] vspncctttx = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCTTTX.cso"));
+            byte[] vspncctx = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCCTX.cso"));
+            byte[] vspnctttx = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCTTTX.cso"));
+            byte[] vspncttx = File.ReadAllBytes(Path.Combine(folder, "TerrainVS_PNCTTX.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "TerrainPS.cso"));
+            byte[] psdefbytes = File.ReadAllBytes(Path.Combine(folder, "TerrainPS_Deferred.cso"));
 
             pncctvs = new VertexShader(device, vspncct);
             pnccttvs = new VertexShader(device, vspncctt);
@@ -278,7 +280,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             uint rendermode = 0;
             uint rendermodeind = 1;
@@ -332,10 +334,7 @@ namespace CodeWalker.Rendering
             PSSceneVars.Update(context);
             PSSceneVars.SetPSCBuffer(context, 0);
 
-            if (shadowmap != null)
-            {
-                shadowmap.SetFinalRenderResources(context);
-            }
+            shadowmap?.SetFinalRenderResources(context);
         }
 
         public override void SetEntityVars(DeviceContext context, ref RenderableInst rend)
@@ -383,7 +382,7 @@ namespace CodeWalker.Rendering
                     if (geom.HDTextureEnable)
                     {
                         var hdtex = geom.RenderableTexturesHD[i];
-                        if ((hdtex != null) && (hdtex.IsLoaded))
+                        if (hdtex is not null && hdtex.IsLoaded)
                         {
                             itex = hdtex;
                         }

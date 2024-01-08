@@ -11,6 +11,7 @@ using System.Collections.Concurrent;
 using CodeWalker.GameFiles;
 using System.Threading;
 using CodeWalker.Properties;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -20,7 +21,7 @@ namespace CodeWalker.Rendering
         public DateTime LastUnload = DateTime.UtcNow;
         public double CacheTime = Settings.Default.GPUCacheTime;// 10.0; //seconds to keep something that's not used
         public double UnloadTime = Settings.Default.GPUCacheFlushTime;// 0.1; //seconds between running unload cycles
-        public int MaxItemsPerLoop = 1; //to keep things flowing
+        public int MaxItemsPerLoop = 3; //to keep things flowing
 
         public long TotalGraphicsMemoryUse
         {
@@ -117,6 +118,11 @@ namespace CodeWalker.Rendering
         {
             currentDevice = null;
 
+            Clear();
+        }
+
+        public void Clear()
+        {
             renderables.Clear();
             textures.Clear();
             boundcomps.Clear();
@@ -129,59 +135,69 @@ namespace CodeWalker.Rendering
 
         public bool ContentThreadProc()
         {
-            if (currentDevice == null) return false; //can't do anything with no device
+            if (currentDevice == null)
+                return false; //can't do anything with no device
 
             Monitor.Enter(updateSyncRoot);
-
-
-            //load the queued items if possible
-            int renderablecount = renderables.LoadProc(currentDevice, MaxItemsPerLoop);
-            int texturecount = textures.LoadProc(currentDevice, MaxItemsPerLoop);
-            int boundcompcount = boundcomps.LoadProc(currentDevice, MaxItemsPerLoop);
-            int instbatchcount = instbatches.LoadProc(currentDevice, MaxItemsPerLoop);
-            int lodlightcount = lodlights.LoadProc(currentDevice, MaxItemsPerLoop);
-            int distlodlightcount = distlodlights.LoadProc(currentDevice, MaxItemsPerLoop);
-            int pathbatchcount = pathbatches.LoadProc(currentDevice, MaxItemsPerLoop);
-            int waterquadcount = waterquads.LoadProc(currentDevice, MaxItemsPerLoop);
-
-
-            bool itemsStillPending = 
-                (renderablecount >= MaxItemsPerLoop) ||
-                (texturecount >= MaxItemsPerLoop) ||
-                (boundcompcount >= MaxItemsPerLoop) ||
-                (instbatchcount >= MaxItemsPerLoop) ||
-                (lodlightcount >= MaxItemsPerLoop) ||
-                (distlodlightcount >= MaxItemsPerLoop) ||
-                (pathbatchcount >= MaxItemsPerLoop) ||
-                (waterquadcount >= MaxItemsPerLoop);
-
-
-            //todo: change this to unload only when necessary (ie when something is loaded)
-            var now = DateTime.UtcNow;
-            var deltat = (now - LastUpdate).TotalSeconds;
-            var unloadt = (now - LastUnload).TotalSeconds;
-            if ((unloadt > UnloadTime) && (deltat < 0.25)) //don't try the unload on every loop... or when really busy
+            try
             {
+                //load the queued items if possible
+                int renderablecount = renderables.LoadProc(currentDevice, MaxItemsPerLoop);
+                int texturecount = textures.LoadProc(currentDevice, MaxItemsPerLoop);
+                int boundcompcount = boundcomps.LoadProc(currentDevice, MaxItemsPerLoop);
+                int instbatchcount = instbatches.LoadProc(currentDevice, MaxItemsPerLoop);
+                int lodlightcount = lodlights.LoadProc(currentDevice, MaxItemsPerLoop);
+                int distlodlightcount = distlodlights.LoadProc(currentDevice, MaxItemsPerLoop);
+                int pathbatchcount = pathbatches.LoadProc(currentDevice, MaxItemsPerLoop);
+                int waterquadcount = waterquads.LoadProc(currentDevice, MaxItemsPerLoop);
 
-                //unload items that haven't been used in longer than the cache period.
-                renderables.UnloadProc();
-                textures.UnloadProc();
-                boundcomps.UnloadProc();
-                instbatches.UnloadProc();
-                lodlights.UnloadProc();
-                distlodlights.UnloadProc();
-                pathbatches.UnloadProc();
-                waterquads.UnloadProc();
 
-                LastUnload = DateTime.UtcNow;
+                bool itemsStillPending =
+                    (renderablecount >= MaxItemsPerLoop) ||
+                    (texturecount >= MaxItemsPerLoop) ||
+                    (boundcompcount >= MaxItemsPerLoop) ||
+                    (instbatchcount >= MaxItemsPerLoop) ||
+                    (lodlightcount >= MaxItemsPerLoop) ||
+                    (distlodlightcount >= MaxItemsPerLoop) ||
+                    (pathbatchcount >= MaxItemsPerLoop) ||
+                    (waterquadcount >= MaxItemsPerLoop);
+
+
+                //todo: change this to unload only when necessary (ie when something is loaded)
+                var now = DateTime.UtcNow;
+                var deltat = (now - LastUpdate).TotalSeconds;
+                var unloadt = (now - LastUnload).TotalSeconds;
+                //Console.WriteLine($"deltat: {deltat}; unloadt: {unloadt}; UnloadTime: {UnloadTime};");
+                if ((unloadt > UnloadTime) && (deltat < 1.0)) //don't try the unload on every loop... or when really busy
+                {
+
+                    //unload items that haven't been used in longer than the cache period.
+                    renderables.UnloadProc();
+                    textures.UnloadProc();
+                    boundcomps.UnloadProc();
+                    instbatches.UnloadProc();
+                    lodlights.UnloadProc();
+                    distlodlights.UnloadProc();
+                    pathbatches.UnloadProc();
+                    waterquads.UnloadProc();
+
+                    LastUnload = DateTime.UtcNow;
+                }
+
+
+                LastUpdate = DateTime.UtcNow;
+
+                return itemsStillPending;
             }
-
-
-            LastUpdate = DateTime.UtcNow;
-
-            Monitor.Exit(updateSyncRoot);
-
-            return itemsStillPending;
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+                return true;
+            }
+            finally
+            {
+                Monitor.Exit(updateSyncRoot);
+            }
         }
 
         public void RenderThreadSync()
@@ -196,35 +212,35 @@ namespace CodeWalker.Rendering
             waterquads.RenderThreadSync(currentDevice);
         }
 
-        public Renderable GetRenderable(DrawableBase drawable)
+        public Renderable? GetRenderable(DrawableBase drawable)
         {
             return renderables.Get(drawable);
         }
-        public RenderableTexture GetRenderableTexture(Texture texture)
+        public RenderableTexture? GetRenderableTexture(Texture texture)
         {
             return textures.Get(texture);
         }
-        public RenderableBoundComposite GetRenderableBoundComp(Bounds bound)
+        public RenderableBoundComposite? GetRenderableBoundComp(Bounds bound)
         {
             return boundcomps.Get(bound);
         }
-        public RenderableInstanceBatch GetRenderableInstanceBatch(YmapGrassInstanceBatch batch)
+        public RenderableInstanceBatch? GetRenderableInstanceBatch(YmapGrassInstanceBatch batch)
         {
             return instbatches.Get(batch);
         }
-        public RenderableDistantLODLights GetRenderableDistantLODLights(YmapDistantLODLights lights)
+        public RenderableDistantLODLights? GetRenderableDistantLODLights(YmapDistantLODLights lights)
         {
             return distlodlights.Get(lights);
         }
-        public RenderableLODLights GetRenderableLODLights(YmapFile ymap)
+        public RenderableLODLights? GetRenderableLODLights(YmapFile ymap)
         {
             return lodlights.Get(ymap);
         }
-        public RenderablePathBatch GetRenderablePathBatch(BasePathData pathdata)
+        public RenderablePathBatch? GetRenderablePathBatch(BasePathData pathdata)
         {
             return pathbatches.Get(pathdata);
         }
-        public RenderableWaterQuad GetRenderableWaterQuad(WaterQuad quad)
+        public RenderableWaterQuad? GetRenderableWaterQuad(WaterQuad quad)
         {
             return waterquads.Get(quad);
         }
@@ -255,19 +271,32 @@ namespace CodeWalker.Rendering
 
     }
 
+    [Flags]
+    public enum LoadFlags
+    {
+        None = 0,
+        IsLoaded = 1,
+        LoadQueued = 2,
+    }
 
-    public abstract class RenderableCacheItem<TKey>
+    public abstract class RenderableCacheItem<TKey>: IDisposable
     {
         public TKey Key;
         public volatile bool IsLoaded = false;
         public volatile bool LoadQueued = false;
-        public long LastUseTime = 0;
+        public Stopwatch LastUseTime = Stopwatch.StartNew();
         //public DateTime LastUseTime { get; set; }
         public long DataSize { get; set; }
 
         public abstract void Init(TKey key);
         public abstract void Load(Device device);
         public abstract void Unload();
+
+        public void Dispose()
+        {
+            Unload();
+            GC.SuppressFinalize(this);
+        }
     }
 
     public class RenderableCacheLookup<TKey, TVal> where TVal: RenderableCacheItem<TKey>, new()
@@ -281,43 +310,23 @@ namespace CodeWalker.Rendering
         public long CacheUse = 0;
         public double CacheTime;
         public int LoadedCount = 0;//temporary, per loop
-        private long LastFrameTime = 0;
 
         public RenderableCacheLookup(long limit, double time)
         {
             CacheLimit = limit;
             CacheTime = time;
-            LastFrameTime = DateTime.UtcNow.ToBinary();
         }
 
-        public int QueueLength
-        {
-            get
-            {
-                return itemsToLoad.Count;
-            }
-        }
-        public int CurrentLoadedCount
-        {
-            get
-            {
-                return loadeditems.Count;
-            }
-        }
-        public int CurrentCacheCount
-        {
-            get
-            {
-                return cacheitems.Count;
-            }
-        }
+        public int QueueLength => itemsToLoad.Count;
+        public int CurrentLoadedCount => loadeditems.Count;
+        public int CurrentCacheCount => cacheitems.Count;
 
         public void Clear()
         {
             itemsToLoad = new ConcurrentQueue<TVal>();
             foreach (TVal rnd in loadeditems)
             {
-                rnd.Unload();
+                rnd.Dispose();
             }
             loadeditems.Clear();
             cacheitems.Clear();
@@ -333,26 +342,39 @@ namespace CodeWalker.Rendering
             LoadedCount = 0;
             while (itemsToLoad.TryDequeue(out item))
             {
-                if (item.IsLoaded) continue; //don't load it again...
-                LoadedCount++;
-                long gcachefree = CacheLimit - Interlocked.Read(ref CacheUse);// CacheUse;
-                if (gcachefree > item.DataSize)
+                if (item.IsLoaded)
                 {
-                    try
+                    item.LoadQueued = false;
+                    continue;
+                }
+                    
+                try
+                {
+                    LoadedCount++;
+                    long gcachefree = CacheLimit - Interlocked.Read(ref CacheUse);// CacheUse;
+                    if (gcachefree > item.DataSize)
                     {
-                        item.Load(device);
-                        loadeditems.AddLast(item);
-                        Interlocked.Add(ref CacheUse, item.DataSize);
-                    }
-                    catch //(Exception ex)
-                    {
-                        //todo: error handling...
+                        try
+                        {
+                            item.Load(device);
+                            loadeditems.AddLast(item);
+                            Interlocked.Add(ref CacheUse, item.DataSize);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
                     }
                 }
-                else
+                catch(Exception ex)
                 {
-                    item.LoadQueued = false; //can try load it again later..
+                    Console.WriteLine(ex);
                 }
+                finally
+                {
+                    item.LoadQueued = false;
+                }
+
                 if (LoadedCount >= maxitemsperloop) break;
             }
             return LoadedCount;
@@ -361,12 +383,12 @@ namespace CodeWalker.Rendering
         public void UnloadProc()
         {
             //unload items that haven't been used in longer than the cache period.
-            var now = DateTime.UtcNow;
+            //var now = DateTime.UtcNow;
             var rnode = loadeditems.First;
-            while (rnode != null)
+            while (rnode is not null)
             {
-                var lu = DateTime.FromBinary(Interlocked.Read(ref rnode.Value.LastUseTime));
-                if ((now - lu).TotalSeconds > CacheTime)
+                var lastUsed = rnode.Value.LastUseTime.Elapsed;
+                if (lastUsed.TotalSeconds > CacheTime)
                 {
                     var nextnode = rnode.Next;
                     itemsToUnload.Enqueue(rnode.Value);
@@ -383,7 +405,6 @@ namespace CodeWalker.Rendering
 
         public void RenderThreadSync(Device device)
         {
-            LastFrameTime = DateTime.UtcNow.ToBinary();
             TVal item;
             TKey key;
             while (keysToInvalidate.TryDequeue(out key))
@@ -399,7 +420,7 @@ namespace CodeWalker.Rendering
             }
             while (itemsToUnload.TryDequeue(out item))
             {
-                if ((item.Key != null) && (cacheitems.ContainsKey(item.Key)))
+                if (item.Key != null && cacheitems.ContainsKey(item.Key))
                 {
                     cacheitems.Remove(item.Key);
                 }
@@ -410,37 +431,44 @@ namespace CodeWalker.Rendering
 
         }
 
-        public TVal Get(TKey key)
+        public TVal? Get(TKey? key)
         {
-            if (key == null) return null;
-            TVal item = null;
-            if (!cacheitems.TryGetValue(key, out item))
+            if (key is null)
+            {
+                return null;
+            }
+
+            if (!cacheitems.TryGetValue(key, out var item))
             {
                 item = new TVal();
                 item.Init(key);
                 cacheitems.Add(key, item);
             }
-            Interlocked.Exchange(ref item.LastUseTime, LastFrameTime);
-            if ((!item.IsLoaded) && (!item.LoadQueued))// || 
+
+            item.LastUseTime.Restart();
+            if (!item.IsLoaded && !item.LoadQueued)// || 
             {
                 item.LoadQueued = true;
                 itemsToLoad.Enqueue(item);
             }
+
             return item;
         }
 
 
-        public void Invalidate(TKey key)
+        public void Invalidate(TKey? key)
         {
-            if (key == null) return;
+            if (key is null)
+            {
+                return;
+            }
 
             keysToInvalidate.Enqueue(key);
 
         }
         public void UpdateImmediate(TKey key, Device device)
         {
-            TVal item;
-            if (cacheitems.TryGetValue(key, out item))
+            if (cacheitems.TryGetValue(key, out var item))
             {
                 Interlocked.Add(ref CacheUse, -item.DataSize);
                 item.Unload();

@@ -10,6 +10,10 @@ using Buffer = SharpDX.Direct3D11.Buffer;
 using CodeWalker.World;
 using SharpDX.Direct3D;
 using SharpDX;
+using System.Threading;
+using System.Diagnostics;
+using Collections.Pooled;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CodeWalker.Rendering
 {
@@ -54,24 +58,36 @@ namespace CodeWalker.Rendering
         public RenderableBoundCompositeInst Inst;
     }
 
-    public struct RenderableInstanceBatchInst
+    public readonly struct RenderableInstanceBatchInst
     {
-        public RenderableInstanceBatch Batch;
-        public Renderable Renderable;
+        public readonly RenderableInstanceBatch Batch;
+        public readonly Renderable Renderable;
+
+        public RenderableInstanceBatchInst(RenderableInstanceBatch batch, Renderable renderable)
+        {
+            Batch = batch;
+            Renderable = renderable;
+        }
     }
 
 
     public class Renderable : RenderableCacheItem<DrawableBase>
     {
-        public YtdFile[] SDtxds;
-        public YtdFile[] HDtxds;
+        public YtdFile[]? SDtxds;
+        public YtdFile[]? HDtxds;
         public bool AllTexturesLoaded = false;
 
-        public RenderableModel[] HDModels;
-        public RenderableModel[] MedModels;
-        public RenderableModel[] LowModels;
-        public RenderableModel[] VlowModels;
-        public RenderableModel[] AllModels;
+        public RenderableModel[] HDModels = [];
+        public RenderableModel[]? MedModels;
+        public RenderableModel[]? LowModels;
+        public RenderableModel[]? VlowModels;
+        public RenderableModel[] AllModels = [];
+
+        public float LodDistanceHigh;
+        public float LodDistanceMed;
+        public float LodDistanceLow;
+        public float LodDistanceVLow;
+        
         //public Dictionary<uint, Texture> TextureDict { get; private set; }
         //public long EmbeddedTextureSize { get; private set; }
 
@@ -81,10 +97,10 @@ namespace CodeWalker.Rendering
 
         public bool HasAnims = false;
         public double CurrentAnimTime = 0;
-        public YcdFile ClipDict;
-        public ClipMapEntry ClipMapEntry;
-        public Expression Expression;
-        public Dictionary<ushort, RenderableModel> ModelBoneLinks;
+        public YcdFile? ClipDict;
+        public ClipMapEntry? ClipMapEntry;
+        public Expression? Expression;
+        public Dictionary<ushort, RenderableModel>? ModelBoneLinks;
 
         public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
 
@@ -109,7 +125,7 @@ namespace CodeWalker.Rendering
             int curmodel = hd?.Length ?? 0;
             AllModels = new RenderableModel[totmodels];
             HDModels = new RenderableModel[hd.Length];
-            if (hd != null)
+            if (hd is not null && hd.Length > 0)
             {
                 for (int i = 0; i < hd.Length; i++)
                 {
@@ -117,7 +133,7 @@ namespace CodeWalker.Rendering
                     AllModels[i] = HDModels[i];
                 }
             }
-            if (med != null)
+            if (med is not null && med.Length > 0)
             {
                 MedModels = new RenderableModel[med.Length];
                 for (int i = 0; i < med.Length; i++)
@@ -127,7 +143,7 @@ namespace CodeWalker.Rendering
                 }
                 curmodel += med.Length;
             }
-            if (low != null)
+            if (low is not null && low.Length > 0)
             {
                 LowModels = new RenderableModel[low.Length];
                 for (int i = 0; i < low.Length; i++)
@@ -137,7 +153,7 @@ namespace CodeWalker.Rendering
                 }
                 curmodel += low.Length;
             }
-            if (vlow != null)
+            if (vlow is not null && vlow.Length > 0)
             {
                 VlowModels = new RenderableModel[vlow.Length];
                 for (int i = 0; i < vlow.Length; i++)
@@ -148,6 +164,10 @@ namespace CodeWalker.Rendering
                 curmodel += vlow.Length;
             }
 
+            LodDistanceHigh = drawable.LodDistHigh;
+            LodDistanceMed = drawable.LodDistMed;
+            LodDistanceLow = drawable.LodDistLow;
+            LodDistanceVLow = drawable.LodDistVlow;
 
             //var sg = Drawable.ShaderGroup;
             //if ((sg != null) && (sg.TextureDictionary != null))
@@ -166,11 +186,11 @@ namespace CodeWalker.Rendering
             bool hastransforms = false;
             bool hasbones = false;
             Skeleton skeleton = drawable.Skeleton;
-            Matrix[] modeltransforms = null;
-            Matrix[] fragtransforms = null;
+            Matrix[]? modeltransforms = null;
+            Matrix[]? fragtransforms = null;
             Vector4 fragoffset = Vector4.Zero;
             int fragtransformid = 0;
-            Bone[] bones = null;
+            Bone[]? bones = null;
             bool usepose = false;
             if (skeleton != null)
             {
@@ -274,7 +294,8 @@ namespace CodeWalker.Rendering
                     {
                         if (bone != null)
                         {
-                            if (ModelBoneLinks == null) ModelBoneLinks = new Dictionary<ushort, RenderableModel>();
+                            if (ModelBoneLinks is null)
+                                ModelBoneLinks = new Dictionary<ushort, RenderableModel>();
                             ModelBoneLinks[bone.Tag] = model;
                         }
                     }
@@ -346,6 +367,30 @@ namespace CodeWalker.Rendering
             Lights = rlights;
         }
 
+        public RenderableModel[] GetModels(float distance)
+        {
+            if (distance > LodDistanceVLow)
+            {
+                return [];
+            }
+            else if (distance > LodDistanceLow)
+            {
+                return VlowModels ?? [];
+            }
+            else if (distance > LodDistanceMed)
+            {
+                return LowModels ?? [];
+            }
+            else if (distance > LodDistanceHigh)
+            {
+                return MedModels ?? [];
+            }
+            else
+            {
+                return HDModels;
+            }
+        }
+
         private RenderableModel InitModel(DrawableModel dm)
         {
             var rmodel = new RenderableModel();
@@ -357,11 +402,12 @@ namespace CodeWalker.Rendering
 
         public override void Load(Device device)
         {
-            if (AllModels != null)
+            if (AllModels is not null)
             {
                 foreach (var model in AllModels)
                 {
-                    if (model.Geometries == null) continue;
+                    if (model.Geometries is null)
+                        continue;
                     foreach (var geom in model.Geometries)
                     {
                         geom.Load(device);
@@ -389,7 +435,7 @@ namespace CodeWalker.Rendering
             LoadQueued = false;
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             return Key.ToString();
         }
@@ -397,48 +443,46 @@ namespace CodeWalker.Rendering
 
         public void ResetBoneTransforms()
         {
-            if (Skeleton == null) return;
+            if (Skeleton is null)
+                return;
             Skeleton.ResetBoneTransforms();
             UpdateBoneTransforms();
         }
         private void UpdateBoneTransforms()
         {
-            if (Skeleton?.Bones?.Items == null) return;
+            if (Skeleton?.Bones?.Items is null)
+                return;
 
             Skeleton.UpdateBoneTransforms();
 
             var bones = Skeleton.Bones?.Items;
             var bonetransforms = Skeleton.BoneTransforms;
+            if (AllModels is null || AllModels.Length == 0 || bones is null)
+                return;
 
-            var drawbl = Key;
-            if (AllModels == null) return;
-            for (int i = 0; i < AllModels.Length; i++)
+            foreach(var model in AllModels)
             {
-                var model = AllModels[i];
-                if (model?.Geometries == null) continue;
-                for (int g = 0; g < model.Geometries.Length; g++)
+                if (model?.Geometries is null)
+                    continue;
+
+                foreach(var geom in model.Geometries)
                 {
-                    var geom = model.Geometries[g];
                     var boneids = geom?.DrawableGeom?.BoneIds;
-                    if (boneids == null) continue;
+                    if (boneids is null)
+                        continue;
+
                     if (boneids.Length != bones.Length)
                     {
                         var idc = boneids.Length;
-                        if (geom.BoneTransforms == null)
-                        {
-                            geom.BoneTransforms = new Matrix3_s[idc];
-                        }
+                        geom.BoneTransforms ??= new Matrix3_s[idc];
+
                         for (int b = 0; b < idc; b++)
                         {
                             var id = boneids[b];
                             if (id < bonetransforms.Length)
                             {
                                 geom.BoneTransforms[b] = bonetransforms[id];
-                                if (id != b)
-                                { }
                             }
-                            else
-                            { }
                         }
                     }
                 }
@@ -455,12 +499,13 @@ namespace CodeWalker.Rendering
                 realTime = ClipMapEntry.PlayTime;
             }
 
-            if (CurrentAnimTime == realTime) return;//already updated this!
+            if (CurrentAnimTime == realTime)
+                return;//already updated this!
             CurrentAnimTime = realTime;
 
             EnableRootMotion = ClipMapEntry?.EnableRootMotion ?? false;
 
-            if (ClipMapEntry != null)
+            if (ClipMapEntry is not null)
             {
                 UpdateAnim(ClipMapEntry); //animate skeleton/models
             }
@@ -469,11 +514,13 @@ namespace CodeWalker.Rendering
 
             foreach (var model in HDModels)
             {
-                if (model == null) continue;
+                if (model is null)
+                    continue;
                 foreach (var geom in model.Geometries)
                 {
-                    if (geom == null) continue;
-                    if (geom.ClipMapEntryUV != null)
+                    if (geom is null)
+                        continue;
+                    if (geom.ClipMapEntryUV is not null)
                     {
                         UpdateAnimUV(geom.ClipMapEntryUV, geom); //animate UVs
                     }
@@ -485,17 +532,18 @@ namespace CodeWalker.Rendering
         {
 
             var clipanim = cme.Clip as ClipAnimation;
-            if (clipanim?.Animation != null)
+            if (clipanim?.Animation is not null)
             {
                 UpdateAnim(clipanim.Animation, clipanim.GetPlaybackTime(CurrentAnimTime));
             }
 
             var clipanimlist = cme.Clip as ClipAnimationList;
-            if (clipanimlist?.Animations != null)
+            if (clipanimlist?.Animations is not null)
             {
                 foreach (var canim in clipanimlist.Animations)
                 {
-                    if (canim?.Animation == null) continue;
+                    if (canim?.Animation is null)
+                        continue;
                     UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime));
                 }
             }
@@ -503,22 +551,20 @@ namespace CodeWalker.Rendering
         }
         private void UpdateAnim(Animation anim, float t)
         { 
-            if (anim == null)
-            { return; }
-            if (anim.BoneIds?.data_items == null)
-            { return; }
-            if (anim.Sequences?.data_items == null)
-            { return; }
+            if (anim?.BoneIds?.data_items is null || anim.Sequences?.data_items is null)
+            {
+                return;
+            }
 
             bool interpolate = true; //how to know? eg. cs4_14_hickbar_anim shouldn't
 
             var frame = anim.GetFramePosition(t);
-
-            var dwbl = this.Key;
             var skel = Skeleton;
             var bones = skel?.BonesSorted;//.Bones?.Items;//
-            if (bones == null)
-            { return; }
+            if (bones is null)
+            {
+                return;
+            }
 
             Vector4 v;
             Quaternion q;
@@ -529,25 +575,21 @@ namespace CodeWalker.Rendering
                 var boneid = boneiditem.BoneId;
                 var track = boneiditem.Track;
 
-                if (Expression?.BoneTracksDict != null)
+                if (Expression?.BoneTracksDict is not null)
                 {
-                    var exprbt = new ExpressionTrack() { BoneId = boneid, Track = track, Flags = boneiditem.Unk0 };
-                    var exprbtmap = exprbt;
-
-                    if ((track == 24) || (track == 25) || (track == 26))
+                    if (track == 24 || track == 25 || track == 26)
                     {
-                        if (Expression.BoneTracksDict.TryGetValue(exprbt, out exprbtmap))
+                        var exprbt = new ExpressionTrack() { BoneId = boneid, Track = track, Flags = boneiditem.Unk0 };
+                        if (Expression.BoneTracksDict.TryGetValue(exprbt, out var exprbtmap))
                         {
                             boneid = exprbtmap.BoneId;
                         }
-                        else
-                        { }
                     }
                 }
 
-                Bone bone = null;
+                Bone? bone = null;
                 skel?.BonesMap?.TryGetValue(boneid, out bone);
-                if (bone == null)
+                if (bone is null)
                 {
                     continue;
                     //skel.BoneTagsMap?.TryGetValue(boneiditem.BoneId, out bone);
@@ -620,49 +662,45 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            for (int i = 0; i < bones.Length; i++)
+            foreach(var bone in bones)
             {
-                var bone = bones[i];
                 var tag = bone.Tag;
-                switch (bone.Tag)
+                tag = tag switch
                 {
-                    case 23639: tag = 58271; break; //RB_L_ThighRoll: SKEL_L_Thigh
-                    case 6442:  tag = 51826; break; //RB_R_ThighRoll: SKEL_R_Thigh
-                    //case 61007: tag = 61163; break; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
-                    //case 5232: tag = 45509; break; //RB_L_ArmRoll: SKEL_L_UpperArm
-                }
-                if ((tag != bone.Tag) && (tag != bone.Parent?.Tag))
+                    23639 => (ushort)58271,
+                    6442 => (ushort)51826,
+                    //61007 => 61163; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
+                    //5232 => 45509; //RB_L_ArmRoll: SKEL_L_UpperArm
+                    _ => tag,
+                };
+                if (tag != bone.Tag && tag != bone.Parent?.Tag)
                 {
-                    var obone = bone;
-                    if (skel.BonesMap.TryGetValue(tag, out obone))
+                    if (skel.BonesMap.TryGetValue(tag, out var obone))
                     {
                         bone.AnimRotation = obone.AnimRotation;
                     }
                 }
             }
 
-            for (int i = 0; i < bones.Length; i++)
+            if (ModelBoneLinks is not null)
             {
-                var bone = bones[i];
-                bone.UpdateAnimTransform();
-                bone.UpdateSkinTransform();
+                foreach (var bone in bones)
+                {
+                    bone.UpdateAnimTransform();
+                    bone.UpdateSkinTransform();
 
-                //update model's transform from animated bone
-                RenderableModel bmodel = null;
-                ModelBoneLinks?.TryGetValue(bone.Tag, out bmodel);
+                    //update model's transform from animated bone
+                    ModelBoneLinks.TryGetValue(bone.Tag, out var bmodel);
 
 
-                if (bmodel == null)
-                { continue; }
-                if (bmodel.IsSkinMesh) //don't transform model for skin mesh
-                { continue; }
+                    if (bmodel is null || bmodel.IsSkinMesh)
+                        continue;
 
-                bmodel.Transform = bone.AnimTransform;
-
+                    bmodel.Transform = bone.AnimTransform;
+                }
             }
-
-
         }
+
         private void UpdateAnimUV(ClipMapEntry cme, RenderableGeometry rgeom = null)
         {
 
@@ -723,7 +761,7 @@ namespace CodeWalker.Rendering
             }
             else
             {
-                foreach (var model in HDModels) //TODO: figure out which models/geometries this should be applying to!
+                foreach (var model in AllModels) //TODO: figure out which models/geometries this should be applying to!
                 {
                     if (model == null) continue;
                     foreach (var geom in model.Geometries)
@@ -805,8 +843,8 @@ namespace CodeWalker.Rendering
     public class RenderableGeometry
     {
         public RenderableModel Owner;
-        public Buffer VertexBuffer { get; set; }
-        public Buffer IndexBuffer { get; set; }
+        public Buffer? VertexBuffer { get; set; }
+        public Buffer? IndexBuffer { get; set; }
         public VertexBufferBinding VBBinding;
         public DrawableGeometry DrawableGeom;
         public VertexType VertexType { get; set; }
@@ -816,11 +854,11 @@ namespace CodeWalker.Rendering
         public uint VertexDataSize { get; set; }
         public uint IndexDataSize { get; set; }
         public uint TotalDataSize { get; set; }
-        public TextureBase[] Textures;
-        public Texture[] TexturesHD;
-        public RenderableTexture[] RenderableTextures;
-        public RenderableTexture[] RenderableTexturesHD;
-        public ShaderParamNames[] TextureParamHashes;
+        public TextureBase[]? Textures;
+        public Texture?[]? TexturesHD { get; set; }
+        public RenderableTexture?[]? RenderableTextures { get; set; }
+        public RenderableTexture?[]? RenderableTexturesHD { get; set; }
+        public ShaderParamNames[]? TextureParamHashes { get; set; }
         public PrimitiveTopology Topology { get; set; }
         public bool IsFragment = false;
         public bool IsEmissive { get; set; } = false;
@@ -849,11 +887,14 @@ namespace CodeWalker.Rendering
         public float HeightOpacity { get; set; } = 0; //for terrainfoam
         public bool HDTextureEnable = true;
         public bool globalAnimUVEnable = false;
-        public ClipMapEntry ClipMapEntryUV = null;
+        public ClipMapEntry? ClipMapEntryUV = null;
         public bool isHair = false;
         public bool disableRendering = false;
 
-        public Matrix3_s[] BoneTransforms = null;
+        public Matrix3_s[]? BoneTransforms = null;
+
+        [MemberNotNullWhen(true, nameof(Textures), nameof(RenderableTextures), nameof(RenderableTexturesHD), nameof(TexturesHD), nameof(TextureParamHashes))]
+        public bool HasTextures => Textures is not null;
 
         public static ShaderParamNames[] GetTextureSamplerList()
         {
@@ -974,8 +1015,8 @@ namespace CodeWalker.Rendering
 
                 var pl = shader.ParametersList.Parameters;
                 var hl = shader.ParametersList.Hashes;
-                List<TextureBase> texs = new List<TextureBase>();
-                List<ShaderParamNames> phashes = new List<ShaderParamNames>();
+                using PooledList<TextureBase> texs = new PooledList<TextureBase>();
+                using PooledList<ShaderParamNames> phashes = new PooledList<ShaderParamNames>();
                 if ((pl != null) && (hl != null))
                 {
                     for (int i = 0; (i < pl.Length) && (i < hl.Length); i++)
@@ -1073,8 +1114,6 @@ namespace CodeWalker.Rendering
                     RenderableTexturesHD = new RenderableTexture[texs.Count]; //these will get populated at render time.
                 }
             }
-
-
         }
 
         public void Load(Device device)
@@ -1154,34 +1193,34 @@ namespace CodeWalker.Rendering
             //    default:
             //        break;
             //}
-            if (VertexBuffer != null)
+            if (VertexBuffer is not null)
             {
                 VBBinding = new VertexBufferBinding(VertexBuffer, VertexStride, 0);
             }
 
-            if (DrawableGeom.IndexBuffer != null)
+            if (DrawableGeom.IndexBuffer is not null)
             {
                 IndexBuffer = Buffer.Create(device, BindFlags.IndexBuffer, DrawableGeom.IndexBuffer.Indices);
             }
 
         }
 
-        public void Unload()
+        public void Dispose()
         {
-            if (VertexBuffer != null)
+            if (VertexBuffer is not null)
             {
                 VBBinding.Buffer = null;
                 VertexBuffer.Dispose();
                 VertexBuffer = null;
             }
-            if (IndexBuffer != null)
+            if (IndexBuffer is not null)
             {
                 IndexBuffer.Dispose();
                 IndexBuffer = null;
             }
             //DrawableGeom = null;
 
-            if (RenderableTextures != null)
+            if (RenderableTextures is not null)
             {
                 for (int i = 0; i < RenderableTextures.Length; i++)
                 {
@@ -1189,7 +1228,7 @@ namespace CodeWalker.Rendering
                 }
                 RenderableTextures = null;
             }
-            if (RenderableTexturesHD != null)
+            if (RenderableTexturesHD is not null)
             {
                 for (int i = 0; i < RenderableTexturesHD.Length; i++)
                 {
@@ -1197,12 +1236,17 @@ namespace CodeWalker.Rendering
                 }
                 RenderableTexturesHD = null;
             }
+            GC.SuppressFinalize(this);
+        }
 
+        public void Unload()
+        {
+            Dispose();
         }
 
         public void Render(DeviceContext context)
         {
-            if ((VertexBuffer == null) || (IndexBuffer == null))
+            if (VertexBuffer is null || IndexBuffer is null)
             {
                 return;
             }
@@ -1216,7 +1260,7 @@ namespace CodeWalker.Rendering
 
         public void RenderInstanced(DeviceContext context, int instCount)
         {
-            if ((VertexBuffer == null) || (IndexBuffer == null))
+            if (VertexBuffer is null || IndexBuffer is null)
             {
                 return;
             }
@@ -1234,15 +1278,15 @@ namespace CodeWalker.Rendering
     {
         public uint Hash { get; private set; }
         public string Name { get; private set; }
-        public Texture2D Texture2D { get; set; }
-        public ShaderResourceView ShaderResourceView { get; set; }
+        public Texture2D? Texture2D { get; set; }
+        public ShaderResourceView? ShaderResourceView { get; set; }
 
 
         public override void Init(Texture tex)
         {
             Key = tex;
 
-            if ((Key != null) && (Key.Data != null) && (Key.Data.FullData != null))
+            if (Key?.Data?.FullData is not null)
             {
                 DataSize = Key.Data.FullData.Length;
             }
@@ -1251,7 +1295,7 @@ namespace CodeWalker.Rendering
 
         public override void Load(Device device)
         {
-            if ((Key != null) && (Key.Data != null) && (Key.Data.FullData != null))
+            if (Key?.Data?.FullData is not null)
             {
                 using (var stream = DataStream.Create(Key.Data.FullData, true, false))
                 {
@@ -1311,8 +1355,9 @@ namespace CodeWalker.Rendering
                         Texture2D = new Texture2D(device, desc, boxes.ToArray()); //multiple mips
                         ShaderResourceView = new ShaderResourceView(device, Texture2D);
                     }
-                    catch //(Exception ex)
+                    catch (Exception ex)
                     {
+                        Console.WriteLine(ex);
                         //string str = ex.ToString(); //todo: don't fail silently..
                     }
                 }
@@ -1337,12 +1382,12 @@ namespace CodeWalker.Rendering
         public override void Unload()
         {
             IsLoaded = false;
-            if (ShaderResourceView != null)
+            if (ShaderResourceView is not null)
             {
                 ShaderResourceView.Dispose();
                 ShaderResourceView = null;
             }
-            if (Texture2D != null)
+            if (Texture2D is not null)
             {
                 Texture2D.Dispose();
                 Texture2D = null;
@@ -1350,9 +1395,9 @@ namespace CodeWalker.Rendering
             LoadQueued = false;
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
-            return (Key != null) ? Key.ToString() : base.ToString();
+            return Key?.ToString() ?? base.ToString();
         }
     }
 
@@ -1411,10 +1456,10 @@ namespace CodeWalker.Rendering
         public rage__fwGrassInstanceListDef__InstanceData[] GrassInstanceData { get; set; }
         public GpuSBuffer<rage__fwGrassInstanceListDef__InstanceData> GrassInstanceBuffer { get; set; }
         public int InstanceCount { get; set; }
-        public Vector3 AABBMin { get; set; }
-        public Vector3 AABBMax { get; set; }
-        public Vector3 Position { get; set; }
-        public Vector3 CamRel { get; set; }
+        public Vector3 AABBMin;
+        public Vector3 AABBMax;
+        public Vector3 Position;
+        public Vector3 CamRel;
 
         public override void Init(YmapGrassInstanceBatch batch)
         {
@@ -1475,15 +1520,16 @@ namespace CodeWalker.Rendering
             public float FalloffExponent;
             public float InnerAngle;//for cone
             public float OuterAngleOrCapExt;//outer angle for cone, cap extent for capsule
+            public float Distance;
         }
 
-        public LODLight[] Points;
-        public LODLight[] Spots;
-        public LODLight[] Caps;
+        public LODLight[] Points = Array.Empty<LODLight>();
+        public LODLight[] Spots = Array.Empty<LODLight>();
+        public LODLight[] Caps = Array.Empty<LODLight>();
 
-        public GpuSBuffer<LODLight> PointsBuffer { get; set; }
-        public GpuSBuffer<LODLight> SpotsBuffer { get; set; }
-        public GpuSBuffer<LODLight> CapsBuffer { get; set; }
+        public GpuSBuffer<LODLight>? PointsBuffer { get; set; }
+        public GpuSBuffer<LODLight>? SpotsBuffer { get; set; }
+        public GpuSBuffer<LODLight>? CapsBuffer { get; set; }
 
 
         public override void Init(YmapFile key)
@@ -1493,16 +1539,17 @@ namespace CodeWalker.Rendering
             var ll = key.LODLights;
             var dll = key.Parent?.DistantLODLights;
 
-            if (ll == null) return;
-            if (dll == null) return;
+            if (ll == null)
+                return;
+            if (dll == null)
+                return;
 
-            if (ll.LodLights == null) 
-            { return; }
+            if (ll.LodLights == null || ll.LodLights.Length == 0) 
+            {
+                return;
+            }
 
             var n = ll.LodLights.Length;
-
-            if (n <= 0)
-            { return; }
 
 
             var points = new List<LODLight>();
@@ -1512,7 +1559,8 @@ namespace CodeWalker.Rendering
             for (int i = 0; i < n; i++)
             {
                 var l = ll.LodLights[i];
-                if (l.Enabled == false) continue;
+                if (l.Enabled == false || l.Visible == false)
+                    continue;
                 var light = new LODLight();
                 light.Position = l.Position;
                 light.Colour = (uint)l.Colour.ToBgra();
@@ -1541,25 +1589,101 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            Points = points.ToArray();
-            Spots = spots.ToArray();
-            Caps = caps.ToArray();
+            Points = points.Count > 0 ? points.ToArray() : Array.Empty<LODLight>();
+            Spots = spots.Count > 0 ? spots.ToArray() : Array.Empty<LODLight>();
+            Caps = caps.Count > 0 ? caps.ToArray() : Array.Empty<LODLight>();
 
             DataSize = (points.Count + spots.Count + caps.Count) * 80;
 
         }
 
+        private int spotsIndex = 0, pointsIndex = 0, capsIndex = 0;
+        public (int, int, int) UpdateLods(in Vector3 refPos, bool updateLods = true)
+        {
+            if (!updateLods)
+            {
+                return (spotsIndex, pointsIndex, capsIndex);
+            }
+
+            if (Points.Length > 0)
+            {
+                for (int i = 0; i < Points.Length; i++)
+                {
+                    Points[i].Distance = Vector3.DistanceSquared(refPos, Points[i].Position);
+                }
+
+                Array.Sort(Points, (a, b) => b.Distance.CompareTo(a.Distance));
+
+                pointsIndex = -1;
+
+                for (int i = Points.Length - 1; i > 0; i--)
+                {
+                    if (Points[i].Distance > 100_000)
+                    {
+                        pointsIndex = i;
+                        break;
+                    }
+                }
+            }
+
+
+            if (Spots.Length > 0)
+            {
+                for (int i = 0; i < Spots.Length; i++)
+                {
+                    Spots[i].Distance = Vector3.DistanceSquared(refPos, Spots[i].Position);
+                }
+
+                Array.Sort(Spots, (a, b) => b.Distance.CompareTo(a.Distance));
+
+                spotsIndex = -1;
+
+                for (int i = Spots.Length - 1; i > 0; i--)
+                {
+                    if (Spots[i].Distance > 100_000)
+                    {
+                        spotsIndex = i;
+                        break;
+                    }
+                }
+            }
+
+
+            if (Caps.Length > 0)
+            {
+                for (int i = 0; i < Caps.Length; i++)
+                {
+                    Caps[i].Distance = Vector3.DistanceSquared(refPos, Caps[i].Position);
+                }
+
+                Array.Sort(Caps, (a, b) => b.Distance.CompareTo(a.Distance));
+
+                capsIndex = -1;
+
+                for (int i = Caps.Length - 1; i > 0; i--)
+                {
+                    if (Caps[i].Distance > 100_000)
+                    {
+                        capsIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            return (spotsIndex, pointsIndex, capsIndex);
+        }
+
         public override void Load(Device device)
         {
-            if ((Points != null) && (Points.Length > 0))
+            if (Points.Length > 0)
             {
                 PointsBuffer = new GpuSBuffer<LODLight>(device, Points);
             }
-            if ((Spots != null) && (Spots.Length > 0))
+            if (Spots.Length > 0)
             {
                 SpotsBuffer = new GpuSBuffer<LODLight>(device, Spots);
             }
-            if ((Caps != null) && (Caps.Length > 0))
+            if (Caps.Length > 0)
             {
                 CapsBuffer = new GpuSBuffer<LODLight>(device, Caps);
             }
@@ -1607,7 +1731,7 @@ namespace CodeWalker.Rendering
         public override void Init(YmapDistantLODLights key)
         {
             Key = key;
-            if ((key.positions == null) || (key.colours == null))
+            if (key.positions.Length == 0 || key.colours.Length == 0)
             {
                 return;
             }
@@ -1647,7 +1771,6 @@ namespace CodeWalker.Rendering
                 InstanceBuffer = null;
             }
         }
-
     }
 
 
@@ -1657,16 +1780,16 @@ namespace CodeWalker.Rendering
 
         public EditorVertex[] PathVertices;
         public int PathVertexCount { get; set; }
-        public Buffer PathVertexBuffer { get; set; }
+        public Buffer? PathVertexBuffer { get; set; }
         public VertexBufferBinding PathVBBinding;
 
         public EditorVertex[] TriangleVertices;
         public int TriangleVertexCount { get; set; }
-        public Buffer TriangleVertexBuffer { get; set; }
+        public Buffer? TriangleVertexBuffer { get; set; }
         public VertexBufferBinding TriangleVBBinding;
 
         public Vector4[] Nodes;
-        public GpuSBuffer<Vector4> NodeBuffer { get; set; }
+        public GpuSBuffer<Vector4>? NodeBuffer { get; set; }
 
         public override void Init(BasePathData key)
         {
@@ -1674,30 +1797,20 @@ namespace CodeWalker.Rendering
 
             DataSize = 0;
             PathVertices = key.GetPathVertices();
-            if (PathVertices != null)
-            {
-                PathVertexCount = PathVertices.Length;
-                DataSize = PathVertices.Length * VertexStride;
-            }
+            PathVertexCount = PathVertices.Length;
+            DataSize = PathVertices.Length * VertexStride;
 
             TriangleVertices = key.GetTriangleVertices();
-            if (TriangleVertices != null)
-            {
-                TriangleVertexCount = TriangleVertices.Length;
-                DataSize += TriangleVertices.Length * VertexStride;
-            }
+            TriangleVertexCount = TriangleVertices.Length;
+            DataSize += TriangleVertices.Length * VertexStride;
 
             Nodes = key.GetNodePositions();
-            if (Nodes != null)
-            {
-                DataSize += Nodes.Length * 16;//sizeof(Vector4)
-            }
-
+            DataSize += Nodes.Length * 16;//sizeof(Vector4)
         }
 
         public override void Load(Device device)
         {
-            if ((PathVertices != null) && (PathVertices.Length > 0))
+            if (PathVertices != null && PathVertices.Length > 0)
             {
                 PathVertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, PathVertices);
                 if (PathVertexBuffer != null)
@@ -1706,7 +1819,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            if ((TriangleVertices != null) && (TriangleVertices.Length > 0))
+            if (TriangleVertices != null && TriangleVertices.Length > 0)
             {
                 TriangleVertexBuffer = Buffer.Create(device, BindFlags.VertexBuffer, TriangleVertices);
                 if (TriangleVertexBuffer != null)
@@ -1715,7 +1828,7 @@ namespace CodeWalker.Rendering
                 }
             }
 
-            if ((Nodes != null) && (Nodes.Length > 0))
+            if (Nodes != null && Nodes.Length > 0)
             {
                 NodeBuffer = new GpuSBuffer<Vector4>(device, Nodes);
             }
@@ -2129,8 +2242,10 @@ namespace CodeWalker.Rendering
                         p1 = bgeom.GetVertex(bcap.capsuleIndex1);
                         p2 = bgeom.GetVertex(bcap.capsuleIndex2);
                         a1 = p2 - p1;
-                        n1 = Vector3.Normalize(a1);
-                        p3 = Vector3.Normalize(n1.GetPerpVec());
+                        n1 = a1;
+                        n1.Normalize();
+                        p3 = n1.GetPerpVec();
+                        p3.Normalize();
                         //p4 = Vector3.Normalize(Vector3.Cross(n1, p3));
                         Quaternion q1 = Quaternion.Invert(Quaternion.LookAtRH(Vector3.Zero, p3, n1));
                         rcapsules[curcapsule].Point1 = p1;
@@ -2232,10 +2347,7 @@ namespace CodeWalker.Rendering
             var colourf = BoundsMaterialTypes.GetMaterialColour(mat);
             var colour = (uint)colourf.ToRgba();
 
-            var rsph = new RenderableSphere();
-            rsph.Colour = colour;
-            rsph.Center = Vector3.TransformCoordinate(bsph.SphereCenter, xform);
-            rsph.Radius = bsph.SphereRadius;
+            var rsph = new RenderableSphere(Vector3.TransformCoordinate(bsph.SphereCenter, xform), bsph.SphereRadius, colour);
 
             Spheres = new[] { rsph };
 
@@ -2258,12 +2370,13 @@ namespace CodeWalker.Rendering
 
             var extent = (bbox.BoxMax - bbox.BoxMin).Abs();
 
-            var rbox = new RenderableBox();
-            rbox.Colour = colour;
-            rbox.Corner = Vector3.TransformCoordinate(bbox.BoxMin, xform);
-            rbox.Edge1 = Vector3.TransformNormal(new Vector3(extent.X, 0, 0), xform);
-            rbox.Edge2 = Vector3.TransformNormal(new Vector3(0, extent.Y, 0), xform);
-            rbox.Edge3 = Vector3.TransformNormal(new Vector3(0, 0, extent.Z), xform);
+            var rbox = new RenderableBox(
+                Vector3.TransformCoordinate(bbox.BoxMin, xform),
+                colour,
+                Vector3.TransformNormal(new Vector3(extent.X, 0, 0), xform),
+                Vector3.TransformNormal(new Vector3(0, extent.Y, 0), xform),
+                Vector3.TransformNormal(new Vector3(0, 0, extent.Z), xform)
+            );
 
             Boxes = new[] { rbox };
 
@@ -2441,23 +2554,23 @@ namespace CodeWalker.Rendering
 
     }
 
-    public struct RenderableBox
+    public struct RenderableBox(Vector3 corner, uint colour, Vector3 edge1, Vector3 edge2, Vector3 edge3)
     {
-        public Vector3 Corner { get; set; }
-        public uint Colour { get; set; }
-        public Vector3 Edge1 { get; set; }
-        public float Pad1 { get; set; }
-        public Vector3 Edge2 { get; set; }
-        public float Pad2 { get; set; }
-        public Vector3 Edge3 { get; set; }
-        public float Pad3 { get; set; }
+        public Vector3 Corner { get; set; } = corner;
+        public uint Colour { get; set; } = colour;
+        public Vector3 Edge1 { get; set; } = edge1;
+        public float Pad1 { get; init; }
+        public Vector3 Edge2 { get; set; } = edge2;
+        public float Pad2 { get; init; }
+        public Vector3 Edge3 { get; set; } = edge3;
+        public float Pad3 { get; init; }
     }
-    public struct RenderableSphere
+    public struct RenderableSphere(Vector3 center, float radius, uint colour)
     {
-        public Vector3 Center { get; set; }
-        public float Radius { get; set; }
+        public Vector3 Center { get; set; } = center;
+        public float Radius { get; set; } = radius;
         public Vector3 Pad0 { get; set; }
-        public uint Colour { get; set; }
+        public uint Colour { get; set; } = colour;
     }
     public struct RenderableCapsule
     {
@@ -2481,10 +2594,10 @@ namespace CodeWalker.Rendering
     }
 
 
-    public struct RenderableEntity
+    public struct RenderableEntity(YmapEntityDef entity, Renderable renderable)
     {
-        public YmapEntityDef Entity;
-        public Renderable Renderable;
+        public YmapEntityDef Entity = entity;
+        public Renderable Renderable = renderable;
     }
 
 

@@ -153,9 +153,9 @@ namespace CodeWalker.World
                 Vector3 cpos = new Vector3();
                 if (FollowEntity != null)
                 {
-                    up = FollowEntity.Orientation.Multiply(up);
-                    lookat = FollowEntity.Orientation.Multiply(lookat);
-                    rdir = FollowEntity.Orientation.Multiply(rdir);
+                    up = FollowEntity.Orientation.Multiply(in up);
+                    lookat = FollowEntity.Orientation.Multiply(in lookat);
+                    rdir = FollowEntity.Orientation.Multiply(in rdir);
                     cpos = FollowEntity.Position;
                 }
                 LocalLookAt = (rdir * CurrentDistance) + lookat;

@@ -1,4 +1,6 @@
-﻿namespace CodeWalker.Forms
+﻿using CodeWalker.WinForms;
+
+namespace CodeWalker.Forms
 {
     partial class ModelForm
     {

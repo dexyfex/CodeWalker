@@ -89,10 +89,10 @@ namespace CodeWalker.GameFiles
 
 
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(16, Entries)
+            return new (long, IResourceBlock)[] {
+                (16, Entries)
             };
         }
     }

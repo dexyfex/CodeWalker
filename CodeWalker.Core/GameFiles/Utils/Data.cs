@@ -1,4 +1,6 @@
-﻿/*
+﻿
+
+/*
     Copyright(c) 2015 Neodymium
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,18 +28,25 @@
 
 using SharpDX;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using CodeWalker.Core.Utils;
+using System.Buffers.Binary;
+using System.Buffers;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Threading;
+using SharpDX.Win32;
+using CommunityToolkit.HighPerformance;
+using System.Linq;
 
 namespace CodeWalker.GameFiles
 {
     public enum Endianess
     {
-        LittleEndian,
-        BigEndian
+        LittleEndian = 0,
+        BigEndian = 1,
     }
 
     public enum DataType
@@ -54,67 +63,100 @@ namespace CodeWalker.GameFiles
         String = 9,
     }
 
-    public class DataReader
+    [SkipLocalsInit]
+    public class DataReader : IDisposable
     {
         private Stream baseStream;
 
         /// <summary>
         /// Gets or sets the endianess of the underlying stream.
         /// </summary>
-        public Endianess Endianess
-        {
-            get;
-            set;
-        }
+        public readonly Endianess Endianess = Endianess.LittleEndian;
 
         /// <summary>
         /// Gets the length of the underlying stream.
         /// </summary>
-        public virtual long Length
-        {
-            get
-            {
-                return baseStream.Length;
-            }
-        }
+        public virtual long Length => baseStream.Length;
 
         /// <summary>
         /// Gets or sets the position within the underlying stream.
         /// </summary>
         public virtual long Position
         {
-            get
+            get => baseStream.Position;
+            set => baseStream.Position = value;
+        }
+
+        public DataReader(Stream stream)
+        {
+            if (stream is not null)
             {
-                return baseStream.Position;
-            }
-            set
-            {
-                baseStream.Position = value;
+                this.baseStream = Stream.Synchronized(stream);
             }
         }
 
         /// <summary>
         /// Initializes a new data reader for the specified stream.
         /// </summary>
-        public DataReader(Stream stream, Endianess endianess = Endianess.LittleEndian)
+        public DataReader(Stream stream, Endianess endianess)
+            : this(stream)
         {
-            this.baseStream = stream;
             this.Endianess = endianess;
+        }
+
+        public DataReader(byte[] data, Endianess endianess = Endianess.LittleEndian)
+            : this(new MemoryStream(data))
+        {
+            this.Endianess = endianess;
+        }
+
+        public virtual Stream GetStream() => baseStream;
+        internal virtual void SetPositionAfterRead(Stream stream)
+        {
+            return;
+        }
+
+        public virtual void ReadFromStream(Span<byte> buffer, bool ignoreEndianess = false)
+        {
+            var stream = GetStream();
+
+            try
+            {
+                stream.Read(buffer);
+            }
+            finally
+            {
+                SetPositionAfterRead(stream);
+            }
+
+            if (Endianess == Endianess.BigEndian && !ignoreEndianess)
+            {
+                buffer.Reverse();
+            }
         }
 
         /// <summary>
         /// Reads data from the underlying stream. This is the only method that directly accesses
         /// the data in the underlying stream.
         /// </summary>
-        protected virtual byte[] ReadFromStream(int count, bool ignoreEndianess = false)
+        protected virtual byte[] ReadFromStream(int count, bool ignoreEndianess = false, byte[]? buffer = null)
         {
-            var buffer = new byte[count];
-            baseStream.Read(buffer, 0, count);
+            var stream = GetStream();
+            buffer ??= GC.AllocateUninitializedArray<byte>(count);
+
+            try
+            {
+                stream.Read(buffer, 0, count);
+            }
+            finally
+            {
+                SetPositionAfterRead(stream);
+            }
 
             // handle endianess
-            if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
+            if (Endianess == Endianess.BigEndian && !ignoreEndianess)
             {
-                Array.Reverse(buffer);
+                Array.Reverse(buffer, 0, count);
             }
 
             return buffer;
@@ -123,100 +165,238 @@ namespace CodeWalker.GameFiles
         /// <summary>
         /// Reads a byte.
         /// </summary>
-        public byte ReadByte()
+        public virtual byte ReadByte()
         {
-            return ReadFromStream(1)[0];
+            var stream = GetStream();
+            int result;
+            try
+            {
+                result = stream.ReadByte();
+            }
+            finally
+            {
+                SetPositionAfterRead(stream);
+            }
+            
+            if (result == -1)
+            {
+                throw new InvalidOperationException("Tried to read from stream beyond end!");
+            }
+
+            return (byte) result;
         }
 
         /// <summary>
         /// Reads a sequence of bytes.
         /// </summary>
-        public byte[] ReadBytes(int count)
+        public byte[] ReadBytes(int count, byte[] buffer = null)
         {
-            return ReadFromStream(count, true);
+            return ReadFromStream(count, true, buffer);
+        }
+
+        public void ReadBytes(Span<byte> buffer)
+        {
+            ReadFromStream(buffer, true);
         }
 
         /// <summary>
         /// Reads a signed 16-bit value.
         /// </summary>
+        [SkipLocalsInit]
         public short ReadInt16()
         {
-            return BitConverter.ToInt16(ReadFromStream(2), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(short)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadInt16LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadInt16BigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads a signed 32-bit value.
         /// </summary>
+        [SkipLocalsInit]
         public int ReadInt32()
         {
-            return BitConverter.ToInt32(ReadFromStream(4), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(int)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadInt32LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadInt32BigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads a signed 64-bit value.
         /// </summary>
+        [SkipLocalsInit]
         public long ReadInt64()
         {
-            return BitConverter.ToInt64(ReadFromStream(8), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(long)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadInt64LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadInt64BigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads an unsigned 16-bit value.
         /// </summary>
+        [SkipLocalsInit]
         public ushort ReadUInt16()
         {
-            return BitConverter.ToUInt16(ReadFromStream(2), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(ushort)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadUInt16LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadUInt16BigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads an unsigned 32-bit value.
         /// </summary>
+        [SkipLocalsInit]
         public uint ReadUInt32()
         {
-            return BitConverter.ToUInt32(ReadFromStream(4), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(uint)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadUInt32LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadUInt32BigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads an unsigned 64-bit value.
         /// </summary>
+        [SkipLocalsInit]
         public ulong ReadUInt64()
         {
-            return BitConverter.ToUInt64(ReadFromStream(8), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(ulong)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadUInt64LittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadUInt64BigEndian(_buffer);
+            }
+            //return BitConverter.ToUInt64(ReadFromStream(_buffer), 0);
         }
 
         /// <summary>
         /// Reads a single precision floating point value.
         /// </summary>
+        [SkipLocalsInit]
         public float ReadSingle()
         {
-            return BitConverter.ToSingle(ReadFromStream(4), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(float)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadSingleLittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadSingleBigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads a double precision floating point value.
         /// </summary>
+        [SkipLocalsInit]
         public double ReadDouble()
         {
-            return BitConverter.ToDouble(ReadFromStream(8), 0);
+            Span<byte> _buffer = stackalloc byte[sizeof(double)];
+            ReadFromStream(_buffer, true);
+
+            if (Endianess == Endianess.LittleEndian)
+            {
+                return BinaryPrimitives.ReadDoubleLittleEndian(_buffer);
+            }
+            else
+            {
+                return BinaryPrimitives.ReadDoubleBigEndian(_buffer);
+            }
         }
 
         /// <summary>
         /// Reads a string.
         /// </summary>
-        public string ReadString()
+        [SkipLocalsInit]
+        unsafe public string ReadStringLength(int length)
         {
-            var bytes = new List<byte>();
-            var temp = ReadFromStream(1)[0];
-            while (temp != 0)
+            if (length == 0)
             {
-                bytes.Add(temp);
-                temp = ReadFromStream(1)[0];
+                return string.Empty;
+            }
+            Span<byte> bytes = stackalloc byte[length];
+            for (int i = 0; i < length; i++)
+            {
+                bytes[i] = ReadByte();
             }
 
-            return Encoding.UTF8.GetString(bytes.ToArray());
+            return Encoding.UTF8.GetString(bytes);
+            //return Encoding.UTF8.GetString(bytes, Math.Min(charsRead, maxLength));
         }
 
+        /// <summary>
+        /// Reads a string.
+        /// </summary>
+        [SkipLocalsInit]
+        unsafe public string ReadString(int maxLength = 1024)
+        {
+            Span<byte> bytes = stackalloc byte[Math.Min(maxLength, 1024)];
+            var temp = ReadByte();
+            var bytesRead = 0;
+            var length = Length;
+            while (temp != 0 && (length == -1 || Position <= length))
+            {
+                if (bytesRead < maxLength && bytesRead < 1024)
+                {
+                    bytes[bytesRead] = temp;
+                }
+                temp = ReadByte();
+                bytesRead++;
+            }
 
+            return Encoding.UTF8.GetString(bytes.Slice(0, bytesRead));
+            //return Encoding.UTF8.GetString(bytes, Math.Min(charsRead, maxLength));
+        }
+
+        [SkipLocalsInit]
         public Vector3 ReadVector3()
         {
             Vector3 v = new Vector3();
@@ -225,6 +405,8 @@ namespace CodeWalker.GameFiles
             v.Z = ReadSingle();
             return v;
         }
+
+        [SkipLocalsInit]
         public Vector4 ReadVector4()
         {
             Vector4 v = new Vector4();
@@ -235,6 +417,7 @@ namespace CodeWalker.GameFiles
             return v;
         }
 
+        [SkipLocalsInit]
         public Matrix ReadMatrix()
         {
             Matrix m = new Matrix();
@@ -279,12 +462,13 @@ namespace CodeWalker.GameFiles
             }
         }
 
-
-
-
+        public virtual void Dispose()
+        {
+            baseStream?.Dispose();
+        }
     }
 
-    public class DataWriter
+    public class DataWriter : IDisposable
     {
         private Stream baseStream;
 
@@ -294,7 +478,7 @@ namespace CodeWalker.GameFiles
         public Endianess Endianess
         {
             get;
-            set;
+            init;
         }
 
         /// <summary>
@@ -323,30 +507,112 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        internal virtual Stream GetStream()
+        {
+            return baseStream;
+        }
+
+        internal virtual void SetPositionAfterWrite(Stream stream)
+        { }
+
         /// <summary>
         /// Initializes a new data writer for the specified stream.
         /// </summary>
         public DataWriter(Stream stream, Endianess endianess = Endianess.LittleEndian)
         {
-            this.baseStream = stream;
+            if (stream is not null)
+            {
+                this.baseStream = Stream.Synchronized(stream);
+            }
             this.Endianess = endianess;
         }
+
+        protected bool ShouldReverse(bool ignoreEndianness) => !ignoreEndianness && Endianess == Endianess.BigEndian;
 
         /// <summary>
         /// Writes data to the underlying stream. This is the only method that directly accesses
         /// the data in the underlying stream.
         /// </summary>
-        protected virtual void WriteToStream(byte[] value, bool ignoreEndianess = false)
+        protected virtual void WriteToStream(byte[] value, bool ignoreEndianess = false, int count = -1, int offset = 0)
         {
-            if (!ignoreEndianess && (Endianess == Endianess.BigEndian))
+            var stream = GetStream();
+            if (count == -1)
             {
-                var buffer = (byte[])value.Clone();
-                Array.Reverse(buffer);
-                baseStream.Write(buffer, 0, buffer.Length);
+                count = value.Length;
+            }
+            if (ShouldReverse(ignoreEndianess))
+            {
+                var buffer = ArrayPool<byte>.Shared.Rent(count);
+                try
+                {
+                    Array.Copy(value, offset, buffer, 0, count);
+                    Array.Reverse(buffer, 0, count);
+                    stream.Write(buffer, 0, count);
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(buffer);
+                }
             }
             else
             {
-                baseStream.Write(value, 0, value.Length);
+                stream.Write(value, offset, count);
+            }
+            SetPositionAfterWrite(stream);
+        }
+
+        protected virtual void WriteToStream(ReadOnlySpan<byte> value, bool ignoreEndianess = false)
+        {
+            if (!ShouldReverse(ignoreEndianess))
+            {
+                var stream = GetStream();
+                stream.Write(value);
+                SetPositionAfterWrite(stream);
+                return;
+            }
+
+            byte[] sharedBuffer = ArrayPool<byte>.Shared.Rent(value.Length);
+            try
+            {
+                value.CopyTo(sharedBuffer);
+                Array.Reverse(sharedBuffer, 0, value.Length);
+                var stream = GetStream();
+
+                stream.Write(sharedBuffer.AsSpan());
+
+                SetPositionAfterWrite(stream);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(sharedBuffer);
+            }
+        }
+
+        protected virtual async ValueTask WriteToStreamAsync(ReadOnlyMemory<byte> buffer, bool ignoreEndianess = false)
+        {
+            if (!ShouldReverse(ignoreEndianess))
+            {
+                var stream = GetStream();
+                await stream.WriteAsync(buffer);
+                SetPositionAfterWrite(stream);
+                return;
+            }
+
+            var arr = ArrayPool<byte>.Shared.Rent(buffer.Length);
+            try
+            {
+                buffer.CopyTo(arr);
+                Array.Reverse(arr, 0, buffer.Length);
+
+                var stream = GetStream();
+
+                await stream.WriteAsync(arr.AsMemory(0, buffer.Length));
+
+                SetPositionAfterWrite(stream);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(arr);
             }
         }
 
@@ -364,6 +630,16 @@ namespace CodeWalker.GameFiles
         public void Write(byte[] value)
         {
             WriteToStream(value, true);
+        }
+
+        public void Write(ReadOnlySpan<byte> value)
+        {
+            WriteToStream(value, true);
+        }
+
+        public ValueTask WriteAsync(Memory<byte> value)
+        {
+            return WriteToStreamAsync(value, true);
         }
 
         /// <summary>
@@ -476,6 +752,15 @@ namespace CodeWalker.GameFiles
             Write(value.M44);
         }
 
+        public virtual void Dispose()
+        {
+            baseStream?.Dispose();
+        }
+
+        public virtual void Close()
+        {
+            baseStream?.Close();
+        }
     }
 
 

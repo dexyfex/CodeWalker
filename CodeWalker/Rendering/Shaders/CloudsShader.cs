@@ -8,6 +8,7 @@ using CodeWalker.World;
 using SharpDX.Direct3D11;
 using System.IO;
 using SharpDX;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -106,8 +107,9 @@ namespace CodeWalker.Rendering
 
         public CloudsShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\CloudsVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\CloudsPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "CloudsVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "CloudsPS.cso"));
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);
@@ -174,7 +176,7 @@ namespace CodeWalker.Rendering
             context.PixelShader.Set(ps);
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             CloudsLocalVars.Update(context);
             CloudsLocalVars.SetVSCBuffer(context, 0);

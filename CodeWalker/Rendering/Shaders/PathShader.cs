@@ -12,6 +12,7 @@ using CodeWalker.GameFiles;
 using System.IO;
 using SharpDX.DXGI;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -46,11 +47,12 @@ namespace CodeWalker.Rendering
 
         public PathShader(Device device)
         {
-            byte[] boxvsbytes = File.ReadAllBytes("Shaders\\PathBoxVS.cso");
-            byte[] boxpsbytes = File.ReadAllBytes("Shaders\\PathBoxPS.cso");
-            byte[] dynvsbytes = File.ReadAllBytes("Shaders\\PathDynVS.cso");
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\PathVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\PathPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] boxvsbytes = File.ReadAllBytes(Path.Combine(folder, "PathBoxVS.cso"));
+            byte[] boxpsbytes = File.ReadAllBytes(Path.Combine(folder, "PathBoxPS.cso"));
+            byte[] dynvsbytes = File.ReadAllBytes(Path.Combine(folder, "PathDynVS.cso"));
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "PathVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "PathPS.cso"));
 
 
             boxvs = new VertexShader(device, boxvsbytes);
@@ -97,7 +99,7 @@ namespace CodeWalker.Rendering
             return true;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             VSSceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             VSSceneVars.Vars.CameraPos = new Vector4(camera.Position, 0.0f);

@@ -17,7 +17,7 @@ namespace CodeWalker.World
 
         public abstract void Render(DeviceContext context, Camera cam, WidgetShader shader);
 
-        protected bool GetAxisRayHit(Vector3 ax1, Vector3 ax2, Vector3 camrel, Ray ray, out Vector3 pos)
+        protected bool GetAxisRayHit(in Vector3 ax1, in Vector3 ax2, in Vector3 camrel, in Ray ray, out Vector3 pos)
         {
             //helper method for double sided ray/plane intersection
             Vector3 pn = Vector3.Cross(ax1, ax2);

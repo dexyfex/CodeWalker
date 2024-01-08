@@ -297,8 +297,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return string.Format("{0}, {1}, {2}",
-                    Start, Count, Offset);
+                return $"{Start}, {Count}, {Offset}";
             }
         }
 
@@ -399,7 +398,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return string.Format("{0} - Size: {1},  Pos: {2}", Type, Size, Position);
+                return $"{Type} - Size: {Size},  Pos: {Position}";
             }
         }
         public class WaterFlow : WaterItem
@@ -488,9 +487,9 @@ namespace CodeWalker.GameFiles
                 {
                     var h = GridWatermapInds[y * Width + x];
                     sb.Append(h.ToString());
-                    sb.Append(" ");
+                    sb.Append(' ');
                 }
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             return sb.ToString();

@@ -1,5 +1,7 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using CodeWalker.Properties;
+using CodeWalker.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +20,15 @@ namespace CodeWalker.Peds
         {
             //Process.Start("CodeWalker.exe", "peds");
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new PedsForm());
+            if (!NamedPipe.TrySendMessageToOtherProcess("peds-mode"))
+            {
+                ConsoleWindow.Hide();
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new PedsForm());
 
-            GTAFolder.UpdateSettings();
+                GTAFolder.UpdateSettings();
+            }
         }
     }
 }

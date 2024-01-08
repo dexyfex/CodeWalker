@@ -1,4 +1,5 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,7 +39,7 @@ namespace CodeWalker.World
                 {
                     foreach (var file in dlcrpf.AllEntries)
                     {
-                        if (file.NameLower.EndsWith(".xml") && file.NameLower.StartsWith("timecycle_mods_"))
+                        if (file.IsExtension(".xml") && file.Name.StartsWith("timecycle_mods_", StringComparison.OrdinalIgnoreCase))
                         {
                             LoadXml(rpfman.GetFileXml(file.Path));
                         }
@@ -59,17 +60,17 @@ namespace CodeWalker.World
             float version = Xml.GetFloatAttribute(root, "version");
 
             var modnodes = root.SelectNodes("modifier");
-            foreach (XmlNode modnode in modnodes)
+            if (modnodes is not null)
             {
-                if (!(modnode is XmlElement)) continue; 
-                TimecycleMod mod = new TimecycleMod();
-                mod.Init(modnode);
-                Dict[mod.nameHash] = mod;
+                foreach (XmlNode modnode in modnodes)
+                {
+                    if (!(modnode is XmlElement)) continue;
+                    TimecycleMod mod = new TimecycleMod();
+                    mod.Init(modnode);
+                    Dict[mod.nameHash] = mod;
+                }
             }
-
         }
-
-
     }
 
 
@@ -96,7 +97,7 @@ namespace CodeWalker.World
             JenkIndex.Ensure(namel);
             nameHash = JenkHash.GenHash(namel);
 
-            List<TimecycleModValue> vals = new List<TimecycleModValue>();
+            var vals = PooledListPool<TimecycleModValue>.Shared.Get();
             foreach (XmlNode valnode in node.ChildNodes)
             {
                 if (!(valnode is XmlElement)) continue;
@@ -108,12 +109,12 @@ namespace CodeWalker.World
                 Dict[val.name] = val;
             }
             Values = vals.ToArray();
-
+            PooledListPool<TimecycleModValue>.Shared.Return(vals);
         }
 
         public override string ToString()
         {
-            return name + " (" + numMods.ToString() + " mods, userFlags: " + userFlags.ToString() + ")";
+            return $"{name} ({numMods} mods, userFlags: {userFlags})";
         }
     }
 
@@ -141,7 +142,7 @@ namespace CodeWalker.World
 
         public override string ToString()
         {
-            return name + ": " + FloatUtil.ToString(value1) + ", " + FloatUtil.ToString(value2);
+            return $"{name}: {FloatUtil.ToString(value1)}, {FloatUtil.ToString(value2)}";
         }
     }
 

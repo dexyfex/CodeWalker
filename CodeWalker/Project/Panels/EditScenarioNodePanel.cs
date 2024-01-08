@@ -131,13 +131,16 @@ namespace CodeWalker.Project.Panels
             { return; }
 
             var stypes = types.GetScenarioTypeRefs();
-            if (stypes == null) return;
+            if (stypes.Length == 0)
+                return;
 
             var pmsets = types.GetPedModelSets();
-            if (pmsets == null) return;
+            if (pmsets.Length == 0)
+                return;
 
             var vmsets = types.GetVehicleModelSets();
-            if (vmsets == null) return;
+            if (vmsets.Length == 0)
+                return;
 
             ScenarioPointTypeComboBox.Items.Clear();
             ScenarioPointTypeComboBox.Items.Add("");
@@ -1191,8 +1194,7 @@ namespace CodeWalker.Project.Panels
 
         private void ScenarioEntityPointsListBox_DoubleClick(object sender, EventArgs e)
         {
-            var item = ScenarioEntityPointsListBox.SelectedItem as MCExtensionDefSpawnPoint;
-            if (item == null) return;
+            if (ScenarioEntityPointsListBox.SelectedItem is not MCExtensionDefSpawnPoint item) return;
 
             var nodes = CurrentScenario?.ScenarioRegion?.Nodes;
             if (nodes == null) return;
@@ -2035,8 +2037,7 @@ namespace CodeWalker.Project.Panels
 
         private void ScenarioClusterPointsListBox_DoubleClick(object sender, EventArgs e)
         {
-            var item = ScenarioClusterPointsListBox.SelectedItem as MCScenarioPoint;
-            if (item == null) return;
+            if (ScenarioClusterPointsListBox.SelectedItem is not MCScenarioPoint item) return;
 
             var nodes = CurrentScenario?.ScenarioRegion?.Nodes;
             if (nodes == null) return;

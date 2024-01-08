@@ -10,6 +10,7 @@ using System.Xml;
 
 using TC = System.ComponentModel.TypeConverterAttribute;
 using EXP = System.ComponentModel.ExpandableObjectConverter;
+using CodeWalker.Core.Utils;
 
 namespace CodeWalker.GameFiles
 {
@@ -78,12 +79,11 @@ namespace CodeWalker.GameFiles
 
         public CVehicleModelInfoVariation(XmlNode node)
         {
-            XmlNode cnode;
-            cnode = node.SelectSingleNode("variationData");
-            if (cnode != null)
+            var variationNode = node.SelectSingleNode("variationData");
+            if (variationNode is not null)
             {
-                var items = cnode.SelectNodes("Item");
-                if (items.Count > 0)
+                var items = variationNode.SelectNodes("Item");
+                if (items is not null && items.Count > 0)
                 {
                     variationData = new CVehicleModelInfoVariation_418053801[items.Count];
                     for (int i = 0; i < items.Count; i++)
@@ -107,12 +107,11 @@ namespace CodeWalker.GameFiles
         public CVehicleModelInfoVariation_418053801(XmlNode node)
         {
             modelName = Xml.GetChildInnerText(node, "modelName");
-            XmlNode cnode;
-            cnode = node.SelectSingleNode("colors");
-            if (cnode != null)
+            var colorsNode = node.SelectSingleNode("colors");
+            if (colorsNode is not null)
             {
-                var items = cnode.SelectNodes("Item");
-                if (items.Count > 0)
+                var items = colorsNode.SelectNodes("Item");
+                if (items is not null && items.Count > 0)
                 {
                     colors = new CVehicleModelInfoVariation_2575850962[items.Count];
                     for (int i = 0; i < items.Count; i++)
@@ -121,11 +120,11 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
-            cnode = node.SelectSingleNode("kits");
-            if (cnode != null)
+            var kitsNode = node.SelectSingleNode("kits");
+            if (kitsNode is not null)
             {
-                var items = cnode.SelectNodes("Item");
-                if (items.Count > 0)
+                var items = kitsNode.SelectNodes("Item");
+                if (items is not null && items.Count > 0)
                 {
                     kits = new MetaHash[items.Count];
                     for (int i = 0; i < items.Count; i++)
@@ -134,11 +133,11 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
-            cnode = node.SelectSingleNode("windowsWithExposedEdges");
-            if (cnode != null)
+            var windowsNodes = node.SelectSingleNode("windowsWithExposedEdges");
+            if (windowsNodes is not null)
             {
-                var items = cnode.SelectNodes("Item");
-                if (items.Count > 0)
+                var items = windowsNodes.SelectNodes("Item");
+                if (items is not null && items.Count > 0)
                 {
                     windowsWithExposedEdges = new MetaHash[items.Count];
                     for (int i = 0; i < items.Count; i++)
@@ -147,10 +146,10 @@ namespace CodeWalker.GameFiles
                     }
                 }
             }
-            cnode = node.SelectSingleNode("plateProbabilities");
-            if (cnode != null)
+            var plateProbabilitiesNode = node.SelectSingleNode("plateProbabilities");
+            if (plateProbabilitiesNode is not null)
             {
-                plateProbabilities = new PlateProbabilities(cnode);
+                plateProbabilities = new PlateProbabilities(plateProbabilitiesNode);
             }
             lightSettings = (byte)Xml.GetChildIntAttribute(node, "lightSettings", "value");
             sirenSettings = (byte)Xml.GetChildIntAttribute(node, "sirenSettings", "value");
@@ -168,28 +167,25 @@ namespace CodeWalker.GameFiles
 
         public CVehicleModelInfoVariation_2575850962(XmlNode node)
         {
-            XmlNode cnode;
-            cnode = node.SelectSingleNode("indices");
-            if (cnode != null)
+            var indicesNode = node.SelectSingleNode("indices");
+            if (indicesNode is not null)
             {
-                var astr = cnode.InnerText;
-                var arrr = astr.Split(new[] { '\n', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                var astr = indicesNode.InnerText;
                 var alist = new List<byte>();
-                foreach (var item in arrr)
+                foreach (var item in astr.EnumerateSplitAny(['\n', ' ', '\t']))
                 {
                     var titem = item.Trim();
-                    byte v;
-                    if (byte.TryParse(titem, out v))
+                    if (byte.TryParse(titem, out var v))
                     {
                         alist.Add(v);
                     }
                 }
                 indices = alist.ToArray();
             }
-            cnode = node.SelectSingleNode("liveries");
-            if (cnode != null)
+            var liveriesNode = node.SelectSingleNode("liveries");
+            if (liveriesNode is not null)
             {
-                var items = cnode.SelectNodes("Item");
+                var items = liveriesNode.SelectNodes("Item");
                 if (items.Count > 0)
                 {
                     liveries = new bool[items.Count];
@@ -200,14 +196,12 @@ namespace CodeWalker.GameFiles
                 }
                 else
                 {
-                    var astr = cnode.InnerText;
-                    var arrr = astr.Split(new[] { '\n', ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                    var astr = liveriesNode.InnerText;
                     var alist = new List<bool>();
-                    foreach (var item in arrr)
+                    foreach (var item in astr.EnumerateSplitAny(['\n', ' ', '\t']))
                     {
                         var titem = item.Trim();
-                        byte v;
-                        if (byte.TryParse(titem, out v))
+                        if (byte.TryParse(titem, out var v))
                         {
                             alist.Add(v > 0);
                         }
@@ -254,7 +248,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return Name.ToString() + ": " + Value.ToString();
+            return $"{Name}: {Value}";
         }
     }
 

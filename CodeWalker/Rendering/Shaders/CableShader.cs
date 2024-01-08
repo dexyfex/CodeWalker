@@ -12,6 +12,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 using SharpDX;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -88,9 +89,10 @@ namespace CodeWalker.Rendering
 
         public CableShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\CableVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\CablePS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\CablePS_Deferred.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "CableVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "CablePS.cso"));
+            byte[] psdefbytes = File.ReadAllBytes(Path.Combine(folder, "CablePS_Deferred.cso"));
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);
@@ -104,11 +106,8 @@ namespace CodeWalker.Rendering
             PSSceneVars = new GpuVarsBuffer<CableShaderPSSceneVars>(device);
             PSGeomVars = new GpuVarsBuffer<CableShaderPSGeomVars>(device);
 
-
             //supported layout - requires Position, Normal, Colour, Texcoord
             layouts.Add(VertexType.Default, new InputLayout(device, vsbytes, VertexTypeGTAV.GetLayout(VertexType.Default)));
-
-
 
             texsampler = new SamplerState(device, new SamplerStateDescription()
             {
@@ -156,7 +155,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             uint rendermode = 0;
             uint rendermodeind = 1;
@@ -195,10 +194,7 @@ namespace CodeWalker.Rendering
             PSSceneVars.Update(context);
             PSSceneVars.SetPSCBuffer(context, 0);
 
-            if (shadowmap != null)
-            {
-                shadowmap.SetFinalRenderResources(context);
-            }
+            shadowmap?.SetFinalRenderResources(context);
         }
 
         public override void SetEntityVars(DeviceContext context, ref RenderableInst rend)

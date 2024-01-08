@@ -12,7 +12,7 @@ namespace CodeWalker
 
     public static class QuaternionExtension
     {
-        public static Vector3 Multiply(this Quaternion a, Vector3 b)
+        public static Vector3 Multiply(in this Quaternion a, in Vector3 b)
         {
             float axx = a.X * 2.0f;
             float ayy = a.Y * 2.0f;
@@ -31,7 +31,7 @@ namespace CodeWalker
                         ((b.X * (axzz - awyy)) + (b.Y * (ayzz + awxx))) + (b.Z * ((1.0f - axxx) - ayyy)));
         }
 
-        public static Matrix ToMatrix(this Quaternion q)
+        public static Matrix ToMatrix(in this Quaternion q)
         {
             float xx = q.X * q.X;
             float yy = q.Y * q.Y;
@@ -62,12 +62,12 @@ namespace CodeWalker
             return result;
         }
 
-        public static Vector4 ToVector4(this Quaternion q)
+        public static Vector4 ToVector4(in this Quaternion q)
         {
             return new Vector4(q.X, q.Y, q.Z, q.W);
         }
 
-        public static Quaternion FastLerp(Quaternion a, Quaternion b, float v)
+        public static Quaternion FastLerp(in Quaternion a, in Quaternion b, float v)
         {
             var r = new Quaternion();
             var vi = 1.0f - v;

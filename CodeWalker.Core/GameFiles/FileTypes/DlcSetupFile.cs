@@ -53,7 +53,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return deviceName + ", " + datFile + ", " + nameHash + ", " + type + ", " + order.ToString() + ", " + ((contentChangeSetGroups != null) ? contentChangeSetGroups.Count.ToString() : "0") + " groups, " + timeStamp;
+            return $"{deviceName}, {datFile}, {nameHash}, {type}, {order}, {contentChangeSetGroups?.Count ?? 0} groups, {timeStamp}";
         }
     }
 
@@ -77,7 +77,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return NameHash + " (" + ((ContentChangeSets != null) ? ContentChangeSets.Count.ToString() : "0") + " changesets)";
+            return $"{NameHash} ({ContentChangeSets?.Count ?? 0} changesets)";
         }
     }
 }

@@ -32,6 +32,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using static CodeWalker.GameFiles.MetaXmlBase;
 
 namespace CodeWalker.GameFiles
 {
@@ -97,7 +98,7 @@ namespace CodeWalker.GameFiles
         public string Name { get; set; }
         public FragBoneTransforms BoneTransforms { get; set; }
         public ResourcePointerArray64<FragGlassWindow> GlassWindows { get; set; }
-        public FragPhysicsLODGroup PhysicsLODGroup { get; set; }
+        public FragPhysicsLODGroup? PhysicsLODGroup { get; set; }
         public FragDrawable DrawableCloth { get; set; }
         public FragVehicleGlassWindows VehicleGlassWindows { get; set; }
 
@@ -736,11 +737,11 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
 
-        public override Tuple<long, IResourceBlock>[] GetParts()
+        public override (long, IResourceBlock)[] GetParts()
         {
-            return new Tuple<long, IResourceBlock>[] {
-                new Tuple<long, IResourceBlock>(0x60, Cloths),
-                new Tuple<long, IResourceBlock>(0x110, LightAttributes)
+            return new (long, IResourceBlock)[] {
+                (0x60, Cloths),
+                (0x110, LightAttributes)
             };
         }
     }
@@ -1346,7 +1347,7 @@ namespace CodeWalker.GameFiles
 
                 if (ItemDataByteLength != 0)//sometimes this is 0 and UnkUshort3>0, which is weird
                 {
-                    ShatterMapRowOffsets = reader.ReadStructs<ushort>(ItemDataCount);//byte offsets for following array
+                    ShatterMapRowOffsets = reader.ReadStructs<ushort>(ItemDataCount).ToArray();//byte offsets for following array
                     ShatterMap = new WindowShatterMapRow[ItemDataCount];
                     for (int i = 0; i < ItemDataCount; i++)
                     {
@@ -1942,7 +1943,13 @@ namespace CodeWalker.GameFiles
 
         public void BuildOffsets()
         {
-            var offs = new List<WindowOffset>();
+            if (Windows == null)
+            {
+                TotalLength = 16u;
+                WindowOffsets = Array.Empty<WindowOffset>();
+                return;
+            }
+            var offs = new List<WindowOffset>(Windows.Length);
             var bc = 16u;
             if (Windows != null)
             {
@@ -1988,10 +1995,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragPhysicsLODGroup : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 48; }
-        }
+        public override long BlockLength => 48;
 
         // structure data
         public uint VFT { get; set; } = 1080055472;
@@ -2003,9 +2007,9 @@ namespace CodeWalker.GameFiles
         public ulong Unknown_28h; // 0x0000000000000000
 
         // reference data
-        public FragPhysicsLOD PhysicsLOD1 { get; set; }
-        public FragPhysicsLOD PhysicsLOD2 { get; set; }
-        public FragPhysicsLOD PhysicsLOD3 { get; set; }
+        public FragPhysicsLOD? PhysicsLOD1 { get; set; }
+        public FragPhysicsLOD? PhysicsLOD2 { get; set; }
+        public FragPhysicsLOD? PhysicsLOD3 { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -2160,8 +2164,8 @@ namespace CodeWalker.GameFiles
         public FragPhysArticulatedBodyType ArticulatedBodyType { get; set; }
         public float[] ChildrenUnkFloats { get; set; }
         public FragPhysGroupNamesBlock GroupNames { get; set; }
-        public ResourcePointerArray64<FragPhysTypeGroup> Groups { get; set; }
-        public ResourcePointerArray64<FragPhysTypeChild> Children { get; set; }
+        public ResourcePointerArray64<FragPhysTypeGroup>? Groups { get; set; }
+        public ResourcePointerArray64<FragPhysTypeChild>? Children { get; set; }
         public FragPhysArchetype Archetype1 { get; set; }
         public FragPhysArchetype Archetype2 { get; set; }
         public Bounds Bound { get; set; }
@@ -2848,11 +2852,11 @@ namespace CodeWalker.GameFiles
         {
             if (ItemIndices != null)
             {
-                YftXml.WriteRawArray(sb, ItemIndices, indent, "ItemIndices", "", null, 22);
+                YftXml.WriteRawArray(sb, ItemIndices, indent, "ItemIndices", "", (FormatterRef<uint>?)null, 22);
             }
             if (ItemFlags != null)
             {
-                YftXml.WriteRawArray(sb, ItemFlags, indent, "ItemFlags", "", null, 22);
+                YftXml.WriteRawArray(sb, ItemFlags, indent, "ItemFlags", "", (FormatterRef<byte>?)null, 22);
             }
             if (UnknownVectors != null)
             {
@@ -4356,7 +4360,7 @@ namespace CodeWalker.GameFiles
             Unknown_24h = u(36);
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             UintStringBuilder usb = new UintStringBuilder();
             usb.Add(Unknown_00h);

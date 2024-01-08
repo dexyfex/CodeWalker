@@ -55,7 +55,7 @@ namespace CodeWalker.GameFiles
 
             using (MemoryStream ms = new MemoryStream(data))
             {
-                DataReader r = new DataReader(ms, Endianess.LittleEndian);
+                DataReader r = new DataReader(ms);
 
                 Read(r);
             };
@@ -798,9 +798,13 @@ namespace CodeWalker.GameFiles
             {
             }
 
-            protected override void WriteToStream(byte[] value, bool ignoreEndianess = false)
+            protected override void WriteToStream(byte[] value, bool ignoreEndianess = false, int count = -1, int offset = 0)
             {
-                position += value.Length;
+                if (count == -1)
+                {
+                    count = value.Length;
+                }
+                position += count;
                 length = Math.Max(length, position);
             }
         }
@@ -5380,7 +5384,7 @@ namespace CodeWalker.GameFiles
         public static void WriteNodeRef(StringBuilder sb, int indent, string name, MrfNode node)
         {
             Indent(sb, indent);
-            sb.Append("<");
+            sb.Append('<');
             sb.Append(name);
             sb.Append(" ref=\"");
             sb.Append(HashString(node.Name));

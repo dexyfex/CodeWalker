@@ -45,42 +45,42 @@ namespace CodeWalker
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public struct MapSelection
     {
-        public WorldForm WorldForm { get; set; }
-        public YmapEntityDef EntityDef { get; set; }
-        public Archetype Archetype { get; set; }
-        public DrawableBase Drawable { get; set; }
-        public DrawableGeometry Geometry { get; set; }
-        public MetaWrapper EntityExtension { get; set; }
-        public MetaWrapper ArchetypeExtension { get; set; }
-        public YmapTimeCycleModifier TimeCycleModifier { get; set; }
-        public YmapCarGen CarGenerator { get; set; }
-        public YmapGrassInstanceBatch GrassBatch { get; set; }
-        public YmapLODLight LodLight { get; set; }
-        public YmapBoxOccluder BoxOccluder { get; set; }
-        public YmapOccludeModelTriangle OccludeModelTri { get; set; }
-        public YmapEntityDef MloEntityDef { get; set; }
-        public MCMloRoomDef MloRoomDef { get; set; }
-        public WaterQuad WaterQuad { get; set; }
-        public WaterCalmingQuad CalmingQuad { get; set; }
-        public WaterWaveQuad WaveQuad { get; set; }
-        public Bounds CollisionBounds { get; set; }
-        public BoundPolygon CollisionPoly { get; set; }
-        public BoundVertex CollisionVertex { get; set; }
-        public YnvPoly NavPoly { get; set; }
-        public YnvPoint NavPoint { get; set; }
-        public YnvPortal NavPortal { get; set; }
-        public YndNode PathNode { get; set; }
-        public YndLink PathLink { get; set; }
-        public TrainTrackNode TrainTrackNode { get; set; }
-        public ScenarioNode ScenarioNode { get; set; }
-        public MCScenarioChainingEdge ScenarioEdge { get; set; }
-        public AudioPlacement Audio { get; set; }
+        public WorldForm? WorldForm { get; set; }
+        public YmapEntityDef? EntityDef { get; set; }
+        public Archetype? Archetype { get; set; }
+        public DrawableBase? Drawable { get; set; }
+        public DrawableGeometry? Geometry { get; set; }
+        public MetaWrapper? EntityExtension { get; set; }
+        public MetaWrapper? ArchetypeExtension { get; set; }
+        public YmapTimeCycleModifier? TimeCycleModifier { get; set; }
+        public YmapCarGen? CarGenerator { get; set; }
+        public YmapGrassInstanceBatch? GrassBatch { get; set; }
+        public YmapLODLight? LodLight { get; set; }
+        public YmapBoxOccluder? BoxOccluder { get; set; }
+        public YmapOccludeModelTriangle? OccludeModelTri { get; set; }
+        public YmapEntityDef? MloEntityDef { get; set; }
+        public MCMloRoomDef? MloRoomDef { get; set; }
+        public WaterQuad? WaterQuad { get; set; }
+        public WaterCalmingQuad? CalmingQuad { get; set; }
+        public WaterWaveQuad? WaveQuad { get; set; }
+        public Bounds? CollisionBounds { get; set; }
+        public BoundPolygon? CollisionPoly { get; set; }
+        public BoundVertex? CollisionVertex { get; set; }
+        public YnvPoly? NavPoly { get; set; }
+        public YnvPoint? NavPoint { get; set; }
+        public YnvPortal? NavPortal { get; set; }
+        public YndNode? PathNode { get; set; }
+        public YndLink? PathLink { get; set; }
+        public TrainTrackNode? TrainTrackNode { get; set; }
+        public ScenarioNode? ScenarioNode { get; set; }
+        public MCScenarioChainingEdge? ScenarioEdge { get; set; }
+        public AudioPlacement? Audio { get; set; }
 
-        public MapSelection[] MultipleSelectionItems { get; private set; }
+        public MapSelection[]? MultipleSelectionItems { get; private set; }
         public Vector3 MultipleSelectionCenter { get; set; }
         public Quaternion MultipleSelectionRotation { get; set; }
         public Vector3 MultipleSelectionScale { get; set; }
-        public BoundVertex[] GatheredCollisionVerts { get; private set; } //for collision polys, need to move all the individual vertices instead
+        public BoundVertex[]? GatheredCollisionVerts { get; private set; } //for collision polys, need to move all the individual vertices instead
 
         public Vector3 BBOffset { get; set; }
         public Quaternion BBOrientation { get; set; }
@@ -91,47 +91,43 @@ namespace CodeWalker
         public float HitDist { get; set; }
 
 
-        public bool HasValue
+        public readonly bool HasValue
         {
             get
             {
-                return (EntityDef != null) ||
-                    (Archetype != null) ||
-                    (Drawable != null) ||
-                    (Geometry != null) ||
-                    (EntityExtension != null) ||
-                    (ArchetypeExtension != null) ||
-                    (TimeCycleModifier != null) ||
-                    (CarGenerator != null) ||
-                    (GrassBatch != null) ||
-                    (WaterQuad != null) ||
-                    (CalmingQuad != null) ||
-                    (WaveQuad != null) ||
-                    (CollisionBounds != null) ||
-                    (CollisionPoly != null) ||
-                    (CollisionVertex != null) ||
-                    (NavPoly != null) ||
-                    (NavPoint != null) ||
-                    (NavPortal != null) ||
-                    (PathNode != null) ||
-                    (TrainTrackNode != null) ||
-                    (LodLight != null) ||
-                    (BoxOccluder != null) ||
-                    (OccludeModelTri != null) ||
-                    (MloEntityDef != null) ||
-                    (ScenarioNode != null) ||
-                    (Audio != null) ||
-                    (MloRoomDef != null);
+                return (EntityDef is not null) ||
+                    (Archetype is not null) ||
+                    (Drawable is not null) ||
+                    (Geometry is not null) ||
+                    (EntityExtension is not null) ||
+                    (ArchetypeExtension is not null) ||
+                    (TimeCycleModifier is not null) ||
+                    (CarGenerator is not null) ||
+                    (GrassBatch is not null) ||
+                    (WaterQuad is not null) ||
+                    (CalmingQuad is not null) ||
+                    (WaveQuad is not null) ||
+                    (CollisionBounds is not null) ||
+                    (CollisionPoly is not null) ||
+                    (CollisionVertex is not null) ||
+                    (NavPoly is not null) ||
+                    (NavPoint is not null) ||
+                    (NavPortal is not null) ||
+                    (PathNode is not null) ||
+                    (TrainTrackNode is not null) ||
+                    (LodLight is not null) ||
+                    (BoxOccluder is not null) ||
+                    (OccludeModelTri is not null) ||
+                    (MloEntityDef is not null) ||
+                    (ScenarioNode is not null) ||
+                    (Audio is not null) ||
+                    (MloRoomDef is not null);
             }
         }
 
-        public bool HasHit
-        {
-            get { return (HitDist != float.MaxValue); }
-        }
+        public readonly bool HasHit => HitDist != float.MaxValue;
 
-
-        public bool CheckForChanges(MapSelection mhit)
+        public readonly bool CheckForChanges(in MapSelection mhit)
         {
             return (EntityDef != mhit.EntityDef)
                 || (Archetype != mhit.Archetype)
@@ -160,35 +156,35 @@ namespace CodeWalker
                 || (Audio != mhit.Audio)
                 || (MloRoomDef != mhit.MloRoomDef);
         }
-        public bool CheckForChanges()
+        public readonly bool CheckForChanges()
         {
-            return (EntityDef != null)
-                || (Archetype != null)
-                || (Drawable != null)
-                || (TimeCycleModifier != null)
-                || (ArchetypeExtension != null)
-                || (EntityExtension != null)
-                || (CarGenerator != null)
-                || (MloEntityDef != null)
-                || (LodLight != null)
-                || (GrassBatch != null)
-                || (BoxOccluder != null)
-                || (OccludeModelTri != null)
-                || (WaterQuad != null)
-                || (CalmingQuad != null)
-                || (WaveQuad != null)
-                || (CollisionBounds != null)
-                || (CollisionPoly != null)
-                || (CollisionVertex != null)
-                || (NavPoly != null)
-                || (NavPoint != null)
-                || (NavPortal != null)
-                || (PathNode != null)
-                || (PathLink != null)
-                || (TrainTrackNode != null)
-                || (ScenarioNode != null)
-                || (Audio != null)
-                || (MloRoomDef != null);
+            return (EntityDef is not null)
+                || (Archetype is not null)
+                || (Drawable is not null)
+                || (TimeCycleModifier is not null)
+                || (ArchetypeExtension is not null)
+                || (EntityExtension is not null)
+                || (CarGenerator is not null)
+                || (MloEntityDef is not null)
+                || (LodLight is not null)
+                || (GrassBatch is not null)
+                || (BoxOccluder is not null)
+                || (OccludeModelTri is not null)
+                || (WaterQuad is not null)
+                || (CalmingQuad is not null)
+                || (WaveQuad is not null)
+                || (CollisionBounds is not null)
+                || (CollisionPoly is not null)
+                || (CollisionVertex is not null)
+                || (NavPoly is not null)
+                || (NavPoint is not null)
+                || (NavPortal is not null)
+                || (PathNode is not null)
+                || (PathLink is not null)
+                || (TrainTrackNode is not null)
+                || (ScenarioNode is not null)
+                || (Audio is not null)
+                || (MloRoomDef is not null);
         }
 
 
@@ -233,148 +229,148 @@ namespace CodeWalker
             HitDist = float.MaxValue;
         }
 
-        public string GetNameString(string defval)
+        public readonly string GetNameString(string defval)
         {
             string name = defval;
-            var ename = (EntityDef != null) ? EntityDef._CEntityDef.archetypeName.ToString() : string.Empty;
-            var enamec = ename + ((!string.IsNullOrEmpty(ename)) ? ": " : "");
-            if (MultipleSelectionItems != null)
+            var ename = (EntityDef is not null) ? EntityDef._CEntityDef.archetypeName.ToString() : string.Empty;
+            var enamec = ename + ((!string.IsNullOrEmpty(ename)) ? ": " : string.Empty);
+            if (MultipleSelectionItems is not null)
             {
                 name = "Multiple items";
             }
-            else if (CollisionVertex != null)
+            else if (CollisionVertex is not null)
             {
-                name = enamec + "Vertex " + CollisionVertex.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
+                name = $"{enamec}Vertex {CollisionVertex.Index}{((CollisionBounds is not null) ? ($": {CollisionBounds.GetName()}") : string.Empty)}";
             }
-            else if (CollisionPoly != null)
+            else if (CollisionPoly is not null)
             {
-                name = enamec + "Poly " + CollisionPoly.Index.ToString() + ((CollisionBounds != null) ? (": " + CollisionBounds.GetName()) : string.Empty);
+                name = $"{enamec}Poly {CollisionPoly.Index}{((CollisionBounds != null) ? ($": {CollisionBounds.GetName()}") : string.Empty)}";
             }
-            else if (CollisionBounds != null)
+            else if (CollisionBounds is not null)
             {
-                name = enamec + CollisionBounds.GetName();
+                name = $"{enamec}{CollisionBounds.GetName()}";
             }
-            else if (EntityDef != null)
+            else if (EntityDef is not null)
             {
                 name = ename;
             }
-            else if (Archetype != null)
+            else if (Archetype is not null)
             {
                 name = Archetype.Hash.ToString();
             }
-            else if (TimeCycleModifier != null)
+            else if (TimeCycleModifier is not null)
             {
                 name = TimeCycleModifier.CTimeCycleModifier.name.ToString();
             }
-            else if (CarGenerator != null)
+            else if (CarGenerator is not null)
             {
-                name = (CarGenerator.Ymap?.Name ?? "") + ": " + CarGenerator.NameString();
+                name = $"{(CarGenerator.Ymap?.Name ?? string.Empty)}: {CarGenerator.NameString()}";
             }
-            else if (GrassBatch != null)
+            else if (GrassBatch is not null)
             {
-                name = (GrassBatch.Ymap?.Name ?? "") + ": " + GrassBatch.Archetype?.Name ?? "";
+                name = $"{(GrassBatch.Ymap?.Name ?? string.Empty)}: {GrassBatch.Archetype?.Name ?? string.Empty}";
             }
-            else if (LodLight != null)
+            else if (LodLight is not null)
             {
-                name = (LodLight.Ymap?.Name ?? "") + ": " + LodLight.Index.ToString();
+                name = $"{(LodLight.Ymap?.Name ?? string.Empty)}: {LodLight.Index}";
             }
-            else if (BoxOccluder != null)
+            else if (BoxOccluder is not null)
             {
-                name = "BoxOccluder " + (BoxOccluder.Ymap?.Name ?? "") + ": " + BoxOccluder.Index.ToString();
+                name = "BoxOccluder " + (BoxOccluder.Ymap?.Name ?? string.Empty) + ": " + BoxOccluder.Index.ToString();
             }
-            else if (OccludeModelTri != null)
+            else if (OccludeModelTri is not null)
             {
-                name = "OccludeModel " + (OccludeModelTri.Ymap?.Name ?? "") + ": " + (OccludeModelTri.Model?.Index??0).ToString() + ":" + OccludeModelTri.Index.ToString();
+                name = $"OccludeModel {OccludeModelTri.Ymap?.Name ?? string.Empty}: {OccludeModelTri.Model?.Index ?? 0}:{OccludeModelTri.Index}";
             }
-            else if (WaterQuad != null)
+            else if (WaterQuad is not null)
             {
-                name = "WaterQuad " + WaterQuad.ToString();
+                name = $"WaterQuad {WaterQuad}";
             }
-            else if (CalmingQuad != null)
+            else if (CalmingQuad is not null)
             {
-                name = "WaterCalmingQuad " + CalmingQuad.ToString();
+                name = $"WaterCalmingQuad {CalmingQuad}";
             }
-            else if (WaveQuad != null)
+            else if (WaveQuad is not null)
             {
-                name = "WaterWaveQuad " + WaveQuad.ToString();
+                name = $"WaterWaveQuad {WaveQuad}";
             }
-            else if (NavPoly != null)
+            else if (NavPoly is not null)
             {
-                name = "NavPoly " + NavPoly.ToString();
+                name = $"NavPoly {NavPoly}";
             }
-            else if (NavPoint != null)
+            else if (NavPoint is not null)
             {
-                name = "NavPoint " + NavPoint.ToString();
+                name = $"NavPoint {NavPoint}";
             }
-            else if (NavPortal != null)
+            else if (NavPortal is not null)
             {
-                name = "NavPortal " + NavPortal.ToString();
+                name = $"NavPortal {NavPortal}";
             }
-            else if (PathNode != null)
+            else if (PathNode is not null)
             {
-                name = "PathNode " + PathNode.AreaID.ToString() + "." + PathNode.NodeID.ToString(); //+ FloatUtil.GetVector3String(PathNode.Position);
+                name = $"PathNode {PathNode.AreaID}.{PathNode.NodeID}"; //+ FloatUtil.GetVector3String(PathNode.Position);
             }
-            else if (TrainTrackNode != null)
+            else if (TrainTrackNode is not null)
             {
-                name = "TrainTrackNode " + FloatUtil.GetVector3String(TrainTrackNode.Position);
+                name = $"TrainTrackNode {FloatUtil.GetVector3String(TrainTrackNode.Position)}";
             }
-            else if (ScenarioNode != null)
+            else if (ScenarioNode is not null)
             {
                 name = ScenarioNode.ToString();
             }
-            else if (Audio != null)
+            else if (Audio is not null)
             {
-                name = Audio.ShortTypeName + " " + Audio.GetNameString();// FloatUtil.GetVector3String(Audio.InnerPos);
+                name = $"{Audio.ShortTypeName} {Audio.GetNameString()}";// FloatUtil.GetVector3String(Audio.InnerPos);
             }
-            if (MloRoomDef != null)
+            if (MloRoomDef is not null)
             {
-                name = "MloRoomDef " + MloRoomDef.RoomName;
+                name = $"MloRoomDef {MloRoomDef.RoomName}";
             }
-            if (EntityExtension != null)
+            if (EntityExtension is not null)
             {
-                name += ": " + EntityExtension.Name;
+                name += $": {EntityExtension.Name}";
             }
-            if (ArchetypeExtension != null)
+            if (ArchetypeExtension is not null)
             {
-                name += ": " + ArchetypeExtension.Name;
+                name += $": {ArchetypeExtension.Name}";
             }
             return name;
         }
 
-        public string GetFullNameString(string defval)
+        public readonly string GetFullNameString(string defval)
         {
             string name = GetNameString(defval);
-            if (Geometry != null)
+            if (Geometry is not null)
             {
-                name += " (" + GeometryIndex.ToString() + ")";
+                name += $" ({GeometryIndex})";
             }
             return name;
         }
 
 
-        public bool CanMarkUndo()
+        public readonly bool CanMarkUndo()
         {
-            if (MultipleSelectionItems != null) return true;
-            if (EntityDef != null) return true;
-            if (CarGenerator != null) return true;
-            if (LodLight != null) return true;
-            if (BoxOccluder != null) return true;
-            if (OccludeModelTri != null) return true;
-            if (CollisionBounds != null) return true;
-            if (CollisionPoly != null) return true;
-            if (CollisionVertex != null) return true;
-            if (PathNode != null) return true;
+            if (MultipleSelectionItems is not null) return true;
+            if (EntityDef is not null) return true;
+            if (CarGenerator is not null) return true;
+            if (LodLight is not null) return true;
+            if (BoxOccluder is not null) return true;
+            if (OccludeModelTri is not null) return true;
+            if (CollisionBounds is not null) return true;
+            if (CollisionPoly is not null) return true;
+            if (CollisionVertex is not null) return true;
+            if (PathNode is not null) return true;
             //if (NavPoly != null) return true;
-            if (NavPoint != null) return true;
-            if (NavPortal != null) return true;
-            if (TrainTrackNode != null) return true;
-            if (ScenarioNode != null) return true;
-            if (Audio != null) return true;
+            if (NavPoint is not null) return true;
+            if (NavPortal is not null) return true;
+            if (TrainTrackNode is not null) return true;
+            if (ScenarioNode is not null) return true;
+            if (Audio is not null) return true;
             return false;
         }
-        public UndoStep CreateUndoStep(WidgetMode mode, Vector3 startPos, Quaternion startRot, Vector3 startScale, WorldForm wf, bool editPivot)
+        public readonly UndoStep? CreateUndoStep(WidgetMode mode, Vector3 startPos, Quaternion startRot, Vector3 startScale, WorldForm wf, bool editPivot)
         {
-            if (MultipleSelectionItems != null)
+            if (MultipleSelectionItems is not null)
             {
                 switch (mode)
                 {
@@ -383,14 +379,14 @@ namespace CodeWalker
                     case WidgetMode.Scale: return new MultiScaleUndoStep(this, startScale, wf);
                 }
             }
-            else if (CollisionVertex != null)
+            else if (CollisionVertex is not null)
             {
                 switch (mode)
                 {
                     case WidgetMode.Position: return new CollisionVertexPositionUndoStep(CollisionVertex, EntityDef, startPos, wf);
                 }
             }
-            else if (CollisionPoly != null)
+            else if (CollisionPoly is not null)
             {
                 switch (mode)
                 {
@@ -399,7 +395,7 @@ namespace CodeWalker
                     case WidgetMode.Scale: return new CollisionPolyScaleUndoStep(CollisionPoly, startScale, wf);
                 }
             }
-            else if (CollisionBounds != null)
+            else if (CollisionBounds is not null)
             {
                 switch (mode)
                 {
@@ -408,7 +404,7 @@ namespace CodeWalker
                     case WidgetMode.Scale: return new CollisionScaleUndoStep(CollisionBounds, startScale, wf);
                 }
             }
-            else if (EntityDef != null)
+            else if (EntityDef is not null)
             {
                 if (editPivot)
                 {
@@ -428,7 +424,7 @@ namespace CodeWalker
                     }
                 }
             }
-            else if (CarGenerator != null)
+            else if (CarGenerator is not null)
             {
                 switch (mode)
                 {
@@ -437,7 +433,7 @@ namespace CodeWalker
                     case WidgetMode.Scale: return new CarGenScaleUndoStep(CarGenerator, startScale);
                 }
             }
-            else if (LodLight != null)
+            else if (LodLight is not null)
             {
                 switch (mode)
                 {
@@ -446,7 +442,7 @@ namespace CodeWalker
                     case WidgetMode.Scale: return new LodLightScaleUndoStep(LodLight, startScale);
                 }
             }
-            else if (BoxOccluder != null)
+            else if (BoxOccluder is not null)
             {
                 switch (mode)
                 {
@@ -455,7 +451,7 @@ namespace CodeWalker
                     case WidgetMode.Scale: return new BoxOccluderScaleUndoStep(BoxOccluder, startScale);
                 }
             }
-            else if (OccludeModelTri != null)
+            else if (OccludeModelTri is not null)
             {
                 switch (mode)
                 {
@@ -464,18 +460,18 @@ namespace CodeWalker
                     case WidgetMode.Scale: return new OccludeModelTriScaleUndoStep(OccludeModelTri, startScale);
                 }
             }
-            else if (PathNode != null)
+            else if (PathNode is not null)
             {
                 switch (mode)
                 {
                     case WidgetMode.Position: return new PathNodePositionUndoStep(PathNode, startPos, wf);
                 }
             }
-            else if (NavPoly != null)
+            else if (NavPoly is not null)
             {
                 //todo...
             }
-            else if (NavPoint != null)
+            else if (NavPoint is not null)
             {
                 switch (mode)
                 {
@@ -483,7 +479,7 @@ namespace CodeWalker
                     case WidgetMode.Rotation: return new NavPointRotationUndoStep(NavPoint, startRot, wf);
                 }
             }
-            else if (NavPortal != null)
+            else if (NavPortal is not null)
             {
                 switch (mode)
                 {
@@ -491,14 +487,14 @@ namespace CodeWalker
                     case WidgetMode.Rotation: return new NavPortalRotationUndoStep(NavPortal, startRot, wf);
                 }
             }
-            else if (TrainTrackNode != null)
+            else if (TrainTrackNode is not null)
             {
                 switch (mode)
                 {
                     case WidgetMode.Position: return new TrainTrackNodePositionUndoStep(TrainTrackNode, startPos, wf);
                 }
             }
-            else if (ScenarioNode != null)
+            else if (ScenarioNode is not null)
             {
                 switch (mode)
                 {
@@ -506,7 +502,7 @@ namespace CodeWalker
                     case WidgetMode.Rotation: return new ScenarioNodeRotationUndoStep(ScenarioNode, startRot, wf);
                 }
             }
-            else if (Audio != null)
+            else if (Audio is not null)
             {
                 switch (mode)
                 {
@@ -517,394 +513,395 @@ namespace CodeWalker
             return null;
         }
 
-        public bool CanShowWidget
+        public readonly bool CanShowWidget
         {
             get
             {
                 bool res = false;
 
-                if (MultipleSelectionItems != null)
+                if (MultipleSelectionItems is not null)
                 {
                     res = true;
                 }
-                else if (EntityDef != null)
+                else if (EntityDef is not null)
                 {
                     res = true;
                 }
-                else if (CarGenerator != null)
+                else if (CarGenerator is not null)
                 {
                     res = true;
                 }
-                else if (LodLight != null)
+                else if (LodLight is not null)
                 {
                     res = true;
                 }
-                else if (BoxOccluder != null)
+                else if (BoxOccluder is not null)
                 {
                     res = true;
                 }
-                else if (OccludeModelTri != null)
+                else if (OccludeModelTri is not null)
                 {
                     res = true;
                 }
-                else if (NavPoly != null)
+                else if (NavPoly is not null)
                 {
                     res = true;
                 }
-                else if (CollisionVertex != null)
+                else if (CollisionVertex is not null)
                 {
                     res = true;
                 }
-                else if (CollisionPoly != null)
+                else if (CollisionPoly is not null)
                 {
                     res = true;
                 }
-                else if (CollisionBounds != null)
+                else if (CollisionBounds is not null)
                 {
                     res = true;
                 }
-                else if (NavPoint != null)
+                else if (NavPoint is not null)
                 {
                     res = true;
                 }
-                else if (NavPortal != null)
+                else if (NavPortal is not null)
                 {
                     res = true;
                 }
-                else if (PathNode != null)
+                else if (PathNode is not null)
                 {
                     res = true;
                 }
-                else if (TrainTrackNode != null)
+                else if (TrainTrackNode is not null)
                 {
                     res = true;
                 }
-                else if (ScenarioNode != null)
+                else if (ScenarioNode is not null)
                 {
                     res = true;
                 }
-                else if (Audio != null)
+                else if (Audio is not null)
                 {
                     res = true;
                 }
                 return res;
             }
         }
-        public Vector3 WidgetPosition
+        public readonly Vector3 WidgetPosition
         {
             get
             {
-                if (MultipleSelectionItems != null)
+                if (MultipleSelectionItems is not null)
                 {
                     return MultipleSelectionCenter;
                 }
-                else if (CollisionVertex != null)
+                else if (CollisionVertex is not null)
                 {
-                    if (EntityDef != null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionVertex.Position);
+                    if (EntityDef is not null)
+                        return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionVertex.Position);
                     return CollisionVertex.Position;
                 }
-                else if (CollisionPoly != null)
+                else if (CollisionPoly is not null)
                 {
-                    if (EntityDef != null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionPoly.Position);
+                    if (EntityDef is not null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionPoly.Position);
                     return CollisionPoly.Position;
                 }
-                else if (CollisionBounds != null)
+                else if (CollisionBounds is not null)
                 {
-                    if (EntityDef != null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionBounds.Position);
+                    if (EntityDef is not null) return EntityDef.Position + EntityDef.Orientation.Multiply(CollisionBounds.Position);
                     return CollisionBounds.Position;
                 }
-                else if (EntityDef != null)
+                else if (EntityDef is not null)
                 {
                     return EntityDef.WidgetPosition;
                 }
-                else if (CarGenerator != null)
+                else if (CarGenerator is not null)
                 {
                     return CarGenerator.Position;
                 }
-                else if (LodLight != null)
+                else if (LodLight is not null)
                 {
                     return LodLight.Position;
                 }
-                else if (BoxOccluder != null)
+                else if (BoxOccluder is not null)
                 {
                     return BoxOccluder.Position;
                 }
-                else if (OccludeModelTri != null)
+                else if (OccludeModelTri is not null)
                 {
                     return OccludeModelTri.Center;
                 }
-                else if (NavPoly != null)
+                else if (NavPoly is not null)
                 {
                     return NavPoly.Position;
                 }
-                else if (NavPoint != null)
+                else if (NavPoint is not null)
                 {
                     return NavPoint.Position;
                 }
-                else if (NavPortal != null)
+                else if (NavPortal is not null)
                 {
                     return NavPortal.Position;
                 }
-                else if (PathNode != null)
+                else if (PathNode is not null)
                 {
                     return PathNode.Position;
                 }
-                else if (TrainTrackNode != null)
+                else if (TrainTrackNode is not null)
                 {
                     return TrainTrackNode.Position;
                 }
-                else if (ScenarioNode != null)
+                else if (ScenarioNode is not null)
                 {
                     return ScenarioNode.Position;
                 }
-                else if (Audio != null)
+                else if (Audio is not null)
                 {
                     return Audio.InnerPos;
                 }
                 return Vector3.Zero;
             }
         }
-        public Quaternion WidgetRotation
+        public readonly Quaternion WidgetRotation
         {
             get
             {
-                if (MultipleSelectionItems != null)
+                if (MultipleSelectionItems is not null)
                 {
                     return MultipleSelectionRotation;
                 }
-                else if (CollisionVertex != null)
+                else if (CollisionVertex is not null)
                 {
-                    if (EntityDef != null) return EntityDef.Orientation;
+                    if (EntityDef is not null) return EntityDef.Orientation;
                     return Quaternion.Identity;
                 }
-                else if (CollisionPoly != null)
+                else if (CollisionPoly is not null)
                 {
-                    if (EntityDef != null) return CollisionPoly.Orientation * EntityDef.Orientation;
+                    if (EntityDef is not null) return CollisionPoly.Orientation * EntityDef.Orientation;
                     return CollisionPoly.Orientation;
                 }
-                else if (CollisionBounds != null)
+                else if (CollisionBounds is not null)
                 {
-                    if (EntityDef != null) return CollisionBounds.Orientation * EntityDef.Orientation;
+                    if (EntityDef is not null) return CollisionBounds.Orientation * EntityDef.Orientation;
                     return CollisionBounds.Orientation;
                 }
-                else if (EntityDef != null)
+                else if (EntityDef is not null)
                 {
                     return EntityDef.WidgetOrientation;
                 }
-                else if (CarGenerator != null)
+                else if (CarGenerator is not null)
                 {
                     return CarGenerator.Orientation;
                 }
-                else if (LodLight != null)
+                else if (LodLight is not null)
                 {
                     return LodLight.Orientation;
                 }
-                else if (BoxOccluder != null)
+                else if (BoxOccluder is not null)
                 {
                     return BoxOccluder.Orientation;
                 }
-                else if (OccludeModelTri != null)
+                else if (OccludeModelTri is not null)
                 {
                     return OccludeModelTri.Orientation;
                 }
-                else if (NavPoly != null)
+                else if (NavPoly is not null)
                 {
                     return Quaternion.Identity;
                 }
-                else if (NavPoint != null)
+                else if (NavPoint is not null)
                 {
                     return NavPoint.Orientation;
                 }
-                else if (NavPortal != null)
+                else if (NavPortal is not null)
                 {
                     return NavPortal.Orientation;
                 }
-                else if (PathNode != null)
+                else if (PathNode is not null)
                 {
                     return Quaternion.Identity;
                 }
-                else if (TrainTrackNode != null)
+                else if (TrainTrackNode is not null)
                 {
                     return Quaternion.Identity;
                 }
-                else if (ScenarioNode != null)
+                else if (ScenarioNode is not null)
                 {
                     return ScenarioNode.Orientation;
                 }
-                else if (Audio != null)
+                else if (Audio is not null)
                 {
                     return Audio.Orientation;
                 }
                 return Quaternion.Identity;
             }
         }
-        public WidgetAxis WidgetRotationAxes
+        public readonly WidgetAxis WidgetRotationAxes
         {
             get
             {
-                if (MultipleSelectionItems != null)
+                if (MultipleSelectionItems is not null)
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (CollisionVertex != null)
+                else if (CollisionVertex is not null)
                 {
                     return WidgetAxis.None;
                 }
-                else if (CollisionPoly != null)
+                else if (CollisionPoly is not null)
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (CollisionBounds != null)
+                else if (CollisionBounds is not null)
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (EntityDef != null)
+                else if (EntityDef is not null)
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (CarGenerator != null)
+                else if (CarGenerator is not null)
                 {
                     return WidgetAxis.Z;
                 }
-                else if (LodLight != null)
+                else if (LodLight is not null)
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (BoxOccluder != null)
+                else if (BoxOccluder is not null)
                 {
                     return WidgetAxis.Z;
                 }
-                else if (OccludeModelTri != null)
+                else if (OccludeModelTri is not null)
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (NavPoly != null)
+                else if (NavPoly is not null)
                 {
                     return WidgetAxis.XYZ;
                 }
-                else if (NavPoint != null)
+                else if (NavPoint is not null)
                 {
                     return WidgetAxis.Z;
                 }
-                else if (NavPortal != null)
+                else if (NavPortal is not null)
                 {
                     return WidgetAxis.Z;
                 }
-                else if (PathNode != null)
+                else if (PathNode is not null)
                 {
                     return WidgetAxis.None;
                 }
-                else if (TrainTrackNode != null)
+                else if (TrainTrackNode is not null)
                 {
                     return WidgetAxis.None;
                 }
-                else if (ScenarioNode != null)
+                else if (ScenarioNode is not null)
                 {
                     return WidgetAxis.Z;
                 }
-                else if (Audio != null)
+                else if (Audio is not null)
                 {
                     return WidgetAxis.Z;
                 }
                 return WidgetAxis.None;
             }
         }
-        public Vector3 WidgetScale
+        public readonly Vector3 WidgetScale
         {
             get
             {
-                if (MultipleSelectionItems != null)
+                if (MultipleSelectionItems is not null)
                 {
                     return MultipleSelectionScale;
                 }
-                else if (CollisionVertex != null)
+                else if (CollisionVertex is not null)
                 {
                     return Vector3.One;
                 }
-                else if (CollisionPoly != null)
+                else if (CollisionPoly is not null)
                 {
                     return CollisionPoly.Scale;
                 }
-                else if (CollisionBounds != null)
+                else if (CollisionBounds is not null)
                 {
                     return CollisionBounds.Scale;
                 }
-                else if (EntityDef != null)
+                else if (EntityDef is not null)
                 {
                     return EntityDef.Scale;
                 }
-                else if (CarGenerator != null)
+                else if (CarGenerator is not null)
                 {
                     return new Vector3(CarGenerator.CCarGen.perpendicularLength);
                 }
-                else if (LodLight != null)
+                else if (LodLight is not null)
                 {
                     return LodLight.Scale;
                 }
-                else if (BoxOccluder != null)
+                else if (BoxOccluder is not null)
                 {
                     return BoxOccluder.Size;
                 }
-                else if (OccludeModelTri != null)
+                else if (OccludeModelTri is not null)
                 {
                     return OccludeModelTri.Scale;
                 }
-                else if (NavPoly != null)
+                else if (NavPoly is not null)
                 {
                     return Vector3.One;
                 }
-                else if (NavPoint != null)
+                else if (NavPoint is not null)
                 {
                     return Vector3.One;
                 }
-                else if (NavPortal != null)
+                else if (NavPortal is not null)
                 {
                     return Vector3.One;
                 }
-                else if (PathNode != null)
+                else if (PathNode is not null)
                 {
                     return Vector3.One;
                 }
-                else if (TrainTrackNode != null)
+                else if (TrainTrackNode is not null)
                 {
                     return Vector3.One;
                 }
-                else if (ScenarioNode != null)
+                else if (ScenarioNode is not null)
                 {
                     return Vector3.One;
                 }
-                else if (Audio != null)
+                else if (Audio is not null)
                 {
                     return Vector3.One;
                 }
                 return Vector3.One;
             }
         }
-        public bool WidgetScaleLockXY
+        public readonly bool WidgetScaleLockXY
         {
             get
             {
-                if (MultipleSelectionItems != null)
+                if (MultipleSelectionItems is not null)
                 {
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        if ((MultipleSelectionItems[i].EntityDef != null) && (MultipleSelectionItems[i].CollisionBounds == null)) return true;
+                        if ((MultipleSelectionItems[i].EntityDef is not null) && (MultipleSelectionItems[i].CollisionBounds is null)) return true;
                     }
                     return false;
                 }
-                if (BoxOccluder != null)
+                if (BoxOccluder is not null)
                 {
                     return false;
                 }
-                if (OccludeModelTri != null)
+                if (OccludeModelTri is not null)
                 {
                     return false;
                 }
-                if (CollisionBounds != null)
+                if (CollisionBounds is not null)
                 {
                     return false;
                 }
-                if (CollisionPoly != null)
+                if (CollisionPoly is not null)
                 {
                     return false;
                 }
@@ -912,46 +909,49 @@ namespace CodeWalker
             }
         }
 
-        public bool CanCopyPaste
+        public readonly bool CanCopyPaste
         {
             get
             {
-                if (MultipleSelectionItems != null)
+                if (MultipleSelectionItems is not null)
                 {
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
-                        if (MultipleSelectionItems[i].CanCopyPaste) return true;
+                        if (MultipleSelectionItems[i].CanCopyPaste)
+                            return true;
                     }
                     return false;
                 }
-                else if (CollisionVertex != null) return false;//can't copy just a vertex..
-                else if (CollisionPoly != null) return true;
-                else if (CollisionBounds != null) return true;
-                else if (EntityDef != null) return true;
-                else if (CarGenerator != null) return true;
-                else if (LodLight != null) return true;
-                else if (BoxOccluder != null) return true;
-                else if (OccludeModelTri != null) return true;
-                else if (PathNode != null) return true;
-                else if (NavPoly != null) return true;
-                else if (NavPoint != null) return true;
-                else if (NavPortal != null) return true;
-                else if (TrainTrackNode != null) return true;
-                else if (ScenarioNode != null) return true;
-                else if (Audio?.AudioZone != null) return true;
-                else if (Audio?.AudioEmitter != null) return true;
+                else if (CollisionVertex is not null) return false;//can't copy just a vertex..
+                else if (CollisionPoly is not null) return true;
+                else if (CollisionBounds is not null) return true;
+                else if (EntityDef is not null) return true;
+                else if (CarGenerator is not null) return true;
+                else if (LodLight is not null) return true;
+                else if (BoxOccluder is not null) return true;
+                else if (OccludeModelTri is not null) return true;
+                else if (PathNode is not null) return true;
+                else if (NavPoly is not null) return true;
+                else if (NavPoint is not null) return true;
+                else if (NavPortal is not null) return true;
+                else if (TrainTrackNode is not null) return true;
+                else if (ScenarioNode is not null) return true;
+                else if (Audio?.AudioZone is not null) return true;
+                else if (Audio?.AudioEmitter is not null) return true;
                 return false;
             }
         }
 
 
-        public void SetMultipleSelectionItems(MapSelection[] items)
+        public void SetMultipleSelectionItems(MapSelection[]? items)
         {
-            if ((items != null) && (items.Length == 0)) items = null;
+            if (items is not null && items.Length == 0)
+                items = null;
+
             MultipleSelectionItems = items;
             GatheredCollisionVerts = null;
             var center = Vector3.Zero;
-            if (items != null)
+            if (items is not null)
             {
                 Dictionary<BoundVertex, int> collVerts = null;
                 for (int i = 0; i < items.Length; i++)
@@ -959,18 +959,18 @@ namespace CodeWalker
                     center += items[i].WidgetPosition;
                     var collVert = items[i].CollisionVertex;
                     var collPoly = items[i].CollisionPoly;
-                    if (collVert != null)
+                    if (collVert is not null)
                     {
                         if (collVerts == null) collVerts = new Dictionary<BoundVertex, int>();
                         collVerts[collVert] = collVert.Index;
                     }
-                    else if (collPoly != null)
+                    else if (collPoly is not null)
                     {
                         if (collVerts == null) collVerts = new Dictionary<BoundVertex, int>();
                         collPoly.GatherVertices(collVerts);
                     }
                 }
-                if (collVerts != null)
+                if (collVerts is not null)
                 {
                     GatheredCollisionVerts = collVerts.Keys.ToArray();
                 }
@@ -985,7 +985,7 @@ namespace CodeWalker
 
         public void SetPosition(Vector3 newpos, bool editPivot)
         {
-            if (MultipleSelectionItems != null)
+            if (MultipleSelectionItems is not null)
             {
                 if (editPivot)
                 {
@@ -1006,8 +1006,8 @@ namespace CodeWalker
                         }
                         ent = MultipleSelectionItems[i].EntityDef ?? ent;
                     }
-                    if (ent != null) dpos = Quaternion.Invert(ent.Orientation).Multiply(dpos);
-                    if (GatheredCollisionVerts != null)
+                    if (ent is not null) dpos = Quaternion.Invert(ent.Orientation).Multiply(dpos);
+                    if (GatheredCollisionVerts is not null)
                     {
                         for (int i = 0; i < GatheredCollisionVerts.Length; i++)
                         {
@@ -1019,22 +1019,22 @@ namespace CodeWalker
                     MultipleSelectionCenter = newpos;
                 }
             }
-            else if (CollisionVertex != null)
+            else if (CollisionVertex is not null)
             {
-                if (EntityDef != null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
+                if (EntityDef is not null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
                 CollisionVertex.Position = newpos;
             }
-            else if (CollisionPoly != null)
+            else if (CollisionPoly is not null)
             {
-                if (EntityDef != null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
+                if (EntityDef is not null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
                 CollisionPoly.Position = newpos;
             }
-            else if (CollisionBounds != null)
+            else if (CollisionBounds is not null)
             {
-                if (EntityDef != null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
+                if (EntityDef is not null) newpos = Quaternion.Invert(EntityDef.Orientation).Multiply(newpos - EntityDef.Position);
                 CollisionBounds.Position = newpos;
             }
-            else if (EntityDef != null)
+            else if (EntityDef is not null)
             {
                 if (editPivot)
                 {
@@ -1045,23 +1045,23 @@ namespace CodeWalker
                     EntityDef.SetPositionFromWidget(newpos);
                 }
             }
-            else if (CarGenerator != null)
+            else if (CarGenerator is not null)
             {
                 CarGenerator.SetPosition(newpos);
             }
-            else if (LodLight != null)
+            else if (LodLight is not null)
             {
                 LodLight.SetPosition(newpos);
             }
-            else if (BoxOccluder != null)
+            else if (BoxOccluder is not null)
             {
                 BoxOccluder.Position = newpos;
             }
-            else if (OccludeModelTri != null)
+            else if (OccludeModelTri is not null)
             {
                 OccludeModelTri.Center = newpos;
             }
-            else if (PathNode != null)
+            else if (PathNode is not null)
             {
                 PathNode.SetYndNodePosition(WorldForm.Space, newpos, out var affectedFiles);
                 foreach (var affectedFile in affectedFiles)
@@ -1069,27 +1069,27 @@ namespace CodeWalker
                     WorldForm.UpdatePathYndGraphics(affectedFile, false);
                 }
             }
-            else if (NavPoly != null)
+            else if (NavPoly is not null)
             {
                 NavPoly.SetPosition(newpos);
             }
-            else if (NavPoint != null)
+            else if (NavPoint is not null)
             {
                 NavPoint.SetPosition(newpos);
             }
-            else if (NavPortal != null)
+            else if (NavPortal is not null)
             {
                 NavPortal.SetPosition(newpos);
             }
-            else if (TrainTrackNode != null)
+            else if (TrainTrackNode is not null)
             {
                 TrainTrackNode.SetPosition(newpos);
             }
-            else if (ScenarioNode != null)
+            else if (ScenarioNode is not null)
             {
                 ScenarioNode.SetPosition(newpos);
             }
-            else if (Audio != null)
+            else if (Audio is not null)
             {
                 Audio.SetPosition(newpos);
             }
@@ -1097,7 +1097,7 @@ namespace CodeWalker
         }
         public void SetRotation(Quaternion newrot, bool editPivot)
         {
-            if (MultipleSelectionItems != null)
+            if (MultipleSelectionItems is not null)
             {
                 if (editPivot)
                 {
@@ -1107,7 +1107,7 @@ namespace CodeWalker
                     var cen = MultipleSelectionCenter;
                     var orinv = Quaternion.Invert(MultipleSelectionRotation);
                     var trans = newrot * orinv;
-                    YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
+                    YmapEntityDef? ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
                         var collVert = MultipleSelectionItems[i].CollisionVertex;
@@ -1124,15 +1124,15 @@ namespace CodeWalker
                         }
                         ent = MultipleSelectionItems[i].EntityDef ?? ent;
                     }
-                    var eorinv = (ent != null) ? Quaternion.Invert(ent.Orientation) : Quaternion.Identity;
-                    if (GatheredCollisionVerts != null)
+                    var eorinv = (ent is not null) ? Quaternion.Invert(ent.Orientation) : Quaternion.Identity;
+                    if (GatheredCollisionVerts is not null)
                     {
                         for (int i = 0; i < GatheredCollisionVerts.Length; i++)
                         {
                             var refpos = GatheredCollisionVerts[i].Position;
                             var relpos = refpos - cen;
                             var newpos = trans.Multiply(relpos) + cen;
-                            if (ent != null)
+                            if (ent is not null)
                             {
                                 refpos = ent.Position + ent.Orientation.Multiply(refpos);
                                 relpos = refpos - cen;
@@ -1144,21 +1144,21 @@ namespace CodeWalker
                     MultipleSelectionRotation = newrot;
                 }
             }
-            else if (CollisionVertex != null)
+            else if (CollisionVertex is not null)
             {
                 //do nothing, but stop any poly from being rotated also
             }
-            else if (CollisionPoly != null)
+            else if (CollisionPoly is not null)
             {
-                if (EntityDef != null) newrot = Quaternion.Normalize(Quaternion.Invert(EntityDef.Orientation) * newrot);
+                if (EntityDef is not null) newrot = Quaternion.Normalize(Quaternion.Invert(EntityDef.Orientation) * newrot);
                 CollisionPoly.Orientation = newrot;
             }
-            else if (CollisionBounds != null)
+            else if (CollisionBounds is not null)
             {
-                if (EntityDef != null) newrot = Quaternion.Normalize(Quaternion.Invert(EntityDef.Orientation) * newrot);
+                if (EntityDef is not null) newrot = Quaternion.Normalize(Quaternion.Invert(EntityDef.Orientation) * newrot);
                 CollisionBounds.Orientation = newrot;
             }
-            else if (EntityDef != null)
+            else if (EntityDef is not null)
             {
                 if (editPivot)
                 {
@@ -1169,42 +1169,42 @@ namespace CodeWalker
                     EntityDef.SetOrientationFromWidget(newrot);
                 }
             }
-            else if (CarGenerator != null)
+            else if (CarGenerator is not null)
             {
                 CarGenerator.SetOrientation(newrot);
             }
-            else if (LodLight != null)
+            else if (LodLight is not null)
             {
                 LodLight.SetOrientation(newrot);
             }
-            else if (BoxOccluder != null)
+            else if (BoxOccluder is not null)
             {
                 BoxOccluder.Orientation = newrot;
             }
-            else if (OccludeModelTri != null)
+            else if (OccludeModelTri is not null)
             {
                 OccludeModelTri.Orientation = newrot;
             }
-            else if (ScenarioNode != null)
+            else if (ScenarioNode is not null)
             {
                 ScenarioNode.SetOrientation(newrot);
             }
-            else if (NavPoint != null)
+            else if (NavPoint is not null)
             {
                 NavPoint.SetOrientation(newrot);
             }
-            else if (NavPortal != null)
+            else if (NavPortal is not null)
             {
                 NavPortal.SetOrientation(newrot);
             }
-            else if (Audio != null)
+            else if (Audio is not null)
             {
                 Audio.SetOrientation(newrot);
             }
         }
         public void SetScale(Vector3 newscale, bool editPivot)
         {
-            if (MultipleSelectionItems != null)
+            if (MultipleSelectionItems is not null)
             {
                 if (editPivot)
                 {//editing pivot scale is sort of meaningless..
@@ -1215,7 +1215,7 @@ namespace CodeWalker
                     var ori = MultipleSelectionRotation;
                     var orinv = Quaternion.Invert(ori);
                     var rsca = newscale / MultipleSelectionScale;
-                    YmapEntityDef ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
+                    YmapEntityDef? ent = null;//hack to use an entity for multple selections... buggy if entities mismatch!!!
                     for (int i = 0; i < MultipleSelectionItems.Length; i++)
                     {
                         var collVert = MultipleSelectionItems[i].CollisionVertex;
@@ -1231,14 +1231,14 @@ namespace CodeWalker
                         ent = MultipleSelectionItems[i].EntityDef ?? ent;
                     }
                     var eorinv = (ent != null) ? Quaternion.Invert(ent.Orientation) : Quaternion.Identity;
-                    if (GatheredCollisionVerts != null)
+                    if (GatheredCollisionVerts is not null)
                     {
                         for (int i = 0; i < GatheredCollisionVerts.Length; i++)
                         {
                             var refpos = GatheredCollisionVerts[i].Position;
                             var relpos = refpos - cen;
                             var newpos = ori.Multiply(orinv.Multiply(relpos) * rsca) + cen;
-                            if (ent != null)
+                            if (ent is not null)
                             {
                                 refpos = ent.Position + ent.Orientation.Multiply(refpos);
                                 relpos = refpos - cen;
@@ -1251,36 +1251,36 @@ namespace CodeWalker
                     MultipleSelectionScale = newscale;
                 }
             }
-            else if (CollisionVertex != null)
+            else if (CollisionVertex is not null)
             {
                 //do nothing, but stop any poly from being scaled also
             }
-            else if (CollisionPoly != null)
+            else if (CollisionPoly is not null)
             {
                 CollisionPoly.Scale = newscale;
             }
-            else if (CollisionBounds != null)
+            else if (CollisionBounds is not null)
             {
                 CollisionBounds.Scale = newscale;
             }
-            else if (EntityDef != null)
+            else if (EntityDef is not null)
             {
                 EntityDef.SetScale(newscale);
             }
-            else if (CarGenerator != null)
+            else if (CarGenerator is not null)
             {
                 CarGenerator.SetScale(newscale);
                 AABB = new BoundingBox(CarGenerator.BBMin, CarGenerator.BBMax);
             }
-            else if (LodLight != null)
+            else if (LodLight is not null)
             {
                 LodLight.SetScale(newscale);
             }
-            else if (BoxOccluder != null)
+            else if (BoxOccluder is not null)
             {
                 BoxOccluder.SetSize(newscale);
             }
-            else if (OccludeModelTri != null)
+            else if (OccludeModelTri is not null)
             {
                 OccludeModelTri.Scale = newscale;
             }
@@ -1320,9 +1320,9 @@ namespace CodeWalker
 
 
 
-        public void UpdateGraphics(WorldForm wf)
+        public readonly void UpdateGraphics(WorldForm wf)
         {
-            if (MultipleSelectionItems != null)
+            if (MultipleSelectionItems is not null)
             {
                 var pathYnds = new Dictionary<YndFile, int>();
                 var navYnvs = new Dictionary<YnvFile, int>();
@@ -1335,51 +1335,51 @@ namespace CodeWalker
 
                 foreach (var item in MultipleSelectionItems)
                 {
-                    if (item.PathNode != null)
+                    if (item.PathNode is not null)
                     {
                         pathYnds[item.PathNode.Ynd] = 1;
                     }
-                    if (item.NavPoly != null)
+                    if (item.NavPoly is not null)
                     {
                         navYnvs[item.NavPoly.Ynv] = 1;
                     }
-                    if (item.NavPoint != null)
+                    if (item.NavPoint is not null)
                     {
                         navYnvs[item.NavPoint.Ynv] = 1;
                     }
-                    if (item.NavPortal != null)
+                    if (item.NavPortal is not null)
                     {
                         navYnvs[item.NavPortal.Ynv] = 1;
                     }
-                    if (item.TrainTrackNode != null)
+                    if (item.TrainTrackNode is not null)
                     {
                         trainTracks[item.TrainTrackNode.Track] = 1;
                     }
-                    if (item.ScenarioNode != null)
+                    if (item.ScenarioNode is not null)
                     {
                         scenarioYmts[item.ScenarioNode.Ymt] = 1;
                     }
-                    if (item.CollisionBounds != null)
+                    if (item.CollisionBounds is not null)
                     {
                         bounds[item.CollisionBounds] = 1;
                     }
-                    if (item.CollisionPoly?.Owner != null)
+                    if (item.CollisionPoly?.Owner is not null)
                     {
                         bounds[item.CollisionPoly.Owner] = 1;
                     }
-                    if (item.CollisionVertex?.Owner != null)
+                    if (item.CollisionVertex?.Owner is not null)
                     {
                         bounds[item.CollisionVertex.Owner] = 1;
                     }
-                    if (item.LodLight?.LodLights != null)
+                    if (item.LodLight?.LodLights is not null)
                     {
                         lodlights[item.LodLight.LodLights] = 1;
                     }
-                    if (item.BoxOccluder != null)
+                    if (item.BoxOccluder is not null)
                     {
                         boxoccls[item.BoxOccluder] = 1;
                     }
-                    if (item.OccludeModelTri?.Model != null)
+                    if (item.OccludeModelTri?.Model is not null)
                     {
                         occlmods[item.OccludeModelTri.Model] = 1;
                     }
@@ -1422,51 +1422,51 @@ namespace CodeWalker
             }
             else
             {
-                if (PathNode != null)
+                if (PathNode is not null)
                 {
                     wf.UpdatePathYndGraphics(PathNode.Ynd, false);
                 }
-                if (NavPoly != null)
+                if (NavPoly is not null)
                 {
                     wf.UpdateNavYnvGraphics(NavPoly.Ynv, true);
                 }
-                if (NavPoint != null)
+                if (NavPoint is not null)
                 {
                     wf.UpdateNavYnvGraphics(NavPoint.Ynv, true);
                 }
-                if (NavPortal != null)
+                if (NavPortal is not null)
                 {
                     wf.UpdateNavYnvGraphics(NavPortal.Ynv, true);
                 }
-                if (TrainTrackNode != null)
+                if (TrainTrackNode is not null)
                 {
                     wf.UpdateTrainTrackGraphics(TrainTrackNode.Track, false);
                 }
-                if (ScenarioNode != null)
+                if (ScenarioNode is not null)
                 {
                     wf.UpdateScenarioGraphics(ScenarioNode.Ymt, false);
                 }
-                if (CollisionVertex?.Owner != null)
+                if (CollisionVertex?.Owner is not null)
                 {
                     wf.UpdateCollisionBoundsGraphics(CollisionVertex.Owner);
                 }
-                else if (CollisionPoly?.Owner != null)
+                else if (CollisionPoly?.Owner is not null)
                 {
                     wf.UpdateCollisionBoundsGraphics(CollisionPoly.Owner);
                 }
-                else if (CollisionBounds != null)
+                else if (CollisionBounds is not null)
                 {
                     wf.UpdateCollisionBoundsGraphics(CollisionBounds);
                 }
-                else if (LodLight != null)
+                else if (LodLight is not null)
                 {
                     wf.UpdateLodLightGraphics(LodLight);
                 }
-                else if (BoxOccluder != null)
+                else if (BoxOccluder is not null)
                 {
                     wf.UpdateBoxOccluderGraphics(BoxOccluder);
                 }
-                else if (OccludeModelTri?.Model != null)
+                else if (OccludeModelTri?.Model is not null)
                 {
                     wf.UpdateOccludeModelGraphics(OccludeModelTri?.Model);
                 }
@@ -1474,29 +1474,29 @@ namespace CodeWalker
         }
 
 
-        public object GetProjectObject()
+        public readonly object GetProjectObject()
         {
-            if (MultipleSelectionItems != null) return MultipleSelectionItems;
-            else if (CollisionVertex != null) return CollisionVertex;
-            else if (CollisionPoly != null) return CollisionPoly;
-            else if (CollisionBounds != null) return CollisionBounds;
-            else if (EntityDef != null) return EntityDef;
-            else if (CarGenerator != null) return CarGenerator;
-            else if (LodLight != null) return LodLight;
-            else if (BoxOccluder != null) return BoxOccluder;
-            else if (OccludeModelTri != null) return OccludeModelTri;
-            else if (PathNode != null) return PathNode;
-            else if (NavPoly != null) return NavPoly;
-            else if (NavPoint != null) return NavPoint;
-            else if (NavPortal != null) return NavPortal;
-            else if (TrainTrackNode != null) return TrainTrackNode;
-            else if (ScenarioNode != null) return ScenarioNode;
-            else if (Audio?.AudioZone != null) return Audio;
-            else if (Audio?.AudioEmitter != null) return Audio;
+            if (MultipleSelectionItems is not null) return MultipleSelectionItems;
+            else if (CollisionVertex is not null) return CollisionVertex;
+            else if (CollisionPoly is not null) return CollisionPoly;
+            else if (CollisionBounds is not null) return CollisionBounds;
+            else if (EntityDef is not null) return EntityDef;
+            else if (CarGenerator is not null) return CarGenerator;
+            else if (LodLight is not null) return LodLight;
+            else if (BoxOccluder is not null) return BoxOccluder;
+            else if (OccludeModelTri is not null) return OccludeModelTri;
+            else if (PathNode is not null) return PathNode;
+            else if (NavPoly is not null) return NavPoly;
+            else if (NavPoint is not null) return NavPoint;
+            else if (NavPortal is not null) return NavPortal;
+            else if (TrainTrackNode is not null) return TrainTrackNode;
+            else if (ScenarioNode is not null) return ScenarioNode;
+            else if (Audio?.AudioZone is not null) return Audio;
+            else if (Audio?.AudioEmitter is not null) return Audio;
             return null;
         }
 
-        public static MapSelection FromProjectObject(WorldForm worldForm, object o, object parent = null)
+        public static MapSelection FromProjectObject(WorldForm worldForm, object o, object? parent = null)
         {
             const float nrad = 0.5f;
             var ms = new MapSelection();
@@ -1632,10 +1632,7 @@ namespace CodeWalker
 
 
 
-        public override string ToString()
-        {
-            return GetFullNameString("[Empty]");
-        }
+        public override readonly string ToString() => GetFullNameString("[Empty]");
     }
 
 

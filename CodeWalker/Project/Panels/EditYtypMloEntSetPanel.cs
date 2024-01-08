@@ -131,8 +131,7 @@ namespace CodeWalker.Project.Panels
 
             if (CurrentEntitySet == null) return;
 
-            var item = LocationsListBox.SelectedItem as LocationItem;
-            if (item == null) return;
+            if (LocationsListBox.SelectedItem is not LocationItem item) return;
 
             SelectingLocation = true;
             SelectedLocationEntityLabel.Text = (item.Entity != null) ? item.Entity.Name : "-";
@@ -146,8 +145,7 @@ namespace CodeWalker.Project.Panels
             if (SelectingLocation) return;
             if (CurrentEntitySet?.Locations == null) return;
 
-            var item = LocationsListBox.SelectedItem as LocationItem;
-            if (item == null) return;
+            if (LocationsListBox.SelectedItem is not LocationItem item) return;
 
             item.Location = (SelectedLocationRoomCombo.SelectedIndex >= 0) ? (uint)SelectedLocationRoomCombo.SelectedIndex : 0;
 

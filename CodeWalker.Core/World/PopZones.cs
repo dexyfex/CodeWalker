@@ -1,8 +1,11 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
+using Collections.Pooled;
 using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,25 +18,18 @@ namespace CodeWalker.World
 
         public Dictionary<string, PopZone> Groups = new Dictionary<string, PopZone>();
 
-        public Vector4[] GetNodePositions()
-        {
-            return null;
-        }
-        public EditorVertex[] GetPathVertices()
-        {
-            return null;
-        }
         public EditorVertex[] GetTriangleVertices()
         {
             return TriangleVerts;
         }
 
-        public EditorVertex[] TriangleVerts;
+        public EditorVertex[] TriangleVerts = Array.Empty<EditorVertex>();
 
 
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
         {
+            using var _ = new DisposableTimer("PopZones Init");
             Inited = false;
 
             GameFileCache = gameFileCache;
@@ -55,9 +51,9 @@ namespace CodeWalker.World
 
             Groups.Clear();
 
-            var ipllines = ipltext.Split('\n');
+            //var ipllines = ipltext.Split('\n');
             bool inzone = false;
-            foreach (var iplline in ipllines)
+            foreach (var iplline in ipltext.EnumerateSplit('\n'))
             {
                 var linet = iplline.Trim();
                 if (linet == "zone")
@@ -73,8 +69,7 @@ namespace CodeWalker.World
                     PopZoneBox box = new PopZoneBox();
                     box.Init(linet);
 
-                    PopZone group;
-                    if (!Groups.TryGetValue(box.NameLabel, out group))
+                    if (!Groups.TryGetValue(box.NameLabel, out var group))
                     {
                         group = new PopZone();
                         group.NameLabel = box.NameLabel;
@@ -88,7 +83,7 @@ namespace CodeWalker.World
 
             foreach (var group in Groups.Values)
             {
-                var hash = JenkHash.GenHash(group.NameLabel.ToLowerInvariant());
+                var hash = JenkHash.GenHashLower(group.NameLabel);
                 group.Name = GlobalText.TryGetString(hash);
             }
 
@@ -103,34 +98,26 @@ namespace CodeWalker.World
         public void BuildVertices()
         {
 
-            var vlist = new List<EditorVertex>();
-            var v1 = new EditorVertex();
-            var v2 = new EditorVertex();
-            var v3 = new EditorVertex();
-            var v4 = new EditorVertex();
+            using var vlist = new PooledList<EditorVertex>();
 
             foreach (var group in Groups.Values)
             {
-                var hash = JenkHash.GenHash(group.NameLabel.ToLowerInvariant());
+                var hash = JenkHash.GenHashLower(group.NameLabel);
                 byte cr = (byte)((hash >> 8) & 0xFF);
                 byte cg = (byte)((hash >> 16) & 0xFF);
                 byte cb = (byte)((hash >> 24) & 0xFF);
                 byte ca = 60;
                 uint cv = (uint)new Color(cr, cg, cb, ca).ToRgba();
-                v1.Colour = cv;
-                v2.Colour = cv;
-                v3.Colour = cv;
-                v4.Colour = cv;
 
                 foreach (var box in group.Boxes)
                 {
                     var min = box.Box.Minimum;
                     var max = box.Box.Maximum;
 
-                    v1.Position = new Vector3(min.X, min.Y, 0);
-                    v2.Position = new Vector3(max.X, min.Y, 0);
-                    v3.Position = new Vector3(min.X, max.Y, 0);
-                    v4.Position = new Vector3(max.X, max.Y, 0);
+                    var v1 = new EditorVertex(new Vector3(min.X, min.Y, 0), cv);
+                    var v2 = new EditorVertex(new Vector3(max.X, min.Y, 0), cv);
+                    var v3 = new EditorVertex(new Vector3(min.X, max.Y, 0), cv);
+                    var v4 = new EditorVertex(new Vector3(max.X, max.Y, 0), cv);
 
                     vlist.Add(v1);
                     vlist.Add(v2);
@@ -147,7 +134,7 @@ namespace CodeWalker.World
             }
             else
             {
-                TriangleVerts = null;
+                TriangleVerts = [];
             }
 
         }
@@ -165,7 +152,7 @@ namespace CodeWalker.World
 
         public override string ToString()
         {
-            return NameLabel + ": " + Name;
+            return $"{NameLabel}: {Name}";
         }
     }
 
@@ -177,29 +164,31 @@ namespace CodeWalker.World
         public string NameLabel { get; set; }
         public float UnkVal { get; set; }
 
-
-        public void Init(string iplline)
+        [SkipLocalsInit]
+        public void Init(ReadOnlySpan<char> iplline)
         {
-            var parts = iplline.Split(',');
-            if (parts.Length >= 9)
+            Span<Range> parts = stackalloc Range[10];
+            var numParts = iplline.Split(parts, ',', StringSplitOptions.TrimEntries);
+            //var parts = iplline.Split(',');
+            if (numParts >= 9)
             {
-                ID = parts[0].Trim();
+                ID = iplline[parts[0]].ToString();
                 BoundingBox b = new BoundingBox();
-                b.Minimum.X = FloatUtil.Parse(parts[1].Trim());
-                b.Minimum.Y = FloatUtil.Parse(parts[2].Trim());
-                b.Minimum.Z = FloatUtil.Parse(parts[3].Trim());
-                b.Maximum.X = FloatUtil.Parse(parts[4].Trim());
-                b.Maximum.Y = FloatUtil.Parse(parts[5].Trim());
-                b.Maximum.Z = FloatUtil.Parse(parts[6].Trim());
+                b.Minimum.X = FloatUtil.Parse(iplline[parts[1]]);
+                b.Minimum.Y = FloatUtil.Parse(iplline[parts[2]]);
+                b.Minimum.Z = FloatUtil.Parse(iplline[parts[3]]);
+                b.Maximum.X = FloatUtil.Parse(iplline[parts[4]]);
+                b.Maximum.Y = FloatUtil.Parse(iplline[parts[5]]);
+                b.Maximum.Z = FloatUtil.Parse(iplline[parts[6]]);
                 Box = b;
-                NameLabel = parts[7].Trim();
-                UnkVal = FloatUtil.Parse(parts[8].Trim());
+                NameLabel = iplline[parts[7]].ToString();
+                UnkVal = FloatUtil.Parse(iplline[parts[8]]);
             }
         }
 
         public override string ToString()
         {
-            return ID + ": " + NameLabel + ": " + Box.ToString();
+            return $"{ID}: {NameLabel}: {Box}";
         }
     }
 

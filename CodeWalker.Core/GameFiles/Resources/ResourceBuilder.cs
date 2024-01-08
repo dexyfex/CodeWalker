@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CodeWalker.Core.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -348,9 +349,9 @@ namespace CodeWalker.GameFiles
             fileBase.FilePagesInfo.GraphicsPagesCount = (byte)graphicsPageFlags.Count;
 
 
-            var systemStream = new MemoryStream();
-            var graphicsStream = new MemoryStream();
-            var resourceWriter = new ResourceDataWriter(systemStream, graphicsStream);
+            using var systemStream = new MemoryStream();
+            using var graphicsStream = new MemoryStream();
+            using var resourceWriter = new ResourceDataWriter(systemStream, graphicsStream);
 
             resourceWriter.Position = 0x50000000;
             foreach (var block in systemBlocks)
@@ -456,15 +457,12 @@ namespace CodeWalker.GameFiles
 
         public static byte[] Compress(byte[] data)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using (MemoryStream ms = RpfFile.recyclableMemoryStreamManager.GetStream())
             {
-                DeflateStream ds = new DeflateStream(ms, CompressionMode.Compress, true);
+                DeflateStream ds = new DeflateStream(ms, CompressionLevel.SmallestSize, true);
                 ds.Write(data, 0, data.Length);
                 ds.Close();
-                byte[] deflated = ms.GetBuffer();
-                byte[] outbuf = new byte[ms.Length]; //need to copy to the right size buffer...
-                Array.Copy(deflated, outbuf, outbuf.Length);
-                return outbuf;
+                return ms.ToArray();
             }
         }
         public static byte[] Decompress(byte[] data)
@@ -472,13 +470,27 @@ namespace CodeWalker.GameFiles
             using (MemoryStream ms = new MemoryStream(data))
             {
                 DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
-                MemoryStream outstr = new MemoryStream();
-                ds.CopyTo(outstr);
-                byte[] deflated = outstr.GetBuffer();
-                byte[] outbuf = new byte[outstr.Length]; //need to copy to the right size buffer...
-                Array.Copy(deflated, outbuf, outbuf.Length);
-                return outbuf;
+                MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream("Decompress", data.Length * 2);
+                ds.CopyTo(outstr, 524288);
+                return outstr.ToArray();
             }
+        }
+
+        public static async Task<byte[]> DecompressAsync(byte[] data)
+        {
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress);
+                MemoryStream outstr = RpfFile.recyclableMemoryStreamManager.GetStream("Decompress", data.Length * 2);
+                await ds.CopyToAsync(outstr, 524288);
+                return outstr.ToArray();
+            }
+        }
+
+        public static DeflateStream Decompress(Stream stream)
+        {
+            DeflateStream ds = new DeflateStream(stream, CompressionMode.Decompress);
+            return ds;
         }
 
     }

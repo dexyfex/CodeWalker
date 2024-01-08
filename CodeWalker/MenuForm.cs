@@ -36,13 +36,13 @@ namespace CodeWalker
         private void RPFExplorerButton_Click(object sender, EventArgs e)
         {
             ExploreForm f = new ExploreForm();
-            f.Show(this);
+            f.Show();
         }
 
         private void RPFBrowserButton_Click(object sender, EventArgs e)
         {
             BrowseForm f = new BrowseForm();
-            f.Show(this);
+            f.Show();
         }
 
         private void ExtractScriptsButton_Click(object sender, EventArgs e)

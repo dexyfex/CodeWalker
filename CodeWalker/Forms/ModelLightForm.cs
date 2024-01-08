@@ -37,10 +37,7 @@ namespace CodeWalker.Forms
             LightsTreeView.Nodes.Clear();
             LightsTreeView.ShowRootLines = false;
 
-            var dr = drawable as Drawable;
-            var fr = drawable as FragDrawable;
-
-            if (dr != null)
+            if (drawable is Drawable dr)
             {
                 Drawable = dr;
                 var lights = dr.LightAttributes;
@@ -49,7 +46,7 @@ namespace CodeWalker.Forms
                     AddLightsTreeNodes(lights.data_items);
                 }
             }
-            else if (fr != null)
+            else if (drawable is FragDrawable fr)
             {
                 FragDrawable = fr;
                 var lights = fr.OwnerFragment?.LightAttributes;
@@ -353,8 +350,7 @@ namespace CodeWalker.Forms
                 var n = LightsTreeView.SelectedNode;
                 if (n != null)
                 {
-                    var dr = n.Tag as Drawable;
-                    if (dr == null) { dr = n.Parent.Tag as Drawable; } //try parent node tag also
+                    if (n.Tag is not Drawable dr) { dr = n.Parent.Tag as Drawable; } //try parent node tag also
                     if (dr!= null)
                     {
                         if (dr.LightAttributes == null) dr.LightAttributes = new ResourceSimpleList64<LightAttributes>();
@@ -389,8 +385,7 @@ namespace CodeWalker.Forms
             }
             else
             {
-                var dr = LightsTreeView.SelectedNode.Parent.Tag as Drawable;
-                if (dr != null)
+                if (LightsTreeView.SelectedNode.Parent.Tag is Drawable dr)
                 {
                     List<LightAttributes> lights = dr.LightAttributes.data_items.ToList();
                     lights.Remove(selectedLight);
@@ -429,8 +424,7 @@ namespace CodeWalker.Forms
                 var n = LightsTreeView.SelectedNode;
                 if (n != null)
                 {
-                    var dr = n.Tag as Drawable;
-                    if (dr == null) { dr = n.Parent.Tag as Drawable; } //try parent node tag also
+                    if (n.Tag is not Drawable dr) { dr = n.Parent.Tag as Drawable; } //try parent node tag also
                     if (dr != null)
                     {
                         if (dr.LightAttributes == null) dr.LightAttributes = new ResourceSimpleList64<LightAttributes>();

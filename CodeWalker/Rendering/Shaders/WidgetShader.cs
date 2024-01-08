@@ -8,6 +8,7 @@ using CodeWalker.World;
 using SharpDX.Direct3D11;
 using SharpDX;
 using System.IO;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -28,7 +29,7 @@ namespace CodeWalker.Rendering
     }
 
 
-    public class WidgetShader : Shader
+    public class WidgetShader : Shader, IDisposable
     {
         VertexShader vs;
         PixelShader ps;
@@ -39,8 +40,9 @@ namespace CodeWalker.Rendering
 
         public WidgetShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\WidgetVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\WidgetPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "WidgetVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "WidgetPS.cso"));
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);
@@ -70,7 +72,7 @@ namespace CodeWalker.Rendering
             context.InputAssembler.SetIndexBuffer(null, SharpDX.DXGI.Format.Unknown, 0);
             return true;
         }
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             SceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             SceneVars.Update(context);

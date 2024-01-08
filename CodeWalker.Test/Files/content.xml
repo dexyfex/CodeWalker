@@ -1,0 +1,382 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<CDataFileMgr__ContentsOfDataFileXml>
+  <disabledFiles />
+  <includedXmlFiles />
+  <includedDataFiles />
+  <dataFiles>
+  <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_JetSki_Ramp.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_JetSki_Ramp.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+      </Item>
+  <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_stunt.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_stunt.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+      </Item>
+  <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_Inflatable_CP.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_Inflatable_CP.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+      </Item>
+  <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_signs.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_signs.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+      </Item>
+  <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_tubes.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_tubes.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+      </Item>
+  <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_neongates.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_neongates.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_CP_Towers.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_CP_Towers.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_Blocks.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_Blocks.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_FireHoops.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_FireHoops.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_checkpoints.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_checkpoints.ityp</filename>
+      <fileType>DLC_ITYP_REQUEST</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+      <contents>CONTENTS_PROPS</contents>
+   </Item>
+   <Item>
+      <filename>dlc_mpAirracesCRC:/common/data/contentunlocks.meta</filename>
+      <fileType>CONTENT_UNLOCKING_META_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+   <Item>
+      <filename>dlc_mpAirraces:/common/data/overlayinfo.xml</filename>
+      <fileType>OVERLAY_INFO_FILE</fileType>
+      <overlay value="false"/>
+      <disabled value="true"/>
+      <persistent value="false"/>
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/data/effects/ptfx.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/anim/creaturemetadata.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirracesCRC:/common/data/pedalternatevariations.meta</filename>
+      <fileType>ALTERNATE_VARIATIONS_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/common/data/effects/peds/first_person.meta</filename>
+      <fileType>PED_FIRST_PERSON_ASSET_DATA</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirracesCRC:/common/data/mp_f_freemode_01_airraces_shop.meta</filename>
+      <fileType>SHOP_PED_APPAREL_META_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_female.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_female_p.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirracesCRC:/common/data/mp_m_freemode_01_airraces_shop.meta</filename>
+      <fileType>SHOP_PED_APPAREL_META_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_male.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_male_p.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirracesCRC:/common/data/shop_tattoo.meta</filename>
+      <fileType>TATTOO_SHOP_DLC_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_game.dat</filename>
+      <fileType>AUDIO_GAMEDATA</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_sounds.dat</filename>
+      <fileType>AUDIO_SOUNDDATA</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_mix.dat</filename>
+      <fileType>AUDIO_DYNAMIXDATA</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_amp.dat</filename>
+      <fileType>AUDIO_SYNTHDATA</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/audio/sfx/dlc_Airraces</filename>
+      <fileType>AUDIO_WAVEPACK</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirracesCRC:/common/data/effects/peds/mpAirraces_overlays.xml</filename>
+      <fileType>PED_OVERLAY_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="false" />
+    </Item>
+    <Item>
+      <filename>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirraces_ped_mp_overlay_txds.rpf</filename>
+      <fileType>RPF_FILE</fileType>
+      <overlay value="false" />
+      <disabled value="true" />
+      <persistent value="true" />
+    </Item>
+ </dataFiles>
+  <contentChangeSets>
+    <Item>
+      <changeSetName>MPAIRRACES_AUTOGEN</changeSetName>
+      <mapChangeSetData />
+      <filesToInvalidate />
+      <filesToDisable />
+      <filesToEnable>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_JetSki_Ramp.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_JetSki_Ramp.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_stunt.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_stunt.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_Inflatable_CP.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_Inflatable_CP.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_signs.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_signs.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_tubes.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_tubes.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_neongates.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_neongates.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_CP_Towers.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_CP_Towers.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_Blocks.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_Blocks.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/Prop_AR_FireHoops.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_Prop_AR_FireHoops.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/prop_ar_checkpoints.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/levels/gta5/props/ar_prop_ar_checkpoints.ityp</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/data/effects/ptfx.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/anim/creaturemetadata.rpf</Item>
+        <Item>dlc_mpAirracesCRC:/common/data/pedalternatevariations.meta</Item>
+        <Item>dlc_mpAirraces:/common/data/effects/peds/first_person.meta</Item>
+        <Item>dlc_mpAirraces:/common/data/overlayinfo.xml</Item>
+        <Item>dlc_mpAirracesCRC:/common/data/mp_f_freemode_01_airraces_shop.meta</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_female.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_female_p.rpf</Item>
+        <Item>dlc_mpAirracesCRC:/common/data/mp_m_freemode_01_airraces_shop.meta</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_male.rpf</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirRaces_male_p.rpf</Item>
+        <Item>dlc_mpAirracesCRC:/common/data/shop_tattoo.meta</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_game.dat</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_sounds.dat</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_mix.dat</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/audio/dlcAirraces_amp.dat</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/audio/sfx/dlc_Airraces</Item>
+        <Item>dlc_mpAirracesCRC:/common/data/effects/peds/mpAirraces_overlays.xml</Item>
+        <Item>dlc_mpAirraces:/%PLATFORM%/models/cdimages/mpAirraces_ped_mp_overlay_txds.rpf</Item>
+ </filesToEnable>
+      <txdToLoad />
+      <txdToUnload />
+      <residentResources />
+      <unregisterResources />
+      <requiresLoadingScreen value="false" />
+    </Item> 
+    <Item>
+      <changeSetName>MPAIRRACES_UNLOCKS_AUTOGEN</changeSetName>
+      <mapChangeSetData />
+      <filesToInvalidate />
+      <filesToDisable />
+      <filesToEnable>
+        <Item>dlc_mpAirracesCRC:/common/data/contentunlocks.meta</Item>
+      </filesToEnable>
+      <txdToLoad />
+      <txdToUnload />
+      <residentResources />
+      <unregisterResources />
+      <requiresLoadingScreen value="false" />
+    </Item>
+    <Item>
+      <changeSetName>MPAIRRACES_INTERIOR_ADDITIONS</changeSetName>
+      <mapChangeSetData>
+        <Item>
+          <associatedMap>MO_JIM_L11</associatedMap>
+          <filesToInvalidate />
+          <filesToEnable>
+            
+          </filesToEnable>
+        </Item>
+      </mapChangeSetData>
+      <requiresLoadingScreen value="true"/>
+      <loadingScreenContext>LOADINGSCREEN_CONTEXT_LAST_FRAME</loadingScreenContext>
+      <useCacheLoader value="true"/>
+    </Item> 
+  </contentChangeSets>
+  <patchFiles />
+</CDataFileMgr__ContentsOfDataFileXml>

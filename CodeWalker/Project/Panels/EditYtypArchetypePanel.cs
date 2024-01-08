@@ -19,14 +19,14 @@ namespace CodeWalker.Project.Panels
             ProjectForm = owner;
         }
 
-        public Archetype CurrentArchetype { get; set; }
+        public Archetype? CurrentArchetype { get; set; }
 
         private void EditYtypArchetypePanel_Load(object sender, EventArgs e)
         {
             AssetTypeComboBox.Items.AddRange(Enum.GetNames(typeof(rage__fwArchetypeDef__eAssetType)));
         }
 
-        public void SetArchetype(Archetype archetype)
+        public void SetArchetype(Archetype? archetype)
         {
             CurrentArchetype = archetype;
             Tag = archetype;
@@ -46,9 +46,34 @@ namespace CodeWalker.Project.Panels
                 ArchetypeDeleteButton.Enabled = ProjectForm.YtypExistsInProject(CurrentArchetype.Ytyp);
                 ArchetypeNameTextBox.Text = CurrentArchetype.Name;
                 AssetNameTextBox.Text = CurrentArchetype.AssetName;
-                LodDistNumericUpDown.Value = (decimal)CurrentArchetype._BaseArchetypeDef.lodDist;
-                HDTextureDistNumericUpDown.Value = (decimal)CurrentArchetype._BaseArchetypeDef.hdTextureDist;
-                SpecialAttributeNumericUpDown.Value = CurrentArchetype._BaseArchetypeDef.specialAttribute;
+                if ((decimal)CurrentArchetype._BaseArchetypeDef.lodDist > LodDistNumericUpDown.Maximum)
+                {
+                    MessageBox.Show($"lodDist {CurrentArchetype._BaseArchetypeDef.lodDist:0.##} is higher than maximum allowed, capping it to {LodDistNumericUpDown.Maximum:0.##}");
+                    LodDistNumericUpDown.Value = LodDistNumericUpDown.Maximum;
+                }
+                else
+                {
+                    LodDistNumericUpDown.Value = (decimal)CurrentArchetype._BaseArchetypeDef.lodDist;
+                }
+                if ((decimal)CurrentArchetype._BaseArchetypeDef.hdTextureDist > HDTextureDistNumericUpDown.Maximum)
+                {
+                    MessageBox.Show($"hdTextureDist {CurrentArchetype._BaseArchetypeDef.hdTextureDist:0.##} is higher than maximum allowed, capping it to {HDTextureDistNumericUpDown.Maximum:0.##}");
+                    HDTextureDistNumericUpDown.Value = HDTextureDistNumericUpDown.Maximum;
+                }
+                else
+                {
+                    HDTextureDistNumericUpDown.Value = (decimal)CurrentArchetype._BaseArchetypeDef.hdTextureDist;
+                }
+                if (CurrentArchetype._BaseArchetypeDef.specialAttribute > SpecialAttributeNumericUpDown.Maximum)
+                {
+                    MessageBox.Show($"specialAttribute {CurrentArchetype._BaseArchetypeDef.specialAttribute} is higher than maximum allowed, capping it to {SpecialAttributeNumericUpDown.Maximum:0.##}");
+                    SpecialAttributeNumericUpDown.Value = SpecialAttributeNumericUpDown.Maximum;
+                }
+                else
+                {
+                    SpecialAttributeNumericUpDown.Value = CurrentArchetype._BaseArchetypeDef.specialAttribute;
+                }
+
                 ArchetypeFlagsTextBox.Text = CurrentArchetype._BaseArchetypeDef.flags.ToString();
                 TextureDictTextBox.Text = CurrentArchetype._BaseArchetypeDef.textureDictionary.ToCleanString();
                 ClipDictionaryTextBox.Text = CurrentArchetype._BaseArchetypeDef.clipDictionary.ToCleanString();
@@ -80,7 +105,7 @@ namespace CodeWalker.Project.Panels
                         TabControl.TabPages.Add(TimeArchetypeTabPage);
                     }
 
-                    TimeFlagsTextBox.Text = TimeArchetype.TimeFlags.ToString();
+                    TimeFlagsTextBox.Text = TimeArchetype.ActiveHours.TimeFlags.ToString();
 
                 }
                 else TabControl.TabPages.Remove(TimeArchetypeTabPage);
@@ -361,16 +386,17 @@ namespace CodeWalker.Project.Panels
 
         private void MloUpdatePortalCountsButton_Click(object sender, EventArgs e)
         {
-            var mlo = CurrentArchetype as MloArchetype;
-            if (mlo == null) return;
+            if (CurrentArchetype is not MloArchetype mlo) return;
 
             mlo.UpdatePortalCounts();
         }
 
         private void TimeFlagsTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentArchetype == null) return;
+            if (populatingui)
+                return;
+            if (CurrentArchetype == null)
+                return;
             if (CurrentArchetype is TimeArchetype TimeArchetype)
             {
                 uint flags = 0;
@@ -384,7 +410,7 @@ namespace CodeWalker.Project.Panels
                 populatingui = false;
                 lock (ProjectForm.ProjectSyncRoot)
                 {
-                    if (TimeArchetype.TimeFlags != flags)
+                    if (TimeArchetype.ActiveHours.TimeFlags != flags)
                     {
                         TimeArchetype.SetTimeFlags(flags);
                         ProjectForm.SetYtypHasChanged(true);
@@ -423,7 +449,7 @@ namespace CodeWalker.Project.Panels
                 populatingui = false;
                 lock (ProjectForm.ProjectSyncRoot)
                 {
-                    if (TimeArchetype.TimeFlags != flags)
+                    if (TimeArchetype.ActiveHours.TimeFlags != flags)
                     {
                         TimeArchetype.SetTimeFlags(flags);
                         ProjectForm.SetYtypHasChanged(true);

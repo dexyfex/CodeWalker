@@ -42,7 +42,18 @@ namespace CodeWalker
         public volatile bool kbjump = false;
         public volatile bool kbmoving = false;
 
-        public KeyBindings keyBindings = new KeyBindings(Settings.Default.KeyBindings);
+        private KeyBindings keyBindings;
+        public KeyBindings KeyBindings
+        {
+            get
+            {
+                return keyBindings ??= new KeyBindings(Settings.Default.KeyBindings);
+            }
+            set
+            {
+                keyBindings = value;
+            }
+        }
 
         public bool CtrlPressed = false;
         public bool ShiftPressed = false;
@@ -127,13 +138,13 @@ namespace CodeWalker
             //WASD move...
             if (enablemove)
             {
-                if (k == keyBindings.MoveForward) kbmovefwd = true;
-                if (k == keyBindings.MoveBackward) kbmovebck = true;
-                if (k == keyBindings.MoveLeft) kbmovelft = true;
-                if (k == keyBindings.MoveRight) kbmovergt = true;
-                if (k == keyBindings.MoveUp) kbmoveup = true;
-                if (k == keyBindings.MoveDown) kbmovedn = true;
-                if (k == keyBindings.Jump) kbjump = true;
+                if (k == KeyBindings.MoveForward) kbmovefwd = true;
+                if (k == KeyBindings.MoveBackward) kbmovebck = true;
+                if (k == KeyBindings.MoveLeft) kbmovelft = true;
+                if (k == KeyBindings.MoveRight) kbmovergt = true;
+                if (k == KeyBindings.MoveUp) kbmoveup = true;
+                if (k == KeyBindings.MoveDown) kbmovedn = true;
+                if (k == KeyBindings.Jump) kbjump = true;
             }
 
             kbmoving = kbmovefwd || kbmovebck || kbmovelft || kbmovergt || kbmoveup || kbmovedn || kbjump;
@@ -146,13 +157,13 @@ namespace CodeWalker
             ShiftPressed = (e.Modifiers & Keys.Shift) > 0;
 
             var k = e.KeyCode;
-            if (k == keyBindings.MoveForward) kbmovefwd = false;
-            if (k == keyBindings.MoveBackward) kbmovebck = false;
-            if (k == keyBindings.MoveLeft) kbmovelft = false;
-            if (k == keyBindings.MoveRight) kbmovergt = false;
-            if (k == keyBindings.MoveUp) kbmoveup = false;
-            if (k == keyBindings.MoveDown) kbmovedn = false;
-            if (k == keyBindings.Jump) kbjump = false;
+            if (k == KeyBindings.MoveForward) kbmovefwd = false;
+            if (k == KeyBindings.MoveBackward) kbmovebck = false;
+            if (k == KeyBindings.MoveLeft) kbmovelft = false;
+            if (k == KeyBindings.MoveRight) kbmovergt = false;
+            if (k == KeyBindings.MoveUp) kbmoveup = false;
+            if (k == KeyBindings.MoveDown) kbmovedn = false;
+            if (k == KeyBindings.Jump) kbjump = false;
 
             kbmoving = kbmovefwd || kbmovebck || kbmovelft || kbmovergt || kbmoveup || kbmovedn || kbjump;
 
@@ -263,6 +274,7 @@ namespace CodeWalker
 
         public KeyBindings(StringCollection sc)
         {
+            Console.WriteLine("Creating KeyBindings");
             foreach (string s in sc)
             {
                 string[] parts = s.Split(':');

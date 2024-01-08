@@ -12,6 +12,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 using SharpDX;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -77,9 +78,10 @@ namespace CodeWalker.Rendering
 
         public TreesLodShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\TreesLodVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\TreesLodPS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\TreesLodPS_Deferred.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "TreesLodVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "TreesLodPS.cso"));
+            byte[] psdefbytes = File.ReadAllBytes(Path.Combine(folder, "TreesLodPS_Deferred.cso"));
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);
@@ -132,7 +134,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             VSSceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             VSSceneVars.Update(context);

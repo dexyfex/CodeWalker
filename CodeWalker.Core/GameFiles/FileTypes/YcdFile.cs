@@ -38,26 +38,26 @@ namespace CodeWalker.GameFiles
             //Hash = entry.ShortNameHash;
 
 
-            RpfResourceFileEntry resentry = entry as RpfResourceFileEntry;
-            if (resentry == null)
+            if (entry is not RpfResourceFileEntry resentry)
             {
-                throw new Exception("File entry wasn't a resource! (is it binary data?)");
+                ThrowFileIsNotAResourceException();
+                return;
             }
 
-            ResourceDataReader rd = null;
+
             try
             {
-                rd = new ResourceDataReader(resentry, data);
+                using ResourceDataReader rd = new ResourceDataReader(resentry, data);
+
+                ClipDictionary = rd?.ReadBlock<ClipDictionary>();
+
+                InitDictionaries();
             }
             catch (Exception ex)
             {
                 //data = entry.File.DecompressBytes(data); //??
                 LoadException = ex.ToString();
             }
-
-            ClipDictionary = rd?.ReadBlock<ClipDictionary>();
-
-            InitDictionaries();
         }
 
         public void InitDictionaries()

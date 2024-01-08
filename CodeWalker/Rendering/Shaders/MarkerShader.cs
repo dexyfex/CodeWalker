@@ -12,6 +12,7 @@ using CodeWalker.GameFiles;
 using System.IO;
 using SharpDX.DXGI;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -46,8 +47,9 @@ namespace CodeWalker.Rendering
 
         public MarkerShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\MarkerVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\MarkerPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "MarkerVS.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "MarkerPS.cso"));
 
             markervs = new VertexShader(device, vsbytes);
             markerps = new PixelShader(device, psbytes);
@@ -74,7 +76,6 @@ namespace CodeWalker.Rendering
                 MinimumLod = 0,
                 MipLodBias = 0,
             });
-
         }
 
 
@@ -93,7 +94,7 @@ namespace CodeWalker.Rendering
         }
 
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             VSSceneVars.Vars.ViewProj = Matrix.Transpose(camera.ViewProjMatrix);
             VSSceneVars.Vars.ViewInv = Matrix.Transpose(camera.ViewInvMatrix);

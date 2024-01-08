@@ -99,7 +99,7 @@ namespace CodeWalker.GameFiles
                 CompHeaders = new CompHeader[Height];
                 for (int i = 0; i < Height; i++)
                 {
-                    CompHeaders[i].Read(r);
+                    CompHeaders[i] = new CompHeader(r);
                 }
                 dlen -= (Height * 8);
             }
@@ -173,8 +173,7 @@ namespace CodeWalker.GameFiles
                         d1.Add(MaxHeights[n]);
                         d2.Add(MinHeights[n]);
                     }
-                    var h = new CompHeader() { Start = (ushort)start, Count = (ushort)count, DataOffset = offset };
-                    ch[y] = h;
+                    ch[y] = new CompHeader((ushort)start, (ushort)count, offset);
                 }
                 d1.AddRange(d2);//the 2 sets of compressed data are just smushed together
                 d = d1.ToArray();
@@ -243,7 +242,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        private byte[] InvertImage(byte[] i, int w, int h)
+        private static byte[] InvertImage(byte[] i, int w, int h)
         {
             //inverts the image vertically
             byte[] o = new byte[i.Length];
@@ -262,7 +261,8 @@ namespace CodeWalker.GameFiles
 
         public string GetPGM()
         {
-            if (MaxHeights == null) return string.Empty;
+            if (MaxHeights == null)
+                return string.Empty;
 
             var sb = new StringBuilder();
             sb.AppendFormat("P2\n{0} {1}\n255\n", Width, Height);
@@ -272,10 +272,10 @@ namespace CodeWalker.GameFiles
                 for (int x = 0; x < Width; x++)
                 {
                     var h = MaxHeights[y * Width + x];
-                    sb.Append(h.ToString());
-                    sb.Append(" ");
+                    sb.Append(h);
+                    sb.Append(' ');
                 }
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             return sb.ToString();
@@ -283,18 +283,20 @@ namespace CodeWalker.GameFiles
 
 
 
-        public struct CompHeader
+        public readonly struct CompHeader(ushort start, ushort count, int dataOffset)
         {
-            public ushort Start;
-            public ushort Count;
-            public int DataOffset;
+            public readonly ushort Start = start;
+            public readonly ushort Count = count;
+            public readonly int DataOffset = dataOffset;
 
-            public void Read(DataReader r)
+            public CompHeader(DataReader r) : this(r.ReadUInt16(), r.ReadUInt16(), r.ReadInt32())
+            { }
+
+            public static CompHeader Read(DataReader r)
             {
-                Start = r.ReadUInt16();
-                Count = r.ReadUInt16();
-                DataOffset = r.ReadInt32();
+                return new CompHeader(r);
             }
+
             public void Write(DataWriter w)
             {
                 w.Write(Start);
@@ -304,7 +306,7 @@ namespace CodeWalker.GameFiles
 
             public override string ToString()
             {
-                return Start.ToString() + ", " + Count.ToString() + ", " + DataOffset.ToString();
+                return $"{Start}, {Count}, {DataOffset}";
             }
         }
 
@@ -316,24 +318,29 @@ namespace CodeWalker.GameFiles
 
         public static string GetXml(HeightmapFile hmf)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(XmlHeader);
-
-            if ((hmf != null) && (hmf.MaxHeights != null))
+            StringBuilder sb = StringBuilderPool.Get();
+            try
             {
-                var name = "Heightmap";
+                sb.AppendLine(XmlHeader);
 
-                OpenTag(sb, 0, name);
+                if ((hmf != null) && (hmf.MaxHeights != null))
+                {
+                    var name = "Heightmap";
 
-                hmf.WriteXml(sb, 1);
+                    OpenTag(sb, 0, name);
 
-                CloseTag(sb, 0, name);
+                    hmf.WriteXml(sb, 1);
+
+                    CloseTag(sb, 0, name);
+                }
+
+                return sb.ToString();
             }
-
-            return sb.ToString();
+            finally
+            {
+                StringBuilderPool.Return(sb);
+            }
         }
-
-
     }
 
 

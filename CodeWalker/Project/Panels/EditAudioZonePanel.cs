@@ -102,7 +102,7 @@ namespace CodeWalker.Project.Panels
                 UnkVec1TextBox.Text = FloatUtil.GetVector4String(z.UnkVec1);
                 UnkVec2TextBox.Text = FloatUtil.GetVector4String(z.UnkVec2);
                 UnkVec3TextBox.Text = FloatUtil.GetVector2String(z.UnkVec3);
-                UnkBytesTextBox.Text = string.Format("{0}, {1}, {2}", z.Unk14, z.Unk15, z.Unk16);
+                UnkBytesTextBox.Text = $"{z.Unk14}, {z.Unk15}, {z.Unk16}";
                 Flags0TextBox.Text = z.Flags0.Hex;
                 Flags1TextBox.Text = z.Flags1.Hex;
                 Unk13TextBox.Text = z.Unk13.Hex;
@@ -110,7 +110,7 @@ namespace CodeWalker.Project.Panels
                 SceneTextBox.Text = z.Scene.ToString();
 
                 StringBuilder sb = new StringBuilder();
-                if (z.Rules != null)
+                if (z.Rules is not null)
                 {
                     foreach (var hash in z.Rules)
                     {
@@ -568,8 +568,11 @@ namespace CodeWalker.Project.Panels
 
         private void DependentAmbiencesTextBox_TextChanged(object sender, EventArgs e)
         {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
+            if (populatingui)
+                return;
+            if (CurrentZone?.AudioZone == null)
+                return;
+
 
             var paramstrs = DependentAmbiencesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
@@ -609,10 +612,10 @@ namespace CodeWalker.Project.Panels
             ProjectForm.WorldForm.GoToPosition(CurrentZone.Position, CurrentZone.AudioZone.PlaybackZoneSize);
         }
 
-        private void AddToProjectButton_Click(object sender, EventArgs e)
+        private async void AddToProjectButton_Click(object sender, EventArgs e)
         {
             ProjectForm.SetProjectItem(CurrentZone);
-            ProjectForm.AddAudioFileToProject(CurrentZone.RelFile);
+            await ProjectForm.AddAudioFileToProject(CurrentZone.RelFile);
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)

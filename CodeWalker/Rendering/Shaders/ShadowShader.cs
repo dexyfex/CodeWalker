@@ -12,6 +12,7 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 using SharpDX;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -81,9 +82,10 @@ namespace CodeWalker.Rendering
 
         public ShadowShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\ShadowVS.cso");
-            byte[] vssbytes = File.ReadAllBytes("Shaders\\ShadowVS_Skin.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\ShadowPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] vsbytes = File.ReadAllBytes(Path.Combine(folder, "ShadowVS.cso"));
+            byte[] vssbytes = File.ReadAllBytes(Path.Combine(folder, "ShadowVS_Skin.cso"));
+            byte[] psbytes = File.ReadAllBytes(Path.Combine(folder, "ShadowPS.cso"));
 
             shadowvs = new VertexShader(device, vsbytes);
             shadowvs_skin = new VertexShader(device, vssbytes);
@@ -165,9 +167,7 @@ namespace CodeWalker.Rendering
             defaultBoneMatrices = new Matrix3_s[255];
             for (int i = 0; i < 255; i++)
             {
-                defaultBoneMatrices[i].Row1 = Vector4.UnitX;
-                defaultBoneMatrices[i].Row2 = Vector4.UnitY;
-                defaultBoneMatrices[i].Row3 = Vector4.UnitZ;
+                defaultBoneMatrices[i] = new Matrix3_s(Vector4.UnitX, Vector4.UnitY, Vector4.UnitZ);
             }
 
         }
@@ -210,7 +210,7 @@ namespace CodeWalker.Rendering
             return false;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
         }
         public void SetSceneVars(DeviceContext context, Matrix shadowviewproj)
@@ -235,7 +235,7 @@ namespace CodeWalker.Rendering
 
         public override void SetModelVars(DeviceContext context, RenderableModel model)
         {
-            if ((model.Owner.Skeleton?.BoneTransforms != null) && (model.Owner.Skeleton.BoneTransforms.Length > 0))
+            if ((model.Owner.Skeleton?.BoneTransforms is not null) && (model.Owner.Skeleton.BoneTransforms.Length > 0))
             {
                 SetBoneMatrices(context, model.Owner.Skeleton.BoneTransforms);
                 defaultBoneMatricesBound = false;
@@ -245,12 +245,13 @@ namespace CodeWalker.Rendering
                 SetBoneMatrices(context, defaultBoneMatrices);
                 defaultBoneMatricesBound = true;
             }
-            if (model.Owner.Cloth?.Vertices != null)
+            if (model.Owner.Cloth?.Vertices is not null)
             {
                 SetClothVertices(context, model.Owner.Cloth.Vertices);
             }
 
-            if (!model.UseTransform) return;
+            if (!model.UseTransform)
+                return;
             VSModelVars.Vars.Transform = Matrix.Transpose(model.Transform);
             VSModelVars.Update(context);
             VSModelVars.SetVSCBuffer(context, 2);
@@ -258,12 +259,12 @@ namespace CodeWalker.Rendering
 
         public override void SetGeomVars(DeviceContext context, RenderableGeometry geom)
         {
-            RenderableTexture texture = null; // ((geom.Textures != null) && (geom.Textures.Length > 0)) ? geom.Textures[0] : null;
+            RenderableTexture? texture = null; // ((geom.Textures != null) && (geom.Textures.Length > 0)) ? geom.Textures[0] : null;
             //RenderableTexture tintpal = null;
 
             //float tntpalind = 0.0f;
 
-            if ((geom.RenderableTextures != null) && (geom.RenderableTextures.Length > 0))
+            if (geom.RenderableTextures is not null && geom.RenderableTextures.Length > 0)
             {
                 for (int i = 0; i < geom.RenderableTextures.Length; i++)
                 {
@@ -279,7 +280,8 @@ namespace CodeWalker.Rendering
                             texture = itex;
                             break;
                     }
-                    if (texture != null) break;
+                    if (texture is not null)
+                        break;
                 }
 
                 ////try get default diffuse texture
@@ -306,7 +308,7 @@ namespace CodeWalker.Rendering
 
                 //fallback try get first texture... eventaully remove this! (helps with water for now)
                 int index = 0;
-                while (((texture == null)) && (index < geom.RenderableTextures.Length))
+                while (texture is null && index < geom.RenderableTextures.Length)
                 {
                     texture = geom.RenderableTextures[index];
                     index++;
@@ -325,7 +327,7 @@ namespace CodeWalker.Rendering
             }
 
 
-            bool usediff = ((texture != null) && (texture.ShaderResourceView != null));
+            bool usediff = texture is not null && texture.ShaderResourceView != null;
 
 
             uint windflag = 0;
@@ -366,11 +368,11 @@ namespace CodeWalker.Rendering
             //context.PixelShader.SetSampler(1, texsamplerc);
             if (usediff)
             {
-                texture.SetPSResource(context, 0);
+                texture!.SetPSResource(context, 0);
             }
 
 
-            if (geom.BoneTransforms != null)
+            if (geom.BoneTransforms is not null)
             {
                 SetBoneMatrices(context, geom.BoneTransforms);
                 defaultBoneMatricesBound = false;
@@ -410,16 +412,8 @@ namespace CodeWalker.Rendering
         {
             if (disposed) return;
 
-            if (texsampler != null)
-            {
-                texsampler.Dispose();
-                texsampler = null;
-            }
-            if (texsamplerc != null)
-            {
-                texsamplerc.Dispose();
-                texsamplerc = null;
-            }
+            texsampler?.Dispose();
+            texsamplerc?.Dispose();
 
             foreach (InputLayout layout in layouts.Values)
             {
@@ -439,7 +433,13 @@ namespace CodeWalker.Rendering
             shadowvs.Dispose();
             shadowvs_skin.Dispose();
 
+            GC.SuppressFinalize(this);
             disposed = true;
+        }
+
+        ~ShadowShader()
+        {
+            Dispose();
         }
     }
 }

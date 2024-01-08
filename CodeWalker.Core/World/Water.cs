@@ -1,4 +1,5 @@
-﻿using CodeWalker.GameFiles;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.GameFiles;
 using SharpDX;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace CodeWalker.World
 
         public void Init(GameFileCache gameFileCache, Action<string> updateStatus)
         {
+            using var _ = new DisposableTimer("Water Init");
             GameFileCache = gameFileCache;
 
             var rpfman = gameFileCache.RpfMan;
@@ -27,10 +29,11 @@ namespace CodeWalker.World
 
             XmlDocument waterxml = rpfman.GetFileXml(filename);
 
-            XmlElement waterdata = waterxml.DocumentElement;
+            XmlElement? waterdata = waterxml.DocumentElement;
 
-            XmlNodeList waterquads = waterdata.SelectNodes("WaterQuads/Item");
+            XmlNodeList? waterquads = waterdata.SelectNodes("WaterQuads/Item");
             WaterQuads.Clear();
+            WaterQuads.EnsureCapacity(waterquads.Count);
             for (int i = 0; i < waterquads.Count; i++)
             {
                 var waterquad = new WaterQuad();
@@ -38,8 +41,9 @@ namespace CodeWalker.World
                 WaterQuads.Add(waterquad);
             }
 
-            XmlNodeList calmingquads = waterdata.SelectNodes("CalmingQuads/Item");
+            XmlNodeList? calmingquads = waterdata.SelectNodes("CalmingQuads/Item");
             CalmingQuads.Clear();
+            CalmingQuads.EnsureCapacity(calmingquads.Count);
             for (int i = 0; i < calmingquads.Count; i++)
             {
                 var calmingquad = new WaterCalmingQuad();
@@ -47,8 +51,9 @@ namespace CodeWalker.World
                 CalmingQuads.Add(calmingquad);
             }
 
-            XmlNodeList wavequads = waterdata.SelectNodes("WaveQuads/Item");
+            XmlNodeList? wavequads = waterdata.SelectNodes("WaveQuads/Item");
             WaveQuads.Clear();
+            WaveQuads.EnsureCapacity(wavequads.Count);
             for (int i = 0; i < wavequads.Count; i++)
             {
                 var wavequad = new WaterWaveQuad();
@@ -65,7 +70,8 @@ namespace CodeWalker.World
         {
             List<T> quads = new List<T>();
 
-            if (!Inited) return quads;
+            if (!Inited)
+                return quads;
 
             var vf = camera.ViewFrustum;
             foreach (var quad in allQuads)
@@ -104,7 +110,7 @@ namespace CodeWalker.World
 
         public override string ToString()
         {
-            return string.Format("[{0}] X=({1} : {2}), Y=({3} : {4})", xmlNodeIndex, minX, maxX, minY, maxY);
+            return $"[{xmlNodeIndex}] X=({minX} : {maxX}), Y=({minY} : {maxY})";
         }
     }
 
@@ -188,7 +194,8 @@ namespace CodeWalker.World
         public float Amplitude { get; set; }
         public float XDirection { get; set; }
         public float YDirection { get; set; }
-        public Quaternion WaveOrientation { get; set; }
+        public Quaternion _WaveOrientation;
+        public ref Quaternion WaveOrientation => ref _WaveOrientation;
 
 
         public override void Init(XmlNode node, int index)
@@ -203,7 +210,7 @@ namespace CodeWalker.World
             YDirection = Xml.GetChildFloatAttribute(node, "YDirection", "value");
 
             float angl = (float)Math.Atan2(YDirection, XDirection);
-            WaveOrientation = Quaternion.RotationYawPitchRoll(0.0f, 0.0f, angl);
+            Quaternion.RotationYawPitchRoll(0.0f, 0.0f, angl, out WaveOrientation);
 
             /*
             <minX value="1664" />

@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,14 +13,46 @@ namespace CodeWalker.GameFiles
 
     public static class MetaNames
     {
-        public static bool TryGetString(uint h, out string str)
+        public static ConcurrentDictionary<uint, string?>? stringCache = null;
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        [MemberNotNull(nameof(stringCache))]
+        public static void InitializeCache()
         {
-            if (Enum.IsDefined(typeof(MetaName), h))
+            if (stringCache is not null)
             {
-                str = ((MetaName)h).ToString();
-                if (str.StartsWith("@")) str = str.Substring(1); //mainly to handle the @null entry
-                return true;
+                return;
             }
+            var values = Enum.GetValues<MetaName>();
+            var names = Enum.GetNames<MetaName>();
+
+            stringCache = new ConcurrentDictionary<uint, string?>(Environment.ProcessorCount, names.Length);
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                var str = names[i];
+
+                if (str?.StartsWith('@') ?? false)
+                {
+                    str = str.Substring(1);
+                }
+
+                stringCache.TryAdd((uint)values[i], str);
+            }
+        }
+
+        public static bool TryGetString(uint h, [MaybeNullWhen(false)] out string str)
+        {
+            if (stringCache is null)
+            {
+                InitializeCache();
+            }
+
+            if (stringCache.TryGetValue(h, out str))
+            {
+                return str is not null;
+            }
+
             str = null;
             return false;
         }

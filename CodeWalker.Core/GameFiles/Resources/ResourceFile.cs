@@ -23,8 +23,10 @@
 //shamelessly stolen and mangled
 
 
+using CodeWalker.Core.Utils;
 using SharpDX;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -35,12 +37,10 @@ using System.Threading.Tasks;
 namespace CodeWalker.GameFiles
 {
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourceFileBase : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ResourceFileBase : ResourceSystemBlock
     {
-        public override long BlockLength
-        {
-            get { return 16; }
-        }
+        public override long BlockLength => 16;
 
         // structure data
         public uint FileVFT { get; set; }
@@ -54,6 +54,19 @@ namespace CodeWalker.GameFiles
         /// Reads the data-block from a stream.
         /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.FileVFT = reader.ReadUInt32();
+            this.FileUnknown = reader.ReadUInt32();
+            this.FilePagesInfoPointer = reader.ReadUInt64();
+
+            // read reference data
+            this.FilePagesInfo = reader.ReadBlockAt<ResourcePagesInfo>(
+                this.FilePagesInfoPointer // offset
+            );
+        }
+
+        public void Read(ref SequenceReader<byte> reader, params object[] parameters)
         {
             // read structure data
             this.FileVFT = reader.ReadUInt32();
@@ -85,19 +98,20 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override IResourceBlock[] GetReferences()
         {
-            var list = new List<IResourceBlock>();
-            if (FilePagesInfo != null) list.Add(FilePagesInfo);
-            return list.ToArray();
+            if (FilePagesInfo is null)
+            {
+                return [];
+            }
+
+            return [FilePagesInfo];
         }
     }
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class ResourcePagesInfo : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class ResourcePagesInfo : ResourceSystemBlock, IResourceBlockSpan
     {
-        public override long BlockLength
-        {
-            get { return 20 + (256 * 16); }
-        }
+        public override long BlockLength => 20 + (256 * 16);
 
         // structure data
         public uint Unknown_0h { get; set; }
@@ -112,6 +126,18 @@ namespace CodeWalker.GameFiles
         /// Reads the data-block from a stream.
         /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            // read structure data
+            this.Unknown_0h = reader.ReadUInt32();
+            this.Unknown_4h = reader.ReadUInt32();
+            this.SystemPagesCount = reader.ReadByte();
+            this.GraphicsPagesCount = reader.ReadByte();
+            this.Unknown_Ah = reader.ReadUInt16();
+            this.Unknown_Ch = reader.ReadUInt32();
+            this.Unknown_10h = reader.ReadUInt32();
+        }
+
+        public void Read(ref SequenceReader<byte> reader, params object[] parameters)
         {
             // read structure data
             this.Unknown_0h = reader.ReadUInt32();
@@ -143,7 +169,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return SystemPagesCount.ToString() + ", " + GraphicsPagesCount.ToString();
+            return $"{SystemPagesCount}, {GraphicsPagesCount}";
         }
     }
 

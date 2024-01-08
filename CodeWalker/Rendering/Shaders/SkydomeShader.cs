@@ -11,6 +11,7 @@ using SharpDX.Direct3D11;
 using System.IO;
 using CodeWalker.GameFiles;
 using CodeWalker.World;
+using System.Diagnostics;
 
 namespace CodeWalker.Rendering
 {
@@ -131,12 +132,13 @@ namespace CodeWalker.Rendering
 
         public SkydomeShader(Device device)
         {
-            byte[] skyvsbytes = File.ReadAllBytes("Shaders\\SkydomeVS.cso");
-            byte[] skypsbytes = File.ReadAllBytes("Shaders\\SkydomePS.cso");
-            byte[] sunvsbytes = File.ReadAllBytes("Shaders\\SkySunVS.cso");
-            byte[] sunpsbytes = File.ReadAllBytes("Shaders\\SkySunPS.cso");
-            byte[] moonvsbytes = File.ReadAllBytes("Shaders\\SkyMoonVS.cso");
-            byte[] moonpsbytes = File.ReadAllBytes("Shaders\\SkyMoonPS.cso");
+            string folder = ShaderManager.GetShaderFolder();
+            byte[] skyvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkydomeVS.cso"));
+            byte[] skypsbytes = File.ReadAllBytes(Path.Combine(folder, "SkydomePS.cso"));
+            byte[] sunvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkySunVS.cso"));
+            byte[] sunpsbytes = File.ReadAllBytes(Path.Combine(folder, "SkySunPS.cso"));
+            byte[] moonvsbytes = File.ReadAllBytes(Path.Combine(folder, "SkyMoonVS.cso"));
+            byte[] moonpsbytes = File.ReadAllBytes(Path.Combine(folder, "SkyMoonPS.cso"));
 
             skyvs = new VertexShader(device, skyvsbytes);
             skyps = new PixelShader(device, skypsbytes);
@@ -259,7 +261,7 @@ namespace CodeWalker.Rendering
             SkyLocalVars.Vars.noisePhase = Vector4.Zero;
         }
 
-        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap shadowmap, ShaderGlobalLights lights)
+        public override void SetSceneVars(DeviceContext context, Camera camera, Shadowmap? shadowmap, ShaderGlobalLights lights)
         {
             SkyLocalVars.Update(context);
             SkyLocalVars.SetVSCBuffer(context, 0);
@@ -286,7 +288,8 @@ namespace CodeWalker.Rendering
 
         public override void SetModelVars(DeviceContext context, RenderableModel model)
         {
-            if (!model.UseTransform) return;
+            if (!model.UseTransform)
+                return;
             VSModelVars.Vars.Transform = Matrix.Transpose(model.Transform);
             VSModelVars.Update(context);
             VSModelVars.SetVSCBuffer(context, 3);

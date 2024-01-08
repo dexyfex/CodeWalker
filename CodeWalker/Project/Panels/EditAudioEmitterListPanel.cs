@@ -1,4 +1,5 @@
 ﻿using CodeWalker.GameFiles;
+using Collections.Pooled;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -122,14 +123,13 @@ namespace CodeWalker.Project.Panels
             var hashstrs = HashesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (hashstrs?.Length > 0)
             {
-                var hashlist = new List<MetaHash>();
+                using var hashlist = new PooledList<MetaHash>();
                 foreach (var hashstr in hashstrs)
                 {
-                    uint hash = 0;
-                    if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
+                    if (!uint.TryParse(hashstr, out var hash))//don't re-hash hashes
                     {
                         hash = JenkHash.GenHash(hashstr);
-                        JenkIndex.Ensure(hashstr);
+                        JenkIndex.Ensure(hashstr, hash);
                     }
                     hashlist.Add(hash);
                 }

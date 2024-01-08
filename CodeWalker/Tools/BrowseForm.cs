@@ -43,17 +43,21 @@ namespace CodeWalker.Tools
         private void BrowseForm_Load(object sender, EventArgs e)
         {
             var info = DetailsPropertyGrid.GetType().GetProperty("Controls");
-            var collection = info.GetValue(DetailsPropertyGrid, null) as Control.ControlCollection;
-            foreach (var control in collection)
+            var collection = info?.GetValue(DetailsPropertyGrid, null) as Control.ControlCollection;
+            if (collection is not null)
             {
-                var ctyp = control.GetType();
-                if (ctyp.Name == "PropertyGridView")
+                foreach (var control in collection)
                 {
-                    var prop = ctyp.GetField("labelRatio");
-                    var val = prop.GetValue(control);
-                    prop.SetValue(control, 4.0); //somehow this sets the width of the property grid's label column...
+                    var ctyp = control.GetType();
+                    if (ctyp.Name == "PropertyGridView")
+                    {
+                        var prop = ctyp.GetField("labelRatio");
+                        var val = prop.GetValue(control);
+                        prop.SetValue(control, 4.0); //somehow this sets the width of the property grid's label column...
+                    }
                 }
             }
+
 
             FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
             DataHexLineCombo.Text = "16";
@@ -111,20 +115,16 @@ namespace CodeWalker.Tools
             MainTreeView.Nodes.Clear();
 
             string searchpath = FolderTextBox.Text;
-            string replpath = searchpath + "\\";
+            string replpath = $"{searchpath}\\";
 
-            Task.Run(() =>
+            _ = Task.Run(() =>
             {
 
                 UpdateStatus("Starting scan...");
 
                 string[] allfiles = Directory.GetFiles(searchpath, "*.rpf", SearchOption.AllDirectories);
 
-                uint totrpfs = 0;
-                uint totfiles = 0;
-                uint totfolders = 0;
-                uint totresfiles = 0;
-                uint totbinfiles = 0;
+                var counts = new FileCounts();
 
                 foreach (string rpfpath in allfiles)
                 {
@@ -137,24 +137,21 @@ namespace CodeWalker.Tools
 
                     RpfFile rf = new RpfFile(rpfpath, rpfpath.Replace(replpath, ""));
 
-                    UpdateStatus("Scanning " + rf.Name + "...");
+                    UpdateStatus($"Scanning {rf.Name}...");
 
-                    rf.ScanStructure(UpdateStatus, UpdateStatus);
-
-                    totrpfs += rf.GrandTotalRpfCount;
-                    totfiles += rf.GrandTotalFileCount;
-                    totfolders += rf.GrandTotalFolderCount;
-                    totresfiles += rf.GrandTotalResourceCount;
-                    totbinfiles += rf.GrandTotalBinaryFileCount;
+                    if (rf.ScanStructure(UpdateStatus, UpdateStatus, out var result))
+                    {
+                        counts += result;
+                    }
 
                     AddScannedFile(rf, null, true);
 
                     RootFiles.Add(rf);
                 }
 
-                UpdateStatus(string.Format("Scan complete. {0} RPF files, {1} total files, {2} total folders, {3} resources, {4} binary files.", totrpfs, totfiles, totfolders, totresfiles, totbinfiles));
+                UpdateStatus($"Scan complete. {counts.Rpfs} RPF files, {counts.Files} total files, {counts.Folders} total folders, {counts.Resources} resources, {counts.BinaryFiles} binary files.");
                 InProgress = false;
-                TotalFileCount = (int)totfiles;
+                TotalFileCount = (int)counts.Files;
             });
 
         }
@@ -167,14 +164,16 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { UpdateStatus(text); }));
+                    Invoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void ClearFiles()
@@ -187,7 +186,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { AddScannedFile(file, node, addToList); }));
+                    Invoke(AddScannedFile, file, node, addToList);
                 }
                 else
                 {
@@ -206,7 +205,9 @@ namespace CodeWalker.Tools
                     }
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private TreeNode AddFileNode(RpfFile file, TreeNode n)
         {
@@ -218,13 +219,13 @@ namespace CodeWalker.Tools
             {
                 if (entry is RpfFileEntry)
                 {
-                    bool show = !entry.NameLower.EndsWith(".rpf"); //rpf entries get their own root node..
+                    bool show = !entry.IsExtension(".rpf"); //rpf entries get their own root node..
                     if (show)
                     {
                         //string text = entry.Path.Substring(file.Path.Length + 1); //includes \ on the end
                         //TreeNode cnode = node.Nodes.Add(text);
                         //cnode.Tag = entry;
-                        TreeNode cnode = AddEntryNode(entry, node);
+                        AddEntryNode(entry, node);
                     }
                 }
             }
@@ -234,14 +235,14 @@ namespace CodeWalker.Tools
             JenkIndex.Ensure(file.Name);
             foreach (RpfEntry entry in file.AllEntries)
             {
-                if (string.IsNullOrEmpty(entry.Name)) continue;
-                JenkIndex.Ensure(entry.Name);
-                JenkIndex.Ensure(entry.NameLower);
-                int ind = entry.Name.LastIndexOf('.');
-                if (ind > 0)
+                if (string.IsNullOrEmpty(entry.Name))
+                    continue;
+
+                JenkIndex.EnsureBoth(entry.Name);
+                var shortName = entry.ShortName;
+                if (shortName != entry.Name)
                 {
-                    JenkIndex.Ensure(entry.Name.Substring(0, ind));
-                    JenkIndex.Ensure(entry.NameLower.Substring(0, ind));
+                    JenkIndex.EnsureBoth(shortName);
                 }
             }
 
@@ -321,11 +322,9 @@ namespace CodeWalker.Tools
             SelectedOffset = offset;
             SelectedLength = length;
 
-            RpfFileEntry rfe = entry as RpfFileEntry;
-            if (rfe == null)
+            if (entry is not RpfFileEntry rfe)
             {
-                RpfDirectoryEntry rde = entry as RpfDirectoryEntry;
-                if (rde != null)
+                if (entry is RpfDirectoryEntry rde)
                 {
                     FileInfoLabel.Text = rde.Path + " (Directory)";
                     DataTextBox.Text = "[Please select a data file]";
@@ -368,43 +367,43 @@ namespace CodeWalker.Tools
             bool istexdict = false;
 
 
-            if (rfe.NameLower.EndsWith(".ymap"))
+            if (rfe.IsExtension(".ymap"))
             {
                 YmapFile ymap = new YmapFile(rfe);
                 ymap.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ymap;
             }
-            else if (rfe.NameLower.EndsWith(".ytyp"))
+            else if (rfe.IsExtension(".ytyp"))
             {
                 YtypFile ytyp = new YtypFile();
                 ytyp.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ytyp;
             }
-            else if (rfe.NameLower.EndsWith(".ymf"))
+            else if (rfe.IsExtension(".ymf"))
             {
                 YmfFile ymf = new YmfFile();
                 ymf.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ymf;
             }
-            else if (rfe.NameLower.EndsWith(".ymt"))
+            else if (rfe.IsExtension(".ymt"))
             {
                 YmtFile ymt = new YmtFile();
                 ymt.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ymt;
             }
-            else if (rfe.NameLower.EndsWith(".ybn"))
+            else if (rfe.IsExtension(".ybn"))
             {
                 YbnFile ybn = new YbnFile();
                 ybn.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ybn;
             }
-            else if (rfe.NameLower.EndsWith(".fxc"))
+            else if (rfe.IsExtension(".fxc"))
             {
                 FxcFile fxc = new FxcFile();
                 fxc.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = fxc;
             }
-            else if (rfe.NameLower.EndsWith(".yft"))
+            else if (rfe.IsExtension(".yft"))
             {
                 YftFile yft = new YftFile();
                 yft.Load(data, rfe);
@@ -416,7 +415,7 @@ namespace CodeWalker.Tools
                     istexdict = true;
                 }
             }
-            else if (rfe.NameLower.EndsWith(".ydr"))
+            else if (rfe.IsExtension(".ydr"))
             {
                 YdrFile ydr = new YdrFile();
                 ydr.Load(data, rfe);
@@ -428,14 +427,14 @@ namespace CodeWalker.Tools
                     istexdict = true;
                 }
             }
-            else if (rfe.NameLower.EndsWith(".ydd"))
+            else if (rfe.IsExtension(".ydd"))
             {
                 YddFile ydd = new YddFile();
                 ydd.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ydd;
                 //todo: show embedded texdicts in ydd's? is this possible?
             }
-            else if (rfe.NameLower.EndsWith(".ytd"))
+            else if (rfe.IsExtension(".ytd"))
             {
                 YtdFile ytd = new YtdFile();
                 ytd.Load(data, rfe);
@@ -443,43 +442,43 @@ namespace CodeWalker.Tools
                 ShowTextures(ytd.TextureDict);
                 istexdict = true;
             }
-            else if (rfe.NameLower.EndsWith(".ycd"))
+            else if (rfe.IsExtension(".ycd"))
             {
                 YcdFile ycd = new YcdFile();
                 ycd.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ycd;
             }
-            else if (rfe.NameLower.EndsWith(".ynd"))
+            else if (rfe.IsExtension(".ynd"))
             {
                 YndFile ynd = new YndFile();
                 ynd.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ynd;
             }
-            else if (rfe.NameLower.EndsWith(".ynv"))
+            else if (rfe.IsExtension(".ynv"))
             {
                 YnvFile ynv = new YnvFile();
                 ynv.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = ynv;
             }
-            else if (rfe.NameLower.EndsWith("_cache_y.dat"))
+            else if (rfe.Name.EndsWith("_cache_y.dat", StringComparison.OrdinalIgnoreCase))
             {
                 CacheDatFile cdf = new CacheDatFile();
                 cdf.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = cdf;
             }
-            else if (rfe.NameLower.EndsWith(".rel"))
+            else if (rfe.IsExtension(".rel"))
             {
                 RelFile rel = new RelFile(rfe);
                 rel.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = rel;
             }
-            else if (rfe.NameLower.EndsWith(".gxt2"))
+            else if (rfe.IsExtension(".gxt2"))
             {
                 Gxt2File gxt2 = new Gxt2File();
                 gxt2.Load(data, rfe);
                 DetailsPropertyGrid.SelectedObject = gxt2;
             }
-            else if (rfe.NameLower.EndsWith(".pso"))
+            else if (rfe.IsExtension(".pso"))
             {
                 JPsoFile pso = new JPsoFile();
                 pso.Load(data, rfe);
@@ -534,16 +533,16 @@ namespace CodeWalker.Tools
                     int poslim = pos + charsperln;
                     hexb.Clear();
                     texb.Clear();
-                    hexb.AppendFormat("{0:X4}: ", pos);
+                    hexb.Append($"{pos:X4}: ");
                     for (int c = pos; c < poslim; c++)
                     {
                         if (c < data.Length)
                         {
                             byte b = data[c];
-                            hexb.AppendFormat("{0:X2} ", b);
+                            hexb.Append($"{b:X2} ");
                             if (char.IsControl((char)b))
                             {
-                                texb.Append(".");
+                                texb.Append('.');
                             }
                             else
                             {
@@ -553,7 +552,7 @@ namespace CodeWalker.Tools
                         else
                         {
                             hexb.Append("   ");
-                            texb.Append(" ");
+                            texb.Append(' ');
                         }
                     }
 
@@ -728,7 +727,7 @@ namespace CodeWalker.Tools
                         return;
                     }
 
-                    UpdateStatus(curfile.ToString() + "/" + totrpfs.ToString() + ": Testing " + file.FilePath + "...");
+                    UpdateStatus($"{curfile}/{totrpfs}: Testing {file.FilePath}...");
 
                     string errorstr = file.TestExtractAllFiles();
 
@@ -739,12 +738,11 @@ namespace CodeWalker.Tools
                         errcount++;
                     }
 
-                    totbytes += file.ExtractedByteCount;
                     curfile++;
                 }
 
 
-                UpdateStatus("Test complete. " + errcount.ToString() + " problems encountered, " + totbytes.ToString() + " total bytes extracted.");
+                UpdateStatus($"Test complete. {errcount} problems encountered");
                 InProgress = false;
             });
         }
@@ -754,7 +752,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { AddTestError(error); }));
+                    Invoke(AddTestError, error);
                 }
                 else
                 {
@@ -762,7 +760,9 @@ namespace CodeWalker.Tools
 
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -797,19 +797,17 @@ namespace CodeWalker.Tools
                 int max = 500;
                 foreach (RpfFile file in ScannedFiles)
                 {
-                    if (file.Name.ToLowerInvariant().Contains(find))
+                    if (file.Name.Contains(find, StringComparison.OrdinalIgnoreCase))
                     {
                         AddFileNode(file, null);
                         count++;
                     }
                     foreach (RpfEntry entry in file.AllEntries)
                     {
-                        if (entry.NameLower.Contains(find))
+                        if (entry.Name.Contains(find, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (entry is RpfDirectoryEntry)
+                            if (entry is RpfDirectoryEntry direntry)
                             {
-                                RpfDirectoryEntry direntry = entry as RpfDirectoryEntry;
-
                                 TreeNode node = AddEntryNode(entry, null);
 
                                 foreach (RpfFileEntry cfentry in direntry.Files)
@@ -821,7 +819,8 @@ namespace CodeWalker.Tools
                             }
                             else if (entry is RpfBinaryFileEntry)
                             {
-                                if (entry.NameLower.EndsWith(".rpf", StringComparison.InvariantCultureIgnoreCase)) continue;
+                                if (entry.IsExtension(".rpf"))
+                                    continue;
                                 AddEntryNode(entry, null);
                                 count++;
                             }
@@ -875,8 +874,7 @@ namespace CodeWalker.Tools
                 return;
             }
 
-            RpfFileEntry rfe = node.Tag as RpfFileEntry;
-            if (rfe == null)
+            if (node.Tag is not RpfFileEntry rfe)
             {
                 MessageBox.Show("Please select a file to export.");
                 return;
@@ -896,8 +894,7 @@ namespace CodeWalker.Tools
                 }
 
 
-                RpfResourceFileEntry rrfe = rfe as RpfResourceFileEntry;
-                if (rrfe != null) //add resource header if this is a resource file.
+                if (rfe is RpfResourceFileEntry rrfe) //add resource header if this is a resource file.
                 {
                     data = ResourceBuilder.AddResourceHeader(rrfe, data);
                 }
@@ -956,7 +953,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { AddSearchResult(result); }));
+                    Invoke(AddSearchResult, result);
                 }
                 else
                 {
@@ -964,7 +961,9 @@ namespace CodeWalker.Tools
                     SearchResultsListView.VirtualListSize = SearchResults.Count;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
         private void Search()
@@ -1076,12 +1075,11 @@ namespace CodeWalker.Tools
                             return;
                         }
 
-                        RpfFileEntry fentry = entry as RpfFileEntry;
-                        if (fentry == null) continue;
+                        if (entry is not RpfFileEntry fentry) continue;
 
                         curfile++;
 
-                        if (fentry.NameLower.EndsWith(".rpf"))
+                        if (fentry.IsExtension(".rpf"))
                         { continue; }
 
                         if (ignoreexts != null)
@@ -1089,7 +1087,7 @@ namespace CodeWalker.Tools
                             bool ignore = false;
                             for (int i = 0; i < ignoreexts.Length; i++)
                             {
-                                if (fentry.NameLower.EndsWith(ignoreexts[i]))
+                                if (fentry.Name.EndsWith(ignoreexts[i], StringComparison.OrdinalIgnoreCase))
                                 {
                                     ignore = true;
                                     break;
@@ -1099,7 +1097,7 @@ namespace CodeWalker.Tools
                             { continue; }
                         }
 
-                        UpdateStatus(string.Format("{0} - Searching {1}/{2} : {3}", duration.ToString(@"hh\:mm\:ss"), curfile, totfiles, fentry.Path));
+                        UpdateStatus($"{duration:hh\\:mm\\:ss} - Searching {curfile}/{totfiles} : {fentry.Path}");
 
                         byte[] filebytes = fentry.File.ExtractFile(fentry);
                         if (filebytes == null) continue;
@@ -1147,7 +1145,7 @@ namespace CodeWalker.Tools
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { SearchComplete(); }));
+                    Invoke(SearchComplete);
                 }
                 else
                 {
@@ -1162,7 +1160,9 @@ namespace CodeWalker.Tools
                     SearchSaveResultsButton.Enabled = true;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void SearchButton_Click(object sender, EventArgs e)
         {

@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Linq;
 using Range = FastColoredTextBoxNS.Range;
+using CodeWalker.Core.Utils;
 
 namespace CodeWalker.Forms
 {

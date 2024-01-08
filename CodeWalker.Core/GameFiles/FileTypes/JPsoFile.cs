@@ -29,9 +29,6 @@ namespace CodeWalker.GameFiles
                 //PsoTypes.EnsurePsoTypes(Pso);
 
                 var root = PsoTypes.GetRootEntry(Pso);
-                if (root != null)
-                {
-                }
                 return;
             }
             else

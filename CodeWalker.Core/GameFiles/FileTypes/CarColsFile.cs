@@ -35,8 +35,7 @@ namespace CodeWalker.GameFiles
 
 
             //can be PSO .ymt or XML .meta
-            MemoryStream ms = new MemoryStream(data);
-            if (PsoFile.IsPSO(ms))
+            if (PsoFile.IsPSO(data.AsSpan(0, 4)))
             {
                 Pso = new PsoFile();
                 Pso.Load(data);
@@ -59,8 +58,6 @@ namespace CodeWalker.GameFiles
                     var msg = ex.Message;
                 }
             }
-            else
-            { }
 
 
             if (xdoc.DocumentElement != null)

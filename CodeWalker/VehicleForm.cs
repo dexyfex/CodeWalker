@@ -22,14 +22,18 @@ namespace CodeWalker
 {
     public partial class VehicleForm : Form, DXForm
     {
-        public Form Form { get { return this; } } //for DXForm/DXManager use
+        public Form Form => this; //for DXForm/DXManager use
 
-        public Renderer Renderer = null;
-        public object RenderSyncRoot { get { return Renderer.RenderSyncRoot; } }
+        public Renderer Renderer { get; set; }
 
         volatile bool formopen = false;
         volatile bool running = false;
         volatile bool pauserendering = false;
+        public bool Pauserendering { get; set; } = false;
+
+        public CancellationTokenSource CancellationTokenSource { get; } = new CancellationTokenSource();
+        private CancellationToken CancellationToken;
+
         //volatile bool initialised = false;
 
         Stopwatch frametimer = new Stopwatch();
@@ -49,7 +53,7 @@ namespace CodeWalker
         System.Drawing.Point MouseLastPoint;
 
 
-        public GameFileCache GameFileCache { get; } = GameFileCacheFactory.Create();
+        public GameFileCache GameFileCache => GameFileCacheFactory.Instance;
 
 
         InputManager Input = new InputManager();
@@ -84,6 +88,7 @@ namespace CodeWalker
 
         public VehicleForm()
         {
+            CancellationToken = CancellationTokenSource.Token;
             InitializeComponent();
 
             Renderer = new Renderer(this, GameFileCache);
@@ -133,19 +138,19 @@ namespace CodeWalker
             camera.TargetRotation.X = 0.5f * (float)Math.PI;
             camera.CurrentRotation.X = 0.5f * (float)Math.PI;
 
-            Renderer.shaders.deferred = false; //no point using this here yet
+            Renderer.Shaders.deferred = false; //no point using this here yet
 
 
             LoadSettings();
 
 
             formopen = true;
-            new Thread(new ThreadStart(ContentThread)).Start();
+            Task.Run(ContentThread);
 
             frametimer.Start();
 
         }
-        public void CleanupScene()
+        public async ValueTask CleanupScene()
         {
             formopen = false;
 
@@ -154,68 +159,78 @@ namespace CodeWalker
             int count = 0;
             while (running && (count < 5000)) //wait for the content thread to exit gracefully
             {
-                Thread.Sleep(1);
+                await Task.Delay(1);
                 count++;
             }
         }
-        public void RenderScene(DeviceContext context)
+        public async ValueTask RenderScene(DeviceContext context)
         {
             float elapsed = (float)frametimer.Elapsed.TotalSeconds;
             frametimer.Restart();
 
-            if (pauserendering) return;
+            if (elapsed < 0.016666)
+            {
+                await Task.Delay((int)(0.016666 * elapsed) * 1000);
+            }
+
+            if (Pauserendering) return;
 
             GameFileCache.BeginFrame();
 
-            if (!Monitor.TryEnter(Renderer.RenderSyncRoot, 50))
-            { return; } //couldn't get a lock, try again next time
+            if (!await Renderer.RenderSyncRoot.WaitAsync(50))
+            {
+                return;
+            } //couldn't get a lock, try again next time
+            try
+            {
+                UpdateControlInputs(elapsed);
+                //space.Update(elapsed);
 
-            UpdateControlInputs(elapsed);
-            //space.Update(elapsed);
-
-            Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
-
-
-
-            //UpdateWidgets();
-            //BeginMouseHitTest();
+                Renderer.Update(elapsed, MouseLastPoint.X, MouseLastPoint.Y);
 
 
 
-
-            Renderer.BeginRender(context);
-
-            Renderer.RenderSkyAndClouds();
-
-            Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
+                //UpdateWidgets();
+                //BeginMouseHitTest();
 
 
-            RenderVehicle();
-
-            //UpdateMouseHitsFromRenderer();
-            //RenderSelection();
 
 
-            RenderGrid(context);
+                Renderer.BeginRender(context);
+
+                Renderer.RenderSkyAndClouds();
+
+                Renderer.SelectedDrawable = null;// SelectedItem.Drawable;
 
 
-            Renderer.RenderQueued();
+                RenderVehicle();
 
-            //Renderer.RenderBounds(MapSelectionMode.Entity);
+                //UpdateMouseHitsFromRenderer();
+                //RenderSelection();
 
-            Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
-            //RenderMoused();
+                RenderGrid(context);
 
-            Renderer.RenderFinalPass();
 
-            //RenderMarkers();
-            //RenderWidgets();
+                Renderer.RenderQueued();
 
-            Renderer.EndRender();
+                //Renderer.RenderBounds(MapSelectionMode.Entity);
 
-            Monitor.Exit(Renderer.RenderSyncRoot);
+                Renderer.RenderSelectionGeometry(MapSelectionMode.Entity);
 
+                //RenderMoused();
+
+                Renderer.RenderFinalPass();
+
+                //RenderMarkers();
+                //RenderWidgets();
+
+                Renderer.EndRender();
+            }
+            finally
+            {
+                Renderer.RenderSyncRoot.Release();
+            }
             //UpdateMarkerSelectionPanelInvoke();
         }
         public void BuffersResized(int w, int h)
@@ -272,7 +287,7 @@ namespace CodeWalker
         }
 
 
-        private void ContentThread()
+        private async ValueTask ContentThread()
         {
             //main content loading thread.
             running = true;
@@ -297,7 +312,7 @@ namespace CodeWalker
             GameFileCache.LoadArchetypes = false;//to speed things up a little
             GameFileCache.BuildExtendedJenkIndex = false;//to speed things up a little
             GameFileCache.DoFullStringIndex = true;//to get all global text from DLC...
-            GameFileCache.Init(UpdateStatus, LogError);
+            await GameFileCache.InitAsync(UpdateStatus, LogError);
 
             //UpdateDlcListComboBox(gameFileCache.DlcNameList);
 
@@ -317,31 +332,43 @@ namespace CodeWalker
             //UpdateStatus("Ready");
 
 
-            Task.Run(() => {
-                while (formopen && !IsDisposed) //renderer content loop
+            _ = Task.Run(async () => {
+                try
                 {
-                    bool rcItemsPending = Renderer.ContentThreadProc();
-
-                    if (!rcItemsPending)
+                    while (formopen && !IsDisposed && !CancellationToken.IsCancellationRequested) //renderer content loop
                     {
-                        Thread.Sleep(1); //sleep if there's nothing to do
+                        bool rcItemsPending = Renderer.ContentThreadProc();
+
+                        if (!rcItemsPending)
+                        {
+                            await Task.Delay(ActiveForm == null ? 50 : 2, CancellationToken).ConfigureAwait(false);
+                        }
                     }
                 }
+                catch(TaskCanceledException)
+                { }
             });
 
-            while (formopen && !IsDisposed) //main asset loop
+            _ = Task.Run(async () =>
             {
-                bool fcItemsPending = GameFileCache.ContentThreadProc();
-
-                if (!fcItemsPending)
+                try
                 {
-                    Thread.Sleep(1); //sleep if there's nothing to do
+                    while (formopen && !IsDisposed) //main asset loop
+                    {
+                        bool fcItemsPending = GameFileCache.ContentThreadProc();
+
+                        if (!fcItemsPending)
+                        {
+                            await Task.Delay(ActiveForm == null ? 50 : 2, CancellationToken).ConfigureAwait(false);
+                        }
+                    }
                 }
-            }
+                catch (TaskCanceledException) { }
 
-            GameFileCache.Clear();
 
-            running = false;
+                running = false;
+            });
+
         }
 
 
@@ -396,14 +423,16 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateStatus(text); }));
+                    BeginInvoke(UpdateStatus, text);
                 }
                 else
                 {
                     StatusLabel.Text = text;
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
         private void LogError(string text)
         {
@@ -411,17 +440,20 @@ namespace CodeWalker
             {
                 if (InvokeRequired)
                 {
-                    Invoke(new Action(() => { LogError(text); }));
+                    Invoke(LogError, text);
                 }
                 else
                 {
                     //TODO: error logging..
+                    Console.WriteLine(text);
                     ConsoleTextBox.AppendText(text + "\r\n");
                     //StatusLabel.Text = text;
                     //MessageBox.Show(text);
                 }
             }
-            catch { }
+            catch(Exception ex) {
+                Console.WriteLine(ex);
+            }
         }
 
 
@@ -471,7 +503,8 @@ namespace CodeWalker
         }
         private void AddDrawableModelsTreeNodes(DrawableModel[] models, string prefix, bool check, TreeNode parentDrawableNode = null)
         {
-            if (models == null) return;
+            if (models is null)
+                return;
 
             for (int mi = 0; mi < models.Length; mi++)
             {
@@ -491,7 +524,8 @@ namespace CodeWalker
                     Renderer.SelectionModelDrawFlags[model] = false;
                 }
 
-                if (model.Geometries == null) continue;
+                if (model.Geometries is null || model.Geometries.Length == 0)
+                    continue;
 
                 foreach (var geom in model.Geometries)
                 {
@@ -512,16 +546,14 @@ namespace CodeWalker
                         {
                             var hash = pl.Hashes[ip];
                             var parm = pl.Parameters[ip];
-                            var tex = parm.Data as TextureBase;
-                            if (tex != null)
+                            if (parm.Data is TextureBase tex)
                             {
-                                var t = tex as Texture;
                                 var tstr = tex.Name.Trim();
-                                if (t != null)
+                                if (tex is Texture t)
                                 {
-                                    tstr = string.Format("{0} ({1}x{2}, embedded)", tex.Name, t.Width, t.Height);
+                                    tstr = $"{tex.Name} ({t.Width}x{t.Height}, embedded)";
                                 }
-                                var tnode = tgnode.Nodes.Add(hash.ToString().Trim() + ": " + tstr);
+                                var tnode = tgnode.Nodes.Add($"{hash}: {tstr}");
                                 tnode.Tag = tex;
                             }
                         }
@@ -536,49 +568,36 @@ namespace CodeWalker
         }
         private void UpdateSelectionDrawFlags(TreeNode node)
         {
-            //update the selection draw flags depending on tag and checked/unchecked
-            var drwbl = node.Tag as DrawableBase;
-            var model = node.Tag as DrawableModel;
-            var geom = node.Tag as DrawableGeometry;
             bool rem = node.Checked;
-            lock (Renderer.RenderSyncRoot)
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
-                if (drwbl != null)
+                if (node.Tag is DrawableBase drwbl)
                 {
                     if (rem)
                     {
-                        if (DrawableDrawFlags.ContainsKey(drwbl))
-                        {
-                            DrawableDrawFlags.Remove(drwbl);
-                        }
+                        DrawableDrawFlags.Remove(drwbl);
                     }
                     else
                     {
                         DrawableDrawFlags[drwbl] = false;
                     }
                 }
-                if (model != null)
+                if (node.Tag is DrawableModel model)
                 {
                     if (rem)
                     {
-                        if (Renderer.SelectionModelDrawFlags.ContainsKey(model))
-                        {
-                            Renderer.SelectionModelDrawFlags.Remove(model);
-                        }
+                        Renderer.SelectionModelDrawFlags.Remove(model);
                     }
                     else
                     {
                         Renderer.SelectionModelDrawFlags[model] = false;
                     }
                 }
-                if (geom != null)
+                if (node.Tag is DrawableGeometry geom)
                 {
                     if (rem)
                     {
-                        if (Renderer.SelectionGeometryDrawFlags.ContainsKey(geom))
-                        {
-                            Renderer.SelectionGeometryDrawFlags.Remove(geom);
-                        }
+                        Renderer.SelectionGeometryDrawFlags.Remove(geom);
                     }
                     else
                     {
@@ -594,7 +613,7 @@ namespace CodeWalker
         {
             if (InvokeRequired)
             {
-                BeginInvoke(new Action(() => { UpdateGlobalVehiclesUI(); }));
+                BeginInvoke(UpdateGlobalVehiclesUI);
             }
             else
             {
@@ -639,8 +658,7 @@ namespace CodeWalker
                 //AddDrawableModelsTreeNodes(drawable.DrawableModels?.Extra, "X Detail", false);
 
 
-                var fdrawable = drawable as FragDrawable;
-                if (fdrawable != null)
+                if (drawable is FragDrawable fdrawable)
                 {
                     var plod1 = fdrawable.OwnerFragment?.PhysicsLODGroup?.PhysicsLOD1;
                     if ((plod1 != null) && (plod1.Children?.data_items != null))
@@ -732,7 +750,7 @@ namespace CodeWalker
             int ih = (int)fh;
             int im = v - (ih * 60);
             if (ih == 24) ih = 0;
-            TimeOfDayLabel.Text = string.Format("{0:00}:{1:00}", ih, im);
+            TimeOfDayLabel.Text = $"{ih:00}:{im:00}";
         }
 
 
@@ -1025,7 +1043,7 @@ namespace CodeWalker
             Input.KeyDown(e, enablemove);
 
             var k = e.KeyCode;
-            var kb = Input.keyBindings;
+            var kb = Input.KeyBindings;
             bool ctrl = Input.CtrlPressed;
             bool shift = Input.ShiftPressed;
 
@@ -1189,17 +1207,22 @@ namespace CodeWalker
 
         private void HDRRenderingCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            if (Renderer.Shaders is null)
+                return;
+
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
-                Renderer.shaders.hdr = HDRRenderingCheckBox.Checked;
+                Renderer.Shaders.hdr = HDRRenderingCheckBox.Checked;
             }
         }
 
         private void ShadowsCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            lock (Renderer.RenderSyncRoot)
+            if (Renderer.Shaders is null)
+                return;
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
-                Renderer.shaders.shadows = ShadowsCheckBox.Checked;
+                Renderer.Shaders.shadows = ShadowsCheckBox.Checked;
             }
         }
 
@@ -1219,7 +1242,8 @@ namespace CodeWalker
             int v = TimeOfDayTrackBar.Value;
             float fh = v / 60.0f;
             UpdateTimeOfDayLabel();
-            lock (Renderer.RenderSyncRoot)
+
+            using (Renderer.RenderSyncRoot.WaitDisposable())
             {
                 Renderer.timeofday = fh;
                 timecycle.SetTime(Renderer.timeofday);
@@ -1234,12 +1258,16 @@ namespace CodeWalker
 
         private void WireframeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.wireframe = WireframeCheckBox.Checked;
+            if (Renderer.Shaders is null)
+                return;
+            Renderer.Shaders.wireframe = WireframeCheckBox.Checked;
         }
 
         private void AnisotropicFilteringCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            Renderer.shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
+            if (Renderer.Shaders is null)
+                return;
+            Renderer.Shaders.AnisotropicFiltering = AnisotropicFilteringCheckBox.Checked;
         }
 
         private void HDTexturesCheckBox_CheckedChanged(object sender, EventArgs e)
@@ -1249,75 +1277,75 @@ namespace CodeWalker
 
         private void RenderModeComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (Renderer.Shaders is null)
+                return;
             TextureSamplerComboBox.Enabled = false;
             TextureCoordsComboBox.Enabled = false;
             switch (RenderModeComboBox.Text)
             {
                 default:
                 case "Default":
-                    Renderer.shaders.RenderMode = WorldRenderMode.Default;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.Default;
                     break;
                 case "Single texture":
-                    Renderer.shaders.RenderMode = WorldRenderMode.SingleTexture;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.SingleTexture;
                     TextureSamplerComboBox.Enabled = true;
                     TextureCoordsComboBox.Enabled = true;
                     break;
                 case "Vertex normals":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexNormals;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexNormals;
                     break;
                 case "Vertex tangents":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexTangents;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexTangents;
                     break;
                 case "Vertex colour 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 1;
                     break;
                 case "Vertex colour 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 2;
                     break;
                 case "Vertex colour 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.VertexColour;
-                    Renderer.shaders.RenderVertexColourIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.VertexColour;
+                    Renderer.Shaders.RenderVertexColourIndex = 3;
                     break;
                 case "Texture coord 1":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 1;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 1;
                     break;
                 case "Texture coord 2":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 2;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 2;
                     break;
                 case "Texture coord 3":
-                    Renderer.shaders.RenderMode = WorldRenderMode.TextureCoord;
-                    Renderer.shaders.RenderTextureCoordIndex = 3;
+                    Renderer.Shaders.RenderMode = WorldRenderMode.TextureCoord;
+                    Renderer.Shaders.RenderTextureCoordIndex = 3;
                     break;
             }
         }
 
         private void TextureSamplerComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (TextureSamplerComboBox.SelectedItem is ShaderParamNames)
+            if (Renderer.Shaders is null)
+                return;
+            if (TextureSamplerComboBox.SelectedItem is ShaderParamNames names)
             {
-                Renderer.shaders.RenderTextureSampler = (ShaderParamNames)TextureSamplerComboBox.SelectedItem;
+                Renderer.Shaders.RenderTextureSampler = names;
             }
         }
 
         private void TextureCoordsComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            switch (TextureCoordsComboBox.Text)
+            if (Renderer.Shaders is null)
+                return;
+
+            Renderer.Shaders.RenderTextureSamplerCoord = TextureCoordsComboBox.Text switch
             {
-                default:
-                case "Texture coord 1":
-                    Renderer.shaders.RenderTextureSamplerCoord = 1;
-                    break;
-                case "Texture coord 2":
-                    Renderer.shaders.RenderTextureSamplerCoord = 2;
-                    break;
-                case "Texture coord 3":
-                    Renderer.shaders.RenderTextureSamplerCoord = 3;
-                    break;
-            }
+                "Texture coord 2" => 2,
+                "Texture coord 3" => 3,
+                _ => 1,
+            };
         }
 
         private void GridCheckBox_CheckedChanged(object sender, EventArgs e)

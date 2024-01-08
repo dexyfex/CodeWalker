@@ -109,10 +109,10 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
             foreach (var poly in polys)  //split along borders
             {
                 var verts = poly.Vertices;
-                if (verts == null)
-                { continue; }//ignore empty polys..
+                if (verts is null)
+                    continue;//ignore empty polys..
                 if (verts.Length < 3)
-                { continue; }//not enough verts for a triangle!
+                    continue;//not enough verts for a triangle!
 
                 Vector2I gprev = NavGrid.GetCellPos(verts[0]);
                 int split1 = 0;
@@ -156,13 +156,18 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                         verts1.Clear();
                         verts2.Clear();
 
-                        for (int i = 0; i < split1; i++) verts1.Add(verts[i]);
+                        for (int i = 0; i < split1; i++)
+                            verts1.Add(verts[i]);
+
                         verts1.Add(sp1);
                         verts1.Add(sp2);
-                        for (int i = split2end; i < verts.Length; i++) verts1.Add(verts[i]);
+
+                        for (int i = split2end; i < verts.Length; i++)
+                            verts1.Add(verts[i]);
 
                         verts2.Add(sp1);
-                        for (int i = split1; i < split2end; i++) verts2.Add(verts[i]);
+                        for (int i = split1; i < split2end; i++)
+                            verts2.Add(verts[i]);
                         verts2.Add(sp2);
 
                         poly1.Vertices = verts1.ToArray();
@@ -203,9 +208,9 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                 var verts = poly.Vertices;
                 var ec = edges?.Length ?? 0;
                 if (ec <= 0)
-                { continue; }//shouldn't happen - no edges?
+                    continue;//shouldn't happen - no edges?
                 if (ec != poly.Vertices?.Length)
-                { continue; }//shouldn't happen
+                    continue;//shouldn't happen
 
                 var split1beg = polysplit.Split1 - 1;
                 var split1end = polysplit.Split1;
@@ -256,22 +261,22 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
 
             foreach (var poly in newpolys) //fix any untouched edges that joined to split polys
             {
-                if (poly.Edges?.Length != poly.Vertices?.Length)
-                { continue; }//shouldn't happen (no edges?)
+                if (poly.Edges is null || poly.Vertices is null || poly.Edges.Length != poly.Vertices.Length)
+                    continue;//shouldn't happen (no edges?)
+
                 for (int i = 0; i < poly.Edges.Length; i++)
                 {
                     var edge = poly.Edges[i];
                     var vert = poly.Vertices[i];
                     if (edge == null)
-                    { continue; }//shouldn't happen
+                        continue;//shouldn't happen
                     if (edge.Poly1 != edge.Poly2)
-                    { continue; }//shouldn't happen?
+                        continue;//shouldn't happen?
                     if (edge.Poly1 == null)
-                    { continue; }//probably this edge joins to nothing
+                        continue;//probably this edge joins to nothing
 
 
-                    YnvPolySplit polysplit;
-                    if (polysplits.TryGetValue(edge.Poly1, out polysplit))
+                    if (polysplits.TryGetValue(edge.Poly1, out var polysplit))
                     {
                         var newpoly = polysplit.GetNearest(vert);
                         if (newpoly == null)
@@ -287,7 +292,7 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
             return newpolys;
         }
 
-        private Vector3 GetSplitPos(Vector3 a, Vector3 b, bool xaxis)
+        private Vector3 GetSplitPos(in Vector3 a, in Vector3 b, bool xaxis)
         {
             Vector3 ca = NavGrid.GetCellRel(a);
             Vector3 cb = NavGrid.GetCellRel(b);
@@ -311,19 +316,19 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
             return a + (b - a) * Math.Min(Math.Max(f, 0.0f), 1.0f);
         }
 
-        private bool IsValidSplit(Vector3 s1, Vector3 s2, Vector3 v1a, Vector3 v1b, Vector3 v2a, Vector3 v2b)
+        private bool IsValidSplit(in Vector3 s1, in Vector3 s2, in Vector3 v1a, in Vector3 v1b, in Vector3 v2a, in Vector3 v2b)
         {
-            if (XYEqual(s1, s2)) return false;
-            if (XYEqual(s1, v1a)) return false;
-            if (XYEqual(s1, v1b)) return false;
-            if (XYEqual(s2, v2a)) return false;
-            if (XYEqual(s2, v2b)) return false;
+            if (XYEqual(in s1, in s2)) return false;
+            if (XYEqual(in s1, in v1a)) return false;
+            if (XYEqual(in s1, in v1b)) return false;
+            if (XYEqual(in s2, in v2a)) return false;
+            if (XYEqual(in s2, in v2b)) return false;
             return true;
         }
 
-        private bool XYEqual(Vector3 v1, Vector3 v2)
+        private bool XYEqual(in Vector3 v1, in Vector3 v2)
         {
-            return ((v1.X == v2.X) && (v1.Y == v2.Y));
+            return v1.X == v2.X && v1.Y == v2.Y;
         }
 
         private class YnvPolySplit
@@ -335,8 +340,8 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
             public int Split2;
             public YnvPoly GetNearest(Vector3 v)
             {
-                if (New1?.Vertices == null) return New2;
-                if (New2?.Vertices == null) return New1;
+                if (New1?.Vertices is null) return New2;
+                if (New2?.Vertices is null) return New1;
                 float len1 = float.MaxValue;
                 float len2 = float.MaxValue;
                 for (int i = 0; i < New1.Vertices.Length; i++)
@@ -357,11 +362,11 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                 return New1;
             }
         }
-        private YnvPolySplit TryGetSplit(Dictionary<YnvPoly, YnvPolySplit> polysplits, YnvPoly poly)
+        private YnvPolySplit? TryGetSplit(Dictionary<YnvPoly, YnvPolySplit> polysplits, YnvPoly poly)
         {
-            if (poly == null) return null;
-            YnvPolySplit r = null;
-            polysplits.TryGetValue(poly, out r);
+            if (poly == null)
+                return null;
+            _ = polysplits.TryGetValue(poly, out var r);
             return r;
         }
 
@@ -379,7 +384,7 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                 if (ynv == null)
                 {
                     ynv = new YnvFile();
-                    ynv.Name = "navmesh[" + cell.FileX.ToString() + "][" + cell.FileY.ToString() + "]";
+                    ynv.Name = $"navmesh[{cell.FileX}][{cell.FileY}]";
                     ynv.Nav = new NavMesh();
                     ynv.Nav.SetDefaults(false);
                     ynv.Nav.AABBSize = new Vector3(NavGrid.CellSize, NavGrid.CellSize, 0.0f);
@@ -411,14 +416,13 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
             foreach (var poly in polys)
             {
                 poly.CalculatePosition();
-                var pos = poly.Position;
                 var verts = poly.Vertices;
-                if (verts != null)
+                if (verts is not null)
                 {
-                    foreach (var vert in verts)
+                    foreach (ref var vert in verts.AsSpan())
                     {
-                        bbmin = Vector3.Min(bbmin, vert);
-                        bbmax = Vector3.Max(bbmax, vert);
+                        Vector3.Min(ref bbmin, ref vert, out bbmin);
+                        Vector3.Max(ref bbmax, ref vert, out bbmax);
                     }
                 }
             }
@@ -460,7 +464,9 @@ namespace CodeWalker.Core.GameFiles.FileTypes.Builders
                 float zmax = float.MinValue;
                 foreach (var poly in ynv.Polys)
                 {
-                    foreach (var vert in poly.Vertices)
+                    if (poly.Vertices is null)
+                        continue;
+                    foreach (ref var vert in poly.Vertices.AsSpan())
                     {
                         zmin = Math.Min(zmin, vert.Z);
                         zmax = Math.Max(zmax, vert.Z);

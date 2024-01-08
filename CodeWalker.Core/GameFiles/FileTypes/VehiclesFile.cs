@@ -1,20 +1,31 @@
-﻿using SharpDX;
+﻿using CodeWalker.Core.Utils;
+using CodeWalker.World;
+using Collections.Pooled;
+using CommunityToolkit.Diagnostics;
+using CommunityToolkit.HighPerformance;
+using Microsoft.Extensions.ObjectPool;
+using SharpDX;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace CodeWalker.GameFiles
 {
     public class VehiclesFile : GameFile, PackedFile
     {
-
+        private static XmlNameTableThreadSafe cachedNameTable = new XmlNameTableThreadSafe(256);
 
         public string ResidentTxd { get; set; }
-        public List<VehicleInitData> InitDatas { get; set; }
-        public Dictionary<string, string> TxdRelationships { get; set; }
+        public PooledList<VehicleInitData> InitDatas { get; set; }
+        public PooledDictionary<string, string> TxdRelationships { get; set; }
 
 
 
@@ -28,14 +39,14 @@ namespace CodeWalker.GameFiles
 
 
 
-        public void Load(byte[] data, RpfFileEntry entry)
+        public void LoadOld(byte[] data, RpfFileEntry entry)
         {
             RpfFileEntry = entry;
             Name = entry.Name;
             FilePath = Name;
 
 
-            if (entry.NameLower.EndsWith(".meta"))
+            if (entry.IsExtension(".meta"))
             {
                 string xml = TextUtil.GetUTF8Text(data);
 
@@ -53,12 +64,69 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        public void Load(byte[] data, RpfFileEntry entry)
+        {
+            RpfFileEntry = entry;
+            Name = entry.Name;
+            FilePath = Name;
+
+
+            if (entry.IsExtension(".meta"))
+            {
+                using var textReader = new StreamReader(new MemoryStream(data), Encoding.UTF8);
+
+                using var xmlReader = XmlReader.Create(textReader, new XmlReaderSettings { NameTable = cachedNameTable });
+
+                while (xmlReader.Read())
+                {
+                    xmlReader.MoveToContent();
+
+                    //var _ = xmlReader.Name switch
+                    //{
+                    //    "residentTxd" => ResidentTxd = Xml.GetChildInnerText(xmlReader, "residentTxd"),
+                    //    "InitDatas" => LoadInitDatas(xmlReader),
+                    //    "txdRelationships" => LoadTxdRelationships(xmlReader),
+                    //    _ => throw new Exception()
+                    //};
+
+                    switch (xmlReader.Name)
+                    {
+                        case string Name when Name.Equals("residentTxd", StringComparison.OrdinalIgnoreCase):
+                            ResidentTxd = Xml.GetChildInnerText(xmlReader, "residentTxd");
+                            break;
+                        case string Name when Name.Equals("InitDatas", StringComparison.OrdinalIgnoreCase):
+                            LoadInitDatas(xmlReader);
+                            break;
+                        case string Name when Name.Equals("txdRelationships", StringComparison.OrdinalIgnoreCase):
+                            LoadTxdRelationships(xmlReader);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+
+                //ResidentTxd = Xml.GetChildInnerText(xmldoc.SelectSingleNode("CVehicleModelInfo__InitDataList"), "residentTxd");
+
+                //LoadInitDatas(xmldoc);
+
+                //LoadTxdRelationships(xmldoc);
+
+                Loaded = true;
+            }
+        }
+
 
         private void LoadInitDatas(XmlDocument xmldoc)
         {
-            XmlNodeList items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/InitDatas/Item | CVehicleModelInfo__InitDataList/InitDatas/item");
+            XmlNodeList? items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/InitDatas/Item | CVehicleModelInfo__InitDataList/InitDatas/item");
 
-            InitDatas = new List<VehicleInitData>();
+            if (items is null)
+            {
+                return;
+            }
+
+            InitDatas = new PooledList<VehicleInitData>(items.Count);
             for (int i = 0; i < items.Count; i++)
             {
                 var node = items[i];
@@ -68,33 +136,85 @@ namespace CodeWalker.GameFiles
             }
         }
 
+        private void LoadInitDatas(XmlReader reader)
+        {
+            if (!reader.IsStartElement() || reader.Name != "InitDatas")
+            {
+                ThrowHelper.ThrowInvalidOperationException("XmlReader is not at start element of \"InitDatas\"");
+                return;
+            }
+
+            InitDatas = new PooledList<VehicleInitData>();
+
+            reader.ReadStartElement("InitDatas");
+
+            while (reader.MoveToContent() == XmlNodeType.Element && reader.Name == "Item")
+            {
+                if (reader.IsStartElement())
+                {
+                    VehicleInitData d = new VehicleInitData();
+                    d.Load(reader);
+                    InitDatas.Add(d);
+                }
+            }
+        }
+
+        private void LoadTxdRelationships(XmlReader reader)
+        {
+            if (reader.IsEmptyElement)
+            {
+                reader.ReadStartElement();
+                return;
+            }
+            TxdRelationships ??= new PooledDictionary<string, string>();
+            TxdRelationships.Clear();
+
+            foreach (var item in Xml.IterateItems(reader, "txdRelationships"))
+            {
+                var childstr = item.Element("child")?.Value;
+                var parentstr = item.Element("parent")?.Value;
+
+                if (!string.IsNullOrEmpty(parentstr) && !string.IsNullOrEmpty(childstr))
+                {
+                    _ = TxdRelationships.TryAdd(childstr, parentstr);
+                }
+            }
+        }
+
         private void LoadTxdRelationships(XmlDocument xmldoc)
         {
-            XmlNodeList items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/txdRelationships/Item | CVehicleModelInfo__InitDataList/txdRelationships/item");
+            XmlNodeList? items = xmldoc.SelectNodes("CVehicleModelInfo__InitDataList/txdRelationships/Item | CVehicleModelInfo__InitDataList/txdRelationships/item");
+            if (items is null || items.Count == 0)
+            {
+                TxdRelationships.Clear();
+                return;
+            }
 
-            TxdRelationships = new Dictionary<string, string>();
+            TxdRelationships ??= new PooledDictionary<string, string>();
+            TxdRelationships.Clear();
             for (int i = 0; i < items.Count; i++)
             {
                 string parentstr = Xml.GetChildInnerText(items[i], "parent");
                 string childstr = Xml.GetChildInnerText(items[i], "child");
 
-                if ((!string.IsNullOrEmpty(parentstr)) && (!string.IsNullOrEmpty(childstr)))
+                if (!string.IsNullOrEmpty(parentstr) && !string.IsNullOrEmpty(childstr))
                 {
-                    if (!TxdRelationships.ContainsKey(childstr))
-                    {
-                        TxdRelationships.Add(childstr, parentstr);
-                    }
-                    else
-                    { }
+                    _ = TxdRelationships.TryAdd(childstr, parentstr);
                 }
             }
         }
 
-
+        public override void Dispose()
+        {
+            InitDatas?.Dispose();
+            TxdRelationships?.Dispose();
+            base.Dispose();
+            GC.SuppressFinalize(this);
+        }
     }
 
 
-    public class VehicleInitData
+    public record VehicleInitData
     {
         
         public string modelName { get; set; }                   //<modelName>impaler3</modelName>
@@ -106,7 +226,7 @@ namespace CodeWalker.GameFiles
         public string expressionName { get; set; }              //<expressionName>null</expressionName>
         public string animConvRoofDictName { get; set; }        //<animConvRoofDictName>null</animConvRoofDictName>
         public string animConvRoofName { get; set; }            //<animConvRoofName>null</animConvRoofName>
-        public string animConvRoofWindowsAffected { get; set; } //<animConvRoofWindowsAffected />
+        public string[] animConvRoofWindowsAffected { get; set; } //<animConvRoofWindowsAffected />
         public string ptfxAssetName { get; set; }               //<ptfxAssetName>weap_xs_vehicle_weapons</ptfxAssetName>
         public string audioNameHash { get; set; }               //<audioNameHash />
         public string layout { get; set; }                      //<layout>LAYOUT_STD_ARENA_1HONLY</layout>
@@ -185,6 +305,373 @@ namespace CodeWalker.GameFiles
         public VehicleOverrideRagdollThreshold pOverrideRagdollThreshold { get; set; }  //<pOverrideRagdollThreshold type="NULL" />
         public string[] firstPersonDrivebyData { get; set; }            //<firstPersonDrivebyData>//  <Item>STD_IMPALER2_FRONT_LEFT</Item>//  <Item>STD_IMPALER2_FRONT_RIGHT</Item>//</firstPersonDrivebyData>
 
+        public void Load(XmlReader reader)
+        {
+            reader.ReadStartElement("Item");
+            while (reader.Name != "Item" && reader.Read())
+            {
+                if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "Item")
+                {
+                    reader.ReadEndElement();
+                    return;
+                }
+                if (reader.IsStartElement())
+                {
+                    while (reader.IsStartElement())
+                    {
+                        switch (reader.Name)
+                        {
+                            case "modelName":
+                                modelName = Xml.GetChildInnerText(reader, "modelName");
+                                break;
+                            case "txdName":
+                                txdName = Xml.GetChildInnerText(reader, "txdName");
+                                break;
+                            case "handlingId":
+                                handlingId = Xml.GetChildInnerText(reader, "handlingId");
+                                break;
+                            case "gameName":
+                                gameName = Xml.GetChildInnerText(reader, "gameName");
+                                break;
+                            case "vehicleMakeName":
+                                vehicleMakeName = Xml.GetChildInnerText(reader, "vehicleMakeName");
+                                break;
+                            case "expressionDictName":
+                                expressionDictName = Xml.GetChildInnerText(reader, "expressionDictName");
+                                break;
+                            case "expressionName":
+                                expressionName = Xml.GetChildInnerText(reader, "expressionName");
+                                break;
+                            case "animConvRoofDictName":
+                                animConvRoofDictName = Xml.GetChildInnerText(reader, "animConvRoofDictName");
+                                break;
+                            case "animConvRoofName":
+                                animConvRoofName = Xml.GetChildInnerText(reader, "animConvRoofName");
+                                break;
+                            case "animConvRoofWindowsAffected":
+                                animConvRoofWindowsAffected = GetStringItemArray(reader, "animConvRoofWindowsAffected");
+                                break;
+                            case "ptfxAssetName":
+                                ptfxAssetName = Xml.GetChildInnerText(reader, "ptfxAssetName");
+                                break;
+                            case "audioNameHash":
+                                audioNameHash = Xml.GetChildInnerText(reader, "audioNameHash");
+                                break;
+                            case "layout":
+                                layout = Xml.GetChildInnerText(reader, "layout");
+                                break;
+                            case "coverBoundOffsets":
+                                coverBoundOffsets = Xml.GetChildInnerText(reader, "coverBoundOffsets");
+                                break;
+                            case "explosionInfo":
+                                explosionInfo = Xml.GetChildInnerText(reader, "explosionInfo");
+                                break;
+                            case "scenarioLayout":
+                                scenarioLayout = Xml.GetChildInnerText(reader, "scenarioLayout");
+                                break;
+                            case "cameraName":
+                                cameraName = Xml.GetChildInnerText(reader, "cameraName");
+                                break;
+                            case "aimCameraName":
+                                aimCameraName = Xml.GetChildInnerText(reader, "aimCameraName");
+                                break;
+                            case "bonnetCameraName":
+                                bonnetCameraName = Xml.GetChildInnerText(reader, "bonnetCameraName");
+                                break;
+                            case "povCameraName":
+                                povCameraName = Xml.GetChildInnerText(reader, "povCameraName");
+                                break;
+                            case "FirstPersonDriveByIKOffset":
+                                FirstPersonDriveByIKOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonDriveByIKOffset");
+                                break;
+                            case "FirstPersonDriveByUnarmedIKOffset":
+                                FirstPersonDriveByUnarmedIKOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonDriveByUnarmedIKOffset");
+                                break;
+                            case "FirstPersonProjectileDriveByIKOffset":
+                                FirstPersonProjectileDriveByIKOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonProjectileDriveByIKOffset");
+                                break;
+                            case "FirstPersonProjectileDriveByPassengerIKOffset":
+                                FirstPersonProjectileDriveByPassengerIKOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonProjectileDriveByPassengerIKOffset");
+                                break;
+                            case "FirstPersonDriveByRightPassengerIKOffset":
+                                FirstPersonDriveByRightPassengerIKOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonDriveByRightPassengerIKOffset");
+                                break;
+                            case "FirstPersonDriveByRightPassengerUnarmedIKOffset":
+                                FirstPersonDriveByRightPassengerUnarmedIKOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonDriveByRightPassengerUnarmedIKOffset");
+                                break;
+                            case "FirstPersonMobilePhoneOffset":
+                                FirstPersonMobilePhoneOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonMobilePhoneOffset");
+                                break;
+                            case "FirstPersonPassengerMobilePhoneOffset":
+                                FirstPersonPassengerMobilePhoneOffset = Xml.GetChildVector3Attributes(reader, "FirstPersonPassengerMobilePhoneOffset");
+                                break;
+                            case "PovCameraOffset":
+                                PovCameraOffset = Xml.GetChildVector3Attributes(reader, "PovCameraOffset");
+                                break;
+                            case "PovCameraVerticalAdjustmentForRollCage":
+                                PovCameraVerticalAdjustmentForRollCage = Xml.GetChildVector3Attributes(reader, "PovCameraVerticalAdjustmentForRollCage");
+                                break;
+                            case "PovPassengerCameraOffset":
+                                PovPassengerCameraOffset = Xml.GetChildVector3Attributes(reader, "PovPassengerCameraOffset");
+                                break;
+                            case "PovRearPassengerCameraOffset":
+                                PovRearPassengerCameraOffset = Xml.GetChildVector3Attributes(reader, "PovRearPassengerCameraOffset");
+                                break;
+                            case "vfxInfoName":
+                                vfxInfoName = Xml.GetChildInnerText(reader, "vfxInfoName");
+                                break;
+                            case "shouldUseCinematicViewMode":
+                                shouldUseCinematicViewMode = Xml.GetChildBoolAttribute(reader, "shouldUseCinematicViewMode");
+                                break;
+                            case "shouldCameraTransitionOnClimbUpDown":
+                                shouldCameraTransitionOnClimbUpDown = Xml.GetChildBoolAttribute(reader, "shouldCameraTransitionOnClimbUpDown");
+                                break;
+                            case "shouldCameraIgnoreExiting":
+                                shouldCameraIgnoreExiting = Xml.GetChildBoolAttribute(reader, "shouldCameraIgnoreExiting");
+                                break;
+                            case "AllowPretendOccupants":
+                                AllowPretendOccupants = Xml.GetChildBoolAttribute(reader, "AllowPretendOccupants");
+                                break;
+                            case "AllowJoyriding":
+                                AllowJoyriding = Xml.GetChildBoolAttribute(reader, "AllowJoyriding");
+                                break;
+                            case "AllowSundayDriving":
+                                AllowSundayDriving = Xml.GetChildBoolAttribute(reader, "AllowSundayDriving");
+                                break;
+                            case "AllowBodyColorMapping":
+                                AllowBodyColorMapping = Xml.GetChildBoolAttribute(reader, "AllowBodyColorMapping");
+                                break;
+                            case "wheelScale":
+                                wheelScale = Xml.GetChildFloatAttribute(reader, "wheelScale");
+                                break;
+                            case "wheelScaleRear":
+                                wheelScaleRear = Xml.GetChildFloatAttribute(reader, "wheelScaleRear");
+                                break;
+                            case "dirtLevelMin":
+                                dirtLevelMin = Xml.GetChildFloatAttribute(reader, "dirtLevelMin");
+                                break;
+                            case "dirtLevelMax":
+                                dirtLevelMax = Xml.GetChildFloatAttribute(reader, "dirtLevelMax");
+                                break;
+                            case "envEffScaleMin":
+                                envEffScaleMin = Xml.GetChildFloatAttribute(reader, "envEffScaleMin");
+                                break;
+                            case "envEffScaleMax":
+                                envEffScaleMax = Xml.GetChildFloatAttribute(reader, "envEffScaleMax");
+                                break;
+                            case "envEffScaleMin2":
+                                envEffScaleMin2 = Xml.GetChildFloatAttribute(reader, "envEffScaleMin2");
+                                break;
+                            case "envEffScaleMax2":
+                                envEffScaleMax2 = Xml.GetChildFloatAttribute(reader, "envEffScaleMax2");
+                                break;
+                            case "damageMapScale":
+                                damageMapScale = Xml.GetChildFloatAttribute(reader, "damageMapScale");
+                                break;
+                            case "damageOffsetScale":
+                                damageOffsetScale = Xml.GetChildFloatAttribute(reader, "damageOffsetScale");
+                                break;
+                            case "diffuseTint":
+                                var str = Xml.GetChildStringAttribute(reader, "diffuseTint", "value").AsSpan();
+                                if (str.StartsWith("0x"))
+                                {
+                                    str = str.Slice(2);
+                                }
+
+                                if (str.IsEmpty)
+                                {
+                                    diffuseTint = new Color4();
+                                } else
+                                {
+                                    diffuseTint = new Color4(uint.Parse(str, System.Globalization.NumberStyles.HexNumber));
+                                }
+                                
+                                break;
+                            case "steerWheelMult":
+                                steerWheelMult = Xml.GetChildFloatAttribute(reader, "steerWheelMult");
+                                break;
+                            case "HDTextureDist":
+                                HDTextureDist = Xml.GetChildFloatAttribute(reader, "HDTextureDist");
+                                break;
+                            case "lodDistances":
+                                lodDistances = GetFloatArray(reader, "lodDistances", '\n');
+                                break;
+                            case "minSeatHeight":
+                                minSeatHeight = Xml.GetChildFloatAttribute(reader, "minSeatHeight");
+                                break;
+                            case "identicalModelSpawnDistance":
+                                identicalModelSpawnDistance = Xml.GetChildFloatAttribute(reader, "identicalModelSpawnDistance");
+                                break;
+                            case "maxNumOfSameColor":
+                                maxNumOfSameColor = Xml.GetChildIntAttribute(reader, "maxNumOfSameColor");
+                                break;
+                            case "defaultBodyHealth":
+                                defaultBodyHealth = Xml.GetChildFloatAttribute(reader, "defaultBodyHealth");
+                                break;
+                            case "pretendOccupantsScale":
+                                pretendOccupantsScale = Xml.GetChildFloatAttribute(reader, "pretendOccupantsScale");
+                                break;
+                            case "visibleSpawnDistScale":
+                                visibleSpawnDistScale = Xml.GetChildFloatAttribute(reader, "visibleSpawnDistScale");
+                                break;
+                            case "trackerPathWidth":
+                                trackerPathWidth = Xml.GetChildFloatAttribute(reader, "trackerPathWidth");
+                                break;
+                            case "weaponForceMult":
+                                weaponForceMult = Xml.GetChildFloatAttribute(reader, "weaponForceMult");
+                                break;
+                            case "frequency":
+                                frequency = Xml.GetChildFloatAttribute(reader, "frequency");
+                                break;
+                            case "swankness":
+                                swankness = Xml.GetChildInnerText(reader, "swankness");
+                                break;
+                            case "maxNum":
+                                maxNum = Xml.GetChildIntAttribute(reader, "maxNum", "value");
+                                break;
+                            case "flags":
+                                flags = GetStringArray(reader, "flags", ' ');
+                                break;
+                            case "type":
+                                type = Xml.GetChildInnerText(reader, "type");
+                                break;
+                            case "plateType":
+                                plateType = Xml.GetChildInnerText(reader, "plateType");
+                                break;
+                            case "dashboardType":
+                                dashboardType = Xml.GetChildInnerText(reader, "dashboardType");
+                                break;
+                            case "vehicleClass":
+                                vehicleClass = Xml.GetChildInnerText(reader, "vehicleClass");
+                                break;
+                            case "wheelType":
+                                wheelType = Xml.GetChildInnerText(reader, "wheelType");
+                                break;
+                            case "trailers":
+                                trailers = GetStringItemArray(reader, "trailers");
+                                break;
+                            case "additionalTrailers":
+                                additionalTrailers = GetStringItemArray(reader, "additionalTrailers");
+                                break;
+                            case "drivers":
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.ReadStartElement();
+                                    break;
+                                }
+
+                                using (var _drivers = new PooledList<VehicleDriver>())
+                                {
+                                    foreach (var item in Xml.IterateItems(reader, "drivers"))
+                                    {
+                                        var driver = new VehicleDriver
+                                        {
+                                            DriverName = item.Element("driverName")?.Value ?? string.Empty,
+                                            NpcName = item.Element("npcName")?.Value ?? string.Empty,
+                                        };
+
+
+                                        if (!string.IsNullOrEmpty(driver.NpcName) || !string.IsNullOrEmpty(driver.DriverName))
+                                        {
+                                            _drivers.Add(driver);
+                                        }
+                                    }
+                                    drivers = _drivers.ToArray();
+                                }
+
+                                break;
+                            case "doorsWithCollisionWhenClosed":
+                                doorsWithCollisionWhenClosed = GetStringItemArray(reader, "doorsWithCollisionWhenClosed");
+                                break;
+                            case "driveableDoors":
+                                driveableDoors = GetStringItemArray(reader, "driveableDoors");
+                                break;
+                            case "bumpersNeedToCollideWithMap":
+                                bumpersNeedToCollideWithMap = Xml.GetChildBoolAttribute(reader, "bumpersNeedToCollideWithMap", "value");
+                                break;
+                            case "needsRopeTexture":
+                                needsRopeTexture = Xml.GetChildBoolAttribute(reader, "needsRopeTexture", "value");
+                                break;
+                            case "requiredExtras":
+                                requiredExtras = GetStringArray(reader, "requiredExtras", ' ');
+                                break;
+                            case "rewards":
+                                rewards = GetStringItemArray(reader, "rewards");
+                                break;
+                            case "cinematicPartCamera":
+                                cinematicPartCamera = GetStringItemArray(reader, "cinematicPartCamera");
+                                break;
+                            case "NmBraceOverrideSet":
+                                NmBraceOverrideSet = Xml.GetChildInnerText(reader, "NmBraceOverrideSet");
+                                break;
+                            case "buoyancySphereOffset":
+                                buoyancySphereOffset = Xml.GetChildVector3Attributes(reader, "buoyancySphereOffset");
+                                break;
+                            case "buoyancySphereSizeScale":
+                                buoyancySphereSizeScale = Xml.GetChildFloatAttribute(reader, "buoyancySphereSizeScale", "value");
+                                break;
+                            case "pOverrideRagdollThreshold":
+                                if (reader.IsEmptyElement)
+                                {
+                                    reader.ReadStartElement();
+                                    break;
+                                }
+
+                                switch (reader.GetAttribute("type"))
+                                {
+                                    case "NULL":
+                                        break;
+                                    case "CVehicleModelInfo__CVehicleOverrideRagdollThreshold":
+                                        reader.ReadStartElement();
+                                        pOverrideRagdollThreshold = new VehicleOverrideRagdollThreshold();
+                                        while (reader.MoveToContent() == XmlNodeType.Element)
+                                        {
+                                            if (reader.Name == "MinComponent")
+                                            {
+                                                pOverrideRagdollThreshold.MinComponent = Xml.GetChildIntAttribute(reader, "MinComponent", "value");
+                                            }
+                                            else if (reader.Name == "MaxComponent")
+                                            {
+                                                pOverrideRagdollThreshold.MaxComponent = Xml.GetChildIntAttribute(reader, "MaxComponent", "value");
+                                            }
+                                            else if (reader.Name == "ThresholdMult")
+                                            {
+                                                pOverrideRagdollThreshold.ThresholdMult = Xml.GetChildFloatAttribute(reader, "ThresholdMult", "value");
+                                            }
+                                            else
+                                            {
+                                                break;
+                                            }
+                                        }
+
+                                        reader.ReadEndElement();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            case "firstPersonDrivebyData":
+                                firstPersonDrivebyData = GetStringItemArray(reader, "firstPersonDrivebyData");
+                                break;
+                            case "extraIncludes":
+                                extraIncludes = GetStringItemArray(reader, "extraIncludes");
+                                break;
+                            case "FirstPersonDriveByLeftPassengerIKOffset":
+                            case "FirstPersonDriveByLeftPassengerUnarmedIKOffset":
+                            default:
+                                reader.Skip();
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    reader.Read();
+                }
+            }
+
+            reader.ReadEndElement();
+        }
 
         public void Load(XmlNode node)
         {
@@ -197,7 +684,7 @@ namespace CodeWalker.GameFiles
             expressionName = Xml.GetChildInnerText(node, "expressionName");
             animConvRoofDictName = Xml.GetChildInnerText(node, "animConvRoofDictName");
             animConvRoofName = Xml.GetChildInnerText(node, "animConvRoofName");
-            animConvRoofWindowsAffected = Xml.GetChildInnerText(node, "animConvRoofWindowsAffected");//?
+            animConvRoofWindowsAffected = GetStringItemArray(node, "animConvRoofWindowsAffected");//?
             ptfxAssetName = Xml.GetChildInnerText(node, "ptfxAssetName");
             audioNameHash = Xml.GetChildInnerText(node, "audioNameHash");
             layout = Xml.GetChildInnerText(node, "layout");
@@ -271,10 +758,11 @@ namespace CodeWalker.GameFiles
                     for (int i = 0; i < items.Count; i++)
                     {
                         var item = items[i];
-                        var driver = new VehicleDriver();
-                        driver.driverName = Xml.GetChildInnerText(item, "driverName");
-                        driver.npcName = Xml.GetChildInnerText(item, "npcName");
-                        drivers[i] = driver;
+                        drivers[i] = new VehicleDriver
+                        {
+                            DriverName = Xml.GetChildInnerText(item, "driverName"),
+                            NpcName = Xml.GetChildInnerText(item, "npcName")
+                        };
                     }
                 }
             }
@@ -309,61 +797,137 @@ namespace CodeWalker.GameFiles
             firstPersonDrivebyData = GetStringItemArray(node, "firstPersonDrivebyData");
         }
 
-        private string[] GetStringItemArray(XmlNode node, string childName)
+        private string[]? GetStringItemArray(XmlNode node, string childName)
         {
             var cnode = node.SelectSingleNode(childName);
-            if (cnode == null) return null;
+            if (cnode == null)
+                return null;
             var items = cnode.SelectNodes("Item");
-            if (items == null) return null;
-            getStringArrayList.Clear();
-            foreach (XmlNode inode in items)
+            if (items == null)
+                return null;
+
+            lock(getStringArrayList)
             {
-                var istr = inode.InnerText;
-                if (!string.IsNullOrEmpty(istr))
+                getStringArrayList.Clear();
+                foreach (XmlNode inode in items)
                 {
-                    getStringArrayList.Add(istr);
+                    var istr = inode.InnerText;
+                    if (!string.IsNullOrEmpty(istr))
+                    {
+                        getStringArrayList.Add(istr);
+                    }
                 }
+
+                if (getStringArrayList.Count == 0)
+                    return null;
+                return getStringArrayList.ToArray();
             }
-            if (getStringArrayList.Count == 0) return null;
-            return getStringArrayList.ToArray();
         }
-        private string[] GetStringArray(XmlNode node, string childName, char delimiter)
+
+        private string[]? GetStringItemArray(XmlReader node, string childName)
+        {
+            if (node.IsEmptyElement)
+            {
+                node.ReadStartElement();
+                return null;
+            }
+                
+            lock(getStringArrayList)
+            {
+                getStringArrayList.Clear();
+                node.ReadStartElement();
+                while (node.MoveToContent() == XmlNodeType.Element && node.Name == "Item")
+                {
+                    var istr = node.ReadElementContentAsString();
+                    if (!string.IsNullOrEmpty(istr))
+                    {
+                        getStringArrayList.Add(istr);
+                    }
+                }
+                node.ReadEndElement();
+
+                if (getStringArrayList.Count == 0)
+                    return null;
+                return getStringArrayList.ToArray();
+            }
+        }
+
+        private string[]? GetStringArray(string ldastr, char delimiter)
+        {
+            if (string.IsNullOrEmpty(ldastr))
+            {
+                return null;
+            }
+            lock(getStringArrayList)
+            {
+                getStringArrayList.Clear();
+                foreach (var ldstr in ldastr.EnumerateSplit(delimiter))
+                {
+                    var ldt = ldstr.Trim();
+                    if (!ldt.IsEmpty)
+                    {
+                        getStringArrayList.Add(ldt.ToString());
+                    }
+                }
+                if (getStringArrayList.Count == 0)
+                    return null;
+                return getStringArrayList.ToArray();
+            }
+        }
+
+        private string[]? GetStringArray(XmlNode node, string childName, char delimiter)
         {
             var ldastr = Xml.GetChildInnerText(node, childName);
-            var ldarr = ldastr?.Split(delimiter);
-            if (ldarr == null) return null;
-            getStringArrayList.Clear();
-            foreach (var ldstr in ldarr)
-            {
-                var ldt = ldstr?.Trim();
-                if (!string.IsNullOrEmpty(ldt))
-                {
-                    getStringArrayList.Add(ldt);
-                }
-            }
-            if (getStringArrayList.Count == 0) return null;
-            return getStringArrayList.ToArray();
+            return GetStringArray(ldastr, delimiter);
         }
-        private float[] GetFloatArray(XmlNode node, string childName, char delimiter)
+
+        private string[]? GetStringArray(XmlReader reader, string childName, char delimiter)
         {
-            var ldastr = Xml.GetChildInnerText(node, childName);
-            var ldarr = ldastr?.Split(delimiter);
-            if (ldarr == null) return null;
-            getFloatArrayList.Clear();
-            foreach (var ldstr in ldarr)
+            var ldastr = Xml.GetChildInnerText(reader, childName);
+            return GetStringArray(ldastr, delimiter);
+        }
+
+        private float[]? GetFloatArray(string ldastr, char delimiter)
+        {
+            if (string.IsNullOrEmpty(ldastr))
             {
-                var ldt = ldstr?.Trim();
-                if (!string.IsNullOrEmpty(ldt))
+                return [];
+            }
+            var ldarr = ldastr.Split(delimiter);
+            if (ldarr == null)
+                return [];
+
+            lock (getFloatArrayList)
+            {
+                getFloatArrayList.Clear();
+                foreach (var ldstr in ldastr.EnumerateSplit(delimiter))
                 {
-                    float f;
-                    if (FloatUtil.TryParse(ldt, out f))
+                    var ldt = ldstr.Trim();
+                    if (!ldt.IsEmpty && FloatUtil.TryParse(ldt, out var f))
                     {
                         getFloatArrayList.Add(f);
                     }
                 }
+
+                if (getFloatArrayList.Count == 0)
+                {
+                    return [];
+                }
+
+                return getFloatArrayList.ToArray();
             }
-            if (getFloatArrayList.Count == 0) return null;
-            return getFloatArrayList.ToArray();
+        }
+
+        private float[]? GetFloatArray(XmlNode node, string childName, char delimiter)
+        {
+            var ldastr = Xml.GetChildInnerText(node, childName);
+            return GetFloatArray(ldastr, delimiter);
+        }
+
+        private float[]? GetFloatArray(XmlReader reader, string childName, char delimiter)
+        {
+            var ldastr = Xml.GetChildInnerText(reader, childName);
+            return GetFloatArray(ldastr, delimiter);
         }
 
         private static List<string> getStringArrayList = new List<string>(); //kinda hacky..
@@ -376,7 +940,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    public class VehicleOverrideRagdollThreshold
+    public record VehicleOverrideRagdollThreshold : IEquatable<VehicleOverrideRagdollThreshold>
     {
         public int MinComponent { get; set; }
         public int MaxComponent { get; set; }
@@ -384,17 +948,18 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return MinComponent.ToString() + ", " + MaxComponent.ToString() + ", " + ThresholdMult.ToString();
+            return $"{MinComponent}, {MaxComponent}, {ThresholdMult}";
         }
     }
-    public class VehicleDriver
+
+    public readonly record struct VehicleDriver : IEquatable<VehicleDriver>
     {
-        public string driverName { get; set; }
-        public string npcName { get; set; }
+        public string DriverName { get; init; }
+        public string NpcName { get; init; }
 
         public override string ToString()
         {
-            return driverName + ", " + npcName;
+            return $"{DriverName}, {NpcName}";
         }
     }
 
