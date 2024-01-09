@@ -592,7 +592,18 @@ namespace CodeWalker.Forms
                     selectedLight.Type = LightType.Spot;
                     break;
             }
+            UpdateLightTreeNodeText();
             UpdateLightParams();
+        }
+
+        private void UpdateLightTreeNodeText()
+        {
+            if (LightsTreeView.Nodes.Count == 0 || LightsTreeView.SelectedNode == null) return;
+            var lnode = LightsTreeView.SelectedNode;
+            if (lnode.Index >= 0)
+            {
+                lnode.Text = "Light" + (lnode.Index + 1).ToString() + " : " + selectedLight.Type.ToString();
+            }
         }
 
         private void IntensityTextBox_TextChanged(object sender, EventArgs e)
