@@ -6173,11 +6173,15 @@ namespace CodeWalker.GameFiles
             bw.Write(RoomName);
             bw.Write(AmbientZone);
             bw.Write(InteriorType);
+            bw.Write(padding00);
+            bw.Write(padding01);
             bw.Write(ReverbSmall);
             bw.Write(ReverbMedium);
             bw.Write(ReverbLarge);
             bw.Write(RoomToneSound);
             bw.Write(RainType);
+            bw.Write(padding02);
+            bw.Write(padding03);
             bw.Write(ExteriorAudibility);
             bw.Write(RoomOcclusionDamping);
             bw.Write(NonMarkedPortalOcclusion);
