@@ -6201,7 +6201,7 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "RoomOcclusionDamping", FloatUtil.ToString(RoomOcclusionDamping));
             RelXml.ValueTag(sb, indent, "NonMarkedPortalOcclusion", FloatUtil.ToString(NonMarkedPortalOcclusion));
             RelXml.ValueTag(sb, indent, "DistanceFromPortalForOcclusion", FloatUtil.ToString(DistanceFromPortalForOcclusion));
-            RelXml.ValueTag(sb, indent, "UDistanceFromPortalFadeDistancenk12", FloatUtil.ToString(DistanceFromPortalFadeDistance));
+            RelXml.ValueTag(sb, indent, "DistanceFromPortalFadeDistance", FloatUtil.ToString(DistanceFromPortalFadeDistance));
             RelXml.StringTag(sb, indent, "WeaponMetrics", RelXml.HashString(WeaponMetrics));
             RelXml.StringTag(sb, indent, "InteriorWallaSoundSet", RelXml.HashString(InteriorWallaSoundSet));
         }
