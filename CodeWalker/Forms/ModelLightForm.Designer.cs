@@ -1396,6 +1396,7 @@ namespace CodeWalker.Forms
             this.OptionsMenu.Name = "OptionsMenu";
             this.OptionsMenu.Size = new System.Drawing.Size(75, 24);
             this.OptionsMenu.Text = "Options";
+            this.OptionsMenu.Visible = false;
             // 
             // OptionsShowOutlinesMenu
             // 
