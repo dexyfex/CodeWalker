@@ -209,6 +209,31 @@ namespace CodeWalker.Forms
             selectedLight.UpdateRenderable = true;
         }
 
+        public void UpdateWidgetTransform()
+        {
+            var sl = selectedLight;
+            var pos = sl.Position;
+            Bone bone = null;
+            ModelForm.Skeleton?.BonesMap?.TryGetValue(sl.BoneId, out bone);
+            if (bone != null)
+            {
+                var xform = bone.AbsTransform;
+                pos = xform.Multiply(pos);
+            }
+            if (sl == null) return;
+            if (sl.Type == LightType.Capsule)
+            {
+                ModelForm.SetWidgetTransform(pos, sl.Orientation, new Vector3(sl.Falloff, sl.Falloff, sl.Extent.X));
+            }
+            else if (sl.Type == LightType.Spot)
+            {
+                ModelForm.SetWidgetTransform(pos, sl.Orientation, new Vector3(sl.ConeOuterAngle, sl.ConeInnerAngle,  sl.Falloff));
+            }
+            else
+            {
+                ModelForm.SetWidgetTransform(pos, sl.Orientation, new Vector3(sl.Falloff));
+            }
+        }
 
         private LightAttributes NewLightAttribute()
         {
@@ -291,18 +316,7 @@ namespace CodeWalker.Forms
                 selectedLight = light;
                 ModelForm.selectedLight = light;
                 UpdateUI();
-
-                var pos = light.Position;
-                Bone bone = null;
-                ModelForm.Skeleton?.BonesMap?.TryGetValue(light.BoneId, out bone);
-                if (bone != null)
-                {
-                    var xform = bone.AbsTransform;
-                    pos = xform.Multiply(pos);
-                    //TODO:? handle bone's rotation correctly for widget??
-                }
-
-                ModelForm.SetWidgetTransform(pos, light.Orientation, new Vector3(light.Falloff));
+                UpdateWidgetTransform();
             }
         }
         private void SelectLightTreeNode(LightAttributes light)
@@ -571,6 +585,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Position != v)
             {
                 selectedLight.Position = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -592,6 +607,7 @@ namespace CodeWalker.Forms
                     selectedLight.Type = LightType.Spot;
                     break;
             }
+            UpdateWidgetTransform();
             UpdateLightTreeNodeText();
             UpdateLightParams();
         }
@@ -653,6 +669,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Falloff != v)
             {
                 selectedLight.Falloff = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -677,6 +694,7 @@ namespace CodeWalker.Forms
             if (selectedLight.ConeInnerAngle != v)
             {
                 selectedLight.ConeInnerAngle = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -689,6 +707,7 @@ namespace CodeWalker.Forms
             if (selectedLight.ConeOuterAngle != v)
             {
                 selectedLight.ConeOuterAngle = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -725,6 +744,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Direction != v)
             {
                 selectedLight.Direction = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -743,6 +763,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Tangent != v)
             {
                 selectedLight.Tangent = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -785,6 +806,7 @@ namespace CodeWalker.Forms
             if (selectedLight.BoneId != v)
             {
                 selectedLight.BoneId = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -809,6 +831,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Extent != v)
             {
                 selectedLight.Extent = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -1056,6 +1079,7 @@ namespace CodeWalker.Forms
             if (selectedLight.CullingPlaneNormal != v)
             {
                 selectedLight.CullingPlaneNormal = v;
+                UpdateLightParams();
             }
         }
 
@@ -1139,3 +1163,4 @@ namespace CodeWalker.Forms
         }
     }
 }
+
