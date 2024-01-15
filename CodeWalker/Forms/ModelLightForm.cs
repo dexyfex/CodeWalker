@@ -239,7 +239,7 @@ namespace CodeWalker.Forms
         {
             LightAttributes light = new LightAttributes();
             light.Direction = Vector3.BackwardLH;
-            light.Tangent = Vector3.Right;
+            light.Tangent = Vector3.Left;
             light.Intensity = 5;
             light.ConeInnerAngle = 5;
             light.ConeOuterAngle = 35;
@@ -249,7 +249,7 @@ namespace CodeWalker.Forms
             light.ColorR = 255;
             light.ColorG = 255;
             light.ColorB = 255;
-            light.TimeFlags = 14680191;
+            light.TimeFlags = 16777215;
             return light;
         }
         private LightAttributes DuplicateLightAttribute()
@@ -755,6 +755,14 @@ namespace CodeWalker.Forms
             DirectionTextBox.Text = FloatUtil.GetVector3String(d);
         }
 
+        private void ResetDirectionButton_Click(object sender, EventArgs e)
+        {
+            Vector3 d = Vector3.ForwardRH;
+            Vector3 t = Vector3.Left;
+            DirectionTextBox.Text = FloatUtil.GetVector3String(d);
+            TangentTextBox.Text = FloatUtil.GetVector3String(t);
+        }
+
         private void TangentTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
@@ -771,6 +779,19 @@ namespace CodeWalker.Forms
         private void NormalizeTangentButton_Click(object sender, EventArgs e)
         {
             Vector3 t = Vector3.Normalize(FloatUtil.ParseVector3String(TangentTextBox.Text));
+            TangentTextBox.Text = FloatUtil.GetVector3String(t);
+        }
+
+        private void CalculateTangentButton_Click(object sender, EventArgs e)
+        {
+            Vector3 d = Vector3.Normalize(FloatUtil.ParseVector3String(DirectionTextBox.Text));
+            Vector3 v = Vector3.Down;
+            Vector3 t = Vector3.Normalize(Vector3.Cross(d, v));
+            if (t == Vector3.Zero)
+            {
+                v = Vector3.Left;
+                t = Vector3.Normalize(Vector3.Cross(d, v));
+            }
             TangentTextBox.Text = FloatUtil.GetVector3String(t);
         }
 
@@ -1163,4 +1184,3 @@ namespace CodeWalker.Forms
         }
     }
 }
-
