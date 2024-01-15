@@ -56,7 +56,7 @@ VS_Output main(float4 ipos : POSITION, uint iid : SV_InstanceID)
     else if (InstType == 4)//capsule
     {
         float3 cpos = ipos.xyz * extent;
-        cpos.y += abs(InstCapsuleExtent.y) * (ipos.w - 0.5);
+        cpos.y += abs(InstCapsuleExtent.x) * (ipos.w - 0.5);
         opos = (cpos.x * InstTangentX.xyz) + (cpos.y * InstDirection.xyz) + (cpos.z * InstTangentY.xyz);
     }
     
