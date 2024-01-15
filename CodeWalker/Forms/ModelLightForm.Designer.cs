@@ -128,6 +128,8 @@ namespace CodeWalker.Forms
             this.MoveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RotateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ScaleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ResetDirectionButton = new System.Windows.Forms.Button();
+            this.CalculateTangentButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
@@ -270,9 +272,11 @@ namespace CodeWalker.Forms
             this.LightPropertiesPanel2.Controls.Add(this.GoToButton);
             this.LightPropertiesPanel2.Controls.Add(this.DirectionLabel);
             this.LightPropertiesPanel2.Controls.Add(this.DirectionTextBox);
+            this.LightPropertiesPanel2.Controls.Add(this.ResetDirectionButton);
             this.LightPropertiesPanel2.Controls.Add(this.NormalizeDirectionButton);
             this.LightPropertiesPanel2.Controls.Add(this.TangentLabel);
             this.LightPropertiesPanel2.Controls.Add(this.TangentTextBox);
+            this.LightPropertiesPanel2.Controls.Add(this.CalculateTangentButton);
             this.LightPropertiesPanel2.Controls.Add(this.NormalizeTangentButton);
             this.LightPropertiesPanel2.Controls.Add(this.TypeLabel);
             this.LightPropertiesPanel2.Controls.Add(this.TypeComboBox);
@@ -399,14 +403,14 @@ namespace CodeWalker.Forms
             this.DirectionTextBox.Location = new System.Drawing.Point(117, 32);
             this.DirectionTextBox.Margin = new System.Windows.Forms.Padding(4);
             this.DirectionTextBox.Name = "DirectionTextBox";
-            this.DirectionTextBox.Size = new System.Drawing.Size(450, 22);
+            this.DirectionTextBox.Size = new System.Drawing.Size(363, 22);
             this.DirectionTextBox.TabIndex = 112;
             this.DirectionTextBox.TextChanged += new System.EventHandler(this.DirectionTextBox_TextChanged);
             // 
             // NormalizeDirectionButton
             // 
             this.NormalizeDirectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NormalizeDirectionButton.Location = new System.Drawing.Point(570, 29);
+            this.NormalizeDirectionButton.Location = new System.Drawing.Point(483, 29);
             this.NormalizeDirectionButton.Margin = new System.Windows.Forms.Padding(4);
             this.NormalizeDirectionButton.Name = "NormalizeDirectionButton";
             this.NormalizeDirectionButton.Size = new System.Drawing.Size(84, 28);
@@ -432,14 +436,14 @@ namespace CodeWalker.Forms
             this.TangentTextBox.Location = new System.Drawing.Point(117, 61);
             this.TangentTextBox.Margin = new System.Windows.Forms.Padding(4);
             this.TangentTextBox.Name = "TangentTextBox";
-            this.TangentTextBox.Size = new System.Drawing.Size(450, 22);
+            this.TangentTextBox.Size = new System.Drawing.Size(363, 22);
             this.TangentTextBox.TabIndex = 122;
             this.TangentTextBox.TextChanged += new System.EventHandler(this.TangentTextBox_TextChanged);
             // 
             // NormalizeTangentButton
             // 
             this.NormalizeTangentButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NormalizeTangentButton.Location = new System.Drawing.Point(570, 58);
+            this.NormalizeTangentButton.Location = new System.Drawing.Point(483, 58);
             this.NormalizeTangentButton.Margin = new System.Windows.Forms.Padding(4);
             this.NormalizeTangentButton.Name = "NormalizeTangentButton";
             this.NormalizeTangentButton.Size = new System.Drawing.Size(84, 28);
@@ -1432,6 +1436,30 @@ namespace CodeWalker.Forms
             this.ScaleMenuItem.ToolTipText = "Scale";
             this.ScaleMenuItem.Click += new System.EventHandler(this.ScaleMenuItem_Click);
             // 
+            // ResetDirectionButton
+            // 
+            this.ResetDirectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ResetDirectionButton.Location = new System.Drawing.Point(570, 29);
+            this.ResetDirectionButton.Margin = new System.Windows.Forms.Padding(4);
+            this.ResetDirectionButton.Name = "ResetDirectionButton";
+            this.ResetDirectionButton.Size = new System.Drawing.Size(84, 28);
+            this.ResetDirectionButton.TabIndex = 113;
+            this.ResetDirectionButton.Text = "Reset";
+            this.ResetDirectionButton.UseVisualStyleBackColor = true;
+            this.ResetDirectionButton.Click += new System.EventHandler(this.ResetDirectionButton_Click);
+            // 
+            // CalculateTangentButton
+            // 
+            this.CalculateTangentButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.CalculateTangentButton.Location = new System.Drawing.Point(570, 58);
+            this.CalculateTangentButton.Margin = new System.Windows.Forms.Padding(4);
+            this.CalculateTangentButton.Name = "CalculateTangentButton";
+            this.CalculateTangentButton.Size = new System.Drawing.Size(84, 28);
+            this.CalculateTangentButton.TabIndex = 123;
+            this.CalculateTangentButton.Text = "Calculate";
+            this.CalculateTangentButton.UseVisualStyleBackColor = true;
+            this.CalculateTangentButton.Click += new System.EventHandler(this.CalculateTangentButton_Click);
+            // 
             // ModelLightForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -1574,5 +1602,7 @@ namespace CodeWalker.Forms
         private System.Windows.Forms.NumericUpDown LightHashUpDown;
         private System.Windows.Forms.CheckedListBox FlagsCheckedListBox;
         private System.Windows.Forms.Panel LightPropertiesPanel1;
+        private System.Windows.Forms.Button ResetDirectionButton;
+        private System.Windows.Forms.Button CalculateTangentButton;
     }
 }
