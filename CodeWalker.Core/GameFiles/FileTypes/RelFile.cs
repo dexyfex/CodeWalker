@@ -6381,7 +6381,7 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Unk00", "value");
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             WheelPosition = Xml.GetChildUIntAttribute(node, "WheelPosition", "value");
             Genre = (byte)Xml.GetChildUIntAttribute(node, "Genre", "value");
             AmbientRadioVol = (byte)Xml.GetChildUIntAttribute(node, "AmbientRadioVol", "value");
