@@ -644,7 +644,7 @@ namespace CodeWalker.Project.Panels
             "2097152 - 21:00 - 22:00",
             "4194304 - 22:00 - 23:00",
             "8388608 - 23:00 - 00:00",
-            "16777216 - Unk25",
+            "16777216 - Allow Vanish Whilst Viewed",
             "33554432 - Unk26",
             "67108864 - Unk27",
             "134217728 - Unk28",
