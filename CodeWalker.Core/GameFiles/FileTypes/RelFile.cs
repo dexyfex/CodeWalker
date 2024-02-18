@@ -5589,9 +5589,9 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151AmbientRule : Dat151RelData
     {
+        public FlagsUint Flags { get; set; }
         public uint Padding01 { get; set; }
         public uint Padding02 { get; set; }
-        public FlagsUint Flags { get; set; }
         public Vector3 Position { get; set; }
         public uint Padding03 { get; set; }
         public MetaHash ChildSound { get; set; }
@@ -5666,9 +5666,9 @@ namespace CodeWalker.GameFiles
         }
         public Dat151AmbientRule(RelData d, BinaryReader br) : base(d, br)
         {
+            Flags = br.ReadUInt32();
             Padding01 = br.ReadUInt32();
             Padding02 = br.ReadUInt32();
-            Flags = br.ReadUInt32();
             Position = new Vector3(br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             Padding03 = br.ReadUInt32();
             ChildSound = br.ReadUInt32();
@@ -5714,12 +5714,11 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(BinaryWriter bw)
         {
-            //base.Write(bw);
             WriteTypeAndOffset(bw);
 
+            bw.Write(Flags);
             bw.Write(Padding01);
             bw.Write(Padding02);
-            bw.Write(Flags);
             bw.Write(Position.X);
             bw.Write(Position.Y);
             bw.Write(Position.Z);
