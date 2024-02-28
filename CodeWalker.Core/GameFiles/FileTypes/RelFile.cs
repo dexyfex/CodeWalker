@@ -5791,7 +5791,7 @@ namespace CodeWalker.GameFiles
             ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
             Category = XmlRel.GetHash(Xml.GetChildInnerText(node, "Category"));
             LastPlayTime = Xml.GetChildUIntAttribute(node, "LastPlayTime", "value");
-            DynamicBankID = (int)Xml.GetChildUIntAttribute(node, "DynamicBankID", "value");
+            DynamicBankID = Xml.GetChildIntAttribute(node, "DynamicBankID", "value");
             DynamicSlotType = Xml.GetChildUIntAttribute(node, "DynamicSlotType", "value");
             Weight = Xml.GetChildFloatAttribute(node, "Weight", "value");
             MinDist = Xml.GetChildFloatAttribute(node, "MinDist", "value");
