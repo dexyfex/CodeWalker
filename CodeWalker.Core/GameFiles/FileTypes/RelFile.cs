@@ -5408,11 +5408,12 @@ namespace CodeWalker.GameFiles
             NumRules = br.ReadByte();
             Unused11 = br.ReadByte();
 
-            Rules = new MetaHash[NumRules];
+            var rules = new MetaHash[NumRules];
             for (int i = 0; i < NumRules; i++)
             {
-                Rules[i] = br.ReadUInt32();
+                rules[i] = br.ReadUInt32();
             }
+            Rules = rules;
 
             NumDirAmbiences = br.ReadByte();
             Unused12 = br.ReadByte();
@@ -5425,6 +5426,10 @@ namespace CodeWalker.GameFiles
                 DirAmbiences[i] = new DirAmbience(br);
             }
             if (NumDirAmbiences != 0)
+            { }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
             { }
         }
         public override void Write(BinaryWriter bw)
@@ -5498,6 +5503,7 @@ namespace CodeWalker.GameFiles
             {
                 bw.Write(Rules[i]);
             }
+
             bw.Write(NumDirAmbiences);
             bw.Write(Unused12);
             bw.Write(Unused13);
@@ -5569,6 +5575,7 @@ namespace CodeWalker.GameFiles
             NumRulesToPlay = (byte)Xml.GetChildUIntAttribute(node, "NumRulesToPlay", "value");
             ZoneWaterCalculation = (byte)Xml.GetChildUIntAttribute(node, "ZoneWaterCalculation", "value");
             Rules = XmlRel.ReadHashItemArray(node, "Rules");
+            NumRules = (byte)(Rules?.Length ?? 0);
             DirAmbiences = XmlRel.ReadItemArray<DirAmbience>(node, "DirAmbiences");
         }
         public override MetaHash[] GetMixerHashes()
@@ -5577,14 +5584,13 @@ namespace CodeWalker.GameFiles
         }
         public override MetaHash[] GetGameHashes()
         {
-            var list = new List<MetaHash>();
-            list.Add(EnviromentRule);
-            if (Rules != null) list.AddRange(Rules);
+            var hashes = new List<MetaHash> { EnviromentRule };
+            if (Rules != null)
+                hashes.AddRange(Rules);
             if (DirAmbiences != null)
-            {
-                foreach (var ep in DirAmbiences) list.Add(ep.Name);
-            }
-            return list.ToArray();
+                hashes.AddRange(DirAmbiences.Select(ep => ep.Name));
+
+            return hashes.ToArray();
         }
     }
     [TC(typeof(EXP))] public class Dat151AmbientRule : Dat151RelData
