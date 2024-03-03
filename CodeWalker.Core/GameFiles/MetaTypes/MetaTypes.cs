@@ -6393,12 +6393,7 @@ namespace CodeWalker.GameFiles
     {
         public MetaHash pedXml_audioID { get; set; } //0   0: Hash: 0: 802196719
         public MetaHash pedXml_audioID2 { get; set; } //4   4: Hash: 0: 4233133352
-        public ArrayOfBytes5 pedXml_expressionMods { get; set; } //8   8: ArrayOfBytes: 5: 128864925
-        public byte Unused0 { get; set; }//13
-        public ushort Unused1 { get; set; }//14
-        public uint Unused2 { get; set; }//16
-        public uint Unused3 { get; set; }//20
-        public uint Unused4 { get; set; }//24
+        public ArrayOfFloats5 pedXml_expressionMods { get; set; }
         public uint flags { get; set; } //28   28: UnsignedInt: 0: flags
         public int inclusions { get; set; } //32   32: IntFlags2: 0: inclusions//2172318933
         public int exclusions { get; set; } //36   36: IntFlags2: 0: exclusions

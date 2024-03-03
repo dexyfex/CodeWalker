@@ -1024,6 +1024,15 @@ namespace CodeWalker.GameFiles
             return new[] { b0, b1, b2, b3, b4 };
         }
     }
+
+    [TC(typeof(EXP))] public struct ArrayOfFloats5
+    {
+        public float f0, f1, f2, f3, f4;
+        public float[] GetArray()
+        {
+            return new[] { f0, f1, f2, f3, f4 };
+        }
+    }
     [TC(typeof(EXP))] public struct ArrayOfBytes6 //array of 6 bytes
     {
         public byte b0, b1, b2, b3, b4, b5;
