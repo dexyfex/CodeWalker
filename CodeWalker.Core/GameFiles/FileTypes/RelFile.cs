@@ -12097,20 +12097,20 @@ namespace CodeWalker.GameFiles
                 SlowMoInteriorShotSound, SlowMoPedStrikeSound, SlowMoPedStrikeSoundPresuck, SlowMoBigAnimalStrikeSound, SlowMoBigAnimalStrikeSoundPresuck, SlowMoSmallAnimalStrikeSound, SlowMoSmallAnimalStrikeSoundPresuck, SlowMoFireSoundPresuckTime, SlowMoSuppressedFireSoundPresuckTime, SuperSlowMoFireSound, SuperSlowMoFireSoundPresuck, SuperSlowMoSuppressedFireSound, SuperSlowMoSuppressedFireSoundPresuck, SuperSlowMoReportSound, SuperSlowMoInteriorShotSound, SuperSlowMoPedStrikeSound, SuperSlowMoPedStrikeSoundPresuck, SuperSlowMoBigAnimalStrikeSound, SuperSlowMoBigAnimalStrikeSoundPresuck, SuperSlowMoSmallAnimalStrikeSound, SuperSlowMoSmallAnimalStrikeSoundPresuck };
         }
     }
-    [TC(typeof(EXP))] public class Dat151Explosion : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151Explosion : Dat151RelData // ExplosionAudioSettings
     {
         public FlagsUint Flags { get; set; }
-        public MetaHash Main { get; set; }
-        public MetaHash Debris { get; set; }
-        public float Unk04 { get; set; }
-        public float Unk05 { get; set; }
-        public float Unk06 { get; set; }
-        public float Unk07 { get; set; }
-        public float Unk08 { get; set; }
-        public MetaHash SlowMotion { get; set; }
-        public MetaHash Unk10 { get; set; }
-        public int Unk11 { get; set; }
-        public int Unk12 { get; set; }
+        public MetaHash ExplosionSound { get; set; }
+        public MetaHash DebrisSound { get; set; }
+        public float DeafeningVolume { get; set; }
+        public float DebrisTimeScale { get; set; }
+        public float DebrisVolume { get; set; }
+        public float ShockwaveIntensity { get; set; }
+        public float ShockwaveDelay { get; set; }
+        public MetaHash SlowMoExplosionSound { get; set; }
+        public MetaHash SlowMoExplosionPreSuckSound { get; set; }
+        public int SlowMoExplosionPreSuckSoundTime { get; set; }
+        public uint SlowMoExplosionPreSuckMixerScene { get; set; }
 
         public Dat151Explosion(RelFile rel) : base(rel)
         {
@@ -12119,78 +12119,69 @@ namespace CodeWalker.GameFiles
         }
         public Dat151Explosion(RelData d, BinaryReader br) : base(d, br)
         {
-            Flags = br.ReadUInt32();//flags
-            Main = br.ReadUInt32();//hash
-            Debris = br.ReadUInt32();//hash
-            Unk04 = br.ReadSingle();//float
-            Unk05 = br.ReadSingle();//float
-            Unk06 = br.ReadSingle();//float
-            Unk07 = br.ReadSingle();//float
-            Unk08 = br.ReadSingle();//float
-            SlowMotion = br.ReadUInt32();//hash
-            Unk10 = br.ReadUInt32();//hash
-            Unk11 = br.ReadInt32();//0
-            Unk12 = br.ReadInt32();//0
-
-            if (Unk11 != 0)
-            { }
-            if (Unk12 != 0)
-            { }
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
+            Flags = br.ReadUInt32();
+            ExplosionSound = br.ReadUInt32();
+            DebrisSound = br.ReadUInt32();
+            DeafeningVolume = br.ReadSingle();
+            DebrisTimeScale = br.ReadSingle();
+            DebrisVolume = br.ReadSingle();
+            ShockwaveIntensity = br.ReadSingle();
+            ShockwaveDelay = br.ReadSingle();
+            SlowMoExplosionSound = br.ReadUInt32();
+            SlowMoExplosionPreSuckSound = br.ReadUInt32();
+            SlowMoExplosionPreSuckSoundTime = br.ReadInt32();
+            SlowMoExplosionPreSuckMixerScene = br.ReadUInt32();
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Flags);//flags
-            bw.Write(Main);//hash
-            bw.Write(Debris);//hash
-            bw.Write(Unk04);//float
-            bw.Write(Unk05);//float
-            bw.Write(Unk06);//float
-            bw.Write(Unk07);//float
-            bw.Write(Unk08);//float
-            bw.Write(SlowMotion);//hash
-            bw.Write(Unk10);//hash
-            bw.Write(Unk11);//0
-            bw.Write(Unk12);//0
+            bw.Write(Flags);
+            bw.Write(ExplosionSound);
+            bw.Write(DebrisSound);
+            bw.Write(DeafeningVolume);
+            bw.Write(DebrisTimeScale);
+            bw.Write(DebrisVolume);
+            bw.Write(ShockwaveIntensity);
+            bw.Write(ShockwaveDelay);
+            bw.Write(SlowMoExplosionSound);
+            bw.Write(SlowMoExplosionPreSuckSound);
+            bw.Write(SlowMoExplosionPreSuckSoundTime);
+            bw.Write(SlowMoExplosionPreSuckMixerScene);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.StringTag(sb, indent, "Main", RelXml.HashString(Main));
-            RelXml.StringTag(sb, indent, "Debris", RelXml.HashString(Debris));
-            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
-            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
-            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
-            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
-            RelXml.StringTag(sb, indent, "SlowMotion", RelXml.HashString(SlowMotion));
-            RelXml.StringTag(sb, indent, "Unk10", RelXml.HashString(Unk10));
-            RelXml.ValueTag(sb, indent, "Unk11", Unk11.ToString());
-            RelXml.ValueTag(sb, indent, "Unk12", Unk12.ToString());
+            RelXml.StringTag(sb, indent, "ExplosionSound", RelXml.HashString(ExplosionSound));
+            RelXml.StringTag(sb, indent, "DebrisSound", RelXml.HashString(DebrisSound));
+            RelXml.ValueTag(sb, indent, "DeafeningVolume", FloatUtil.ToString(DeafeningVolume));
+            RelXml.ValueTag(sb, indent, "DebrisTimeScale", FloatUtil.ToString(DebrisTimeScale));
+            RelXml.ValueTag(sb, indent, "DebrisVolume", FloatUtil.ToString(DebrisVolume));
+            RelXml.ValueTag(sb, indent, "ShockwaveIntensity", FloatUtil.ToString(ShockwaveIntensity));
+            RelXml.ValueTag(sb, indent, "ShockwaveDelay", FloatUtil.ToString(ShockwaveDelay));
+            RelXml.StringTag(sb, indent, "SlowMoExplosionSound", RelXml.HashString(SlowMoExplosionSound));
+            RelXml.StringTag(sb, indent, "SlowMoExplosionPreSuckSound", RelXml.HashString(SlowMoExplosionPreSuckSound));
+            RelXml.ValueTag(sb, indent, "SlowMoExplosionPreSuckSoundTime", SlowMoExplosionPreSuckSoundTime.ToString());
+            RelXml.ValueTag(sb, indent, "SlowMoExplosionPreSuckMixerScene", SlowMoExplosionPreSuckMixerScene.ToString());
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Main = XmlRel.GetHash(Xml.GetChildInnerText(node, "Main"));
-            Debris = XmlRel.GetHash(Xml.GetChildInnerText(node, "Debris"));
-            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
-            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
-            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
-            SlowMotion = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMotion"));
-            Unk10 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk10"));
-            Unk11 = Xml.GetChildIntAttribute(node, "Unk11", "value");
-            Unk12 = Xml.GetChildIntAttribute(node, "Unk12", "value");
+            ExplosionSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExplosionSound"));
+            DebrisSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "DebrisSound"));
+            DeafeningVolume = Xml.GetChildFloatAttribute(node, "DeafeningVolume", "value");
+            DebrisTimeScale = Xml.GetChildFloatAttribute(node, "DebrisTimeScale", "value");
+            DebrisVolume = Xml.GetChildFloatAttribute(node, "DebrisVolume", "value");
+            ShockwaveIntensity = Xml.GetChildFloatAttribute(node, "ShockwaveIntensity", "value");
+            ShockwaveDelay = Xml.GetChildFloatAttribute(node, "ShockwaveDelay", "value");
+            SlowMoExplosionSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoExplosionSound"));
+            SlowMoExplosionPreSuckSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoExplosionPreSuckSound"));
+            SlowMoExplosionPreSuckSoundTime = Xml.GetChildIntAttribute(node, "SlowMoExplosionPreSuckSoundTime", "value");
+            SlowMoExplosionPreSuckMixerScene = Xml.GetChildUIntAttribute(node, "SlowMoExplosionPreSuckMixerScene", "value");
         }
         public override MetaHash[] GetSoundHashes()
         {
-            return new[] { Main, Debris, SlowMotion, Unk10 };
+            return new[] { ExplosionSound, DebrisSound, SlowMoExplosionSound, SlowMoExplosionPreSuckSound };
         }
     }
     [TC(typeof(EXP))] public class Dat151PedVoiceGroupItem : IMetaXmlItem
@@ -12379,20 +12370,22 @@ namespace CodeWalker.GameFiles
             return list.ToArray();
         }
     }
-    [TC(typeof(EXP))] public class Dat151EntityEmitter : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151EntityEmitter : Dat151RelData  // EntityEmitter
     {
         public FlagsUint Flags { get; set; }
-        public MetaHash ChildSound { get; set; }
-        public float Unk02 { get; set; }
-        public float Unk03 { get; set; }
-        public float Unk04 { get; set; }
-        public float Unk05 { get; set; }
-        public float Unk06 { get; set; }
-        public float Unk07 { get; set; }
-        public float Unk08 { get; set; }
-        public MetaHash Unk09 { get; set; }//always 0
-        public int Unk10 { get; set; }
-        public float Unk11 { get; set; }
+        public MetaHash Sound { get; set; }
+        public float MaxDistance { get; set; }
+        public float BusinessHoursProb { get; set; }
+        public float EveningProb { get; set; }
+        public float NightProb { get; set; }
+        public float ConeInnerAngle { get; set; }
+        public float ConeOuterAngle { get; set; }
+        public float ConeMaxAtten { get; set; }
+        public MetaHash StopAfterLoudSound { get; set; }
+        public byte MaxPathDepth { get; set; }
+        public byte padding00 { get; set; }
+        public short padding01 { get; set; }
+        public float BrokenHealth { get; set; }
 
         public Dat151EntityEmitter(RelFile rel) : base(rel)
         {
@@ -12402,140 +12395,142 @@ namespace CodeWalker.GameFiles
         public Dat151EntityEmitter(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
-            ChildSound = br.ReadUInt32();
-            Unk02 = br.ReadSingle();
-            Unk03 = br.ReadSingle();
-            Unk04 = br.ReadSingle();
-            Unk05 = br.ReadSingle();
-            Unk06 = br.ReadSingle();
-            Unk07 = br.ReadSingle();
-            Unk08 = br.ReadSingle();
-            Unk09 = br.ReadUInt32();
-            Unk10 = br.ReadInt32();
-            Unk11 = br.ReadSingle();
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
+            Sound = br.ReadUInt32();
+            MaxDistance = br.ReadSingle();
+            BusinessHoursProb = br.ReadSingle();
+            EveningProb = br.ReadSingle();
+            NightProb = br.ReadSingle();
+            ConeInnerAngle = br.ReadSingle();
+            ConeOuterAngle = br.ReadSingle();
+            ConeMaxAtten = br.ReadSingle();
+            StopAfterLoudSound = br.ReadUInt32();
+            MaxPathDepth = br.ReadByte();
+            padding00 = br.ReadByte();
+            padding01 = br.ReadInt16();
+            BrokenHealth = br.ReadSingle();
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
 
             bw.Write(Flags);
-            bw.Write(ChildSound);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
-            bw.Write(Unk10);
-            bw.Write(Unk11);
+            bw.Write(Sound);
+            bw.Write(MaxDistance);
+            bw.Write(BusinessHoursProb);
+            bw.Write(EveningProb);
+            bw.Write(NightProb);
+            bw.Write(ConeInnerAngle);
+            bw.Write(ConeOuterAngle);
+            bw.Write(ConeMaxAtten);
+            bw.Write(StopAfterLoudSound);
+            bw.Write(MaxPathDepth);
+            bw.Write(padding00);
+            bw.Write(padding01);
+            bw.Write(BrokenHealth);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.StringTag(sb, indent, "ChildSound", RelXml.HashString(ChildSound));
-            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
-            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
-            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
-            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
-            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
-            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
-            RelXml.StringTag(sb, indent, "Unk09", RelXml.HashString(Unk09));
-            RelXml.ValueTag(sb, indent, "Unk10", Unk10.ToString());
-            RelXml.ValueTag(sb, indent, "Unk11", FloatUtil.ToString(Unk11));
+            RelXml.StringTag(sb, indent, "Sound", RelXml.HashString(Sound));
+            RelXml.ValueTag(sb, indent, "MaxDistance", FloatUtil.ToString(MaxDistance));
+            RelXml.ValueTag(sb, indent, "BusinessHoursProb", FloatUtil.ToString(BusinessHoursProb));
+            RelXml.ValueTag(sb, indent, "EveningProb", FloatUtil.ToString(EveningProb));
+            RelXml.ValueTag(sb, indent, "NightProb", FloatUtil.ToString(NightProb));
+            RelXml.ValueTag(sb, indent, "ConeInnerAngle", FloatUtil.ToString(ConeInnerAngle));
+            RelXml.ValueTag(sb, indent, "ConeOuterAngle", FloatUtil.ToString(ConeOuterAngle));
+            RelXml.ValueTag(sb, indent, "ConeMaxAtten", FloatUtil.ToString(ConeMaxAtten));
+            RelXml.StringTag(sb, indent, "StopAfterLoudSound", RelXml.HashString(StopAfterLoudSound));
+            RelXml.ValueTag(sb, indent, "MaxPathDepth", MaxPathDepth.ToString());
+            RelXml.ValueTag(sb, indent, "BrokenHealth", FloatUtil.ToString(BrokenHealth));
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
-            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
-            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
-            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
-            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
-            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
-            Unk09 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk09"));
-            Unk10 = Xml.GetChildIntAttribute(node, "Unk10", "value");
-            Unk11 = Xml.GetChildFloatAttribute(node, "Unk11", "value");
+            Sound = XmlRel.GetHash(Xml.GetChildInnerText(node, "Sound"));
+            MaxDistance = Xml.GetChildFloatAttribute(node, "MaxDistance", "value");
+            BusinessHoursProb = Xml.GetChildFloatAttribute(node, "BusinessHoursProb", "value");
+            EveningProb = Xml.GetChildFloatAttribute(node, "EveningProb", "value");
+            NightProb = Xml.GetChildFloatAttribute(node, "NightProb", "value");
+            ConeInnerAngle = Xml.GetChildFloatAttribute(node, "ConeInnerAngle", "value");
+            ConeOuterAngle = Xml.GetChildFloatAttribute(node, "ConeOuterAngle", "value");
+            ConeMaxAtten = Xml.GetChildFloatAttribute(node, "ConeMaxAtten", "value");
+            StopAfterLoudSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "StopAfterLoudSound"));
+            MaxPathDepth = (byte)Xml.GetChildUIntAttribute(node, "MaxPathDepth", "value");
+            BrokenHealth = Xml.GetChildFloatAttribute(node, "BrokenHealth", "value");
         }
         public override MetaHash[] GetSoundHashes()
         {
-            return new[] { ChildSound };
+            return new[] { Sound };
         }
     }
     [TC(typeof(EXP))] public class Dat151Boat : Dat151RelData
     {
         public FlagsUint Flags { get; set; }
-        public MetaHash Engine { get; set; }
-        public MetaHash EngineVolume { get; set; }
-        public MetaHash EnginePitch { get; set; }
-        public MetaHash Engine2 { get; set; }
-        public MetaHash Engine2Volume { get; set; }
+        public MetaHash Engine1Loop { get; set; }
+        public MetaHash Engine1Vol { get; set; }
+        public MetaHash Engine1Pitch { get; set; }
+        public MetaHash Engine2Loop { get; set; }
+        public MetaHash Engine2Vol { get; set; }
         public MetaHash Engine2Pitch { get; set; }
-        public MetaHash EngineLowReso { get; set; }
-        public MetaHash EngineLowResoVolume { get; set; }
-        public MetaHash EngineLowResoPitch { get; set; }
-        public MetaHash EngineIdleLoop { get; set; }
-        public MetaHash EngineIdleVolume { get; set; }
-        public MetaHash EngineIdlePitch { get; set; }
-        public MetaHash WaterTurbulence { get; set; }
-        public MetaHash WaterTurbulenceVolume { get; set; }
-        public MetaHash Unk15 { get; set; }//doesn't seem to match anything? always 0x6B3DC4A2
-        public MetaHash Unk16 { get; set; }
-        public MetaHash Unk17 { get; set; }
-        public MetaHash Unk18 { get; set; }
-        public MetaHash PoliceScannerParams { get; set; }//scanner params
-        public FlagsUint RadioFlags { get; set; }
-        public MetaHash Horn { get; set; }
-        public MetaHash Ignition { get; set; }
-        public MetaHash Shutdown { get; set; }
-        public MetaHash Unk24 { get; set; }//0
-        public MetaHash EngineSubmix { get; set; }//engine submix
-        public MetaHash EngineSubmixPreset { get; set; }//engine submix preset
-        public MetaHash ExhaustSubmix { get; set; }//exhaust submix
-        public MetaHash ExhaustSubmixPreset { get; set; }//exhaust submix preset
-        public MetaHash Collision { get; set; }
-        public MetaHash Unk30 { get; set; }//engine environment
-        public MetaHash Unk31 { get; set; }//exhaust environment?
-        public MetaHash WaveHitMedium { get; set; }//wave hit (medium?)
-        public MetaHash Unk33 { get; set; }//0
-        public MetaHash IdleHullSlap { get; set; }
-        public MetaHash Unk35 { get; set; }//curve
-        public MetaHash EngineGranular { get; set; }//granular engine
-        public MetaHash BankSpray { get; set; }
-        public MetaHash Ignition2 { get; set; }
-        public MetaHash Startup { get; set; }//startup
-        public MetaHash SubTurnVolume { get; set; }//curve
-        public MetaHash SubTurn { get; set; }
-        public MetaHash Unk42 { get; set; }//constant_one (curve)
-        public MetaHash Unk43 { get; set; }//curve
-        public MetaHash Unk44 { get; set; }//curve
-        public MetaHash SandSkid { get; set; }
-        public float Unk46 { get; set; }
-        public float Unk47 { get; set; }
-        public float Unk48 { get; set; }
-        public MetaHash Unk49 { get; set; }
-        public MetaHash Hull { get; set; }
-        public MetaHash Cloth { get; set; }
-        public MetaHash Fire { get; set; }
+        public MetaHash LowResoLoop { get; set; }
+        public MetaHash LowResoLoopVol { get; set; }
+        public MetaHash LowResoPitch { get; set; }
+        public MetaHash ResoLoop { get; set; }
+        public MetaHash ResoLoopVol { get; set; }
+        public MetaHash ResoPitch { get; set; }
+        public MetaHash WaterTurbulance { get; set; }
+        public MetaHash WaterTurbulanceVol { get; set; }
+        public MetaHash WaterTurbulancePitch { get; set; }//doesn't seem to match anything? always 0x6B3DC4A2
+        public MetaHash ScannerMake { get; set; }
+        public MetaHash ScannerModel { get; set; }
+        public MetaHash ScannerCategory { get; set; }
+        public MetaHash ScannerVehicleSettings { get; set; }//scanner params
+        public byte RadioType { get; set; }
+        public byte RadioGenre { get; set; }
+        public short padding00 { get; set; }
+        public MetaHash HornLoop { get; set; }
+        public MetaHash IgnitionOneShot { get; set; }
+        public MetaHash ShutdownOneShot { get; set; }
+        public MetaHash EngineVolPostSubmix { get; set; }//0
+        public MetaHash ExhaustVolPostSubmix { get; set; }//engine submix
+        public MetaHash EngineSynthDef { get; set; }//engine submix preset
+        public MetaHash EngineSynthPreset { get; set; }//exhaust submix
+        public MetaHash ExhaustSynthDef { get; set; }//exhaust submix preset
+        public MetaHash ExhaustSynthPreset { get; set; }
+        public MetaHash VehicleCollisions { get; set; }//engine environment
+        public MetaHash EngineSubmixVoice { get; set; }//exhaust environment?
+        public MetaHash ExhaustSubmixVoice { get; set; }//wave hit (medium?)
+        public MetaHash WaveHitSound { get; set; }//0
+        public MetaHash LeftWaterSound { get; set; }
+        public MetaHash IdleHullSlapLoop { get; set; }//curve
+        public MetaHash IdleHullSlapSpeedToVol { get; set; }//granular engine
+        public MetaHash GranularEngine { get; set; }
+        public MetaHash BankSpraySound { get; set; }
+        public MetaHash IgnitionLoop { get; set; }//startup
+        public MetaHash EngineStartUp { get; set; }//curve
+        public MetaHash SubTurningEnginePitchModifier { get; set; }
+        public MetaHash SubTurningSweetenerSound { get; set; }//constant_one (curve)
+        public MetaHash RevsToSweetenerVolume { get; set; }//curve
+        public MetaHash TurningToSweetenerVolume { get; set; }//curve
+        public MetaHash TurningToSweetenerPitch { get; set; }
+        public MetaHash DryLandScrape { get; set; }
+        public float MaxRollOffScalePlayer { get; set; }
+        public float MaxRollOffScaleNPC { get; set; }
+        public float Openness { get; set; }
+        public MetaHash DryLandHardScrape { get; set; }
+        public MetaHash DryLandHardImpact { get; set; }
+        public MetaHash WindClothSound { get; set; }
         public MetaHash DoorOpen { get; set; }
         public MetaHash DoorClose { get; set; }
-        public MetaHash Unk55 { get; set; }
-        public MetaHash Unk56 { get; set; }
-        public MetaHash Unk57 { get; set; }
-        public MetaHash Unk58 { get; set; }
-        public MetaHash SubCreaks { get; set; }
-        public MetaHash WaveHitBigAir { get; set; }//wave hit (big air?)
-        public float Unk61 { get; set; }
-        public MetaHash Unk62 { get; set; }
-        public MetaHash Unk63 { get; set; }
+        public MetaHash DoorLimit { get; set; }
+        public MetaHash DoorStartClose { get; set; }
+        public MetaHash SubExtrasSound { get; set; }
+        public MetaHash SFXBankSound { get; set; }
+        public MetaHash SubmersibleCreaksSound { get; set; }
+        public MetaHash WaveHitBigAirSound { get; set; }//wave hit (big air?)
+        public float BigAirMinTime { get; set; }
+        public MetaHash VehicleRainSound { get; set; }
+        public MetaHash VehicleRainSoundInterior { get; set; }
 
 
         public Dat151Boat(RelFile rel) : base(rel)
@@ -12546,305 +12541,300 @@ namespace CodeWalker.GameFiles
         public Dat151Boat(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
-            Engine = br.ReadUInt32();
-            EngineVolume = br.ReadUInt32();
-            EnginePitch = br.ReadUInt32();
-            Engine2 = br.ReadUInt32();
-            Engine2Volume = br.ReadUInt32();
+            Engine1Loop = br.ReadUInt32();
+            Engine1Vol = br.ReadUInt32();
+            Engine1Pitch = br.ReadUInt32();
+            Engine2Loop = br.ReadUInt32();
+            Engine2Vol = br.ReadUInt32();
             Engine2Pitch = br.ReadUInt32();
-            EngineLowReso = br.ReadUInt32();
-            EngineLowResoVolume = br.ReadUInt32();
-            EngineLowResoPitch = br.ReadUInt32();
-            EngineIdleLoop = br.ReadUInt32();
-            EngineIdleVolume = br.ReadUInt32();
-            EngineIdlePitch = br.ReadUInt32();
-            WaterTurbulence = br.ReadUInt32();
-            WaterTurbulenceVolume = br.ReadUInt32();
-            Unk15 = br.ReadUInt32();
-            Unk16 = br.ReadUInt32();
-            Unk17 = br.ReadUInt32();
-            Unk18 = br.ReadUInt32();
-            PoliceScannerParams = br.ReadUInt32();
-            RadioFlags = br.ReadUInt32();
-            Horn = br.ReadUInt32();
-            Ignition = br.ReadUInt32();
-            Shutdown = br.ReadUInt32();
-            Unk24 = br.ReadUInt32();
-            EngineSubmix = br.ReadUInt32();
-            EngineSubmixPreset = br.ReadUInt32();
-            ExhaustSubmix = br.ReadUInt32();
-            ExhaustSubmixPreset = br.ReadUInt32();
-            Collision = br.ReadUInt32();
-            Unk30 = br.ReadUInt32();
-            Unk31 = br.ReadUInt32();
-            WaveHitMedium = br.ReadUInt32();
-            Unk33 = br.ReadUInt32();
-            IdleHullSlap = br.ReadUInt32();
-            Unk35 = br.ReadUInt32();
-            EngineGranular = br.ReadUInt32();
-            BankSpray = br.ReadUInt32();
-            Ignition2 = br.ReadUInt32();
-            Startup = br.ReadUInt32();
-            SubTurnVolume = br.ReadUInt32();
-            SubTurn = br.ReadUInt32();
-            Unk42 = br.ReadUInt32();
-            Unk43 = br.ReadUInt32();
-            Unk44 = br.ReadUInt32();
-            SandSkid = br.ReadUInt32();
-            Unk46 = br.ReadSingle();
-            Unk47 = br.ReadSingle();
-            Unk48 = br.ReadSingle();
-            Unk49 = br.ReadUInt32();
-            Hull = br.ReadUInt32();
-            Cloth = br.ReadUInt32();
-            Fire = br.ReadUInt32();
+            LowResoLoop = br.ReadUInt32();
+            LowResoLoopVol = br.ReadUInt32();
+            LowResoPitch = br.ReadUInt32();
+            ResoLoop = br.ReadUInt32();
+            ResoLoopVol = br.ReadUInt32();
+            ResoPitch = br.ReadUInt32();
+            WaterTurbulance = br.ReadUInt32();
+            WaterTurbulanceVol = br.ReadUInt32();
+            WaterTurbulancePitch = br.ReadUInt32();
+            ScannerMake = br.ReadUInt32();
+            ScannerModel = br.ReadUInt32();
+            ScannerCategory = br.ReadUInt32();
+            ScannerVehicleSettings = br.ReadUInt32();
+            RadioType = br.ReadByte();
+            RadioGenre = br.ReadByte();
+            padding00 = br.ReadInt16();
+            HornLoop = br.ReadUInt32();
+            IgnitionOneShot = br.ReadUInt32();
+            ShutdownOneShot = br.ReadUInt32();
+            EngineVolPostSubmix = br.ReadUInt32();
+            ExhaustVolPostSubmix = br.ReadUInt32();
+            EngineSynthDef = br.ReadUInt32();
+            EngineSynthPreset = br.ReadUInt32();
+            ExhaustSynthDef = br.ReadUInt32();
+            ExhaustSynthPreset = br.ReadUInt32();
+            VehicleCollisions = br.ReadUInt32();
+            EngineSubmixVoice = br.ReadUInt32();
+            ExhaustSubmixVoice = br.ReadUInt32();
+            WaveHitSound = br.ReadUInt32();
+            LeftWaterSound = br.ReadUInt32();
+            IdleHullSlapLoop = br.ReadUInt32();
+            IdleHullSlapSpeedToVol = br.ReadUInt32();
+            GranularEngine = br.ReadUInt32();
+            BankSpraySound = br.ReadUInt32();
+            IgnitionLoop = br.ReadUInt32();
+            EngineStartUp = br.ReadUInt32();
+            SubTurningEnginePitchModifier = br.ReadUInt32();
+            SubTurningSweetenerSound = br.ReadUInt32();
+            RevsToSweetenerVolume = br.ReadUInt32();
+            TurningToSweetenerVolume = br.ReadUInt32();
+            TurningToSweetenerPitch = br.ReadUInt32();
+            DryLandScrape = br.ReadUInt32();
+            MaxRollOffScalePlayer = br.ReadSingle();
+            MaxRollOffScaleNPC = br.ReadSingle();
+            Openness = br.ReadSingle();
+            DryLandHardScrape = br.ReadUInt32();
+            DryLandHardImpact = br.ReadUInt32();
+            WindClothSound = br.ReadUInt32();
             DoorOpen = br.ReadUInt32();
             DoorClose = br.ReadUInt32();
-            Unk55 = br.ReadUInt32();
-            Unk56 = br.ReadUInt32();
-            Unk57 = br.ReadUInt32();
-            Unk58 = br.ReadUInt32();
-            SubCreaks = br.ReadUInt32();
-            WaveHitBigAir = br.ReadUInt32();
-            Unk61 = br.ReadSingle();
-            Unk62 = br.ReadUInt32();
-            Unk63 = br.ReadUInt32();
-
-            if (Unk15 != 0x6B3DC4A2)
-            { }//no hit
-            if (Unk24 != 0)
-            { }//no hit
-            if (Unk33 != 0)
-            { }//no hit
-
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
+            DoorLimit = br.ReadUInt32();
+            DoorStartClose = br.ReadUInt32();
+            SubExtrasSound = br.ReadUInt32();
+            SFXBankSound = br.ReadUInt32();
+            SubmersibleCreaksSound = br.ReadUInt32();
+            WaveHitBigAirSound = br.ReadUInt32();
+            BigAirMinTime = br.ReadSingle();
+            VehicleRainSound = br.ReadUInt32();
+            VehicleRainSoundInterior = br.ReadUInt32();
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
 
             bw.Write(Flags);
-            bw.Write(Engine);
-            bw.Write(EngineVolume);
-            bw.Write(EnginePitch);
-            bw.Write(Engine2);
-            bw.Write(Engine2Volume);
+            bw.Write(Engine1Loop);
+            bw.Write(Engine1Vol);
+            bw.Write(Engine1Pitch);
+            bw.Write(Engine2Loop);
+            bw.Write(Engine2Vol);
             bw.Write(Engine2Pitch);
-            bw.Write(EngineLowReso);
-            bw.Write(EngineLowResoVolume);
-            bw.Write(EngineLowResoPitch);
-            bw.Write(EngineIdleLoop);
-            bw.Write(EngineIdleVolume);
-            bw.Write(EngineIdlePitch);
-            bw.Write(WaterTurbulence);
-            bw.Write(WaterTurbulenceVolume);
-            bw.Write(Unk15);
-            bw.Write(Unk16);
-            bw.Write(Unk17);
-            bw.Write(Unk18);
-            bw.Write(PoliceScannerParams);
-            bw.Write(RadioFlags);
-            bw.Write(Horn);
-            bw.Write(Ignition);
-            bw.Write(Shutdown);
-            bw.Write(Unk24);
-            bw.Write(EngineSubmix);
-            bw.Write(EngineSubmixPreset);
-            bw.Write(ExhaustSubmix);
-            bw.Write(ExhaustSubmixPreset);
-            bw.Write(Collision);
-            bw.Write(Unk30);
-            bw.Write(Unk31);
-            bw.Write(WaveHitMedium);
-            bw.Write(Unk33);
-            bw.Write(IdleHullSlap);
-            bw.Write(Unk35);
-            bw.Write(EngineGranular);
-            bw.Write(BankSpray);
-            bw.Write(Ignition2);
-            bw.Write(Startup);
-            bw.Write(SubTurnVolume);
-            bw.Write(SubTurn);
-            bw.Write(Unk42);
-            bw.Write(Unk43);
-            bw.Write(Unk44);
-            bw.Write(SandSkid);
-            bw.Write(Unk46);
-            bw.Write(Unk47);
-            bw.Write(Unk48);
-            bw.Write(Unk49);
-            bw.Write(Hull);
-            bw.Write(Cloth);
-            bw.Write(Fire);
+            bw.Write(LowResoLoop);
+            bw.Write(LowResoLoopVol);
+            bw.Write(LowResoPitch);
+            bw.Write(ResoLoop);
+            bw.Write(ResoLoopVol);
+            bw.Write(ResoPitch);
+            bw.Write(WaterTurbulance);
+            bw.Write(WaterTurbulanceVol);
+            bw.Write(WaterTurbulancePitch);
+            bw.Write(ScannerMake);
+            bw.Write(ScannerModel);
+            bw.Write(ScannerCategory);
+            bw.Write(ScannerVehicleSettings);
+            bw.Write(RadioType);
+            bw.Write(RadioGenre);
+            bw.Write(padding00);
+            bw.Write(HornLoop);
+            bw.Write(IgnitionOneShot);
+            bw.Write(ShutdownOneShot);
+            bw.Write(EngineVolPostSubmix);
+            bw.Write(ExhaustVolPostSubmix);
+            bw.Write(EngineSynthDef);
+            bw.Write(EngineSynthPreset);
+            bw.Write(ExhaustSynthDef);
+            bw.Write(ExhaustSynthPreset);
+            bw.Write(VehicleCollisions);
+            bw.Write(EngineSubmixVoice);
+            bw.Write(ExhaustSubmixVoice);
+            bw.Write(WaveHitSound);
+            bw.Write(LeftWaterSound);
+            bw.Write(IdleHullSlapLoop);
+            bw.Write(IdleHullSlapSpeedToVol);
+            bw.Write(GranularEngine);
+            bw.Write(BankSpraySound);
+            bw.Write(IgnitionLoop);
+            bw.Write(EngineStartUp);
+            bw.Write(SubTurningEnginePitchModifier);
+            bw.Write(SubTurningSweetenerSound);
+            bw.Write(RevsToSweetenerVolume);
+            bw.Write(TurningToSweetenerVolume);
+            bw.Write(TurningToSweetenerPitch);
+            bw.Write(DryLandScrape);
+            bw.Write(MaxRollOffScalePlayer);
+            bw.Write(MaxRollOffScaleNPC);
+            bw.Write(Openness);
+            bw.Write(DryLandHardScrape);
+            bw.Write(DryLandHardImpact);
+            bw.Write(WindClothSound);
             bw.Write(DoorOpen);
             bw.Write(DoorClose);
-            bw.Write(Unk55);
-            bw.Write(Unk56);
-            bw.Write(Unk57);
-            bw.Write(Unk58);
-            bw.Write(SubCreaks);
-            bw.Write(WaveHitBigAir);
-            bw.Write(Unk61);
-            bw.Write(Unk62);
-            bw.Write(Unk63);
+            bw.Write(DoorLimit);
+            bw.Write(DoorStartClose);
+            bw.Write(SubExtrasSound);
+            bw.Write(SFXBankSound);
+            bw.Write(SubmersibleCreaksSound);
+            bw.Write(WaveHitBigAirSound);
+            bw.Write(BigAirMinTime);
+            bw.Write(VehicleRainSound);
+            bw.Write(VehicleRainSoundInterior);
 
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.StringTag(sb, indent, "Engine", RelXml.HashString(Engine));
-            RelXml.StringTag(sb, indent, "EngineVolume", RelXml.HashString(EngineVolume));
-            RelXml.StringTag(sb, indent, "EnginePitch", RelXml.HashString(EnginePitch));
-            RelXml.StringTag(sb, indent, "Engine2", RelXml.HashString(Engine2));
-            RelXml.StringTag(sb, indent, "Engine2Volume", RelXml.HashString(Engine2Volume));
+            RelXml.StringTag(sb, indent, "Engine1Loop", RelXml.HashString(Engine1Loop));
+            RelXml.StringTag(sb, indent, "Engine1Vol", RelXml.HashString(Engine1Vol));
+            RelXml.StringTag(sb, indent, "Engine1Pitch", RelXml.HashString(Engine1Pitch));
+            RelXml.StringTag(sb, indent, "Engine2Loop", RelXml.HashString(Engine2Loop));
+            RelXml.StringTag(sb, indent, "Engine2Vol", RelXml.HashString(Engine2Vol));
             RelXml.StringTag(sb, indent, "Engine2Pitch", RelXml.HashString(Engine2Pitch));
-            RelXml.StringTag(sb, indent, "EngineLowReso", RelXml.HashString(EngineLowReso));
-            RelXml.StringTag(sb, indent, "EngineLowResoVolume", RelXml.HashString(EngineLowResoVolume));
-            RelXml.StringTag(sb, indent, "EngineLowResoPitch", RelXml.HashString(EngineLowResoPitch));
-            RelXml.StringTag(sb, indent, "EngineIdleLoop", RelXml.HashString(EngineIdleLoop));
-            RelXml.StringTag(sb, indent, "EngineIdleVolume", RelXml.HashString(EngineIdleVolume));
-            RelXml.StringTag(sb, indent, "EngineIdlePitch", RelXml.HashString(EngineIdlePitch));
-            RelXml.StringTag(sb, indent, "WaterTurbulence", RelXml.HashString(WaterTurbulence));
-            RelXml.StringTag(sb, indent, "WaterTurbulenceVolume", RelXml.HashString(WaterTurbulenceVolume));
-            RelXml.StringTag(sb, indent, "Unk15", RelXml.HashString(Unk15));
-            RelXml.StringTag(sb, indent, "Unk16", RelXml.HashString(Unk16));
-            RelXml.StringTag(sb, indent, "Unk17", RelXml.HashString(Unk17));
-            RelXml.StringTag(sb, indent, "Unk18", RelXml.HashString(Unk18));
-            RelXml.StringTag(sb, indent, "PoliceScannerParams", RelXml.HashString(PoliceScannerParams));
-            RelXml.ValueTag(sb, indent, "RadioFlags", "0x" + RadioFlags.Hex);
-            RelXml.StringTag(sb, indent, "Horn", RelXml.HashString(Horn));
-            RelXml.StringTag(sb, indent, "Ignition", RelXml.HashString(Ignition));
-            RelXml.StringTag(sb, indent, "Shutdown", RelXml.HashString(Shutdown));
-            RelXml.StringTag(sb, indent, "Unk24", RelXml.HashString(Unk24));
-            RelXml.StringTag(sb, indent, "EngineSubmix", RelXml.HashString(EngineSubmix));
-            RelXml.StringTag(sb, indent, "EngineSubmixPreset", RelXml.HashString(EngineSubmixPreset));
-            RelXml.StringTag(sb, indent, "ExhaustSubmix", RelXml.HashString(ExhaustSubmix));
-            RelXml.StringTag(sb, indent, "ExhaustSubmixPreset", RelXml.HashString(ExhaustSubmixPreset));
-            RelXml.StringTag(sb, indent, "Collision", RelXml.HashString(Collision));
-            RelXml.StringTag(sb, indent, "Unk30", RelXml.HashString(Unk30));
-            RelXml.StringTag(sb, indent, "Unk31", RelXml.HashString(Unk31));
-            RelXml.StringTag(sb, indent, "WaveHitMedium", RelXml.HashString(WaveHitMedium));
-            RelXml.StringTag(sb, indent, "Unk33", RelXml.HashString(Unk33));
-            RelXml.StringTag(sb, indent, "IdleHullSlap", RelXml.HashString(IdleHullSlap));
-            RelXml.StringTag(sb, indent, "Unk35", RelXml.HashString(Unk35));
-            RelXml.StringTag(sb, indent, "EngineGranular", RelXml.HashString(EngineGranular));
-            RelXml.StringTag(sb, indent, "BankSpray", RelXml.HashString(BankSpray));
-            RelXml.StringTag(sb, indent, "Ignition2", RelXml.HashString(Ignition2));
-            RelXml.StringTag(sb, indent, "Startup", RelXml.HashString(Startup));
-            RelXml.StringTag(sb, indent, "SubTurnVolume", RelXml.HashString(SubTurnVolume));
-            RelXml.StringTag(sb, indent, "SubTurn", RelXml.HashString(SubTurn));
-            RelXml.StringTag(sb, indent, "Unk42", RelXml.HashString(Unk42));
-            RelXml.StringTag(sb, indent, "Unk43", RelXml.HashString(Unk43));
-            RelXml.StringTag(sb, indent, "Unk44", RelXml.HashString(Unk44));
-            RelXml.StringTag(sb, indent, "SandSkid", RelXml.HashString(SandSkid));
-            RelXml.ValueTag(sb, indent, "Unk46", FloatUtil.ToString(Unk46));
-            RelXml.ValueTag(sb, indent, "Unk47", FloatUtil.ToString(Unk47));
-            RelXml.ValueTag(sb, indent, "Unk48", FloatUtil.ToString(Unk48));
-            RelXml.StringTag(sb, indent, "Unk49", RelXml.HashString(Unk49));
-            RelXml.StringTag(sb, indent, "Hull", RelXml.HashString(Hull));
-            RelXml.StringTag(sb, indent, "Cloth", RelXml.HashString(Cloth));
-            RelXml.StringTag(sb, indent, "Fire", RelXml.HashString(Fire));
+            RelXml.StringTag(sb, indent, "LowResoLoop", RelXml.HashString(LowResoLoop));
+            RelXml.StringTag(sb, indent, "LowResoLoopVol", RelXml.HashString(LowResoLoopVol));
+            RelXml.StringTag(sb, indent, "LowResoPitch", RelXml.HashString(LowResoPitch));
+            RelXml.StringTag(sb, indent, "ResoLoop", RelXml.HashString(ResoLoop));
+            RelXml.StringTag(sb, indent, "ResoLoopVol", RelXml.HashString(ResoLoopVol));
+            RelXml.StringTag(sb, indent, "ResoPitch", RelXml.HashString(ResoPitch));
+            RelXml.StringTag(sb, indent, "WaterTurbulance", RelXml.HashString(WaterTurbulance));
+            RelXml.StringTag(sb, indent, "WaterTurbulanceVol", RelXml.HashString(WaterTurbulanceVol));
+            RelXml.StringTag(sb, indent, "WaterTurbulancePitch", RelXml.HashString(WaterTurbulancePitch));
+            RelXml.StringTag(sb, indent, "ScannerMake", RelXml.HashString(ScannerMake));
+            RelXml.StringTag(sb, indent, "ScannerModel", RelXml.HashString(ScannerModel));
+            RelXml.StringTag(sb, indent, "ScannerCategory", RelXml.HashString(ScannerCategory));
+            RelXml.StringTag(sb, indent, "ScannerVehicleSettings", RelXml.HashString(ScannerVehicleSettings));
+            RelXml.ValueTag(sb, indent, "RadioType", RadioType.ToString());
+            RelXml.ValueTag(sb, indent, "RadioGenre", RadioGenre.ToString());
+            RelXml.StringTag(sb, indent, "HornLoop", RelXml.HashString(HornLoop));
+            RelXml.StringTag(sb, indent, "IgnitionOneShot", RelXml.HashString(IgnitionOneShot));
+            RelXml.StringTag(sb, indent, "ShutdownOneShot", RelXml.HashString(ShutdownOneShot));
+            RelXml.StringTag(sb, indent, "EngineVolPostSubmix", RelXml.HashString(EngineVolPostSubmix));
+            RelXml.StringTag(sb, indent, "ExhaustVolPostSubmix", RelXml.HashString(ExhaustVolPostSubmix));
+            RelXml.StringTag(sb, indent, "EngineSynthDef", RelXml.HashString(EngineSynthDef));
+            RelXml.StringTag(sb, indent, "EngineSynthPreset", RelXml.HashString(EngineSynthPreset));
+            RelXml.StringTag(sb, indent, "ExhaustSynthDef", RelXml.HashString(ExhaustSynthDef));
+            RelXml.StringTag(sb, indent, "ExhaustSynthPreset", RelXml.HashString(ExhaustSynthPreset));
+            RelXml.StringTag(sb, indent, "VehicleCollisions", RelXml.HashString(VehicleCollisions));
+            RelXml.StringTag(sb, indent, "EngineSubmixVoice", RelXml.HashString(EngineSubmixVoice));
+            RelXml.StringTag(sb, indent, "ExhaustSubmixVoice", RelXml.HashString(ExhaustSubmixVoice));
+            RelXml.StringTag(sb, indent, "WaveHitSound", RelXml.HashString(WaveHitSound));
+            RelXml.StringTag(sb, indent, "LeftWaterSound", RelXml.HashString(LeftWaterSound));
+            RelXml.StringTag(sb, indent, "IdleHullSlapLoop", RelXml.HashString(IdleHullSlapLoop));
+            RelXml.StringTag(sb, indent, "IdleHullSlapSpeedToVol", RelXml.HashString(IdleHullSlapSpeedToVol));
+            RelXml.StringTag(sb, indent, "GranularEngine", RelXml.HashString(GranularEngine));
+            RelXml.StringTag(sb, indent, "BankSpraySound", RelXml.HashString(BankSpraySound));
+            RelXml.StringTag(sb, indent, "IgnitionLoop", RelXml.HashString(IgnitionLoop));
+            RelXml.StringTag(sb, indent, "EngineStartUp", RelXml.HashString(EngineStartUp));
+            RelXml.StringTag(sb, indent, "SubTurningEnginePitchModifier", RelXml.HashString(SubTurningEnginePitchModifier));
+            RelXml.StringTag(sb, indent, "SubTurningSweetenerSound", RelXml.HashString(SubTurningSweetenerSound));
+            RelXml.StringTag(sb, indent, "RevsToSweetenerVolume", RelXml.HashString(RevsToSweetenerVolume));
+            RelXml.StringTag(sb, indent, "TurningToSweetenerVolume", RelXml.HashString(TurningToSweetenerVolume));
+            RelXml.StringTag(sb, indent, "TurningToSweetenerPitch", RelXml.HashString(TurningToSweetenerPitch));
+            RelXml.ValueTag(sb, indent, "DryLandScrape", FloatUtil.ToString(DryLandScrape));
+            RelXml.ValueTag(sb, indent, "MaxRollOffScalePlayer", FloatUtil.ToString(MaxRollOffScalePlayer));
+            RelXml.ValueTag(sb, indent, "MaxRollOffScaleNPC", FloatUtil.ToString(MaxRollOffScaleNPC));
+            RelXml.StringTag(sb, indent, "Openness", FloatUtil.ToString(Openness));
+            RelXml.StringTag(sb, indent, "DryLandHardScrape", RelXml.HashString(DryLandHardScrape));
+            RelXml.StringTag(sb, indent, "DryLandHardImpact", RelXml.HashString(DryLandHardImpact));
+            RelXml.StringTag(sb, indent, "WindClothSound", RelXml.HashString(WindClothSound));
             RelXml.StringTag(sb, indent, "DoorOpen", RelXml.HashString(DoorOpen));
             RelXml.StringTag(sb, indent, "DoorClose", RelXml.HashString(DoorClose));
-            RelXml.StringTag(sb, indent, "Unk55", RelXml.HashString(Unk55));
-            RelXml.StringTag(sb, indent, "Unk56", RelXml.HashString(Unk56));
-            RelXml.StringTag(sb, indent, "Unk57", RelXml.HashString(Unk57));
-            RelXml.StringTag(sb, indent, "Unk58", RelXml.HashString(Unk58));
-            RelXml.StringTag(sb, indent, "SubCreaks", RelXml.HashString(SubCreaks));
-            RelXml.StringTag(sb, indent, "WaveHitBigAir", RelXml.HashString(WaveHitBigAir));
-            RelXml.ValueTag(sb, indent, "Unk61", FloatUtil.ToString(Unk61));
-            RelXml.StringTag(sb, indent, "Unk62", RelXml.HashString(Unk62));
-            RelXml.StringTag(sb, indent, "Unk63", RelXml.HashString(Unk63));
+            RelXml.StringTag(sb, indent, "DoorLimit", RelXml.HashString(DoorLimit));
+            RelXml.StringTag(sb, indent, "DoorStartClose", RelXml.HashString(DoorStartClose));
+            RelXml.StringTag(sb, indent, "SubExtrasSound", RelXml.HashString(SubExtrasSound));
+            RelXml.StringTag(sb, indent, "SFXBankSound", RelXml.HashString(SFXBankSound));
+            RelXml.StringTag(sb, indent, "SubmersibleCreaksSound", RelXml.HashString(SubmersibleCreaksSound));
+            RelXml.StringTag(sb, indent, "WaveHitBigAirSound", RelXml.HashString(WaveHitBigAirSound));
+            RelXml.ValueTag(sb, indent, "BigAirMinTime", FloatUtil.ToString(BigAirMinTime));
+            RelXml.StringTag(sb, indent, "VehicleRainSound", RelXml.HashString(VehicleRainSound));
+            RelXml.StringTag(sb, indent, "VehicleRainSoundInterior", RelXml.HashString(VehicleRainSoundInterior));
 
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Engine = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine"));
-            EngineVolume = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineVolume"));
-            EnginePitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "EnginePitch"));
-            Engine2 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine2"));
-            Engine2Volume = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine2Volume"));
+            Engine1Loop = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine1Loop"));
+            Engine1Vol = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine1Vol"));
+            Engine1Pitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine1Pitch"));
+            Engine2Loop = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine2Loop"));
+            Engine2Vol = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine2Vol"));
             Engine2Pitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine2Pitch"));
-            EngineLowReso = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineLowReso"));
-            EngineLowResoVolume = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineLowResoVolume"));
-            EngineLowResoPitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineLowResoPitch"));
-            EngineIdleLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineIdleLoop"));
-            EngineIdleVolume = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineIdleVolume"));
-            EngineIdlePitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineIdlePitch"));
-            WaterTurbulence = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaterTurbulence"));
-            WaterTurbulenceVolume = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaterTurbulenceVolume"));
-            Unk15 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk15"));
-            Unk16 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk16"));
-            Unk17 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk17"));
-            Unk18 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk18"));
-            PoliceScannerParams = XmlRel.GetHash(Xml.GetChildInnerText(node, "PoliceScannerParams"));
-            RadioFlags = Xml.GetChildUIntAttribute(node, "RadioFlags", "value");
-            Horn = XmlRel.GetHash(Xml.GetChildInnerText(node, "Horn"));
-            Ignition = XmlRel.GetHash(Xml.GetChildInnerText(node, "Ignition"));
-            Shutdown = XmlRel.GetHash(Xml.GetChildInnerText(node, "Shutdown"));
-            Unk24 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk24"));
-            EngineSubmix = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineSubmix"));
-            EngineSubmixPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineSubmixPreset"));
-            ExhaustSubmix = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustSubmix"));
-            ExhaustSubmixPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustSubmixPreset"));
-            Collision = XmlRel.GetHash(Xml.GetChildInnerText(node, "Collision"));
-            Unk30 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk30"));
-            Unk31 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk31"));
-            WaveHitMedium = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaveHitMedium"));
-            Unk33 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk33"));
-            IdleHullSlap = XmlRel.GetHash(Xml.GetChildInnerText(node, "IdleHullSlap"));
-            Unk35 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk35"));
-            EngineGranular = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineGranular"));
-            BankSpray = XmlRel.GetHash(Xml.GetChildInnerText(node, "BankSpray"));
-            Ignition2 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Ignition2"));
-            Startup = XmlRel.GetHash(Xml.GetChildInnerText(node, "Startup"));
-            SubTurnVolume = XmlRel.GetHash(Xml.GetChildInnerText(node, "SubTurnVolume"));
-            SubTurn = XmlRel.GetHash(Xml.GetChildInnerText(node, "SubTurn"));
-            Unk42 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk42"));
-            Unk43 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk43"));
-            Unk44 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk44"));
-            SandSkid = XmlRel.GetHash(Xml.GetChildInnerText(node, "SandSkid"));
-            Unk46 = Xml.GetChildFloatAttribute(node, "Unk46", "value");
-            Unk47 = Xml.GetChildFloatAttribute(node, "Unk47", "value");
-            Unk48 = Xml.GetChildFloatAttribute(node, "Unk48", "value");
-            Unk49 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk49"));
-            Hull = XmlRel.GetHash(Xml.GetChildInnerText(node, "Hull"));
-            Cloth = XmlRel.GetHash(Xml.GetChildInnerText(node, "Cloth"));
-            Fire = XmlRel.GetHash(Xml.GetChildInnerText(node, "Fire"));
+            LowResoLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "LowResoLoop"));
+            LowResoLoopVol = XmlRel.GetHash(Xml.GetChildInnerText(node, "LowResoLoopVol"));
+            LowResoPitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "LowResoPitch"));
+            ResoLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "ResoLoop"));
+            ResoLoopVol = XmlRel.GetHash(Xml.GetChildInnerText(node, "ResoLoopVol"));
+            ResoPitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "ResoPitch"));
+            WaterTurbulance = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaterTurbulance"));
+            WaterTurbulanceVol = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaterTurbulanceVol"));
+            WaterTurbulancePitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaterTurbulancePitch"));
+            ScannerMake = XmlRel.GetHash(Xml.GetChildInnerText(node, "ScannerMake"));
+            ScannerModel = XmlRel.GetHash(Xml.GetChildInnerText(node, "ScannerModel"));
+            ScannerCategory = XmlRel.GetHash(Xml.GetChildInnerText(node, "ScannerCategory"));
+            ScannerVehicleSettings = XmlRel.GetHash(Xml.GetChildInnerText(node, "ScannerVehicleSettings"));
+            RadioType = (byte)Xml.GetChildUIntAttribute(node, "RadioType", "value");
+            RadioGenre = (byte)Xml.GetChildUIntAttribute(node, "RadioGenre", "value");
+            HornLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "HornLoop"));
+            IgnitionOneShot = XmlRel.GetHash(Xml.GetChildInnerText(node, "IgnitionOneShot"));
+            ShutdownOneShot = XmlRel.GetHash(Xml.GetChildInnerText(node, "ShutdownOneShot"));
+            EngineVolPostSubmix = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineVolPostSubmix"));
+            ExhaustVolPostSubmix = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustVolPostSubmix"));
+            EngineSynthDef = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineSynthDef"));
+            EngineSynthPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineSynthPreset"));
+            ExhaustSynthDef = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustSynthDef"));
+            ExhaustSynthPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustSynthPreset"));
+            VehicleCollisions = XmlRel.GetHash(Xml.GetChildInnerText(node, "VehicleCollisions"));
+            EngineSubmixVoice = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineSubmixVoice"));
+            ExhaustSubmixVoice = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustSubmixVoice"));
+            WaveHitSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaveHitSound"));
+            LeftWaterSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "LeftWaterSound"));
+            IdleHullSlapLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "IdleHullSlapLoop"));
+            IdleHullSlapSpeedToVol = XmlRel.GetHash(Xml.GetChildInnerText(node, "IdleHullSlapSpeedToVol"));
+            GranularEngine = XmlRel.GetHash(Xml.GetChildInnerText(node, "GranularEngine"));
+            BankSpraySound = XmlRel.GetHash(Xml.GetChildInnerText(node, "BankSpraySound"));
+            IgnitionLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "IgnitionLoop"));
+            EngineStartUp = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineStartUp"));
+            SubTurningEnginePitchModifier = XmlRel.GetHash(Xml.GetChildInnerText(node, "SubTurningEnginePitchModifier"));
+            SubTurningSweetenerSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SubTurningSweetenerSound"));
+            RevsToSweetenerVolume = XmlRel.GetHash(Xml.GetChildInnerText(node, "RevsToSweetenerVolume"));
+            TurningToSweetenerVolume = XmlRel.GetHash(Xml.GetChildInnerText(node, "TurningToSweetenerVolume"));
+            TurningToSweetenerPitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "TurningToSweetenerPitch"));
+            DryLandScrape = XmlRel.GetHash(Xml.GetChildInnerText(node, "DryLandScrape"));
+            MaxRollOffScalePlayer = Xml.GetChildFloatAttribute(node, "MaxRollOffScalePlayer", "value");
+            MaxRollOffScaleNPC = Xml.GetChildFloatAttribute(node, "MaxRollOffScaleNPC", "value");
+            Openness = XmlRel.GetHash(Xml.GetChildInnerText(node, "Openness"));
+            DryLandHardScrape = XmlRel.GetHash(Xml.GetChildInnerText(node, "DryLandHardScrape"));
+            DryLandHardImpact = XmlRel.GetHash(Xml.GetChildInnerText(node, "DryLandHardImpact"));
+            WindClothSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "WindClothSound"));
             DoorOpen = XmlRel.GetHash(Xml.GetChildInnerText(node, "DoorOpen"));
             DoorClose = XmlRel.GetHash(Xml.GetChildInnerText(node, "DoorClose"));
-            Unk55 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk55"));
-            Unk56 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk56"));
-            Unk57 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk57"));
-            Unk58 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk58"));
-            SubCreaks = XmlRel.GetHash(Xml.GetChildInnerText(node, "SubCreaks"));
-            WaveHitBigAir = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaveHitBigAir"));
-            Unk61 = Xml.GetChildFloatAttribute(node, "Unk61", "value");
-            Unk62 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk62"));
-            Unk63 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk63"));
+            DoorLimit = XmlRel.GetHash(Xml.GetChildInnerText(node, "DoorLimit"));
+            DoorStartClose = XmlRel.GetHash(Xml.GetChildInnerText(node, "DoorStartClose"));
+            SubExtrasSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SubExtrasSound"));
+            SFXBankSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SFXBankSound"));
+            SubmersibleCreaksSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SubmersibleCreaksSound"));
+            WaveHitBigAirSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "WaveHitBigAirSound"));
+            BigAirMinTime = Xml.GetChildFloatAttribute(node, "BigAirMinTime", "value");
+            VehicleRainSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "VehicleRainSound"));
+            VehicleRainSoundInterior = XmlRel.GetHash(Xml.GetChildInnerText(node, "VehicleRainSoundInterior"));
 
         }
         public override MetaHash[] GetCurveHashes()
         {
-            return new[] { EngineVolume, EnginePitch, Engine2Volume, Engine2Pitch, EngineLowResoVolume, EngineLowResoPitch, EngineIdleVolume, EngineIdlePitch,
-                WaterTurbulenceVolume, Unk35, SubTurnVolume, Unk42, Unk43, Unk44 };
+            return new[] { Engine1Vol, Engine1Pitch, Engine2Vol, Engine2Pitch, LowResoLoopVol, LowResoPitch, ResoLoopVol, ResoPitch,
+                WaterTurbulanceVol, IdleHullSlapLoop, EngineStartUp, SubTurningSweetenerSound, RevsToSweetenerVolume, TurningToSweetenerVolume };
         }
         public override MetaHash[] GetSynthHashes()
         {
-            return new[] { EngineSubmix, EngineSubmixPreset, ExhaustSubmix, ExhaustSubmixPreset };
+            return new[] { ExhaustVolPostSubmix, EngineSynthDef, EngineSynthPreset, ExhaustSynthDef };
         }
         public override MetaHash[] GetSoundHashes()
         {
-            return new[] { Engine, Engine2, EngineLowReso, EngineIdleLoop, WaterTurbulence, Unk16, Unk17, Unk18, Horn, Ignition, Shutdown, Unk30, Unk31,
-                WaveHitMedium, IdleHullSlap, BankSpray, Ignition2, Startup, SubTurn, SandSkid, Unk49, Hull, Cloth, Fire, DoorOpen, DoorClose,
-                Unk55, Unk56, Unk57, Unk58, SubCreaks, WaveHitBigAir, Unk62, Unk63 };
+            return new[] { Engine1Loop, Engine2Loop, LowResoLoop, ResoLoop, WaterTurbulance, ScannerMake, ScannerModel, ScannerCategory, HornLoop, IgnitionOneShot, ShutdownOneShot, VehicleCollisions, EngineSubmixVoice,
+                ExhaustSubmixVoice, LeftWaterSound, GranularEngine, BankSpraySound, IgnitionLoop, SubTurningEnginePitchModifier, TurningToSweetenerPitch, DryLandHardScrape, DryLandHardImpact, WindClothSound, DoorOpen, DoorClose,
+                DoorLimit, DoorStartClose, SubExtrasSound, SFXBankSound, SubmersibleCreaksSound, WaveHitBigAirSound, VehicleRainSound, VehicleRainSoundInterior };
         }
         public override MetaHash[] GetGameHashes()
         {
-            return new[] { PoliceScannerParams, Collision, EngineGranular };
+            return new[] { ScannerVehicleSettings, ExhaustSynthPreset, IdleHullSlapSpeedToVol };
         }
     }
     [TC(typeof(EXP))] public class Dat151Bicycle : Dat151RelData
