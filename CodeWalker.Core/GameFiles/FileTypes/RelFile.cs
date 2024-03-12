@@ -694,7 +694,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.VirtualSpeechChoice: return new Dat151VirtualSpeechChoice(d, br);
                 case Dat151RelType.SpeechContextList: return new Dat151SpeechContextList(d, br);
                 case Dat151RelType.Shoe: return new Dat151Shoe(d, br);
-                case Dat151RelType.Unk22: return new Dat151ModelPhysicsParams(d, br);
+                case Dat151RelType.Unk22: return new Dat151Unk22(d, br);
                 case Dat151RelType.Skis: return new Dat151Skis(d, br);
                 case Dat151RelType.RadioTrackCategory: return new Dat151RadioTrackCategory(d, br);
                 case Dat151RelType.PoliceScannerCrime: return new Dat151PoliceScannerCrime(d, br);
@@ -862,7 +862,7 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.VirtualSpeechChoice: return new Dat151VirtualSpeechChoice(this);
                         case Dat151RelType.SpeechContextList: return new Dat151SpeechContextList(this);
                         case Dat151RelType.Shoe: return new Dat151Shoe(this);
-                        case Dat151RelType.Unk22: return new Dat151ModelPhysicsParams(this);
+                        case Dat151RelType.Unk22: return new Dat151Unk22(this);
                         case Dat151RelType.Skis: return new Dat151Skis(this);
                         case Dat151RelType.RadioTrackCategory: return new Dat151RadioTrackCategory(this);
                         case Dat151RelType.PoliceScannerCrime: return new Dat151PoliceScannerCrime(this);
@@ -15280,157 +15280,150 @@ namespace CodeWalker.GameFiles
             return new[] { Walk, DirtyWalk, CreakyWalk, GlassyWalk, Run, DirtyRun, CreakyRun, GlassyRun, WetWalk, WetRun, SoftWalk, Scuff, Land, LadderShoeDown, LadderShoeUp, Kick };
         }
     }
-    [TC(typeof(EXP))] public class Dat151ModelPhysicsParamsModes : IMetaXmlItem
+    [TC(typeof(EXP))] public class Dat151Unk22Item : IMetaXmlItem
     {
-        public MetaHash Name { get; set; }
-        public float GroundDistanceDownEpsilon { get; set; }
-        public float GroundDistanceUpEpsilon { get; set; }
-        public float DownSpeedEpsilon { get; set; }
-        public float HindGroundDistanceDownEpsilon { get; set; }
-        public float HindGroundDistanceUpEpsilon { get; set; }
-        public float SpeedSmootherIncreaseRate { get; set; }
-        public float SpeedSmootherDecreaseRate { get; set; }
-        public uint TimeToRetrigger { get; set; }
+        public MetaHash Unk01 { get; set; }//state name? eg. stop,walk,run,sprint,jump,stairs_stop,stairs_walk,stairs_run,slopes,slopes_run,ladder,vault
+        public float Unk02 { get; set; }
+        public float Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public float Unk07 { get; set; }
+        public float Unk08 { get; set; }
+        public int Unk09 { get; set; }
 
-        public Dat151ModelPhysicsParamsModes()
+        public Dat151Unk22Item()
         { }
-        public Dat151ModelPhysicsParamsModes(BinaryReader br)
+        public Dat151Unk22Item(BinaryReader br)
         {
-            Name = br.ReadUInt32();
-            GroundDistanceDownEpsilon = br.ReadSingle();
-            GroundDistanceUpEpsilon = br.ReadSingle();
-            DownSpeedEpsilon = br.ReadSingle();
-            HindGroundDistanceDownEpsilon = br.ReadSingle();
-            HindGroundDistanceUpEpsilon = br.ReadSingle();
-            SpeedSmootherIncreaseRate = br.ReadSingle();
-            SpeedSmootherDecreaseRate = br.ReadSingle();
-            TimeToRetrigger = br.ReadUInt32();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadSingle();
+            Unk03 = br.ReadSingle();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            Unk07 = br.ReadSingle();
+            Unk08 = br.ReadSingle();
+            Unk09 = br.ReadInt32();
         }
         public void Write(BinaryWriter bw)
         {
-            bw.Write(Name);
-            bw.Write(GroundDistanceDownEpsilon);
-            bw.Write(GroundDistanceUpEpsilon);
-            bw.Write(DownSpeedEpsilon);
-            bw.Write(HindGroundDistanceDownEpsilon);
-            bw.Write(HindGroundDistanceUpEpsilon);
-            bw.Write(SpeedSmootherIncreaseRate);
-            bw.Write(SpeedSmootherDecreaseRate);
-            bw.Write(TimeToRetrigger);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.StringTag(sb, indent, "Name", RelXml.HashString(Name));
-            RelXml.ValueTag(sb, indent, "GroundDistanceDownEpsilon", FloatUtil.ToString(GroundDistanceDownEpsilon));
-            RelXml.ValueTag(sb, indent, "GroundDistanceUpEpsilon", FloatUtil.ToString(GroundDistanceUpEpsilon));
-            RelXml.ValueTag(sb, indent, "DownSpeedEpsilon", FloatUtil.ToString(DownSpeedEpsilon));
-            RelXml.ValueTag(sb, indent, "HindGroundDistanceDownEpsilon", FloatUtil.ToString(HindGroundDistanceDownEpsilon));
-            RelXml.ValueTag(sb, indent, "HindGroundDistanceUpEpsilon", FloatUtil.ToString(HindGroundDistanceUpEpsilon));
-            RelXml.ValueTag(sb, indent, "SpeedSmootherIncreaseRate", FloatUtil.ToString(SpeedSmootherIncreaseRate));
-            RelXml.ValueTag(sb, indent, "SpeedSmootherDecreaseRate", FloatUtil.ToString(SpeedSmootherDecreaseRate));
-            RelXml.ValueTag(sb, indent, "TimeToRetrigger", TimeToRetrigger.ToString());
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
+            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
+            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
+            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
         }
         public void ReadXml(XmlNode node)
         {
-            Name = XmlRel.GetHash(Xml.GetChildInnerText(node, "Name"));
-            GroundDistanceDownEpsilon = Xml.GetChildFloatAttribute(node, "GroundDistanceDownEpsilon", "value");
-            GroundDistanceUpEpsilon = Xml.GetChildFloatAttribute(node, "GroundDistanceUpEpsilon", "value");
-            DownSpeedEpsilon = Xml.GetChildFloatAttribute(node, "DownSpeedEpsilon", "value");
-            HindGroundDistanceDownEpsilon = Xml.GetChildFloatAttribute(node, "HindGroundDistanceDownEpsilon", "value");
-            HindGroundDistanceUpEpsilon = Xml.GetChildFloatAttribute(node, "HindGroundDistanceUpEpsilon", "value");
-            SpeedSmootherIncreaseRate = Xml.GetChildFloatAttribute(node, "SpeedSmootherIncreaseRate", "value");
-            SpeedSmootherDecreaseRate = Xml.GetChildFloatAttribute(node, "SpeedSmootherDecreaseRate", "value");
-            TimeToRetrigger = Xml.GetChildUIntAttribute(node, "TimeToRetrigger", "value");
+            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
+            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
+            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
+            Unk09 = Xml.GetChildIntAttribute(node, "Unk09", "value");
         }
         public override string ToString()
         {
-            return Name.ToString();
+            return Unk01.ToString();
         }
     }
-    [TC(typeof(EXP))] public class Dat151ModelPhysicsParams : Dat151RelData
+    [TC(typeof(EXP))] public class Dat151Unk22 : Dat151RelData  //player/creature?
     {
-        public uint NumFeet { get; set; }
-        public byte PedType { get; set; }
-        public byte padding00 { get; set; }
-        public short padding01 { get; set; }
-        public MetaHash FootstepTuningValues { get; set; }
-        public float StopSpeedThreshold { get; set; }
-        public float WalkSpeedThreshold { get; set; }
-        public float RunSpeedThreshold { get; set; }
-        public byte NumModes { get; set; }
-        public byte padding02 { get; set; }
-        public short padding03 { get; set; }
-        public Dat151ModelPhysicsParamsModes[] Modes { get; set; }
+        public int Unk01 { get; set; }
+        public int Unk02 { get; set; }
+        public MetaHash Unk03 { get; set; }
+        public float Unk04 { get; set; }
+        public float Unk05 { get; set; }
+        public float Unk06 { get; set; }
+        public int ItemCount { get; set; }
+        public Dat151Unk22Item[] Items { get; set; }
 
 
-        public Dat151ModelPhysicsParams(RelFile rel) : base(rel)
+        public Dat151Unk22(RelFile rel) : base(rel)
         {
             Type = Dat151RelType.Unk22;
             TypeID = (byte)Type;
         }
-        public Dat151ModelPhysicsParams(RelData d, BinaryReader br) : base(d, br)
+        public Dat151Unk22(RelData d, BinaryReader br) : base(d, br)
         {
-            NumFeet = br.ReadUInt32();
-            PedType = br.ReadByte();
-            padding00 = br.ReadByte();
-            padding01 = br.ReadInt16();
-            FootstepTuningValues = br.ReadUInt32();
-            StopSpeedThreshold = br.ReadSingle();
-            WalkSpeedThreshold = br.ReadSingle();
-            RunSpeedThreshold = br.ReadSingle();
-            NumModes = br.ReadByte();
-            padding02 = br.ReadByte();
-            padding03 = br.ReadInt16();
-            Modes = new Dat151ModelPhysicsParamsModes[NumModes];
-            for (int i = 0; i < NumModes; i++)
+            Unk01 = br.ReadInt32();
+            Unk02 = br.ReadInt32();
+            Unk03 = br.ReadUInt32();
+            Unk04 = br.ReadSingle();
+            Unk05 = br.ReadSingle();
+            Unk06 = br.ReadSingle();
+            ItemCount = br.ReadInt32();
+            Items = new Dat151Unk22Item[ItemCount];
+            for (int i = 0; i < ItemCount; i++)
             {
-                Modes[i] = new Dat151ModelPhysicsParamsModes(br);
+                Items[i] = new Dat151Unk22Item(br);
             }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(NumFeet);
-            bw.Write(PedType);
-            bw.Write(padding00);
-            bw.Write(padding01);
-            bw.Write(FootstepTuningValues);
-            bw.Write(StopSpeedThreshold);
-            bw.Write(WalkSpeedThreshold);
-            bw.Write(RunSpeedThreshold);
-            bw.Write(NumModes);
-            bw.Write(padding02);
-            bw.Write(padding03);
-            for (int i = 0; i < NumModes; i++)
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(ItemCount);
+            for (int i = 0; i < ItemCount; i++)
             {
-                Modes[i].Write(bw);
+                Items[i].Write(bw);
             }
 
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "NumFeet", NumFeet.ToString());
-            RelXml.ValueTag(sb, indent, "PedType", PedType.ToString());
-            RelXml.StringTag(sb, indent, "FootstepTuningValues", RelXml.HashString(FootstepTuningValues));
-            RelXml.ValueTag(sb, indent, "StopSpeedThreshold", FloatUtil.ToString(StopSpeedThreshold));
-            RelXml.ValueTag(sb, indent, "WalkSpeedThreshold", FloatUtil.ToString(WalkSpeedThreshold));
-            RelXml.ValueTag(sb, indent, "RunSpeedThreshold", FloatUtil.ToString(RunSpeedThreshold));
-            RelXml.WriteItemArray(sb, Modes, indent, "Modes");
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
+            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
+            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.WriteItemArray(sb, Items, indent, "Items");
         }
         public override void ReadXml(XmlNode node)
         {
-            NumFeet = Xml.GetChildUIntAttribute(node, "NumFeet", "value");
-            PedType = (byte)Xml.GetChildIntAttribute(node, "PedType", "value");
-            FootstepTuningValues = XmlRel.GetHash(Xml.GetChildInnerText(node, "FootstepTuningValues"));
-            StopSpeedThreshold = Xml.GetChildFloatAttribute(node, "StopSpeedThreshold", "value");
-            WalkSpeedThreshold = Xml.GetChildFloatAttribute(node, "WalkSpeedThreshold", "value");
-            RunSpeedThreshold = Xml.GetChildFloatAttribute(node, "RunSpeedThreshold", "value");
-            Modes = XmlRel.ReadItemArray<Dat151ModelPhysicsParamsModes>(node, "Modes");
+            Unk01 = Xml.GetChildIntAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildIntAttribute(node, "Unk02", "value");
+            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
+            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
+            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            Items = XmlRel.ReadItemArray<Dat151Unk22Item>(node, "Items");
+            ItemCount = (Items?.Length ?? 0);
         }
         public override MetaHash[] GetGameHashes()
         {
-            return new[] { FootstepTuningValues };
+            return new[] { Unk03 };
         }
     }
     [TC(typeof(EXP))] public class Dat151Skis : Dat151RelData
