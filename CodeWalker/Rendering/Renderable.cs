@@ -483,11 +483,11 @@ namespace CodeWalker.Rendering
         }
         private void UpdateAnim(ClipMapEntry cme)
         {
-
+            (Vector3 Position, Quaternion Rotation) root = (Vector3.Zero, Quaternion.Identity);
             var clipanim = cme.Clip as ClipAnimation;
             if (clipanim?.Animation != null)
             {
-                UpdateAnim(clipanim.Animation, clipanim.GetPlaybackTime(CurrentAnimTime));
+                UpdateAnim(clipanim.Animation, clipanim.GetPlaybackTime(CurrentAnimTime), ref root);
             }
 
             var clipanimlist = cme.Clip as ClipAnimationList;
@@ -496,12 +496,38 @@ namespace CodeWalker.Rendering
                 foreach (var canim in clipanimlist.Animations)
                 {
                     if (canim?.Animation == null) continue;
-                    UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime));
+                    UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime), ref root);
                 }
             }
 
+            var bones = Skeleton?.BonesSorted;
+            if (bones != null)
+                for (var i = 0; i < bones.Length; i++)
+                {
+                    var bone = bones[i];
+                    if (EnableRootMotion && bone.Tag == 0)
+                    {
+                        bone.AnimTranslation = root.Position + root.Rotation.Multiply(bone.AnimTranslation);
+                        bone.AnimRotation = root.Rotation * bone.AnimRotation;
+                    }
+                    bone.UpdateAnimTransform();
+                    bone.UpdateSkinTransform();
+
+                    //update model's transform from animated bone
+                    RenderableModel bmodel = null;
+                    ModelBoneLinks?.TryGetValue(bone.Tag, out bmodel);
+
+
+                    if (bmodel == null)
+                    { continue; }
+                    if (bmodel.IsSkinMesh) //don't transform model for skin mesh
+                    { continue; }
+
+                    bmodel.Transform = bone.AnimTransform;
+
+                }
         }
-        private void UpdateAnim(Animation anim, float t)
+        private void UpdateAnim(Animation anim, float t, ref (Vector3 Position, Quaternion Rotation) root)
         { 
             if (anim == null)
             { return; }
@@ -570,18 +596,12 @@ namespace CodeWalker.Rendering
                         bone.AnimScale = v.XYZ();
                         break;
                     case 5://root motion vector
-                        if (EnableRootMotion)
-                        {
-                            v = anim.EvaluateVector4(frame, i, interpolate);
-                            bone.AnimTranslation += v.XYZ();
-                        }
+                        v = anim.EvaluateVector4(frame, i, interpolate);
+                        root.Position += v.XYZ();
                         break;
                     case 6://quaternion... root rotation
-                        if (EnableRootMotion)
-                        {
-                            q = anim.EvaluateQuaternion(frame, i, interpolate);
-                            bone.AnimRotation = q * bone.AnimRotation;
-                        }
+                        q = anim.EvaluateQuaternion(frame, i, interpolate);
+                        root.Rotation *= q;
                         break;
                     case 7://vector3... (camera position?)
                         break;
@@ -639,26 +659,6 @@ namespace CodeWalker.Rendering
                         bone.AnimRotation = obone.AnimRotation;
                     }
                 }
-            }
-
-            for (int i = 0; i < bones.Length; i++)
-            {
-                var bone = bones[i];
-                bone.UpdateAnimTransform();
-                bone.UpdateSkinTransform();
-
-                //update model's transform from animated bone
-                RenderableModel bmodel = null;
-                ModelBoneLinks?.TryGetValue(bone.Tag, out bmodel);
-
-
-                if (bmodel == null)
-                { continue; }
-                if (bmodel.IsSkinMesh) //don't transform model for skin mesh
-                { continue; }
-
-                bmodel.Transform = bone.AnimTransform;
-
             }
 
 
