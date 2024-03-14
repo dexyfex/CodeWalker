@@ -6134,7 +6134,7 @@ namespace CodeWalker.Project
                 float dir = 0;
                 var action = CScenarioChainingEdge__eAction.Move;
                 var navMode = CScenarioChainingEdge__eNavMode.Direct;
-                var navSpeed = CScenarioChainingEdge__eNavSpeed.Unk_00_3279574318;
+                var navSpeed = CScenarioChainingEdge__eNavSpeed.kSpeed5Mph;
                 var stype = defaulttype;
                 var modelset = defaultmodelset;
                 var flags = defaultflags;

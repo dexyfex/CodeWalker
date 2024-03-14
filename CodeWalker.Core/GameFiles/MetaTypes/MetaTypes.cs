@@ -2171,22 +2171,22 @@ namespace CodeWalker.GameFiles
     public enum CScenarioChainingEdge__eNavSpeed //SCENARIO (Path) Edge nav speed
         : byte //Key:1112851290
     {
-        Unk_00_3279574318 = 0,
-        Unk_01_2212923970 = 1,
-        Unk_02_4022799658 = 2,
-        Unk_03_1425672334 = 3,
-        Unk_04_957720931 = 4,
-        Unk_05_3795195414 = 5,
-        Unk_06_2834622009 = 6,
-        Unk_07_1876554076 = 7,
-        Unk_08_698543797 = 8,
-        Unk_09_1544199634 = 9,
-        Unk_10_2725613303 = 10,
-        Unk_11_4033265820 = 11,
-        Unk_12_3054809929 = 12,
-        Unk_13_3911005380 = 13,
-        Unk_14_3717649022 = 14,
-        Unk_15_3356026130 = 15,
+        kSpeed5Mph = 0,
+        kSpeed10Mph = 1,
+        kSpeed15Mph = 2,
+        kSpeed25Mph = 3,
+        kSpeed35Mph = 4,
+        kSpeed45Mph = 5,
+        kSpeed55Mph = 6,
+        kSpeed65Mph = 7,
+        kSpeed80Mph = 8,
+        kSpeed100Mph = 9,
+        kSpeed125Mph = 10,
+        kSpeed150Mph = 11,
+        kSpeed200Mph = 12,
+        kSpeedWalk = 13,
+        kSpeedRun = 14,
+        kSpeedSprint = 15,
     }
 
     public enum rage__fwArchetypeDef__eAssetType //archetype assetType
