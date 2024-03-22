@@ -5319,6 +5319,7 @@ namespace CodeWalker.GameFiles
         public byte Unused14 { get; set; }
         public DirAmbience[] DirAmbiences { get; set; }
         public uint Unused15 { get; set; }
+
         public struct DirAmbience : IMetaXmlItem
         {
             public MetaHash Name { get; set; }
@@ -5405,12 +5406,11 @@ namespace CodeWalker.GameFiles
             NumRules = br.ReadByte();
             Unused11 = br.ReadByte();
 
-            var rules = new MetaHash[NumRules];
+            Rules = new MetaHash[NumRules];
             for (int i = 0; i < NumRules; i++)
             {
-                rules[i] = br.ReadUInt32();
+                Rules[i] = br.ReadUInt32();
             }
-            Rules = rules;
 
             NumDirAmbiences = br.ReadByte();
             Unused12 = br.ReadByte();
@@ -5425,9 +5425,6 @@ namespace CodeWalker.GameFiles
             if (NumDirAmbiences != 0)
             { }
 
-            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
-            if (bytesleft != 0)
-            { }
         }
         public override void Write(BinaryWriter bw)
         {
@@ -5506,13 +5503,14 @@ namespace CodeWalker.GameFiles
             bw.Write(Unused13);
             bw.Write(Unused14);
 
-            bw.Write(NumDirAmbiences);
             for (int i = 0; i < NumDirAmbiences; i++)
             {
                 DirAmbiences[i].Write(bw);
             }
             if (NumDirAmbiences != 0)
             { }
+
+            while ((bw.BaseStream.Position & 0xF) != 0) bw.Write((byte)0);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5574,6 +5572,7 @@ namespace CodeWalker.GameFiles
             Rules = XmlRel.ReadHashItemArray(node, "Rules");
             NumRules = (byte)(Rules?.Length ?? 0);
             DirAmbiences = XmlRel.ReadItemArray<DirAmbience>(node, "DirAmbiences");
+            NumDirAmbiences = (byte)(DirAmbiences?.Length ?? 0);
         }
         public override MetaHash[] GetMixerHashes()
         {
@@ -5582,10 +5581,13 @@ namespace CodeWalker.GameFiles
         public override MetaHash[] GetGameHashes()
         {
             var hashes = new List<MetaHash> { EnviromentRule };
-            if (Rules != null)
-                hashes.AddRange(Rules);
+            hashes.Add(EnviromentRule);
+
+            if (Rules != null) hashes.AddRange(Rules);
             if (DirAmbiences != null)
-                hashes.AddRange(DirAmbiences.Select(ep => ep.Name));
+            {
+                foreach (var ep in DirAmbiences) hashes.Add(ep.Name);
+            }
 
             return hashes.ToArray();
         }

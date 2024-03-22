@@ -289,6 +289,15 @@ namespace CodeWalker.GameFiles
             {
                 AwcXml.ValueTag(sb, indent, "MultiChannel", true.ToString());
             }
+            if (SingleChannelEncryptFlag)
+            {
+                AwcXml.ValueTag(sb, indent, "SingleChannelEncryptFlag", true.ToString());
+            }
+            if (MultiChannelEncryptFlag)
+            {
+                AwcXml.ValueTag(sb, indent, "MultiChannelEncryptFlag", true.ToString());
+            }
+
             if ((Streams?.Length ?? 0) > 0)
             {
                 AwcXml.OpenTag(sb, indent, "Streams");
@@ -309,6 +318,8 @@ namespace CodeWalker.GameFiles
             Version = (ushort)Xml.GetChildUIntAttribute(node, "Version");
             ChunkIndicesFlag = Xml.GetChildBoolAttribute(node, "ChunkIndices");
             MultiChannelFlag = Xml.GetChildBoolAttribute(node, "MultiChannel");
+            SingleChannelEncryptFlag = Xml.GetChildBoolAttribute(node, "SingleChannelEncryptFlag");
+            MultiChannelEncryptFlag = Xml.GetChildBoolAttribute(node, "MultiChannelEncryptFlag");
 
             var snode = node.SelectSingleNode("Streams");
             if (snode != null)
