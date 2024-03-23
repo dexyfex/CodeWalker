@@ -289,6 +289,7 @@ namespace CodeWalker.GameFiles
             {
                 AwcXml.ValueTag(sb, indent, "MultiChannel", true.ToString());
             }
+
             if ((Streams?.Length ?? 0) > 0)
             {
                 AwcXml.OpenTag(sb, indent, "Streams");

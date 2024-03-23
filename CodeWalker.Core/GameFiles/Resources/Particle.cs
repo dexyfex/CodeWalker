@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharpDX;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -71,24 +72,24 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.NamePointer = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.TextureDictionaryPointer = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.DrawableDictionaryPointer = reader.ReadUInt64();
-            this.ParticleRuleDictionaryPointer = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt64();
-            this.EmitterRuleDictionaryPointer = reader.ReadUInt64();
-            this.EffectRuleDictionaryPointer = reader.ReadUInt64();
-            this.Unknown_58h = reader.ReadUInt64();
+            NamePointer = reader.ReadUInt64();
+            Unknown_18h = reader.ReadUInt64();
+            TextureDictionaryPointer = reader.ReadUInt64();
+            Unknown_28h = reader.ReadUInt64();
+            DrawableDictionaryPointer = reader.ReadUInt64();
+            ParticleRuleDictionaryPointer = reader.ReadUInt64();
+            Unknown_40h = reader.ReadUInt64();
+            EmitterRuleDictionaryPointer = reader.ReadUInt64();
+            EffectRuleDictionaryPointer = reader.ReadUInt64();
+            Unknown_58h = reader.ReadUInt64();
 
             // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.TextureDictionary = reader.ReadBlockAt<TextureDictionary>(this.TextureDictionaryPointer);
-            this.DrawableDictionary = reader.ReadBlockAt<DrawablePtfxDictionary>(this.DrawableDictionaryPointer);
-            this.ParticleRuleDictionary = reader.ReadBlockAt<ParticleRuleDictionary>(this.ParticleRuleDictionaryPointer);
-            this.EffectRuleDictionary = reader.ReadBlockAt<ParticleEffectRuleDictionary>(this.EmitterRuleDictionaryPointer);
-            this.EmitterRuleDictionary = reader.ReadBlockAt<ParticleEmitterRuleDictionary>(this.EffectRuleDictionaryPointer);
+            Name = reader.ReadBlockAt<string_r>(NamePointer);
+            TextureDictionary = reader.ReadBlockAt<TextureDictionary>(TextureDictionaryPointer);
+            DrawableDictionary = reader.ReadBlockAt<DrawablePtfxDictionary>(DrawableDictionaryPointer);
+            ParticleRuleDictionary = reader.ReadBlockAt<ParticleRuleDictionary>(ParticleRuleDictionaryPointer);
+            EffectRuleDictionary = reader.ReadBlockAt<ParticleEffectRuleDictionary>(EmitterRuleDictionaryPointer);
+            EmitterRuleDictionary = reader.ReadBlockAt<ParticleEmitterRuleDictionary>(EffectRuleDictionaryPointer);
 
 
 
@@ -107,24 +108,24 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.TextureDictionaryPointer = (ulong)(this.TextureDictionary != null ? this.TextureDictionary.FilePosition : 0);
-            this.DrawableDictionaryPointer = (ulong)(this.DrawableDictionary != null ? this.DrawableDictionary.FilePosition : 0);
-            this.ParticleRuleDictionaryPointer = (ulong)(this.ParticleRuleDictionary != null ? this.ParticleRuleDictionary.FilePosition : 0);
-            this.EmitterRuleDictionaryPointer = (ulong)(this.EffectRuleDictionary != null ? this.EffectRuleDictionary.FilePosition : 0);
-            this.EffectRuleDictionaryPointer = (ulong)(this.EmitterRuleDictionary != null ? this.EmitterRuleDictionary.FilePosition : 0);
+            NamePointer = (ulong)(Name != null ? Name.FilePosition : 0);
+            TextureDictionaryPointer = (ulong)(TextureDictionary != null ? TextureDictionary.FilePosition : 0);
+            DrawableDictionaryPointer = (ulong)(DrawableDictionary != null ? DrawableDictionary.FilePosition : 0);
+            ParticleRuleDictionaryPointer = (ulong)(ParticleRuleDictionary != null ? ParticleRuleDictionary.FilePosition : 0);
+            EmitterRuleDictionaryPointer = (ulong)(EffectRuleDictionary != null ? EffectRuleDictionary.FilePosition : 0);
+            EffectRuleDictionaryPointer = (ulong)(EmitterRuleDictionary != null ? EmitterRuleDictionary.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.TextureDictionaryPointer);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.DrawableDictionaryPointer);
-            writer.Write(this.ParticleRuleDictionaryPointer);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.EmitterRuleDictionaryPointer);
-            writer.Write(this.EffectRuleDictionaryPointer);
-            writer.Write(this.Unknown_58h);
+            writer.Write(NamePointer);
+            writer.Write(Unknown_18h);
+            writer.Write(TextureDictionaryPointer);
+            writer.Write(Unknown_28h);
+            writer.Write(DrawableDictionaryPointer);
+            writer.Write(ParticleRuleDictionaryPointer);
+            writer.Write(Unknown_40h);
+            writer.Write(EmitterRuleDictionaryPointer);
+            writer.Write(EffectRuleDictionaryPointer);
+            writer.Write(Unknown_58h);
         }
         public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
@@ -383,13 +384,13 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.ParticleRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
-            this.ParticleRules = reader.ReadBlock<ResourcePointerList64<ParticleRule>>();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadUInt64();
+            ParticleRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            ParticleRules = reader.ReadBlock<ResourcePointerList64<ParticleRule>>();
 
             //if (Unknown_4h != 1)
             //{ }//no hit
@@ -404,13 +405,13 @@ namespace CodeWalker.GameFiles
         {
 
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.WriteBlock(this.ParticleRuleNameHashes);
-            writer.WriteBlock(this.ParticleRules);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_18h);
+            writer.WriteBlock(ParticleRuleNameHashes);
+            writer.WriteBlock(ParticleRules);
         }
         public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
@@ -482,13 +483,13 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.EffectRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
-            this.EffectRules = reader.ReadBlock<ResourcePointerList64<ParticleEffectRule>>();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadUInt64();
+            EffectRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            EffectRules = reader.ReadBlock<ResourcePointerList64<ParticleEffectRule>>();
 
             //if (Unknown_4h != 1)
             //{ }//no hit
@@ -502,13 +503,13 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.WriteBlock(this.EffectRuleNameHashes);
-            writer.WriteBlock(this.EffectRules);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_18h);
+            writer.WriteBlock(EffectRuleNameHashes);
+            writer.WriteBlock(EffectRules);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -581,13 +582,13 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.EmitterRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
-            this.EmitterRules = reader.ReadBlock<ResourcePointerList64<ParticleEmitterRule>>();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadUInt64();
+            EmitterRuleNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            EmitterRules = reader.ReadBlock<ResourcePointerList64<ParticleEmitterRule>>();
 
 
             //if (Unknown_4h != 1)
@@ -603,13 +604,13 @@ namespace CodeWalker.GameFiles
         {
 
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.WriteBlock(this.EmitterRuleNameHashes);
-            writer.WriteBlock(this.EmitterRules);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_18h);
+            writer.WriteBlock(EmitterRuleNameHashes);
+            writer.WriteBlock(EmitterRules);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -739,62 +740,62 @@ namespace CodeWalker.GameFiles
             #region read data
 
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.Spawner1 = reader.ReadBlock<ParticleEffectSpawner>();
-            this.Spawner2 = reader.ReadBlock<ParticleEffectSpawner>();
-            this.Unknown_100h = reader.ReadUInt32();
-            this.Unknown_104h = reader.ReadUInt32();
-            this.Unknown_108h = reader.ReadUInt32();
-            this.Unknown_10Ch = reader.ReadUInt32();
-            this.Unknown_110h = reader.ReadUInt32();
-            this.Unknown_114h = reader.ReadSingle();
-            this.Unknown_118h = reader.ReadUInt32();
-            this.Unknown_11Ch = reader.ReadUInt32();
-            this.NamePointer = reader.ReadUInt64();
-            this.BehaviourList1 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList2 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList3 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList4 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.BehaviourList5 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
-            this.Unknown_178h = reader.ReadUInt64();
-            this.Unknown_180h = reader.ReadUInt64();
-            this.UnknownList1 = reader.ReadBlock<ResourceSimpleList64<ParticleRuleUnknownItem>>();
-            this.Unknown_198h = reader.ReadUInt64();
-            this.Unknown_1A0h = reader.ReadUInt64();
-            this.Unknown_1A8h = reader.ReadUInt64();
-            this.VFT2 = reader.ReadUInt32();
-            this.Unknown_1B4h = reader.ReadUInt32();
-            this.FxcFilePointer = reader.ReadUInt64();
-            this.FxcTechniquePointer = reader.ReadUInt64();
-            this.Unknown_1C8h = reader.ReadUInt64();
-            this.Unknown_1D0h = reader.ReadUInt32();
-            this.Unknown_1D4h = reader.ReadUInt32();
-            this.VFT3 = reader.ReadUInt32();
-            this.Unknown_1DCh = reader.ReadUInt32();
-            this.Unknown_1E0h = reader.ReadUInt32();
-            this.Unknown_1E4h = reader.ReadUInt32();
-            this.Unknown_1E8h = reader.ReadUInt32();
-            this.Unknown_1ECh = reader.ReadUInt32();
-            this.ShaderVars = reader.ReadBlock<ResourcePointerList64<ParticleShaderVar>>();
-            this.Unknown_200h = reader.ReadUInt64();
-            this.FxcFileHash = reader.ReadUInt32();
-            this.Unknown_20Ch = reader.ReadUInt32();
-            this.Drawables = reader.ReadBlock<ResourceSimpleList64<ParticleDrawable>>();
-            this.Unknown_220h = reader.ReadUInt32();
-            this.Unknown_224h = reader.ReadUInt32();
-            this.Unknown_228h = reader.ReadUInt64();
-            this.Unknown_230h = reader.ReadUInt64();
-            this.Unknown_238h = reader.ReadUInt64();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt32();
+            Unknown_14h = reader.ReadUInt32();
+            Unknown_18h = reader.ReadUInt64();
+            Spawner1 = reader.ReadBlock<ParticleEffectSpawner>();
+            Spawner2 = reader.ReadBlock<ParticleEffectSpawner>();
+            Unknown_100h = reader.ReadUInt32();
+            Unknown_104h = reader.ReadUInt32();
+            Unknown_108h = reader.ReadUInt32();
+            Unknown_10Ch = reader.ReadUInt32();
+            Unknown_110h = reader.ReadUInt32();
+            Unknown_114h = reader.ReadSingle();
+            Unknown_118h = reader.ReadUInt32();
+            Unknown_11Ch = reader.ReadUInt32();
+            NamePointer = reader.ReadUInt64();
+            BehaviourList1 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            BehaviourList2 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            BehaviourList3 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            BehaviourList4 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            BehaviourList5 = reader.ReadBlock<ResourcePointerList64<ParticleBehaviour>>();
+            Unknown_178h = reader.ReadUInt64();
+            Unknown_180h = reader.ReadUInt64();
+            UnknownList1 = reader.ReadBlock<ResourceSimpleList64<ParticleRuleUnknownItem>>();
+            Unknown_198h = reader.ReadUInt64();
+            Unknown_1A0h = reader.ReadUInt64();
+            Unknown_1A8h = reader.ReadUInt64();
+            VFT2 = reader.ReadUInt32();
+            Unknown_1B4h = reader.ReadUInt32();
+            FxcFilePointer = reader.ReadUInt64();
+            FxcTechniquePointer = reader.ReadUInt64();
+            Unknown_1C8h = reader.ReadUInt64();
+            Unknown_1D0h = reader.ReadUInt32();
+            Unknown_1D4h = reader.ReadUInt32();
+            VFT3 = reader.ReadUInt32();
+            Unknown_1DCh = reader.ReadUInt32();
+            Unknown_1E0h = reader.ReadUInt32();
+            Unknown_1E4h = reader.ReadUInt32();
+            Unknown_1E8h = reader.ReadUInt32();
+            Unknown_1ECh = reader.ReadUInt32();
+            ShaderVars = reader.ReadBlock<ResourcePointerList64<ParticleShaderVar>>();
+            Unknown_200h = reader.ReadUInt64();
+            FxcFileHash = reader.ReadUInt32();
+            Unknown_20Ch = reader.ReadUInt32();
+            Drawables = reader.ReadBlock<ResourceSimpleList64<ParticleDrawable>>();
+            Unknown_220h = reader.ReadUInt32();
+            Unknown_224h = reader.ReadUInt32();
+            Unknown_228h = reader.ReadUInt64();
+            Unknown_230h = reader.ReadUInt64();
+            Unknown_238h = reader.ReadUInt64();
 
             // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.FxcFile = reader.ReadBlockAt<string_r>(this.FxcFilePointer);
-            this.FxcTechnique = reader.ReadBlockAt<string_r>(this.FxcTechniquePointer);
+            Name = reader.ReadBlockAt<string_r>(NamePointer);
+            FxcFile = reader.ReadBlockAt<string_r>(FxcFilePointer);
+            FxcTechnique = reader.ReadBlockAt<string_r>(FxcTechniquePointer);
 
             #endregion
 
@@ -1175,62 +1176,62 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.FxcFilePointer = (ulong)(this.FxcFile != null ? this.FxcFile.FilePosition : 0);
-            this.FxcTechniquePointer = (ulong)(this.FxcTechnique != null ? this.FxcTechnique.FilePosition : 0);
+            NamePointer = (ulong)(Name != null ? Name.FilePosition : 0);
+            FxcFilePointer = (ulong)(FxcFile != null ? FxcFile.FilePosition : 0);
+            FxcTechniquePointer = (ulong)(FxcTechnique != null ? FxcTechnique.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.WriteBlock(this.Spawner1);
-            writer.WriteBlock(this.Spawner2);
-            writer.Write(this.Unknown_100h);
-            writer.Write(this.Unknown_104h);
-            writer.Write(this.Unknown_108h);
-            writer.Write(this.Unknown_10Ch);
-            writer.Write(this.Unknown_110h);
-            writer.Write(this.Unknown_114h);
-            writer.Write(this.Unknown_118h);
-            writer.Write(this.Unknown_11Ch);
-            writer.Write(this.NamePointer);
-            writer.WriteBlock(this.BehaviourList1);
-            writer.WriteBlock(this.BehaviourList2);
-            writer.WriteBlock(this.BehaviourList3);
-            writer.WriteBlock(this.BehaviourList4);
-            writer.WriteBlock(this.BehaviourList5);
-            writer.Write(this.Unknown_178h);
-            writer.Write(this.Unknown_180h);
-            writer.WriteBlock(this.UnknownList1);
-            writer.Write(this.Unknown_198h);
-            writer.Write(this.Unknown_1A0h);
-            writer.Write(this.Unknown_1A8h);
-            writer.Write(this.VFT2);
-            writer.Write(this.Unknown_1B4h);
-            writer.Write(this.FxcFilePointer);
-            writer.Write(this.FxcTechniquePointer);
-            writer.Write(this.Unknown_1C8h);
-            writer.Write(this.Unknown_1D0h);
-            writer.Write(this.Unknown_1D4h);
-            writer.Write(this.VFT3);
-            writer.Write(this.Unknown_1DCh);
-            writer.Write(this.Unknown_1E0h);
-            writer.Write(this.Unknown_1E4h);
-            writer.Write(this.Unknown_1E8h);
-            writer.Write(this.Unknown_1ECh);
-            writer.WriteBlock(this.ShaderVars);
-            writer.Write(this.Unknown_200h);
-            writer.Write(this.FxcFileHash);
-            writer.Write(this.Unknown_20Ch);
-            writer.WriteBlock(this.Drawables);
-            writer.Write(this.Unknown_220h);
-            writer.Write(this.Unknown_224h);
-            writer.Write(this.Unknown_228h);
-            writer.Write(this.Unknown_230h);
-            writer.Write(this.Unknown_238h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_14h);
+            writer.Write(Unknown_18h);
+            writer.WriteBlock(Spawner1);
+            writer.WriteBlock(Spawner2);
+            writer.Write(Unknown_100h);
+            writer.Write(Unknown_104h);
+            writer.Write(Unknown_108h);
+            writer.Write(Unknown_10Ch);
+            writer.Write(Unknown_110h);
+            writer.Write(Unknown_114h);
+            writer.Write(Unknown_118h);
+            writer.Write(Unknown_11Ch);
+            writer.Write(NamePointer);
+            writer.WriteBlock(BehaviourList1);
+            writer.WriteBlock(BehaviourList2);
+            writer.WriteBlock(BehaviourList3);
+            writer.WriteBlock(BehaviourList4);
+            writer.WriteBlock(BehaviourList5);
+            writer.Write(Unknown_178h);
+            writer.Write(Unknown_180h);
+            writer.WriteBlock(UnknownList1);
+            writer.Write(Unknown_198h);
+            writer.Write(Unknown_1A0h);
+            writer.Write(Unknown_1A8h);
+            writer.Write(VFT2);
+            writer.Write(Unknown_1B4h);
+            writer.Write(FxcFilePointer);
+            writer.Write(FxcTechniquePointer);
+            writer.Write(Unknown_1C8h);
+            writer.Write(Unknown_1D0h);
+            writer.Write(Unknown_1D4h);
+            writer.Write(VFT3);
+            writer.Write(Unknown_1DCh);
+            writer.Write(Unknown_1E0h);
+            writer.Write(Unknown_1E4h);
+            writer.Write(Unknown_1E8h);
+            writer.Write(Unknown_1ECh);
+            writer.WriteBlock(ShaderVars);
+            writer.Write(Unknown_200h);
+            writer.Write(FxcFileHash);
+            writer.Write(Unknown_20Ch);
+            writer.WriteBlock(Drawables);
+            writer.Write(Unknown_220h);
+            writer.Write(Unknown_224h);
+            writer.Write(Unknown_228h);
+            writer.Write(Unknown_230h);
+            writer.Write(Unknown_238h);
         }
         public void WriteXml(StringBuilder sb, int indent, string ddsfolder)
         {
@@ -1482,14 +1483,14 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Name = reader.ReadStruct<PsoChar32>();
-            this.Unknown_20h = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadUInt64();
-            this.Unknown_38h = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
-            this.Unknown_50h = reader.ReadUInt32();
-            this.Unknown_54h = reader.ReadUInt32();
+            Name = reader.ReadStruct<PsoChar32>();
+            Unknown_20h = reader.ReadUInt64();
+            Unknown_28h = reader.ReadUInt64();
+            Unknown_30h = reader.ReadUInt64();
+            Unknown_38h = reader.ReadUInt64();
+            Unknown_40h = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            Unknown_50h = reader.ReadUInt32();
+            Unknown_54h = reader.ReadUInt32();
 
             //if (Name.ToString() != "Bias Link Set_00")
             //{ }//no hit
@@ -1533,14 +1534,14 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.WriteStruct(this.Name);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_38h);
-            writer.WriteBlock(this.Unknown_40h);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
+            writer.WriteStruct(Name);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_28h);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_38h);
+            writer.WriteBlock(Unknown_40h);
+            writer.Write(Unknown_50h);
+            writer.Write(Unknown_54h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -1609,32 +1610,32 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadSingle();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadSingle();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
-            this.Unknown_30h = reader.ReadUInt64();
-            this.Unknown_38h = reader.ReadSingle();
-            this.Unknown_3Ch = reader.ReadSingle();
-            this.Unknown_40h = reader.ReadUInt32();
-            this.Unknown_44h = reader.ReadSingle();
-            this.Unknown_48h = reader.ReadUInt32();
-            this.Unknown_4Ch = reader.ReadUInt32();
-            this.Unknown_50h = reader.ReadUInt64();
-            this.EffectRulePointer = reader.ReadUInt64();
-            this.EffectRuleNamePointer = reader.ReadUInt64();
-            this.Unknown_68h = reader.ReadSingle();
-            this.Unknown_6Ch = reader.ReadUInt32();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadSingle();
+            Unknown_1Ch = reader.ReadSingle();
+            Unknown_20h = reader.ReadUInt32();
+            Unknown_24h = reader.ReadSingle();
+            Unknown_28h = reader.ReadUInt32();
+            Unknown_2Ch = reader.ReadUInt32();
+            Unknown_30h = reader.ReadUInt64();
+            Unknown_38h = reader.ReadSingle();
+            Unknown_3Ch = reader.ReadSingle();
+            Unknown_40h = reader.ReadUInt32();
+            Unknown_44h = reader.ReadSingle();
+            Unknown_48h = reader.ReadUInt32();
+            Unknown_4Ch = reader.ReadUInt32();
+            Unknown_50h = reader.ReadUInt64();
+            EffectRulePointer = reader.ReadUInt64();
+            EffectRuleNamePointer = reader.ReadUInt64();
+            Unknown_68h = reader.ReadSingle();
+            Unknown_6Ch = reader.ReadUInt32();
 
             // read reference data
-            this.EffectRule = reader.ReadBlockAt<ParticleEffectRule>(this.EffectRulePointer);
-            this.EffectRuleName = reader.ReadBlockAt<string_r>(this.EffectRuleNamePointer);
+            EffectRule = reader.ReadBlockAt<ParticleEffectRule>(EffectRulePointer);
+            EffectRuleName = reader.ReadBlockAt<string_r>(EffectRuleNamePointer);
 
             //if (EffectRuleName?.Value != (EffectRule?.Name?.Value ?? ""))
             //{ }//no hit
@@ -1809,32 +1810,32 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.EffectRulePointer = (ulong)(this.EffectRule != null ? this.EffectRule.FilePosition : 0);
-            this.EffectRuleNamePointer = (ulong)(this.EffectRuleName != null ? this.EffectRuleName.FilePosition : 0);
+            EffectRulePointer = (ulong)(EffectRule != null ? EffectRule.FilePosition : 0);
+            EffectRuleNamePointer = (ulong)(EffectRuleName != null ? EffectRuleName.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_4Ch);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.EffectRulePointer);
-            writer.Write(this.EffectRuleNamePointer);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_6Ch);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_24h);
+            writer.Write(Unknown_28h);
+            writer.Write(Unknown_2Ch);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_3Ch);
+            writer.Write(Unknown_40h);
+            writer.Write(Unknown_44h);
+            writer.Write(Unknown_48h);
+            writer.Write(Unknown_4Ch);
+            writer.Write(Unknown_50h);
+            writer.Write(EffectRulePointer);
+            writer.Write(EffectRuleNamePointer);
+            writer.Write(Unknown_68h);
+            writer.Write(Unknown_6Ch);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -1913,19 +1914,19 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadSingle();
-            this.Unknown_4h = reader.ReadSingle();
-            this.Unknown_8h = reader.ReadSingle();
-            this.Unknown_Ch = reader.ReadSingle();
-            this.NamePointer = reader.ReadUInt64();
-            this.DrawablePointer = reader.ReadUInt64();
-            this.NameHash = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt64();
+            Unknown_0h = reader.ReadSingle();
+            Unknown_4h = reader.ReadSingle();
+            Unknown_8h = reader.ReadSingle();
+            Unknown_Ch = reader.ReadSingle();
+            NamePointer = reader.ReadUInt64();
+            DrawablePointer = reader.ReadUInt64();
+            NameHash = reader.ReadUInt32();
+            Unknown_24h = reader.ReadUInt32();
+            Unknown_28h = reader.ReadUInt64();
 
             // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.Drawable = reader.ReadBlockAt<DrawablePtfx>(this.DrawablePointer);
+            Name = reader.ReadBlockAt<string_r>(NamePointer);
+            Drawable = reader.ReadBlockAt<DrawablePtfx>(DrawablePointer);
 
             if (!string.IsNullOrEmpty(Name?.Value))
             {
@@ -1978,19 +1979,19 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.DrawablePointer = (ulong)(this.Drawable != null ? this.Drawable.FilePosition : 0);
+            NamePointer = (ulong)(Name != null ? Name.FilePosition : 0);
+            DrawablePointer = (ulong)(Drawable != null ? Drawable.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.Unknown_0h);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.NamePointer);
-            writer.Write(this.DrawablePointer);
-            writer.Write(this.NameHash);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
+            writer.Write(Unknown_0h);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_Ch);
+            writer.Write(NamePointer);
+            writer.Write(DrawablePointer);
+            writer.Write(NameHash);
+            writer.Write(Unknown_24h);
+            writer.Write(Unknown_28h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -2041,9 +2042,6 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class ParticleEffectRule : ResourceSystemBlock
     {
-        // pgBase
-        // pgBaseRefCounted
-        // ptxEffectRule
         public override long BlockLength => 0x3C0;
 
         // structure data
@@ -2062,32 +2060,41 @@ namespace CodeWalker.GameFiles
         public ushort EventEmittersCapacity { get; set; } = 32; //always 32
         public uint Unknown_44h; // 0x00000000
         public ulong UnknownData1Pointer { get; set; }
-        public uint Unknown_50h { get; set; } // 0, 0xffffffff
-        public uint Unknown_54h { get; set; } // eg. 0x01010200
-        public ulong Unknown_58h; // 0x0000000000000000
-        public ulong Unknown_60h; // 0x0000000000000000
-        public uint Unknown_68h; // 0x00000000
-        public uint Unknown_6Ch { get; set; } = 0x7f800001; // 0x7f800001
-        public float Unknown_70h { get; set; }
-        public float Unknown_74h { get; set; } // 0, 0.1f, 0.25f, 1.0f
-        public float PlaybackDelay { get; set; }
-        public float PlaybackDelayModifier { get; set; }
-        public float PlaybackSpeedScale { get; set; }
-        public float PlaybackSpeedScaleModifier { get; set; }
-        public uint Unknown_88h { get; set; } // eg. 0x01010105
-        public uint Unknown_8Ch { get; set; } // eg. 0x01010002
-        public float CullRadius { get; set; }
-        public float CullDistance { get; set; }
-        public float Unknown_98h { get; set; }
-        public uint Unknown_9Ch { get; set; } = 0x7f800001;// 0x7f800001
-        public float Unknown_A0h { get; set; }
-        public float Unknown_A4h { get; set; }
-        public float Unknown_A8h { get; set; }
-        public float Unknown_ACh { get; set; }
-        public float Unknown_B0h { get; set; }
-        public float Unknown_B4h { get; set; }
-        public float Unknown_B8h { get; set; }
-        public uint Unknown_BCh { get; set; } // eg. 0x00010103
+        public int NumLoops { get; set; } // 0, 0xffffffff
+        public byte SortEventsByDistance { get; set; }
+        public byte DrawListID { get; set; }
+        public byte IsShortLived { get; set; }
+        public byte HasNoShadows { get; set; }
+        public ulong padding00;
+        public Vector3 VRandomOffsetPos { get; set; }
+        public uint padding01 { get; set; } = 0x7f800001;
+        public float PreUpdateTime { get; set; }
+        public float PreUpdateTimeInterval { get; set; } // 0, 0.1f, 0.25f, 1.0f
+        public float DurationMin { get; set; }
+        public float DurationMax { get; set; }
+        public float PlaybackRateScalarMin { get; set; }
+        public float PlaybackRateScalarMax { get; set; }
+        public byte ViewportCullingMode { get; set; }
+        public byte RenderWhenViewportCulled { get; set; }
+        public byte UpdateWhenViewportCulled { get; set; }
+        public byte EmitWhenViewportCulled { get; set; }
+        public byte DistanceCullingMode { get; set; }
+        public byte RenderWhenDistanceCulled { get; set; }
+        public byte UpdateWhenDistanceCulled { get; set; }
+        public byte EmitWhenDistanceCulled { get; set; }
+        public Vector3 ViewportCullingSphereOffset { get; set; }
+        public uint padding02 { get; set; } = 0x7f800001;
+        public float ViewportCullingSphereRadius { get; set; }
+        public float DistanceCullingFadeDist { get; set; }
+        public float DistanceCullingCullDist { get; set; }
+        public float LodEvoDistanceMin { get; set; }
+        public float LodEvoDistanceMax { get; set; }
+        public float CollisionRange { get; set; }
+        public float CollisionProbeDistance { get; set; }
+        public byte CollisionType { get; set; }
+        public byte ShareEntityCollisions { get; set; }
+        public byte OnlyUseBVHCollisions { get; set; }
+        public byte GameFlags { get; set; }
         public ParticleKeyframeProp KeyframeProp0 { get; set; }
         public ParticleKeyframeProp KeyframeProp1 { get; set; }
         public ParticleKeyframeProp KeyframeProp2 { get; set; }
@@ -2097,9 +2104,12 @@ namespace CodeWalker.GameFiles
         public ushort KeyframePropsCount { get; set; } = 5; //always 5
         public ushort KeyframePropsCapacity { get; set; } = 16; //always 16
         public uint Unknown_39Ch; // 0x00000000
-        public uint Unknown_3A0h { get; set; } // eg. 0x00090100
+        public byte ColourTintMaxEnable { get; set; }
+        public byte UseDataVolume { get; set; }
+        public byte DataVolumeType { get; set; }
+        public byte padding03 { get; set; }
         public uint Unknown_3A4h; // 0x00000000
-        public float Unknown_3A8h { get; set; } = 100.0f;
+        public float ZoomLevel { get; set; }
         public uint Unknown_3ACh { get; set; } // 0x00000000
         public ulong Unknown_3B0h { get; set; } // 0x0000000000000000
         public ulong Unknown_3B8h { get; set; } // 0x0000000000000000
@@ -2117,68 +2127,80 @@ namespace CodeWalker.GameFiles
             #region read
 
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.NamePointer = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.VFT2 = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadUInt32();
-            this.EventEmittersPointer = reader.ReadUInt64();
-            this.EventEmittersCount = reader.ReadUInt16();
-            this.EventEmittersCapacity = reader.ReadUInt16();
-            this.Unknown_44h = reader.ReadUInt32();
-            this.UnknownData1Pointer = reader.ReadUInt64();
-            this.Unknown_50h = reader.ReadUInt32();
-            this.Unknown_54h = reader.ReadUInt32();
-            this.Unknown_58h = reader.ReadUInt64();
-            this.Unknown_60h = reader.ReadUInt64();
-            this.Unknown_68h = reader.ReadUInt32();
-            this.Unknown_6Ch = reader.ReadUInt32();
-            this.Unknown_70h = reader.ReadSingle();
-            this.Unknown_74h = reader.ReadSingle();
-            this.PlaybackDelay = reader.ReadSingle();
-            this.PlaybackDelayModifier = reader.ReadSingle();
-            this.PlaybackSpeedScale = reader.ReadSingle();
-            this.PlaybackSpeedScaleModifier = reader.ReadSingle();
-            this.Unknown_88h = reader.ReadUInt32();
-            this.Unknown_8Ch = reader.ReadUInt32();
-            this.CullRadius = reader.ReadSingle();
-            this.CullDistance = reader.ReadSingle();
-            this.Unknown_98h = reader.ReadSingle();
-            this.Unknown_9Ch = reader.ReadUInt32();
-            this.Unknown_A0h = reader.ReadSingle();
-            this.Unknown_A4h = reader.ReadSingle();
-            this.Unknown_A8h = reader.ReadSingle();
-            this.Unknown_ACh = reader.ReadSingle();
-            this.Unknown_B0h = reader.ReadSingle();
-            this.Unknown_B4h = reader.ReadSingle();
-            this.Unknown_B8h = reader.ReadSingle();
-            this.Unknown_BCh = reader.ReadUInt32();
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframePropsPointer = reader.ReadUInt64();
-            this.KeyframePropsCount = reader.ReadUInt16();
-            this.KeyframePropsCapacity = reader.ReadUInt16();
-            this.Unknown_39Ch = reader.ReadUInt32();
-            this.Unknown_3A0h = reader.ReadUInt32();
-            this.Unknown_3A4h = reader.ReadUInt32();
-            this.Unknown_3A8h = reader.ReadSingle();
-            this.Unknown_3ACh = reader.ReadUInt32();
-            this.Unknown_3B0h = reader.ReadUInt64();
-            this.Unknown_3B8h = reader.ReadUInt64();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadSingle();
+            Unknown_1Ch = reader.ReadUInt32();
+            NamePointer = reader.ReadUInt64();
+            Unknown_28h = reader.ReadUInt64();
+            VFT2 = reader.ReadUInt32();
+            Unknown_34h = reader.ReadUInt32();
+            EventEmittersPointer = reader.ReadUInt64();
+            EventEmittersCount = reader.ReadUInt16();
+            EventEmittersCapacity = reader.ReadUInt16();
+            Unknown_44h = reader.ReadUInt32();
+            UnknownData1Pointer = reader.ReadUInt64();
+            NumLoops = reader.ReadInt32();
+            SortEventsByDistance = reader.ReadByte();
+            DrawListID = reader.ReadByte();
+            IsShortLived = reader.ReadByte();
+            HasNoShadows = reader.ReadByte();
+            padding00 = reader.ReadUInt64();
+            VRandomOffsetPos = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            padding01 = reader.ReadUInt32();
+            PreUpdateTime = reader.ReadSingle();
+            PreUpdateTimeInterval = reader.ReadSingle();
+            DurationMin = reader.ReadSingle();
+            DurationMax = reader.ReadSingle();
+            PlaybackRateScalarMin = reader.ReadSingle();
+            PlaybackRateScalarMax = reader.ReadSingle();
+            ViewportCullingMode = reader.ReadByte();
+            RenderWhenViewportCulled = reader.ReadByte();
+            UpdateWhenViewportCulled = reader.ReadByte();
+            EmitWhenViewportCulled = reader.ReadByte();
+            DistanceCullingMode = reader.ReadByte();
+            RenderWhenDistanceCulled = reader.ReadByte();
+            UpdateWhenDistanceCulled = reader.ReadByte();
+            EmitWhenDistanceCulled = reader.ReadByte();
+            ViewportCullingSphereOffset = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            padding02 = reader.ReadUInt32();
+            ViewportCullingSphereRadius = reader.ReadSingle();
+            DistanceCullingFadeDist = reader.ReadSingle();
+            DistanceCullingCullDist = reader.ReadSingle();
+            LodEvoDistanceMin = reader.ReadSingle();
+            LodEvoDistanceMax = reader.ReadSingle();
+            CollisionRange = reader.ReadSingle();
+            CollisionProbeDistance = reader.ReadSingle();
+            CollisionType = reader.ReadByte();
+            ShareEntityCollisions = reader.ReadByte();
+            OnlyUseBVHCollisions = reader.ReadByte();
+            GameFlags = reader.ReadByte();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframePropsPointer = reader.ReadUInt64();
+            KeyframePropsCount = reader.ReadUInt16();
+            KeyframePropsCapacity = reader.ReadUInt16();
+            Unknown_39Ch = reader.ReadUInt32();
+            ColourTintMaxEnable = reader.ReadByte();
+            UseDataVolume = reader.ReadByte();
+            DataVolumeType = reader.ReadByte();
+            padding03 = reader.ReadByte();
+            Unknown_3A4h = reader.ReadUInt32();
+            ZoomLevel = reader.ReadSingle();
+            Unknown_3ACh = reader.ReadUInt32();
+            Unknown_3B0h = reader.ReadUInt64();
+            Unknown_3B8h = reader.ReadUInt64();
 
             // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.EventEmitters = reader.ReadBlockAt<ResourcePointerArray64<ParticleEventEmitter>>(this.EventEmittersPointer, this.EventEmittersCapacity);
-            this.UnknownData = reader.ReadBlockAt<ParticleUnknown1>(this.UnknownData1Pointer);
-            this.KeyframeProps = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframePropsPointer, this.KeyframePropsCapacity);
+            Name = reader.ReadBlockAt<string_r>(NamePointer);
+            EventEmitters = reader.ReadBlockAt<ResourcePointerArray64<ParticleEventEmitter>>(EventEmittersPointer, EventEmittersCapacity);
+            UnknownData = reader.ReadBlockAt<ParticleUnknown1>(UnknownData1Pointer);
+            KeyframeProps = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(KeyframePropsPointer, KeyframePropsCapacity);
 
             if (!string.IsNullOrEmpty(Name?.Value))
             {
@@ -2501,94 +2523,120 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.EventEmittersPointer = (ulong)(this.EventEmitters != null ? this.EventEmitters.FilePosition : 0);
-            this.UnknownData1Pointer = (ulong)(this.UnknownData != null ? this.UnknownData.FilePosition : 0);
-            this.KeyframePropsPointer = (ulong)(this.KeyframeProps != null ? this.KeyframeProps.FilePosition : 0);
+            NamePointer = (ulong)(Name != null ? Name.FilePosition : 0);
+            EventEmittersPointer = (ulong)(EventEmitters != null ? EventEmitters.FilePosition : 0);
+            UnknownData1Pointer = (ulong)(UnknownData != null ? UnknownData.FilePosition : 0);
+            KeyframePropsPointer = (ulong)(KeyframeProps != null ? KeyframeProps.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.VFT2);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.EventEmittersPointer);
-            writer.Write(this.EventEmittersCount);
-            writer.Write(this.EventEmittersCapacity);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.UnknownData1Pointer);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_6Ch);
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Unknown_74h);
-            writer.Write(this.PlaybackDelay);
-            writer.Write(this.PlaybackDelayModifier);
-            writer.Write(this.PlaybackSpeedScale);
-            writer.Write(this.PlaybackSpeedScaleModifier);
-            writer.Write(this.Unknown_88h);
-            writer.Write(this.Unknown_8Ch);
-            writer.Write(this.CullRadius);
-            writer.Write(this.CullDistance);
-            writer.Write(this.Unknown_98h);
-            writer.Write(this.Unknown_9Ch);
-            writer.Write(this.Unknown_A0h);
-            writer.Write(this.Unknown_A4h);
-            writer.Write(this.Unknown_A8h);
-            writer.Write(this.Unknown_ACh);
-            writer.Write(this.Unknown_B0h);
-            writer.Write(this.Unknown_B4h);
-            writer.Write(this.Unknown_B8h);
-            writer.Write(this.Unknown_BCh);
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.WriteBlock(this.KeyframeProp4);
-            writer.Write(this.KeyframePropsPointer);
-            writer.Write(this.KeyframePropsCount);
-            writer.Write(this.KeyframePropsCapacity);
-            writer.Write(this.Unknown_39Ch);
-            writer.Write(this.Unknown_3A0h);
-            writer.Write(this.Unknown_3A4h);
-            writer.Write(this.Unknown_3A8h);
-            writer.Write(this.Unknown_3ACh);
-            writer.Write(this.Unknown_3B0h);
-            writer.Write(this.Unknown_3B8h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.Write(NamePointer);
+            writer.Write(Unknown_28h);
+            writer.Write(VFT2);
+            writer.Write(Unknown_34h);
+            writer.Write(EventEmittersPointer);
+            writer.Write(EventEmittersCount);
+            writer.Write(EventEmittersCapacity);
+            writer.Write(Unknown_44h);
+            writer.Write(UnknownData1Pointer);
+            writer.Write(NumLoops);
+            writer.Write(SortEventsByDistance);
+            writer.Write(DrawListID);
+            writer.Write(IsShortLived);
+            writer.Write(HasNoShadows);
+            writer.Write(padding00);
+            writer.Write(VRandomOffsetPos);
+            writer.Write(padding01);
+            writer.Write(PreUpdateTime);
+            writer.Write(PreUpdateTimeInterval);
+            writer.Write(DurationMin);
+            writer.Write(DurationMax);
+            writer.Write(PlaybackRateScalarMin);
+            writer.Write(PlaybackRateScalarMax);
+            writer.Write(ViewportCullingMode);
+            writer.Write(RenderWhenViewportCulled);
+            writer.Write(UpdateWhenViewportCulled);
+            writer.Write(EmitWhenViewportCulled);
+            writer.Write(DistanceCullingMode);
+            writer.Write(RenderWhenDistanceCulled);
+            writer.Write(UpdateWhenDistanceCulled);
+            writer.Write(EmitWhenDistanceCulled);
+            writer.Write(ViewportCullingSphereOffset);
+            writer.Write(padding02);
+            writer.Write(ViewportCullingSphereRadius);
+            writer.Write(DistanceCullingFadeDist);
+            writer.Write(DistanceCullingCullDist);
+            writer.Write(LodEvoDistanceMin);
+            writer.Write(LodEvoDistanceMax);
+            writer.Write(CollisionRange);
+            writer.Write(CollisionProbeDistance);
+            writer.Write(CollisionType);
+            writer.Write(ShareEntityCollisions);
+            writer.Write(OnlyUseBVHCollisions);
+            writer.Write(GameFlags);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.WriteBlock(KeyframeProp3);
+            writer.WriteBlock(KeyframeProp4);
+            writer.Write(KeyframePropsPointer);
+            writer.Write(KeyframePropsCount);
+            writer.Write(KeyframePropsCapacity);
+            writer.Write(Unknown_39Ch);
+            writer.Write(ColourTintMaxEnable);
+            writer.Write(UseDataVolume);
+            writer.Write(DataVolumeType);
+            writer.Write(padding03);
+            writer.Write(Unknown_3A4h);
+            writer.Write(ZoomLevel);
+            writer.Write(Unknown_3ACh);
+            writer.Write(Unknown_3B0h);
+            writer.Write(Unknown_3B8h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YptXml.StringTag(sb, indent, "Name", YptXml.XmlEscape(Name?.Value ?? ""));
-            YptXml.ValueTag(sb, indent, "Unknown50", YptXml.UintString(Unknown_50h));
-            YptXml.ValueTag(sb, indent, "Unknown54", YptXml.UintString(Unknown_54h));
-            YptXml.ValueTag(sb, indent, "Unknown70", FloatUtil.ToString(Unknown_70h));
-            YptXml.ValueTag(sb, indent, "Unknown74", FloatUtil.ToString(Unknown_74h));
-            YptXml.ValueTag(sb, indent, "PlaybackDelay", FloatUtil.ToString(PlaybackDelay));
-            YptXml.ValueTag(sb, indent, "PlaybackDelayModifier", FloatUtil.ToString(PlaybackDelayModifier));
-            YptXml.ValueTag(sb, indent, "PlaybackSpeedScale", FloatUtil.ToString(PlaybackSpeedScale));
-            YptXml.ValueTag(sb, indent, "PlaybackSpeedScaleModifier", FloatUtil.ToString(PlaybackSpeedScaleModifier));
-            YptXml.ValueTag(sb, indent, "Unknown88", YptXml.UintString(Unknown_88h));
-            YptXml.ValueTag(sb, indent, "Unknown8C", YptXml.UintString(Unknown_8Ch));
-            YptXml.ValueTag(sb, indent, "CullRadius", FloatUtil.ToString(CullRadius));
-            YptXml.ValueTag(sb, indent, "CullDistance", FloatUtil.ToString(CullDistance));
-            YptXml.ValueTag(sb, indent, "Unknown98", FloatUtil.ToString(Unknown_98h));
-            YptXml.ValueTag(sb, indent, "UnknownA0", FloatUtil.ToString(Unknown_A0h));
-            YptXml.ValueTag(sb, indent, "UnknownA4", FloatUtil.ToString(Unknown_A4h));
-            YptXml.ValueTag(sb, indent, "UnknownA8", FloatUtil.ToString(Unknown_A8h));
-            YptXml.ValueTag(sb, indent, "UnknownAC", FloatUtil.ToString(Unknown_ACh));
-            YptXml.ValueTag(sb, indent, "UnknownB0", FloatUtil.ToString(Unknown_B0h));
-            YptXml.ValueTag(sb, indent, "UnknownB4", FloatUtil.ToString(Unknown_B4h));
-            YptXml.ValueTag(sb, indent, "UnknownB8", FloatUtil.ToString(Unknown_B8h));
-            YptXml.ValueTag(sb, indent, "UnknownBC", YptXml.UintString(Unknown_BCh));
-            YptXml.ValueTag(sb, indent, "Unknown3A0", YptXml.UintString(Unknown_3A0h));
+            YptXml.ValueTag(sb, indent, "NumLoops", YptXml.UintString((uint)NumLoops));
+            YptXml.ValueTag(sb, indent, "SortEventsByDistance", FloatUtil.ToString(SortEventsByDistance));
+            YptXml.ValueTag(sb, indent, "DrawListID", FloatUtil.ToString(DrawListID));
+            YptXml.ValueTag(sb, indent, "IsShortLived", FloatUtil.ToString(IsShortLived));
+            YptXml.ValueTag(sb, indent, "HasNoShadows", FloatUtil.ToString(HasNoShadows));
+            RelXml.SelfClosingTag(sb, indent, "VRandomOffsetPos " + FloatUtil.GetVector3XmlString(VRandomOffsetPos));
+            YptXml.ValueTag(sb, indent, "PreUpdateTime", FloatUtil.ToString(PreUpdateTime));
+            YptXml.ValueTag(sb, indent, "PreUpdateTimeInterval", FloatUtil.ToString(PreUpdateTimeInterval));
+            YptXml.ValueTag(sb, indent, "DurationMin", FloatUtil.ToString(DurationMin));
+            YptXml.ValueTag(sb, indent, "DurationMax", FloatUtil.ToString(DurationMax));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMin", FloatUtil.ToString(PlaybackRateScalarMin));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMax", FloatUtil.ToString(PlaybackRateScalarMax));
+            YptXml.ValueTag(sb, indent, "ViewportCullingMode", FloatUtil.ToString(ViewportCullingMode));
+            YptXml.ValueTag(sb, indent, "RenderWhenViewportCulled", FloatUtil.ToString(RenderWhenViewportCulled));
+            YptXml.ValueTag(sb, indent, "UpdateWhenViewportCulled", FloatUtil.ToString(UpdateWhenViewportCulled));
+            YptXml.ValueTag(sb, indent, "EmitWhenViewportCulled", FloatUtil.ToString(EmitWhenViewportCulled));
+            YptXml.ValueTag(sb, indent, "DistanceCullingMode", FloatUtil.ToString(DistanceCullingMode));
+            YptXml.ValueTag(sb, indent, "RenderWhenDistanceCulled", FloatUtil.ToString(RenderWhenDistanceCulled));
+            YptXml.ValueTag(sb, indent, "UpdateWhenDistanceCulled", FloatUtil.ToString(UpdateWhenDistanceCulled));
+            YptXml.ValueTag(sb, indent, "EmitWhenDistanceCulled", FloatUtil.ToString(EmitWhenDistanceCulled));
+            RelXml.SelfClosingTag(sb, indent, "ViewportCullingSphereOffset " + FloatUtil.GetVector3XmlString(ViewportCullingSphereOffset));
+            YptXml.ValueTag(sb, indent, "ViewportCullingSphereRadius", FloatUtil.ToString(ViewportCullingSphereRadius));
+            YptXml.ValueTag(sb, indent, "DistanceCullingFadeDist", FloatUtil.ToString(DistanceCullingFadeDist));
+            YptXml.ValueTag(sb, indent, "DistanceCullingCullDist", FloatUtil.ToString(DistanceCullingCullDist));
+            YptXml.ValueTag(sb, indent, "LodEvoDistanceMin", FloatUtil.ToString(LodEvoDistanceMin));
+            YptXml.ValueTag(sb, indent, "LodEvoDistanceMax", FloatUtil.ToString(LodEvoDistanceMax));
+            YptXml.ValueTag(sb, indent, "CollisionRange", FloatUtil.ToString(CollisionRange));
+            YptXml.ValueTag(sb, indent, "CollisionProbeDistance", FloatUtil.ToString(CollisionProbeDistance));
+            YptXml.ValueTag(sb, indent, "CollisionType", FloatUtil.ToString(CollisionType));
+            YptXml.ValueTag(sb, indent, "ShareEntityCollisions", FloatUtil.ToString(ShareEntityCollisions));
+            YptXml.ValueTag(sb, indent, "OnlyUseBVHCollisions", FloatUtil.ToString(OnlyUseBVHCollisions));
+            YptXml.ValueTag(sb, indent, "GameFlags", FloatUtil.ToString(GameFlags));
+            YptXml.ValueTag(sb, indent, "ColourTintMaxEnable", FloatUtil.ToString(ColourTintMaxEnable));
+            YptXml.ValueTag(sb, indent, "UseDataVolume", FloatUtil.ToString(UseDataVolume));
+            YptXml.ValueTag(sb, indent, "DataVolumeType", FloatUtil.ToString(DataVolumeType));
+            YptXml.ValueTag(sb, indent, "ZoomLevel", FloatUtil.ToString(ZoomLevel));
             if (EventEmitters?.data_items != null)
             {
                 var ee = new ParticleEventEmitter[EventEmittersCount];//trim the unused items from this array
@@ -2612,28 +2660,42 @@ namespace CodeWalker.GameFiles
         {
             Name = (string_r)Xml.GetChildInnerText(node, "Name"); if (Name.Value == null) Name = null;
             NameHash = JenkHash.GenHash(Name?.Value ?? "");
-            Unknown_50h = Xml.GetChildUIntAttribute(node, "Unknown50");
-            Unknown_54h = Xml.GetChildUIntAttribute(node, "Unknown54");
-            Unknown_70h = Xml.GetChildFloatAttribute(node, "Unknown70");
-            Unknown_74h = Xml.GetChildFloatAttribute(node, "Unknown74");
-            PlaybackDelay = Xml.GetChildFloatAttribute(node, "PlaybackDelay");
-            PlaybackDelayModifier = Xml.GetChildFloatAttribute(node, "PlaybackDelayModifier");
-            PlaybackSpeedScale = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScale");
-            PlaybackSpeedScaleModifier = Xml.GetChildFloatAttribute(node, "PlaybackSpeedScaleModifier");
-            Unknown_88h = Xml.GetChildUIntAttribute(node, "Unknown88");
-            Unknown_8Ch = Xml.GetChildUIntAttribute(node, "Unknown8C");
-            CullRadius = Xml.GetChildFloatAttribute(node, "CullRadius");
-            CullDistance = Xml.GetChildFloatAttribute(node, "CullDistance");
-            Unknown_98h = Xml.GetChildFloatAttribute(node, "Unknown98");
-            Unknown_A0h = Xml.GetChildFloatAttribute(node, "UnknownA0");
-            Unknown_A4h = Xml.GetChildFloatAttribute(node, "UnknownA4");
-            Unknown_A8h = Xml.GetChildFloatAttribute(node, "UnknownA8");
-            Unknown_ACh = Xml.GetChildFloatAttribute(node, "UnknownAC");
-            Unknown_B0h = Xml.GetChildFloatAttribute(node, "UnknownB0");
-            Unknown_B4h = Xml.GetChildFloatAttribute(node, "UnknownB4");
-            Unknown_B8h = Xml.GetChildFloatAttribute(node, "UnknownB8");
-            Unknown_BCh = Xml.GetChildUIntAttribute(node, "UnknownBC");
-            Unknown_3A0h = Xml.GetChildUIntAttribute(node, "Unknown3A0");
+            NumLoops = (int)Xml.GetChildUIntAttribute(node, "NumLoops");
+            SortEventsByDistance = (byte)Xml.GetChildFloatAttribute(node, "SortEventsByDistance");
+            DrawListID = (byte)Xml.GetChildFloatAttribute(node, "DrawListID");
+            IsShortLived = (byte)Xml.GetChildFloatAttribute(node, "IsShortLived");
+            HasNoShadows = (byte)Xml.GetChildFloatAttribute(node, "HasNoShadows");
+            VRandomOffsetPos = Xml.GetChildVector3Attributes(node, "VRandomOffsetPos");
+            PreUpdateTime = Xml.GetChildFloatAttribute(node, "PreUpdateTime");
+            PreUpdateTimeInterval = Xml.GetChildFloatAttribute(node, "PreUpdateTimeInterval");
+            DurationMin = Xml.GetChildFloatAttribute(node, "DurationMin");
+            DurationMax = Xml.GetChildFloatAttribute(node, "DurationMax");
+            PlaybackRateScalarMin = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMin");
+            PlaybackRateScalarMax = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMax");
+            ViewportCullingMode = (byte)Xml.GetChildFloatAttribute(node, "ViewportCullingMode");
+            RenderWhenViewportCulled = (byte)Xml.GetChildFloatAttribute(node, "RenderWhenViewportCulled");
+            UpdateWhenViewportCulled = (byte)Xml.GetChildFloatAttribute(node, "UpdateWhenViewportCulled");
+            EmitWhenViewportCulled = (byte)Xml.GetChildFloatAttribute(node, "EmitWhenViewportCulled");
+            DistanceCullingMode = (byte)Xml.GetChildFloatAttribute(node, "DistanceCullingMode");
+            RenderWhenDistanceCulled = (byte)Xml.GetChildFloatAttribute(node, "RenderWhenDistanceCulled");
+            UpdateWhenDistanceCulled = (byte)Xml.GetChildFloatAttribute(node, "UpdateWhenDistanceCulled");
+            EmitWhenDistanceCulled = (byte)Xml.GetChildFloatAttribute(node, "EmitWhenDistanceCulled");
+            ViewportCullingSphereOffset = Xml.GetChildVector3Attributes(node, "ViewportCullingSphereOffset");
+            ViewportCullingSphereRadius = Xml.GetChildFloatAttribute(node, "ViewportCullingSphereRadius");
+            DistanceCullingFadeDist = Xml.GetChildFloatAttribute(node, "DistanceCullingFadeDist");
+            DistanceCullingCullDist = Xml.GetChildFloatAttribute(node, "DistanceCullingCullDist");
+            LodEvoDistanceMin = Xml.GetChildFloatAttribute(node, "LodEvoDistanceMin");
+            LodEvoDistanceMax = Xml.GetChildFloatAttribute(node, "LodEvoDistanceMax");
+            CollisionRange = Xml.GetChildFloatAttribute(node, "CollisionRange");
+            CollisionProbeDistance = Xml.GetChildFloatAttribute(node, "CollisionProbeDistance");
+            CollisionType = (byte)Xml.GetChildFloatAttribute(node, "CollisionType");
+            ShareEntityCollisions = (byte)Xml.GetChildFloatAttribute(node, "ShareEntityCollisions");
+            OnlyUseBVHCollisions = (byte)Xml.GetChildFloatAttribute(node, "OnlyUseBVHCollisions");
+            GameFlags = (byte)Xml.GetChildFloatAttribute(node, "GameFlags");
+            ColourTintMaxEnable = (byte)Xml.GetChildFloatAttribute(node, "ColourTintMaxEnable");
+            UseDataVolume = (byte)Xml.GetChildFloatAttribute(node, "UseDataVolume");
+            DataVolumeType = (byte)Xml.GetChildFloatAttribute(node, "DataVolumeType");
+            ZoomLevel = Xml.GetChildFloatAttribute(node, "ZoomLevel");
 
             var emlist = XmlMeta.ReadItemArray<ParticleEventEmitter>(node, "EventEmitters")?.ToList() ?? new List<ParticleEventEmitter>();
             EventEmittersCount = (ushort)emlist.Count;
@@ -2723,12 +2785,12 @@ namespace CodeWalker.GameFiles
         public ulong ParticleRuleNamePointer { get; set; }
         public ulong EmitterRulePointer { get; set; }
         public ulong ParticleRulePointer { get; set; }
-        public float MoveSpeedScale { get; set; }
-        public float MoveSpeedScaleModifier { get; set; }
-        public float ParticleScale { get; set; }
-        public float ParticleScaleModifier { get; set; }
-        public uint Colour1 { get; set; } // eg. 0xfffafafa - colour?
-        public uint Colour2 { get; set; } // eg. 0x5affffff - colour?
+        public float PlaybackRateScalarMin { get; set; }
+        public float PlaybackRateScalarMax { get; set; }
+        public float ZoomScalarMin { get; set; }
+        public float ZoomScalarMax { get; set; }
+        public uint ColourTintMin { get; set; }
+        public uint ColourTintMax { get; set; }
         public ulong Unknown_68h; // 0x0000000000000000
 
         // reference data
@@ -2742,33 +2804,33 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Index = reader.ReadUInt32();
-            this.Unknown_Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadSingle();
-            this.Unknown_14h = reader.ReadSingle();
-            this.UnknownDataPointer = reader.ReadUInt64();
-            this.Unknown_20h = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.EmitterRuleNamePointer = reader.ReadUInt64();
-            this.ParticleRuleNamePointer = reader.ReadUInt64();
-            this.EmitterRulePointer = reader.ReadUInt64();
-            this.ParticleRulePointer = reader.ReadUInt64();
-            this.MoveSpeedScale = reader.ReadSingle();
-            this.MoveSpeedScaleModifier = reader.ReadSingle();
-            this.ParticleScale = reader.ReadSingle();
-            this.ParticleScaleModifier = reader.ReadSingle();
-            this.Colour1 = reader.ReadUInt32();
-            this.Colour2 = reader.ReadUInt32();
-            this.Unknown_68h = reader.ReadUInt64();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Index = reader.ReadUInt32();
+            Unknown_Ch = reader.ReadUInt32();
+            Unknown_10h = reader.ReadSingle();
+            Unknown_14h = reader.ReadSingle();
+            UnknownDataPointer = reader.ReadUInt64();
+            Unknown_20h = reader.ReadUInt64();
+            Unknown_28h = reader.ReadUInt64();
+            EmitterRuleNamePointer = reader.ReadUInt64();
+            ParticleRuleNamePointer = reader.ReadUInt64();
+            EmitterRulePointer = reader.ReadUInt64();
+            ParticleRulePointer = reader.ReadUInt64();
+            PlaybackRateScalarMin = reader.ReadSingle();
+            PlaybackRateScalarMax = reader.ReadSingle();
+            ZoomScalarMin = reader.ReadSingle();
+            ZoomScalarMax = reader.ReadSingle();
+            ColourTintMin = reader.ReadUInt32();
+            ColourTintMax = reader.ReadUInt32();
+            Unknown_68h = reader.ReadUInt64();
 
             // read reference data
-            this.UnknownData = reader.ReadBlockAt<ParticleUnknown1>(this.UnknownDataPointer);
-            this.EmitterRuleName = reader.ReadBlockAt<string_r>(this.EmitterRuleNamePointer);
-            this.ParticleRuleName = reader.ReadBlockAt<string_r>(this.ParticleRuleNamePointer);
-            this.EmitterRule = reader.ReadBlockAt<ParticleEmitterRule>(this.EmitterRulePointer);
-            this.ParticleRule = reader.ReadBlockAt<ParticleRule>(this.ParticleRulePointer);
+            UnknownData = reader.ReadBlockAt<ParticleUnknown1>(UnknownDataPointer);
+            EmitterRuleName = reader.ReadBlockAt<string_r>(EmitterRuleNamePointer);
+            ParticleRuleName = reader.ReadBlockAt<string_r>(ParticleRuleNamePointer);
+            EmitterRule = reader.ReadBlockAt<ParticleEmitterRule>(EmitterRulePointer);
+            ParticleRule = reader.ReadBlockAt<ParticleRule>(ParticleRulePointer);
 
 
             if (!string.IsNullOrEmpty(EmitterRuleName?.Value))
@@ -2828,7 +2890,7 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //if (Unknown_28h != 0)
             //{ }//no hit
-            switch (MoveSpeedScale)
+            switch (PlaybackRateScalarMin)
             {
                 case 1.0f:
                 case 2.0f:
@@ -2838,7 +2900,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (MoveSpeedScaleModifier)
+            switch (PlaybackRateScalarMax)
             {
                 case 1.0f:
                 case 2.0f:
@@ -2848,7 +2910,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//and more
             }
-            switch (ParticleScale)
+            switch (ZoomScalarMin)
             {
                 case 1.0f:
                 case 0.5f:
@@ -2859,7 +2921,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (ParticleScaleModifier)
+            switch (ZoomScalarMax)
             {
                 case 1.0f:
                 case 1.2f:
@@ -2869,7 +2931,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Colour1)
+            switch (ColourTintMin)
             {
                 case 0xffffffff:
                 case 0xfffafafa:
@@ -2883,7 +2945,7 @@ namespace CodeWalker.GameFiles
                 default:
                     break;//more
             }
-            switch (Colour2)
+            switch (ColourTintMax)
             {
                 case 0xffffffff:
                 case 0xffffefc2:
@@ -2908,33 +2970,33 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.UnknownDataPointer = (ulong)(this.UnknownData != null ? this.UnknownData.FilePosition : 0);
-            this.EmitterRuleNamePointer = (ulong)(this.EmitterRuleName != null ? this.EmitterRuleName.FilePosition : 0);
-            this.ParticleRuleNamePointer = (ulong)(this.ParticleRuleName != null ? this.ParticleRuleName.FilePosition : 0);
-            this.EmitterRulePointer = (ulong)(this.EmitterRule != null ? this.EmitterRule.FilePosition : 0);
-            this.ParticleRulePointer = (ulong)(this.ParticleRule != null ? this.ParticleRule.FilePosition : 0);
+            UnknownDataPointer = (ulong)(UnknownData != null ? UnknownData.FilePosition : 0);
+            EmitterRuleNamePointer = (ulong)(EmitterRuleName != null ? EmitterRuleName.FilePosition : 0);
+            ParticleRuleNamePointer = (ulong)(ParticleRuleName != null ? ParticleRuleName.FilePosition : 0);
+            EmitterRulePointer = (ulong)(EmitterRule != null ? EmitterRule.FilePosition : 0);
+            ParticleRulePointer = (ulong)(ParticleRule != null ? ParticleRule.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Index);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.UnknownDataPointer);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.EmitterRuleNamePointer);
-            writer.Write(this.ParticleRuleNamePointer);
-            writer.Write(this.EmitterRulePointer);
-            writer.Write(this.ParticleRulePointer);
-            writer.Write(this.MoveSpeedScale);
-            writer.Write(this.MoveSpeedScaleModifier);
-            writer.Write(this.ParticleScale);
-            writer.Write(this.ParticleScaleModifier);
-            writer.Write(this.Colour1);
-            writer.Write(this.Colour2);
-            writer.Write(this.Unknown_68h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Index);
+            writer.Write(Unknown_Ch);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_14h);
+            writer.Write(UnknownDataPointer);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_28h);
+            writer.Write(EmitterRuleNamePointer);
+            writer.Write(ParticleRuleNamePointer);
+            writer.Write(EmitterRulePointer);
+            writer.Write(ParticleRulePointer);
+            writer.Write(PlaybackRateScalarMin);
+            writer.Write(PlaybackRateScalarMax);
+            writer.Write(ZoomScalarMin);
+            writer.Write(ZoomScalarMax);
+            writer.Write(ColourTintMin);
+            writer.Write(ColourTintMax);
+            writer.Write(Unknown_68h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -2942,12 +3004,12 @@ namespace CodeWalker.GameFiles
             YptXml.StringTag(sb, indent, "ParticleRule", YptXml.XmlEscape(ParticleRuleName?.Value ?? ""));
             YptXml.ValueTag(sb, indent, "Unknown10", FloatUtil.ToString(Unknown_10h));
             YptXml.ValueTag(sb, indent, "Unknown14", FloatUtil.ToString(Unknown_14h));
-            YptXml.ValueTag(sb, indent, "MoveSpeedScale", FloatUtil.ToString(MoveSpeedScale));
-            YptXml.ValueTag(sb, indent, "MoveSpeedScaleModifier", FloatUtil.ToString(MoveSpeedScaleModifier));
-            YptXml.ValueTag(sb, indent, "ParticleScale", FloatUtil.ToString(ParticleScale));
-            YptXml.ValueTag(sb, indent, "ParticleScaleModifier", FloatUtil.ToString(ParticleScaleModifier));
-            YptXml.ValueTag(sb, indent, "Colour1", YptXml.UintString(Colour1));
-            YptXml.ValueTag(sb, indent, "Colour2", YptXml.UintString(Colour2));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMin", FloatUtil.ToString(PlaybackRateScalarMin));
+            YptXml.ValueTag(sb, indent, "PlaybackRateScalarMax", FloatUtil.ToString(PlaybackRateScalarMax));
+            YptXml.ValueTag(sb, indent, "ZoomScalarMin", FloatUtil.ToString(ZoomScalarMin));
+            YptXml.ValueTag(sb, indent, "ZoomScalarMax", FloatUtil.ToString(ZoomScalarMax));
+            YptXml.ValueTag(sb, indent, "ColourTintMin", YptXml.UintString(ColourTintMin));
+            YptXml.ValueTag(sb, indent, "ColourTintMax", YptXml.UintString(ColourTintMax));
             if (UnknownData != null)
             {
                 YptXml.OpenTag(sb, indent, "UnknownData");
@@ -2961,12 +3023,12 @@ namespace CodeWalker.GameFiles
             ParticleRuleName = (string_r)Xml.GetChildInnerText(node, "ParticleRule"); if (ParticleRuleName.Value == null) ParticleRuleName = null;
             Unknown_10h = Xml.GetChildFloatAttribute(node, "Unknown10");
             Unknown_14h = Xml.GetChildFloatAttribute(node, "Unknown14");
-            MoveSpeedScale = Xml.GetChildFloatAttribute(node, "MoveSpeedScale");
-            MoveSpeedScaleModifier = Xml.GetChildFloatAttribute(node, "MoveSpeedScaleModifier");
-            ParticleScale = Xml.GetChildFloatAttribute(node, "ParticleScale");
-            ParticleScaleModifier = Xml.GetChildFloatAttribute(node, "ParticleScaleModifier");
-            Colour1 = Xml.GetChildUIntAttribute(node, "Colour1");
-            Colour2 = Xml.GetChildUIntAttribute(node, "Colour2");
+            PlaybackRateScalarMin = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMin");
+            PlaybackRateScalarMax = Xml.GetChildFloatAttribute(node, "PlaybackRateScalarMax");
+            ZoomScalarMin = Xml.GetChildFloatAttribute(node, "ZoomScalarMin");
+            ZoomScalarMax = Xml.GetChildFloatAttribute(node, "ZoomScalarMax");
+            ColourTintMin = Xml.GetChildUIntAttribute(node, "ColourTintMin");
+            ColourTintMax = Xml.GetChildUIntAttribute(node, "ColourTintMax");
             var udnode = node.SelectSingleNode("UnknownData");
             if (udnode != null)
             {
@@ -3008,11 +3070,11 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.EventEmitterFlags = reader.ReadBlock<ResourceSimpleList64<ParticleStringBlock>>();
-            this.Unknown_10h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2>>();
-            this.Unknown_20h = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2Block>>();
-            this.Unknown_38h = reader.ReadUInt64();
+            EventEmitterFlags = reader.ReadBlock<ResourceSimpleList64<ParticleStringBlock>>();
+            Unknown_10h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2>>();
+            Unknown_20h = reader.ReadUInt64();
+            Unknown_28h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown2Block>>();
+            Unknown_38h = reader.ReadUInt64();
 
             //if (Unknown_20h != 1)
             //{ }//no hit
@@ -3062,11 +3124,11 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.WriteBlock(this.EventEmitterFlags);
-            writer.WriteBlock(this.Unknown_10h);
-            writer.Write(this.Unknown_20h);
-            writer.WriteBlock(this.Unknown_28h);
-            writer.Write(this.Unknown_38h);
+            writer.WriteBlock(EventEmitterFlags);
+            writer.WriteBlock(Unknown_10h);
+            writer.Write(Unknown_20h);
+            writer.WriteBlock(Unknown_28h);
+            writer.Write(Unknown_38h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -3165,12 +3227,12 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.NamePointer = reader.ReadUInt64();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
+            NamePointer = reader.ReadUInt64();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt64();
 
             // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
+            Name = reader.ReadBlockAt<string_r>(NamePointer);
 
             //if (!string.IsNullOrEmpty(String1?.Value))
             //{
@@ -3186,12 +3248,12 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            NamePointer = (ulong)(Name != null ? Name.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
+            writer.Write(NamePointer);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
         }
 
         public override IResourceBlock[] GetReferences()
@@ -3223,12 +3285,12 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Name = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.ItemPointer = reader.ReadUInt64();
+            Name = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            ItemPointer = reader.ReadUInt64();
 
             // read reference data
-            this.Item = reader.ReadBlockAt<ParticleUnknown2>(this.ItemPointer);
+            Item = reader.ReadBlockAt<ParticleUnknown2>(ItemPointer);
 
             if (Item != null)
             { }
@@ -3242,12 +3304,12 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.ItemPointer = (ulong)(this.Item != null ? this.Item.FilePosition : 0);
+            ItemPointer = (ulong)(Item != null ? Item.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.Name);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.ItemPointer);
+            writer.Write(Name);
+            writer.Write(Unknown_4h);
+            writer.Write(ItemPointer);
         }
 
         public override string ToString()
@@ -3270,9 +3332,9 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown3>>();
-            this.Name = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
+            Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleUnknown3>>();
+            Name = reader.ReadUInt32();
+            Unknown_14h = reader.ReadUInt32();
 
             //switch (Unknown_14h)
             //{
@@ -3286,9 +3348,9 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.WriteBlock(this.Unknown_0h);
-            writer.Write(this.Name);
-            writer.Write(this.Unknown_14h);
+            writer.WriteBlock(Unknown_0h);
+            writer.Write(Name);
+            writer.Write(Unknown_14h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -3337,12 +3399,12 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropValue>>();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt64();
+            Unknown_0h = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropValue>>();
+            Unknown_10h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadUInt64();
+            Unknown_20h = reader.ReadUInt32();
+            Unknown_24h = reader.ReadUInt32();
+            Unknown_28h = reader.ReadUInt64();
 
             //if (Unknown_10h != 0)
             //{ }//no hit
@@ -3373,12 +3435,12 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.WriteBlock(this.Unknown_0h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
+            writer.WriteBlock(Unknown_0h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_24h);
+            writer.Write(Unknown_28h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -3465,41 +3527,41 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadSingle();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.NamePointer = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadUInt64();
-            this.Domain1Pointer = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt64();
-            this.Domain2Pointer = reader.ReadUInt64();
-            this.Unknown_50h = reader.ReadUInt64();
-            this.Domain3Pointer = reader.ReadUInt64();
-            this.Unknown_60h = reader.ReadUInt64();
-            this.Unknown_68h = reader.ReadUInt64();
-            this.Unknown_70h = reader.ReadUInt64();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt32();
+            Unknown_14h = reader.ReadUInt32();
+            Unknown_18h = reader.ReadSingle();
+            Unknown_1Ch = reader.ReadUInt32();
+            NamePointer = reader.ReadUInt64();
+            Unknown_28h = reader.ReadUInt64();
+            Unknown_30h = reader.ReadUInt64();
+            Domain1Pointer = reader.ReadUInt64();
+            Unknown_40h = reader.ReadUInt64();
+            Domain2Pointer = reader.ReadUInt64();
+            Unknown_50h = reader.ReadUInt64();
+            Domain3Pointer = reader.ReadUInt64();
+            Unknown_60h = reader.ReadUInt64();
+            Unknown_68h = reader.ReadUInt64();
+            Unknown_70h = reader.ReadUInt64();
             for (int i = 0; i < 10; i++)
             {
-                this.KeyframeProps1[i] = reader.ReadBlock<ParticleKeyframeProp>();
+                KeyframeProps1[i] = reader.ReadBlock<ParticleKeyframeProp>();
             }
-            this.KeyframeProps2Pointer = reader.ReadUInt64();
-            this.KeyframePropsCount1 = reader.ReadUInt16();
-            this.KeyframePropsCount2 = reader.ReadUInt16();
-            this.Unknown_624h = reader.ReadUInt32();
-            this.Unknown_628h = reader.ReadUInt32();
-            this.Unknown_62Ch = reader.ReadUInt32();
+            KeyframeProps2Pointer = reader.ReadUInt64();
+            KeyframePropsCount1 = reader.ReadUInt16();
+            KeyframePropsCount2 = reader.ReadUInt16();
+            Unknown_624h = reader.ReadUInt32();
+            Unknown_628h = reader.ReadUInt32();
+            Unknown_62Ch = reader.ReadUInt32();
 
             // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(this.NamePointer);
-            this.Domain1 = reader.ReadBlockAt<ParticleDomain>(this.Domain1Pointer);
-            this.Domain2 = reader.ReadBlockAt<ParticleDomain>(this.Domain2Pointer);
-            this.Domain3 = reader.ReadBlockAt<ParticleDomain>(this.Domain3Pointer);
-            this.KeyframeProps2 = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(this.KeyframeProps2Pointer, this.KeyframePropsCount2);
+            Name = reader.ReadBlockAt<string_r>(NamePointer);
+            Domain1 = reader.ReadBlockAt<ParticleDomain>(Domain1Pointer);
+            Domain2 = reader.ReadBlockAt<ParticleDomain>(Domain2Pointer);
+            Domain3 = reader.ReadBlockAt<ParticleDomain>(Domain3Pointer);
+            KeyframeProps2 = reader.ReadBlockAt<ResourcePointerArray64<ParticleKeyframeProp>>(KeyframeProps2Pointer, KeyframePropsCount2);
 
 
             if (!string.IsNullOrEmpty(Name?.Value))
@@ -3587,43 +3649,43 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
-            this.Domain1Pointer = (ulong)(this.Domain1 != null ? this.Domain1.FilePosition : 0);
-            this.Domain2Pointer = (ulong)(this.Domain2 != null ? this.Domain2.FilePosition : 0);
-            this.Domain3Pointer = (ulong)(this.Domain3 != null ? this.Domain3.FilePosition : 0);
-            this.KeyframeProps2Pointer = (ulong)(this.KeyframeProps2 != null ? this.KeyframeProps2.FilePosition : 0);
-            //this.refcnt2 = (ushort)(this.refs != null ? this.refs.Count : 0);
+            NamePointer = (ulong)(Name != null ? Name.FilePosition : 0);
+            Domain1Pointer = (ulong)(Domain1 != null ? Domain1.FilePosition : 0);
+            Domain2Pointer = (ulong)(Domain2 != null ? Domain2.FilePosition : 0);
+            Domain3Pointer = (ulong)(Domain3 != null ? Domain3.FilePosition : 0);
+            KeyframeProps2Pointer = (ulong)(KeyframeProps2 != null ? KeyframeProps2.FilePosition : 0);
+            //refcnt2 = (ushort)(refs != null ? refs.Count : 0);
 
 
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.NamePointer);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Domain1Pointer);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Domain2Pointer);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Domain3Pointer);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_70h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_14h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.Write(NamePointer);
+            writer.Write(Unknown_28h);
+            writer.Write(Unknown_30h);
+            writer.Write(Domain1Pointer);
+            writer.Write(Unknown_40h);
+            writer.Write(Domain2Pointer);
+            writer.Write(Unknown_50h);
+            writer.Write(Domain3Pointer);
+            writer.Write(Unknown_60h);
+            writer.Write(Unknown_68h);
+            writer.Write(Unknown_70h);
             for (int i = 0; i < 10; i++)
             {
-                writer.WriteBlock(this.KeyframeProps1[i]);
+                writer.WriteBlock(KeyframeProps1[i]);
             }
-            writer.Write(this.KeyframeProps2Pointer);
-            writer.Write(this.KeyframePropsCount1);
-            writer.Write(this.KeyframePropsCount2);
-            writer.Write(this.Unknown_624h);
-            writer.Write(this.Unknown_628h);
-            writer.Write(this.Unknown_62Ch);
+            writer.Write(KeyframeProps2Pointer);
+            writer.Write(KeyframePropsCount1);
+            writer.Write(KeyframePropsCount2);
+            writer.Write(Unknown_624h);
+            writer.Write(Unknown_628h);
+            writer.Write(Unknown_62Ch);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -3782,25 +3844,25 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadUInt64();
-            this.Unknown_18h = reader.ReadUInt64();
-            this.Unknown_20h = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
-            this.Unknown_30h = reader.ReadUInt64();
-            this.Unknown_38h = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt64();
-            this.Unknown_48h = reader.ReadUInt64();
-            this.Unknown_50h = reader.ReadUInt64();
-            this.Unknown_58h = reader.ReadUInt64();
-            this.Unknown_60h = reader.ReadUInt64();
-            this.Name = reader.ReadUInt32();
-            this.Unknown_6Ch = reader.ReadUInt32();
-            this.Values = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropValue>>();
-            this.Unknown_80h = reader.ReadUInt64();
-            this.Unknown_88h = reader.ReadUInt64();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadUInt64();
+            Unknown_20h = reader.ReadUInt64();
+            Unknown_28h = reader.ReadUInt64();
+            Unknown_30h = reader.ReadUInt64();
+            Unknown_38h = reader.ReadUInt64();
+            Unknown_40h = reader.ReadUInt64();
+            Unknown_48h = reader.ReadUInt64();
+            Unknown_50h = reader.ReadUInt64();
+            Unknown_58h = reader.ReadUInt64();
+            Unknown_60h = reader.ReadUInt64();
+            Name = reader.ReadUInt32();
+            Unknown_6Ch = reader.ReadUInt32();
+            Values = reader.ReadBlock<ResourceSimpleList64<ParticleKeyframePropValue>>();
+            Unknown_80h = reader.ReadUInt64();
+            Unknown_88h = reader.ReadUInt64();
 
 
             //if (Unknown_4h != 1)
@@ -3873,25 +3935,25 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Name);
-            writer.Write(this.Unknown_6Ch);
-            writer.WriteBlock(this.Values);
-            writer.Write(this.Unknown_80h);
-            writer.Write(this.Unknown_88h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_28h);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_40h);
+            writer.Write(Unknown_48h);
+            writer.Write(Unknown_50h);
+            writer.Write(Unknown_58h);
+            writer.Write(Unknown_60h);
+            writer.Write(Name);
+            writer.Write(Unknown_6Ch);
+            writer.WriteBlock(Values);
+            writer.Write(Unknown_80h);
+            writer.Write(Unknown_88h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -4039,13 +4101,13 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.InterpolationInterval = reader.ReadSingle();
-            this.KeyFrameMultiplier = reader.ReadSingle();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.RedChannelColour = reader.ReadSingle();
-            this.GreenChannelColour = reader.ReadSingle();
-            this.BlueChannelColour = reader.ReadSingle();
-            this.AlphaChannelColour = reader.ReadSingle();
+            InterpolationInterval = reader.ReadSingle();
+            KeyFrameMultiplier = reader.ReadSingle();
+            Unknown_8h = reader.ReadUInt64();
+            RedChannelColour = reader.ReadSingle();
+            GreenChannelColour = reader.ReadSingle();
+            BlueChannelColour = reader.ReadSingle();
+            AlphaChannelColour = reader.ReadSingle();
 
             switch (InterpolationInterval)
             {
@@ -4137,13 +4199,13 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.InterpolationInterval);
-            writer.Write(this.KeyFrameMultiplier);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.RedChannelColour);
-            writer.Write(this.GreenChannelColour);
-            writer.Write(this.BlueChannelColour);
-            writer.Write(this.AlphaChannelColour);
+            writer.Write(InterpolationInterval);
+            writer.Write(KeyFrameMultiplier);
+            writer.Write(Unknown_8h);
+            writer.Write(RedChannelColour);
+            writer.Write(GreenChannelColour);
+            writer.Write(BlueChannelColour);
+            writer.Write(AlphaChannelColour);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -4218,23 +4280,23 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Index = reader.ReadUInt32();
-            this.DomainType = (ParticleDomainType)reader.ReadByte();
-            this.Unknown_Dh = reader.ReadByte();
-            this.Unknown_Eh = reader.ReadUInt16();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_258h = reader.ReadSingle();
-            this.Unknown_25Ch = reader.ReadUInt32();
-            this.KeyframeProps = reader.ReadBlock<ResourcePointerList64<ParticleKeyframeProp>>();
-            this.Unknown_270h = reader.ReadUInt64();
-            this.Unknown_278h = reader.ReadUInt64();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Index = reader.ReadUInt32();
+            DomainType = (ParticleDomainType)reader.ReadByte();
+            Unknown_Dh = reader.ReadByte();
+            Unknown_Eh = reader.ReadUInt16();
+            Unknown_10h = reader.ReadUInt32();
+            Unknown_14h = reader.ReadUInt32();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_258h = reader.ReadSingle();
+            Unknown_25Ch = reader.ReadUInt32();
+            KeyframeProps = reader.ReadBlock<ResourcePointerList64<ParticleKeyframeProp>>();
+            Unknown_270h = reader.ReadUInt64();
+            Unknown_278h = reader.ReadUInt64();
 
 
             //if (KeyframeProps?.data_items?.Length != 4)
@@ -4306,23 +4368,23 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Index);
-            writer.Write((byte)this.DomainType);
-            writer.Write(this.Unknown_Dh);
-            writer.Write(this.Unknown_Eh);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.Write(this.Unknown_258h);
-            writer.Write(this.Unknown_25Ch);
-            writer.WriteBlock(this.KeyframeProps);
-            writer.Write(this.Unknown_270h);
-            writer.Write(this.Unknown_278h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Index);
+            writer.Write((byte)DomainType);
+            writer.Write(Unknown_Dh);
+            writer.Write(Unknown_Eh);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_14h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.WriteBlock(KeyframeProp3);
+            writer.Write(Unknown_258h);
+            writer.Write(Unknown_25Ch);
+            writer.WriteBlock(KeyframeProps);
+            writer.Write(Unknown_270h);
+            writer.Write(Unknown_278h);
         }
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
@@ -4536,13 +4598,13 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Type = (ParticleBehaviourType)reader.ReadUInt32();
-            this.Unknown_Ch = reader.ReadUInt32();
-            this.KeyframeProps = reader.ReadBlock<ResourcePointerList64<ParticleKeyframeProp>>();
-            this.Unknown_20h = reader.ReadUInt64();
-            this.Unknown_28h = reader.ReadUInt64();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Type = (ParticleBehaviourType)reader.ReadUInt32();
+            Unknown_Ch = reader.ReadUInt32();
+            KeyframeProps = reader.ReadBlock<ResourcePointerList64<ParticleKeyframeProp>>();
+            Unknown_20h = reader.ReadUInt64();
+            Unknown_28h = reader.ReadUInt64();
 
             KeyframeProps.ManualCountOverride = true; //incase re-saving again
             KeyframeProps.ManualReferenceOverride = true;
@@ -4561,13 +4623,13 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write((uint)this.Type);
-            writer.Write(this.Unknown_Ch);
-            writer.WriteBlock(this.KeyframeProps);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_28h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write((uint)Type);
+            writer.Write(Unknown_Ch);
+            writer.WriteBlock(KeyframeProps);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_28h);
         }
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
@@ -4725,13 +4787,13 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_150h = reader.ReadUInt64();
-            this.Unknown_158h = reader.ReadUInt32();
-            this.Unknown_15Ch = reader.ReadUInt32();
-            this.Unknown_160h = reader.ReadUInt64();
-            this.Unknown_168h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_150h = reader.ReadUInt64();
+            Unknown_158h = reader.ReadUInt32();
+            Unknown_15Ch = reader.ReadUInt32();
+            Unknown_160h = reader.ReadUInt64();
+            Unknown_168h = reader.ReadUInt64();
 
             //if (Unknown_150h != 0)
             //{ }//no hit
@@ -4762,13 +4824,13 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.Write(this.Unknown_150h);
-            writer.Write(this.Unknown_158h);
-            writer.Write(this.Unknown_15Ch);
-            writer.Write(this.Unknown_160h);
-            writer.Write(this.Unknown_168h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.Write(Unknown_150h);
+            writer.Write(Unknown_158h);
+            writer.Write(Unknown_15Ch);
+            writer.Write(Unknown_160h);
+            writer.Write(Unknown_168h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -4869,14 +4931,14 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_270h = reader.ReadUInt32();
-            this.Unknown_274h = reader.ReadUInt32();
-            this.Unknown_278h = reader.ReadUInt32();
-            this.Unknown_27Ch = reader.ReadSingle();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_270h = reader.ReadUInt32();
+            Unknown_274h = reader.ReadUInt32();
+            Unknown_278h = reader.ReadUInt32();
+            Unknown_27Ch = reader.ReadSingle();
 
             //switch (Unknown_270h)
             //{
@@ -4928,14 +4990,14 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.Write(this.Unknown_270h);
-            writer.Write(this.Unknown_274h);
-            writer.Write(this.Unknown_278h);
-            writer.Write(this.Unknown_27Ch);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.WriteBlock(KeyframeProp3);
+            writer.Write(Unknown_270h);
+            writer.Write(Unknown_274h);
+            writer.Write(Unknown_278h);
+            writer.Write(Unknown_27Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5039,13 +5101,13 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_270h = reader.ReadUInt32();
-            this.Unknown_274h = reader.ReadUInt32();
-            this.Unknown_278h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_270h = reader.ReadUInt32();
+            Unknown_274h = reader.ReadUInt32();
+            Unknown_278h = reader.ReadUInt64();
 
             //if (Unknown_20h != 0)
             //{ }//no hit
@@ -5076,13 +5138,13 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.Write(this.Unknown_270h);
-            writer.Write(this.Unknown_274h);
-            writer.Write(this.Unknown_278h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.WriteBlock(KeyframeProp3);
+            writer.Write(Unknown_270h);
+            writer.Write(Unknown_274h);
+            writer.Write(Unknown_278h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5182,13 +5244,13 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_150h = reader.ReadUInt64();
-            this.Unknown_158h = reader.ReadUInt32();
-            this.Unknown_15Ch = reader.ReadUInt32();
-            this.Unknown_160h = reader.ReadUInt64();
-            this.Unknown_168h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_150h = reader.ReadUInt64();
+            Unknown_158h = reader.ReadUInt32();
+            Unknown_15Ch = reader.ReadUInt32();
+            Unknown_160h = reader.ReadUInt64();
+            Unknown_168h = reader.ReadUInt64();
 
             //if (Unknown_150h != 0)
             //{ }//no hit
@@ -5213,13 +5275,13 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.Write(this.Unknown_150h);
-            writer.Write(this.Unknown_158h);
-            writer.Write(this.Unknown_15Ch);
-            writer.Write(this.Unknown_160h);
-            writer.Write(this.Unknown_168h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.Write(Unknown_150h);
+            writer.Write(Unknown_158h);
+            writer.Write(Unknown_15Ch);
+            writer.Write(Unknown_160h);
+            writer.Write(Unknown_168h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5286,10 +5348,10 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_C0h = reader.ReadUInt32();
-            this.Unknown_C4h = reader.ReadUInt32();
-            this.Unknown_C8h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_C0h = reader.ReadUInt32();
+            Unknown_C4h = reader.ReadUInt32();
+            Unknown_C8h = reader.ReadUInt64();
 
 
             //switch (Unknown_C0h)
@@ -5310,10 +5372,10 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.Write(this.Unknown_C0h);
-            writer.Write(this.Unknown_C4h);
-            writer.Write(this.Unknown_C8h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.Write(Unknown_C0h);
+            writer.Write(Unknown_C4h);
+            writer.Write(Unknown_C8h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5370,14 +5432,14 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_150h = reader.ReadSingle();
-            this.Unknown_154h = reader.ReadSingle();
-            this.Unknown_158h = reader.ReadUInt32();
-            this.Unknown_15Ch = reader.ReadUInt32();
-            this.Unknown_160h = reader.ReadUInt64();
-            this.Unknown_168h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_150h = reader.ReadSingle();
+            Unknown_154h = reader.ReadSingle();
+            Unknown_158h = reader.ReadUInt32();
+            Unknown_15Ch = reader.ReadUInt32();
+            Unknown_160h = reader.ReadUInt64();
+            Unknown_168h = reader.ReadUInt64();
 
             switch (Unknown_150h)
             {
@@ -5439,14 +5501,14 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.Write(this.Unknown_150h);
-            writer.Write(this.Unknown_154h);
-            writer.Write(this.Unknown_158h);
-            writer.Write(this.Unknown_15Ch);
-            writer.Write(this.Unknown_160h);
-            writer.Write(this.Unknown_168h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.Write(Unknown_150h);
+            writer.Write(Unknown_154h);
+            writer.Write(Unknown_158h);
+            writer.Write(Unknown_15Ch);
+            writer.Write(Unknown_160h);
+            writer.Write(Unknown_168h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5520,11 +5582,11 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_C0h = reader.ReadUInt32();
-            this.Unknown_C4h = reader.ReadInt32();
-            this.Unknown_C8h = reader.ReadUInt32();
-            this.Unknown_CCh = reader.ReadUInt32();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_C0h = reader.ReadUInt32();
+            Unknown_C4h = reader.ReadInt32();
+            Unknown_C8h = reader.ReadUInt32();
+            Unknown_CCh = reader.ReadUInt32();
 
             //switch (Unknown_C0h)
             //{
@@ -5581,11 +5643,11 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.Write(this.Unknown_C0h);
-            writer.Write(this.Unknown_C4h);
-            writer.Write(this.Unknown_C8h);
-            writer.Write(this.Unknown_CCh);
+            writer.WriteBlock(KeyframeProp0);
+            writer.Write(Unknown_C0h);
+            writer.Write(Unknown_C4h);
+            writer.Write(Unknown_C8h);
+            writer.Write(Unknown_CCh);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5646,12 +5708,12 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_1E0h = reader.ReadUInt32();
-            this.Unknown_1E4h = reader.ReadUInt32();
-            this.Unknown_1E8h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_1E0h = reader.ReadUInt32();
+            Unknown_1E4h = reader.ReadUInt32();
+            Unknown_1E8h = reader.ReadUInt64();
 
             //switch (Unknown_1E0h)
             //{
@@ -5682,12 +5744,12 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.Write(this.Unknown_1E0h);
-            writer.Write(this.Unknown_1E4h);
-            writer.Write(this.Unknown_1E8h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.Write(Unknown_1E0h);
+            writer.Write(Unknown_1E4h);
+            writer.Write(Unknown_1E8h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5781,21 +5843,21 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_30h = reader.ReadSingle();
-            this.Unknown_34h = reader.ReadSingle();
-            this.Unknown_38h = reader.ReadSingle();
-            this.Unknown_3Ch = reader.ReadUInt32();
-            this.Unknown_40h = reader.ReadUInt32();
-            this.Unknown_44h = reader.ReadSingle();
-            this.Unknown_48h = reader.ReadSingle();
-            this.Unknown_4Ch = reader.ReadSingle();
-            this.Unknown_50h = reader.ReadSingle();
-            this.Unknown_54h = reader.ReadSingle();
-            this.Unknown_58h = reader.ReadSingle();
-            this.Unknown_5Ch = reader.ReadUInt32();
-            this.Unknown_60h = reader.ReadUInt32();
-            this.Unknown_64h = reader.ReadUInt32();
-            this.Unknown_68h = reader.ReadUInt64();
+            Unknown_30h = reader.ReadSingle();
+            Unknown_34h = reader.ReadSingle();
+            Unknown_38h = reader.ReadSingle();
+            Unknown_3Ch = reader.ReadUInt32();
+            Unknown_40h = reader.ReadUInt32();
+            Unknown_44h = reader.ReadSingle();
+            Unknown_48h = reader.ReadSingle();
+            Unknown_4Ch = reader.ReadSingle();
+            Unknown_50h = reader.ReadSingle();
+            Unknown_54h = reader.ReadSingle();
+            Unknown_58h = reader.ReadSingle();
+            Unknown_5Ch = reader.ReadUInt32();
+            Unknown_60h = reader.ReadUInt32();
+            Unknown_64h = reader.ReadUInt32();
+            Unknown_68h = reader.ReadUInt64();
 
             //switch (Unknown_30h)
             //{
@@ -5956,21 +6018,21 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_4Ch);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_54h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_5Ch);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_64h);
-            writer.Write(this.Unknown_68h);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_34h);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_3Ch);
+            writer.Write(Unknown_40h);
+            writer.Write(Unknown_44h);
+            writer.Write(Unknown_48h);
+            writer.Write(Unknown_4Ch);
+            writer.Write(Unknown_50h);
+            writer.Write(Unknown_54h);
+            writer.Write(Unknown_58h);
+            writer.Write(Unknown_5Ch);
+            writer.Write(Unknown_60h);
+            writer.Write(Unknown_64h);
+            writer.Write(Unknown_68h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6028,16 +6090,16 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_C0h = reader.ReadUInt64();
-            this.Unknown_C8h = reader.ReadUInt64();
-            this.Unknown_D0h = reader.ReadSingle();
-            this.Unknown_D4h = reader.ReadSingle();
-            this.Unknown_D8h = reader.ReadUInt32();
-            this.Unknown_DCh = reader.ReadUInt32();
-            this.Unknown_E0h = reader.ReadUInt32();
-            this.Unknown_E4h = reader.ReadUInt32();
-            this.Unknown_E8h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_C0h = reader.ReadUInt64();
+            Unknown_C8h = reader.ReadUInt64();
+            Unknown_D0h = reader.ReadSingle();
+            Unknown_D4h = reader.ReadSingle();
+            Unknown_D8h = reader.ReadUInt32();
+            Unknown_DCh = reader.ReadUInt32();
+            Unknown_E0h = reader.ReadUInt32();
+            Unknown_E4h = reader.ReadUInt32();
+            Unknown_E8h = reader.ReadUInt64();
 
             //if (Unknown_C0h != 0)
             //{ }//no hit
@@ -6099,16 +6161,16 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.Write(this.Unknown_C0h);
-            writer.Write(this.Unknown_C8h);
-            writer.Write(this.Unknown_D0h);
-            writer.Write(this.Unknown_D4h);
-            writer.Write(this.Unknown_D8h);
-            writer.Write(this.Unknown_DCh);
-            writer.Write(this.Unknown_E0h);
-            writer.Write(this.Unknown_E4h);
-            writer.Write(this.Unknown_E8h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.Write(Unknown_C0h);
+            writer.Write(Unknown_C8h);
+            writer.Write(Unknown_D0h);
+            writer.Write(Unknown_D4h);
+            writer.Write(Unknown_D8h);
+            writer.Write(Unknown_DCh);
+            writer.Write(Unknown_E0h);
+            writer.Write(Unknown_E4h);
+            writer.Write(Unknown_E8h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6177,19 +6239,19 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp5 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp6 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp7 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp8 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_540h = reader.ReadSingle();
-            this.Unknown_544h = reader.ReadUInt32();
-            this.Unknown_548h = reader.ReadUInt32();
-            this.Unknown_54Ch = reader.ReadUInt32();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp5 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp6 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp7 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp8 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_540h = reader.ReadSingle();
+            Unknown_544h = reader.ReadUInt32();
+            Unknown_548h = reader.ReadUInt32();
+            Unknown_54Ch = reader.ReadUInt32();
 
 
             switch (Unknown_540h)
@@ -6252,19 +6314,19 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.WriteBlock(this.KeyframeProp4);
-            writer.WriteBlock(this.KeyframeProp5);
-            writer.WriteBlock(this.KeyframeProp6);
-            writer.WriteBlock(this.KeyframeProp7);
-            writer.WriteBlock(this.KeyframeProp8);
-            writer.Write(this.Unknown_540h);
-            writer.Write(this.Unknown_544h);
-            writer.Write(this.Unknown_548h);
-            writer.Write(this.Unknown_54Ch);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.WriteBlock(KeyframeProp3);
+            writer.WriteBlock(KeyframeProp4);
+            writer.WriteBlock(KeyframeProp5);
+            writer.WriteBlock(KeyframeProp6);
+            writer.WriteBlock(KeyframeProp7);
+            writer.WriteBlock(KeyframeProp8);
+            writer.Write(Unknown_540h);
+            writer.Write(Unknown_544h);
+            writer.Write(Unknown_548h);
+            writer.Write(Unknown_54Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6435,10 +6497,10 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_30h = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadSingle();
-            this.Unknown_38h = reader.ReadSingle();
-            this.Unknown_3Ch = reader.ReadUInt32();
+            Unknown_30h = reader.ReadUInt32();
+            Unknown_34h = reader.ReadSingle();
+            Unknown_38h = reader.ReadSingle();
+            Unknown_3Ch = reader.ReadUInt32();
 
             //if (Unknown_30h != 0)
             //{ }//no hit
@@ -6471,10 +6533,10 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_34h);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_3Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6516,20 +6578,20 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_150h = reader.ReadUInt32();
-            this.Unknown_154h = reader.ReadUInt32();
-            this.Unknown_158h = reader.ReadSingle();
-            this.Unknown_15Ch = reader.ReadSingle();
-            this.Unknown_160h = reader.ReadSingle();
-            this.Unknown_164h = reader.ReadSingle();
-            this.Unknown_168h = reader.ReadSingle();
-            this.Unknown_16Ch = reader.ReadSingle();
-            this.Unknown_170h = reader.ReadUInt32();
-            this.Unknown_174h = reader.ReadSingle();
-            this.Unknown_178h = reader.ReadSingle();
-            this.Unknown_17Ch = reader.ReadUInt32();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_150h = reader.ReadUInt32();
+            Unknown_154h = reader.ReadUInt32();
+            Unknown_158h = reader.ReadSingle();
+            Unknown_15Ch = reader.ReadSingle();
+            Unknown_160h = reader.ReadSingle();
+            Unknown_164h = reader.ReadSingle();
+            Unknown_168h = reader.ReadSingle();
+            Unknown_16Ch = reader.ReadSingle();
+            Unknown_170h = reader.ReadUInt32();
+            Unknown_174h = reader.ReadSingle();
+            Unknown_178h = reader.ReadSingle();
+            Unknown_17Ch = reader.ReadUInt32();
 
             //switch (Unknown_150h)
             //{
@@ -6631,20 +6693,20 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.Write(this.Unknown_150h);
-            writer.Write(this.Unknown_154h);
-            writer.Write(this.Unknown_158h);
-            writer.Write(this.Unknown_15Ch);
-            writer.Write(this.Unknown_160h);
-            writer.Write(this.Unknown_164h);
-            writer.Write(this.Unknown_168h);
-            writer.Write(this.Unknown_16Ch);
-            writer.Write(this.Unknown_170h);
-            writer.Write(this.Unknown_174h);
-            writer.Write(this.Unknown_178h);
-            writer.Write(this.Unknown_17Ch);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.Write(Unknown_150h);
+            writer.Write(Unknown_154h);
+            writer.Write(Unknown_158h);
+            writer.Write(Unknown_15Ch);
+            writer.Write(Unknown_160h);
+            writer.Write(Unknown_164h);
+            writer.Write(Unknown_168h);
+            writer.Write(Unknown_16Ch);
+            writer.Write(Unknown_170h);
+            writer.Write(Unknown_174h);
+            writer.Write(Unknown_178h);
+            writer.Write(Unknown_17Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6732,13 +6794,13 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_150h = reader.ReadUInt64();
-            this.Unknown_158h = reader.ReadUInt32();
-            this.Unknown_15Ch = reader.ReadUInt32();
-            this.Unknown_160h = reader.ReadUInt64();
-            this.Unknown_168h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_150h = reader.ReadUInt64();
+            Unknown_158h = reader.ReadUInt32();
+            Unknown_15Ch = reader.ReadUInt32();
+            Unknown_160h = reader.ReadUInt64();
+            Unknown_168h = reader.ReadUInt64();
 
             //if (Unknown_150h != 0)
             //{ }//no hit
@@ -6773,13 +6835,13 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.Write(this.Unknown_150h);
-            writer.Write(this.Unknown_158h);
-            writer.Write(this.Unknown_15Ch);
-            writer.Write(this.Unknown_160h);
-            writer.Write(this.Unknown_168h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.Write(Unknown_150h);
+            writer.Write(Unknown_158h);
+            writer.Write(Unknown_15Ch);
+            writer.Write(Unknown_160h);
+            writer.Write(Unknown_168h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6851,13 +6913,13 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_270h = reader.ReadUInt32();
-            this.Unknown_274h = reader.ReadUInt32();
-            this.Unknown_278h = reader.ReadUInt64();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_270h = reader.ReadUInt32();
+            Unknown_274h = reader.ReadUInt32();
+            Unknown_278h = reader.ReadUInt64();
 
 
             //if ((Unknown_270h != 0) && (Unknown_270h != 2))
@@ -6878,13 +6940,13 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.Write(this.Unknown_270h);
-            writer.Write(this.Unknown_274h);
-            writer.Write(this.Unknown_278h);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.WriteBlock(KeyframeProp3);
+            writer.Write(Unknown_270h);
+            writer.Write(Unknown_274h);
+            writer.Write(Unknown_278h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -6978,7 +7040,7 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
 
 
         }
@@ -6987,7 +7049,7 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
+            writer.WriteBlock(KeyframeProp0);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -7047,19 +7109,19 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_C0h = reader.ReadUInt32();
-            this.Unknown_C4h = reader.ReadSingle();
-            this.Unknown_C8h = reader.ReadSingle();
-            this.Unknown_CCh = reader.ReadUInt32();
-            this.Unknown_D0h = reader.ReadUInt32();
-            this.Unknown_D4h = reader.ReadUInt32();
-            this.Unknown_D8h = reader.ReadUInt32();
-            this.Unknown_DCh = reader.ReadSingle();
-            this.Unknown_E0h = reader.ReadSingle();
-            this.Unknown_E4h = reader.ReadSingle();
-            this.Unknown_E8h = reader.ReadUInt32();
-            this.Unknown_ECh = reader.ReadUInt32();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_C0h = reader.ReadUInt32();
+            Unknown_C4h = reader.ReadSingle();
+            Unknown_C8h = reader.ReadSingle();
+            Unknown_CCh = reader.ReadUInt32();
+            Unknown_D0h = reader.ReadUInt32();
+            Unknown_D4h = reader.ReadUInt32();
+            Unknown_D8h = reader.ReadUInt32();
+            Unknown_DCh = reader.ReadSingle();
+            Unknown_E0h = reader.ReadSingle();
+            Unknown_E4h = reader.ReadSingle();
+            Unknown_E8h = reader.ReadUInt32();
+            Unknown_ECh = reader.ReadUInt32();
 
             //if (Unknown_C0h != 0)
             //{ }//no hit
@@ -7158,19 +7220,19 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.Write(this.Unknown_C0h);
-            writer.Write(this.Unknown_C4h);
-            writer.Write(this.Unknown_C8h);
-            writer.Write(this.Unknown_CCh);
-            writer.Write(this.Unknown_D0h);
-            writer.Write(this.Unknown_D4h);
-            writer.Write(this.Unknown_D8h);
-            writer.Write(this.Unknown_DCh);
-            writer.Write(this.Unknown_E0h);
-            writer.Write(this.Unknown_E4h);
-            writer.Write(this.Unknown_E8h);
-            writer.Write(this.Unknown_ECh);
+            writer.WriteBlock(KeyframeProp0);
+            writer.Write(Unknown_C0h);
+            writer.Write(Unknown_C4h);
+            writer.Write(Unknown_C8h);
+            writer.Write(Unknown_CCh);
+            writer.Write(Unknown_D0h);
+            writer.Write(Unknown_D4h);
+            writer.Write(Unknown_D8h);
+            writer.Write(Unknown_DCh);
+            writer.Write(Unknown_E0h);
+            writer.Write(Unknown_E4h);
+            writer.Write(Unknown_E8h);
+            writer.Write(Unknown_ECh);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -7244,17 +7306,17 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp5 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.KeyframeProp6 = reader.ReadBlock<ParticleKeyframeProp>();
-            this.Unknown_420h = reader.ReadSingle();
-            this.Unknown_424h = reader.ReadSingle();
-            this.Unknown_428h = reader.ReadUInt32();
-            this.Unknown_42Ch = reader.ReadUInt32();
+            KeyframeProp0 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp1 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp2 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp3 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp4 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp5 = reader.ReadBlock<ParticleKeyframeProp>();
+            KeyframeProp6 = reader.ReadBlock<ParticleKeyframeProp>();
+            Unknown_420h = reader.ReadSingle();
+            Unknown_424h = reader.ReadSingle();
+            Unknown_428h = reader.ReadUInt32();
+            Unknown_42Ch = reader.ReadUInt32();
 
 
             //switch (Unknown_420h)
@@ -7290,17 +7352,17 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.WriteBlock(this.KeyframeProp0);
-            writer.WriteBlock(this.KeyframeProp1);
-            writer.WriteBlock(this.KeyframeProp2);
-            writer.WriteBlock(this.KeyframeProp3);
-            writer.WriteBlock(this.KeyframeProp4);
-            writer.WriteBlock(this.KeyframeProp5);
-            writer.WriteBlock(this.KeyframeProp6);
-            writer.Write(this.Unknown_420h);
-            writer.Write(this.Unknown_424h);
-            writer.Write(this.Unknown_428h);
-            writer.Write(this.Unknown_42Ch);
+            writer.WriteBlock(KeyframeProp0);
+            writer.WriteBlock(KeyframeProp1);
+            writer.WriteBlock(KeyframeProp2);
+            writer.WriteBlock(KeyframeProp3);
+            writer.WriteBlock(KeyframeProp4);
+            writer.WriteBlock(KeyframeProp5);
+            writer.WriteBlock(KeyframeProp6);
+            writer.Write(Unknown_420h);
+            writer.Write(Unknown_424h);
+            writer.Write(Unknown_428h);
+            writer.Write(Unknown_42Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -7442,9 +7504,9 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_30h = reader.ReadSingle();
-            this.Unknown_34h = reader.ReadSingle();
-            this.Unknown_38h = reader.ReadUInt64();
+            Unknown_30h = reader.ReadSingle();
+            Unknown_34h = reader.ReadSingle();
+            Unknown_38h = reader.ReadUInt64();
 
             //if (Unknown_30h != 100.0f)
             //{ }//no hit
@@ -7458,9 +7520,9 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_34h);
+            writer.Write(Unknown_38h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -7495,13 +7557,13 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_30h = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadInt32();
-            this.Unknown_38h = reader.ReadInt32();
-            this.Unknown_3Ch = reader.ReadSingle();
-            this.Unknown_40h = reader.ReadSingle();
-            this.Unknown_44h = reader.ReadSingle();
-            this.Unknown_48h = reader.ReadUInt64();
+            Unknown_30h = reader.ReadUInt32();
+            Unknown_34h = reader.ReadInt32();
+            Unknown_38h = reader.ReadInt32();
+            Unknown_3Ch = reader.ReadSingle();
+            Unknown_40h = reader.ReadSingle();
+            Unknown_44h = reader.ReadSingle();
+            Unknown_48h = reader.ReadUInt64();
 
             //if (Unknown_30h != 0)
             //{ }//no hit
@@ -7567,13 +7629,13 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_34h);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_3Ch);
+            writer.Write(Unknown_40h);
+            writer.Write(Unknown_44h);
+            writer.Write(Unknown_48h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -7615,14 +7677,14 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_30h = reader.ReadUInt32();
-            this.Unknown_34h = reader.ReadUInt32();
-            this.Unknown_38h = reader.ReadSingle();
-            this.Unknown_3Ch = reader.ReadSingle();
-            this.Unknown_40h = reader.ReadSingle();
-            this.Unknown_44h = reader.ReadSingle();
-            this.Unknown_48h = reader.ReadSingle();
-            this.Unknown_4Ch = reader.ReadUInt32();
+            Unknown_30h = reader.ReadUInt32();
+            Unknown_34h = reader.ReadUInt32();
+            Unknown_38h = reader.ReadSingle();
+            Unknown_3Ch = reader.ReadSingle();
+            Unknown_40h = reader.ReadSingle();
+            Unknown_44h = reader.ReadSingle();
+            Unknown_48h = reader.ReadSingle();
+            Unknown_4Ch = reader.ReadUInt32();
 
             //if (Unknown_30h != 0)
             //{ }//no hit
@@ -7676,14 +7738,14 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_44h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_4Ch);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_34h);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_3Ch);
+            writer.Write(Unknown_40h);
+            writer.Write(Unknown_44h);
+            writer.Write(Unknown_48h);
+            writer.Write(Unknown_4Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -7744,13 +7806,13 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Name = reader.ReadUInt32();
-            this.Type = (ParticleShaderVarType)reader.ReadByte();
-            this.Unknown_15h = reader.ReadByte();
-            this.Unknown_16h = reader.ReadUInt16();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt64();
+            Name = reader.ReadUInt32();
+            Type = (ParticleShaderVarType)reader.ReadByte();
+            Unknown_15h = reader.ReadByte();
+            Unknown_16h = reader.ReadUInt16();
 
             //if (Unknown_4h != 1)
             //{ }//no hit
@@ -7791,13 +7853,13 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Name);
-            writer.Write((byte)this.Type);
-            writer.Write(this.Unknown_15h);
-            writer.Write(this.Unknown_16h);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Name);
+            writer.Write((byte)Type);
+            writer.Write(Unknown_15h);
+            writer.Write(Unknown_16h);
         }
         public virtual void WriteXml(StringBuilder sb, int indent)
         {
@@ -7883,16 +7945,16 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.Unknown_28h = reader.ReadUInt32();
-            this.Unknown_2Ch = reader.ReadUInt32();
-            this.Unknown_30h = reader.ReadSingle();
-            this.Unknown_34h = reader.ReadSingle();
-            this.Unknown_38h = reader.ReadSingle();
-            this.Unknown_3Ch = reader.ReadUInt32();
+            Unknown_18h = reader.ReadUInt32();
+            Unknown_1Ch = reader.ReadUInt32();
+            Unknown_20h = reader.ReadUInt32();
+            Unknown_24h = reader.ReadUInt32();
+            Unknown_28h = reader.ReadUInt32();
+            Unknown_2Ch = reader.ReadUInt32();
+            Unknown_30h = reader.ReadSingle();
+            Unknown_34h = reader.ReadSingle();
+            Unknown_38h = reader.ReadSingle();
+            Unknown_3Ch = reader.ReadUInt32();
 
             //switch (Unknown_18h) //shader var index..?
             //{
@@ -7970,16 +8032,16 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_2Ch);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_34h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_3Ch);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_24h);
+            writer.Write(Unknown_28h);
+            writer.Write(Unknown_2Ch);
+            writer.Write(Unknown_30h);
+            writer.Write(Unknown_34h);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_3Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -8023,18 +8085,18 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt32();
-            this.Unknown_24h = reader.ReadUInt32();
-            this.TexturePointer = reader.ReadUInt64();
-            this.TextureNamePointer = reader.ReadUInt64();
-            this.TextureNameHash = reader.ReadUInt32();
-            this.Unknown_3Ch = reader.ReadUInt32();
+            Unknown_18h = reader.ReadUInt32();
+            Unknown_1Ch = reader.ReadUInt32();
+            Unknown_20h = reader.ReadUInt32();
+            Unknown_24h = reader.ReadUInt32();
+            TexturePointer = reader.ReadUInt64();
+            TextureNamePointer = reader.ReadUInt64();
+            TextureNameHash = reader.ReadUInt32();
+            Unknown_3Ch = reader.ReadUInt32();
 
             // read reference data
-            this.Texture = reader.ReadBlockAt<Texture>(this.TexturePointer);
-            this.TextureName = reader.ReadBlockAt<string_r>(this.TextureNamePointer);
+            Texture = reader.ReadBlockAt<Texture>(TexturePointer);
+            TextureName = reader.ReadBlockAt<string_r>(TextureNamePointer);
 
 
             //switch (Unknown_18h) //shader var index..?
@@ -8078,18 +8140,18 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // update structure data
-            this.TexturePointer = (ulong)(this.Texture != null ? this.Texture.FilePosition : 0);
-            this.TextureNamePointer = (ulong)(this.TextureName != null ? this.TextureName.FilePosition : 0);
+            TexturePointer = (ulong)(Texture != null ? Texture.FilePosition : 0);
+            TextureNamePointer = (ulong)(TextureName != null ? TextureName.FilePosition : 0);
 
             // write structure data
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.TexturePointer);
-            writer.Write(this.TextureNamePointer);
-            writer.Write(this.TextureNameHash);
-            writer.Write(this.Unknown_3Ch);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.Write(Unknown_20h);
+            writer.Write(Unknown_24h);
+            writer.Write(TexturePointer);
+            writer.Write(TextureNamePointer);
+            writer.Write(TextureNameHash);
+            writer.Write(Unknown_3Ch);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -8135,13 +8197,13 @@ namespace CodeWalker.GameFiles
             base.Read(reader, parameters);
 
             // read structure data
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Unknown_20h = reader.ReadUInt64();
-            this.Items = reader.ReadBlock<ResourceSimpleList64<ParticleShaderVarKeyframeItem>>();
-            this.Unknown_38h = reader.ReadUInt64();
-            this.Unknown_40h = reader.ReadUInt64();
-            this.Unknown_48h = reader.ReadUInt64();
+            Unknown_18h = reader.ReadUInt32();
+            Unknown_1Ch = reader.ReadUInt32();
+            Unknown_20h = reader.ReadUInt64();
+            Items = reader.ReadBlock<ResourceSimpleList64<ParticleShaderVarKeyframeItem>>();
+            Unknown_38h = reader.ReadUInt64();
+            Unknown_40h = reader.ReadUInt64();
+            Unknown_48h = reader.ReadUInt64();
 
             //switch (Unknown_18h) //shader var index..?
             //{
@@ -8174,13 +8236,13 @@ namespace CodeWalker.GameFiles
             base.Write(writer, parameters);
 
             // write structure data
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.Unknown_20h);
-            writer.WriteBlock(this.Items);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_48h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.Write(Unknown_20h);
+            writer.WriteBlock(Items);
+            writer.Write(Unknown_38h);
+            writer.Write(Unknown_40h);
+            writer.Write(Unknown_48h);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -8219,12 +8281,12 @@ namespace CodeWalker.GameFiles
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             // read structure data
-            this.Unknown_0h = reader.ReadSingle();
-            this.Unknown_4h = reader.ReadSingle();
-            this.Unknown_8h = reader.ReadUInt64();
-            this.Unknown_10h = reader.ReadSingle();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt64();
+            Unknown_0h = reader.ReadSingle();
+            Unknown_4h = reader.ReadSingle();
+            Unknown_8h = reader.ReadUInt64();
+            Unknown_10h = reader.ReadSingle();
+            Unknown_14h = reader.ReadUInt32();
+            Unknown_18h = reader.ReadUInt64();
 
             switch (Unknown_0h)
             {
@@ -8270,12 +8332,12 @@ namespace CodeWalker.GameFiles
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             // write structure data
-            writer.Write(this.Unknown_0h);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
+            writer.Write(Unknown_0h);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_14h);
+            writer.Write(Unknown_18h);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {

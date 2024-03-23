@@ -162,29 +162,29 @@ namespace CodeWalker.World
             switch (zone.Shape)
             {
                 case Dat151ZoneShape.Box:
-                    InnerPos = zone.PlaybackZonePosition;
-                    InnerMax = zone.PlaybackZoneSize * 0.5f;
+                    InnerPos = zone.PositioningZoneCentre;
+                    InnerMax = zone.PositioningZoneSize * 0.5f;
                     InnerMin = -InnerMax;
-                    InnerOri = Quaternion.RotationAxis(Vector3.UnitZ, zone.PlaybackZoneAngle * deg2rad);
+                    InnerOri = Quaternion.RotationAxis(Vector3.UnitZ, zone.PositioningZoneRotationAngle * deg2rad);
                     break;
                 case Dat151ZoneShape.Sphere:
-                    InnerPos = zone.PlaybackZonePosition;
+                    InnerPos = zone.PositioningZoneCentre;
                     InnerOri = Quaternion.Identity;
-                    InnerRadius = zone.PlaybackZoneSize.X;
+                    InnerRadius = zone.PositioningZoneSize.X;
                     OuterRadius = zone.ActivationZoneSize.X;
                     break;
                 case Dat151ZoneShape.Line:
-                    InnerPos = zone.PlaybackZonePosition;
+                    InnerPos = zone.PositioningZoneCentre;
                     InnerMin = new Vector3(-1.0f, -1.0f, 0.0f);
-                    InnerMax = new Vector3(1.0f, 1.0f, (zone.PlaybackZoneSize - zone.PlaybackZonePosition).Length());
-                    InnerOri = Quaternion.Invert(Quaternion.LookAtLH(zone.PlaybackZonePosition, zone.PlaybackZoneSize, Vector3.UnitZ));
+                    InnerMax = new Vector3(1.0f, 1.0f, (zone.PositioningZoneSize - zone.PositioningZoneCentre).Length());
+                    InnerOri = Quaternion.Invert(Quaternion.LookAtLH(zone.PositioningZoneCentre, zone.PositioningZoneSize, Vector3.UnitZ));
                     break;
             }
 
-            OuterPos = zone.ActivationZonePosition;
+            OuterPos = zone.ActivationZoneCentre;
             OuterMax = zone.ActivationZoneSize * 0.5f;
             OuterMin = -OuterMax;
-            OuterOri = Quaternion.RotationAxis(Vector3.UnitZ, zone.ActivationZoneAngle * deg2rad);
+            OuterOri = Quaternion.RotationAxis(Vector3.UnitZ, zone.ActivationZoneRotationAngle * deg2rad);
 
             bool useouter = ((InnerMax.X == 0) || (InnerMax.Y == 0) || (InnerMax.Z == 0));
             if (useouter && (zone.Shape != Dat151ZoneShape.Sphere))
@@ -215,8 +215,8 @@ namespace CodeWalker.World
             OrientationInv = Quaternion.Identity;
             InnerPos = emitter.Position;
             OuterPos = InnerPos;
-            InnerRadius = emitter.InnerRadius;
-            OuterRadius = emitter.OuterRadius;
+            InnerRadius = emitter.MinDist;
+            OuterRadius = emitter.MaxDist;
 
             bool useouter = (InnerRadius == 0);
             if (useouter)
@@ -239,8 +239,8 @@ namespace CodeWalker.World
 
             if (AudioZone != null)
             {
-                AudioZone.PlaybackZonePosition = InnerPos;
-                AudioZone.ActivationZonePosition = OuterPos;
+                AudioZone.PositioningZoneCentre = InnerPos;
+                AudioZone.ActivationZoneCentre = OuterPos;
             }
             if (AudioEmitter != null)
             {
@@ -266,8 +266,8 @@ namespace CodeWalker.World
                 OuterOri = Orientation;
                 if (AudioZone != null)
                 {
-                    AudioZone.PlaybackZoneAngle = uangl;
-                    AudioZone.ActivationZoneAngle = uangl;
+                    AudioZone.PositioningZoneRotationAngle = (ushort)uangl;
+                    AudioZone.ActivationZoneRotationAngle = (ushort)uangl;
                 }
             }
             else
@@ -280,7 +280,7 @@ namespace CodeWalker.World
                     OuterOri = Orientation;
                     if (AudioZone != null)
                     {
-                        AudioZone.ActivationZoneAngle = uangl;
+                        AudioZone.ActivationZoneRotationAngle = (ushort)uangl;
                     }
                 }
                 else
@@ -288,7 +288,7 @@ namespace CodeWalker.World
                     InnerOri = Orientation;
                     if (AudioZone != null)
                     {
-                        AudioZone.PlaybackZoneAngle = uangl;
+                        AudioZone.PositioningZoneRotationAngle = (ushort)uangl;
                     }
                 }
             }
