@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -4509,7 +4509,7 @@ namespace CodeWalker.GameFiles
                         ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
                         break;
                     case LightType.Capsule:
-                        tx = -Vector3.Normalize(Tangent);
+                        tx = Vector3.Normalize(Tangent);
                         ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
                         break;
                 }
