@@ -11573,7 +11573,7 @@ namespace CodeWalker.GameFiles
         public MetaHash AutoSound { get; set; }
         public MetaHash ReportSound { get; set; }
         public float ReportVolumeDelta { get; set; }
-        public uint ReportPredelayDelta { get; set; }
+        public int ReportPredelayDelta { get; set; }
         public float TailEnergyValue { get; set; }
         public MetaHash EchoSound { get; set; }
         public MetaHash SuppressedEchoSound { get; set; }
@@ -11586,22 +11586,23 @@ namespace CodeWalker.GameFiles
         public MetaHash RattleSound { get; set; }
         public MetaHash RattleLandSound { get; set; }
         public MetaHash PickupSound { get; set; }
-        public int ShellCasing { get; set; }
+        public int ShellCasing { get; set; }//0,1,2
         public MetaHash SafetyOn { get; set; }
         public MetaHash SafetyOff { get; set; }
         public MetaHash SpecialWeaponSoundSet { get; set; }//eg fuel_can_soundset
         public MetaHash BankSound { get; set; }
         public MetaHash InteriorShotSound { get; set; }
-        public MetaHash ReloadSounds { get; set; }
+        public MetaHash ReloadSounds { get; set; }//soundset
         public MetaHash IntoCoverSound { get; set; }
         public MetaHash OutOfCoverSound { get; set; }
-        public uint BulletImpactTimeFilter { get; set; }
-        public uint LastBulletImpactTime { get; set; }
+        public int BulletImpactTimeFilter { get; set; }//0,50
+        public int LastBulletImpactTime { get; set; }//0
         public MetaHash RattleAimSound { get; set; }
         public MetaHash SmallAnimalStrikeSound { get; set; }
         public MetaHash BigAnimalStrikeSound { get; set; }
         public MetaHash SlowMoFireSound { get; set; }
         public MetaHash HitPedSound { get; set; }
+
         public MetaHash SlowMoFireSoundPresuck { get; set; }
         public MetaHash SlowMoSuppressedFireSound { get; set; }
         public MetaHash SlowMoSuppressedFireSoundPresuck { get; set; }
@@ -11615,9 +11616,11 @@ namespace CodeWalker.GameFiles
         public MetaHash SlowMoSmallAnimalStrikeSoundPresuck { get; set; }
         public MetaHash SlowMoFireSoundPresuckTime { get; set; }//100, 30, null_sound ... both int (v3) and sound (v1)... TODO: fix this!
         public MetaHash SlowMoSuppressedFireSoundPresuckTime { get; set; }//20, null_sound ...      both int (v3) and sound (v1)...
+
         public int SlowMoPedStrikeSoundPresuckTime { get; set; }
         public int SlowMoBigAnimalStrikeSoundPresuckTime { get; set; }
         public int SlowMoSmallAnimalStrikeSoundPresuckTime { get; set; }
+
         public MetaHash SuperSlowMoFireSound { get; set; }
         public MetaHash SuperSlowMoFireSoundPresuck { get; set; }
         public MetaHash SuperSlowMoSuppressedFireSound { get; set; }
@@ -11636,6 +11639,8 @@ namespace CodeWalker.GameFiles
         public int SuperSlowMoBigAnimalStrikeSoundPresuckTime { get; set; }
         public int SuperSlowMoSmallAnimalStrikeSoundPresuckTime { get; set; }
 
+        public int Version { get; set; }
+
 
         public Dat151Weapon(RelFile rel) : base(rel)
         {
@@ -11650,20 +11655,20 @@ namespace CodeWalker.GameFiles
             AutoSound = br.ReadUInt32();
             ReportSound = br.ReadUInt32();
             ReportVolumeDelta = br.ReadSingle();
-            ReportPredelayDelta = br.ReadUInt32();
+            ReportPredelayDelta = br.ReadInt32();
             TailEnergyValue = br.ReadSingle();
             EchoSound = br.ReadUInt32();
             SuppressedEchoSound = br.ReadUInt32();
             ShellCasingSound = br.ReadUInt32();
             SwipeSound = br.ReadUInt32();
             GeneralStrikeSound = br.ReadUInt32();
-            PedStrikeSound = br.ReadUInt32();
+            PedStrikeSound = br.ReadUInt32();//eg 0xBB0A8AE1
             HeftSound = br.ReadUInt32();
             PutDownSound = br.ReadUInt32();
             RattleSound = br.ReadUInt32();
             RattleLandSound = br.ReadUInt32();
             PickupSound = br.ReadUInt32();
-            ShellCasing = br.ReadInt32();
+            ShellCasing = br.ReadInt32();//0,1,2
             SafetyOn = br.ReadUInt32();
             SafetyOff = br.ReadUInt32();
             SpecialWeaponSoundSet = br.ReadUInt32();
@@ -11672,46 +11677,89 @@ namespace CodeWalker.GameFiles
             ReloadSounds = br.ReadUInt32();
             IntoCoverSound = br.ReadUInt32();
             OutOfCoverSound = br.ReadUInt32();
-            BulletImpactTimeFilter = br.ReadUInt32();
-            LastBulletImpactTime = br.ReadUInt32();
+            BulletImpactTimeFilter = br.ReadInt32();//0,50
+            LastBulletImpactTime = br.ReadInt32();//0
             RattleAimSound = br.ReadUInt32();
             SmallAnimalStrikeSound = br.ReadUInt32();
             BigAnimalStrikeSound = br.ReadUInt32();
             SlowMoFireSound = br.ReadUInt32();
             HitPedSound = br.ReadUInt32();
-            SlowMoFireSoundPresuck = br.ReadUInt32();
-            SlowMoSuppressedFireSound = br.ReadUInt32();
-            SlowMoSuppressedFireSoundPresuck = br.ReadUInt32();
-            SlowMoReportSound = br.ReadUInt32();
-            SlowMoInteriorShotSound = br.ReadUInt32();
-            SlowMoPedStrikeSound = br.ReadUInt32();
-            SlowMoPedStrikeSoundPresuck = br.ReadUInt32();
-            SlowMoBigAnimalStrikeSound = br.ReadUInt32();
-            SlowMoBigAnimalStrikeSoundPresuck = br.ReadUInt32();
-            SlowMoSmallAnimalStrikeSound = br.ReadUInt32();
-            SlowMoSmallAnimalStrikeSoundPresuck = br.ReadUInt32();
-            SlowMoFireSoundPresuckTime = br.ReadUInt32();
-            SlowMoSuppressedFireSoundPresuckTime = br.ReadUInt32();
-            SlowMoPedStrikeSoundPresuckTime = br.ReadInt32();
-            SlowMoBigAnimalStrikeSoundPresuckTime = br.ReadInt32();
-            SlowMoSmallAnimalStrikeSoundPresuckTime = br.ReadInt32();
-            SuperSlowMoFireSound = br.ReadUInt32();
-            SuperSlowMoFireSoundPresuck = br.ReadUInt32();
-            SuperSlowMoSuppressedFireSound = br.ReadUInt32();
-            SuperSlowMoSuppressedFireSoundPresuck = br.ReadUInt32();
-            SuperSlowMoReportSound = br.ReadUInt32();
-            SuperSlowMoInteriorShotSound = br.ReadUInt32();
-            SuperSlowMoPedStrikeSound = br.ReadUInt32();
-            SuperSlowMoPedStrikeSoundPresuck = br.ReadUInt32();
-            SuperSlowMoBigAnimalStrikeSound = br.ReadUInt32();
-            SuperSlowMoBigAnimalStrikeSoundPresuck = br.ReadUInt32();
-            SuperSlowMoSmallAnimalStrikeSound = br.ReadUInt32();
-            SuperSlowMoSmallAnimalStrikeSoundPresuck = br.ReadUInt32();
-            SuperSlowMoFireSoundPresuckTime = br.ReadInt32();
-            SuperSlowMoSuppressedFireSoundPresuckTime = br.ReadInt32();
-            SuperSlowMoPedStrikeSoundPresuckTime = br.ReadInt32();
-            SuperSlowMoBigAnimalStrikeSoundPresuckTime = br.ReadInt32();
-            SuperSlowMoSmallAnimalStrikeSoundPresuckTime = br.ReadInt32();
+
+            Version = 0;
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            switch (bytesleft)
+            {
+                case 0:
+                    break;
+                case 52:
+                case 64:
+                case 132:
+                    Version = 1;
+                    SlowMoFireSoundPresuck = br.ReadUInt32();
+                    SlowMoSuppressedFireSound = br.ReadUInt32();
+                    SlowMoSuppressedFireSoundPresuck = br.ReadUInt32();
+                    SlowMoReportSound = br.ReadUInt32();
+                    SlowMoInteriorShotSound = br.ReadUInt32();
+                    SlowMoPedStrikeSound = br.ReadUInt32();
+                    SlowMoPedStrikeSoundPresuck = br.ReadUInt32();
+                    SlowMoBigAnimalStrikeSound = br.ReadUInt32();
+                    SlowMoBigAnimalStrikeSoundPresuck = br.ReadUInt32();
+                    SlowMoSmallAnimalStrikeSound = br.ReadUInt32();
+                    SlowMoSmallAnimalStrikeSoundPresuck = br.ReadUInt32();
+                    SlowMoFireSoundPresuckTime = br.ReadUInt32();
+                    SlowMoSuppressedFireSoundPresuckTime = br.ReadUInt32();
+
+                    if (bytesleft >= 64)
+                    {
+                        Version = 2;
+                        SlowMoPedStrikeSoundPresuckTime = br.ReadInt32();
+                        SlowMoBigAnimalStrikeSoundPresuckTime = br.ReadInt32();
+                        SlowMoSmallAnimalStrikeSoundPresuckTime = br.ReadInt32();
+
+                        if (SlowMoPedStrikeSoundPresuckTime != 0)
+                        { }//only rarely hit!
+                        if (SlowMoBigAnimalStrikeSoundPresuckTime != 0)
+                        { }//no hit
+                        if (SlowMoSmallAnimalStrikeSoundPresuckTime != 0)
+                        { }//no hit
+
+                        if (bytesleft >= 132)
+                        {
+                            Version = 3;
+                            SuperSlowMoFireSound = br.ReadUInt32();
+                            SuperSlowMoFireSoundPresuck = br.ReadUInt32();
+                            SuperSlowMoSuppressedFireSound = br.ReadUInt32();
+                            SuperSlowMoSuppressedFireSoundPresuck = br.ReadUInt32();
+                            SuperSlowMoReportSound = br.ReadUInt32();
+                            SuperSlowMoInteriorShotSound = br.ReadUInt32();
+                            SuperSlowMoPedStrikeSound = br.ReadUInt32();
+                            SuperSlowMoPedStrikeSoundPresuck = br.ReadUInt32();
+                            SuperSlowMoBigAnimalStrikeSound = br.ReadUInt32();
+                            SuperSlowMoBigAnimalStrikeSoundPresuck = br.ReadUInt32();
+                            SuperSlowMoSmallAnimalStrikeSound = br.ReadUInt32();
+                            SuperSlowMoSmallAnimalStrikeSoundPresuck = br.ReadUInt32();
+                            SuperSlowMoFireSoundPresuckTime = br.ReadInt32();
+                            SuperSlowMoSuppressedFireSoundPresuckTime = br.ReadInt32();
+                            SuperSlowMoPedStrikeSoundPresuckTime = br.ReadInt32();
+                            SuperSlowMoBigAnimalStrikeSoundPresuckTime = br.ReadInt32();
+                            SuperSlowMoSmallAnimalStrikeSoundPresuckTime = br.ReadInt32();
+
+                            if (bytesleft > 132)
+                            { }//shouldn't get here
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesleft != 0)
+            { }
+
+            if (LastBulletImpactTime != 0)
+            { }//no hit
+
         }
         public override void Write(BinaryWriter bw)
         {
@@ -11730,13 +11778,13 @@ namespace CodeWalker.GameFiles
             bw.Write(ShellCasingSound);
             bw.Write(SwipeSound);
             bw.Write(GeneralStrikeSound);
-            bw.Write(PedStrikeSound);
+            bw.Write(PedStrikeSound);//eg 0xBB0A8AE1
             bw.Write(HeftSound);
             bw.Write(PutDownSound);
             bw.Write(RattleSound);
             bw.Write(RattleLandSound);
             bw.Write(PickupSound);
-            bw.Write(ShellCasing);
+            bw.Write(ShellCasing);//0,1,2
             bw.Write(SafetyOn);
             bw.Write(SafetyOff);
             bw.Write(SpecialWeaponSoundSet);
@@ -11745,50 +11793,64 @@ namespace CodeWalker.GameFiles
             bw.Write(ReloadSounds);
             bw.Write(IntoCoverSound);
             bw.Write(OutOfCoverSound);
-            bw.Write(BulletImpactTimeFilter);
-            bw.Write(LastBulletImpactTime);
+            bw.Write(BulletImpactTimeFilter);//0,50
+            bw.Write(LastBulletImpactTime);//0
             bw.Write(RattleAimSound);
             bw.Write(SmallAnimalStrikeSound);
             bw.Write(BigAnimalStrikeSound);
             bw.Write(SlowMoFireSound);
             bw.Write(HitPedSound);
-            bw.Write(SlowMoFireSoundPresuck);
-            bw.Write(SlowMoSuppressedFireSound);
-            bw.Write(SlowMoSuppressedFireSoundPresuck);
-            bw.Write(SlowMoReportSound);
-            bw.Write(SlowMoInteriorShotSound);
-            bw.Write(SlowMoPedStrikeSound);
-            bw.Write(SlowMoPedStrikeSoundPresuck);
-            bw.Write(SlowMoBigAnimalStrikeSound);
-            bw.Write(SlowMoBigAnimalStrikeSoundPresuck);
-            bw.Write(SlowMoSmallAnimalStrikeSound);
-            bw.Write(SlowMoSmallAnimalStrikeSoundPresuck);
-            bw.Write(SlowMoFireSoundPresuckTime);
-            bw.Write(SlowMoSuppressedFireSoundPresuckTime);
-            bw.Write(SlowMoPedStrikeSoundPresuckTime);
-            bw.Write(SlowMoBigAnimalStrikeSoundPresuckTime);
-            bw.Write(SlowMoSmallAnimalStrikeSoundPresuckTime);
-            bw.Write(SuperSlowMoFireSound);
-            bw.Write(SuperSlowMoFireSoundPresuck);
-            bw.Write(SuperSlowMoSuppressedFireSound);
-            bw.Write(SuperSlowMoSuppressedFireSoundPresuck);
-            bw.Write(SuperSlowMoReportSound);
-            bw.Write(SuperSlowMoInteriorShotSound);
-            bw.Write(SuperSlowMoPedStrikeSound);
-            bw.Write(SuperSlowMoPedStrikeSoundPresuck);
-            bw.Write(SuperSlowMoBigAnimalStrikeSound);
-            bw.Write(SuperSlowMoBigAnimalStrikeSoundPresuck);
-            bw.Write(SuperSlowMoSmallAnimalStrikeSound);
-            bw.Write(SuperSlowMoSmallAnimalStrikeSoundPresuck);
-            bw.Write(SuperSlowMoFireSoundPresuckTime);
-            bw.Write(SuperSlowMoSuppressedFireSoundPresuckTime);
-            bw.Write(SuperSlowMoPedStrikeSoundPresuckTime);
-            bw.Write(SuperSlowMoBigAnimalStrikeSoundPresuckTime);
-            bw.Write(SuperSlowMoSmallAnimalStrikeSoundPresuckTime);
+
+            if (Version >= 1)
+            {
+                bw.Write(SlowMoFireSoundPresuck);
+                bw.Write(SlowMoSuppressedFireSound);
+                bw.Write(SlowMoSuppressedFireSoundPresuck);
+                bw.Write(SlowMoReportSound);
+                bw.Write(SlowMoInteriorShotSound);
+                bw.Write(SlowMoPedStrikeSound);
+                bw.Write(SlowMoPedStrikeSoundPresuck);
+                bw.Write(SlowMoBigAnimalStrikeSound);
+                bw.Write(SlowMoBigAnimalStrikeSoundPresuck);
+                bw.Write(SlowMoSmallAnimalStrikeSound);
+                bw.Write(SlowMoSmallAnimalStrikeSoundPresuck);
+                bw.Write(SlowMoFireSoundPresuckTime);
+                bw.Write(SlowMoSuppressedFireSoundPresuckTime);
+
+                if (Version >= 2)
+                {
+                    bw.Write(SlowMoPedStrikeSoundPresuckTime);
+                    bw.Write(SlowMoBigAnimalStrikeSoundPresuckTime);
+                    bw.Write(SlowMoSmallAnimalStrikeSoundPresuckTime);
+
+                    if (Version >= 3)
+                    {
+                        bw.Write(SuperSlowMoFireSound);
+                        bw.Write(SuperSlowMoFireSoundPresuck);
+                        bw.Write(SuperSlowMoSuppressedFireSound);
+                        bw.Write(SuperSlowMoSuppressedFireSoundPresuck);
+                        bw.Write(SuperSlowMoReportSound);
+                        bw.Write(SuperSlowMoInteriorShotSound);
+                        bw.Write(SuperSlowMoPedStrikeSound);
+                        bw.Write(SuperSlowMoPedStrikeSoundPresuck);
+                        bw.Write(SuperSlowMoBigAnimalStrikeSound);
+                        bw.Write(SuperSlowMoBigAnimalStrikeSoundPresuck);
+                        bw.Write(SuperSlowMoSmallAnimalStrikeSound);
+                        bw.Write(SuperSlowMoSmallAnimalStrikeSoundPresuck);
+                        bw.Write(SuperSlowMoFireSoundPresuckTime);
+                        bw.Write(SuperSlowMoSuppressedFireSoundPresuckTime);
+                        bw.Write(SuperSlowMoPedStrikeSoundPresuckTime);
+                        bw.Write(SuperSlowMoBigAnimalStrikeSoundPresuckTime);
+                        bw.Write(SuperSlowMoSmallAnimalStrikeSoundPresuckTime);
+                    }
+                }
+            }
+
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.ValueTag(sb, indent, "Version", Version.ToString()); //CW invention, not an actual field!
             RelXml.StringTag(sb, indent, "FireSound", RelXml.HashString(FireSound));
             RelXml.StringTag(sb, indent, "SuppressedFireSound", RelXml.HashString(SuppressedFireSound));
             RelXml.StringTag(sb, indent, "AutoSound", RelXml.HashString(AutoSound));
@@ -11823,49 +11885,62 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "BigAnimalStrikeSound", RelXml.HashString(BigAnimalStrikeSound));
             RelXml.StringTag(sb, indent, "SlowMoFireSound", RelXml.HashString(SlowMoFireSound));
             RelXml.StringTag(sb, indent, "HitPedSound", RelXml.HashString(HitPedSound));
-            RelXml.StringTag(sb, indent, "SlowMoFireSoundPresuck", RelXml.HashString(SlowMoFireSoundPresuck));
-            RelXml.StringTag(sb, indent, "SlowMoSuppressedFireSound", RelXml.HashString(SlowMoSuppressedFireSound));
-            RelXml.StringTag(sb, indent, "SlowMoSuppressedFireSoundPresuck", RelXml.HashString(SlowMoSuppressedFireSoundPresuck));
-            RelXml.StringTag(sb, indent, "SlowMoReportSound", RelXml.HashString(SlowMoReportSound));
-            RelXml.StringTag(sb, indent, "SlowMoInteriorShotSound", RelXml.HashString(SlowMoInteriorShotSound));
-            RelXml.StringTag(sb, indent, "SlowMoPedStrikeSound", RelXml.HashString(SlowMoPedStrikeSound));
-            RelXml.StringTag(sb, indent, "SlowMoPedStrikeSoundPresuck", RelXml.HashString(SlowMoPedStrikeSoundPresuck));
-            RelXml.StringTag(sb, indent, "SlowMoBigAnimalStrikeSound", RelXml.HashString(SlowMoBigAnimalStrikeSound));
-            RelXml.StringTag(sb, indent, "SlowMoBigAnimalStrikeSoundPresuck", RelXml.HashString(SlowMoBigAnimalStrikeSoundPresuck));
-            RelXml.StringTag(sb, indent, "SlowMoSmallAnimalStrikeSound", RelXml.HashString(SlowMoSmallAnimalStrikeSound));
-            RelXml.StringTag(sb, indent, "SlowMoSmallAnimalStrikeSoundPresuck", RelXml.HashString(SlowMoSmallAnimalStrikeSoundPresuck));
-            RelXml.StringTag(sb, indent, "SlowMoFireSoundPresuckTime", RelXml.HashString(SlowMoFireSoundPresuckTime));
-            RelXml.StringTag(sb, indent, "SlowMoSuppressedFireSoundPresuckTime", RelXml.HashString(SlowMoSuppressedFireSoundPresuckTime));
-            RelXml.ValueTag(sb, indent, "SlowMoPedStrikeSoundPresuckTime", SlowMoPedStrikeSoundPresuckTime.ToString());
-            RelXml.ValueTag(sb, indent, "SlowMoBigAnimalStrikeSoundPresuckTime", SlowMoBigAnimalStrikeSoundPresuckTime.ToString());
-            RelXml.ValueTag(sb, indent, "SlowMoSmallAnimalStrikeSoundPresuckTime", SlowMoSmallAnimalStrikeSoundPresuckTime.ToString());
-            RelXml.StringTag(sb, indent, "SuperSlowMoFireSound", RelXml.HashString(SuperSlowMoFireSound));
-            RelXml.StringTag(sb, indent, "SuperSlowMoFireSoundPresuck", RelXml.HashString(SuperSlowMoFireSoundPresuck));
-            RelXml.StringTag(sb, indent, "SuperSlowMoSuppressedFireSound", RelXml.HashString(SuperSlowMoSuppressedFireSound));
-            RelXml.StringTag(sb, indent, "SuperSlowMoSuppressedFireSoundPresuck", RelXml.HashString(SuperSlowMoSuppressedFireSoundPresuck));
-            RelXml.StringTag(sb, indent, "SuperSlowMoReportSound", RelXml.HashString(SuperSlowMoReportSound));
-            RelXml.StringTag(sb, indent, "SuperSlowMoInteriorShotSound", RelXml.HashString(SuperSlowMoInteriorShotSound));
-            RelXml.StringTag(sb, indent, "SuperSlowMoPedStrikeSound", RelXml.HashString(SuperSlowMoPedStrikeSound));
-            RelXml.StringTag(sb, indent, "SuperSlowMoPedStrikeSoundPresuck", RelXml.HashString(SuperSlowMoPedStrikeSoundPresuck));
-            RelXml.StringTag(sb, indent, "SuperSlowMoBigAnimalStrikeSound", RelXml.HashString(SuperSlowMoBigAnimalStrikeSound));
-            RelXml.StringTag(sb, indent, "SuperSlowMoBigAnimalStrikeSoundPresuck", RelXml.HashString(SuperSlowMoBigAnimalStrikeSoundPresuck));
-            RelXml.StringTag(sb, indent, "SuperSlowMoSmallAnimalStrikeSound", RelXml.HashString(SuperSlowMoSmallAnimalStrikeSound));
-            RelXml.StringTag(sb, indent, "SuperSlowMoSmallAnimalStrikeSoundPresuck", RelXml.HashString(SuperSlowMoSmallAnimalStrikeSoundPresuck));
-            RelXml.ValueTag(sb, indent, "SuperSlowMoFireSoundPresuckTime", SuperSlowMoFireSoundPresuckTime.ToString());
-            RelXml.ValueTag(sb, indent, "SuperSlowMoSuppressedFireSoundPresuckTime", SuperSlowMoSuppressedFireSoundPresuckTime.ToString());
-            RelXml.ValueTag(sb, indent, "SuperSlowMoPedStrikeSoundPresuckTime", SuperSlowMoPedStrikeSoundPresuckTime.ToString());
-            RelXml.ValueTag(sb, indent, "SuperSlowMoBigAnimalStrikeSoundPresuckTime", SuperSlowMoBigAnimalStrikeSoundPresuckTime.ToString());
-            RelXml.ValueTag(sb, indent, "SuperSlowMoSmallAnimalStrikeSoundPresuckTime", SuperSlowMoSmallAnimalStrikeSoundPresuckTime.ToString());
+
+            if (Version >= 1)
+            {
+                RelXml.StringTag(sb, indent, "SlowMoFireSoundPresuck", RelXml.HashString(SlowMoFireSoundPresuck));
+                RelXml.StringTag(sb, indent, "SlowMoSuppressedFireSound", RelXml.HashString(SlowMoSuppressedFireSound));
+                RelXml.StringTag(sb, indent, "SlowMoSuppressedFireSoundPresuck", RelXml.HashString(SlowMoSuppressedFireSoundPresuck));
+                RelXml.StringTag(sb, indent, "SlowMoReportSound", RelXml.HashString(SlowMoReportSound));
+                RelXml.StringTag(sb, indent, "SlowMoInteriorShotSound", RelXml.HashString(SlowMoInteriorShotSound));
+                RelXml.StringTag(sb, indent, "SlowMoPedStrikeSound", RelXml.HashString(SlowMoPedStrikeSound));
+                RelXml.StringTag(sb, indent, "SlowMoPedStrikeSoundPresuck", RelXml.HashString(SlowMoPedStrikeSoundPresuck));
+                RelXml.StringTag(sb, indent, "SlowMoBigAnimalStrikeSound", RelXml.HashString(SlowMoBigAnimalStrikeSound));
+                RelXml.StringTag(sb, indent, "SlowMoBigAnimalStrikeSoundPresuck", RelXml.HashString(SlowMoBigAnimalStrikeSoundPresuck));
+                RelXml.StringTag(sb, indent, "SlowMoSmallAnimalStrikeSound", RelXml.HashString(SlowMoSmallAnimalStrikeSound));
+                RelXml.StringTag(sb, indent, "SlowMoSmallAnimalStrikeSoundPresuck", RelXml.HashString(SlowMoSmallAnimalStrikeSoundPresuck));
+                RelXml.StringTag(sb, indent, "SlowMoFireSoundPresuckTime", RelXml.HashString(SlowMoFireSoundPresuckTime));
+                RelXml.StringTag(sb, indent, "SlowMoSuppressedFireSoundPresuckTime", RelXml.HashString(SlowMoSuppressedFireSoundPresuckTime));
+
+                if (Version >= 2)
+                {
+                    RelXml.ValueTag(sb, indent, "SlowMoPedStrikeSoundPresuckTime", SlowMoPedStrikeSoundPresuckTime.ToString());
+                    RelXml.ValueTag(sb, indent, "SlowMoBigAnimalStrikeSoundPresuckTime", SlowMoBigAnimalStrikeSoundPresuckTime.ToString());
+                    RelXml.ValueTag(sb, indent, "SlowMoSmallAnimalStrikeSoundPresuckTime", SlowMoSmallAnimalStrikeSoundPresuckTime.ToString());
+
+                    if (Version >= 3)
+                    {
+                        RelXml.StringTag(sb, indent, "SuperSlowMoFireSound", RelXml.HashString(SuperSlowMoFireSound));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoFireSoundPresuck", RelXml.HashString(SuperSlowMoFireSoundPresuck));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoSuppressedFireSound", RelXml.HashString(SuperSlowMoSuppressedFireSound));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoSuppressedFireSoundPresuck", RelXml.HashString(SuperSlowMoSuppressedFireSoundPresuck));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoReportSound", RelXml.HashString(SuperSlowMoReportSound));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoInteriorShotSound", RelXml.HashString(SuperSlowMoInteriorShotSound));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoPedStrikeSound", RelXml.HashString(SuperSlowMoPedStrikeSound));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoPedStrikeSoundPresuck", RelXml.HashString(SuperSlowMoPedStrikeSoundPresuck));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoBigAnimalStrikeSound", RelXml.HashString(SuperSlowMoBigAnimalStrikeSound));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoBigAnimalStrikeSoundPresuck", RelXml.HashString(SuperSlowMoBigAnimalStrikeSoundPresuck));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoSmallAnimalStrikeSound", RelXml.HashString(SuperSlowMoSmallAnimalStrikeSound));
+                        RelXml.StringTag(sb, indent, "SuperSlowMoSmallAnimalStrikeSoundPresuck", RelXml.HashString(SuperSlowMoSmallAnimalStrikeSoundPresuck));
+                        RelXml.ValueTag(sb, indent, "SuperSlowMoFireSoundPresuckTime", SuperSlowMoFireSoundPresuckTime.ToString());
+                        RelXml.ValueTag(sb, indent, "SuperSlowMoSuppressedFireSoundPresuckTime", SuperSlowMoSuppressedFireSoundPresuckTime.ToString());
+                        RelXml.ValueTag(sb, indent, "SuperSlowMoPedStrikeSoundPresuckTime", SuperSlowMoPedStrikeSoundPresuckTime.ToString());
+                        RelXml.ValueTag(sb, indent, "SuperSlowMoBigAnimalStrikeSoundPresuckTime", SuperSlowMoBigAnimalStrikeSoundPresuckTime.ToString());
+                        RelXml.ValueTag(sb, indent, "SuperSlowMoSmallAnimalStrikeSoundPresuckTime", SuperSlowMoSmallAnimalStrikeSoundPresuckTime.ToString());
+                    }
+                }
+            }
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            Version = Xml.GetChildIntAttribute(node, "Version", "value");
             FireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "FireSound"));
             SuppressedFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuppressedFireSound"));
             AutoSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "AutoSound"));
             ReportSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ReportSound"));
             ReportVolumeDelta = Xml.GetChildFloatAttribute(node, "ReportVolumeDelta", "value");
-            ReportPredelayDelta = Xml.GetChildUIntAttribute(node, "ReportPredelayDelta", "value");
+            ReportPredelayDelta = Xml.GetChildIntAttribute(node, "ReportPredelayDelta", "value");
             TailEnergyValue = Xml.GetChildFloatAttribute(node, "TailEnergyValue", "value");
             EchoSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "EchoSound"));
             SuppressedEchoSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuppressedEchoSound"));
@@ -11887,46 +11962,58 @@ namespace CodeWalker.GameFiles
             ReloadSounds = XmlRel.GetHash(Xml.GetChildInnerText(node, "ReloadSounds"));
             IntoCoverSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "IntoCoverSound"));
             OutOfCoverSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "OutOfCoverSound"));
-            BulletImpactTimeFilter = Xml.GetChildUIntAttribute(node, "BulletImpactTimeFilter", "value");
-            LastBulletImpactTime = Xml.GetChildUIntAttribute(node, "LastBulletImpactTime", "value");
+            BulletImpactTimeFilter = Xml.GetChildIntAttribute(node, "BulletImpactTimeFilter", "value");
+            LastBulletImpactTime = Xml.GetChildIntAttribute(node, "LastBulletImpactTime", "value");
             RattleAimSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "RattleAimSound"));
             SmallAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SmallAnimalStrikeSound"));
             BigAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "BigAnimalStrikeSound"));
             SlowMoFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoFireSound"));
             HitPedSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "HitPedSound"));
-            SlowMoFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoFireSoundPresuck"));
-            SlowMoSuppressedFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSuppressedFireSound"));
-            SlowMoSuppressedFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSuppressedFireSoundPresuck"));
-            SlowMoReportSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoReportSound"));
-            SlowMoInteriorShotSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoInteriorShotSound"));
-            SlowMoPedStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoPedStrikeSound"));
-            SlowMoPedStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoPedStrikeSoundPresuck"));
-            SlowMoBigAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoBigAnimalStrikeSound"));
-            SlowMoBigAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoBigAnimalStrikeSoundPresuck"));
-            SlowMoSmallAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSmallAnimalStrikeSound"));
-            SlowMoSmallAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSmallAnimalStrikeSoundPresuck"));
-            SlowMoFireSoundPresuckTime = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoFireSoundPresuckTime"));
-            SlowMoSuppressedFireSoundPresuckTime = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSuppressedFireSoundPresuckTime"));
-            SlowMoPedStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SlowMoPedStrikeSoundPresuckTime", "value");
-            SlowMoBigAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SlowMoBigAnimalStrikeSoundPresuckTime", "value");
-            SlowMoSmallAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SlowMoSmallAnimalStrikeSoundPresuckTime", "value");
-            SuperSlowMoFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoFireSound"));
-            SuperSlowMoFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoFireSoundPresuck"));
-            SuperSlowMoSuppressedFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSuppressedFireSound"));
-            SuperSlowMoSuppressedFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSuppressedFireSoundPresuck"));
-            SuperSlowMoReportSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoReportSound"));
-            SuperSlowMoInteriorShotSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoInteriorShotSound"));
-            SuperSlowMoPedStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoPedStrikeSound"));
-            SuperSlowMoPedStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoPedStrikeSoundPresuck"));
-            SuperSlowMoBigAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoBigAnimalStrikeSound"));
-            SuperSlowMoBigAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoBigAnimalStrikeSoundPresuck"));
-            SuperSlowMoSmallAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSmallAnimalStrikeSound"));
-            SuperSlowMoSmallAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSmallAnimalStrikeSoundPresuck"));
-            SuperSlowMoFireSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoFireSoundPresuckTime", "value");
-            SuperSlowMoSuppressedFireSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoSuppressedFireSoundPresuckTime", "value");
-            SuperSlowMoPedStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoPedStrikeSoundPresuckTime", "value");
-            SuperSlowMoBigAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoBigAnimalStrikeSoundPresuckTime", "value");
-            SuperSlowMoSmallAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoSmallAnimalStrikeSoundPresuckTime", "value");
+
+            if (Version >= 1)
+            {
+                SlowMoFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoFireSoundPresuck"));
+                SlowMoSuppressedFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSuppressedFireSound"));
+                SlowMoSuppressedFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSuppressedFireSoundPresuck"));
+                SlowMoReportSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoReportSound"));
+                SlowMoInteriorShotSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoInteriorShotSound"));
+                SlowMoPedStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoPedStrikeSound"));
+                SlowMoPedStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoPedStrikeSoundPresuck"));
+                SlowMoBigAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoBigAnimalStrikeSound"));
+                SlowMoBigAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoBigAnimalStrikeSoundPresuck"));
+                SlowMoSmallAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSmallAnimalStrikeSound"));
+                SlowMoSmallAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSmallAnimalStrikeSoundPresuck"));
+                SlowMoFireSoundPresuckTime = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoFireSoundPresuckTime"));
+                SlowMoSuppressedFireSoundPresuckTime = XmlRel.GetHash(Xml.GetChildInnerText(node, "SlowMoSuppressedFireSoundPresuckTime"));
+
+                if (Version >= 2)
+                {
+                    SlowMoPedStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SlowMoPedStrikeSoundPresuckTime", "value");
+                    SlowMoBigAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SlowMoBigAnimalStrikeSoundPresuckTime", "value");
+                    SlowMoSmallAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SlowMoSmallAnimalStrikeSoundPresuckTime", "value");
+
+                    if (Version >= 3)
+                    {
+                        SuperSlowMoFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoFireSound"));
+                        SuperSlowMoFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoFireSoundPresuck"));
+                        SuperSlowMoSuppressedFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSuppressedFireSound"));
+                        SuperSlowMoSuppressedFireSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSuppressedFireSoundPresuck"));
+                        SuperSlowMoReportSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoReportSound"));
+                        SuperSlowMoInteriorShotSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoInteriorShotSound"));
+                        SuperSlowMoPedStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoPedStrikeSound"));
+                        SuperSlowMoPedStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoPedStrikeSoundPresuck"));
+                        SuperSlowMoBigAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoBigAnimalStrikeSound"));
+                        SuperSlowMoBigAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoBigAnimalStrikeSoundPresuck"));
+                        SuperSlowMoSmallAnimalStrikeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSmallAnimalStrikeSound"));
+                        SuperSlowMoSmallAnimalStrikeSoundPresuck = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuperSlowMoSmallAnimalStrikeSoundPresuck"));
+                        SuperSlowMoFireSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoFireSoundPresuckTime", "value");
+                        SuperSlowMoSuppressedFireSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoSuppressedFireSoundPresuckTime", "value");
+                        SuperSlowMoPedStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoPedStrikeSoundPresuckTime", "value");
+                        SuperSlowMoBigAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoBigAnimalStrikeSoundPresuckTime", "value");
+                        SuperSlowMoSmallAnimalStrikeSoundPresuckTime = Xml.GetChildIntAttribute(node, "SuperSlowMoSmallAnimalStrikeSoundPresuckTime", "value");
+                    }
+                }
+            }
         }
         public override MetaHash[] GetSoundHashes()
         {
