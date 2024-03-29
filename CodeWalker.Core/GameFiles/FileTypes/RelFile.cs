@@ -10222,7 +10222,7 @@ namespace CodeWalker.GameFiles
         public int ExhaustRevsVolume_PostSubmix { get; set; }
         public int EngineThrottleVolume_PostSubmix { get; set; }
         public int ExhaustThrottleVolume_PostSubmix { get; set; }
-        public int GearChangeWobbleLength { get; set; }
+        public uint GearChangeWobbleLength { get; set; }
         public float GearChangeWobbleLengthVariance { get; set; }
         public float GearChangeWobbleSpeed { get; set; }
         public float GearChangeWobbleSpeedVariance { get; set; }
@@ -10239,17 +10239,17 @@ namespace CodeWalker.GameFiles
         public MetaHash NPCEngineAccel { get; set; }
         public MetaHash NPCExhaustAccel { get; set; }
         public MetaHash RevLimiterPopSound { get; set; }
-        public int MinRPMOverride { get; set; }
-        public int MaxRPMOverride { get; set; }
+        public uint MinRPMOverride { get; set; }
+        public uint MaxRPMOverride { get; set; }
         public MetaHash EngineSubmixVoice { get; set; }
         public MetaHash ExhaustSubmixVoice { get; set; }
         public int ExhaustProximityVolume_PostSubmix { get; set; }
-        public int RevLimiterGrainsToPlay { get; set; }
-        public int RevLimiterGrainsToSkip { get; set; }
+        public uint RevLimiterGrainsToPlay { get; set; }
+        public uint RevLimiterGrainsToSkip { get; set; }
         public MetaHash SynchronisedSynth { get; set; }
         public int UpgradedEngineVolumeBoost_PostSubmix { get; set; }
-        public int UpgradedEngineSynthDef { get; set; }
-        public int UpgradedEngineSynthPreset { get; set; }
+        public MetaHash UpgradedEngineSynthDef { get; set; }
+        public MetaHash UpgradedEngineSynthPreset { get; set; }
         public int UpgradedExhaustVolumeBoost_PostSubmix { get; set; }
         public MetaHash UpgradedExhaustSynthDef { get; set; }
         public MetaHash UpgradedExhaustSynthPreset { get; set; }
@@ -10259,7 +10259,7 @@ namespace CodeWalker.GameFiles
         public int ExhaustIdleVolume_PostSubmix { get; set; }
         public int StartupRevsVolumeBoostEngine_PostSubmix { get; set; }
         public int StartupRevsVolumeBoostExhaust_PostSubmix { get; set; }
-        public int RevLimiterApplyType { get; set; }
+        public int RevLimiterApplyType { get; set; }//OPTIONAL!? only include this and next if either nonzero?
         public float RevLimiterVolumeCut { get; set; }//OPTIONAL!?
 
         public Dat151VehicleEngineGranular(RelFile rel) : base(rel)
@@ -10290,7 +10290,7 @@ namespace CodeWalker.GameFiles
             ExhaustRevsVolume_PostSubmix = br.ReadInt32();
             EngineThrottleVolume_PostSubmix = br.ReadInt32();
             ExhaustThrottleVolume_PostSubmix = br.ReadInt32();
-            GearChangeWobbleLength = br.ReadInt32();
+            GearChangeWobbleLength = br.ReadUInt32();
             GearChangeWobbleLengthVariance = br.ReadSingle();
             GearChangeWobbleSpeed = br.ReadSingle();
             GearChangeWobbleSpeedVariance = br.ReadSingle();
@@ -10307,17 +10307,17 @@ namespace CodeWalker.GameFiles
             NPCEngineAccel = br.ReadUInt32();
             NPCExhaustAccel = br.ReadUInt32();
             RevLimiterPopSound = br.ReadUInt32();
-            MinRPMOverride = br.ReadInt32();
-            MaxRPMOverride = br.ReadInt32();
+            MinRPMOverride = br.ReadUInt32();
+            MaxRPMOverride = br.ReadUInt32();
             EngineSubmixVoice = br.ReadUInt32();
             ExhaustSubmixVoice = br.ReadUInt32();
             ExhaustProximityVolume_PostSubmix = br.ReadInt32();
-            RevLimiterGrainsToPlay = br.ReadInt32();
-            RevLimiterGrainsToSkip = br.ReadInt32();
+            RevLimiterGrainsToPlay = br.ReadUInt32();
+            RevLimiterGrainsToSkip = br.ReadUInt32();
             SynchronisedSynth = br.ReadUInt32();
             UpgradedEngineVolumeBoost_PostSubmix = br.ReadInt32();
-            UpgradedEngineSynthDef = br.ReadInt32();
-            UpgradedEngineSynthPreset = br.ReadInt32();
+            UpgradedEngineSynthDef = br.ReadUInt32();
+            UpgradedEngineSynthPreset = br.ReadUInt32();
             UpgradedExhaustVolumeBoost_PostSubmix = br.ReadInt32();
             UpgradedExhaustSynthDef = br.ReadUInt32();
             UpgradedExhaustSynthPreset = br.ReadUInt32();
@@ -10327,8 +10327,114 @@ namespace CodeWalker.GameFiles
             ExhaustIdleVolume_PostSubmix = br.ReadInt32();
             StartupRevsVolumeBoostEngine_PostSubmix = br.ReadInt32();
             StartupRevsVolumeBoostExhaust_PostSubmix = br.ReadInt32();
-            RevLimiterApplyType = br.ReadInt32();
-            RevLimiterVolumeCut = br.ReadSingle();
+
+
+
+            switch (this.Flags)
+            {
+                case 0xAAAAA905:
+                case 0xAAAAA955:
+                case 0xAAAAA954:
+                case 0xAAAAA914:
+                case 0xAAAAA904:
+                case 0xAAAAA805:
+                case 0xAAAAA915:
+                case 0xAAAAA945:
+                case 0xAAAAA815:
+                case 0xAAAAA944:
+                case 0xAAAAA854:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.EngineSubmixVoice)
+            {
+                case 1225003942:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.ExhaustSubmixVoice)
+            {
+                case 1479769906:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.RevLimiterGrainsToPlay)
+            {
+                case 5:
+                case 3:
+                case 4:
+                case 2:
+                case 6:
+                case 1:
+                    break;
+                default:
+                    break;
+            }
+            switch (this.RevLimiterGrainsToSkip)
+            {
+                case 2:
+                case 1:
+                case 3:
+                case 4:
+                    break;
+                default:
+                    break;
+            }
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            switch (bytesleft) //any other way to tell??
+            {
+                case 0:
+                    break;
+                case 8:
+                    RevLimiterApplyType = br.ReadInt32();
+                    RevLimiterVolumeCut = br.ReadSingle();
+                    switch (RevLimiterApplyType)
+                    {
+                        case 1:
+                        case 2:
+                        case 0:
+                            break;
+                        default:
+                            break;//no hit here
+                    }
+                    if ((RevLimiterApplyType == 0) && (RevLimiterVolumeCut == 0))
+                    { }//no hit here
+                    break;
+                default:
+                    break;//no hit here
+            }
+
+            if (bytesleft != 0)
+            { }
+
+            if (EngineVolume_PreSubmix != 0)
+            { }
+            if (EngineRevsVolume_PreSubmix != 0)
+            { }
+            if (ExhaustRevsVolume_PreSubmix != 0)
+            { }
+            if (EngineThrottleVolume_PreSubmix != 0)
+            { }
+            if (ExhaustThrottleVolume_PreSubmix != 0)
+            { }
+            if (MinRPMOverride != 0)
+            { }
+            if (MaxRPMOverride != 0)
+            { }
+            if (UpgradedEngineSynthDef != 0)
+            { }
+            if (UpgradedEngineSynthPreset != 0)
+            { }
+            if (UpgradedExhaustSynthDef != 0)
+            { }
+            if (UpgradedExhaustSynthPreset != 0)
+            { }
+
+
         }
         public override void Write(BinaryWriter bw)
         {
@@ -10391,8 +10497,11 @@ namespace CodeWalker.GameFiles
             bw.Write(ExhaustIdleVolume_PostSubmix);
             bw.Write(StartupRevsVolumeBoostEngine_PostSubmix);
             bw.Write(StartupRevsVolumeBoostExhaust_PostSubmix);
-            bw.Write(RevLimiterApplyType);
-            bw.Write(RevLimiterVolumeCut);
+            if ((RevLimiterApplyType != 0) || (RevLimiterVolumeCut != 0))//how else to know?? seems hacky!
+            {
+                bw.Write(RevLimiterApplyType);
+                bw.Write(RevLimiterVolumeCut);
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -10443,8 +10552,8 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "RevLimiterGrainsToSkip", RevLimiterGrainsToSkip.ToString());
             RelXml.StringTag(sb, indent, "SynchronisedSynth", RelXml.HashString(SynchronisedSynth));
             RelXml.ValueTag(sb, indent, "UpgradedEngineVolumeBoost_PostSubmix", UpgradedEngineVolumeBoost_PostSubmix.ToString());
-            RelXml.ValueTag(sb, indent, "UpgradedEngineSynthDef", UpgradedEngineSynthDef.ToString());
-            RelXml.ValueTag(sb, indent, "UpgradedEngineSynthPreset", UpgradedEngineSynthPreset.ToString());
+            RelXml.StringTag(sb, indent, "UpgradedEngineSynthDef", RelXml.HashString(UpgradedEngineSynthDef));
+            RelXml.StringTag(sb, indent, "UpgradedEngineSynthPreset", RelXml.HashString(UpgradedEngineSynthPreset));
             RelXml.ValueTag(sb, indent, "UpgradedExhaustVolumeBoost_PostSubmix", UpgradedExhaustVolumeBoost_PostSubmix.ToString());
             RelXml.StringTag(sb, indent, "UpgradedExhaustSynthDef", RelXml.HashString(UpgradedExhaustSynthDef));
             RelXml.StringTag(sb, indent, "UpgradedExhaustSynthPreset", RelXml.HashString(UpgradedExhaustSynthPreset));
@@ -10480,7 +10589,7 @@ namespace CodeWalker.GameFiles
             ExhaustRevsVolume_PostSubmix = Xml.GetChildIntAttribute(node, "ExhaustRevsVolume_PostSubmix", "value");
             EngineThrottleVolume_PostSubmix = Xml.GetChildIntAttribute(node, "EngineThrottleVolume_PostSubmix", "value");
             ExhaustThrottleVolume_PostSubmix = Xml.GetChildIntAttribute(node, "ExhaustThrottleVolume_PostSubmix", "value");
-            GearChangeWobbleLength = Xml.GetChildIntAttribute(node, "GearChangeWobbleLength", "value");
+            GearChangeWobbleLength = Xml.GetChildUIntAttribute(node, "GearChangeWobbleLength", "value");
             GearChangeWobbleLengthVariance = Xml.GetChildFloatAttribute(node, "GearChangeWobbleLengthVariance", "value");
             GearChangeWobbleSpeed = Xml.GetChildFloatAttribute(node, "GearChangeWobbleSpeed", "value");
             GearChangeWobbleSpeedVariance = Xml.GetChildFloatAttribute(node, "GearChangeWobbleSpeedVariance", "value");
@@ -10497,17 +10606,17 @@ namespace CodeWalker.GameFiles
             NPCEngineAccel = XmlRel.GetHash(Xml.GetChildInnerText(node, "NPCEngineAccel"));
             NPCExhaustAccel = XmlRel.GetHash(Xml.GetChildInnerText(node, "NPCExhaustAccel"));
             RevLimiterPopSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "RevLimiterPopSound"));
-            MinRPMOverride = Xml.GetChildIntAttribute(node, "MinRPMOverride", "value");
-            MaxRPMOverride = Xml.GetChildIntAttribute(node, "MaxRPMOverride", "value");
+            MinRPMOverride = Xml.GetChildUIntAttribute(node, "MinRPMOverride", "value");
+            MaxRPMOverride = Xml.GetChildUIntAttribute(node, "MaxRPMOverride", "value");
             EngineSubmixVoice = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineSubmixVoice"));
             ExhaustSubmixVoice = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustSubmixVoice"));
             ExhaustProximityVolume_PostSubmix = Xml.GetChildIntAttribute(node, "ExhaustProximityVolume_PostSubmix", "value");
-            RevLimiterGrainsToPlay = Xml.GetChildIntAttribute(node, "RevLimiterGrainsToPlay", "value");
-            RevLimiterGrainsToSkip = Xml.GetChildIntAttribute(node, "RevLimiterGrainsToSkip", "value");
+            RevLimiterGrainsToPlay = Xml.GetChildUIntAttribute(node, "RevLimiterGrainsToPlay", "value");
+            RevLimiterGrainsToSkip = Xml.GetChildUIntAttribute(node, "RevLimiterGrainsToSkip", "value");
             SynchronisedSynth = XmlRel.GetHash(Xml.GetChildInnerText(node, "SynchronisedSynth"));
             UpgradedEngineVolumeBoost_PostSubmix = Xml.GetChildIntAttribute(node, "UpgradedEngineVolumeBoost_PostSubmix", "value");
-            UpgradedEngineSynthDef = Xml.GetChildIntAttribute(node, "UpgradedEngineSynthDef", "value");
-            UpgradedEngineSynthPreset = Xml.GetChildIntAttribute(node, "UpgradedEngineSynthPreset", "value");
+            UpgradedEngineSynthDef = XmlRel.GetHash(Xml.GetChildInnerText(node, "UpgradedEngineSynthDef"));
+            UpgradedEngineSynthPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "UpgradedEngineSynthPreset"));
             UpgradedExhaustVolumeBoost_PostSubmix = Xml.GetChildIntAttribute(node, "UpgradedExhaustVolumeBoost_PostSubmix", "value");
             UpgradedExhaustSynthDef = XmlRel.GetHash(Xml.GetChildInnerText(node, "UpgradedExhaustSynthDef"));
             UpgradedExhaustSynthPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "UpgradedExhaustSynthPreset"));
@@ -10522,7 +10631,7 @@ namespace CodeWalker.GameFiles
         }
         public override MetaHash[] GetSynthHashes()
         {
-            return new[] { EngineSynthDef, EngineSynthPreset, ExhaustSynthDef, ExhaustSynthPreset, UpgradedExhaustSynthDef, UpgradedExhaustSynthPreset };
+            return new[] { EngineSynthDef, EngineSynthPreset, ExhaustSynthDef, ExhaustSynthPreset, UpgradedExhaustSynthDef, UpgradedExhaustSynthPreset, UpgradedEngineSynthDef, UpgradedEngineSynthPreset };
         }
         public override MetaHash[] GetSoundHashes()
         {
@@ -10531,7 +10640,7 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151Car : Dat151RelData
     {
-        public FlagsUint Flags { get; set; }
+        public FlagsUint Flags { get; set; } //2432719400   0x91005A28
         public MetaHash Engine { get; set; }
         public MetaHash GranularEngine { get; set; }
         public MetaHash HornSounds { get; set; }
@@ -10544,27 +10653,23 @@ namespace CodeWalker.GameFiles
         public MetaHash SuspensionUp { get; set; }
         public MetaHash SuspensionDown { get; set; }
         public float MinSuspCompThresh { get; set; }
-        public float MaxSuspCompThres { get; set; }
+        public float MaxSuspCompThresh { get; set; }
         public MetaHash VehicleCollisions { get; set; }
         public uint CarMake { get; set; }
         public uint CarModel { get; set; }
         public uint CarCategory { get; set; }
-        public MetaHash PoliceScannerVehicleSettings { get; set; }
+        public MetaHash ScannerVehicleSettings { get; set; }
         public MetaHash JumpLandSound { get; set; }
         public MetaHash DamagedJumpLandSound { get; set; }
         public uint JumpLandMinThresh { get; set; }
         public uint JumpLandMaxThresh { get; set; }
-        public byte VolumeCategory { get; set; }
-        public byte GpsType { get; set; }
-        public byte RadioType { get; set; }
-        public byte RadioGenre { get; set; }
+        public FlagsUint RadioFlags { get; set; } // VolumeCategory, GpsType, RadioType, RadioGenre
         public MetaHash IndicatorOn { get; set; }
         public MetaHash IndicatorOff { get; set; }
         public MetaHash Handbrake { get; set; }
-        public byte GpsVoice { get; set; }
-        public byte AmbientRadioVol { get; set; }
-        public byte RadioLeakage { get; set; }
-        public byte padding00 { get; set; }
+        public ushort GpsVoice { get; set; }
+        // AmbientRadioVol
+        public ushort RadioLeakage { get; set; }
         public MetaHash ParkingTone { get; set; }
         public MetaHash RoofStuckSound { get; set; }
         public MetaHash FreewayPassbyTyreBumpFront { get; set; }
@@ -10579,27 +10684,21 @@ namespace CodeWalker.GameFiles
         public MetaHash ConvertibleRoofSoundSet { get; set; }
         public int OffRoadRumbleSoundVolume { get; set; }
         public MetaHash SirenSounds { get; set; }
-        public uint AlternativeGranularEngines { get; set; }
+        public MetaHash AlternativeGranularEngines { get; set; }
         public float AlternativeGranularEngineProbability { get; set; }
         public uint StopStartProb { get; set; }
         public MetaHash NPCRoadNoise { get; set; }
         public MetaHash NPCRoadNoiseHighway { get; set; }
         public MetaHash ForkliftSounds { get; set; }
         public MetaHash TurretSounds { get; set; }
-        public byte ClatterType { get; set; }
-        public byte padding01 { get; set; }
-        public short padding02 { get; set; }
+        public int ClatterType { get; set; }
         public MetaHash DiggerSounds { get; set; }
         public MetaHash TowTruckSounds { get; set; }
-        public byte EngineType { get; set; }
-        public byte padding03 { get; set; }
-        public short padding04 { get; set; }
+        public int EngineType { get; set; }
         public MetaHash ElectricEngine { get; set; }
         public float Openness { get; set; }
-        public MetaHash ReverseWarningSound { get; set; }
-        public byte RandomDamage { get; set; }
-        public byte padding05 { get; set; }
-        public short padding06 { get; set; }
+        public MetaHash ReverseWarning { get; set; }
+        public int RandomDamage { get; set; }
         public MetaHash WindClothSound { get; set; }
         public MetaHash CarSpecificShutdownSound { get; set; }
         public float ClatterSensitivityScalar { get; set; }
@@ -10607,8 +10706,8 @@ namespace CodeWalker.GameFiles
         public float ChassisStressSensitivityScalar { get; set; }
         public int ChassisStressVolumeBoost { get; set; }
         public MetaHash VehicleRainSound { get; set; }
-        public ushort AdditionalRevsIncreaseSmoothing { get; set; }
-        public ushort AdditionalRevsDecreaseSmoothing { get; set; }
+        public int AdditionalRevsIncreaseSmoothing { get; set; }
+        // missing ushort
         public ushort AdditionalGearChangeSmoothing { get; set; }
         public ushort AdditionalGearChangeSmoothingTime { get; set; }
         public MetaHash ConvertibleRoofInteriorSoundSet { get; set; }
@@ -10625,7 +10724,7 @@ namespace CodeWalker.GameFiles
         }
         public Dat151Car(RelData d, BinaryReader br) : base(d, br)
         {
-            Flags = br.ReadUInt32();
+            Flags = br.ReadUInt32(); //2432719400   0x91005A28
             Engine = br.ReadUInt32();
             GranularEngine = br.ReadUInt32();
             HornSounds = br.ReadUInt32();
@@ -10638,27 +10737,22 @@ namespace CodeWalker.GameFiles
             SuspensionUp = br.ReadUInt32();
             SuspensionDown = br.ReadUInt32();
             MinSuspCompThresh = br.ReadSingle();
-            MaxSuspCompThres = br.ReadSingle();
+            MaxSuspCompThresh = br.ReadSingle();
             VehicleCollisions = br.ReadUInt32();
             CarMake = br.ReadUInt32();
             CarModel = br.ReadUInt32();
             CarCategory = br.ReadUInt32();
-            PoliceScannerVehicleSettings = br.ReadUInt32();
+            ScannerVehicleSettings = br.ReadUInt32();
             JumpLandSound = br.ReadUInt32();
             DamagedJumpLandSound = br.ReadUInt32();
             JumpLandMinThresh = br.ReadUInt32();
             JumpLandMaxThresh = br.ReadUInt32();
-            VolumeCategory = br.ReadByte();
-            GpsType = br.ReadByte();
-            RadioType = br.ReadByte();
-            RadioGenre = br.ReadByte();
+            RadioFlags = br.ReadUInt32();
             IndicatorOn = br.ReadUInt32();
             IndicatorOff = br.ReadUInt32();
             Handbrake = br.ReadUInt32();
-            GpsVoice = br.ReadByte();
-            AmbientRadioVol = br.ReadByte();
-            RadioLeakage = br.ReadByte();
-            padding00 = br.ReadByte();
+            GpsVoice = br.ReadUInt16();
+            RadioLeakage = br.ReadUInt16();
             ParkingTone = br.ReadUInt32();
             RoofStuckSound = br.ReadUInt32();
             FreewayPassbyTyreBumpFront = br.ReadUInt32();
@@ -10680,40 +10774,124 @@ namespace CodeWalker.GameFiles
             NPCRoadNoiseHighway = br.ReadUInt32();
             ForkliftSounds = br.ReadUInt32();
             TurretSounds = br.ReadUInt32();
-            ClatterType = br.ReadByte();
-            padding01 = br.ReadByte();
-            padding02 = br.ReadInt16();
+            ClatterType = br.ReadInt32();
             DiggerSounds = br.ReadUInt32();
             TowTruckSounds = br.ReadUInt32();
-            EngineType = br.ReadByte();
-            padding03 = br.ReadByte();
-            padding04 = br.ReadInt16();
+            EngineType = br.ReadInt32();
             ElectricEngine = br.ReadUInt32();
             Openness = br.ReadSingle();
-            ReverseWarningSound = br.ReadUInt32();
-            RandomDamage = br.ReadByte();
-            padding05 = br.ReadByte();
-            padding06 = br.ReadInt16();
+            ReverseWarning = br.ReadUInt32();
+            RandomDamage = br.ReadInt32();
             WindClothSound = br.ReadUInt32();
             CarSpecificShutdownSound = br.ReadUInt32();
             ClatterSensitivityScalar = br.ReadSingle();
             ClatterVolumeBoost = br.ReadInt32();
             ChassisStressSensitivityScalar = br.ReadSingle();
             ChassisStressVolumeBoost = br.ReadInt32();
-            VehicleRainSound = br.ReadUInt32();
-            AdditionalRevsIncreaseSmoothing = br.ReadUInt16();
-            AdditionalRevsDecreaseSmoothing = br.ReadUInt16();
-            AdditionalGearChangeSmoothing = br.ReadUInt16();
-            AdditionalGearChangeSmoothingTime = br.ReadUInt16();
-            ConvertibleRoofInteriorSoundSet = br.ReadUInt32();
-            VehicleRainSoundInterior = br.ReadUInt32();
-            CabinToneLoop = br.ReadUInt32();
-            InteriorViewEngineOpenness = br.ReadSingle();
-            JumpLandSoundInterior = br.ReadUInt32();
-            DamagedJumpLandSoundInterior = br.ReadUInt32();
+
+
+
+            var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
+            switch (bytesleft) //any other way to tell..?
+            {
+                case 0:
+                    break;
+                case 4:
+                    VehicleRainSound = br.ReadUInt32();//flags??  0xE38FCF16
+                    if (VehicleRainSound == 0)
+                    { }
+                    break;
+                case 36:
+                    VehicleRainSound = br.ReadUInt32();//flags??  0xE38FCF16
+                    AdditionalRevsIncreaseSmoothing = br.ReadInt32();
+                    AdditionalGearChangeSmoothing = br.ReadUInt16();
+                    AdditionalGearChangeSmoothingTime = br.ReadUInt16();
+                    ConvertibleRoofInteriorSoundSet = br.ReadUInt32();//flags?  0x536F6CAC
+                    VehicleRainSoundInterior = br.ReadUInt32();//flags??  0xE38FCF16
+                    CabinToneLoop = br.ReadUInt32();//flags?  0x7C9B8D8C
+                    InteriorViewEngineOpenness = br.ReadInt32();
+                    JumpLandSoundInterior = br.ReadUInt32();//flags??  0xE38FCF16
+                    DamagedJumpLandSoundInterior = br.ReadUInt32();//flags??  0xE38FCF16
+                    if (InteriorViewEngineOpenness != 0)
+                    { }
+                    if (VehicleRainSoundInterior == 0)
+                    { }
+                    if (JumpLandSoundInterior == 0)
+                    { }
+                    if (DamagedJumpLandSoundInterior == 0)
+                    { }
+
+                    break;
+                default:
+                    break;
+            }
+            if (bytesleft != 0)
+            { }
+
+
+
+            if (CarMake != 0)
+            { }
+            if (CarModel != 0)
+            { }
+            if (CarCategory != 0)
+            { }
+            if (OffRoadRumbleSoundVolume != 0)
+            { }
+            if (AlternativeGranularEngines != 0)
+            { }
+            if (AlternativeGranularEngineProbability != 0)
+            { }
+            if (StopStartProb != 0)
+            { }
+
+            switch (JumpLandMinThresh)
+            {
+                case 31:
+                case 0:
+                    break;
+                default:
+                    break;
+            }
+            switch (JumpLandMaxThresh)
+            {
+                case 36:
+                case 100:
+                case 1:
+                    break;
+                default:
+                    break;
+            }
+            switch (ClatterType)
+            {
+                case 8:
+                case 5:
+                case 3:
+                case 1:
+                case 4:
+                case 0:
+                case 6:
+                case 7:
+                    break;
+                default:
+                    break;
+            }
+            switch (RandomDamage)
+            {
+                case 2:
+                case 3:
+                case 0:
+                case 1:
+                    break;
+                default:
+                    break;
+            }
+
         }
         public override void Write(BinaryWriter bw)
         {
+            //base.Write(bw);
+            //return;
 
             WriteTypeAndOffset(bw);
 
@@ -10730,27 +10908,22 @@ namespace CodeWalker.GameFiles
             bw.Write(SuspensionUp);
             bw.Write(SuspensionDown);
             bw.Write(MinSuspCompThresh);
-            bw.Write(MaxSuspCompThres);
+            bw.Write(MaxSuspCompThresh);
             bw.Write(VehicleCollisions);
             bw.Write(CarMake);
             bw.Write(CarModel);
             bw.Write(CarCategory);
-            bw.Write(PoliceScannerVehicleSettings);
+            bw.Write(ScannerVehicleSettings);
             bw.Write(JumpLandSound);
             bw.Write(DamagedJumpLandSound);
             bw.Write(JumpLandMinThresh);
             bw.Write(JumpLandMaxThresh);
-            bw.Write(VolumeCategory);
-            bw.Write(GpsType);
-            bw.Write(RadioType);
-            bw.Write(RadioGenre);
+            bw.Write(RadioFlags);
             bw.Write(IndicatorOn);
             bw.Write(IndicatorOff);
             bw.Write(Handbrake);
             bw.Write(GpsVoice);
-            bw.Write(AmbientRadioVol);
             bw.Write(RadioLeakage);
-            bw.Write(padding00);
             bw.Write(ParkingTone);
             bw.Write(RoofStuckSound);
             bw.Write(FreewayPassbyTyreBumpFront);
@@ -10773,36 +10946,38 @@ namespace CodeWalker.GameFiles
             bw.Write(ForkliftSounds);
             bw.Write(TurretSounds);
             bw.Write(ClatterType);
-            bw.Write(padding01);
-            bw.Write(padding02);
             bw.Write(DiggerSounds);
             bw.Write(TowTruckSounds);
             bw.Write(EngineType);
-            bw.Write(padding03);
-            bw.Write(padding04);
             bw.Write(ElectricEngine);
             bw.Write(Openness);
-            bw.Write(ReverseWarningSound);
+            bw.Write(ReverseWarning);
             bw.Write(RandomDamage);
-            bw.Write(padding05);
-            bw.Write(padding06);
             bw.Write(WindClothSound);
             bw.Write(CarSpecificShutdownSound);
             bw.Write(ClatterSensitivityScalar);
             bw.Write(ClatterVolumeBoost);
             bw.Write(ChassisStressSensitivityScalar);
             bw.Write(ChassisStressVolumeBoost);
-            bw.Write(VehicleRainSound);
-            bw.Write(AdditionalRevsIncreaseSmoothing);
-            bw.Write(AdditionalRevsDecreaseSmoothing);
-            bw.Write(AdditionalGearChangeSmoothing);
-            bw.Write(AdditionalGearChangeSmoothingTime);
-            bw.Write(ConvertibleRoofInteriorSoundSet);
-            bw.Write(VehicleRainSoundInterior);
-            bw.Write(CabinToneLoop);
-            bw.Write(InteriorViewEngineOpenness);
-            bw.Write(JumpLandSoundInterior);
-            bw.Write(DamagedJumpLandSoundInterior);
+
+            if (VehicleRainSound != 0)//any better way?
+            {
+                bw.Write(VehicleRainSound);
+
+                if ((VehicleRainSoundInterior != 0) || (JumpLandSoundInterior != 0) || (DamagedJumpLandSoundInterior != 0))//any better way?
+                {
+                    bw.Write(AdditionalRevsIncreaseSmoothing);
+                    bw.Write(AdditionalGearChangeSmoothing);
+                    bw.Write(AdditionalGearChangeSmoothingTime);
+                    bw.Write(ConvertibleRoofInteriorSoundSet);
+                    bw.Write(VehicleRainSoundInterior);
+                    bw.Write(CabinToneLoop);
+                    bw.Write(InteriorViewEngineOpenness);
+                    bw.Write(JumpLandSoundInterior);
+                    bw.Write(DamagedJumpLandSoundInterior);
+                }
+            }
+
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -10819,25 +10994,21 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "SuspensionUp", RelXml.HashString(SuspensionUp));
             RelXml.StringTag(sb, indent, "SuspensionDown", RelXml.HashString(SuspensionDown));
             RelXml.ValueTag(sb, indent, "MinSuspCompThresh", FloatUtil.ToString(MinSuspCompThresh));
-            RelXml.ValueTag(sb, indent, "MaxSuspCompThres", FloatUtil.ToString(MaxSuspCompThres));
+            RelXml.ValueTag(sb, indent, "MaxSuspCompThresh", FloatUtil.ToString(MaxSuspCompThresh));
             RelXml.StringTag(sb, indent, "VehicleCollisions", RelXml.HashString(VehicleCollisions));
             RelXml.ValueTag(sb, indent, "CarMake", CarMake.ToString());
             RelXml.ValueTag(sb, indent, "CarModel", CarModel.ToString());
             RelXml.ValueTag(sb, indent, "CarCategory", CarCategory.ToString());
-            RelXml.StringTag(sb, indent, "PoliceScannerVehicleSettings", RelXml.HashString(PoliceScannerVehicleSettings));
+            RelXml.StringTag(sb, indent, "ScannerVehicleSettings", RelXml.HashString(ScannerVehicleSettings));
             RelXml.StringTag(sb, indent, "JumpLandSound", RelXml.HashString(JumpLandSound));
             RelXml.StringTag(sb, indent, "DamagedJumpLandSound", RelXml.HashString(DamagedJumpLandSound));
             RelXml.ValueTag(sb, indent, "JumpLandMinThresh", JumpLandMinThresh.ToString());
             RelXml.ValueTag(sb, indent, "JumpLandMaxThresh", JumpLandMaxThresh.ToString());
-            RelXml.ValueTag(sb, indent, "VolumeCategory", VolumeCategory.ToString());
-            RelXml.ValueTag(sb, indent, "GpsType", GpsType.ToString());
-            RelXml.ValueTag(sb, indent, "RadioType", RadioType.ToString());
-            RelXml.ValueTag(sb, indent, "RadioGenre", RadioGenre.ToString());
+            RelXml.ValueTag(sb, indent, "RadioFlags", "0x" + RadioFlags.Hex);
             RelXml.StringTag(sb, indent, "IndicatorOn", RelXml.HashString(IndicatorOn));
             RelXml.StringTag(sb, indent, "IndicatorOff", RelXml.HashString(IndicatorOff));
             RelXml.StringTag(sb, indent, "Handbrake", RelXml.HashString(Handbrake));
             RelXml.ValueTag(sb, indent, "GpsVoice", GpsVoice.ToString());
-            RelXml.ValueTag(sb, indent, "AmbientRadioVol", AmbientRadioVol.ToString());
             RelXml.ValueTag(sb, indent, "RadioLeakage", RadioLeakage.ToString());
             RelXml.StringTag(sb, indent, "ParkingTone", RelXml.HashString(ParkingTone));
             RelXml.StringTag(sb, indent, "RoofStuckSound", RelXml.HashString(RoofStuckSound));
@@ -10853,7 +11024,7 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "ConvertibleRoofSoundSet", RelXml.HashString(ConvertibleRoofSoundSet));
             RelXml.ValueTag(sb, indent, "OffRoadRumbleSoundVolume", OffRoadRumbleSoundVolume.ToString());
             RelXml.StringTag(sb, indent, "SirenSounds", RelXml.HashString(SirenSounds));
-            RelXml.ValueTag(sb, indent, "AlternativeGranularEngines", AlternativeGranularEngines.ToString());
+            RelXml.StringTag(sb, indent, "AlternativeGranularEngines", RelXml.HashString(AlternativeGranularEngines));
             RelXml.ValueTag(sb, indent, "AlternativeGranularEngineProbability", FloatUtil.ToString(AlternativeGranularEngineProbability));
             RelXml.ValueTag(sb, indent, "StopStartProb", StopStartProb.ToString());
             RelXml.StringTag(sb, indent, "NPCRoadNoise", RelXml.HashString(NPCRoadNoise));
@@ -10866,7 +11037,7 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "EngineType", EngineType.ToString());
             RelXml.StringTag(sb, indent, "ElectricEngine", RelXml.HashString(ElectricEngine));
             RelXml.ValueTag(sb, indent, "Openness", FloatUtil.ToString(Openness));
-            RelXml.StringTag(sb, indent, "ReverseWarningSound", RelXml.HashString(ReverseWarningSound));
+            RelXml.StringTag(sb, indent, "ReverseWarning", RelXml.HashString(ReverseWarning));
             RelXml.ValueTag(sb, indent, "RandomDamage", RandomDamage.ToString());
             RelXml.StringTag(sb, indent, "WindClothSound", RelXml.HashString(WindClothSound));
             RelXml.StringTag(sb, indent, "CarSpecificShutdownSound", RelXml.HashString(CarSpecificShutdownSound));
@@ -10900,26 +11071,22 @@ namespace CodeWalker.GameFiles
             SuspensionUp = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuspensionUp"));
             SuspensionDown = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuspensionDown"));
             MinSuspCompThresh = Xml.GetChildFloatAttribute(node, "MinSuspCompThresh", "value");
-            MaxSuspCompThres = Xml.GetChildFloatAttribute(node, "MaxSuspCompThres", "value");
+            MaxSuspCompThresh = Xml.GetChildFloatAttribute(node, "MaxSuspCompThresh", "value");
             VehicleCollisions = XmlRel.GetHash(Xml.GetChildInnerText(node, "VehicleCollisions"));
             CarMake = Xml.GetChildUIntAttribute(node, "CarMake", "value");
             CarModel = Xml.GetChildUIntAttribute(node, "CarModel", "value");
             CarCategory = Xml.GetChildUIntAttribute(node, "CarCategory", "value");
-            PoliceScannerVehicleSettings = XmlRel.GetHash(Xml.GetChildInnerText(node, "PoliceScannerVehicleSettings"));
+            ScannerVehicleSettings = XmlRel.GetHash(Xml.GetChildInnerText(node, "ScannerVehicleSettings"));
             JumpLandSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "JumpLandSound"));
             DamagedJumpLandSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "DamagedJumpLandSound"));
             JumpLandMinThresh = Xml.GetChildUIntAttribute(node, "JumpLandMinThresh", "value");
             JumpLandMaxThresh = Xml.GetChildUIntAttribute(node, "JumpLandMaxThresh", "value");
-            VolumeCategory = (byte)Xml.GetChildUIntAttribute(node, "VolumeCategory", "value");
-            GpsType = (byte)Xml.GetChildUIntAttribute(node, "GpsType", "value");
-            RadioType = (byte)Xml.GetChildUIntAttribute(node, "RadioType", "value");
-            RadioGenre = (byte)Xml.GetChildUIntAttribute(node, "RadioGenre", "value");
+            RadioFlags = Xml.GetChildUIntAttribute(node, "RadioFlags", "value");
             IndicatorOn = XmlRel.GetHash(Xml.GetChildInnerText(node, "IndicatorOn"));
             IndicatorOff = XmlRel.GetHash(Xml.GetChildInnerText(node, "IndicatorOff"));
             Handbrake = XmlRel.GetHash(Xml.GetChildInnerText(node, "Handbrake"));
-            GpsVoice = (byte)Xml.GetChildUIntAttribute(node, "GpsVoice", "value");
-            AmbientRadioVol = (byte)Xml.GetChildUIntAttribute(node, "AmbientRadioVol", "value");
-            RadioLeakage = (byte)Xml.GetChildUIntAttribute(node, "RadioLeakage", "value");
+            GpsVoice = (ushort)Xml.GetChildUIntAttribute(node, "GpsVoice", "value");
+            RadioLeakage = (ushort)Xml.GetChildUIntAttribute(node, "RadioLeakage", "value");
             ParkingTone = XmlRel.GetHash(Xml.GetChildInnerText(node, "ParkingTone"));
             RoofStuckSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "RoofStuckSound"));
             FreewayPassbyTyreBumpFront = XmlRel.GetHash(Xml.GetChildInnerText(node, "FreewayPassbyTyreBumpFront"));
@@ -10934,21 +11101,21 @@ namespace CodeWalker.GameFiles
             ConvertibleRoofSoundSet = XmlRel.GetHash(Xml.GetChildInnerText(node, "ConvertibleRoofSoundSet"));
             OffRoadRumbleSoundVolume = Xml.GetChildIntAttribute(node, "OffRoadRumbleSoundVolume", "value");
             SirenSounds = XmlRel.GetHash(Xml.GetChildInnerText(node, "SirenSounds"));
-            AlternativeGranularEngines = Xml.GetChildUIntAttribute(node, "AlternativeGranularEngines", "value");
+            AlternativeGranularEngines = XmlRel.GetHash(Xml.GetChildInnerText(node, "AlternativeGranularEngines"));
             AlternativeGranularEngineProbability = Xml.GetChildFloatAttribute(node, "AlternativeGranularEngineProbability", "value");
             StopStartProb = Xml.GetChildUIntAttribute(node, "StopStartProb", "value");
             NPCRoadNoise = XmlRel.GetHash(Xml.GetChildInnerText(node, "NPCRoadNoise"));
             NPCRoadNoiseHighway = XmlRel.GetHash(Xml.GetChildInnerText(node, "NPCRoadNoiseHighway"));
             ForkliftSounds = XmlRel.GetHash(Xml.GetChildInnerText(node, "ForkliftSounds"));
             TurretSounds = XmlRel.GetHash(Xml.GetChildInnerText(node, "TurretSounds"));
-            ClatterType = (byte)Xml.GetChildUIntAttribute(node, "ClatterType", "value");
+            ClatterType = Xml.GetChildIntAttribute(node, "ClatterType", "value");
             DiggerSounds = XmlRel.GetHash(Xml.GetChildInnerText(node, "DiggerSounds"));
             TowTruckSounds = XmlRel.GetHash(Xml.GetChildInnerText(node, "TowTruckSounds"));
-            EngineType = (byte)Xml.GetChildUIntAttribute(node, "EngineType", "value");
+            EngineType = Xml.GetChildIntAttribute(node, "EngineType", "value");
             ElectricEngine = XmlRel.GetHash(Xml.GetChildInnerText(node, "ElectricEngine"));
             Openness = Xml.GetChildFloatAttribute(node, "Openness", "value");
-            ReverseWarningSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ReverseWarningSound"));
-            RandomDamage = (byte)Xml.GetChildUIntAttribute(node, "RandomDamage", "value");
+            ReverseWarning = XmlRel.GetHash(Xml.GetChildInnerText(node, "ReverseWarning"));
+            RandomDamage = Xml.GetChildIntAttribute(node, "RandomDamage", "value");
             WindClothSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "WindClothSound"));
             CarSpecificShutdownSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "CarSpecificShutdownSound"));
             ClatterSensitivityScalar = Xml.GetChildFloatAttribute(node, "ClatterSensitivityScalar", "value");
@@ -10956,13 +11123,13 @@ namespace CodeWalker.GameFiles
             ChassisStressSensitivityScalar = Xml.GetChildFloatAttribute(node, "ChassisStressSensitivityScalar", "value");
             ChassisStressVolumeBoost = Xml.GetChildIntAttribute(node, "ChassisStressVolumeBoost", "value");
             VehicleRainSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "VehicleRainSound"));
-            AdditionalRevsIncreaseSmoothing = (ushort)Xml.GetChildUIntAttribute(node, "AdditionalRevsIncreaseSmoothing", "value");
+            AdditionalRevsIncreaseSmoothing = Xml.GetChildIntAttribute(node, "AdditionalRevsIncreaseSmoothing", "value");
             AdditionalGearChangeSmoothing = (ushort)Xml.GetChildUIntAttribute(node, "AdditionalGearChangeSmoothing", "value");
             AdditionalGearChangeSmoothingTime = (ushort)Xml.GetChildUIntAttribute(node, "AdditionalGearChangeSmoothingTime", "value");
             ConvertibleRoofInteriorSoundSet = XmlRel.GetHash(Xml.GetChildInnerText(node, "ConvertibleRoofInteriorSoundSet"));
             VehicleRainSoundInterior = XmlRel.GetHash(Xml.GetChildInnerText(node, "VehicleRainSoundInterior"));
             CabinToneLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "CabinToneLoop"));
-            InteriorViewEngineOpenness = Xml.GetChildFloatAttribute(node, "InteriorViewEngineOpenness", "value");
+            InteriorViewEngineOpenness = Xml.GetChildIntAttribute(node, "InteriorViewEngineOpenness", "value");
             JumpLandSoundInterior = XmlRel.GetHash(Xml.GetChildInnerText(node, "JumpLandSoundInterior"));
             DamagedJumpLandSoundInterior = XmlRel.GetHash(Xml.GetChildInnerText(node, "DamagedJumpLandSoundInterior"));
         }
@@ -10970,12 +11137,12 @@ namespace CodeWalker.GameFiles
         {
             return new[] { HornSounds, DoorOpenSound, DoorCloseSound, BootOpenSound, BootCloseSound, RollSound, SuspensionUp, SuspensionDown, JumpLandSound, DamagedJumpLandSound,
                 IndicatorOn, IndicatorOff, Handbrake, ParkingTone, RoofStuckSound, FreewayPassbyTyreBumpFront, FreewayPassbyTyreBumpBack, FireAudio, StartupRevs, WindNoise, FreewayPassbyTyreBumpFrontSide, FreewayPassbyTyreBumpBackSide, ConvertibleRoofSoundSet,
-                SirenSounds, NPCRoadNoise, NPCRoadNoiseHighway, ForkliftSounds, TurretSounds, DiggerSounds, TowTruckSounds, ReverseWarningSound, WindClothSound, CarSpecificShutdownSound,
-                VehicleRainSound, ConvertibleRoofInteriorSoundSet, VehicleRainSoundInterior, CabinToneLoop, JumpLandSoundInterior, DamagedJumpLandSoundInterior };
+                SirenSounds, NPCRoadNoise, NPCRoadNoiseHighway, ForkliftSounds, TurretSounds, DiggerSounds, TowTruckSounds, ReverseWarning, WindClothSound, CarSpecificShutdownSound,
+                VehicleRainSound, ConvertibleRoofInteriorSoundSet, VehicleRainSoundInterior, CabinToneLoop, JumpLandSoundInterior, DamagedJumpLandSoundInterior, AlternativeGranularEngines };
         }
         public override MetaHash[] GetGameHashes()
         {
-            return new[] { Engine, GranularEngine, VehicleCollisions, PoliceScannerVehicleSettings, ElectricEngine };
+            return new[] { Engine, GranularEngine, VehicleCollisions, ScannerVehicleSettings, ElectricEngine };
         }
     }
     [TC(typeof(EXP))] public class Dat151VehicleEngine : Dat151RelData
