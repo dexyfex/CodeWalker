@@ -6540,7 +6540,6 @@ namespace CodeWalker.GameFiles
             Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
             Unk02 = Xml.GetChildUIntAttribute(node, "Unk02", "value");
             Unk03 = (byte)Xml.GetChildUIntAttribute(node, "Unk03", "value");
-            Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "Unk16", "value");
             Tracks = XmlRel.ReadItemArray<Dat151HashPair>(node, "Tracks");
             TracksCount = (uint)(Tracks?.Length ?? 0);
         }
