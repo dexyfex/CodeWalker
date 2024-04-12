@@ -6410,30 +6410,26 @@ namespace CodeWalker.GameFiles
         }
     }
     [TC(typeof(EXP))] public class Dat151RadioTrack : Dat151RelData //used exclusively for radio stuff, eg music dj lines and idents
-    {
-        public FlagsUint Flags { get; set; }
-        public byte Category { get; set; }
-        public byte padding00 { get; set; }
-        public short padding01 { get; set; }
-        public uint NextValidSelectionTime { get; set; }
-        public byte HistoryWriteIndex { get; set; }
-        public byte NumHistorySpaceElems { get; set; }
-        public short padding02 { get; set; }
-        public uint HistorySpace1 { get; set; }
-        public uint HistorySpace2 { get; set; }
-        public uint HistorySpace3 { get; set; }
-        public uint HistorySpace4 { get; set; }
-        public uint HistorySpace5 { get; set; }
-        public uint HistorySpace6 { get; set; }
-        public uint HistorySpace7 { get; set; }
-        public uint HistorySpace8 { get; set; }
-        public uint HistorySpace9 { get; set; }
-        public uint HistorySpace10 { get; set; }
-        public ushort TotalNumTracks { get; set; }
-        public short padding03 { get; set; }
-        public byte NumTracks { get; set; }
-        public byte padding04 { get; set; }
-        public short padding05 { get; set; }
+     {
+        public FlagsUint Unk00 { get; set; }
+        public byte TrackType { get; set; }
+        public uint Unk01 { get; set; }
+        public uint Unk02 { get; set; }
+        public byte Unk03 { get; set; }
+        public uint Unk04 { get; set; }
+        public uint Unk05 { get; set; }
+        public uint Unk06 { get; set; }
+        public uint Unk07 { get; set; }
+        public uint Unk08 { get; set; }
+        public uint Unk09 { get; set; }
+        public uint Unk10 { get; set; }
+        public uint Unk11 { get; set; }
+        public uint Unk12 { get; set; }
+        public uint Unk13 { get; set; }
+        public uint Unk14 { get; set; }
+        public uint Unk15 { get; set; }
+        public ushort Unk16 { get; set; }
+        public uint TracksCount { get; set; }
         public Dat151HashPair[] Tracks { get; set; }
 
 
@@ -6444,36 +6440,55 @@ namespace CodeWalker.GameFiles
         }
         public Dat151RadioTrack(RelData d, BinaryReader br) : base(d, br)
         {
-            Flags = br.ReadUInt32();
-            Category = br.ReadByte();
-            padding00 = br.ReadByte();
-            padding01 = br.ReadInt16();
-            NextValidSelectionTime = br.ReadUInt32();
-            HistoryWriteIndex = br.ReadByte();
-            NumHistorySpaceElems = br.ReadByte();
-            padding02 = br.ReadInt16();
-            HistorySpace1 = br.ReadUInt32();
-            HistorySpace2 = br.ReadUInt32();
-            HistorySpace3 = br.ReadUInt32();
-            HistorySpace4 = br.ReadUInt32();
-            HistorySpace5 = br.ReadUInt32();
-            HistorySpace6 = br.ReadUInt32();
-            HistorySpace7 = br.ReadUInt32();
-            HistorySpace8 = br.ReadUInt32();
-            HistorySpace9 = br.ReadUInt32();
-            HistorySpace10 = br.ReadUInt32();
-            TotalNumTracks = br.ReadUInt16();
-            padding03 = br.ReadInt16();
-            NumTracks = br.ReadByte();
-            padding04 = br.ReadByte();
-            padding05 = br.ReadInt16();
+            Unk00 = br.ReadUInt32();
+            TrackType = br.ReadByte();
+            Unk01 = br.ReadUInt32();
+            Unk02 = br.ReadUInt32();
+            Unk03 = br.ReadByte();
+            Unk04 = br.ReadUInt32();
+            Unk05 = br.ReadUInt32();
+            Unk06 = br.ReadUInt32();
+            Unk07 = br.ReadUInt32();
+            Unk08 = br.ReadUInt32();
+            Unk09 = br.ReadUInt32();
+            Unk10 = br.ReadUInt32();
+            Unk11 = br.ReadUInt32();
+            Unk12 = br.ReadUInt32();
+            Unk13 = br.ReadUInt32();
+            Unk14 = br.ReadUInt32();
+            Unk15 = br.ReadUInt32();
+            Unk16 = br.ReadUInt16();
+            TracksCount = br.ReadUInt32();
 
-            Dat151HashPair[] items = new Dat151HashPair[NumTracks];
-            for (int i = 0; i < NumTracks; i++)
+            Dat151HashPair[] items = new Dat151HashPair[TracksCount];
+            for (int i = 0; i < TracksCount; i++)
             {
                 items[i] = new Dat151HashPair(br);
             }
             this.Tracks = items;
+
+
+
+            if (Unk04 != 0)
+            { }
+            if (Unk05 != 0)
+            { }
+            if (Unk06 != 0)
+            { }
+            if (Unk07 != 0)
+            { }
+            if (Unk08 != 0)
+            { }
+            if (Unk09 != 0)
+            { }
+            if (Unk10 != 0)
+            { }
+            if (Unk11 != 0)
+            { }
+            if (Unk12 != 0)
+            { }
+            if (Unk13 != 0)
+            { }
 
 
             var bytesleft = br.BaseStream.Length - br.BaseStream.Position;
@@ -6484,30 +6499,26 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Flags);
-            bw.Write(Category);
-            bw.Write(padding00);
-            bw.Write(padding01);
-            bw.Write(NextValidSelectionTime);
-            bw.Write(HistoryWriteIndex);
-            bw.Write(NumHistorySpaceElems);
-            bw.Write(padding02);
-            bw.Write(HistorySpace1);
-            bw.Write(HistorySpace2);
-            bw.Write(HistorySpace3);
-            bw.Write(HistorySpace4);
-            bw.Write(HistorySpace5);
-            bw.Write(HistorySpace6);
-            bw.Write(HistorySpace7);
-            bw.Write(HistorySpace8);
-            bw.Write(HistorySpace9);
-            bw.Write(HistorySpace10);
-            bw.Write(TotalNumTracks);
-            bw.Write(padding03);
-            bw.Write(NumTracks);
-            bw.Write(padding04);
-            bw.Write(padding05);
-            for (int i = 0; i < NumTracks; i++)
+            bw.Write(Unk00);
+            bw.Write(TrackType);
+            bw.Write(Unk01);
+            bw.Write(Unk02);
+            bw.Write(Unk03);
+            bw.Write(Unk04);
+            bw.Write(Unk05);
+            bw.Write(Unk06);
+            bw.Write(Unk07);
+            bw.Write(Unk08);
+            bw.Write(Unk09);
+            bw.Write(Unk10);
+            bw.Write(Unk11);
+            bw.Write(Unk12);
+            bw.Write(Unk13);
+            bw.Write(Unk14);
+            bw.Write(Unk15);
+            bw.Write(Unk16);
+            bw.Write(TracksCount);
+            for (int i = 0; i < TracksCount; i++)
             {
                 Tracks[i].Write(bw);
             }
@@ -6515,23 +6526,23 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.ValueTag(sb, indent, "Category", Category.ToString());
-            RelXml.ValueTag(sb, indent, "NextValidSelectionTime", NextValidSelectionTime.ToString());
-            RelXml.ValueTag(sb, indent, "HistoryWriteIndex", HistoryWriteIndex.ToString());
-            RelXml.ValueTag(sb, indent, "TotalNumTracks", TotalNumTracks.ToString());
+            RelXml.ValueTag(sb, indent, "Unk00", "0x" + Unk00.Hex);
+            RelXml.ValueTag(sb, indent, "TrackType", TrackType.ToString());
+            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
+            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
+            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
             RelXml.WriteItemArray(sb, Tracks, indent, "Tracks");
-            RelXml.ValueTag(sb, indent, "NumTracks", NumTracks.ToString());
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Category = (byte)Xml.GetChildUIntAttribute(node, "Category", "value");
-            NextValidSelectionTime = Xml.GetChildUIntAttribute(node, "NextValidSelectionTime", "value");
-            HistoryWriteIndex = (byte)Xml.GetChildUIntAttribute(node, "HistoryWriteIndex", "value");
-            TotalNumTracks = (ushort)Xml.GetChildUIntAttribute(node, "TotalNumTracks", "value");
+            Unk00 = Xml.GetChildUIntAttribute(node, "Unk00", "value");
+            TrackType = (byte)Xml.GetChildUIntAttribute(node, "TrackType", "value");
+            Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
+            Unk02 = Xml.GetChildUIntAttribute(node, "Unk02", "value");
+            Unk03 = (byte)Xml.GetChildUIntAttribute(node, "Unk03", "value");
+            Unk16 = (ushort)Xml.GetChildUIntAttribute(node, "Unk16", "value");
             Tracks = XmlRel.ReadItemArray<Dat151HashPair>(node, "Tracks");
-            NumTracks = ((byte)(Tracks?.Length ?? 0));
+            TracksCount = (uint)(Tracks?.Length ?? 0);
         }
         public override MetaHash[] GetSoundHashes()
         {
