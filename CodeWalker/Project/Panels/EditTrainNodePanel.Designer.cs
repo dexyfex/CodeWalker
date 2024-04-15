@@ -44,12 +44,11 @@
             this.TrainNodeTypeComboBox.FormattingEnabled = true;
             this.TrainNodeTypeComboBox.Items.AddRange(new object[] {
             "0 - Default",
-            "1 - Station Left",
-            "2 - Station Right",
+            "1 - Default Station",
+            "2 - Freight Station",
             "3 - (Not used)",
             "4 - Underground",
-            "5 - Underground Station Left",
-            "6 - Underground Station Right"});
+            "5 - Underground Station"});
             this.TrainNodeTypeComboBox.Location = new System.Drawing.Point(76, 45);
             this.TrainNodeTypeComboBox.Name = "TrainNodeTypeComboBox";
             this.TrainNodeTypeComboBox.Size = new System.Drawing.Size(142, 21);
