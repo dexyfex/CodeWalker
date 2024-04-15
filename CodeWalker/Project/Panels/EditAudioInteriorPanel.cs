@@ -15,7 +15,7 @@ namespace CodeWalker.Project.Panels
     public partial class EditAudioInteriorPanel : ProjectPanel
     {
         public ProjectForm ProjectForm;
-        public Dat151Interior CurrentInterior { get; set; }
+        public Dat151InteriorSettings CurrentInterior { get; set; }
 
         private bool populatingui = false;
 
@@ -27,7 +27,7 @@ namespace CodeWalker.Project.Panels
         }
 
 
-        public void SetInterior(Dat151Interior interior)
+        public void SetInterior(Dat151InteriorSettings interior)
         {
             CurrentInterior = interior;
             Tag = interior;

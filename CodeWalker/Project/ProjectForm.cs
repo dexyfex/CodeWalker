@@ -76,7 +76,7 @@ namespace CodeWalker.Project
         private AudioPlacement CurrentAudioEmitter;
         private Dat151AmbientZoneList CurrentAudioZoneList;
         private Dat151StaticEmitterList CurrentAudioEmitterList;
-        private Dat151Interior CurrentAudioInterior;
+        private Dat151InteriorSettings CurrentAudioInterior;
         private Dat151InteriorRoom CurrentAudioInteriorRoom;
 
         private YbnFile CurrentYbnFile;
@@ -859,7 +859,7 @@ namespace CodeWalker.Project
             CurrentAudioEmitter = item as AudioPlacement;
             CurrentAudioZoneList = item as Dat151AmbientZoneList;
             CurrentAudioEmitterList = item as Dat151StaticEmitterList;
-            CurrentAudioInterior = item as Dat151Interior;
+            CurrentAudioInterior = item as Dat151InteriorSettings;
             CurrentAudioInteriorRoom = item as Dat151InteriorRoom;
             CurrentMloRoom = item as MCMloRoomDef;
             CurrentMloPortal = item as MCMloPortalDef;
@@ -6791,7 +6791,7 @@ namespace CodeWalker.Project
             if (CurrentAudioFile == null) return;
 
 
-            var interior = new Dat151Interior(CurrentAudioFile);
+            var interior = new Dat151InteriorSettings(CurrentAudioFile);
 
             interior.Name = "interior1";
             interior.NameHash = JenkHash.GenHash(interior.Name);
@@ -6850,7 +6850,7 @@ namespace CodeWalker.Project
 
             return true;
         }
-        public bool IsCurrentAudioInterior(Dat151Interior interior)
+        public bool IsCurrentAudioInterior(Dat151InteriorSettings interior)
         {
             return interior == CurrentAudioInterior;
         }
