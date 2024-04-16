@@ -670,19 +670,11 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.ShoreLineRiverAudioSettings: return new Dat151ShoreLineRiverAudioSettings(d, br);
                 case Dat151RelType.ShoreLineOceanAudioSettings: return new Dat151ShoreLineOceanAudioSettings(d, br);
                 case Dat151RelType.ShoreLineList: return new Dat151ShoreLineList(d, br);
-<<<<<<< Updated upstream
-                case Dat151RelType.RadioTrackEvents: return new Dat151RadioTrackEvents(d, br);
-                case Dat151RelType.VehicleEngineGranular: return new Dat151VehicleEngineGranular(d, br);
-                case Dat151RelType.Car: return new Dat151Car(d, br);
-                case Dat151RelType.VehicleEngine: return new Dat151VehicleEngine(d, br);
-                case Dat151RelType.VehicleScannerParams: return new Dat151VehicleScannerParams(d, br);
-=======
                 case Dat151RelType.RadioTrackTextIDs: return new Dat151RadioTrackTextIDs(d, br);
                 case Dat151RelType.GranularEngineAudioSettings: return new Dat151GranularEngineAudioSettings(d, br);
                 case Dat151RelType.CarAudioSettings: return new Dat151CarAudioSettings(d, br);
                 case Dat151RelType.VehicleEngineAudioSettings: return new Dat151VehicleEngineAudioSettings(d, br);
                 case Dat151RelType.ScannerVehicleParams: return new Dat151ScannerVehicleParams(d, br);
->>>>>>> Stashed changes
                 case Dat151RelType.StaticEmitter: return new Dat151StaticEmitter(d, br);
                 case Dat151RelType.WeaponAudioSettings: return new Dat151WeaponAudioSettings(d, br);
                 case Dat151RelType.ExplosionAudioSettings: return new Dat151ExplosionAudioSettings(d, br);
@@ -846,19 +838,11 @@ namespace CodeWalker.GameFiles
                         case Dat151RelType.ShoreLineRiverAudioSettings: return new Dat151ShoreLineRiverAudioSettings(this);
                         case Dat151RelType.ShoreLineOceanAudioSettings: return new Dat151ShoreLineOceanAudioSettings(this);
                         case Dat151RelType.ShoreLineList: return new Dat151ShoreLineList(this);
-<<<<<<< Updated upstream
-                        case Dat151RelType.RadioTrackEvents: return new Dat151RadioTrackEvents(this);
-                        case Dat151RelType.VehicleEngineGranular: return new Dat151VehicleEngineGranular(this);
-                        case Dat151RelType.Car: return new Dat151Car(this);
-                        case Dat151RelType.VehicleEngine: return new Dat151VehicleEngine(this);
-                        case Dat151RelType.VehicleScannerParams: return new Dat151VehicleScannerParams(this);
-=======
                         case Dat151RelType.RadioTrackTextIDs: return new Dat151RadioTrackTextIDs(this);
                         case Dat151RelType.GranularEngineAudioSettings: return new Dat151GranularEngineAudioSettings(this);
                         case Dat151RelType.CarAudioSettings: return new Dat151CarAudioSettings(this);
                         case Dat151RelType.VehicleEngineAudioSettings: return new Dat151VehicleEngineAudioSettings(this);
                         case Dat151RelType.ScannerVehicleParams: return new Dat151ScannerVehicleParams(this);
->>>>>>> Stashed changes
                         case Dat151RelType.StaticEmitter: return new Dat151StaticEmitter(this);
                         case Dat151RelType.WeaponAudioSettings: return new Dat151WeaponAudioSettings(this);
                         case Dat151RelType.ExplosionAudioSettings: return new Dat151ExplosionAudioSettings(this);
@@ -1105,13 +1089,8 @@ namespace CodeWalker.GameFiles
                             case Dat151RelType.AmbientBankMap:
                             case Dat151RelType.TrailerAudioSettings:
                             case Dat151RelType.StaticEmitterList:
-<<<<<<< Updated upstream
-                            case Dat151RelType.Weapon:
-                            case Dat151RelType.Car:
-=======
                             case Dat151RelType.WeaponAudioSettings:
                             case Dat151RelType.CarAudioSettings:
->>>>>>> Stashed changes
                             case Dat151RelType.StopTrackAction:
                                 while ((ms.Position & 3) != 0) bw.Write((byte)0); //align these to nearest 4 bytes
                                 break;
@@ -5018,19 +4997,11 @@ namespace CodeWalker.GameFiles
 
     public enum Dat151RelType : byte //not sure how correct these are?
     {
-<<<<<<< Updated upstream
-        VehicleCollision = 1, //only for vehicles, vehicle_collision
-        VehicleTrailer = 2,
-        Car = 3,
-        VehicleEngine = 4, //_vehicle_engine
-        AudioMaterial = 5, //am_base
-=======
         VehicleCollisionSettings = 1, //only for vehicles, vehicle_collision
         TrailerAudioSettings = 2,
         CarAudioSettings = 3,
         VehicleEngineAudioSettings = 4, //_vehicle_engine
         CollisionMaterialSettings = 5, //am_base
->>>>>>> Stashed changes
         StaticEmitter = 6, //radio emitters only, se_
         EntityEmitter = 7, //ee_, entity emitters for props such as fans, radars, etc
         HeliAudioSettings = 8,
@@ -6438,11 +6409,7 @@ namespace CodeWalker.GameFiles
             return TrackList;
         }
     }
-<<<<<<< Updated upstream
-    [TC(typeof(EXP))] public class Dat151RadioTrack : Dat151RelData //used exclusively for radio stuff, eg music dj lines and idents
-=======
     [TC(typeof(EXP))] public class Dat151RadioStationTrackList : Dat151RelData
->>>>>>> Stashed changes
      {
         public FlagsUint Unk00 { get; set; }
         public byte TrackType { get; set; }
@@ -8513,11 +8480,7 @@ namespace CodeWalker.GameFiles
         public float FakeImpactSweetenerThreshold { get; set; }
         public MetaHash DamageVolCurve { get; set; }
         public MetaHash JumpLandVolCurve { get; set; }
-<<<<<<< Updated upstream
-        public MetaHash VehicleMaterialSettings { get; set; }//AudioMaterial
-=======
         public MetaHash VehicleMaterialSettings { get; set; }//CollisionMaterialSettings
->>>>>>> Stashed changes
         public MetaHash DeformationSound { get; set; }
         public MetaHash ImpactDebris { get; set; }
         public MetaHash GlassDebris { get; set; }
@@ -10685,11 +10648,7 @@ namespace CodeWalker.GameFiles
             return new[] { EngineAccel, ExhaustAccel, NPCEngineAccel, NPCExhaustAccel, RevLimiterPopSound, EngineSubmixVoice, ExhaustSubmixVoice, SynchronisedSynth, DamageSynthHashList, UpgradedRevLimiterPop };
         }
     }
-<<<<<<< Updated upstream
-    [TC(typeof(EXP))] public class Dat151Car : Dat151RelData
-=======
     [TC(typeof(EXP))] public class Dat151CarAudioSettings : Dat151RelData
->>>>>>> Stashed changes
     {
         public FlagsUint Flags { get; set; } //2432719400   0x91005A28
         public MetaHash Engine { get; set; }
@@ -10714,13 +10673,6 @@ namespace CodeWalker.GameFiles
         public MetaHash DamagedJumpLandSound { get; set; }
         public uint JumpLandMinThresh { get; set; }
         public uint JumpLandMaxThresh { get; set; }
-<<<<<<< Updated upstream
-        public FlagsUint RadioFlags { get; set; } // VolumeCategory, GpsType, RadioType, RadioGenre
-        public MetaHash IndicatorOn { get; set; }
-        public MetaHash IndicatorOff { get; set; }
-        public MetaHash Handbrake { get; set; }
-        public ushort GpsVoice { get; set; }
-=======
         public byte VolumeCategory { get; set; }
         public byte GPSType { get; set; }
         public byte RadioType { get; set; }
@@ -10729,7 +10681,6 @@ namespace CodeWalker.GameFiles
         public MetaHash IndicatorOff { get; set; }
         public MetaHash Handbrake { get; set; }
         public ushort GPSVoice { get; set; }
->>>>>>> Stashed changes
         // AmbientRadioVol
         public ushort RadioLeakage { get; set; }
         public MetaHash ParkingTone { get; set; }
@@ -10779,21 +10730,12 @@ namespace CodeWalker.GameFiles
         public MetaHash JumpLandSoundInterior { get; set; }
         public MetaHash DamagedJumpLandSoundInterior { get; set; }
 
-<<<<<<< Updated upstream
-        public Dat151Car(RelFile rel) : base(rel)
-        {
-            Type = Dat151RelType.Car;
-            TypeID = (byte)Type;
-        }
-        public Dat151Car(RelData d, BinaryReader br) : base(d, br)
-=======
         public Dat151CarAudioSettings(RelFile rel) : base(rel)
         {
             Type = Dat151RelType.CarAudioSettings;
             TypeID = (byte)Type;
         }
         public Dat151CarAudioSettings(RelData d, BinaryReader br) : base(d, br)
->>>>>>> Stashed changes
         {
             Flags = br.ReadUInt32(); //2432719400   0x91005A28
             Engine = br.ReadUInt32();
@@ -10818,13 +10760,6 @@ namespace CodeWalker.GameFiles
             DamagedJumpLandSound = br.ReadUInt32();
             JumpLandMinThresh = br.ReadUInt32();
             JumpLandMaxThresh = br.ReadUInt32();
-<<<<<<< Updated upstream
-            RadioFlags = br.ReadUInt32();
-            IndicatorOn = br.ReadUInt32();
-            IndicatorOff = br.ReadUInt32();
-            Handbrake = br.ReadUInt32();
-            GpsVoice = br.ReadUInt16();
-=======
             VolumeCategory = br.ReadByte();
             GPSType = br.ReadByte();
             RadioType = br.ReadByte();
@@ -10833,7 +10768,6 @@ namespace CodeWalker.GameFiles
             IndicatorOff = br.ReadUInt32();
             Handbrake = br.ReadUInt32();
             GPSVoice = br.ReadUInt16();
->>>>>>> Stashed changes
             RadioLeakage = br.ReadUInt16();
             ParkingTone = br.ReadUInt32();
             RoofStuckSound = br.ReadUInt32();
@@ -11000,13 +10934,6 @@ namespace CodeWalker.GameFiles
             bw.Write(DamagedJumpLandSound);
             bw.Write(JumpLandMinThresh);
             bw.Write(JumpLandMaxThresh);
-<<<<<<< Updated upstream
-            bw.Write(RadioFlags);
-            bw.Write(IndicatorOn);
-            bw.Write(IndicatorOff);
-            bw.Write(Handbrake);
-            bw.Write(GpsVoice);
-=======
             bw.Write(VolumeCategory);
             bw.Write(GPSType);
             bw.Write(RadioType);
@@ -11015,7 +10942,6 @@ namespace CodeWalker.GameFiles
             bw.Write(IndicatorOff);
             bw.Write(Handbrake);
             bw.Write(GPSVoice);
->>>>>>> Stashed changes
             bw.Write(RadioLeakage);
             bw.Write(ParkingTone);
             bw.Write(RoofStuckSound);
@@ -11097,13 +11023,6 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "DamagedJumpLandSound", RelXml.HashString(DamagedJumpLandSound));
             RelXml.ValueTag(sb, indent, "JumpLandMinThresh", JumpLandMinThresh.ToString());
             RelXml.ValueTag(sb, indent, "JumpLandMaxThresh", JumpLandMaxThresh.ToString());
-<<<<<<< Updated upstream
-            RelXml.ValueTag(sb, indent, "RadioFlags", "0x" + RadioFlags.Hex);
-            RelXml.StringTag(sb, indent, "IndicatorOn", RelXml.HashString(IndicatorOn));
-            RelXml.StringTag(sb, indent, "IndicatorOff", RelXml.HashString(IndicatorOff));
-            RelXml.StringTag(sb, indent, "Handbrake", RelXml.HashString(Handbrake));
-            RelXml.ValueTag(sb, indent, "GpsVoice", GpsVoice.ToString());
-=======
             RelXml.ValueTag(sb, indent, "VolumeCategory", VolumeCategory.ToString());
             RelXml.ValueTag(sb, indent, "GPSType", GPSType.ToString());
             RelXml.ValueTag(sb, indent, "RadioType", RadioType.ToString());
@@ -11112,7 +11031,6 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "IndicatorOff", RelXml.HashString(IndicatorOff));
             RelXml.StringTag(sb, indent, "Handbrake", RelXml.HashString(Handbrake));
             RelXml.ValueTag(sb, indent, "GPSVoice", GPSVoice.ToString());
->>>>>>> Stashed changes
             RelXml.ValueTag(sb, indent, "RadioLeakage", RadioLeakage.ToString());
             RelXml.StringTag(sb, indent, "ParkingTone", RelXml.HashString(ParkingTone));
             RelXml.StringTag(sb, indent, "RoofStuckSound", RelXml.HashString(RoofStuckSound));
@@ -11185,13 +11103,6 @@ namespace CodeWalker.GameFiles
             DamagedJumpLandSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "DamagedJumpLandSound"));
             JumpLandMinThresh = Xml.GetChildUIntAttribute(node, "JumpLandMinThresh", "value");
             JumpLandMaxThresh = Xml.GetChildUIntAttribute(node, "JumpLandMaxThresh", "value");
-<<<<<<< Updated upstream
-            RadioFlags = Xml.GetChildUIntAttribute(node, "RadioFlags", "value");
-            IndicatorOn = XmlRel.GetHash(Xml.GetChildInnerText(node, "IndicatorOn"));
-            IndicatorOff = XmlRel.GetHash(Xml.GetChildInnerText(node, "IndicatorOff"));
-            Handbrake = XmlRel.GetHash(Xml.GetChildInnerText(node, "Handbrake"));
-            GpsVoice = (ushort)Xml.GetChildUIntAttribute(node, "GpsVoice", "value");
-=======
             VolumeCategory = (byte)Xml.GetChildUIntAttribute(node, "VolumeCategory", "value");
             GPSType = (byte)Xml.GetChildUIntAttribute(node, "GPSType", "value");
             RadioType = (byte)Xml.GetChildUIntAttribute(node, "RadioType", "value");
@@ -11200,7 +11111,6 @@ namespace CodeWalker.GameFiles
             IndicatorOff = XmlRel.GetHash(Xml.GetChildInnerText(node, "IndicatorOff"));
             Handbrake = XmlRel.GetHash(Xml.GetChildInnerText(node, "Handbrake"));
             GPSVoice = (ushort)Xml.GetChildUIntAttribute(node, "GPSVoice", "value");
->>>>>>> Stashed changes
             RadioLeakage = (ushort)Xml.GetChildUIntAttribute(node, "RadioLeakage", "value");
             ParkingTone = XmlRel.GetHash(Xml.GetChildInnerText(node, "ParkingTone"));
             RoofStuckSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "RoofStuckSound"));
@@ -12137,11 +12047,7 @@ namespace CodeWalker.GameFiles
                 SlowMoInteriorShotSound, SlowMoPedStrikeSound, SlowMoPedStrikeSoundPresuck, SlowMoBigAnimalStrikeSound, SlowMoBigAnimalStrikeSoundPresuck, SlowMoSmallAnimalStrikeSound, SlowMoSmallAnimalStrikeSoundPresuck, SlowMoFireSoundPresuckTime, SlowMoSuppressedFireSoundPresuckTime, SuperSlowMoFireSound, SuperSlowMoFireSoundPresuck, SuperSlowMoSuppressedFireSound, SuperSlowMoSuppressedFireSoundPresuck, SuperSlowMoReportSound, SuperSlowMoInteriorShotSound, SuperSlowMoPedStrikeSound, SuperSlowMoPedStrikeSoundPresuck, SuperSlowMoBigAnimalStrikeSound, SuperSlowMoBigAnimalStrikeSoundPresuck, SuperSlowMoSmallAnimalStrikeSound, SuperSlowMoSmallAnimalStrikeSoundPresuck };
         }
     }
-<<<<<<< Updated upstream
-    [TC(typeof(EXP))] public class Dat151Explosion : Dat151RelData // ExplosionAudioSettings
-=======
     [TC(typeof(EXP))] public class Dat151ExplosionAudioSettings : Dat151RelData // ExplosionAudioSettings
->>>>>>> Stashed changes
     {
         public FlagsUint Flags { get; set; }
         public MetaHash ExplosionSound { get; set; }
@@ -13004,11 +12910,7 @@ namespace CodeWalker.GameFiles
             return new[] { VehicleCollisions };
         }
     }
-<<<<<<< Updated upstream
-    [TC(typeof(EXP))] public class Dat151Aeroplane : Dat151RelData // PlaneAudioSettings
-=======
     [TC(typeof(EXP))] public class Dat151PlaneAudioSettings : Dat151RelData // PlaneAudioSettings
->>>>>>> Stashed changes
     {
         public FlagsUint Flags { get; set; }
         public MetaHash EngineLoop { get; set; }
