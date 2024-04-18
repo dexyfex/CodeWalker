@@ -192,8 +192,6 @@
             // 
             // PositioningRotationAngleTextBox
             // 
-            this.PositioningRotationAngleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PositioningRotationAngleTextBox.Location = new System.Drawing.Point(266, 358);
             this.PositioningRotationAngleTextBox.Name = "PositioningRotationAngleTextBox";
             this.PositioningRotationAngleTextBox.Size = new System.Drawing.Size(55, 20);
@@ -211,8 +209,6 @@
             // 
             // ActivationZoneRotationAngleTextBox
             // 
-            this.ActivationZoneRotationAngleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ActivationZoneRotationAngleTextBox.Location = new System.Drawing.Point(93, 358);
             this.ActivationZoneRotationAngleTextBox.Name = "ActivationZoneRotationAngleTextBox";
             this.ActivationZoneRotationAngleTextBox.Size = new System.Drawing.Size(55, 20);
@@ -221,7 +217,6 @@
             // 
             // label22
             // 
-            this.label22.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label22.AutoSize = true;
             this.label22.Location = new System.Drawing.Point(310, 140);
             this.label22.Name = "label22";
@@ -231,7 +226,6 @@
             // 
             // WindElevationSoundsTextBox
             // 
-            this.WindElevationSoundsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.WindElevationSoundsTextBox.Location = new System.Drawing.Point(390, 137);
             this.WindElevationSoundsTextBox.Name = "WindElevationSoundsTextBox";
             this.WindElevationSoundsTextBox.Size = new System.Drawing.Size(155, 20);
@@ -240,8 +234,6 @@
             // 
             // ZoneWaterCalculationTextBox
             // 
-            this.ZoneWaterCalculationTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ZoneWaterCalculationTextBox.Location = new System.Drawing.Point(266, 316);
             this.ZoneWaterCalculationTextBox.Name = "ZoneWaterCalculationTextBox";
             this.ZoneWaterCalculationTextBox.Size = new System.Drawing.Size(55, 20);
@@ -259,8 +251,6 @@
             // 
             // MaxWindInfluenceTextBox
             // 
-            this.MaxWindInfluenceTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.MaxWindInfluenceTextBox.Location = new System.Drawing.Point(274, 395);
             this.MaxWindInfluenceTextBox.Name = "MaxWindInfluenceTextBox";
             this.MaxWindInfluenceTextBox.Size = new System.Drawing.Size(55, 20);
@@ -278,8 +268,6 @@
             // 
             // MinWindInfluenceTextBox
             // 
-            this.MinWindInfluenceTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.MinWindInfluenceTextBox.Location = new System.Drawing.Point(106, 395);
             this.MinWindInfluenceTextBox.Name = "MinWindInfluenceTextBox";
             this.MinWindInfluenceTextBox.Size = new System.Drawing.Size(55, 20);
@@ -297,8 +285,6 @@
             // 
             // PedDensityScalarTextBox
             // 
-            this.PedDensityScalarTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PedDensityScalarTextBox.Location = new System.Drawing.Point(266, 290);
             this.PedDensityScalarTextBox.Name = "PedDensityScalarTextBox";
             this.PedDensityScalarTextBox.Size = new System.Drawing.Size(55, 20);
@@ -325,8 +311,6 @@
             // 
             // MaxPedDensityTextBox
             // 
-            this.MaxPedDensityTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.MaxPedDensityTextBox.Location = new System.Drawing.Point(93, 316);
             this.MaxPedDensityTextBox.Name = "MaxPedDensityTextBox";
             this.MaxPedDensityTextBox.Size = new System.Drawing.Size(55, 20);
@@ -335,8 +319,6 @@
             // 
             // MinPedDensityTextBox
             // 
-            this.MinPedDensityTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.MinPedDensityTextBox.Location = new System.Drawing.Point(93, 290);
             this.MinPedDensityTextBox.Name = "MinPedDensityTextBox";
             this.MinPedDensityTextBox.Size = new System.Drawing.Size(55, 20);
@@ -354,8 +336,6 @@
             // 
             // PedDensityTODTextBox
             // 
-            this.PedDensityTODTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PedDensityTODTextBox.Location = new System.Drawing.Point(266, 264);
             this.PedDensityTODTextBox.Name = "PedDensityTODTextBox";
             this.PedDensityTODTextBox.Size = new System.Drawing.Size(55, 20);
@@ -373,8 +353,6 @@
             // 
             // BuiltUpFactorTextBox
             // 
-            this.BuiltUpFactorTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.BuiltUpFactorTextBox.Location = new System.Drawing.Point(93, 264);
             this.BuiltUpFactorTextBox.Name = "BuiltUpFactorTextBox";
             this.BuiltUpFactorTextBox.Size = new System.Drawing.Size(55, 20);
@@ -383,8 +361,6 @@
             // 
             // PositioningSizeScaleTextBox
             // 
-            this.PositioningSizeScaleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PositioningSizeScaleTextBox.Location = new System.Drawing.Point(121, 238);
             this.PositioningSizeScaleTextBox.Name = "PositioningSizeScaleTextBox";
             this.PositioningSizeScaleTextBox.Size = new System.Drawing.Size(200, 20);
@@ -411,8 +387,6 @@
             // 
             // PositioningRotationOffsetTextBox
             // 
-            this.PositioningRotationOffsetTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PositioningRotationOffsetTextBox.Location = new System.Drawing.Point(121, 212);
             this.PositioningRotationOffsetTextBox.Name = "PositioningRotationOffsetTextBox";
             this.PositioningRotationOffsetTextBox.Size = new System.Drawing.Size(200, 20);
@@ -430,8 +404,6 @@
             // 
             // PositioningSizeTextBox
             // 
-            this.PositioningSizeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PositioningSizeTextBox.Location = new System.Drawing.Point(121, 186);
             this.PositioningSizeTextBox.Name = "PositioningSizeTextBox";
             this.PositioningSizeTextBox.Size = new System.Drawing.Size(200, 20);
@@ -449,8 +421,6 @@
             // 
             // ActivationSizeScaleTextBox
             // 
-            this.ActivationSizeScaleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ActivationSizeScaleTextBox.Location = new System.Drawing.Point(121, 134);
             this.ActivationSizeScaleTextBox.Name = "ActivationSizeScaleTextBox";
             this.ActivationSizeScaleTextBox.Size = new System.Drawing.Size(172, 20);
@@ -477,8 +447,6 @@
             // 
             // ActivationRotationOffsetTextBox
             // 
-            this.ActivationRotationOffsetTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ActivationRotationOffsetTextBox.Location = new System.Drawing.Point(121, 108);
             this.ActivationRotationOffsetTextBox.Name = "ActivationRotationOffsetTextBox";
             this.ActivationRotationOffsetTextBox.Size = new System.Drawing.Size(200, 20);
@@ -487,8 +455,6 @@
             // 
             // ActivationSizeTextBox
             // 
-            this.ActivationSizeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ActivationSizeTextBox.Location = new System.Drawing.Point(121, 82);
             this.ActivationSizeTextBox.Name = "ActivationSizeTextBox";
             this.ActivationSizeTextBox.Size = new System.Drawing.Size(172, 20);
@@ -497,7 +463,6 @@
             // 
             // label25
             // 
-            this.label25.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label25.AutoSize = true;
             this.label25.Location = new System.Drawing.Point(313, 58);
             this.label25.Name = "label25";
@@ -507,7 +472,6 @@
             // 
             // AudioSceneTextBox
             // 
-            this.AudioSceneTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.AudioSceneTextBox.Location = new System.Drawing.Point(390, 58);
             this.AudioSceneTextBox.Name = "AudioSceneTextBox";
             this.AudioSceneTextBox.Size = new System.Drawing.Size(155, 20);
@@ -516,7 +480,6 @@
             // 
             // label24
             // 
-            this.label24.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label24.AutoSize = true;
             this.label24.Location = new System.Drawing.Point(296, 88);
             this.label24.Name = "label24";
@@ -526,7 +489,6 @@
             // 
             // EnviromentRuleTextBox
             // 
-            this.EnviromentRuleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.EnviromentRuleTextBox.Location = new System.Drawing.Point(390, 85);
             this.EnviromentRuleTextBox.Name = "EnviromentRuleTextBox";
             this.EnviromentRuleTextBox.Size = new System.Drawing.Size(155, 20);
@@ -535,7 +497,6 @@
             // 
             // DeleteButton
             // 
-            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DeleteButton.Location = new System.Drawing.Point(343, 3);
             this.DeleteButton.Name = "DeleteButton";
             this.DeleteButton.Size = new System.Drawing.Size(93, 23);
@@ -546,7 +507,6 @@
             // 
             // AddToProjectButton
             // 
-            this.AddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.AddToProjectButton.Location = new System.Drawing.Point(452, 3);
             this.AddToProjectButton.Name = "AddToProjectButton";
             this.AddToProjectButton.Size = new System.Drawing.Size(93, 23);
@@ -557,7 +517,6 @@
             // 
             // label21
             // 
-            this.label21.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label21.AutoSize = true;
             this.label21.Location = new System.Drawing.Point(268, 36);
             this.label21.Name = "label21";
@@ -567,7 +526,6 @@
             // 
             // RandomRadioSettingsTextBox
             // 
-            this.RandomRadioSettingsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.RandomRadioSettingsTextBox.Location = new System.Drawing.Point(390, 33);
             this.RandomRadioSettingsTextBox.Name = "RandomRadioSettingsTextBox";
             this.RandomRadioSettingsTextBox.Size = new System.Drawing.Size(155, 20);
@@ -576,7 +534,6 @@
             // 
             // label20
             // 
-            this.label20.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label20.AutoSize = true;
             this.label20.Location = new System.Drawing.Point(340, 303);
             this.label20.Name = "label20";
@@ -586,7 +543,6 @@
             // 
             // DirAmbiencesTextBox
             // 
-            this.DirAmbiencesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DirAmbiencesTextBox.Location = new System.Drawing.Point(335, 319);
             this.DirAmbiencesTextBox.Multiline = true;
             this.DirAmbiencesTextBox.Name = "DirAmbiencesTextBox";
@@ -598,7 +554,6 @@
             // 
             // label19
             // 
-            this.label19.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label19.AutoSize = true;
             this.label19.Location = new System.Drawing.Point(340, 183);
             this.label19.Name = "label19";
@@ -608,7 +563,6 @@
             // 
             // RulesTextBox
             // 
-            this.RulesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.RulesTextBox.Location = new System.Drawing.Point(335, 199);
             this.RulesTextBox.Multiline = true;
             this.RulesTextBox.Name = "RulesTextBox";
@@ -620,7 +574,6 @@
             // 
             // label13
             // 
-            this.label13.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label13.AutoSize = true;
             this.label13.Location = new System.Drawing.Point(340, 114);
             this.label13.Name = "label13";
@@ -630,7 +583,6 @@
             // 
             // FlagsTextBox
             // 
-            this.FlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.FlagsTextBox.Location = new System.Drawing.Point(390, 111);
             this.FlagsTextBox.Name = "FlagsTextBox";
             this.FlagsTextBox.Size = new System.Drawing.Size(155, 20);
@@ -671,8 +623,6 @@
             // 
             // NameTextBox
             // 
-            this.NameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.NameTextBox.Location = new System.Drawing.Point(84, 6);
             this.NameTextBox.Name = "NameTextBox";
             this.NameTextBox.Size = new System.Drawing.Size(237, 20);
@@ -690,8 +640,6 @@
             // 
             // PositioningCentreTextBox
             // 
-            this.PositioningCentreTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PositioningCentreTextBox.Location = new System.Drawing.Point(121, 160);
             this.PositioningCentreTextBox.Name = "PositioningCentreTextBox";
             this.PositioningCentreTextBox.Size = new System.Drawing.Size(200, 20);
@@ -709,8 +657,6 @@
             // 
             // ActivationZoneCentreTextBox
             // 
-            this.ActivationZoneCentreTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.ActivationZoneCentreTextBox.Location = new System.Drawing.Point(121, 55);
             this.ActivationZoneCentreTextBox.Name = "ActivationZoneCentreTextBox";
             this.ActivationZoneCentreTextBox.Size = new System.Drawing.Size(186, 20);
