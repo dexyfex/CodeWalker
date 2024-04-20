@@ -120,16 +120,19 @@ namespace CodeWalker.GameFiles
             DataLength = br.ReadUInt32(); //length of data block
             DataBlock = br.ReadBytes((int)DataLength); //main data block...
 
-            NameTableLength = br.ReadUInt32(); //length of this nametable block
+
+            NameTableLength = br.ReadUInt32();
             NameTableCount = br.ReadUInt32();
             if (NameTableCount > 0)
             {
-                uint[] ntoffsets = new uint[NameTableCount]; //string offsets
+                uint[] ntoffsets = new uint[NameTableCount];
                 for (uint i = 0; i < NameTableCount; i++)
                 {
                     ntoffsets[i] = br.ReadUInt32();
                 }
                 NameTableOffsets = ntoffsets;
+
+
                 string[] names = new string[NameTableCount];
                 for (uint i = 0; i < NameTableCount; i++)
                 {
@@ -142,7 +145,6 @@ namespace CodeWalker.GameFiles
                     }
                     names[i] = sb.ToString();
 
-                    //JenkIndex.Ensure(names[i]); //really need both here..?
                     JenkIndex.Ensure(names[i].ToLowerInvariant());
                 }
                 NameTable = names;
@@ -9670,12 +9672,12 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151ShoreLineRiverAudioSettings : Dat151RelData
     {
-        public FlagsUint Unk01 { get; set; }
-        public Vector4 Unk02 { get; set; }
-        public float Unk03 { get; set; }
-        public uint Unk04 { get; set; }
-        public uint Unk05 { get; set; }
-        public uint Unk06 { get; set; }
+        public FlagsUint Flags { get; set; }
+        public Vector4 ActivationBox { get; set; }
+        public float RotationAngle { get; set; }
+        public uint NextShoreline { get; set; }
+        public uint RiverType { get; set; }
+        public float DefaultHeight { get; set; }
         public uint PointsCount { get; set; }
         public Vector3[] Points { get; set; }
 
@@ -9686,12 +9688,12 @@ namespace CodeWalker.GameFiles
         }
         public Dat151ShoreLineRiverAudioSettings(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk01 = br.ReadUInt32();
-            Unk02 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk03 = br.ReadSingle();
-            Unk04 = br.ReadUInt32();
-            Unk05 = br.ReadUInt32();
-            Unk06 = br.ReadUInt32();
+            Flags = br.ReadUInt32();
+            ActivationBox = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            RotationAngle = br.ReadSingle();
+            NextShoreline = br.ReadUInt32();
+            RiverType = br.ReadUInt32();
+            DefaultHeight = br.ReadSingle();
             PointsCount = br.ReadUInt32();
 
             var points = new Vector3[PointsCount];
@@ -9705,15 +9707,15 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk01);
-            bw.Write(Unk02.X);
-            bw.Write(Unk02.Y);
-            bw.Write(Unk02.Z);
-            bw.Write(Unk02.W);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
+            bw.Write(Flags);
+            bw.Write(ActivationBox.X);
+            bw.Write(ActivationBox.Y);
+            bw.Write(ActivationBox.Z);
+            bw.Write(ActivationBox.W);
+            bw.Write(RotationAngle);
+            bw.Write(NextShoreline);
+            bw.Write(RiverType);
+            bw.Write(DefaultHeight);
             bw.Write(PointsCount);
 
             for (int i = 0; i < PointsCount; i++)
@@ -9725,40 +9727,40 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Unk01", "0x" + Unk01.Hex);
-            RelXml.SelfClosingTag(sb, indent, "Unk02 " + FloatUtil.GetVector4XmlString(Unk02));
-            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
-            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
-            RelXml.ValueTag(sb, indent, "Unk05", Unk05.ToString());
-            RelXml.ValueTag(sb, indent, "Unk06", Unk06.ToString());
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.SelfClosingTag(sb, indent, "ActivationBox " + FloatUtil.GetVector4XmlString(ActivationBox));
+            RelXml.ValueTag(sb, indent, "RotationAngle", FloatUtil.ToString(RotationAngle));
+            RelXml.ValueTag(sb, indent, "NextShoreline", NextShoreline.ToString());
+            RelXml.ValueTag(sb, indent, "RiverType", RiverType.ToString());
+            RelXml.ValueTag(sb, indent, "DefaultHeight", FloatUtil.ToString(DefaultHeight));
             RelXml.WriteRawArray(sb, Points, indent, "Points", "", RelXml.FormatVector3, 1);
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02");
-            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
-            Unk04 = Xml.GetChildUIntAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildUIntAttribute(node, "Unk05", "value");
-            Unk06 = Xml.GetChildUIntAttribute(node, "Unk06", "value");
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            ActivationBox = Xml.GetChildVector4Attributes(node, "ActivationBox");
+            RotationAngle = Xml.GetChildFloatAttribute(node, "RotationAngle", "value");
+            NextShoreline = Xml.GetChildUIntAttribute(node, "NextShoreline", "value");
+            RiverType = Xml.GetChildUIntAttribute(node, "RiverType", "value");
+            DefaultHeight = Xml.GetChildUIntAttribute(node, "DefaultHeight", "value");
             Points = Xml.GetChildRawVector3Array(node, "Points");
             PointsCount = (uint)(Points?.Length ?? 0);
         }
     }
     [TC(typeof(EXP))] public class Dat151ShoreLineOceanAudioSettings : Dat151RelData
     {
-        public FlagsUint Unk01 { get; set; }
-        public Vector4 Unk02 { get; set; }
-        public float Unk03 { get; set; }
-        public uint Unk04 { get; set; }
-        public MetaHash Unk05 { get; set; }//adjacent shoreline? links to same type, not included in children list due to large chain!
-        public float Unk06 { get; set; }
-        public float Unk07 { get; set; }
-        public float Unk08 { get; set; }
-        public float Unk09 { get; set; }
-        public float Unk10 { get; set; }
-        public float Unk11 { get; set; }
-        public float Unk12 { get; set; }
+        public FlagsUint Flags { get; set; }
+        public Vector4 ActivationBox { get; set; }
+        public float RotationAngle { get; set; }
+        public uint OceanType { get; set; }
+        public MetaHash NextShoreline { get; set; }
+        public float WaveStartDPDistance { get; set; }
+        public float WaveStartHeight { get; set; }
+        public float WaveBreaksDPDistance { get; set; }
+        public float WaveBreaksHeight { get; set; }
+        public float WaveEndDPDistance { get; set; }
+        public float WaveEndHeight { get; set; }
+        public float RecedeHeight { get; set; }
         public uint PointsCount { get; set; }
         public Vector2[] Points { get; set; }
 
@@ -9769,18 +9771,18 @@ namespace CodeWalker.GameFiles
         }
         public Dat151ShoreLineOceanAudioSettings(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk01 = br.ReadUInt32();
-            Unk02 = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            Unk03 = br.ReadSingle();
-            Unk04 = br.ReadUInt32();
-            Unk05 = br.ReadUInt32();
-            Unk06 = br.ReadSingle();
-            Unk07 = br.ReadSingle();
-            Unk08 = br.ReadSingle();
-            Unk09 = br.ReadSingle();
-            Unk10 = br.ReadSingle();
-            Unk11 = br.ReadSingle();
-            Unk12 = br.ReadSingle();
+            Flags = br.ReadUInt32();
+            ActivationBox = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
+            RotationAngle = br.ReadSingle();
+            OceanType = br.ReadUInt32();
+            NextShoreline = br.ReadUInt32();
+            WaveStartDPDistance = br.ReadSingle();
+            WaveStartHeight = br.ReadSingle();
+            WaveBreaksDPDistance = br.ReadSingle();
+            WaveBreaksHeight = br.ReadSingle();
+            WaveEndDPDistance = br.ReadSingle();
+            WaveEndHeight = br.ReadSingle();
+            RecedeHeight = br.ReadSingle();
 
             PointsCount = br.ReadUInt32();
 
@@ -9795,21 +9797,21 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk01);
-            bw.Write(Unk02.X);
-            bw.Write(Unk02.Y);
-            bw.Write(Unk02.Z);
-            bw.Write(Unk02.W);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
-            bw.Write(Unk10);
-            bw.Write(Unk11);
-            bw.Write(Unk12);
+            bw.Write(Flags);
+            bw.Write(ActivationBox.X);
+            bw.Write(ActivationBox.Y);
+            bw.Write(ActivationBox.Z);
+            bw.Write(ActivationBox.W);
+            bw.Write(RotationAngle);
+            bw.Write(OceanType);
+            bw.Write(NextShoreline);
+            bw.Write(WaveStartDPDistance);
+            bw.Write(WaveStartHeight);
+            bw.Write(WaveBreaksDPDistance);
+            bw.Write(WaveBreaksHeight);
+            bw.Write(WaveEndDPDistance);
+            bw.Write(WaveEndHeight);
+            bw.Write(RecedeHeight);
 
             bw.Write(PointsCount);
 
@@ -9821,34 +9823,34 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Unk01", "0x" + Unk01.Hex);
-            RelXml.SelfClosingTag(sb, indent, "Unk02 " + FloatUtil.GetVector4XmlString(Unk02));
-            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
-            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
-            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
-            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
-            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
-            RelXml.ValueTag(sb, indent, "Unk09", FloatUtil.ToString(Unk09));
-            RelXml.ValueTag(sb, indent, "Unk10", FloatUtil.ToString(Unk10));
-            RelXml.ValueTag(sb, indent, "Unk11", FloatUtil.ToString(Unk11));
-            RelXml.ValueTag(sb, indent, "Unk12", FloatUtil.ToString(Unk12));
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.SelfClosingTag(sb, indent, "ActivationBox " + FloatUtil.GetVector4XmlString(ActivationBox));
+            RelXml.ValueTag(sb, indent, "RotationAngle", FloatUtil.ToString(RotationAngle));
+            RelXml.ValueTag(sb, indent, "OceanType", OceanType.ToString());
+            RelXml.StringTag(sb, indent, "NextShoreline", RelXml.HashString(NextShoreline));
+            RelXml.ValueTag(sb, indent, "WaveStartDPDistance", FloatUtil.ToString(WaveStartDPDistance));
+            RelXml.ValueTag(sb, indent, "WaveStartHeight", FloatUtil.ToString(WaveStartHeight));
+            RelXml.ValueTag(sb, indent, "WaveBreaksDPDistance", FloatUtil.ToString(WaveBreaksDPDistance));
+            RelXml.ValueTag(sb, indent, "WaveBreaksHeight", FloatUtil.ToString(WaveBreaksHeight));
+            RelXml.ValueTag(sb, indent, "WaveEndDPDistance", FloatUtil.ToString(WaveEndDPDistance));
+            RelXml.ValueTag(sb, indent, "WaveEndHeight", FloatUtil.ToString(WaveEndHeight));
+            RelXml.ValueTag(sb, indent, "RecedeHeight", FloatUtil.ToString(RecedeHeight));
             RelXml.WriteRawArray(sb, Points, indent, "Points", "", RelXml.FormatVector2, 1);
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk01 = Xml.GetChildUIntAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildVector4Attributes(node, "Unk02");
-            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
-            Unk04 = Xml.GetChildUIntAttribute(node, "Unk04", "value");
-            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
-            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
-            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
-            Unk09 = Xml.GetChildFloatAttribute(node, "Unk09", "value");
-            Unk10 = Xml.GetChildFloatAttribute(node, "Unk10", "value");
-            Unk11 = Xml.GetChildFloatAttribute(node, "Unk11", "value");
-            Unk12 = Xml.GetChildFloatAttribute(node, "Unk12", "value");
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            ActivationBox = Xml.GetChildVector4Attributes(node, "ActivationBox");
+            RotationAngle = Xml.GetChildFloatAttribute(node, "RotationAngle", "value");
+            OceanType = Xml.GetChildUIntAttribute(node, "OceanType", "value");
+            NextShoreline = XmlRel.GetHash(Xml.GetChildInnerText(node, "NextShoreline"));
+            WaveStartDPDistance = Xml.GetChildFloatAttribute(node, "WaveStartDPDistance", "value");
+            WaveStartHeight = Xml.GetChildFloatAttribute(node, "WaveStartHeight", "value");
+            WaveBreaksDPDistance = Xml.GetChildFloatAttribute(node, "WaveBreaksDPDistance", "value");
+            WaveBreaksHeight = Xml.GetChildFloatAttribute(node, "WaveBreaksHeight", "value");
+            WaveEndDPDistance = Xml.GetChildFloatAttribute(node, "WaveEndDPDistance", "value");
+            WaveEndHeight = Xml.GetChildFloatAttribute(node, "WaveEndHeight", "value");
+            RecedeHeight = Xml.GetChildFloatAttribute(node, "RecedeHeight", "value");
             Points = Xml.GetChildRawVector2Array(node, "Points");
             PointsCount = (uint)(Points?.Length ?? 0);
         }
@@ -14721,79 +14723,79 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151ModelPhysicsParamsItem : IMetaXmlItem
     {
-        public MetaHash Unk01 { get; set; }
-        public float Unk02 { get; set; }
-        public float Unk03 { get; set; }
-        public float Unk04 { get; set; }
-        public float Unk05 { get; set; }
-        public float Unk06 { get; set; }
-        public float Unk07 { get; set; }
-        public float Unk08 { get; set; }
-        public int Unk09 { get; set; }
+        public MetaHash ModeName { get; set; }
+        public float GroundDistanceDownEpsilon { get; set; }
+        public float GroundDistanceUpEpsilon { get; set; }
+        public float DownSpeedEpsilon { get; set; }
+        public float HindGroundDistanceDownEpsilon { get; set; }
+        public float HindGroundDistanceUpEpsilon { get; set; }
+        public float SpeedSmootherIncreaseRate { get; set; }
+        public float SpeedSmootherDecreaseRate { get; set; }
+        public uint TimeToRetrigger { get; set; }
 
         public Dat151ModelPhysicsParamsItem()
         { }
         public Dat151ModelPhysicsParamsItem(BinaryReader br)
         {
-            Unk01 = br.ReadUInt32();
-            Unk02 = br.ReadSingle();
-            Unk03 = br.ReadSingle();
-            Unk04 = br.ReadSingle();
-            Unk05 = br.ReadSingle();
-            Unk06 = br.ReadSingle();
-            Unk07 = br.ReadSingle();
-            Unk08 = br.ReadSingle();
-            Unk09 = br.ReadInt32();
+            ModeName = br.ReadUInt32();
+            GroundDistanceDownEpsilon = br.ReadSingle();
+            GroundDistanceUpEpsilon = br.ReadSingle();
+            DownSpeedEpsilon = br.ReadSingle();
+            HindGroundDistanceDownEpsilon = br.ReadSingle();
+            HindGroundDistanceUpEpsilon = br.ReadSingle();
+            SpeedSmootherIncreaseRate = br.ReadSingle();
+            SpeedSmootherDecreaseRate = br.ReadSingle();
+            TimeToRetrigger = br.ReadUInt32();
         }
         public void Write(BinaryWriter bw)
         {
-            bw.Write(Unk01);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
+            bw.Write(ModeName);
+            bw.Write(GroundDistanceDownEpsilon);
+            bw.Write(GroundDistanceUpEpsilon);
+            bw.Write(DownSpeedEpsilon);
+            bw.Write(HindGroundDistanceDownEpsilon);
+            bw.Write(HindGroundDistanceUpEpsilon);
+            bw.Write(SpeedSmootherIncreaseRate);
+            bw.Write(SpeedSmootherDecreaseRate);
+            bw.Write(TimeToRetrigger);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
-            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
-            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
-            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
-            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
-            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
-            RelXml.ValueTag(sb, indent, "Unk08", FloatUtil.ToString(Unk08));
-            RelXml.ValueTag(sb, indent, "Unk09", Unk09.ToString());
+            RelXml.StringTag(sb, indent, "ModeName", RelXml.HashString(ModeName));
+            RelXml.ValueTag(sb, indent, "GroundDistanceDownEpsilon", FloatUtil.ToString(GroundDistanceDownEpsilon));
+            RelXml.ValueTag(sb, indent, "GroundDistanceUpEpsilon", FloatUtil.ToString(GroundDistanceUpEpsilon));
+            RelXml.ValueTag(sb, indent, "DownSpeedEpsilon", FloatUtil.ToString(DownSpeedEpsilon));
+            RelXml.ValueTag(sb, indent, "HindGroundDistanceDownEpsilon", FloatUtil.ToString(HindGroundDistanceDownEpsilon));
+            RelXml.ValueTag(sb, indent, "HindGroundDistanceUpEpsilon", FloatUtil.ToString(HindGroundDistanceUpEpsilon));
+            RelXml.ValueTag(sb, indent, "SpeedSmootherIncreaseRate", FloatUtil.ToString(SpeedSmootherIncreaseRate));
+            RelXml.ValueTag(sb, indent, "SpeedSmootherDecreaseRate", FloatUtil.ToString(SpeedSmootherDecreaseRate));
+            RelXml.ValueTag(sb, indent, "TimeToRetrigger", TimeToRetrigger.ToString());
         }
         public void ReadXml(XmlNode node)
         {
-            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
-            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
-            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
-            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
-            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
-            Unk08 = Xml.GetChildFloatAttribute(node, "Unk08", "value");
-            Unk09 = Xml.GetChildIntAttribute(node, "Unk09", "value");
+            ModeName = XmlRel.GetHash(Xml.GetChildInnerText(node, "ModeName"));
+            GroundDistanceDownEpsilon = Xml.GetChildFloatAttribute(node, "GroundDistanceDownEpsilon", "value");
+            GroundDistanceUpEpsilon = Xml.GetChildFloatAttribute(node, "GroundDistanceUpEpsilon", "value");
+            DownSpeedEpsilon = Xml.GetChildFloatAttribute(node, "DownSpeedEpsilon", "value");
+            HindGroundDistanceDownEpsilon = Xml.GetChildFloatAttribute(node, "HindGroundDistanceDownEpsilon", "value");
+            HindGroundDistanceUpEpsilon = Xml.GetChildFloatAttribute(node, "HindGroundDistanceUpEpsilon", "value");
+            SpeedSmootherIncreaseRate = Xml.GetChildFloatAttribute(node, "SpeedSmootherIncreaseRate", "value");
+            SpeedSmootherDecreaseRate = Xml.GetChildFloatAttribute(node, "SpeedSmootherDecreaseRate", "value");
+            TimeToRetrigger = Xml.GetChildUIntAttribute(node, "TimeToRetrigger", "value");
         }
         public override string ToString()
         {
-            return Unk01.ToString();
+            return ModeName.ToString();
         }
     }
     [TC(typeof(EXP))] public class Dat151ModelPhysicsParams : Dat151RelData
     {
-        public int Unk01 { get; set; }
-        public int Unk02 { get; set; }
-        public MetaHash Unk03 { get; set; }
-        public float Unk04 { get; set; }
-        public float Unk05 { get; set; }
-        public float Unk06 { get; set; }
+        public uint NumFeet { get; set; }
+        public int PedType { get; set; }
+        public MetaHash FootstepTuningValues { get; set; }
+        public float StopSpeedThreshold { get; set; }
+        public float WalkSpeedThreshold { get; set; }
+        public float RunSpeedThreshold { get; set; }
         public int ItemCount { get; set; }
         public Dat151ModelPhysicsParamsItem[] Items { get; set; }
 
@@ -14805,12 +14807,12 @@ namespace CodeWalker.GameFiles
         }
         public Dat151ModelPhysicsParams(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk01 = br.ReadInt32();
-            Unk02 = br.ReadInt32();
-            Unk03 = br.ReadUInt32();
-            Unk04 = br.ReadSingle();
-            Unk05 = br.ReadSingle();
-            Unk06 = br.ReadSingle();
+            NumFeet = br.ReadUInt32();
+            PedType = br.ReadInt32();
+            FootstepTuningValues = br.ReadUInt32();
+            StopSpeedThreshold = br.ReadSingle();
+            WalkSpeedThreshold = br.ReadSingle();
+            RunSpeedThreshold = br.ReadSingle();
 
             ItemCount = br.ReadInt32();
             Items = new Dat151ModelPhysicsParamsItem[ItemCount];
@@ -14823,12 +14825,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk01);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
+            bw.Write(NumFeet);
+            bw.Write(PedType);
+            bw.Write(FootstepTuningValues);
+            bw.Write(StopSpeedThreshold);
+            bw.Write(WalkSpeedThreshold);
+            bw.Write(RunSpeedThreshold);
 
             bw.Write(ItemCount);
             for (int i = 0; i < ItemCount; i++)
@@ -14839,41 +14841,41 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Unk01", Unk01.ToString());
-            RelXml.ValueTag(sb, indent, "Unk02", Unk02.ToString());
-            RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
-            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
-            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
+            RelXml.ValueTag(sb, indent, "NumFeet", NumFeet.ToString());
+            RelXml.ValueTag(sb, indent, "PedType", PedType.ToString());
+            RelXml.StringTag(sb, indent, "FootstepTuningValues", RelXml.HashString(FootstepTuningValues));
+            RelXml.ValueTag(sb, indent, "StopSpeedThreshold", FloatUtil.ToString(StopSpeedThreshold));
+            RelXml.ValueTag(sb, indent, "WalkSpeedThreshold", FloatUtil.ToString(WalkSpeedThreshold));
+            RelXml.ValueTag(sb, indent, "RunSpeedThreshold", FloatUtil.ToString(RunSpeedThreshold));
             RelXml.WriteItemArray(sb, Items, indent, "Items");
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk01 = Xml.GetChildIntAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildIntAttribute(node, "Unk02", "value");
-            Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
-            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
+            NumFeet = Xml.GetChildUIntAttribute(node, "NumFeet", "value");
+            PedType = Xml.GetChildIntAttribute(node, "PedType", "value");
+            FootstepTuningValues = XmlRel.GetHash(Xml.GetChildInnerText(node, "FootstepTuningValues"));
+            StopSpeedThreshold = Xml.GetChildFloatAttribute(node, "StopSpeedThreshold", "value");
+            WalkSpeedThreshold = Xml.GetChildFloatAttribute(node, "WalkSpeedThreshold", "value");
+            RunSpeedThreshold = Xml.GetChildFloatAttribute(node, "RunSpeedThreshold", "value");
             Items = XmlRel.ReadItemArray<Dat151ModelPhysicsParamsItem>(node, "Items");
             ItemCount = (Items?.Length ?? 0);
         }
         public override MetaHash[] GetGameHashes()
         {
-            return new[] { Unk03 };
+            return new[] { FootstepTuningValues };
         }
     }
     [TC(typeof(EXP))] public class Dat151SkiAudioSettings : Dat151RelData
     {
-        public MetaHash Unk01 { get; set; }
-        public MetaHash Unk02 { get; set; }
-        public float Unk03 { get; set; }
-        public MetaHash Unk04 { get; set; }
-        public MetaHash Unk05 { get; set; }
-        public float Unk06 { get; set; }
-        public MetaHash Unk07 { get; set; }
-        public MetaHash Unk08 { get; set; }
-        public float Unk09 { get; set; }
+        public MetaHash StraightSound { get; set; }
+        public float MinSpeed { get; set; }
+        public float MaxSpeed { get; set; }
+        public MetaHash TurnSound { get; set; }
+        public float MinTurn { get; set; }
+        public float MaxTurn { get; set; }
+        public MetaHash TurnEdgeSound { get; set; }
+        public float MinSlopeEdge { get; set; }
+        public float MaxSlopeEdge { get; set; }
 
 
         public Dat151SkiAudioSettings(RelFile rel) : base(rel)
@@ -14883,57 +14885,57 @@ namespace CodeWalker.GameFiles
         }
         public Dat151SkiAudioSettings(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk01 = br.ReadUInt32();
-            Unk02 = br.ReadUInt32();
-            Unk03 = br.ReadSingle();
-            Unk04 = br.ReadUInt32();
-            Unk05 = br.ReadUInt32();
-            Unk06 = br.ReadSingle();
-            Unk07 = br.ReadUInt32();
-            Unk08 = br.ReadUInt32();
-            Unk09 = br.ReadSingle();
+            StraightSound = br.ReadUInt32();
+            MinSpeed = br.ReadSingle();
+            MaxSpeed = br.ReadSingle();
+            TurnSound = br.ReadUInt32();
+            MinTurn = br.ReadSingle();
+            MaxTurn = br.ReadSingle();
+            TurnEdgeSound = br.ReadUInt32();
+            MinSlopeEdge = br.ReadSingle();
+            MaxSlopeEdge = br.ReadSingle();
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk01);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
-            bw.Write(Unk09);
+            bw.Write(StraightSound);
+            bw.Write(MinSpeed);
+            bw.Write(MaxSpeed);
+            bw.Write(TurnSound);
+            bw.Write(MinTurn);
+            bw.Write(MaxTurn);
+            bw.Write(TurnEdgeSound);
+            bw.Write(MinSlopeEdge);
+            bw.Write(MaxSlopeEdge);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
-            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
-            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
-            RelXml.StringTag(sb, indent, "Unk04", RelXml.HashString(Unk04));
-            RelXml.StringTag(sb, indent, "Unk05", RelXml.HashString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
-            RelXml.StringTag(sb, indent, "Unk07", RelXml.HashString(Unk07));
-            RelXml.StringTag(sb, indent, "Unk08", RelXml.HashString(Unk08));
-            RelXml.ValueTag(sb, indent, "Unk09", FloatUtil.ToString(Unk09));
+            RelXml.StringTag(sb, indent, "StraightSound", RelXml.HashString(StraightSound));
+            RelXml.StringTag(sb, indent, "MinSpeed", FloatUtil.ToString(MinSpeed));
+            RelXml.ValueTag(sb, indent, "MaxSpeed", FloatUtil.ToString(MaxSpeed));
+            RelXml.StringTag(sb, indent, "TurnSound", RelXml.HashString(TurnSound));
+            RelXml.StringTag(sb, indent, "MinTurn", FloatUtil.ToString(MinTurn));
+            RelXml.ValueTag(sb, indent, "MaxTurn", FloatUtil.ToString(MaxTurn));
+            RelXml.StringTag(sb, indent, "TurnEdgeSound", RelXml.HashString(TurnEdgeSound));
+            RelXml.StringTag(sb, indent, "MinSlopeEdge", FloatUtil.ToString(MinSlopeEdge));
+            RelXml.ValueTag(sb, indent, "MaxSlopeEdge", FloatUtil.ToString(MaxSlopeEdge));
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
-            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
-            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
-            Unk04 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk04"));
-            Unk05 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk05"));
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
-            Unk07 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk07"));
-            Unk08 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk08"));
-            Unk09 = Xml.GetChildFloatAttribute(node, "Unk09", "value");
+            StraightSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "StraightSound"));
+            MinSpeed = Xml.GetChildFloatAttribute(node, "MinSpeed", "value");
+            MaxSpeed = Xml.GetChildFloatAttribute(node, "MaxSpeed", "value");
+            TurnSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "TurnSound"));
+            MinTurn = Xml.GetChildFloatAttribute(node, "MinTurn", "value");
+            MaxTurn = Xml.GetChildFloatAttribute(node, "MaxTurn", "value");
+            TurnEdgeSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "TurnEdgeSound"));
+            MinSlopeEdge = Xml.GetChildFloatAttribute(node, "MinSlopeEdge", "value");
+            MaxSlopeEdge = Xml.GetChildFloatAttribute(node, "MaxSlopeEdge", "value");
         }
         public override MetaHash[] GetSoundHashes()
         {
-            return new[] { Unk01, Unk04, Unk07 };
+            return new[] { StraightSound, TurnSound, TurnEdgeSound };
         }
     }
     [TC(typeof(EXP))] public class Dat151RadioTrackCategoryData : Dat151RelData
@@ -15597,7 +15599,7 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public class Dat151EnvironmentRule : Dat151RelData
     {
         public FlagsUint Flags { get; set; }
-        public MetaHash Unk01 { get; set; }
+        public MetaHash ReverbSmall { get; set; }
         public float Unk02 { get; set; }
         public MetaHash Unk03 { get; set; }
         public float Unk04 { get; set; }
@@ -15616,7 +15618,7 @@ namespace CodeWalker.GameFiles
         public Dat151EnvironmentRule(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
-            Unk01 = br.ReadUInt32();
+            ReverbSmall = br.ReadUInt32();
             Unk02 = br.ReadSingle();
             Unk03 = br.ReadUInt32();
             Unk04 = br.ReadSingle();
@@ -15632,7 +15634,7 @@ namespace CodeWalker.GameFiles
             WriteTypeAndOffset(bw);
 
             bw.Write(Flags);
-            bw.Write(Unk01);
+            bw.Write(ReverbSmall);
             bw.Write(Unk02);
             bw.Write(Unk03);
             bw.Write(Unk04);
@@ -15646,7 +15648,7 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(Unk01));
+            RelXml.StringTag(sb, indent, "Unk01", RelXml.HashString(ReverbSmall));
             RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
             RelXml.StringTag(sb, indent, "Unk03", RelXml.HashString(Unk03));
             RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
@@ -15660,7 +15662,7 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Unk01 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
+            ReverbSmall = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk01"));
             Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
             Unk03 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk03"));
             Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
@@ -15674,11 +15676,11 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat151InteriorWeaponMetrics : Dat151RelData
     {
-        public float Unk01 { get; set; }
-        public float Unk02 { get; set; }
-        public int Unk03 { get; set; }
-        public int Unk04 { get; set; }
-        public float Unk05 { get; set; }
+        public float Wetness { get; set; }
+        public float Visability { get; set; }
+        public uint LPFCutoff { get; set; }
+        public uint PreDelay { get; set; }
+        public float Hold { get; set; }
 
         public Dat151InteriorWeaponMetrics(RelFile rel) : base(rel)
         {
@@ -15687,50 +15689,50 @@ namespace CodeWalker.GameFiles
         }
         public Dat151InteriorWeaponMetrics(RelData d, BinaryReader br) : base(d, br)
         {
-            Unk01 = br.ReadSingle();
-            Unk02 = br.ReadSingle();
-            Unk03 = br.ReadInt32();
-            Unk04 = br.ReadInt32();
-            Unk05 = br.ReadSingle();
+            Wetness = br.ReadSingle();
+            Visability = br.ReadSingle();
+            LPFCutoff = br.ReadUInt32();
+            PreDelay = br.ReadUInt32();
+            Hold = br.ReadSingle();
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
 
-            bw.Write(Unk01);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
+            bw.Write(Wetness);
+            bw.Write(Visability);
+            bw.Write(LPFCutoff);
+            bw.Write(PreDelay);
+            bw.Write(Hold);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
-            RelXml.ValueTag(sb, indent, "Unk02", FloatUtil.ToString(Unk02));
-            RelXml.ValueTag(sb, indent, "Unk03", Unk03.ToString());
-            RelXml.ValueTag(sb, indent, "Unk04", Unk04.ToString());
-            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
+            RelXml.ValueTag(sb, indent, "Wetness", FloatUtil.ToString(Wetness));
+            RelXml.ValueTag(sb, indent, "Visability", FloatUtil.ToString(Visability));
+            RelXml.ValueTag(sb, indent, "LPFCutoff", LPFCutoff.ToString());
+            RelXml.ValueTag(sb, indent, "PreDelay", PreDelay.ToString());
+            RelXml.ValueTag(sb, indent, "Hold", FloatUtil.ToString(Hold));
         }
         public override void ReadXml(XmlNode node)
         {
-            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
-            Unk02 = Xml.GetChildFloatAttribute(node, "Unk02", "value");
-            Unk03 = Xml.GetChildIntAttribute(node, "Unk03", "value");
-            Unk04 = Xml.GetChildIntAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
+            Wetness = Xml.GetChildFloatAttribute(node, "Wetness", "value");
+            Visability = Xml.GetChildFloatAttribute(node, "Visability", "value");
+            LPFCutoff = Xml.GetChildUIntAttribute(node, "LPFCutoff", "value");
+            PreDelay = Xml.GetChildUIntAttribute(node, "PreDelay", "value");
+            Hold = Xml.GetChildFloatAttribute(node, "Hold", "value");
         }
     }
     [TC(typeof(EXP))] public class Dat151DoorTuningParams : Dat151RelData
     {
         public FlagsUint Flags { get; set; }
-        public float Unk01 { get; set; }
-        public MetaHash Unk02 { get; set; }
-        public float Unk03 { get; set; }
-        public float Unk04 { get; set; }
-        public float Unk05 { get; set; }
-        public float Unk06 { get; set; }
-        public float Unk07 { get; set; }
-        public int Unk08 { get; set; }
+        public float OpenThresh { get; set; }
+        public float HeadingThresh { get; set; }
+        public float ClosedThresh { get; set; }
+        public float SpeedThresh { get; set; }
+        public float SpeedScale { get; set; }
+        public float HeadingDeltaThreshold { get; set; }
+        public float AngularVelocityThreshold { get; set; }
+        public int DoorType { get; set; }
 
         public Dat151DoorTuningParams(RelFile rel) : base(rel)
         {
@@ -15740,52 +15742,52 @@ namespace CodeWalker.GameFiles
         public Dat151DoorTuningParams(RelData d, BinaryReader br) : base(d, br)
         {
             Flags = br.ReadUInt32();
-            Unk01 = br.ReadSingle();
-            Unk02 = br.ReadUInt32();
-            Unk03 = br.ReadSingle();
-            Unk04 = br.ReadSingle();
-            Unk05 = br.ReadSingle();
-            Unk06 = br.ReadSingle();
-            Unk07 = br.ReadSingle();
-            Unk08 = br.ReadInt32();
+            OpenThresh = br.ReadSingle();
+            HeadingThresh = br.ReadSingle();
+            ClosedThresh = br.ReadSingle();
+            SpeedThresh = br.ReadSingle();
+            SpeedScale = br.ReadSingle();
+            HeadingDeltaThreshold = br.ReadSingle();
+            AngularVelocityThreshold = br.ReadSingle();
+            DoorType = br.ReadInt32();
         }
         public override void Write(BinaryWriter bw)
         {
             WriteTypeAndOffset(bw);
 
             bw.Write(Flags);
-            bw.Write(Unk01);
-            bw.Write(Unk02);
-            bw.Write(Unk03);
-            bw.Write(Unk04);
-            bw.Write(Unk05);
-            bw.Write(Unk06);
-            bw.Write(Unk07);
-            bw.Write(Unk08);
+            bw.Write(OpenThresh);
+            bw.Write(HeadingThresh);
+            bw.Write(ClosedThresh);
+            bw.Write(SpeedThresh);
+            bw.Write(SpeedScale);
+            bw.Write(HeadingDeltaThreshold);
+            bw.Write(AngularVelocityThreshold);
+            bw.Write(DoorType);
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
-            RelXml.ValueTag(sb, indent, "Unk01", FloatUtil.ToString(Unk01));
-            RelXml.StringTag(sb, indent, "Unk02", RelXml.HashString(Unk02));
-            RelXml.ValueTag(sb, indent, "Unk03", FloatUtil.ToString(Unk03));
-            RelXml.ValueTag(sb, indent, "Unk04", FloatUtil.ToString(Unk04));
-            RelXml.ValueTag(sb, indent, "Unk05", FloatUtil.ToString(Unk05));
-            RelXml.ValueTag(sb, indent, "Unk06", FloatUtil.ToString(Unk06));
-            RelXml.ValueTag(sb, indent, "Unk07", FloatUtil.ToString(Unk07));
-            RelXml.ValueTag(sb, indent, "Unk08", Unk08.ToString());
+            RelXml.ValueTag(sb, indent, "OpenThresh", FloatUtil.ToString(OpenThresh));
+            RelXml.StringTag(sb, indent, "HeadingThresh", FloatUtil.ToString(HeadingThresh));
+            RelXml.ValueTag(sb, indent, "ClosedThresh", FloatUtil.ToString(ClosedThresh));
+            RelXml.ValueTag(sb, indent, "SpeedThresh", FloatUtil.ToString(SpeedThresh));
+            RelXml.ValueTag(sb, indent, "SpeedScale", FloatUtil.ToString(SpeedScale));
+            RelXml.ValueTag(sb, indent, "HeadingDeltaThreshold", FloatUtil.ToString(HeadingDeltaThreshold));
+            RelXml.ValueTag(sb, indent, "AngularVelocityThreshold", FloatUtil.ToString(AngularVelocityThreshold));
+            RelXml.ValueTag(sb, indent, "DoorType", DoorType.ToString());
         }
         public override void ReadXml(XmlNode node)
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
-            Unk01 = Xml.GetChildFloatAttribute(node, "Unk01", "value");
-            Unk02 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk02"));
-            Unk03 = Xml.GetChildFloatAttribute(node, "Unk03", "value");
-            Unk04 = Xml.GetChildFloatAttribute(node, "Unk04", "value");
-            Unk05 = Xml.GetChildFloatAttribute(node, "Unk05", "value");
-            Unk06 = Xml.GetChildFloatAttribute(node, "Unk06", "value");
-            Unk07 = Xml.GetChildFloatAttribute(node, "Unk07", "value");
-            Unk08 = Xml.GetChildIntAttribute(node, "Unk08", "value");
+            OpenThresh = Xml.GetChildFloatAttribute(node, "OpenThresh", "value");
+            HeadingThresh = Xml.GetChildFloatAttribute(node, "HeadingThresh", "value");
+            ClosedThresh = Xml.GetChildFloatAttribute(node, "ClosedThresh", "value");
+            SpeedThresh = Xml.GetChildFloatAttribute(node, "SpeedThresh", "value");
+            SpeedScale = Xml.GetChildFloatAttribute(node, "SpeedScale", "value");
+            HeadingDeltaThreshold = Xml.GetChildFloatAttribute(node, "HeadingDeltaThreshold", "value");
+            AngularVelocityThreshold = Xml.GetChildFloatAttribute(node, "AngularVelocityThreshold", "value");
+            DoorType = Xml.GetChildIntAttribute(node, "DoorType", "value");
         }
     }
     [TC(typeof(EXP))] public class Dat151ClimbingAudioSettings : Dat151RelData
@@ -23593,9 +23595,9 @@ namespace CodeWalker.GameFiles
         public short Volume { get; set; }
         public short Unk03 { get; set; }
         public short LPFCutoff { get; set; }
-        public MetaHash LPFCutoffCurve { get; set; }//1757063444
+        public MetaHash LPFCutoffCurve { get; set; }
         public short HPFCutoff { get; set; }
-        public MetaHash HPFCutoffCurve { get; set; }//741353067
+        public MetaHash HPFCutoffCurve { get; set; }
         public short Unk08 { get; set; }
         public short Unk09 { get; set; }
         public short Unk10 { get; set; }
@@ -23621,9 +23623,9 @@ namespace CodeWalker.GameFiles
             Volume = br.ReadInt16();
             Unk03 = br.ReadInt16();
             LPFCutoff = br.ReadInt16();
-            LPFCutoffCurve = br.ReadUInt32();//1757063444
+            LPFCutoffCurve = br.ReadUInt32();
             HPFCutoff = br.ReadInt16();
-            HPFCutoffCurve = br.ReadUInt32();//741353067
+            HPFCutoffCurve = br.ReadUInt32();
             Unk08 = br.ReadInt16();
             Unk09 = br.ReadInt16();
             Unk10 = br.ReadInt16();
