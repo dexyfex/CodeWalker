@@ -4601,9 +4601,6 @@ namespace CodeWalker.GameFiles
         {
             Channel = br.ReadInt32();
             Variable = br.ReadUInt32();
-
-            if (Channel != 0)//should be pack hash?
-            { }
         }
         public void ReadXml(XmlNode node)
         {
@@ -4627,10 +4624,10 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class Dat54ExternalStreamSound : Dat54Sound
     {
-        public MetaHash Unk0 { get; set; }
-        public MetaHash Unk1 { get; set; }
-        public MetaHash Unk2 { get; set; }
-        public MetaHash Unk3 { get; set; }
+        public MetaHash EnvironmentSound1 { get; set; }
+        public MetaHash EnvironmentSound2 { get; set; }
+        public MetaHash EnvironmentSound3 { get; set; }
+        public MetaHash EnvironmentSound4 { get; set; }
 
         public Dat54ExternalStreamSound(RelFile rel) : base(rel, Dat54SoundType.ExternalStreamSound)
         { }
@@ -4638,66 +4635,37 @@ namespace CodeWalker.GameFiles
         {
             ReadChildSoundsHashes(br);
 
-            Unk0 = br.ReadUInt32();
-            Unk1 = br.ReadUInt32();
+            EnvironmentSound1 = br.ReadUInt32();
+            EnvironmentSound2 = br.ReadUInt32();
 
             if (ChildSoundsCount == 0)
             {
-                Unk2 = br.ReadUInt32();
-                Unk3 = br.ReadUInt32();
-            }
-
-            if (br.BaseStream.Position != br.BaseStream.Length)
-            {
-
-                //var bytes = new List<byte>();
-                //while (br.BaseStream.Position < br.BaseStream.Length)
-                //{
-                //    byte b = br.ReadByte();
-                //    bytes.Add(b);
-                //    if (b != 0)
-                //    { }//no hits here
-                //}
-                ////var bytearr = bytes.ToArray();
-
+                EnvironmentSound3 = br.ReadUInt32();
+                EnvironmentSound4 = br.ReadUInt32();
             }
         }
         public override void ReadXml(XmlNode node)
         {
             base.ReadXml(node);
             ReadChildSoundsXml(node, "EnvironmentSounds");
-            Unk0 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk0"));
-            Unk1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk1"));
-            if (ChildSoundsCount == 0)
-            {
-                Unk2 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk2"));
-                Unk3 = XmlRel.GetHash(Xml.GetChildInnerText(node, "Unk3"));
-            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
             base.WriteXml(sb, indent);
             WriteChildSoundsXml(sb, indent, "EnvironmentSounds");
-            RelXml.StringTag(sb, indent, "Unk0", RelXml.HashString(Unk0));
-            RelXml.StringTag(sb, indent, "Unk1", RelXml.HashString(Unk1));
-            if (ChildSoundsCount == 0)
-            {
-                RelXml.StringTag(sb, indent, "Unk2", RelXml.HashString(Unk2));
-                RelXml.StringTag(sb, indent, "Unk3", RelXml.HashString(Unk3));
-            }
         }
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
             WriteChildSoundsHashes(bw);
 
-            bw.Write(Unk0);
-            bw.Write(Unk1);
+            bw.Write(EnvironmentSound1);
+            bw.Write(EnvironmentSound2);
 
             if (ChildSoundsCount == 0)
             {
-                bw.Write(Unk2);
-                bw.Write(Unk3);
+                bw.Write(EnvironmentSound3);
+                bw.Write(EnvironmentSound4);
             }
 
         }
@@ -4705,15 +4673,14 @@ namespace CodeWalker.GameFiles
         {
             var list = GetChildSoundsHashTableOffsets().ToList();
             uint offs = (uint)list.Count * 4 + 1;
-            list.Add(offs);// Unk0
-            list.Add(offs + 4);// Unk1
+            list.Add(offs);// EnvironmentSound1
+            list.Add(offs + 4);// EnvironmentSound2
             if (ChildSoundsCount == 0)
             {
-                list.Add(offs + 8);// Unk2
-                list.Add(offs + 12);// Unk3
+                list.Add(offs + 8);// EnvironmentSound3
+                list.Add(offs + 12);// EnvironmentSound4
             }
             return list.ToArray();
-            //return GetAudioTracksHashTableOffsets();
         }
     }
     [TC(typeof(EXP))] public class Dat54SoundSet : Dat54Sound
