@@ -3358,12 +3358,14 @@ namespace CodeWalker.GameFiles
             SynthPreset = br.ReadUInt32(); //0x4-0x8
             PlaybackTimeLimit = br.ReadSingle(); //0x8-0xC
             VirtualisationMode = br.ReadInt32(); //0xC-0x10
-            TrackCount = br.ReadInt32(); //0x10-0x14
-            ChildSoundsHashes = new MetaHash[4];
-            for (int i = 0; i < 4; i++)
+
+            TrackCount = br.ReadInt32();
+            ChildSoundsHashes = new MetaHash[TrackCount];
+            for (int i = 0; i < TrackCount; i++)
             {
                 ChildSoundsHashes[i] = br.ReadUInt32();
             }
+
             ExposedVariablesCount = br.ReadInt32();
             ExposedVariables = new Dat54ModularSynthSoundVariable[ExposedVariablesCount];
             for (int i = 0; i < ExposedVariablesCount; i++)
@@ -3402,7 +3404,7 @@ namespace CodeWalker.GameFiles
             bw.Write(PlaybackTimeLimit); //0x8-0xC
             bw.Write(VirtualisationMode); //0xC-0x10
             bw.Write(TrackCount); //0x10-0x14
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < TrackCount; i++)
             {
                 bw.Write(ChildSoundsHashes[i]);
             }
