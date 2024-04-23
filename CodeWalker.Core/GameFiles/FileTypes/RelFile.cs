@@ -6036,9 +6036,7 @@ namespace CodeWalker.GameFiles
         public FlagsUint Flags { get; set; }
         public MetaHash InteriorWallaSoundSet { get; set; }
         public MetaHash InteriorReflections { get; set; }
-        public byte NumRooms { get; set; }
-        public byte padding00 { get; set; }
-        public short padding01 { get; set; }
+        public uint RoomsCount { get; set; }
         public MetaHash[] Rooms { get; set; }
 
         public Dat151InteriorSettings(RelFile rel) : base(rel)
@@ -6051,9 +6049,9 @@ namespace CodeWalker.GameFiles
             Flags = br.ReadUInt32();
             InteriorWallaSoundSet = br.ReadUInt32();
             InteriorReflections = br.ReadUInt32();
-            NumRooms = br.ReadByte();
-            var rooms = new MetaHash[NumRooms];
-            for (int i = 0; i < NumRooms; i++)
+            RoomsCount = br.ReadUInt32();
+            var rooms = new MetaHash[RoomsCount];
+            for (int i = 0; i < RoomsCount; i++)
             {
                 rooms[i] = br.ReadUInt32();
             }
@@ -6066,8 +6064,8 @@ namespace CodeWalker.GameFiles
             bw.Write(Flags);
             bw.Write(InteriorWallaSoundSet);
             bw.Write(InteriorReflections);
-            bw.Write(NumRooms);
-            for (int i = 0; i < NumRooms; i++)
+            bw.Write(RoomsCount);
+            for (int i = 0; i < RoomsCount; i++)
             {
                 bw.Write(Rooms[i]);
             }
@@ -6085,12 +6083,12 @@ namespace CodeWalker.GameFiles
             InteriorWallaSoundSet = XmlRel.GetHash(Xml.GetChildInnerText(node, "InteriorWallaSoundSet"));
             InteriorReflections = XmlRel.GetHash(Xml.GetChildInnerText(node, "InteriorReflections"));
             Rooms = XmlRel.ReadHashItemArray(node, "Rooms");
-            NumRooms = (byte)(Rooms?.Length ?? 0);
+            RoomsCount = (uint)(Rooms?.Length ?? 0);
         }
         public override uint[] GetHashTableOffsets()
         {
             var offsets = new List<uint>();
-            for (uint i = 0; i < NumRooms; i++)
+            for (uint i = 0; i < RoomsCount; i++)
             {
                 offsets.Add(16 + i * 4);
             }

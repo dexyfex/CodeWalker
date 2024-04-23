@@ -200,7 +200,7 @@ namespace CodeWalker.Project.Panels
                 }
 
                 CurrentInterior.Rooms = hashlist.ToArray();
-                CurrentInterior.NumRooms = (byte)hashlist.Count;
+                CurrentInterior.RoomsCount = (byte)hashlist.Count;
 
                 ProjectItemChanged();
             }
