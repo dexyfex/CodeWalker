@@ -4156,48 +4156,130 @@ namespace CodeWalker
 
         private void LoadWorld()
         {
+            try
+            {
+                UpdateStatus("Loading timecycles...");
+                timecycle.Init(gameFileCache, UpdateStatus);
+                timecycle.SetTime(Renderer.timeofday);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading timecycles: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            try
+            {
+                UpdateStatus("Loading materials...");
+                BoundsMaterialTypes.Init(gameFileCache);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading materials: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading timecycles...");
-            timecycle.Init(gameFileCache, UpdateStatus);
-            timecycle.SetTime(Renderer.timeofday);
+            try
+            {
+                UpdateStatus("Loading weather...");
+                weather.Init(gameFileCache, UpdateStatus, timecycle);
+                UpdateWeatherTypesComboBox(weather);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading weather files, ensure you do not have FiveMods installed or any Redux mod. May require reinstall.: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading materials...");
-            BoundsMaterialTypes.Init(gameFileCache);
+            try
+            {
+                UpdateStatus("Loading clouds...");
+                clouds.Init(gameFileCache, UpdateStatus, weather);
+                UpdateCloudTypesComboBox(clouds);
+            }
 
-            UpdateStatus("Loading weather...");
-            weather.Init(gameFileCache, UpdateStatus, timecycle);
-            UpdateWeatherTypesComboBox(weather);
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading clouds: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading clouds...");
-            clouds.Init(gameFileCache, UpdateStatus, weather);
-            UpdateCloudTypesComboBox(clouds);
+            try
+            {
+                UpdateStatus("Loading water...");
+                water.Init(gameFileCache, UpdateStatus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading water: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading water...");
-            water.Init(gameFileCache, UpdateStatus);
+            try
+            {
+                UpdateStatus("Loading trains...");
+                trains.Init(gameFileCache, UpdateStatus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading trains: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading trains...");
-            trains.Init(gameFileCache, UpdateStatus);
+            try
+            {
+                UpdateStatus("Loading scenarios...");
+                scenarios.Init(gameFileCache, UpdateStatus, timecycle);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading scenarios: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading scenarios...");
-            scenarios.Init(gameFileCache, UpdateStatus, timecycle);
+            try
+            {
+                UpdateStatus("Loading popzones...");
+                popzones.Init(gameFileCache, UpdateStatus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading popzones: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading popzones...");
-            popzones.Init(gameFileCache, UpdateStatus);
+            try
+            {
+                UpdateStatus("Loading heightmaps...");
+                heightmaps.Init(gameFileCache, UpdateStatus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading heightmaps: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading heightmaps...");
-            heightmaps.Init(gameFileCache, UpdateStatus);
+            try
+            {
+                UpdateStatus("Loading watermaps...");
+                watermaps.Init(gameFileCache, UpdateStatus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading watermaps: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading watermaps...");
-            watermaps.Init(gameFileCache, UpdateStatus);
+            try
+            {
+                UpdateStatus("Loading audio zones...");
+                audiozones.Init(gameFileCache, UpdateStatus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading audio zones: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-            UpdateStatus("Loading audio zones...");
-            audiozones.Init(gameFileCache, UpdateStatus);
-
-            UpdateStatus("Loading world...");
-            space.Init(gameFileCache, UpdateStatus);
+            try
+            {
+                UpdateStatus("Loading world...");
+                space.Init(gameFileCache, UpdateStatus);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading world: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
             UpdateStatus("World loaded");
-
         }
 
 
@@ -4263,7 +4345,7 @@ namespace CodeWalker
             }
             catch
             {
-                MessageBox.Show("Keys not found! This shouldn't happen.");
+                MessageBox.Show("Keys not found! This shouldn't happen, GTA5.exe outdated? CodeWalker outdated?");
                 Close();
                 return;
             }
@@ -4274,36 +4356,58 @@ namespace CodeWalker
 
             EnableCacheDependentUI();
 
-
-
-            LoadWorld();
-
-
+            try
+            {
+                LoadWorld();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load world: {ex.Message}");
+                Close();
+                return;
+            }
 
             initialised = true;
 
             EnableDLCModsUI();
 
-
             Task.Run(() => {
                 while (formopen && !IsDisposed) //renderer content loop
                 {
-                    bool rcItemsPending = Renderer.ContentThreadProc();
-
-                    if (!rcItemsPending)
+                    try
                     {
-                        Thread.Sleep(1); //sleep if there's nothing to do
+                        bool rcItemsPending = Renderer.ContentThreadProc();
+
+                        if (!rcItemsPending)
+                        {
+                            Thread.Sleep(1);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Renderer Failed: {ex.Message}");
+                        Close();
+                        return;
                     }
                 }
             });
 
             while (formopen && !IsDisposed) //main asset loop
             {
-                bool fcItemsPending = gameFileCache.ContentThreadProc();
-
-                if (!fcItemsPending)
+                try
                 {
-                    Thread.Sleep(1); //sleep if there's nothing to do
+                    bool fcItemsPending = gameFileCache.ContentThreadProc();
+
+                    if (!fcItemsPending)
+                    {
+                        Thread.Sleep(1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to load GameFileCache: {ex.Message}");
+                    Close();
+                    return;
                 }
             }
 
