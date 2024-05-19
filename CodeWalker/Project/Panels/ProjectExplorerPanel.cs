@@ -712,7 +712,7 @@ namespace CodeWalker.Project.Panels
             var emitters = new List<Dat151AmbientRule>();
             var zonelists = new List<Dat151AmbientZoneList>();
             var emitterlists = new List<Dat151StaticEmitterList>();
-            var interiors = new List<Dat151Interior>();
+            var interiors = new List<Dat151InteriorSettings>();
             var interiorrooms = new List<Dat151InteriorRoom>();
 
             foreach (var reldata in rel.RelDatasSorted)
@@ -733,9 +733,9 @@ namespace CodeWalker.Project.Panels
                 {
                     emitterlists.Add(reldata as Dat151StaticEmitterList);
                 }
-                if (reldata is Dat151Interior)
+                if (reldata is Dat151InteriorSettings)
                 {
-                    interiors.Add(reldata as Dat151Interior);
+                    interiors.Add(reldata as Dat151InteriorSettings);
                 }
                 if (reldata is Dat151InteriorRoom)
                 {
@@ -1545,7 +1545,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioInteriorTreeNode(Dat151Interior interior)
+        public TreeNode FindAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             if (interior == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(interior.Rel);
@@ -2062,7 +2062,7 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void TrySelectAudioInteriorTreeNode(Dat151Interior interior)
+        public void TrySelectAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             TreeNode tnode = FindAudioInteriorTreeNode(interior);
             if (tnode == null)
@@ -2297,7 +2297,7 @@ namespace CodeWalker.Project.Panels
                 tn.Text = list.NameHash.ToString();
             }
         }
-        public void UpdateAudioInteriorTreeNode(Dat151Interior interior)
+        public void UpdateAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             var tn = FindAudioInteriorTreeNode(interior);
             if (tn != null)
@@ -2557,17 +2557,17 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-        public void RemoveAudioInteriorTreeNode(Dat151Interior interior)
+        public void RemoveAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             var tn = FindAudioInteriorTreeNode(interior);
             if ((tn != null) && (tn.Parent != null))
             {
-                var interiors = new List<Dat151Interior>();
+                var interiors = new List<Dat151InteriorSettings>();
                 foreach (var reldata in interior.Rel.RelDatas)
                 {
-                    if (reldata is Dat151Interior)
+                    if (reldata is Dat151InteriorSettings)
                     {
-                        interiors.Add(reldata as Dat151Interior);
+                        interiors.Add(reldata as Dat151InteriorSettings);
                     }
                 }
 

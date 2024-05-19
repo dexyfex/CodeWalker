@@ -75,22 +75,22 @@ namespace CodeWalker.Project.Panels
                 var cr = CurrentRoom;
 
                 NameTextBox.Text = cr.NameHash.ToString();
-                MloRoomTextBox.Text = cr.MloRoom.ToString();
-                ZoneTextBox.Text = cr.Zone.ToString();
-                Unk02TextBox.Text = cr.Unk02.ToString();
-                Unk03TextBox.Text = FloatUtil.ToString(cr.Unk03);
-                ReverbTextBox.Text = FloatUtil.ToString(cr.Reverb);
-                EchoTextBox.Text = FloatUtil.ToString(cr.Echo);
-                SoundTextBox.Text = cr.Sound.ToString();
-                Unk07TextBox.Text = FloatUtil.ToString(cr.Unk07);
-                Unk08TextBox.Text = FloatUtil.ToString(cr.Unk08);
-                Unk09TextBox.Text = FloatUtil.ToString(cr.Unk09);
-                Unk10TextBox.Text = FloatUtil.ToString(cr.Unk10);
-                Unk11TextBox.Text = FloatUtil.ToString(cr.Unk11);
-                Unk12TextBox.Text = FloatUtil.ToString(cr.Unk12);
-                Unk13TextBox.Text = cr.Unk13.ToString();
-                SoundSetTextBox.Text = cr.SoundSet.ToString();
-                Flags0TextBox.Text = cr.Flags0.Hex;
+                MloRoomTextBox.Text = cr.RoomName.ToString();
+                ZoneTextBox.Text = cr.AmbientZone.ToString();
+                Unk02TextBox.Text = cr.InteriorType.ToString();
+                Unk03TextBox.Text = FloatUtil.ToString(cr.ReverbSmall);
+                ReverbTextBox.Text = FloatUtil.ToString(cr.ReverbMedium);
+                EchoTextBox.Text = FloatUtil.ToString(cr.ReverbLarge);
+                SoundTextBox.Text = cr.RoomToneSound.ToString();
+                Unk07TextBox.Text = FloatUtil.ToString(cr.RainType);
+                Unk08TextBox.Text = FloatUtil.ToString(cr.ExteriorAudibility);
+                Unk09TextBox.Text = FloatUtil.ToString(cr.RoomOcclusionDamping);
+                Unk10TextBox.Text = FloatUtil.ToString(cr.NonMarkedPortalOcclusion);
+                Unk11TextBox.Text = FloatUtil.ToString(cr.DistanceFromPortalForOcclusion);
+                Unk12TextBox.Text = FloatUtil.ToString(cr.DistanceFromPortalFadeDistance);
+                Unk13TextBox.Text = cr.WeaponMetrics.ToString();
+                SoundSetTextBox.Text = cr.InteriorWallaSoundSet.ToString();
+                Flags0TextBox.Text = cr.Flags.Hex;
                 populatingui = false;
 
 
@@ -144,9 +144,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.MloRoom != hash)
+            if (CurrentRoom.RoomName != hash)
             {
-                CurrentRoom.MloRoom = hash;
+                CurrentRoom.RoomName = hash;
 
                 ProjectItemChanged();
             }
@@ -166,9 +166,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Zone != hash)
+            if (CurrentRoom.AmbientZone != hash)
             {
-                CurrentRoom.Zone = hash;
+                CurrentRoom.AmbientZone = hash;
 
                 ProjectItemChanged();
             }
@@ -182,9 +182,9 @@ namespace CodeWalker.Project.Panels
             uint val = 0;
             if (uint.TryParse(Unk02TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk02 != val)
+                if (CurrentRoom.InteriorType != val)
                 {
-                    CurrentRoom.Unk02 = val;
+                    CurrentRoom.InteriorType = (byte)val;
 
                     ProjectItemChanged();
                 }
@@ -199,9 +199,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(Unk03TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk03 != val)
+                if (CurrentRoom.ReverbSmall != val)
                 {
-                    CurrentRoom.Unk03 = val;
+                    CurrentRoom.ReverbSmall = val;
 
                     ProjectItemChanged();
                 }
@@ -216,9 +216,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(ReverbTextBox.Text, out val))
             {
-                if (CurrentRoom.Reverb != val)
+                if (CurrentRoom.ReverbMedium != val)
                 {
-                    CurrentRoom.Reverb = val;
+                    CurrentRoom.ReverbMedium = val;
 
                     ProjectItemChanged();
                 }
@@ -233,9 +233,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(EchoTextBox.Text, out val))
             {
-                if (CurrentRoom.Echo != val)
+                if (CurrentRoom.ReverbLarge != val)
                 {
-                    CurrentRoom.Echo = val;
+                    CurrentRoom.ReverbLarge = val;
 
                     ProjectItemChanged();
                 }
@@ -256,9 +256,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Sound != hash)
+            if (CurrentRoom.RoomToneSound != hash)
             {
-                CurrentRoom.Sound = hash;
+                CurrentRoom.RoomToneSound = hash;
 
                 ProjectItemChanged();
             }
@@ -272,9 +272,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(Unk07TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk07 != val)
+                if (CurrentRoom.RainType != val)
                 {
-                    CurrentRoom.Unk07 = val;
+                    CurrentRoom.RainType = (byte)val;
 
                     ProjectItemChanged();
                 }
@@ -289,9 +289,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(Unk08TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk08 != val)
+                if (CurrentRoom.ExteriorAudibility != val)
                 {
-                    CurrentRoom.Unk08 = val;
+                    CurrentRoom.ExteriorAudibility = val;
 
                     ProjectItemChanged();
                 }
@@ -306,9 +306,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(Unk09TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk09 != val)
+                if (CurrentRoom.RoomOcclusionDamping != val)
                 {
-                    CurrentRoom.Unk09 = val;
+                    CurrentRoom.RoomOcclusionDamping = val;
 
                     ProjectItemChanged();
                 }
@@ -323,9 +323,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(Unk10TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk10 != val)
+                if (CurrentRoom.NonMarkedPortalOcclusion != val)
                 {
-                    CurrentRoom.Unk10 = val;
+                    CurrentRoom.NonMarkedPortalOcclusion = val;
 
                     ProjectItemChanged();
                 }
@@ -340,9 +340,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(Unk11TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk11 != val)
+                if (CurrentRoom.DistanceFromPortalForOcclusion != val)
                 {
-                    CurrentRoom.Unk11 = val;
+                    CurrentRoom.DistanceFromPortalForOcclusion = val;
 
                     ProjectItemChanged();
                 }
@@ -357,9 +357,9 @@ namespace CodeWalker.Project.Panels
             float val = 0;
             if (FloatUtil.TryParse(Unk12TextBox.Text, out val))
             {
-                if (CurrentRoom.Unk12 != val)
+                if (CurrentRoom.DistanceFromPortalFadeDistance != val)
                 {
-                    CurrentRoom.Unk12 = val;
+                    CurrentRoom.DistanceFromPortalFadeDistance = val;
 
                     ProjectItemChanged();
                 }
@@ -380,9 +380,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.Unk13 != hash)
+            if (CurrentRoom.WeaponMetrics != hash)
             {
-                CurrentRoom.Unk13 = hash;
+                CurrentRoom.WeaponMetrics = hash;
 
                 ProjectItemChanged();
             }
@@ -402,9 +402,9 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentRoom.SoundSet != hash)
+            if (CurrentRoom.InteriorWallaSoundSet != hash)
             {
-                CurrentRoom.SoundSet = hash;
+                CurrentRoom.InteriorWallaSoundSet = hash;
 
                 ProjectItemChanged();
             }
@@ -418,9 +418,9 @@ namespace CodeWalker.Project.Panels
             uint flags = 0;
             if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentRoom.Flags0 != flags)
+                if (CurrentRoom.Flags != flags)
                 {
-                    CurrentRoom.Flags0 = flags;
+                    CurrentRoom.Flags = flags;
 
                     ProjectItemChanged();
                 }
