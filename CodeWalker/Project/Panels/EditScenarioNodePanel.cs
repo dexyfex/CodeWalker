@@ -185,22 +185,22 @@ namespace CodeWalker.Project.Panels
             ScenarioChainEdgeNavModeComboBox.Items.Add(CScenarioChainingEdge__eNavMode.Roads);
 
             ScenarioChainEdgeNavSpeedComboBox.Items.Clear();
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_00_3279574318);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_01_2212923970);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_02_4022799658);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_03_1425672334);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_04_957720931);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_05_3795195414);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_06_2834622009);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_07_1876554076);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_08_698543797);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_09_1544199634);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_10_2725613303);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_11_4033265820);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_12_3054809929);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_13_3911005380);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_14_3717649022);
-            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.Unk_15_3356026130);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed5Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed10Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed15Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed25Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed35Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed45Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed55Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed65Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed80Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed100Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed125Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed150Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeed200Mph);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeedWalk);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeedRun);
+            ScenarioChainEdgeNavSpeedComboBox.Items.Add(CScenarioChainingEdge__eNavSpeed.kSpeedSprint);
 
         }
 

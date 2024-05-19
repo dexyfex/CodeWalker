@@ -1,16 +1,9 @@
 ﻿using CodeWalker.GameFiles;
 using CodeWalker.World;
-using SharpDX;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Globalization;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace CodeWalker.Project.Panels
 {
@@ -53,29 +46,34 @@ namespace CodeWalker.Project.Panels
                 populatingui = true;
                 NameTextBox.Text = string.Empty;
                 ShapeComboBox.Text = string.Empty;
-                InnerPosTextBox.Text = string.Empty;
-                InnerSizeTextBox.Text = string.Empty;
-                InnerAngleTextBox.Text = string.Empty;
-                InnerVec1TextBox.Text = string.Empty;
-                InnerVec2TextBox.Text = string.Empty;
-                InnerVec3TextBox.Text = string.Empty;
-                OuterPosTextBox.Text = string.Empty;
-                OuterSizeTextBox.Text = string.Empty;
-                OuterAngleTextBox.Text = string.Empty;
-                OuterVec1TextBox.Text = string.Empty;
-                OuterVec2TextBox.Text = string.Empty;
-                OuterVec3TextBox.Text = string.Empty;
-                UnkVec1TextBox.Text = string.Empty;
-                UnkVec2TextBox.Text = string.Empty;
-                UnkVec3TextBox.Text = string.Empty;
-                UnkBytesTextBox.Text = string.Empty;
-                Flags0TextBox.Text = string.Empty;
-                Flags1TextBox.Text = string.Empty;
-                Unk13TextBox.Text = string.Empty;
-                Hash0TextBox.Text = string.Empty;
-                SceneTextBox.Text = string.Empty;
-                HashesTextBox.Text = string.Empty;
-                DependentAmbiencesTextBox.Text = string.Empty;
+                FlagsTextBox.Text = string.Empty;
+
+                ActivationZoneCentreTextBox.Text = string.Empty;
+                ActivationSizeTextBox.Text = string.Empty;
+                ActivationRotationOffsetTextBox.Text = string.Empty;
+                ActivationSizeScaleTextBox.Text = string.Empty;
+
+                PositioningCentreTextBox.Text = string.Empty;
+                PositioningSizeTextBox.Text = string.Empty;
+                PositioningRotationOffsetTextBox.Text = string.Empty;
+                PositioningSizeScaleTextBox.Text = string.Empty;
+
+                BuiltUpFactorTextBox.Text = string.Empty;
+                MinPedDensityTextBox.Text = string.Empty;
+                MaxPedDensityTextBox.Text = string.Empty;
+                PedDensityTODTextBox.Text = string.Empty;
+                PedDensityScalarTextBox.Text = string.Empty;
+                ZoneWaterCalculationTextBox.Text = string.Empty;
+                PositioningRotationAngleTextBox.Text = string.Empty;
+                ActivationZoneRotationAngleTextBox.Text = string.Empty;
+                MinWindInfluenceTextBox.Text = string.Empty;
+
+                WindElevationSoundsTextBox.Text = string.Empty;
+                RandomRadioSettingsTextBox.Text = string.Empty;
+                EnviromentRuleTextBox.Text = string.Empty;
+                AudioSceneTextBox.Text = string.Empty;
+                RulesTextBox.Text = string.Empty;
+                DirAmbiencesTextBox.Text = string.Empty;
                 populatingui = false;
             }
             else
@@ -87,27 +85,31 @@ namespace CodeWalker.Project.Panels
                 var z = CurrentZone.AudioZone;
                 NameTextBox.Text = z.NameHash.ToString();
                 ShapeComboBox.Text = z.Shape.ToString();
-                InnerPosTextBox.Text = FloatUtil.GetVector3String(z.PlaybackZonePosition);
-                InnerSizeTextBox.Text = FloatUtil.GetVector3String(z.PlaybackZoneSize);
-                InnerAngleTextBox.Text = z.PlaybackZoneAngle.ToString();
-                InnerVec1TextBox.Text = FloatUtil.GetVector4String(z.PlaybackZoneVec1);
-                InnerVec2TextBox.Text = FloatUtil.GetVector4String(z.PlaybackZoneVec2);
-                InnerVec3TextBox.Text = FloatUtil.GetVector3String(z.PlaybackZoneVec3);
-                OuterPosTextBox.Text = FloatUtil.GetVector3String(z.ActivationZonePosition);
-                OuterSizeTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneSize);
-                OuterAngleTextBox.Text = z.ActivationZoneAngle.ToString();
-                OuterVec1TextBox.Text = FloatUtil.GetVector4String(z.ActivationZoneVec1);
-                OuterVec2TextBox.Text = FloatUtil.GetVector4String(z.ActivationZoneVec2);
-                OuterVec3TextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneVec3);
-                UnkVec1TextBox.Text = FloatUtil.GetVector4String(z.UnkVec1);
-                UnkVec2TextBox.Text = FloatUtil.GetVector4String(z.UnkVec2);
-                UnkVec3TextBox.Text = FloatUtil.GetVector2String(z.UnkVec3);
-                UnkBytesTextBox.Text = string.Format("{0}, {1}, {2}", z.Unk14, z.Unk15, z.Unk16);
-                Flags0TextBox.Text = z.Flags0.Hex;
-                Flags1TextBox.Text = z.Flags1.Hex;
-                Unk13TextBox.Text = z.Unk13.Hex;
-                Hash0TextBox.Text = z.UnkHash0.ToString();
-                SceneTextBox.Text = z.Scene.ToString();
+                FlagsTextBox.Text = z.Flags.Hex;
+                ActivationZoneCentreTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneCentre);
+                ActivationSizeTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneSize);
+                ActivationRotationOffsetTextBox.Text = FloatUtil.GetVector3String(z.ActivationZonePostRotationOffset);
+                ActivationSizeScaleTextBox.Text = FloatUtil.GetVector3String(z.ActivationZoneSizeScale);
+
+                PositioningCentreTextBox.Text = FloatUtil.GetVector3String(z.PositioningZoneCentre);
+                PositioningSizeTextBox.Text = FloatUtil.GetVector3String(z.PositioningZoneSize);
+                PositioningRotationOffsetTextBox.Text = FloatUtil.GetVector3String(z.PositioningZonePostRotationOffset);
+                PositioningSizeScaleTextBox.Text = FloatUtil.GetVector3String(z.PositioningZoneSizeScale);
+
+                BuiltUpFactorTextBox.Text = z.BuiltUpFactor.ToString();
+                MinPedDensityTextBox.Text = z.MinPedDensity.ToString();
+                MaxPedDensityTextBox.Text = z.MaxPedDensity.ToString();
+                PedDensityTODTextBox.Text = z.PedDensityTOD.ToString();
+                PedDensityScalarTextBox.Text = z.PedDensityScalar.ToString();
+                ZoneWaterCalculationTextBox.Text = z.ZoneWaterCalculation.ToString();
+                PositioningRotationAngleTextBox.Text = z.PositioningZoneRotationAngle.ToString();
+                ActivationZoneRotationAngleTextBox.Text = z.ActivationZoneRotationAngle.ToString();
+                MinWindInfluenceTextBox.Text = z.MinWindInfluence.ToString();
+
+                WindElevationSoundsTextBox.Text = z.WindElevationSounds.ToString();
+                RandomRadioSettingsTextBox.Text = z.RandomisedRadioSettings.ToString();
+                EnviromentRuleTextBox.Text = z.EnvironmentRule.ToString();
+                AudioSceneTextBox.Text = z.AudioScene.ToString();
 
                 StringBuilder sb = new StringBuilder();
                 if (z.Rules != null)
@@ -117,20 +119,20 @@ namespace CodeWalker.Project.Panels
                         sb.AppendLine(hash.ToString());
                     }
                 }
-                HashesTextBox.Text = sb.ToString();
+                RulesTextBox.Text = sb.ToString();
 
                 sb.Clear();
-                if (z.DependentAmbiences != null)
+                if (z.DirAmbiences != null)
                 {
-                    foreach (var extparam in z.DependentAmbiences)
+                    foreach (var extparam in z.DirAmbiences)
                     {
                         sb.Append(extparam.Name.ToString());
                         sb.Append(", ");
-                        sb.Append(FloatUtil.ToString(extparam.Value));
+                        sb.Append(FloatUtil.ToString(extparam.Volume));
                         sb.AppendLine();
                     }
                 }
-                DependentAmbiencesTextBox.Text = sb.ToString();
+                DirAmbiencesTextBox.Text = sb.ToString();
 
                 populatingui = false;
 
@@ -198,99 +200,18 @@ namespace CodeWalker.Project.Panels
 
         }
 
-        private void InnerPosTextBox_TextChanged(object sender, EventArgs e)
+        private void PositioningCentreTextBoxTextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var vec = FloatUtil.ParseVector3String(InnerPosTextBox.Text);
-            if (CurrentZone.AudioZone.PlaybackZonePosition != vec)
+            var vec = FloatUtil.ParseVector3String(PositioningCentreTextBox.Text);
+            if (CurrentZone.AudioZone.PositioningZoneCentre != vec)
             {
-                CurrentZone.AudioZone.PlaybackZonePosition = vec;
+                CurrentZone.AudioZone.PositioningZoneCentre = vec;
 
                 ProjectItemChanged();
 
-                //var wf = ProjectForm.WorldForm;
-                //if (wf != null)
-                //{
-                //    wf.BeginInvoke(new Action(() =>
-                //    {
-                //        wf.SetWidgetPosition(CurrentZone.Position, true);
-                //    }));
-                //}
-            }
-        }
-
-        private void InnerSizeTextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector3String(InnerSizeTextBox.Text);
-            if (CurrentZone.AudioZone.PlaybackZoneSize != vec)
-            {
-                CurrentZone.AudioZone.PlaybackZoneSize = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void InnerAngleTextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            uint ang = 0;
-            if (uint.TryParse(InnerAngleTextBox.Text, out ang))
-            {
-                if (CurrentZone.AudioZone.PlaybackZoneAngle != ang)
-                {
-                    CurrentZone.AudioZone.PlaybackZoneAngle = ang;
-
-                    ProjectItemChanged();
-                }
-            }
-        }
-
-        private void InnerVec1TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector4String(InnerVec1TextBox.Text);
-            if (CurrentZone.AudioZone.PlaybackZoneVec1 != vec)
-            {
-                CurrentZone.AudioZone.PlaybackZoneVec1 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void InnerVec2TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector4String(InnerVec2TextBox.Text);
-            if (CurrentZone.AudioZone.PlaybackZoneVec2 != vec)
-            {
-                CurrentZone.AudioZone.PlaybackZoneVec2 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void InnerVec3TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector3String(InnerVec3TextBox.Text);
-            if (CurrentZone.AudioZone.PlaybackZoneVec3 != vec)
-            {
-                CurrentZone.AudioZone.PlaybackZoneVec3 = vec;
-
-                ProjectItemChanged();
             }
         }
 
@@ -299,159 +220,43 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var vec = FloatUtil.ParseVector3String(OuterPosTextBox.Text);
-            if (CurrentZone.AudioZone.ActivationZonePosition != vec)
+            var vec = FloatUtil.ParseVector3String(PositioningCentreTextBox.Text);
+            if (CurrentZone.AudioZone.ActivationZoneCentre != vec)
             {
-                CurrentZone.AudioZone.ActivationZonePosition = vec;
+                CurrentZone.AudioZone.ActivationZoneCentre = vec;
 
                 ProjectItemChanged();
             }
         }
 
-        private void OuterSizeTextBox_TextChanged(object sender, EventArgs e)
+        private void ActivationZoneRotationAngleTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var vec = FloatUtil.ParseVector3String(OuterSizeTextBox.Text);
-            if (CurrentZone.AudioZone.ActivationZoneSize != vec)
+            uint ang;
+            if (uint.TryParse(ActivationZoneRotationAngleTextBox.Text, out ang))
             {
-                CurrentZone.AudioZone.ActivationZoneSize = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void OuterAngleTextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            uint ang = 0;
-            if (uint.TryParse(OuterAngleTextBox.Text, out ang))
-            {
-                if (CurrentZone.AudioZone.ActivationZoneAngle != ang)
+                if (CurrentZone.AudioZone.ActivationZoneRotationAngle != ang)
                 {
-                    CurrentZone.AudioZone.ActivationZoneAngle = ang;
+                    CurrentZone.AudioZone.ActivationZoneRotationAngle = (ushort)ang;
 
                     ProjectItemChanged();
                 }
             }
         }
 
-        private void OuterVec1TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector4String(OuterVec1TextBox.Text);
-            if (CurrentZone.AudioZone.ActivationZoneVec1 != vec)
-            {
-                CurrentZone.AudioZone.ActivationZoneVec1 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void OuterVec2TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector4String(OuterVec2TextBox.Text);
-            if (CurrentZone.AudioZone.ActivationZoneVec2 != vec)
-            {
-                CurrentZone.AudioZone.ActivationZoneVec2 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void OuterVec3TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector3String(OuterVec3TextBox.Text);
-            if (CurrentZone.AudioZone.ActivationZoneVec3 != vec)
-            {
-                CurrentZone.AudioZone.ActivationZoneVec3 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void UnkVec1TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector4String(UnkVec1TextBox.Text);
-            if (CurrentZone.AudioZone.UnkVec1 != vec)
-            {
-                CurrentZone.AudioZone.UnkVec1 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void UnkVec2TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector4String(UnkVec2TextBox.Text);
-            if (CurrentZone.AudioZone.UnkVec2 != vec)
-            {
-                CurrentZone.AudioZone.UnkVec2 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void UnkVec3TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var vec = FloatUtil.ParseVector2String(UnkVec3TextBox.Text);
-            if (CurrentZone.AudioZone.UnkVec3 != vec)
-            {
-                CurrentZone.AudioZone.UnkVec3 = vec;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void UnkBytesTextBox_TextChanged(object sender, EventArgs e)
-        {
-            var vals = UnkBytesTextBox.Text.Split(',');
-            if (vals?.Length == 3)
-            {
-                byte val0 = 0, val1 = 0, val2 = 0;
-                byte.TryParse(vals[0].Trim(), out val0);
-                byte.TryParse(vals[1].Trim(), out val1);
-                byte.TryParse(vals[2].Trim(), out val2);
-
-                CurrentZone.AudioZone.Unk14 = val0;
-                CurrentZone.AudioZone.Unk15 = val1;
-                CurrentZone.AudioZone.Unk16 = val2;
-
-                ProjectItemChanged();
-            }
-        }
-
-        private void Flags0TextBox_TextChanged(object sender, EventArgs e)
+        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
             uint flags = 0;
-            if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            if (uint.TryParse(FlagsTextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentZone.AudioZone.Flags0 != flags)
+                if (CurrentZone.AudioZone.Flags != flags)
                 {
-                    CurrentZone.AudioZone.Flags0 = flags;
+                    CurrentZone.AudioZone.Flags = flags;
 
                     ProjectItemChanged();
                 }
@@ -459,29 +264,12 @@ namespace CodeWalker.Project.Panels
 
         }
 
-        private void Flags1TextBox_TextChanged(object sender, EventArgs e)
+        private void RandomisedRadioSettings_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            uint flags = 0;
-            if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
-            {
-                if (CurrentZone.AudioZone.Flags1 != flags)
-                {
-                    CurrentZone.AudioZone.Flags1 = flags;
-
-                    ProjectItemChanged();
-                }
-            }
-        }
-
-        private void Unk13TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentZone?.AudioZone == null) return;
-
-            var hashstr = Unk13TextBox.Text;
+            var hashstr = RandomRadioSettingsTextBox.Text;
             uint hash = 0;
             if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
             {
@@ -489,20 +277,20 @@ namespace CodeWalker.Project.Panels
                 JenkIndex.Ensure(hashstr);
             }
 
-            if (CurrentZone.AudioZone.Unk13 != hash)
+            if (CurrentZone.AudioZone.RandomisedRadioSettings != hash)
             {
-                CurrentZone.AudioZone.Unk13 = hash;
+                CurrentZone.AudioZone.RandomisedRadioSettings = hash;
 
                 ProjectItemChanged();
             }
         }
 
-        private void Hash0TextBox_TextChanged(object sender, EventArgs e)
+        private void EnviromentRuleTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var hashstr = Hash0TextBox.Text;
+            var hashstr = EnviromentRuleTextBox.Text;
             uint hash = 0;
             if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
             {
@@ -510,20 +298,20 @@ namespace CodeWalker.Project.Panels
                 JenkIndex.Ensure(hashstr);
             }
 
-            if (CurrentZone.AudioZone.UnkHash0 != hash)
+            if (CurrentZone.AudioZone.EnvironmentRule != hash)
             {
-                CurrentZone.AudioZone.UnkHash0 = hash;
+                CurrentZone.AudioZone.EnvironmentRule = hash;
 
                 ProjectItemChanged();
             }
         }
 
-        private void SceneTextBox_TextChanged(object sender, EventArgs e)
+        private void AudioSceneTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var hashstr = SceneTextBox.Text;
+            var hashstr = AudioSceneTextBox.Text;
             uint hash = 0;
             if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
             {
@@ -531,20 +319,20 @@ namespace CodeWalker.Project.Panels
                 JenkIndex.Ensure(hashstr);
             }
 
-            if (CurrentZone.AudioZone.Scene != hash)
+            if (CurrentZone.AudioZone.AudioScene != hash)
             {
-                CurrentZone.AudioZone.Scene = hash;
+                CurrentZone.AudioZone.AudioScene = hash;
 
                 ProjectItemChanged();
             }
         }
 
-        private void HashesTextBox_TextChanged(object sender, EventArgs e)
+        private void RulesTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var hashstrs = HashesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var hashstrs = RulesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (hashstrs?.Length > 0)
             {
                 var hashlist = new List<MetaHash>();
@@ -560,27 +348,27 @@ namespace CodeWalker.Project.Panels
                 }
 
                 CurrentZone.AudioZone.Rules = hashlist.ToArray();
-                CurrentZone.AudioZone.RulesCount = (byte)hashlist.Count;
+                CurrentZone.AudioZone.NumRules = (byte)hashlist.Count;
 
                 ProjectItemChanged();
             }
         }
 
-        private void DependentAmbiencesTextBox_TextChanged(object sender, EventArgs e)
+        private void DirAmbiencesTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AudioZone == null) return;
 
-            var paramstrs = DependentAmbiencesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var paramstrs = DirAmbiencesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
             {
-                var paramlist = new List<Dat151AmbientZone.DependentAmbience>();
+                var paramlist = new List<Dat151AmbientZone.DirAmbience>();
                 foreach (var paramstr in paramstrs)
                 {
                     var paramvals = paramstr.Split(',');
                     if (paramvals?.Length == 2)
                     {
-                        var param = new Dat151AmbientZone.DependentAmbience();
+                        var param = new Dat151AmbientZone.DirAmbience();
                         var hashstr = paramvals[0].Trim();
                         var valstr = paramvals[1].Trim();
                         uint hash = 0;
@@ -590,13 +378,13 @@ namespace CodeWalker.Project.Panels
                             JenkIndex.Ensure(hashstr);
                         }
                         param.Name = hash;
-                        param.Value = FloatUtil.Parse(valstr);
+                        param.Volume = FloatUtil.Parse(valstr);
                         paramlist.Add(param);
                     }
                 }
 
-                CurrentZone.AudioZone.DependentAmbiences = paramlist.ToArray();
-                CurrentZone.AudioZone.DependentAmbiencesCount = (uint)paramlist.Count;
+                CurrentZone.AudioZone.DirAmbiences = paramlist.ToArray();
+                CurrentZone.AudioZone.NumDirAmbiences = (byte)paramlist.Count;
 
                 ProjectItemChanged();
             }
@@ -606,7 +394,7 @@ namespace CodeWalker.Project.Panels
         {
             if (CurrentZone == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentZone.Position, CurrentZone.AudioZone.PlaybackZoneSize);
+            ProjectForm.WorldForm.GoToPosition(CurrentZone.Position, CurrentZone.AudioZone.PositioningZoneSize);
         }
 
         private void AddToProjectButton_Click(object sender, EventArgs e)
@@ -619,6 +407,233 @@ namespace CodeWalker.Project.Panels
         {
             ProjectForm.SetProjectItem(CurrentZone);
             ProjectForm.DeleteAudioZone();
+        }
+
+        private void BuiltUpFactorTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(BuiltUpFactorTextBox.Text);
+            if (CurrentZone.AudioZone.BuiltUpFactor != vec)
+            {
+                CurrentZone.AudioZone.BuiltUpFactor = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void PedDensityTODTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(PedDensityTODTextBox.Text);
+            if (CurrentZone.AudioZone.PedDensityTOD != vec)
+            {
+                CurrentZone.AudioZone.PedDensityTOD = (uint)vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void MinPedDensityTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(MinPedDensityTextBox.Text);
+            if (CurrentZone.AudioZone.MinPedDensity != vec)
+            {
+                CurrentZone.AudioZone.MinPedDensity = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void PedDensityScalarTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(PedDensityScalarTextBox.Text);
+            if (CurrentZone.AudioZone.PedDensityScalar != vec)
+            {
+                CurrentZone.AudioZone.PedDensityScalar = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void MaxPedDensityTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(MaxPedDensityTextBox.Text);
+            if (CurrentZone.AudioZone.MaxPedDensity != vec)
+            {
+                CurrentZone.AudioZone.MaxPedDensity = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void ZoneWaterCalculationTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(ZoneWaterCalculationTextBox.Text);
+            if (CurrentZone.AudioZone.ZoneWaterCalculation != vec)
+            {
+                CurrentZone.AudioZone.ZoneWaterCalculation = (byte)vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void PositioningSizeTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.ParseVector3String(PositioningSizeTextBox.Text);
+            if (CurrentZone.AudioZone.PositioningZoneSize != vec)
+            {
+                CurrentZone.AudioZone.PositioningZoneSize = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void PositioningRotationAngleTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            uint ang = 0;
+            if (uint.TryParse(PositioningRotationAngleTextBox.Text, out ang))
+            {
+                if (CurrentZone.AudioZone.PositioningZoneRotationAngle != ang)
+                {
+                    CurrentZone.AudioZone.PositioningZoneRotationAngle = (ushort)ang;
+
+                    ProjectItemChanged();
+                }
+            }
+        }
+
+        private void PositioningRotationOffsetTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.ParseVector3String(PositioningRotationOffsetTextBox.Text);
+            if (CurrentZone.AudioZone.PositioningZonePostRotationOffset != vec)
+            {
+                CurrentZone.AudioZone.PositioningZonePostRotationOffset = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void PositioningSizeScaleTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.ParseVector3String(PositioningSizeTextBox.Text);
+            if (CurrentZone.AudioZone.PositioningZoneSizeScale != vec)
+            {
+                CurrentZone.AudioZone.PositioningZoneSizeScale = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void ActivationSizeTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.ParseVector3String(ActivationSizeTextBox.Text);
+            if (CurrentZone.AudioZone.ActivationZoneSize != vec)
+            {
+                CurrentZone.AudioZone.ActivationZoneSize = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void ActivationRotationOffsetTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.ParseVector3String(ActivationRotationOffsetTextBox.Text);
+            if (CurrentZone.AudioZone.ActivationZonePostRotationOffset != vec)
+            {
+                CurrentZone.AudioZone.ActivationZonePostRotationOffset = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void ActivationSizeScaleTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.ParseVector3String(ActivationSizeScaleTextBox.Text);
+            if (CurrentZone.AudioZone.ActivationZoneSizeScale != vec)
+            {
+                CurrentZone.AudioZone.ActivationZoneSizeScale = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void MinWindInfluenceTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(MinWindInfluenceTextBox.Text);
+            if (CurrentZone.AudioZone.MinWindInfluence != vec)
+            {
+                CurrentZone.AudioZone.MinWindInfluence = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void MaxWindInfluenceTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(MaxWindInfluenceTextBox.Text);
+            if (CurrentZone.AudioZone.MaxWindInfluence != vec)
+            {
+                CurrentZone.AudioZone.MaxWindInfluence = vec;
+
+                ProjectItemChanged();
+            }
+        }
+
+        private void WindElevationSoundsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentZone?.AudioZone == null) return;
+
+            var vec = FloatUtil.Parse(WindElevationSoundsTextBox.Text);
+            if (CurrentZone.AudioZone.WindElevationSounds != vec)
+            {
+                CurrentZone.AudioZone.WindElevationSounds = (uint)vec;
+
+                ProjectItemChanged();
+            }
         }
     }
 }
