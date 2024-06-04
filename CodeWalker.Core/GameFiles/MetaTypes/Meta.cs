@@ -1025,7 +1025,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))]  struct ArrayOfFloats5
+    [TC(typeof(EXP))] public struct ArrayOfFloats5
     {
         public float f0, f1, f2, f3, f4;
         public float[] GetArray()
