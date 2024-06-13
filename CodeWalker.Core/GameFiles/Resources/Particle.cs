@@ -5769,7 +5769,7 @@ namespace CodeWalker.GameFiles
             //{ }//no hit
             //switch (Name) //parameter name
             //{
-            //    case 0xea057402: // 
+            //    case 0xea057402: // wraplightingterm
             //    case 0x0b3045be: // softness
             //    case 0x91bf3028: // superalpha
             //    case 0x4a8a0a28: // directionalmult
@@ -5779,14 +5779,14 @@ namespace CodeWalker.GameFiles
             //    case 0xf03acb8c: // camerabias
             //    case 0x81634888: // camerashrink
             //    case 0xb695f45c: // normalarc
-            //    case 0x403390ea: // 
+            //    case 0x403390ea: // dirnormalbias
             //    case 0x18ca6c12: // softnesscurve
             //    case 0x1458f27b: // softnessshadowmult
             //    case 0xa781a38b: // softnessshadowoffset
             //    case 0x77b842ed: // normalmapmult
-            //    case 0x7b483bc5: // 
-            //    case 0x6a1dbec3: // 
-            //    case 0xba5af058: // 
+            //    case 0x7b483bc5: // alphacutoffminmax
+            //    case 0x6a1dbec3: // rg_blendstartdistance
+            //    case 0xba5af058: // rg_blendenddistance
             //    case 0xdf7cc018: // refractionmap
             //    case 0xb36327d1: // normalspecmap
             //    case 0x0df47048: // diffusetex2

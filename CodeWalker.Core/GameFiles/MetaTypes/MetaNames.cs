@@ -3889,7 +3889,11 @@ namespace CodeWalker.GameFiles
         softnessshadowmult = 341373563,
         extralightmult = 3338535754,
         camerashrink = 2170767496,
-
+        wraplightingterm = 3926225922,
+        dirnormalbias = 1077121258,
+        alphacutoffminmax = 2068331461,
+        rg_blendstartdistance = 1780334275,
+        rg_blendenddistance = 3126521944,
 
         //AWC markers names from Siprus
         tank_jump = 322089989,
