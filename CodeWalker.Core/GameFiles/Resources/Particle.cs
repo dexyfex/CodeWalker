@@ -4588,9 +4588,9 @@ namespace CodeWalker.GameFiles
             base.WriteXml(sb, indent);
             YptXml.ValueTag(sb, indent, "CoronaZBias", FloatUtil.ToString(CoronaZBias));
             YptXml.ValueTag(sb, indent, "CoronaUseLightColour", CoronaUseLightColour.ToString());
-            YptXml.ValueTag(sb, indent, "CoronaUseLightColour", ColourFromParticle.ToString());
-            YptXml.ValueTag(sb, indent, "CoronaUseLightColour", ColourPerFrame.ToString());
-            YptXml.ValueTag(sb, indent, "CoronaUseLightColour", IntensityPerFrame.ToString());
+            YptXml.ValueTag(sb, indent, "ColourFromParticle", ColourFromParticle.ToString());
+            YptXml.ValueTag(sb, indent, "ColourPerFrame", ColourPerFrame.ToString());
+            YptXml.ValueTag(sb, indent, "IntensityPerFrame", IntensityPerFrame.ToString());
             YptXml.ValueTag(sb, indent, "RangePerFrame", RangePerFrame.ToString());
             YptXml.ValueTag(sb, indent, "CastsShadows", CastsShadows.ToString());
             YptXml.ValueTag(sb, indent, "CoronaNotInReflection", CoronaNotInReflection.ToString());
