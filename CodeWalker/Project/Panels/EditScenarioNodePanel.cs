@@ -516,8 +516,8 @@ namespace CodeWalker.Project.Panels
                 ScenarioClusterAddToProjectButton.Enabled = !ScenarioClusterDeleteButton.Enabled;
                 ScenarioClusterCenterTextBox.Text = FloatUtil.GetVector3String(c.Position);
                 ScenarioClusterRadiusTextBox.Text = FloatUtil.ToString(c.Radius);
-                ScenarioClusterUnk1TextBox.Text = FloatUtil.ToString(c.Unk1);
-                ScenarioClusterUnk2CheckBox.Checked = c.Unk2;
+                ScenarioClusterUnk1TextBox.Text = FloatUtil.ToString(c.NextSpawnAttemptDelay);
+                ScenarioClusterUnk2CheckBox.Checked = c.AllPointsRequiredForSpawn;
                 ScenarioClusterPointsListBox.Items.Clear();
                 ScenarioClusterAddPointButton.Enabled = true;
 
@@ -2009,9 +2009,9 @@ namespace CodeWalker.Project.Panels
             float v = FloatUtil.Parse(ScenarioClusterUnk1TextBox.Text);
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentScenarioNode.Cluster.Unk1 != v)
+                if (CurrentScenarioNode.Cluster.NextSpawnAttemptDelay != v)
                 {
-                    CurrentScenarioNode.Cluster.Unk1 = v;
+                    CurrentScenarioNode.Cluster.NextSpawnAttemptDelay = v;
                     ProjectForm.SetScenarioHasChanged(true);
                 }
             }
@@ -2025,9 +2025,9 @@ namespace CodeWalker.Project.Panels
             bool v = ScenarioClusterUnk2CheckBox.Checked;
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentScenarioNode.Cluster.Unk2 != v)
+                if (CurrentScenarioNode.Cluster.AllPointsRequiredForSpawn != v)
                 {
-                    CurrentScenarioNode.Cluster.Unk2 = v;
+                    CurrentScenarioNode.Cluster.AllPointsRequiredForSpawn = v;
                     ProjectForm.SetScenarioHasChanged(true);
                 }
             }

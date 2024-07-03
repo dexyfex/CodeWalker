@@ -5581,8 +5581,8 @@ namespace CodeWalker.GameFiles
     {
         public CScenarioPointContainer Points { get; set; } //0   0: Structure: CScenarioPointContainer//2380938603: Points//702683191
         public rage__spdSphere ClusterSphere { get; set; } //48   48: Structure: 1062159465: ClusterSphere//352461053
-        public float Unk_1095875445 { get; set; } //64   64: Float: 0: 1095875445 //spawn chance? eg 5, 30
-        public byte Unk_3129415068 { get; set; } //68   68: Boolean: 0: 3129415068
+        public float NextSpawnAttemptDelay { get; set; } //64   64: Float: 0: 1095875445 //spawn chance? eg 5, 30
+        public byte AllPointsRequiredForSpawn { get; set; } //68   68: Boolean: 0: 3129415068
         public uint Unused0 { get; set; }//72
         public uint Unused1 { get; set; }//76
 
@@ -5618,8 +5618,8 @@ namespace CodeWalker.GameFiles
                 _Data.ClusterSphere = new rage__spdSphere() { centerAndRadius = v4 };
             }
         }
-        public float Unk1 { get { return _Data.Unk_1095875445; } set { _Data.Unk_1095875445 = value; } }
-        public bool Unk2 { get { return _Data.Unk_3129415068==1; } set { _Data.Unk_3129415068 = (byte)(value?1:0); } }
+        public float NextSpawnAttemptDelay { get { return _Data.NextSpawnAttemptDelay; } set { _Data.NextSpawnAttemptDelay = value; } }
+        public bool AllPointsRequiredForSpawn { get { return _Data.AllPointsRequiredForSpawn==1; } set { _Data.AllPointsRequiredForSpawn = (byte)(value?1:0); } }
 
         public MCScenarioPointCluster() { }
         public MCScenarioPointCluster(MCScenarioPointRegion region) { Region = region; }
