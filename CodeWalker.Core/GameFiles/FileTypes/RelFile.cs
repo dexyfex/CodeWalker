@@ -60,7 +60,7 @@ namespace CodeWalker.GameFiles
         Dat151 = 151
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class RelFile : GameFile, PackedFile
     {
         public byte[] RawFileData { get; set; }
@@ -649,7 +649,7 @@ namespace CodeWalker.GameFiles
                 case Dat151RelType.StopOneShotAction: return new Dat151StopOneShotAction(d, br);
                 case Dat151RelType.FadeOutRadioAction: return new Dat151FadeOutRadioAction(d, br);
                 case Dat151RelType.FadeInRadioAction: return new Dat151FadeInRadioAction(d, br);
-                case Dat151RelType.ModelAudioCollisionSettings: return new Dat151ModelAudioCollisionSettings (d, br);
+                case Dat151RelType.ModelAudioCollisionSettings: return new Dat151ModelAudioCollisionSettings(d, br);
                 case Dat151RelType.InteriorSettings: return new Dat151InteriorSettings(d, br);
                 case Dat151RelType.InteriorRoom: return new Dat151InteriorRoom(d, br);
                 case Dat151RelType.DoorAudioSettingsLink: return new Dat151DoorAudioSettingsLink(d, br);
@@ -919,7 +919,7 @@ namespace CodeWalker.GameFiles
                 case RelDatFileType.Dat4:
                     if (IsAudioConfig)
                     {
-                        switch((Dat4ConfigType)dataType)
+                        switch ((Dat4ConfigType)dataType)
                         {
                             case Dat4ConfigType.Int: return new Dat4ConfigInt(this);
                             case Dat4ConfigType.UnsignedInt: return new Dat4ConfigUnsignedInt(this);
@@ -1020,13 +1020,13 @@ namespace CodeWalker.GameFiles
                 {
                     ntlength += (uint)name.Length + 1;
                 }
-                if ((NameTableLength != ntlength)&&(NameTableLength!=0))
+                if ((NameTableLength != ntlength) && (NameTableLength != 0))
                 { }
                 NameTableLength = ntlength;
             }
             else
             {
-                if ((NameTableLength != 4)&& (NameTableLength != 0))
+                if ((NameTableLength != 4) && (NameTableLength != 0))
                 { }
                 NameTableCount = 0;
                 NameTableLength = 4;
@@ -1130,7 +1130,7 @@ namespace CodeWalker.GameFiles
             ms.Position = 0;
             ms.Read(buf, 0, buf.Length);
 
-            if ((DataBlock!=null)&&(DataBlock.Length != buf.Length))
+            if ((DataBlock != null) && (DataBlock.Length != buf.Length))
             { }
 
             DataBlock = buf;
@@ -1156,7 +1156,7 @@ namespace CodeWalker.GameFiles
                 case RelDatFileType.Dat22Categories:
                 case RelDatFileType.Dat16Curves:
                 case RelDatFileType.Dat54DataEntries:
-                    sorted.Sort((a, b) => 
+                    sorted.Sort((a, b) =>
                     {
                         var ah = (uint)a.NameHash;
                         var bh = (uint)b.NameHash;
@@ -1468,7 +1468,7 @@ namespace CodeWalker.GameFiles
 
         public byte[] Save()
         {
-            
+
             BuildNameTable();
             BuildDataBlock();
             BuildIndex();
@@ -1634,7 +1634,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public struct RelIndexHash
     {
         public MetaHash Name { get; set; }
@@ -1648,7 +1648,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public struct RelIndexString
     {
         public string Name { get; set; }
@@ -1662,7 +1662,7 @@ namespace CodeWalker.GameFiles
     }
 
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class RelData
     {
         public MetaHash NameHash { get; set; }
@@ -1784,7 +1784,7 @@ namespace CodeWalker.GameFiles
 
 
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class RelSoundHeader
     {
         public FlagsUint Flags { get; set; }
@@ -2267,7 +2267,7 @@ namespace CodeWalker.GameFiles
         SoundHashList = 35
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54Sound : RelSound
     {
         public Dat54SoundType Type { get; set; }
@@ -2353,7 +2353,7 @@ namespace CodeWalker.GameFiles
             return new uint[] { 6 };
         }
     }
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54EnvelopeSound : Dat54Sound
     {
         public ushort Attack { get; set; } //0x0-0x2 ADSHR attack in ms. used by PTS or other types.
@@ -2499,7 +2499,7 @@ namespace CodeWalker.GameFiles
             return new[] { AttackCurve, DecayCurve, ReleaseCurve };
         }
     }
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     class Dat54TwinLoopSound : Dat54Sound
     {
         public ushort MinSwapTime { get; set; } //0x0-0x2 //minimum duration in ms of the two samples, if they are longer they are shortened to this value.
@@ -2580,7 +2580,7 @@ namespace CodeWalker.GameFiles
             return new[] { CrossfadeCurve };
         }
     }
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     class Dat54SpeechSound : Dat54Sound
     {
         public int LastVariation { get; set; }
@@ -2666,7 +2666,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54WrapperSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; } //0x0-0x4
@@ -2767,7 +2767,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SequentialSound : Dat54Sound
     {
         public Dat54SequentialSound(RelFile rel) : base(rel, Dat54SoundType.SequentialSound)
@@ -2797,7 +2797,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54StreamingSound : Dat54Sound
     {
         public int Duration { get; set; } //0x0-0x4
@@ -2834,7 +2834,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54RetriggeredOverlappedSound : Dat54Sound
     {
         public short LoopCount { get; set; } //0x0-0x2 number of times to repeat. includes start and tail sounds if defined
@@ -2906,8 +2906,8 @@ namespace CodeWalker.GameFiles
             return new uint[] { 16, 20, 24 };
         }
     }
-    
-    [TC(typeof(EXP))] 
+
+    [TC(typeof(EXP))]
     public class Dat54CrossfadeSound : Dat54Sound
     {
         public MetaHash NearSound { get; set; }
@@ -2999,7 +2999,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54CollapsingStereoSound : Dat54Sound
     {
         public MetaHash LeftSound { get; set; }
@@ -3087,7 +3087,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SimpleSound : Dat54Sound
     {
         public MetaHash ContainerName { get; set; } //Relative path to parent wave container (i.e. "RESIDENT/animals")
@@ -3132,7 +3132,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54MultitrackSound : Dat54Sound
     {
         public Dat54MultitrackSound(RelFile rel) : base(rel, Dat54SoundType.MultitrackSound)
@@ -3162,7 +3162,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54RandomizedSound : Dat54Sound
     {
         public byte HistoryIndex { get; set; } //0x0-0x1 retricts the randomization range?
@@ -3260,7 +3260,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54EnvironmentSound : Dat54Sound
     {
         public byte ChannelID { get; set; }
@@ -3290,7 +3290,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54DynamicEntitySound : Dat54Sound
     {
         public byte EntitiesCount { get; set; }
@@ -3329,7 +3329,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SequentialOverlapSound : Dat54Sound
     {
         public ushort DelayTime { get; set; }
@@ -3378,13 +3378,13 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54ModularSynthSound : Dat54Sound
     {
         public MetaHash SynthSound { get; set; } //0x0-0x4
         public MetaHash SynthPreset { get; set; } //0x4-0x8
         public float PlaybackTimeLimit { get; set; } //0x8-0xC
-        public int VirtualisationMode { get; set; } //0xC-0x10
+        public int UnkInt { get; set; } //0xC-0x10
         public int TrackCount { get; set; }
         public int ExposedVariablesCount { get; set; }
         public Dat54ModularSynthSoundVariable[] ExposedVariables { get; set; } //0x28-..
@@ -3396,15 +3396,13 @@ namespace CodeWalker.GameFiles
             SynthSound = br.ReadUInt32(); //0x0-0x4
             SynthPreset = br.ReadUInt32(); //0x4-0x8
             PlaybackTimeLimit = br.ReadSingle(); //0x8-0xC
-            VirtualisationMode = br.ReadInt32(); //0xC-0x10
-
-            TrackCount = br.ReadInt32();
-            ChildSoundsHashes = new MetaHash[TrackCount];
-            for (int i = 0; i < TrackCount; i++)
+            UnkInt = br.ReadInt32(); //0xC-0x10
+            TrackCount = br.ReadInt32(); //0x10-0x14
+            ChildSoundsHashes = new MetaHash[4];
+            for (int i = 0; i < 4; i++)
             {
                 ChildSoundsHashes[i] = br.ReadUInt32();
             }
-
             ExposedVariablesCount = br.ReadInt32();
             ExposedVariables = new Dat54ModularSynthSoundVariable[ExposedVariablesCount];
             for (int i = 0; i < ExposedVariablesCount; i++)
@@ -3418,7 +3416,7 @@ namespace CodeWalker.GameFiles
             SynthSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SynthSound"));
             SynthPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "SynthPreset"));
             PlaybackTimeLimit = Xml.GetChildFloatAttribute(node, "PlaybackTimeLimit", "value");
-            VirtualisationMode = Xml.GetChildIntAttribute(node, "VirtualisationMode", "value");
+            UnkInt = Xml.GetChildIntAttribute(node, "UnkInt", "value");
             TrackCount = Xml.GetChildIntAttribute(node, "TrackCount", "value");
             ReadChildSoundsXml(node, "EnvironmentSounds");
             ExposedVariables = XmlRel.ReadItemArray<Dat54ModularSynthSoundVariable>(node, "ExposedVariables");
@@ -3430,7 +3428,7 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "SynthSound", RelXml.HashString(SynthSound));
             RelXml.StringTag(sb, indent, "SynthPreset", RelXml.HashString(SynthPreset));
             RelXml.ValueTag(sb, indent, "PlaybackTimeLimit", FloatUtil.ToString(PlaybackTimeLimit));
-            RelXml.ValueTag(sb, indent, "VirtualisationMode", VirtualisationMode.ToString());
+            RelXml.ValueTag(sb, indent, "UnkInt", UnkInt.ToString());
             RelXml.ValueTag(sb, indent, "TrackCount", TrackCount.ToString());
             WriteChildSoundsXml(sb, indent, "EnvironmentSounds");
             RelXml.WriteItemArray(sb, ExposedVariables, indent, "ExposedVariables");
@@ -3441,9 +3439,9 @@ namespace CodeWalker.GameFiles
             bw.Write(SynthSound); //0x0-0x4
             bw.Write(SynthPreset); //0x4-0x8
             bw.Write(PlaybackTimeLimit); //0x8-0xC
-            bw.Write(VirtualisationMode); //0xC-0x10
+            bw.Write(UnkInt); //0xC-0x10
             bw.Write(TrackCount); //0x10-0x14
-            for (int i = 0; i < TrackCount; i++)
+            for (int i = 0; i < 4; i++)
             {
                 bw.Write(ChildSoundsHashes[i]);
             }
@@ -3467,8 +3465,7 @@ namespace CodeWalker.GameFiles
             return new[] { SynthSound, SynthPreset };
         }
     }
-
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54ModularSynthSoundVariable : IMetaXmlItem
     {
         public MetaHash VariableName { get; set; }
@@ -3507,7 +3504,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54GranularSound : Dat54Sound
     {
         public int WaveSlotIndex { get; set; } //0x0-0x4
@@ -3687,7 +3684,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54GranularSoundFile
     {
         public MetaHash ContainerName { get; set; } //0x0-0x4
@@ -3727,7 +3724,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54GranularSoundData
     {
         public byte OutputBuffer { get; set; } //0x0-0x1
@@ -3782,7 +3779,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54DirectionalSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; }
@@ -3840,7 +3837,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54KineticSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; }
@@ -3888,7 +3885,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SwitchSound : Dat54Sound
     {
         public MetaHash Variable { get; set; } //0x0-0x4
@@ -3925,7 +3922,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54VariableCurveSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; }
@@ -3977,7 +3974,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54VariablePrintValueSound : Dat54Sound
     {
         public MetaHash Variable { get; set; } //0x0-0x4
@@ -4010,7 +4007,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54VariableBlockSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; }
@@ -4059,7 +4056,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54VariableData : IMetaXmlItem
     {
         public MetaHash Name { get; set; }
@@ -4103,7 +4100,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54IfSound : Dat54Sound
     {
         public MetaHash TrueSound { get; set; } //sound played if the condition is true
@@ -4161,7 +4158,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54MathOperationSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; }
@@ -4210,7 +4207,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54MathOperationSoundData : IMetaXmlItem
     {
         public byte OperationType { get; set; } //0x0-0x1
@@ -4274,7 +4271,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54ParameterTransformSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; }
@@ -4323,7 +4320,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54ParameterTransformSoundData : IMetaXmlItem
     {
         public MetaHash InputParameter { get; set; } //0x0-0x4
@@ -4378,7 +4375,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54ParameterTransformSoundData2 : IMetaXmlItem
     {
         public float SmoothRate { get; set; } //0x0-0x4
@@ -4444,7 +4441,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54FluctuatorSound : Dat54Sound
     {
         public MetaHash ChildSound { get; set; }
@@ -4493,101 +4490,100 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
-    public class Dat54FluctuatorSoundData : IMetaXmlItem
+    [TC(typeof(EXP))] public class Dat54FluctuatorSoundData : IMetaXmlItem
     {
-        public byte Mode { get; set; } //0x0-0x1 //type of fluctuator; probability-based, time-based
-        public byte Destination { get; set; } //0x1-0x2
-        public MetaHash OutputVariable { get; set; } //0x2-0x6
-        public float IncreaseRate { get; set; } //0x6-0xA
-        public float DecreaseRate { get; set; } //0xA-0xE
-        public float BandOneMinimum { get; set; } //0xE-0x12
-        public float BandOneMaximum { get; set; } //0x12-0x16
-        public float BandTwoMinimum { get; set; } //0x16-0x1A
-        public float BandTwoMaximum { get; set; } //0x1A-0x1E
-        public float IntraBandFlipProbabilty { get; set; } //0x1E-0x22
-        public float InterBandFlipProbabilty { get; set; } //0x22-0x26
-        public float MinSwitchTime { get; set; } //0x26-0x2A
-        public float MaxSwitchTime { get; set; } //0x2A-0x2E
-        public float InitialValue { get; set; } //0x2E-0x32
+        public byte FluctuatorType { get; set; } //0x0-0x1 //type of fluctuator; probability-based, time-based
+        public byte UnkByte1 { get; set; } //0x1-0x2
+        public MetaHash ParameterHash { get; set; } //0x2-0x6
+        public float UnkFloat00 { get; set; } //0x6-0xA
+        public float UnkFloat01 { get; set; } //0xA-0xE
+        public float UnkFloat02 { get; set; } //0xE-0x12
+        public float UnkFloat03 { get; set; } //0x12-0x16
+        public float UnkFloat04 { get; set; } //0x16-0x1A
+        public float UnkFloat05 { get; set; } //0x1A-0x1E
+        public float UnkFloat06 { get; set; } //0x1E-0x22
+        public float UnkFloat07 { get; set; } //0x22-0x26
+        public float UnkFloat08 { get; set; } //0x26-0x2A
+        public float UnkFloat09 { get; set; } //0x2A-0x2E
+        public float UnkFloat10 { get; set; } //0x2E-0x32
 
         public Dat54FluctuatorSoundData()
         { }
         public Dat54FluctuatorSoundData(BinaryReader br)
         {
-            Mode = br.ReadByte();
-            Destination = br.ReadByte();
-            OutputVariable = br.ReadUInt32();
-            IncreaseRate = br.ReadSingle();
-            DecreaseRate = br.ReadSingle();
-            BandOneMinimum = br.ReadSingle();
-            BandOneMaximum = br.ReadSingle();
-            BandTwoMinimum = br.ReadSingle();
-            BandTwoMaximum = br.ReadSingle();
-            IntraBandFlipProbabilty = br.ReadSingle();
-            InterBandFlipProbabilty = br.ReadSingle();
-            MinSwitchTime = br.ReadSingle();
-            MaxSwitchTime = br.ReadSingle();
-            InitialValue = br.ReadSingle();
+            FluctuatorType = br.ReadByte();
+            UnkByte1 = br.ReadByte();
+            ParameterHash = br.ReadUInt32();
+            UnkFloat00 = br.ReadSingle();
+            UnkFloat01 = br.ReadSingle();
+            UnkFloat02 = br.ReadSingle();
+            UnkFloat03 = br.ReadSingle();
+            UnkFloat04 = br.ReadSingle();
+            UnkFloat05 = br.ReadSingle();
+            UnkFloat06 = br.ReadSingle();
+            UnkFloat07 = br.ReadSingle();
+            UnkFloat08 = br.ReadSingle();
+            UnkFloat09 = br.ReadSingle();
+            UnkFloat10 = br.ReadSingle();
         }
         public void ReadXml(XmlNode node)
         {
-            Mode = (byte)Xml.GetChildIntAttribute(node, "Mode", "value");
-            Destination = (byte)Xml.GetChildIntAttribute(node, "Destination", "value");
-            OutputVariable = XmlRel.GetHash(Xml.GetChildInnerText(node, "OutputVariable"));
-            IncreaseRate = Xml.GetChildFloatAttribute(node, "IncreaseRate", "value");
-            DecreaseRate = Xml.GetChildFloatAttribute(node, "DecreaseRate", "value");
-            BandOneMinimum = Xml.GetChildFloatAttribute(node, "BandOneMinimum", "value");
-            BandOneMaximum = Xml.GetChildFloatAttribute(node, "BandOneMaximum", "value");
-            BandTwoMinimum = Xml.GetChildFloatAttribute(node, "BandTwoMinimum", "value");
-            BandTwoMaximum = Xml.GetChildFloatAttribute(node, "BandTwoMaximum", "value");
-            IntraBandFlipProbabilty = Xml.GetChildFloatAttribute(node, "IntraBandFlipProbabilty", "value");
-            InterBandFlipProbabilty = Xml.GetChildFloatAttribute(node, "InterBandFlipProbabilty", "value");
-            MinSwitchTime = Xml.GetChildFloatAttribute(node, "MinSwitchTime", "value");
-            MaxSwitchTime = Xml.GetChildFloatAttribute(node, "MaxSwitchTime", "value");
-            InitialValue = Xml.GetChildFloatAttribute(node, "InitialValue", "value");
+            FluctuatorType = (byte)Xml.GetChildIntAttribute(node, "FluctuatorType", "value");
+            UnkByte1 = (byte)Xml.GetChildIntAttribute(node, "UnkByte1", "value");
+            ParameterHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "ParameterHash"));
+            UnkFloat00 = Xml.GetChildFloatAttribute(node, "UnkFloat00", "value");
+            UnkFloat01 = Xml.GetChildFloatAttribute(node, "UnkFloat01", "value");
+            UnkFloat02 = Xml.GetChildFloatAttribute(node, "UnkFloat02", "value");
+            UnkFloat03 = Xml.GetChildFloatAttribute(node, "UnkFloat03", "value");
+            UnkFloat04 = Xml.GetChildFloatAttribute(node, "UnkFloat04", "value");
+            UnkFloat05 = Xml.GetChildFloatAttribute(node, "UnkFloat05", "value");
+            UnkFloat06 = Xml.GetChildFloatAttribute(node, "UnkFloat06", "value");
+            UnkFloat07 = Xml.GetChildFloatAttribute(node, "UnkFloat07", "value");
+            UnkFloat08 = Xml.GetChildFloatAttribute(node, "UnkFloat08", "value");
+            UnkFloat09 = Xml.GetChildFloatAttribute(node, "UnkFloat09", "value");
+            UnkFloat10 = Xml.GetChildFloatAttribute(node, "UnkFloat10", "value");
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "Mode", Mode.ToString());
-            RelXml.ValueTag(sb, indent, "Destination", Destination.ToString());
-            RelXml.StringTag(sb, indent, "OutputVariable", RelXml.HashString(OutputVariable));
-            RelXml.ValueTag(sb, indent, "IncreaseRate", FloatUtil.ToString(IncreaseRate));
-            RelXml.ValueTag(sb, indent, "DecreaseRate", FloatUtil.ToString(DecreaseRate));
-            RelXml.ValueTag(sb, indent, "BandOneMinimum", FloatUtil.ToString(BandOneMinimum));
-            RelXml.ValueTag(sb, indent, "BandOneMaximum", FloatUtil.ToString(BandOneMaximum));
-            RelXml.ValueTag(sb, indent, "BandTwoMinimum", FloatUtil.ToString(BandTwoMinimum));
-            RelXml.ValueTag(sb, indent, "BandTwoMaximum", FloatUtil.ToString(BandTwoMaximum));
-            RelXml.ValueTag(sb, indent, "IntraBandFlipProbabilty", FloatUtil.ToString(IntraBandFlipProbabilty));
-            RelXml.ValueTag(sb, indent, "InterBandFlipProbabilty", FloatUtil.ToString(InterBandFlipProbabilty));
-            RelXml.ValueTag(sb, indent, "MinSwitchTime", FloatUtil.ToString(MinSwitchTime));
-            RelXml.ValueTag(sb, indent, "MaxSwitchTime", FloatUtil.ToString(MaxSwitchTime));
-            RelXml.ValueTag(sb, indent, "InitialValue", FloatUtil.ToString(InitialValue));
+            RelXml.ValueTag(sb, indent, "FluctuatorType", FluctuatorType.ToString());
+            RelXml.ValueTag(sb, indent, "UnkByte1", UnkByte1.ToString());
+            RelXml.StringTag(sb, indent, "ParameterHash", RelXml.HashString(ParameterHash));
+            RelXml.ValueTag(sb, indent, "UnkFloat00", FloatUtil.ToString(UnkFloat00));
+            RelXml.ValueTag(sb, indent, "UnkFloat01", FloatUtil.ToString(UnkFloat01));
+            RelXml.ValueTag(sb, indent, "UnkFloat02", FloatUtil.ToString(UnkFloat02));
+            RelXml.ValueTag(sb, indent, "UnkFloat03", FloatUtil.ToString(UnkFloat03));
+            RelXml.ValueTag(sb, indent, "UnkFloat04", FloatUtil.ToString(UnkFloat04));
+            RelXml.ValueTag(sb, indent, "UnkFloat05", FloatUtil.ToString(UnkFloat05));
+            RelXml.ValueTag(sb, indent, "UnkFloat06", FloatUtil.ToString(UnkFloat06));
+            RelXml.ValueTag(sb, indent, "UnkFloat07", FloatUtil.ToString(UnkFloat07));
+            RelXml.ValueTag(sb, indent, "UnkFloat08", FloatUtil.ToString(UnkFloat08));
+            RelXml.ValueTag(sb, indent, "UnkFloat09", FloatUtil.ToString(UnkFloat09));
+            RelXml.ValueTag(sb, indent, "UnkFloat10", FloatUtil.ToString(UnkFloat10));
         }
         public void Write(BinaryWriter bw)
         {
-            bw.Write(Mode);
-            bw.Write(Destination);
-            bw.Write(OutputVariable);
-            bw.Write(IncreaseRate);
-            bw.Write(DecreaseRate);
-            bw.Write(BandOneMinimum);
-            bw.Write(BandOneMaximum);
-            bw.Write(BandTwoMinimum);
-            bw.Write(BandTwoMaximum);
-            bw.Write(IntraBandFlipProbabilty);
-            bw.Write(InterBandFlipProbabilty);
-            bw.Write(MinSwitchTime);
-            bw.Write(MaxSwitchTime);
-            bw.Write(InitialValue);
+            bw.Write(FluctuatorType);
+            bw.Write(UnkByte1);
+            bw.Write(ParameterHash);
+            bw.Write(UnkFloat00);
+            bw.Write(UnkFloat01);
+            bw.Write(UnkFloat02);
+            bw.Write(UnkFloat03);
+            bw.Write(UnkFloat04);
+            bw.Write(UnkFloat05);
+            bw.Write(UnkFloat06);
+            bw.Write(UnkFloat07);
+            bw.Write(UnkFloat08);
+            bw.Write(UnkFloat09);
+            bw.Write(UnkFloat10);
         }
         public override string ToString()
         {
-            return OutputVariable.ToString();
+            return ParameterHash.ToString();
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54AutomationSound : Dat54Sound
     {
         public MetaHash FallBackSound { get; set; }  //fallback sound
@@ -4670,7 +4666,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54AutomationSoundVariableOutput : IMetaXmlItem
     {
         public int Channel { get; set; } //0x0-0x1
@@ -4704,7 +4700,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54ExternalStreamSound : Dat54Sound
     {
         public MetaHash EnvironmentSound1 { get; set; }
@@ -4767,7 +4763,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SoundSet : Dat54Sound
     {
         public int SoundSetsCount { get; set; }
@@ -4822,7 +4818,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SoundSetItem : IMetaXmlItem
     {
         public MetaHash ScriptName { get; set; }
@@ -4856,7 +4852,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54AutomationNoteMapSound : Dat54Sound
     {
         public byte RangesCount { get; set; }
@@ -4906,7 +4902,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54AutomationNoteMapSoundData : IMetaXmlItem
     {
         public byte FirstNoteID { get; set; }
@@ -4950,7 +4946,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SoundSetList : Dat54Sound
     {
         public uint SoundSetsCount { get; set; }
@@ -5002,7 +4998,7 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TC(typeof(EXP))] 
+    [TC(typeof(EXP))]
     public class Dat54SoundHashList : Dat54Sound
     {
         public ushort UnkShort { get; set; }
@@ -5051,6 +5047,7 @@ namespace CodeWalker.GameFiles
             return SoundHashes;
         }
     }
+
 
 
     #endregion
