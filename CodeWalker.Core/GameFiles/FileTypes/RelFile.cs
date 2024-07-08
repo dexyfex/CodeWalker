@@ -3384,7 +3384,7 @@ namespace CodeWalker.GameFiles
         public MetaHash SynthSound { get; set; } //0x0-0x4
         public MetaHash SynthPreset { get; set; } //0x4-0x8
         public float PlaybackTimeLimit { get; set; } //0x8-0xC
-        public int UnkInt { get; set; } //0xC-0x10
+        public int VirtualisationMode { get; set; } //0xC-0x10
         public int TrackCount { get; set; }
         public int ExposedVariablesCount { get; set; }
         public Dat54ModularSynthSoundVariable[] ExposedVariables { get; set; } //0x28-..
@@ -3396,7 +3396,7 @@ namespace CodeWalker.GameFiles
             SynthSound = br.ReadUInt32(); //0x0-0x4
             SynthPreset = br.ReadUInt32(); //0x4-0x8
             PlaybackTimeLimit = br.ReadSingle(); //0x8-0xC
-            UnkInt = br.ReadInt32(); //0xC-0x10
+            VirtualisationMode = br.ReadInt32(); //0xC-0x10
             TrackCount = br.ReadInt32(); //0x10-0x14
             ChildSoundsHashes = new MetaHash[4];
             for (int i = 0; i < 4; i++)
@@ -3416,7 +3416,7 @@ namespace CodeWalker.GameFiles
             SynthSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SynthSound"));
             SynthPreset = XmlRel.GetHash(Xml.GetChildInnerText(node, "SynthPreset"));
             PlaybackTimeLimit = Xml.GetChildFloatAttribute(node, "PlaybackTimeLimit", "value");
-            UnkInt = Xml.GetChildIntAttribute(node, "UnkInt", "value");
+            VirtualisationMode = Xml.GetChildIntAttribute(node, "VirtualisationMode", "value");
             TrackCount = Xml.GetChildIntAttribute(node, "TrackCount", "value");
             ReadChildSoundsXml(node, "EnvironmentSounds");
             ExposedVariables = XmlRel.ReadItemArray<Dat54ModularSynthSoundVariable>(node, "ExposedVariables");
@@ -3428,7 +3428,7 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "SynthSound", RelXml.HashString(SynthSound));
             RelXml.StringTag(sb, indent, "SynthPreset", RelXml.HashString(SynthPreset));
             RelXml.ValueTag(sb, indent, "PlaybackTimeLimit", FloatUtil.ToString(PlaybackTimeLimit));
-            RelXml.ValueTag(sb, indent, "UnkInt", UnkInt.ToString());
+            RelXml.ValueTag(sb, indent, "VirtualisationMode", VirtualisationMode.ToString());
             RelXml.ValueTag(sb, indent, "TrackCount", TrackCount.ToString());
             WriteChildSoundsXml(sb, indent, "EnvironmentSounds");
             RelXml.WriteItemArray(sb, ExposedVariables, indent, "ExposedVariables");
@@ -3439,7 +3439,7 @@ namespace CodeWalker.GameFiles
             bw.Write(SynthSound); //0x0-0x4
             bw.Write(SynthPreset); //0x4-0x8
             bw.Write(PlaybackTimeLimit); //0x8-0xC
-            bw.Write(UnkInt); //0xC-0x10
+            bw.Write(VirtualisationMode); //0xC-0x10
             bw.Write(TrackCount); //0x10-0x14
             for (int i = 0; i < 4; i++)
             {
@@ -4492,94 +4492,94 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class Dat54FluctuatorSoundData : IMetaXmlItem
     {
-        public byte FluctuatorType { get; set; } //0x0-0x1 //type of fluctuator; probability-based, time-based
-        public byte UnkByte1 { get; set; } //0x1-0x2
-        public MetaHash ParameterHash { get; set; } //0x2-0x6
-        public float UnkFloat00 { get; set; } //0x6-0xA
-        public float UnkFloat01 { get; set; } //0xA-0xE
-        public float UnkFloat02 { get; set; } //0xE-0x12
-        public float UnkFloat03 { get; set; } //0x12-0x16
-        public float UnkFloat04 { get; set; } //0x16-0x1A
-        public float UnkFloat05 { get; set; } //0x1A-0x1E
-        public float UnkFloat06 { get; set; } //0x1E-0x22
-        public float UnkFloat07 { get; set; } //0x22-0x26
-        public float UnkFloat08 { get; set; } //0x26-0x2A
-        public float UnkFloat09 { get; set; } //0x2A-0x2E
-        public float UnkFloat10 { get; set; } //0x2E-0x32
+        public byte Mode { get; set; } //0x0-0x1 //type of fluctuator; probability-based, time-based
+        public byte Destination { get; set; } //0x1-0x2
+        public MetaHash OutputVariable { get; set; } //0x2-0x6
+        public float IncreaseRate { get; set; } //0x6-0xA
+        public float DecreaseRate { get; set; } //0xA-0xE
+        public float BandOneMinimum { get; set; } //0xE-0x12
+        public float BandOneMaximum { get; set; } //0x12-0x16
+        public float BandTwoMinimum { get; set; } //0x16-0x1A
+        public float BandTwoMaximum { get; set; } //0x1A-0x1E
+        public float IntraBandFlipProbabilty { get; set; } //0x1E-0x22
+        public float InterBandFlipProbabilty { get; set; } //0x22-0x26
+        public float MinSwitchTime { get; set; } //0x26-0x2A
+        public float MaxSwitchTime { get; set; } //0x2A-0x2E
+        public float InitialValue { get; set; } //0x2E-0x32
 
         public Dat54FluctuatorSoundData()
         { }
         public Dat54FluctuatorSoundData(BinaryReader br)
         {
-            FluctuatorType = br.ReadByte();
-            UnkByte1 = br.ReadByte();
-            ParameterHash = br.ReadUInt32();
-            UnkFloat00 = br.ReadSingle();
-            UnkFloat01 = br.ReadSingle();
-            UnkFloat02 = br.ReadSingle();
-            UnkFloat03 = br.ReadSingle();
-            UnkFloat04 = br.ReadSingle();
-            UnkFloat05 = br.ReadSingle();
-            UnkFloat06 = br.ReadSingle();
-            UnkFloat07 = br.ReadSingle();
-            UnkFloat08 = br.ReadSingle();
-            UnkFloat09 = br.ReadSingle();
-            UnkFloat10 = br.ReadSingle();
+            Mode = br.ReadByte();
+            Destination = br.ReadByte();
+            OutputVariable = br.ReadUInt32();
+            IncreaseRate = br.ReadSingle();
+            DecreaseRate = br.ReadSingle();
+            BandOneMinimum = br.ReadSingle();
+            BandOneMaximum = br.ReadSingle();
+            BandTwoMinimum = br.ReadSingle();
+            BandTwoMaximum = br.ReadSingle();
+            IntraBandFlipProbabilty = br.ReadSingle();
+            InterBandFlipProbabilty = br.ReadSingle();
+            MinSwitchTime = br.ReadSingle();
+            MaxSwitchTime = br.ReadSingle();
+            InitialValue = br.ReadSingle();
         }
         public void ReadXml(XmlNode node)
         {
-            FluctuatorType = (byte)Xml.GetChildIntAttribute(node, "FluctuatorType", "value");
-            UnkByte1 = (byte)Xml.GetChildIntAttribute(node, "UnkByte1", "value");
-            ParameterHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "ParameterHash"));
-            UnkFloat00 = Xml.GetChildFloatAttribute(node, "UnkFloat00", "value");
-            UnkFloat01 = Xml.GetChildFloatAttribute(node, "UnkFloat01", "value");
-            UnkFloat02 = Xml.GetChildFloatAttribute(node, "UnkFloat02", "value");
-            UnkFloat03 = Xml.GetChildFloatAttribute(node, "UnkFloat03", "value");
-            UnkFloat04 = Xml.GetChildFloatAttribute(node, "UnkFloat04", "value");
-            UnkFloat05 = Xml.GetChildFloatAttribute(node, "UnkFloat05", "value");
-            UnkFloat06 = Xml.GetChildFloatAttribute(node, "UnkFloat06", "value");
-            UnkFloat07 = Xml.GetChildFloatAttribute(node, "UnkFloat07", "value");
-            UnkFloat08 = Xml.GetChildFloatAttribute(node, "UnkFloat08", "value");
-            UnkFloat09 = Xml.GetChildFloatAttribute(node, "UnkFloat09", "value");
-            UnkFloat10 = Xml.GetChildFloatAttribute(node, "UnkFloat10", "value");
+            Mode = (byte)Xml.GetChildIntAttribute(node, "Mode", "value");
+            Destination = (byte)Xml.GetChildIntAttribute(node, "Destination", "value");
+            OutputVariable = XmlRel.GetHash(Xml.GetChildInnerText(node, "OutputVariable"));
+            IncreaseRate = Xml.GetChildFloatAttribute(node, "IncreaseRate", "value");
+            DecreaseRate = Xml.GetChildFloatAttribute(node, "DecreaseRate", "value");
+            BandOneMinimum = Xml.GetChildFloatAttribute(node, "BandOneMinimum", "value");
+            BandOneMaximum = Xml.GetChildFloatAttribute(node, "BandOneMaximum", "value");
+            BandTwoMinimum = Xml.GetChildFloatAttribute(node, "BandTwoMinimum", "value");
+            BandTwoMaximum = Xml.GetChildFloatAttribute(node, "BandTwoMaximum", "value");
+            IntraBandFlipProbabilty = Xml.GetChildFloatAttribute(node, "IntraBandFlipProbabilty", "value");
+            InterBandFlipProbabilty = Xml.GetChildFloatAttribute(node, "InterBandFlipProbabilty", "value");
+            MinSwitchTime = Xml.GetChildFloatAttribute(node, "MinSwitchTime", "value");
+            MaxSwitchTime = Xml.GetChildFloatAttribute(node, "MaxSwitchTime", "value");
+            InitialValue = Xml.GetChildFloatAttribute(node, "InitialValue", "value");
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-            RelXml.ValueTag(sb, indent, "FluctuatorType", FluctuatorType.ToString());
-            RelXml.ValueTag(sb, indent, "UnkByte1", UnkByte1.ToString());
-            RelXml.StringTag(sb, indent, "ParameterHash", RelXml.HashString(ParameterHash));
-            RelXml.ValueTag(sb, indent, "UnkFloat00", FloatUtil.ToString(UnkFloat00));
-            RelXml.ValueTag(sb, indent, "UnkFloat01", FloatUtil.ToString(UnkFloat01));
-            RelXml.ValueTag(sb, indent, "UnkFloat02", FloatUtil.ToString(UnkFloat02));
-            RelXml.ValueTag(sb, indent, "UnkFloat03", FloatUtil.ToString(UnkFloat03));
-            RelXml.ValueTag(sb, indent, "UnkFloat04", FloatUtil.ToString(UnkFloat04));
-            RelXml.ValueTag(sb, indent, "UnkFloat05", FloatUtil.ToString(UnkFloat05));
-            RelXml.ValueTag(sb, indent, "UnkFloat06", FloatUtil.ToString(UnkFloat06));
-            RelXml.ValueTag(sb, indent, "UnkFloat07", FloatUtil.ToString(UnkFloat07));
-            RelXml.ValueTag(sb, indent, "UnkFloat08", FloatUtil.ToString(UnkFloat08));
-            RelXml.ValueTag(sb, indent, "UnkFloat09", FloatUtil.ToString(UnkFloat09));
-            RelXml.ValueTag(sb, indent, "UnkFloat10", FloatUtil.ToString(UnkFloat10));
+            RelXml.ValueTag(sb, indent, "Mode", Mode.ToString());
+            RelXml.ValueTag(sb, indent, "Destination", Destination.ToString());
+            RelXml.StringTag(sb, indent, "OutputVariable", RelXml.HashString(OutputVariable));
+            RelXml.ValueTag(sb, indent, "IncreaseRate", FloatUtil.ToString(IncreaseRate));
+            RelXml.ValueTag(sb, indent, "DecreaseRate", FloatUtil.ToString(DecreaseRate));
+            RelXml.ValueTag(sb, indent, "BandOneMinimum", FloatUtil.ToString(BandOneMinimum));
+            RelXml.ValueTag(sb, indent, "BandOneMaximum", FloatUtil.ToString(BandOneMaximum));
+            RelXml.ValueTag(sb, indent, "BandTwoMinimum", FloatUtil.ToString(BandTwoMinimum));
+            RelXml.ValueTag(sb, indent, "BandTwoMaximum", FloatUtil.ToString(BandTwoMaximum));
+            RelXml.ValueTag(sb, indent, "IntraBandFlipProbabilty", FloatUtil.ToString(IntraBandFlipProbabilty));
+            RelXml.ValueTag(sb, indent, "InterBandFlipProbabilty", FloatUtil.ToString(InterBandFlipProbabilty));
+            RelXml.ValueTag(sb, indent, "MinSwitchTime", FloatUtil.ToString(MinSwitchTime));
+            RelXml.ValueTag(sb, indent, "MaxSwitchTime", FloatUtil.ToString(MaxSwitchTime));
+            RelXml.ValueTag(sb, indent, "InitialValue", FloatUtil.ToString(InitialValue));
         }
         public void Write(BinaryWriter bw)
         {
-            bw.Write(FluctuatorType);
-            bw.Write(UnkByte1);
-            bw.Write(ParameterHash);
-            bw.Write(UnkFloat00);
-            bw.Write(UnkFloat01);
-            bw.Write(UnkFloat02);
-            bw.Write(UnkFloat03);
-            bw.Write(UnkFloat04);
-            bw.Write(UnkFloat05);
-            bw.Write(UnkFloat06);
-            bw.Write(UnkFloat07);
-            bw.Write(UnkFloat08);
-            bw.Write(UnkFloat09);
-            bw.Write(UnkFloat10);
+            bw.Write(Mode);
+            bw.Write(Destination);
+            bw.Write(OutputVariable);
+            bw.Write(IncreaseRate);
+            bw.Write(DecreaseRate);
+            bw.Write(BandOneMinimum);
+            bw.Write(BandOneMaximum);
+            bw.Write(BandTwoMinimum);
+            bw.Write(BandTwoMaximum);
+            bw.Write(IntraBandFlipProbabilty);
+            bw.Write(InterBandFlipProbabilty);
+            bw.Write(MinSwitchTime);
+            bw.Write(MaxSwitchTime);
+            bw.Write(InitialValue);
         }
         public override string ToString()
         {
-            return ParameterHash.ToString();
+            return OutputVariable.ToString();
         }
     }
 
