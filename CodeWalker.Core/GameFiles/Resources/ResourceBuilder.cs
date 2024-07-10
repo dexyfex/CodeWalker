@@ -139,7 +139,7 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags)
+        public static void AssignPositions(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags, uint maxPageCount)
         {
             if ((blocks.Count > 0) && (blocks[0] is Meta))
             {
@@ -256,7 +256,7 @@ namespace CodeWalker.GameFiles
 
                 pageFlags = new RpfResourcePageFlags(pageCounts, baseShift);
 
-                if ((pageCount == pageFlags.Count) && (pageFlags.Size >= currentPosition)) //make sure page counts fit in the flags value
+                if ((pageCount == pageFlags.Count) && (pageFlags.Size >= currentPosition) && (pageCount <= maxPageCount)) //make sure page counts fit in the flags value
                 {
                     break;
                 }
@@ -338,10 +338,10 @@ namespace CodeWalker.GameFiles
             GetBlocks(fileBase, out systemBlocks, out graphicBlocks);
             
             RpfResourcePageFlags systemPageFlags;
-            AssignPositions(systemBlocks, 0x50000000, out systemPageFlags);
+            AssignPositions(systemBlocks, 0x50000000, out systemPageFlags, 128);
             
             RpfResourcePageFlags graphicsPageFlags;
-            AssignPositions(graphicBlocks, 0x60000000, out graphicsPageFlags);
+            AssignPositions(graphicBlocks, 0x60000000, out graphicsPageFlags, 128 - systemPageFlags.Count);
 
 
             fileBase.FilePagesInfo.SystemPagesCount = (byte)systemPageFlags.Count;
