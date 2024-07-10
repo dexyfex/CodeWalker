@@ -1759,49 +1759,35 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static T[] GetTypedDataArray<T>(Meta meta, MetaName name) where T : struct
+        public static T[] GetTypedPointerArray<T>(Meta meta, MetaName name, MetaPOINTER[] arr) where T : struct
         {
-            if ((meta == null) || (meta.DataBlocks == null)) return null;
-
+            //this is really a bad hack just for ymap entities so as not to completely rewrite all of the YmapFile stuff.
+            //there could be subclasses in the array, which the returned struct array can't handle.
+            //so, this will return a filtered list with only types matching the given name parameter.
+            //NOTE: this is very similar to ConvertDataArray(Meta, MetaName, Array_StructurePointer)
+            if (arr == null) return null;//use GetPointerArray for this parameter
             var datablocks = meta.DataBlocks.Data;
-
-            MetaDataBlock startblock = null;
-            int startblockind = -1;
-            for (int i = 0; i < datablocks.Count; i++)
+            if (datablocks == null) return null;
+            int tsize = Marshal.SizeOf(typeof(T));
+            var list = new List<T>();
+            for (int i = 0; i < arr.Length; i++)
             {
-                var block = datablocks[i];
-                if (block.StructureNameHash == name)
-                {
-                    startblock = block;
-                    startblockind = i;
-                    break;
-                }
+                ref var ptr = ref arr[i];
+                var blockind = ptr.BlockIndex;
+                if (blockind < 0) continue;
+                if (blockind >= datablocks.Count) continue;
+                var block = datablocks[blockind];
+                if (block == null) continue;
+                if (block.Data == null) continue;
+                if (block.StructureNameHash != name) continue;//filter only matching types
+                var offset = ptr.Offset;
+                if (offset < 0) continue;
+                if (offset + tsize > block.Data.Length) continue;
+                var item = ConvertData<T>(block.Data, offset);
+                list.Add(item);
             }
-            if (startblock == null)
-            {
-                return null; //couldn't find the data.
-            }
-
-            int count = 0; //try figure out how many items there are, from the block size(s).
-            int itemsize = Marshal.SizeOf(typeof(T));
-            var currentblock = startblock;
-            int currentblockind = startblockind;
-            while (currentblock != null)
-            {
-                int blockitems = currentblock.DataLength / itemsize;
-                count += blockitems;
-                currentblockind++;
-                if (currentblockind >= datablocks.Count) break; //last block, can't go any further
-                currentblock = datablocks[currentblockind];
-                if (currentblock.StructureNameHash != name) break; //not the right block type, can't go further
-            }
-
-            if (count <= 0)
-            {
-                return null; //didn't find anything...
-            }
-
-            return ConvertDataArray<T>(meta, name, (uint)startblockind + 1, (uint)count);
+            if (list.Count == 0) return null;
+            return list.ToArray();
         }
         public static T GetTypedData<T>(Meta meta, MetaName name) where T : struct
         {

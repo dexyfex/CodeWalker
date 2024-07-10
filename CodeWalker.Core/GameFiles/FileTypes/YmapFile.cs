@@ -259,14 +259,13 @@ namespace CodeWalker.GameFiles
 
         private void EnsureEntities(Meta Meta)
         {
-            //CMloInstanceDefs = MetaTypes.ConvertDataArray<CMloInstanceDef>(Meta, MetaName.CMloInstanceDef, CMapData.entities);
-            CMloInstanceDefs = MetaTypes.GetTypedDataArray<CMloInstanceDef>(Meta, MetaName.CMloInstanceDef);
+            var eptrs = MetaTypes.GetPointerArray(Meta, _CMapData.entities);
+
+            CMloInstanceDefs = MetaTypes.GetTypedPointerArray<CMloInstanceDef>(Meta, MetaName.CMloInstanceDef, eptrs);
             if (CMloInstanceDefs != null)
             { }
 
-            var eptrs = MetaTypes.GetPointerArray(Meta, _CMapData.entities);
-            //CEntityDefs = MetaTypes.ConvertDataArray<CEntityDef>(Meta, MetaName.CEntityDef, CMapData.entities);
-            CEntityDefs = MetaTypes.GetTypedDataArray<CEntityDef>(Meta, MetaName.CEntityDef);
+            CEntityDefs = MetaTypes.GetTypedPointerArray<CEntityDef>(Meta, MetaName.CEntityDef, eptrs);
             if (CEntityDefs != null)
             { }
 
