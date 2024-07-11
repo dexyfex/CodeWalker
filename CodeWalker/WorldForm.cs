@@ -314,7 +314,7 @@ namespace CodeWalker
 
         private MapIcon AddIcon(string name, string filename, int texw, int texh, float centerx, float centery, float scale)
         {
-            string filepath = "icons\\" + filename;
+            string filepath = PathUtil.GetFilePath("icons\\" + filename);
             try
             {
                 MapIcon mi = new MapIcon(name, filepath, texw, texh, centerx, centery, scale);

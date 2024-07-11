@@ -77,9 +77,9 @@ namespace CodeWalker.Rendering
 
         public TreesLodShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\TreesLodVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\TreesLodPS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\TreesLodPS_Deferred.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\TreesLodVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\TreesLodPS.cso");
+            byte[] psdefbytes = PathUtil.ReadAllBytes("Shaders\\TreesLodPS_Deferred.cso");
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);

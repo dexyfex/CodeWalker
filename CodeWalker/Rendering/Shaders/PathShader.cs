@@ -46,11 +46,11 @@ namespace CodeWalker.Rendering
 
         public PathShader(Device device)
         {
-            byte[] boxvsbytes = File.ReadAllBytes("Shaders\\PathBoxVS.cso");
-            byte[] boxpsbytes = File.ReadAllBytes("Shaders\\PathBoxPS.cso");
-            byte[] dynvsbytes = File.ReadAllBytes("Shaders\\PathDynVS.cso");
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\PathVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\PathPS.cso");
+            byte[] boxvsbytes = PathUtil.ReadAllBytes("Shaders\\PathBoxVS.cso");
+            byte[] boxpsbytes = PathUtil.ReadAllBytes("Shaders\\PathBoxPS.cso");
+            byte[] dynvsbytes = PathUtil.ReadAllBytes("Shaders\\PathDynVS.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\PathVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\PathPS.cso");
 
 
             boxvs = new VertexShader(device, boxvsbytes);

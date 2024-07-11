@@ -184,34 +184,34 @@ namespace CodeWalker.Rendering
 
         public BasicShader(Device device)
         {
-            byte[] vspnctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCT.cso");
-            byte[] vspncttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTT.cso");
-            byte[] vspnctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTTT.cso");
-            byte[] vspncctbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCT.cso");
-            byte[] vspnccttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTT.cso");
-            byte[] vspncctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTT.cso");
-            byte[] vspnctxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTX.cso");
-            byte[] vspncctxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTX.cso");
-            byte[] vspncttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTTX.cso");
-            byte[] vspnccttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTX.cso");
-            byte[] vspnctttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCTTTX.cso");
-            byte[] vspncctttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PNCCTTTX.cso");
+            byte[] vspnctbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCT.cso");
+            byte[] vspncttbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCTT.cso");
+            byte[] vspnctttbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCTTT.cso");
+            byte[] vspncctbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCCT.cso");
+            byte[] vspnccttbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCCTT.cso");
+            byte[] vspncctttbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCCTTT.cso");
+            byte[] vspnctxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCTX.cso");
+            byte[] vspncctxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCCTX.cso");
+            byte[] vspncttxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCTTX.cso");
+            byte[] vspnccttxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCCTTX.cso");
+            byte[] vspnctttxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCTTTX.cso");
+            byte[] vspncctttxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PNCCTTTX.cso");
 
-            byte[] vspbbnctbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCT.cso");
-            byte[] vspbbnctxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTX.cso");
-            byte[] vspbbncttbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTT.cso");
-            byte[] vspbbnctttbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTTT.cso");
-            byte[] vspbbncctbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCT.cso");
-            byte[] vspbbncctxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCTX.cso");
-            byte[] vspbbnccttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCCTTX.cso");
-            byte[] vspbbncttxbytes = File.ReadAllBytes("Shaders\\BasicVS_PBBNCTTX.cso");
+            byte[] vspbbnctbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCT.cso");
+            byte[] vspbbnctxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCTX.cso");
+            byte[] vspbbncttbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCTT.cso");
+            byte[] vspbbnctttbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCTTT.cso");
+            byte[] vspbbncctbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCCT.cso");
+            byte[] vspbbncctxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCCTX.cso");
+            byte[] vspbbnccttxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCCTTX.cso");
+            byte[] vspbbncttxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_PBBNCTTX.cso");
 
-            byte[] vsboxbytes = File.ReadAllBytes("Shaders\\BasicVS_Box.cso");
-            byte[] vsspherebytes = File.ReadAllBytes("Shaders\\BasicVS_Sphere.cso");
-            byte[] vscapsulebytes = File.ReadAllBytes("Shaders\\BasicVS_Capsule.cso");
-            byte[] vscylinderbytes = File.ReadAllBytes("Shaders\\BasicVS_Cylinder.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\BasicPS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\BasicPS_Deferred.cso");
+            byte[] vsboxbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_Box.cso");
+            byte[] vsspherebytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_Sphere.cso");
+            byte[] vscapsulebytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_Capsule.cso");
+            byte[] vscylinderbytes = PathUtil.ReadAllBytes("Shaders\\BasicVS_Cylinder.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\BasicPS.cso");
+            byte[] psdefbytes = PathUtil.ReadAllBytes("Shaders\\BasicPS_Deferred.cso");
 
             basicvspnct = new VertexShader(device, vspnctbytes);
             basicvspnctt = new VertexShader(device, vspncttbytes);

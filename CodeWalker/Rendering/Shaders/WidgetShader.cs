@@ -39,8 +39,8 @@ namespace CodeWalker.Rendering
 
         public WidgetShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\WidgetVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\WidgetPS.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\WidgetVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\WidgetPS.cso");
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);

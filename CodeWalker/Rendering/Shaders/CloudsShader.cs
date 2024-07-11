@@ -106,8 +106,8 @@ namespace CodeWalker.Rendering
 
         public CloudsShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\CloudsVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\CloudsPS.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\CloudsVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\CloudsPS.cso");
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);

@@ -81,9 +81,9 @@ namespace CodeWalker.Rendering
 
         public ShadowShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\ShadowVS.cso");
-            byte[] vssbytes = File.ReadAllBytes("Shaders\\ShadowVS_Skin.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\ShadowPS.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\ShadowVS.cso");
+            byte[] vssbytes = PathUtil.ReadAllBytes("Shaders\\ShadowVS_Skin.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\ShadowPS.cso");
 
             shadowvs = new VertexShader(device, vsbytes);
             shadowvs_skin = new VertexShader(device, vssbytes);

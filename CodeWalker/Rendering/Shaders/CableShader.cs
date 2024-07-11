@@ -88,9 +88,9 @@ namespace CodeWalker.Rendering
 
         public CableShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\CableVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\CablePS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\CablePS_Deferred.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\CableVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\CablePS.cso");
+            byte[] psdefbytes = PathUtil.ReadAllBytes("Shaders\\CablePS_Deferred.cso");
 
             vs = new VertexShader(device, vsbytes);
             ps = new PixelShader(device, psbytes);

@@ -186,14 +186,14 @@ namespace CodeWalker.Rendering
         {
             var device = dxman.device;
 
-            byte[] bReduceTo1DCS = File.ReadAllBytes("Shaders\\PPReduceTo1DCS.cso");
-            byte[] bReduceTo0DCS = File.ReadAllBytes("Shaders\\PPReduceTo0DCS.cso");
-            byte[] bLumBlendCS = File.ReadAllBytes("Shaders\\PPLumBlendCS.cso");
-            byte[] bBloomFilterBPHCS = File.ReadAllBytes("Shaders\\PPBloomFilterBPHCS.cso");
-            byte[] bBloomFilterVCS = File.ReadAllBytes("Shaders\\PPBloomFilterVCS.cso");
-            byte[] bCopyPixelsPS = File.ReadAllBytes("Shaders\\PPCopyPixelsPS.cso");
-            byte[] bFinalPassVS = File.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
-            byte[] bFinalPassPS = File.ReadAllBytes("Shaders\\PPFinalPassPS.cso");
+            byte[] bReduceTo1DCS = PathUtil.ReadAllBytes("Shaders\\PPReduceTo1DCS.cso");
+            byte[] bReduceTo0DCS = PathUtil.ReadAllBytes("Shaders\\PPReduceTo0DCS.cso");
+            byte[] bLumBlendCS = PathUtil.ReadAllBytes("Shaders\\PPLumBlendCS.cso");
+            byte[] bBloomFilterBPHCS = PathUtil.ReadAllBytes("Shaders\\PPBloomFilterBPHCS.cso");
+            byte[] bBloomFilterVCS = PathUtil.ReadAllBytes("Shaders\\PPBloomFilterVCS.cso");
+            byte[] bCopyPixelsPS = PathUtil.ReadAllBytes("Shaders\\PPCopyPixelsPS.cso");
+            byte[] bFinalPassVS = PathUtil.ReadAllBytes("Shaders\\PPFinalPassVS.cso");
+            byte[] bFinalPassPS = PathUtil.ReadAllBytes("Shaders\\PPFinalPassPS.cso");
 
             ReduceTo1DCS = new ComputeShader(device, bReduceTo1DCS);
             ReduceTo0DCS = new ComputeShader(device, bReduceTo0DCS);

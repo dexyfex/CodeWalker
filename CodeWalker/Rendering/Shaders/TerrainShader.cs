@@ -101,15 +101,15 @@ namespace CodeWalker.Rendering
 
         public TerrainShader(Device device)
         {
-            byte[] vspncct = File.ReadAllBytes("Shaders\\TerrainVS_PNCCT.cso");
-            byte[] vspncctt = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTT.cso");
-            byte[] vspnccttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTTX.cso");
-            byte[] vspncctttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTTTX.cso");
-            byte[] vspncctx = File.ReadAllBytes("Shaders\\TerrainVS_PNCCTX.cso");
-            byte[] vspnctttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTTX.cso");
-            byte[] vspncttx = File.ReadAllBytes("Shaders\\TerrainVS_PNCTTX.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\TerrainPS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\TerrainPS_Deferred.cso");
+            byte[] vspncct = PathUtil.ReadAllBytes("Shaders\\TerrainVS_PNCCT.cso");
+            byte[] vspncctt = PathUtil.ReadAllBytes("Shaders\\TerrainVS_PNCCTT.cso");
+            byte[] vspnccttx = PathUtil.ReadAllBytes("Shaders\\TerrainVS_PNCCTTX.cso");
+            byte[] vspncctttx = PathUtil.ReadAllBytes("Shaders\\TerrainVS_PNCCTTTX.cso");
+            byte[] vspncctx = PathUtil.ReadAllBytes("Shaders\\TerrainVS_PNCCTX.cso");
+            byte[] vspnctttx = PathUtil.ReadAllBytes("Shaders\\TerrainVS_PNCTTTX.cso");
+            byte[] vspncttx = PathUtil.ReadAllBytes("Shaders\\TerrainVS_PNCTTX.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\TerrainPS.cso");
+            byte[] psdefbytes = PathUtil.ReadAllBytes("Shaders\\TerrainPS_Deferred.cso");
 
             pncctvs = new VertexShader(device, vspncct);
             pnccttvs = new VertexShader(device, vspncctt);

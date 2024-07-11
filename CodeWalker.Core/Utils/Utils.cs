@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +14,29 @@ using Color = SharpDX.Color;
 
 namespace CodeWalker
 {
+
+
+    public static class PathUtil
+    {
+        public static string AppPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        public static string WorkPath = Directory.GetCurrentDirectory();
+
+        public static string GetFilePath(string appRelativePath)
+        {
+            var path = Path.Combine(AppPath, appRelativePath);
+            if (File.Exists(path)) return path;
+            path = Path.Combine(WorkPath, appRelativePath);
+            return path;
+        }
+
+        public static byte[] ReadAllBytes(string appRelativePath)
+        {
+            var path = GetFilePath(appRelativePath);
+            return File.ReadAllBytes(path);
+        }
+
+    }
+
 
 
     public static class TextUtil

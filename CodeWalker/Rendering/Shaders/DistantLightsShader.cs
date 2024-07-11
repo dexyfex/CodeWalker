@@ -41,8 +41,8 @@ namespace CodeWalker.Rendering
 
         public DistantLightsShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\DistantLightsVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\DistantLightsPS.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\DistantLightsVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\DistantLightsPS.cso");
 
             lightsvs = new VertexShader(device, vsbytes);
             lightsps = new PixelShader(device, psbytes);

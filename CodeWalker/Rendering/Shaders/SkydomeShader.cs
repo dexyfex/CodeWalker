@@ -131,12 +131,12 @@ namespace CodeWalker.Rendering
 
         public SkydomeShader(Device device)
         {
-            byte[] skyvsbytes = File.ReadAllBytes("Shaders\\SkydomeVS.cso");
-            byte[] skypsbytes = File.ReadAllBytes("Shaders\\SkydomePS.cso");
-            byte[] sunvsbytes = File.ReadAllBytes("Shaders\\SkySunVS.cso");
-            byte[] sunpsbytes = File.ReadAllBytes("Shaders\\SkySunPS.cso");
-            byte[] moonvsbytes = File.ReadAllBytes("Shaders\\SkyMoonVS.cso");
-            byte[] moonpsbytes = File.ReadAllBytes("Shaders\\SkyMoonPS.cso");
+            byte[] skyvsbytes = PathUtil.ReadAllBytes("Shaders\\SkydomeVS.cso");
+            byte[] skypsbytes = PathUtil.ReadAllBytes("Shaders\\SkydomePS.cso");
+            byte[] sunvsbytes = PathUtil.ReadAllBytes("Shaders\\SkySunVS.cso");
+            byte[] sunpsbytes = PathUtil.ReadAllBytes("Shaders\\SkySunPS.cso");
+            byte[] moonvsbytes = PathUtil.ReadAllBytes("Shaders\\SkyMoonVS.cso");
+            byte[] moonpsbytes = PathUtil.ReadAllBytes("Shaders\\SkyMoonPS.cso");
 
             skyvs = new VertexShader(device, skyvsbytes);
             skyps = new PixelShader(device, skypsbytes);

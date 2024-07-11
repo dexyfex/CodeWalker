@@ -121,12 +121,12 @@ namespace CodeWalker.Rendering
 
         public WaterShader(Device device)
         {
-            byte[] vsptbytes = File.ReadAllBytes("Shaders\\WaterVS_PT.cso");
-            byte[] vspctbytes = File.ReadAllBytes("Shaders\\WaterVS_PCT.cso");
-            byte[] vspnctbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCT.cso");
-            byte[] vspnctxbytes = File.ReadAllBytes("Shaders\\WaterVS_PNCTX.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\WaterPS.cso");
-            byte[] psdefbytes = File.ReadAllBytes("Shaders\\WaterPS_Deferred.cso");
+            byte[] vsptbytes = PathUtil.ReadAllBytes("Shaders\\WaterVS_PT.cso");
+            byte[] vspctbytes = PathUtil.ReadAllBytes("Shaders\\WaterVS_PCT.cso");
+            byte[] vspnctbytes = PathUtil.ReadAllBytes("Shaders\\WaterVS_PNCT.cso");
+            byte[] vspnctxbytes = PathUtil.ReadAllBytes("Shaders\\WaterVS_PNCTX.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\WaterPS.cso");
+            byte[] psdefbytes = PathUtil.ReadAllBytes("Shaders\\WaterPS_Deferred.cso");
 
 
             vspt = new VertexShader(device, vsptbytes);

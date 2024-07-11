@@ -46,8 +46,8 @@ namespace CodeWalker.Rendering
 
         public MarkerShader(Device device)
         {
-            byte[] vsbytes = File.ReadAllBytes("Shaders\\MarkerVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\MarkerPS.cso");
+            byte[] vsbytes = PathUtil.ReadAllBytes("Shaders\\MarkerVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\MarkerPS.cso");
 
             markervs = new VertexShader(device, vsbytes);
             markerps = new PixelShader(device, psbytes);

@@ -71,9 +71,9 @@ namespace CodeWalker.Rendering
 
         public BoundsShader(Device device)
         {
-            byte[] spherevsbytes = File.ReadAllBytes("Shaders\\BoundingSphereVS.cso");
-            byte[] boxvsbytes = File.ReadAllBytes("Shaders\\BoundingBoxVS.cso");
-            byte[] psbytes = File.ReadAllBytes("Shaders\\BoundsPS.cso");
+            byte[] spherevsbytes = PathUtil.ReadAllBytes("Shaders\\BoundingSphereVS.cso");
+            byte[] boxvsbytes = PathUtil.ReadAllBytes("Shaders\\BoundingBoxVS.cso");
+            byte[] psbytes = PathUtil.ReadAllBytes("Shaders\\BoundsPS.cso");
 
             spherevs = new VertexShader(device, spherevsbytes);
             boxvs = new VertexShader(device, boxvsbytes);
