@@ -143,25 +143,6 @@
     <Setting Name="DLC" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="KeyBindings" Type="System.Collections.Specialized.StringCollection" Scope="User">
-      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;ArrayOfString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;string&gt;Move Forwards: W&lt;/string&gt;
-  &lt;string&gt;Move Backwards: S&lt;/string&gt;
-  &lt;string&gt;Move Left: A&lt;/string&gt;
-  &lt;string&gt;Move Right: D&lt;/string&gt;
-  &lt;string&gt;Move Up: R&lt;/string&gt;
-  &lt;string&gt;Move Down: F&lt;/string&gt;
-  &lt;string&gt;Move Slower / Zoom In: Z&lt;/string&gt;
-  &lt;string&gt;Move Faster / Zoom Out: X&lt;/string&gt;
-  &lt;string&gt;Toggle Mouse Select: C&lt;/string&gt;
-  &lt;string&gt;Toggle Toolbar: T&lt;/string&gt;
-  &lt;string&gt;Exit Edit Mode: Q&lt;/string&gt;
-  &lt;string&gt;Edit Position: W&lt;/string&gt;
-  &lt;string&gt;Edit Rotation: E&lt;/string&gt;
-  &lt;string&gt;Edit Scale: R&lt;/string&gt;
-&lt;/ArrayOfString&gt;</Value>
-    </Setting>
     <Setting Name="XInputLThumbInvert" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
@@ -214,6 +195,52 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="RPFExplorerStartFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TimeOfDay" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">720</Value>
+    </Setting>
+    <Setting Name="LODLights" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Region" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Global</Value>
+    </Setting>
+    <Setting Name="Clouds" Type="System.String" Scope="User">
+      <Value Profile="(Default)">contrails</Value>
+    </Setting>
+    <Setting Name="Weather" Type="System.String" Scope="User">
+      <Value Profile="(Default)">EXTRASUNNY</Value>
+    </Setting>
+    <Setting Name="NatrualAmbientLight" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="ArtificialAmbientLight" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="KeyBindings" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfString xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+  &lt;string&gt;Move Forwards: W&lt;/string&gt;
+  &lt;string&gt;Move Backwards: S&lt;/string&gt;
+  &lt;string&gt;Move Left: A&lt;/string&gt;
+  &lt;string&gt;Move Right: D&lt;/string&gt;
+  &lt;string&gt;Move Up: R&lt;/string&gt;
+  &lt;string&gt;Move Down: F&lt;/string&gt;
+  &lt;string&gt;Move Slower / Zoom In: Z&lt;/string&gt;
+  &lt;string&gt;Move Faster / Zoom Out: X&lt;/string&gt;
+  &lt;string&gt;Toggle Mouse Select: C&lt;/string&gt;
+  &lt;string&gt;Toggle Toolbar: T&lt;/string&gt;
+  &lt;string&gt;Exit Edit Mode: Q&lt;/string&gt;
+  &lt;string&gt;Edit Position: W&lt;/string&gt;
+  &lt;string&gt;Edit Rotation: E&lt;/string&gt;
+  &lt;string&gt;Edit Scale: R&lt;/string&gt;
+&lt;/ArrayOfString&gt;</Value>
+    </Setting>
+    <Setting Name="ColourPickerCustomColours" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ColourPickerRecentColours" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
   </Settings>

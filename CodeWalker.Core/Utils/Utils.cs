@@ -261,6 +261,15 @@ namespace CodeWalker
         }
 
 
+        public static float Saturate(float f)
+        {
+            return (f > 1.0f) ? 1.0f : (f < 0.0f) ? 0.0f : f;
+        }
+        public static float Clamp(float f, float min, float max)
+        {
+            return f > max ? max : f < min ? min : f;
+        }
+
     }
 
 

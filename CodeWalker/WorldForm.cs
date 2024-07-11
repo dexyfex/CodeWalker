@@ -5939,6 +5939,11 @@ namespace CodeWalker
         {
         }
 
+        private void WorldForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            SaveSettings();
+        }
+
         private void WorldForm_MouseDown(object sender, MouseEventArgs e)
         {
             switch (e.Button)

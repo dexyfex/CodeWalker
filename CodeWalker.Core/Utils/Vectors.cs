@@ -339,6 +339,38 @@ namespace CodeWalker
             return Vector3.Cross(rd, p - ro).Length();
         }
 
+
+        public static float DistanceFieldTest(in Vector2 s, in Vector2 p1, in Vector2 p2, out int winding)
+        {
+            //utility function to help in calculating distance field textures.
+            //finds the distance from a sample point to a line segment,
+            //outputting a winding value for use to determine if the sample point is inside or outside a shape.
+            var d = PointSegmentDistance(s, p1, p2);
+            winding = 0;
+            var d1 = p1 - s;
+            var d2 = p2 - s;
+            if ((d1.Y > 0) != (d2.Y > 0))//this segment crosses the y-axis (relative to s) 
+            {
+                var yr = (0 - d1.Y) / (d2.Y - d1.Y);//how far along the line is the intersection?
+                var xr = d1.X + (d2.X - d1.X) * yr;//where on the x axis is the intersection?
+                if (xr > 0)
+                {
+                    winding = (d2.Y > d1.Y) ? 1 : -1;
+                }
+            }
+            return d;
+        }
+        public static float PointSegmentDistance(in Vector2 v, in Vector2 a, in Vector2 b)
+        {
+            var ab = b - a;
+            var av = v - a;
+            var l2 = ab.LengthSquared();
+            if (l2 == 0) return av.Length();
+            var t = FloatUtil.Saturate(Vector2.Dot(av, ab) / l2);
+            var p = a + t * ab;
+            return (p - v).Length();
+        }
+
     }
 
 

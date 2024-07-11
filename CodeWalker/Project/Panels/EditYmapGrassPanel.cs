@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using CodeWalker.GameFiles;
+using CodeWalker.Utils;
 using CodeWalker.World;
 using SharpDX;
 
@@ -106,9 +107,9 @@ namespace CodeWalker.Project.Panels
 
         private void GrassColorLabel_Click(object sender, EventArgs e)
         {
-            var colDiag = new ColorDialog {Color = GrassColorLabel.BackColor};
+            var colDiag = new ColourPickerForm { SelectedColour = GrassColorLabel.BackColor };
             if (colDiag.ShowDialog(this) == DialogResult.OK)
-                GrassColorLabel.BackColor = colDiag.Color;
+                GrassColorLabel.BackColor = colDiag.SelectedColour;
         }
 
         private void BrushModeCheckBox_CheckedChanged(object sender, EventArgs e)
