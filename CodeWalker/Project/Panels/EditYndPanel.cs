@@ -103,11 +103,12 @@ namespace CodeWalker.Project.Panels
             {
                 if (ProjectForm.WorldForm == null)
                 {
-                    MessageBox.Show("You can only do this while in full CodeWalker", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("You can only do this while the Project Window is open.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 ProjectForm.WorldForm.Space.MoveYndArea(Ynd, x, y);
+                ProjectForm.WorldForm.UpdatePathYndGraphics(Ynd, true);
                 ProjectForm.SetYndHasChanged(Ynd, true);
 
                 // Take the updated information
