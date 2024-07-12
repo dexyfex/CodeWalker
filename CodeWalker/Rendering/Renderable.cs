@@ -87,6 +87,8 @@ namespace CodeWalker.Rendering
         public Dictionary<ushort, RenderableModel> ModelBoneLinks;
 
         public bool EnableRootMotion = false; //used to toggle whether or not to include root motion when playing animations
+        public Vector3 RootMotionPosition;
+        public Quaternion RootMotionRotation;
 
         public ClothInstance Cloth;
 
@@ -483,6 +485,8 @@ namespace CodeWalker.Rendering
         }
         private void UpdateAnim(ClipMapEntry cme)
         {
+            RootMotionPosition = Vector3.Zero;
+            RootMotionRotation = Quaternion.Identity;
 
             var clipanim = cme.Clip as ClipAnimation;
             if (clipanim?.Animation != null)
@@ -497,6 +501,57 @@ namespace CodeWalker.Rendering
                 {
                     if (canim?.Animation == null) continue;
                     UpdateAnim(canim.Animation, canim.GetPlaybackTime(CurrentAnimTime));
+                }
+            }
+
+            var bonesmap = Skeleton?.BonesMap;
+            var bones = Skeleton?.BonesSorted;
+            if (bones != null)
+            {
+                for (int i = 0; i < bones.Length; i++)
+                {
+                    var bone = bones[i];
+                    var tag = bone.Tag;
+                    switch (bone.Tag)
+                    {
+                        case 23639: tag = 58271; break; //RB_L_ThighRoll: SKEL_L_Thigh
+                        case 6442:  tag = 51826; break; //RB_R_ThighRoll: SKEL_R_Thigh
+                        //case 61007: tag = 61163; break; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
+                        //case 5232: tag = 45509; break; //RB_L_ArmRoll: SKEL_L_UpperArm
+                    }
+                    if ((tag != bone.Tag) && (tag != bone.Parent?.Tag))
+                    {
+                        if ((bonesmap != null) && bonesmap.TryGetValue(tag, out var obone))
+                        {
+                            bone.AnimRotation = obone.AnimRotation;
+                        }
+                    }
+                }
+                for (int i = 0; i < bones.Length; i++)
+                {
+                    var bone = bones[i];
+                    
+                    if (EnableRootMotion && (bone.Tag == 0))
+                    {
+                        bone.AnimTranslation = RootMotionPosition + RootMotionRotation.Multiply(bone.AnimTranslation);
+                        bone.AnimRotation = RootMotionRotation * bone.AnimRotation;
+                    }
+
+                    bone.UpdateAnimTransform();
+                    bone.UpdateSkinTransform();
+
+                    //update model's transform from animated bone
+                    RenderableModel bmodel = null;
+                    ModelBoneLinks?.TryGetValue(bone.Tag, out bmodel);
+
+
+                    if (bmodel == null)
+                    { continue; }
+                    if (bmodel.IsSkinMesh) //don't transform model for skin mesh
+                    { continue; }
+
+                    bmodel.Transform = bone.AnimTransform;
+
                 }
             }
 
@@ -570,18 +625,12 @@ namespace CodeWalker.Rendering
                         bone.AnimScale = v.XYZ();
                         break;
                     case 5://root motion vector
-                        if (EnableRootMotion)
-                        {
-                            v = anim.EvaluateVector4(frame, i, interpolate);
-                            bone.AnimTranslation += v.XYZ();
-                        }
+                        v = anim.EvaluateVector4(frame, i, interpolate);
+                        RootMotionPosition += v.XYZ();
                         break;
                     case 6://quaternion... root rotation
-                        if (EnableRootMotion)
-                        {
-                            q = anim.EvaluateQuaternion(frame, i, interpolate);
-                            bone.AnimRotation = q * bone.AnimRotation;
-                        }
+                        q = anim.EvaluateQuaternion(frame, i, interpolate);
+                        RootMotionRotation *= q;
                         break;
                     case 7://vector3... (camera position?)
                         break;
@@ -618,47 +667,6 @@ namespace CodeWalker.Rendering
                         { }
                         break;
                 }
-            }
-
-            for (int i = 0; i < bones.Length; i++)
-            {
-                var bone = bones[i];
-                var tag = bone.Tag;
-                switch (bone.Tag)
-                {
-                    case 23639: tag = 58271; break; //RB_L_ThighRoll: SKEL_L_Thigh
-                    case 6442:  tag = 51826; break; //RB_R_ThighRoll: SKEL_R_Thigh
-                    //case 61007: tag = 61163; break; //RB_L_ForeArmRoll: SKEL_L_Forearm //NOT GOOD
-                    //case 5232: tag = 45509; break; //RB_L_ArmRoll: SKEL_L_UpperArm
-                }
-                if ((tag != bone.Tag) && (tag != bone.Parent?.Tag))
-                {
-                    var obone = bone;
-                    if (skel.BonesMap.TryGetValue(tag, out obone))
-                    {
-                        bone.AnimRotation = obone.AnimRotation;
-                    }
-                }
-            }
-
-            for (int i = 0; i < bones.Length; i++)
-            {
-                var bone = bones[i];
-                bone.UpdateAnimTransform();
-                bone.UpdateSkinTransform();
-
-                //update model's transform from animated bone
-                RenderableModel bmodel = null;
-                ModelBoneLinks?.TryGetValue(bone.Tag, out bmodel);
-
-
-                if (bmodel == null)
-                { continue; }
-                if (bmodel.IsSkinMesh) //don't transform model for skin mesh
-                { continue; }
-
-                bmodel.Transform = bone.AnimTransform;
-
             }
 
 
