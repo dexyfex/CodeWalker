@@ -52,6 +52,7 @@ namespace CodeWalker.Project.Panels
                 ArchetypeFlagsTextBox.Text = CurrentArchetype._BaseArchetypeDef.flags.ToString();
                 TextureDictTextBox.Text = CurrentArchetype._BaseArchetypeDef.textureDictionary.ToCleanString();
                 ClipDictionaryTextBox.Text = CurrentArchetype._BaseArchetypeDef.clipDictionary.ToCleanString();
+                DrawableDictionaryTextBox.Text = CurrentArchetype._BaseArchetypeDef.drawableDictionary.ToCleanString();
                 PhysicsDictionaryTextBox.Text = CurrentArchetype._BaseArchetypeDef.physicsDictionary.ToCleanString();
                 AssetTypeComboBox.Text = CurrentArchetype._BaseArchetypeDef.assetType.ToString();
                 BBMinTextBox.Text = FloatUtil.GetVector3String(CurrentArchetype._BaseArchetypeDef.bbMin);
@@ -146,85 +147,10 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void TextureDictTextBox_TextChanged(object sender, EventArgs e)
-        {
-            // Check that the form is not null before locking...
-            if (ProjectForm == null)
-                return;
-
-            lock (ProjectForm.ProjectSyncRoot)
-            {
-                // Embedded...
-                if (TextureDictTextBox.Text == ArchetypeNameTextBox.Text)
-                {
-                    TextureDictHashLabel.Text = "Embedded";
-                    CurrentArchetype._BaseArchetypeDef.textureDictionary = CurrentArchetype._BaseArchetypeDef.name;
-                    return;
-                }
-
-                var hash = 0u;
-                if (!uint.TryParse(TextureDictTextBox.Text, out hash))//don't re-hash hashes
-                {
-                    hash = JenkHash.GenHash(TextureDictTextBox.Text);
-                }
-
-                if (CurrentArchetype._BaseArchetypeDef.textureDictionary != hash)
-                {
-                    var ytd = ProjectForm.GameFileCache.GetYtd(hash);
-                    if (ytd == null)
-                    {
-                        TextureDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
-                        ProjectForm.SetYtypHasChanged(true);
-                        return;
-                    }
-                    CurrentArchetype._BaseArchetypeDef.textureDictionary = hash;
-                    ProjectForm.SetYtypHasChanged(true);
-                }
-                TextureDictHashLabel.Text = "Hash: " + hash.ToString();
-            }
-        }
-
-        private void PhysicsDictionaryTextBox_TextChanged(object sender, EventArgs e)
-        {
-            lock (ProjectForm.ProjectSyncRoot)
-            {
-                if (ProjectForm == null)
-                {
-                    return;
-                }
-
-                // Embedded...
-                if (PhysicsDictionaryTextBox.Text == ArchetypeNameTextBox.Text)
-                {
-                    PhysicsDictHashLabel.Text = "Embedded";
-                    CurrentArchetype._BaseArchetypeDef.physicsDictionary = CurrentArchetype._BaseArchetypeDef.name;
-                    return;
-                }
-
-                var hash = 0u;
-                if (!uint.TryParse(PhysicsDictionaryTextBox.Text, out hash))//don't re-hash hashes
-                {
-                    hash = JenkHash.GenHash(PhysicsDictionaryTextBox.Text);
-                }
-
-                if (CurrentArchetype._BaseArchetypeDef.physicsDictionary != hash)
-                {
-                    var ytd = ProjectForm.GameFileCache.GetYbn(hash);
-                    if (ytd == null)
-                    {
-                        PhysicsDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
-                        ProjectForm.SetYtypHasChanged(true);
-                        return;
-                    }
-                    CurrentArchetype._BaseArchetypeDef.physicsDictionary = hash;
-                    ProjectForm.SetYtypHasChanged(true);
-                }
-                PhysicsDictHashLabel.Text = "Hash: " + hash.ToString();
-            }
-        }
-
         private void ArchetypeNameTextBox_TextChanged(object sender, EventArgs e)
         {
+            if (ProjectForm == null) return;
+
             var hash = 0u;
             if (!uint.TryParse(ArchetypeNameTextBox.Text, out hash))//don't re-hash hashes
             {
@@ -246,6 +172,8 @@ namespace CodeWalker.Project.Panels
 
         private void AssetNameTextBox_TextChanged(object sender, EventArgs e)
         {
+            if (ProjectForm == null) return;
+
             var hash = 0u;
             if (!uint.TryParse(AssetNameTextBox.Text, out hash))//don't re-hash hashes
             {
@@ -259,8 +187,46 @@ namespace CodeWalker.Project.Panels
             }
         }
 
+        private void TextureDictTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (ProjectForm == null) return;
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                // Embedded...
+                if (TextureDictTextBox.Text == ArchetypeNameTextBox.Text)
+                {
+                    TextureDictHashLabel.Text = "Embedded";
+                    CurrentArchetype._BaseArchetypeDef.textureDictionary = CurrentArchetype._BaseArchetypeDef.name;
+                    return;
+                }
+
+                var hash = 0u;
+                if (!uint.TryParse(TextureDictTextBox.Text, out hash))//don't re-hash hashes
+                {
+                    hash = JenkHash.GenHash(TextureDictTextBox.Text);
+                }
+
+                if (CurrentArchetype._BaseArchetypeDef.textureDictionary != hash)
+                {
+                    CurrentArchetype._BaseArchetypeDef.textureDictionary = hash;
+                    var ytd = ProjectForm.GameFileCache.GetYtd(hash);
+                    if (ytd == null)
+                    {
+                        TextureDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        ProjectForm.SetYtypHasChanged(true);
+                        return;
+                    }
+                    ProjectForm.SetYtypHasChanged(true);
+                }
+                TextureDictHashLabel.Text = "Hash: " + hash.ToString();
+            }
+        }
+
         private void ClipDictionaryTextBox_TextChanged(object sender, EventArgs e)
         {
+            if (ProjectForm == null) return;
+
             var hash = 0u;
             if (!uint.TryParse(ClipDictionaryTextBox.Text, out hash))//don't re-hash hashes
             {
@@ -271,6 +237,70 @@ namespace CodeWalker.Project.Panels
             {
                 CurrentArchetype._BaseArchetypeDef.clipDictionary = hash;
                 ProjectForm.SetYtypHasChanged(true);
+            }
+        }
+
+        private void DrawableDictionaryTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (ProjectForm == null) return;
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                var hash = 0u;
+                if (!uint.TryParse(DrawableDictionaryTextBox.Text, out hash))//don't re-hash hashes
+                {
+                    hash = JenkHash.GenHash(DrawableDictionaryTextBox.Text);
+                }
+
+                if (CurrentArchetype._BaseArchetypeDef.drawableDictionary != hash)
+                {
+                    CurrentArchetype._BaseArchetypeDef.drawableDictionary = hash;
+                    var ydd = ProjectForm.GameFileCache.GetYdd(hash);
+                    if (ydd == null)
+                    {
+                        DrawableDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        ProjectForm.SetYtypHasChanged(true);
+                        return;
+                    }
+                    ProjectForm.SetYtypHasChanged(true);
+                }
+                DrawableDictHashLabel.Text = "Hash: " + hash.ToString();
+            }
+        }
+
+        private void PhysicsDictionaryTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (ProjectForm == null) return;
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                // Embedded...
+                if (PhysicsDictionaryTextBox.Text == ArchetypeNameTextBox.Text)
+                {
+                    PhysicsDictHashLabel.Text = "Embedded";
+                    CurrentArchetype._BaseArchetypeDef.physicsDictionary = CurrentArchetype._BaseArchetypeDef.name;
+                    return;
+                }
+
+                var hash = 0u;
+                if (!uint.TryParse(PhysicsDictionaryTextBox.Text, out hash))//don't re-hash hashes
+                {
+                    hash = JenkHash.GenHash(PhysicsDictionaryTextBox.Text);
+                }
+
+                if (CurrentArchetype._BaseArchetypeDef.physicsDictionary != hash)
+                {
+                    CurrentArchetype._BaseArchetypeDef.physicsDictionary = hash;
+                    var ybn = ProjectForm.GameFileCache.GetYbn(hash);
+                    if (ybn == null)
+                    {
+                        PhysicsDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        ProjectForm.SetYtypHasChanged(true);
+                        return;
+                    }
+                    ProjectForm.SetYtypHasChanged(true);
+                }
+                PhysicsDictHashLabel.Text = "Hash: " + hash.ToString();
             }
         }
 
