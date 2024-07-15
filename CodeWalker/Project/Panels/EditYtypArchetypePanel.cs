@@ -213,13 +213,13 @@ namespace CodeWalker.Project.Panels
                     var ytd = ProjectForm.GameFileCache.GetYtd(hash);
                     if (ytd == null)
                     {
-                        TextureDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        TextureDictHashLabel.Text = "# " + hash.ToString() + " (invalid)";
                         ProjectForm.SetYtypHasChanged(true);
                         return;
                     }
                     ProjectForm.SetYtypHasChanged(true);
                 }
-                TextureDictHashLabel.Text = "Hash: " + hash.ToString();
+                TextureDictHashLabel.Text = "# " + hash.ToString();
             }
         }
 
@@ -258,13 +258,13 @@ namespace CodeWalker.Project.Panels
                     var ydd = ProjectForm.GameFileCache.GetYdd(hash);
                     if (ydd == null)
                     {
-                        DrawableDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        DrawableDictHashLabel.Text = "# " + hash.ToString() + " (invalid)";
                         ProjectForm.SetYtypHasChanged(true);
                         return;
                     }
                     ProjectForm.SetYtypHasChanged(true);
                 }
-                DrawableDictHashLabel.Text = "Hash: " + hash.ToString();
+                DrawableDictHashLabel.Text = "# " + hash.ToString();
             }
         }
 
@@ -294,13 +294,13 @@ namespace CodeWalker.Project.Panels
                     var ybn = ProjectForm.GameFileCache.GetYbn(hash);
                     if (ybn == null)
                     {
-                        PhysicsDictHashLabel.Text = "Hash: " + hash.ToString() + " (invalid)";
+                        PhysicsDictHashLabel.Text = "# " + hash.ToString() + " (invalid)";
                         ProjectForm.SetYtypHasChanged(true);
                         return;
                     }
                     ProjectForm.SetYtypHasChanged(true);
                 }
-                PhysicsDictHashLabel.Text = "Hash: " + hash.ToString();
+                PhysicsDictHashLabel.Text = "# " + hash.ToString();
             }
         }
 

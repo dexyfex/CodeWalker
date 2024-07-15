@@ -425,9 +425,9 @@
             this.EntityArchetypeHashLabel.AutoSize = true;
             this.EntityArchetypeHashLabel.Location = new System.Drawing.Point(332, 64);
             this.EntityArchetypeHashLabel.Name = "EntityArchetypeHashLabel";
-            this.EntityArchetypeHashLabel.Size = new System.Drawing.Size(44, 13);
+            this.EntityArchetypeHashLabel.Size = new System.Drawing.Size(23, 13);
             this.EntityArchetypeHashLabel.TabIndex = 9;
-            this.EntityArchetypeHashLabel.Text = "Hash: 0";
+            this.EntityArchetypeHashLabel.Text = "# 0";
             // 
             // EntityChildLodDistTextBox
             // 

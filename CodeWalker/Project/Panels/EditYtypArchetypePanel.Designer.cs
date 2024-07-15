@@ -200,9 +200,9 @@
             // ArchetypeFlagsTextBox
             // 
             this.ArchetypeFlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ArchetypeFlagsTextBox.Location = new System.Drawing.Point(476, 12);
+            this.ArchetypeFlagsTextBox.Location = new System.Drawing.Point(422, 12);
             this.ArchetypeFlagsTextBox.Name = "ArchetypeFlagsTextBox";
-            this.ArchetypeFlagsTextBox.Size = new System.Drawing.Size(147, 20);
+            this.ArchetypeFlagsTextBox.Size = new System.Drawing.Size(201, 20);
             this.ArchetypeFlagsTextBox.TabIndex = 34;
             this.ArchetypeFlagsTextBox.TextChanged += new System.EventHandler(this.ArchetypeFlagsTextBox_TextChanged);
             // 
@@ -210,30 +210,30 @@
             // 
             this.PhysicsDictionaryTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.PhysicsDictionaryTextBox.Location = new System.Drawing.Point(113, 217);
+            this.PhysicsDictionaryTextBox.Location = new System.Drawing.Point(113, 191);
             this.PhysicsDictionaryTextBox.Name = "PhysicsDictionaryTextBox";
-            this.PhysicsDictionaryTextBox.Size = new System.Drawing.Size(206, 20);
-            this.PhysicsDictionaryTextBox.TabIndex = 29;
+            this.PhysicsDictionaryTextBox.Size = new System.Drawing.Size(180, 20);
+            this.PhysicsDictionaryTextBox.TabIndex = 27;
             this.PhysicsDictionaryTextBox.TextChanged += new System.EventHandler(this.PhysicsDictionaryTextBox_TextChanged);
             // 
             // DrawableDictionaryTextBox
             // 
             this.DrawableDictionaryTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.DrawableDictionaryTextBox.Location = new System.Drawing.Point(113, 191);
+            this.DrawableDictionaryTextBox.Location = new System.Drawing.Point(113, 165);
             this.DrawableDictionaryTextBox.Name = "DrawableDictionaryTextBox";
-            this.DrawableDictionaryTextBox.Size = new System.Drawing.Size(206, 20);
-            this.DrawableDictionaryTextBox.TabIndex = 26;
+            this.DrawableDictionaryTextBox.Size = new System.Drawing.Size(180, 20);
+            this.DrawableDictionaryTextBox.TabIndex = 24;
             this.DrawableDictionaryTextBox.TextChanged += new System.EventHandler(this.DrawableDictionaryTextBox_TextChanged);
             // 
             // ClipDictionaryTextBox
             // 
             this.ClipDictionaryTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ClipDictionaryTextBox.Location = new System.Drawing.Point(113, 165);
+            this.ClipDictionaryTextBox.Location = new System.Drawing.Point(113, 217);
             this.ClipDictionaryTextBox.Name = "ClipDictionaryTextBox";
             this.ClipDictionaryTextBox.Size = new System.Drawing.Size(247, 20);
-            this.ClipDictionaryTextBox.TabIndex = 24;
+            this.ClipDictionaryTextBox.TabIndex = 30;
             this.ClipDictionaryTextBox.TextChanged += new System.EventHandler(this.ClipDictionaryTextBox_TextChanged);
             // 
             // AssetNameTextBox
@@ -252,7 +252,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.TextureDictTextBox.Location = new System.Drawing.Point(113, 139);
             this.TextureDictTextBox.Name = "TextureDictTextBox";
-            this.TextureDictTextBox.Size = new System.Drawing.Size(206, 20);
+            this.TextureDictTextBox.Size = new System.Drawing.Size(180, 20);
             this.TextureDictTextBox.TabIndex = 21;
             this.TextureDictTextBox.TextChanged += new System.EventHandler(this.TextureDictTextBox_TextChanged);
             // 
@@ -290,31 +290,31 @@
             // 
             this.PhysicsDictHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.PhysicsDictHashLabel.AutoSize = true;
-            this.PhysicsDictHashLabel.Location = new System.Drawing.Point(325, 220);
+            this.PhysicsDictHashLabel.Location = new System.Drawing.Point(295, 194);
             this.PhysicsDictHashLabel.Name = "PhysicsDictHashLabel";
-            this.PhysicsDictHashLabel.Size = new System.Drawing.Size(35, 13);
-            this.PhysicsDictHashLabel.TabIndex = 30;
-            this.PhysicsDictHashLabel.Text = "Hash:";
+            this.PhysicsDictHashLabel.Size = new System.Drawing.Size(14, 13);
+            this.PhysicsDictHashLabel.TabIndex = 28;
+            this.PhysicsDictHashLabel.Text = "#";
             // 
             // DrawableDictHashLabel
             // 
             this.DrawableDictHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.DrawableDictHashLabel.AutoSize = true;
-            this.DrawableDictHashLabel.Location = new System.Drawing.Point(325, 194);
+            this.DrawableDictHashLabel.Location = new System.Drawing.Point(295, 168);
             this.DrawableDictHashLabel.Name = "DrawableDictHashLabel";
-            this.DrawableDictHashLabel.Size = new System.Drawing.Size(35, 13);
-            this.DrawableDictHashLabel.TabIndex = 27;
-            this.DrawableDictHashLabel.Text = "Hash:";
+            this.DrawableDictHashLabel.Size = new System.Drawing.Size(14, 13);
+            this.DrawableDictHashLabel.TabIndex = 25;
+            this.DrawableDictHashLabel.Text = "#";
             // 
             // TextureDictHashLabel
             // 
             this.TextureDictHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.TextureDictHashLabel.AutoSize = true;
-            this.TextureDictHashLabel.Location = new System.Drawing.Point(325, 142);
+            this.TextureDictHashLabel.Location = new System.Drawing.Point(295, 142);
             this.TextureDictHashLabel.Name = "TextureDictHashLabel";
-            this.TextureDictHashLabel.Size = new System.Drawing.Size(35, 13);
+            this.TextureDictHashLabel.Size = new System.Drawing.Size(14, 13);
             this.TextureDictHashLabel.TabIndex = 22;
-            this.TextureDictHashLabel.Text = "Hash:";
+            this.TextureDictHashLabel.Text = "#";
             // 
             // EntityFlagsCheckedListBox
             // 
@@ -355,9 +355,9 @@
             "536870912 - Use Ambient Scale",
             "1073741824 - Is Debug",
             "2147483648 - Has Alpha Shadow"});
-            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(441, 38);
+            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(384, 38);
             this.EntityFlagsCheckedListBox.Name = "EntityFlagsCheckedListBox";
-            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(182, 274);
+            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(239, 274);
             this.EntityFlagsCheckedListBox.TabIndex = 35;
             this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.ArchetypeFlagsCheckedListBox_ItemCheck);
             // 
@@ -365,7 +365,7 @@
             // 
             this.label14.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(419, 15);
+            this.label14.Location = new System.Drawing.Point(381, 15);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(35, 13);
             this.label14.TabIndex = 33;
@@ -418,28 +418,28 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(11, 220);
+            this.label8.Location = new System.Drawing.Point(11, 194);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(96, 13);
-            this.label8.TabIndex = 28;
+            this.label8.TabIndex = 26;
             this.label8.Text = "Physics Dictionary:";
             // 
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(30, 168);
+            this.label7.Location = new System.Drawing.Point(30, 220);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(77, 13);
-            this.label7.TabIndex = 23;
+            this.label7.TabIndex = 29;
             this.label7.Text = "Clip Dictionary:";
             // 
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(2, 194);
+            this.label17.Location = new System.Drawing.Point(2, 168);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(105, 13);
-            this.label17.TabIndex = 25;
+            this.label17.TabIndex = 23;
             this.label17.Text = "Drawable Dictionary:";
             // 
             // label6
@@ -566,9 +566,9 @@
             // 
             // TimeFlagsTextBox
             // 
-            this.TimeFlagsTextBox.Location = new System.Drawing.Point(72, 6);
+            this.TimeFlagsTextBox.Location = new System.Drawing.Point(82, 6);
             this.TimeFlagsTextBox.Name = "TimeFlagsTextBox";
-            this.TimeFlagsTextBox.Size = new System.Drawing.Size(147, 20);
+            this.TimeFlagsTextBox.Size = new System.Drawing.Size(190, 20);
             this.TimeFlagsTextBox.TabIndex = 69;
             this.TimeFlagsTextBox.TextChanged += new System.EventHandler(this.TimeFlagsTextBox_TextChanged);
             // 
@@ -603,7 +603,7 @@
             "2097152 - 21:00 - 22:00",
             "4194304 - 22:00 - 23:00",
             "8388608 - 23:00 - 00:00",
-            "16777216 - Unk25",
+            "16777216 - Allow Vanish Whilst Viewed",
             "33554432 - Unk26",
             "67108864 - Unk27",
             "134217728 - Unk28",
@@ -613,14 +613,14 @@
             "2147483648 - Unk32"});
             this.TimeFlagsCheckedListBox.Location = new System.Drawing.Point(18, 32);
             this.TimeFlagsCheckedListBox.Name = "TimeFlagsCheckedListBox";
-            this.TimeFlagsCheckedListBox.Size = new System.Drawing.Size(201, 424);
+            this.TimeFlagsCheckedListBox.Size = new System.Drawing.Size(254, 424);
             this.TimeFlagsCheckedListBox.TabIndex = 70;
             this.TimeFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.TimeFlagsCheckedListBox_ItemCheck);
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(5, 9);
+            this.label15.Location = new System.Drawing.Point(15, 9);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(61, 13);
             this.label15.TabIndex = 68;
