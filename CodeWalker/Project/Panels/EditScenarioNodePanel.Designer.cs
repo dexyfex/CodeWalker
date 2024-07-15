@@ -1646,7 +1646,7 @@
             this.ScenarioChainEdgeNavSpeedComboBox.FormattingEnabled = true;
             this.ScenarioChainEdgeNavSpeedComboBox.Location = new System.Drawing.Point(100, 118);
             this.ScenarioChainEdgeNavSpeedComboBox.Name = "ScenarioChainEdgeNavSpeedComboBox";
-            this.ScenarioChainEdgeNavSpeedComboBox.Size = new System.Drawing.Size(142, 21);
+            this.ScenarioChainEdgeNavSpeedComboBox.Size = new System.Drawing.Size(170, 21);
             this.ScenarioChainEdgeNavSpeedComboBox.TabIndex = 10;
             this.ScenarioChainEdgeNavSpeedComboBox.SelectedIndexChanged += new System.EventHandler(this.ScenarioChainEdgeNavSpeedComboBox_SelectedIndexChanged);
             // 
@@ -1665,7 +1665,7 @@
             this.ScenarioChainEdgeNavModeComboBox.FormattingEnabled = true;
             this.ScenarioChainEdgeNavModeComboBox.Location = new System.Drawing.Point(100, 91);
             this.ScenarioChainEdgeNavModeComboBox.Name = "ScenarioChainEdgeNavModeComboBox";
-            this.ScenarioChainEdgeNavModeComboBox.Size = new System.Drawing.Size(142, 21);
+            this.ScenarioChainEdgeNavModeComboBox.Size = new System.Drawing.Size(170, 21);
             this.ScenarioChainEdgeNavModeComboBox.TabIndex = 8;
             this.ScenarioChainEdgeNavModeComboBox.SelectedIndexChanged += new System.EventHandler(this.ScenarioChainEdgeNavModeComboBox_SelectedIndexChanged);
             // 
@@ -1684,7 +1684,7 @@
             this.ScenarioChainEdgeActionComboBox.FormattingEnabled = true;
             this.ScenarioChainEdgeActionComboBox.Location = new System.Drawing.Point(100, 64);
             this.ScenarioChainEdgeActionComboBox.Name = "ScenarioChainEdgeActionComboBox";
-            this.ScenarioChainEdgeActionComboBox.Size = new System.Drawing.Size(142, 21);
+            this.ScenarioChainEdgeActionComboBox.Size = new System.Drawing.Size(170, 21);
             this.ScenarioChainEdgeActionComboBox.TabIndex = 6;
             this.ScenarioChainEdgeActionComboBox.SelectedIndexChanged += new System.EventHandler(this.ScenarioChainEdgeActionComboBox_SelectedIndexChanged);
             // 
@@ -2042,7 +2042,7 @@
             // ScenarioClusterUnk2CheckBox
             // 
             this.ScenarioClusterUnk2CheckBox.AutoSize = true;
-            this.ScenarioClusterUnk2CheckBox.Location = new System.Drawing.Point(100, 81);
+            this.ScenarioClusterUnk2CheckBox.Location = new System.Drawing.Point(146, 81);
             this.ScenarioClusterUnk2CheckBox.Name = "ScenarioClusterUnk2CheckBox";
             this.ScenarioClusterUnk2CheckBox.Size = new System.Drawing.Size(169, 17);
             this.ScenarioClusterUnk2CheckBox.TabIndex = 12;
