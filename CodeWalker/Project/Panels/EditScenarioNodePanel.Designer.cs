@@ -2024,7 +2024,7 @@
             // 
             this.ScenarioClusterRadiusTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioClusterRadiusTextBox.Location = new System.Drawing.Point(100, 29);
+            this.ScenarioClusterRadiusTextBox.Location = new System.Drawing.Point(146, 29);
             this.ScenarioClusterRadiusTextBox.Name = "ScenarioClusterRadiusTextBox";
             this.ScenarioClusterRadiusTextBox.Size = new System.Drawing.Size(204, 20);
             this.ScenarioClusterRadiusTextBox.TabIndex = 9;
@@ -2033,7 +2033,7 @@
             // label157
             // 
             this.label157.AutoSize = true;
-            this.label157.Location = new System.Drawing.Point(51, 32);
+            this.label157.Location = new System.Drawing.Point(97, 32);
             this.label157.Name = "label157";
             this.label157.Size = new System.Drawing.Size(43, 13);
             this.label157.TabIndex = 8;
@@ -2044,9 +2044,9 @@
             this.ScenarioClusterUnk2CheckBox.AutoSize = true;
             this.ScenarioClusterUnk2CheckBox.Location = new System.Drawing.Point(100, 81);
             this.ScenarioClusterUnk2CheckBox.Name = "ScenarioClusterUnk2CheckBox";
-            this.ScenarioClusterUnk2CheckBox.Size = new System.Drawing.Size(55, 17);
+            this.ScenarioClusterUnk2CheckBox.Size = new System.Drawing.Size(169, 17);
             this.ScenarioClusterUnk2CheckBox.TabIndex = 12;
-            this.ScenarioClusterUnk2CheckBox.Text = "Unk 2";
+            this.ScenarioClusterUnk2CheckBox.Text = "All Points Required For Spawn";
             this.ScenarioClusterUnk2CheckBox.UseVisualStyleBackColor = true;
             this.ScenarioClusterUnk2CheckBox.CheckedChanged += new System.EventHandler(this.ScenarioClusterUnk2CheckBox_CheckedChanged);
             // 
@@ -2054,7 +2054,7 @@
             // 
             this.ScenarioClusterUnk1TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioClusterUnk1TextBox.Location = new System.Drawing.Point(100, 55);
+            this.ScenarioClusterUnk1TextBox.Location = new System.Drawing.Point(146, 55);
             this.ScenarioClusterUnk1TextBox.Name = "ScenarioClusterUnk1TextBox";
             this.ScenarioClusterUnk1TextBox.Size = new System.Drawing.Size(204, 20);
             this.ScenarioClusterUnk1TextBox.TabIndex = 11;
@@ -2065,14 +2065,14 @@
             this.label140.AutoSize = true;
             this.label140.Location = new System.Drawing.Point(4, 58);
             this.label140.Name = "label140";
-            this.label140.Size = new System.Drawing.Size(90, 13);
+            this.label140.Size = new System.Drawing.Size(137, 13);
             this.label140.TabIndex = 10;
-            this.label140.Text = "Probability Unk 1:";
+            this.label140.Text = "Next Spawn Attempt Delay:";
             // 
             // ScenarioClusterGoToButton
             // 
             this.ScenarioClusterGoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioClusterGoToButton.Location = new System.Drawing.Point(382, 1);
+            this.ScenarioClusterGoToButton.Location = new System.Drawing.Point(428, 1);
             this.ScenarioClusterGoToButton.Name = "ScenarioClusterGoToButton";
             this.ScenarioClusterGoToButton.Size = new System.Drawing.Size(68, 23);
             this.ScenarioClusterGoToButton.TabIndex = 7;
@@ -2084,7 +2084,7 @@
             // 
             this.ScenarioClusterCenterTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScenarioClusterCenterTextBox.Location = new System.Drawing.Point(100, 3);
+            this.ScenarioClusterCenterTextBox.Location = new System.Drawing.Point(146, 3);
             this.ScenarioClusterCenterTextBox.Name = "ScenarioClusterCenterTextBox";
             this.ScenarioClusterCenterTextBox.Size = new System.Drawing.Size(276, 20);
             this.ScenarioClusterCenterTextBox.TabIndex = 6;
@@ -2093,7 +2093,7 @@
             // label139
             // 
             this.label139.AutoSize = true;
-            this.label139.Location = new System.Drawing.Point(53, 6);
+            this.label139.Location = new System.Drawing.Point(99, 6);
             this.label139.Name = "label139";
             this.label139.Size = new System.Drawing.Size(41, 13);
             this.label139.TabIndex = 5;
