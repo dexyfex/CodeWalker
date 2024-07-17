@@ -33,6 +33,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditAudioAmbientZonePanel));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.SelectRuleButton = new System.Windows.Forms.Button();
             this.PositioningRotationAngleTextBox = new System.Windows.Forms.TextBox();
             this.label26 = new System.Windows.Forms.Label();
             this.ActivationZoneRotationAngleTextBox = new System.Windows.Forms.TextBox();
@@ -88,7 +89,6 @@
             this.label16 = new System.Windows.Forms.Label();
             this.ActivationZoneCentreTextBox = new System.Windows.Forms.TextBox();
             this.GoToButton = new System.Windows.Forms.Button();
-            this.SelectRuleButton = new System.Windows.Forms.Button();
             label18 = new System.Windows.Forms.Label();
             label27 = new System.Windows.Forms.Label();
             this.tabControl1.SuspendLayout();
@@ -191,6 +191,17 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Ambient Zone";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // SelectRuleButton
+            // 
+            this.SelectRuleButton.Enabled = false;
+            this.SelectRuleButton.Location = new System.Drawing.Point(469, 272);
+            this.SelectRuleButton.Name = "SelectRuleButton";
+            this.SelectRuleButton.Size = new System.Drawing.Size(75, 23);
+            this.SelectRuleButton.TabIndex = 116;
+            this.SelectRuleButton.Text = "Select Rule";
+            this.SelectRuleButton.UseVisualStyleBackColor = true;
+            this.SelectRuleButton.Click += new System.EventHandler(this.SelectRuleButton_Click);
             // 
             // PositioningRotationAngleTextBox
             // 
@@ -677,17 +688,6 @@
             this.GoToButton.UseVisualStyleBackColor = true;
             this.GoToButton.Click += new System.EventHandler(this.GoToButton_Click);
             // 
-            // SelectRuleButton
-            // 
-            this.SelectRuleButton.Enabled = false;
-            this.SelectRuleButton.Location = new System.Drawing.Point(469, 272);
-            this.SelectRuleButton.Name = "SelectRuleButton";
-            this.SelectRuleButton.Size = new System.Drawing.Size(75, 23);
-            this.SelectRuleButton.TabIndex = 116;
-            this.SelectRuleButton.Text = "Select Rule";
-            this.SelectRuleButton.UseVisualStyleBackColor = true;
-            this.SelectRuleButton.Click += new System.EventHandler(this.SelectRuleButton_Click);
-            // 
             // EditAudioAmbientZonePanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -696,6 +696,7 @@
             this.Controls.Add(this.GoToButton);
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(578, 489);
             this.Name = "EditAudioAmbientZonePanel";
             this.Text = "Edit Audio Ambient Zone";
             this.tabControl1.ResumeLayout(false);

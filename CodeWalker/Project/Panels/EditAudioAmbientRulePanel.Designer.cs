@@ -170,6 +170,7 @@
             // 
             // ExplicitSpawnCombo
             // 
+            this.ExplicitSpawnCombo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ExplicitSpawnCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ExplicitSpawnCombo.FormattingEnabled = true;
             this.ExplicitSpawnCombo.Location = new System.Drawing.Point(412, 103);
@@ -637,6 +638,7 @@
             this.Controls.Add(this.GoToButton);
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(528, 489);
             this.Name = "EditAudioAmbientRulePanel";
             this.Text = "Edit Audio Ambient Rule";
             this.tabControl1.ResumeLayout(false);

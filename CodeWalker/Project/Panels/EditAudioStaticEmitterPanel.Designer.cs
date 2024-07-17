@@ -797,6 +797,7 @@
             this.Controls.Add(this.GoToButton);
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(528, 489);
             this.Name = "EditAudioStaticEmitterPanel";
             this.Text = "Edit Audio Static Emitter";
             this.tabControl1.ResumeLayout(false);
