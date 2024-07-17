@@ -700,7 +700,7 @@ namespace CodeWalker.Project.Panels
         }
         private void LoadAudioRelTreeNodes(RelFile rel, TreeNode node)
         {
-            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Zones, Emitters
+            if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Zones, Rules
 
             node.Nodes.Clear();
 
@@ -709,10 +709,11 @@ namespace CodeWalker.Project.Panels
 
 
             var zones = new List<Dat151AmbientZone>();
-            var emitters = new List<Dat151AmbientRule>();
+            var rules = new List<Dat151AmbientRule>();
+            var emitters = new List<Dat151StaticEmitter>();
             var zonelists = new List<Dat151AmbientZoneList>();
             var emitterlists = new List<Dat151StaticEmitterList>();
-            var interiors = new List<Dat151Interior>();
+            var interiors = new List<Dat151InteriorSettings>();
             var interiorrooms = new List<Dat151InteriorRoom>();
 
             foreach (var reldata in rel.RelDatasSorted)
@@ -723,7 +724,11 @@ namespace CodeWalker.Project.Panels
                 }
                 if (reldata is Dat151AmbientRule)
                 {
-                    emitters.Add(reldata as Dat151AmbientRule);
+                    rules.Add(reldata as Dat151AmbientRule);
+                }
+                if (reldata is Dat151StaticEmitter)
+                {
+                    emitters.Add(reldata as Dat151StaticEmitter);
                 }
                 if (reldata is Dat151AmbientZoneList)
                 {
@@ -733,9 +738,9 @@ namespace CodeWalker.Project.Panels
                 {
                     emitterlists.Add(reldata as Dat151StaticEmitterList);
                 }
-                if (reldata is Dat151Interior)
+                if (reldata is Dat151InteriorSettings)
                 {
-                    interiors.Add(reldata as Dat151Interior);
+                    interiors.Add(reldata as Dat151InteriorSettings);
                 }
                 if (reldata is Dat151InteriorRoom)
                 {
@@ -759,11 +764,24 @@ namespace CodeWalker.Project.Panels
                 }
             }
 
+            if (rules.Count > 0)
+            {
+                var n = node.Nodes.Add("Ambient Rules (" + rules.Count.ToString() + ")");
+                n.Name = "AmbientRules";
+                n.Tag = rel;
+
+                for (int i = 0; i < rules.Count; i++)
+                {
+                    var rule = rules[i];
+                    var tnode = n.Nodes.Add(rule.NameHash.ToString());
+                    tnode.Tag = rule;
+                }
+            }
 
             if (emitters.Count > 0)
             {
-                var n = node.Nodes.Add("Ambient Emitters (" + emitters.Count.ToString() + ")");
-                n.Name = "AmbientEmitters";
+                var n = node.Nodes.Add("Static Emitters (" + emitters.Count.ToString() + ")");
+                n.Name = "StaticEmitters";
                 n.Tag = rel;
 
                 for (int i = 0; i < emitters.Count; i++)
@@ -791,8 +809,8 @@ namespace CodeWalker.Project.Panels
 
             if (emitterlists.Count > 0)
             {
-                var emitterlistsnode = node.Nodes.Add("Ambient Emitter Lists (" + emitterlists.Count.ToString() + ")");
-                emitterlistsnode.Name = "AmbientEmitterLists";
+                var emitterlistsnode = node.Nodes.Add("Static Emitter Lists (" + emitterlists.Count.ToString() + ")");
+                emitterlistsnode.Name = "StaticEmitterLists";
                 emitterlistsnode.Tag = rel;
                 for (int i = 0; i < emitterlists.Count; i++)
                 {
@@ -1482,44 +1500,79 @@ namespace CodeWalker.Project.Panels
         {
             if (ProjectTreeView.Nodes.Count <= 0) return null;
             var projnode = ProjectTreeView.Nodes[0];
-            var scenariosnode = GetChildTreeNode(projnode, "AudioRels");
-            if (scenariosnode == null) return null;
-            for (int i = 0; i < scenariosnode.Nodes.Count; i++)
+            var relsnode = GetChildTreeNode(projnode, "AudioRels");
+            if (relsnode == null) return null;
+            for (int i = 0; i < relsnode.Nodes.Count; i++)
             {
-                var ymtnode = scenariosnode.Nodes[i];
-                if (ymtnode.Tag == rel) return ymtnode;
+                var relnode = relsnode.Nodes[i];
+                if (relnode.Tag == rel) return relnode;
             }
             return null;
         }
-        public TreeNode FindAudioZoneTreeNode(AudioPlacement zone)
+        public TreeNode FindAudioAmbientZoneTreeNode(AudioPlacement zone)
         {
             if (zone == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(zone.RelFile);
-            var zonenode = GetChildTreeNode(relnode, "AmbientZones");
-            if (zonenode == null) return null;
-            //zonenode.Tag = zone;
-            for (int i = 0; i < zonenode.Nodes.Count; i++)
+            var zonesnode = GetChildTreeNode(relnode, "AmbientZones");
+            if (zonesnode == null) return null;
+            for (int i = 0; i < zonesnode.Nodes.Count; i++)
             {
-                TreeNode znode = zonenode.Nodes[i];
-                if (znode.Tag == zone.AudioZone) return znode;
+                TreeNode znode = zonesnode.Nodes[i];
+                if (znode.Tag == zone.AmbientZone) return znode;
             }
-            return zonenode;
+            return zonesnode;
         }
-        public TreeNode FindAudioEmitterTreeNode(AudioPlacement emitter)
+        public TreeNode FindAudioAmbientRuleTreeNode(AudioPlacement rule)
+        {
+            if (rule == null) return null;
+            TreeNode relnode = FindAudioRelTreeNode(rule.RelFile);
+            var rulesnode = GetChildTreeNode(relnode, "AmbientRules");
+            if (rulesnode == null) return null;
+            for (int i = 0; i < rulesnode.Nodes.Count; i++)
+            {
+                TreeNode rnode = rulesnode.Nodes[i];
+                if (rnode.Tag == rule.AmbientRule) return rnode;
+            }
+            return rulesnode;
+        }
+        public TreeNode FindAudioAmbientRuleTreeNode(uint hash)
+        {
+            if (ProjectTreeView.Nodes.Count <= 0) return null;
+            var projnode = ProjectTreeView.Nodes[0];
+            var relsnode = GetChildTreeNode(projnode, "AudioRels");
+            if (relsnode == null) return null;
+            for (int i = 0; i < relsnode.Nodes.Count; i++)
+            {
+                var relnode = relsnode.Nodes[i];
+                var rel = relnode.Tag as RelFile;
+                if (rel == null) continue;
+                var rulesnode = GetChildTreeNode(relnode, "AmbientRules");
+                if (rulesnode == null) continue;
+                for (int j = 0; j < rulesnode.Nodes.Count; j++)
+                {
+                    var rnode = rulesnode.Nodes[j];
+                    var rule = rnode.Tag as Dat151AmbientRule;
+                    if (rule == null) continue;
+                    if (rule.NameHash == hash) return rnode;
+                }
+            }
+            return null;
+        }
+        public TreeNode FindAudioStaticEmitterTreeNode(AudioPlacement emitter)
         {
             if (emitter == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(emitter.RelFile);
-            var zonenode = GetChildTreeNode(relnode, "AmbientEmitters");
+            var zonenode = GetChildTreeNode(relnode, "StaticEmitters");
             if (zonenode == null) return null;
             //zonenode.Tag = emitter;
             for (int i = 0; i < zonenode.Nodes.Count; i++)
             {
                 TreeNode znode = zonenode.Nodes[i];
-                if (znode.Tag == emitter.AudioEmitter) return znode;
+                if (znode.Tag == emitter.StaticEmitter) return znode;
             }
             return zonenode;
         }
-        public TreeNode FindAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        public TreeNode FindAudioAmbientZoneListTreeNode(Dat151AmbientZoneList list)
         {
             if (list == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(list.Rel);
@@ -1532,11 +1585,11 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioEmitterListTreeNode(Dat151StaticEmitterList list)
+        public TreeNode FindAudioStaticEmitterListTreeNode(Dat151StaticEmitterList list)
         {
             if (list == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(list.Rel);
-            var emitterlistsnode = GetChildTreeNode(relnode, "AmbientEmitterLists");
+            var emitterlistsnode = GetChildTreeNode(relnode, "StaticEmitterLists");
             if (emitterlistsnode == null) return null;
             for (int i = 0; i < emitterlistsnode.Nodes.Count; i++)
             {
@@ -1545,7 +1598,7 @@ namespace CodeWalker.Project.Panels
             }
             return null;
         }
-        public TreeNode FindAudioInteriorTreeNode(Dat151Interior interior)
+        public TreeNode FindAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             if (interior == null) return null;
             TreeNode relnode = FindAudioRelTreeNode(interior.Rel);
@@ -1986,9 +2039,9 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void TrySelectAudioZoneTreeNode(AudioPlacement zone)
+        public void TrySelectAudioAmbientZoneTreeNode(AudioPlacement zone)
         {
-            TreeNode tnode = FindAudioZoneTreeNode(zone);
+            TreeNode tnode = FindAudioAmbientZoneTreeNode(zone);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(zone?.RelFile);
@@ -2005,9 +2058,44 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void TrySelectAudioEmitterTreeNode(AudioPlacement emitter)
+        public void TrySelectAudioAmbientRuleTreeNode(AudioPlacement rule)
         {
-            TreeNode tnode = FindAudioEmitterTreeNode(emitter);
+            TreeNode tnode = FindAudioAmbientRuleTreeNode(rule);
+            if (tnode == null)
+            {
+                tnode = FindAudioRelTreeNode(rule?.RelFile);
+            }
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(rule);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectAudioAmbientRuleTreeNode(uint hash)
+        {
+            //variation for use by the button to select ambient rule from the ambient zone form
+            var tnode = FindAudioAmbientRuleTreeNode(hash);
+            if (tnode != null)
+            {
+                if (ProjectTreeView.SelectedNode == tnode)
+                {
+                    OnItemSelected?.Invoke(tnode.Tag);
+                }
+                else
+                {
+                    ProjectTreeView.SelectedNode = tnode;
+                }
+            }
+        }
+        public void TrySelectAudioStaticEmitterTreeNode(AudioPlacement emitter)
+        {
+            TreeNode tnode = FindAudioStaticEmitterTreeNode(emitter);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(emitter?.RelFile);
@@ -2024,9 +2112,9 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void TrySelectAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        public void TrySelectAudioAmbientZoneListTreeNode(Dat151AmbientZoneList list)
         {
-            TreeNode tnode = FindAudioZoneListTreeNode(list);
+            TreeNode tnode = FindAudioAmbientZoneListTreeNode(list);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(list?.Rel);
@@ -2043,9 +2131,9 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void TrySelectAudioEmitterListTreeNode(Dat151StaticEmitterList list)
+        public void TrySelectAudioStaticEmitterListTreeNode(Dat151StaticEmitterList list)
         {
-            TreeNode tnode = FindAudioEmitterListTreeNode(list);
+            TreeNode tnode = FindAudioStaticEmitterListTreeNode(list);
             if (tnode == null)
             {
                 tnode = FindAudioRelTreeNode(list?.Rel);
@@ -2062,7 +2150,7 @@ namespace CodeWalker.Project.Panels
                 }
             }
         }
-        public void TrySelectAudioInteriorTreeNode(Dat151Interior interior)
+        public void TrySelectAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             TreeNode tnode = FindAudioInteriorTreeNode(interior);
             if (tnode == null)
@@ -2265,39 +2353,47 @@ namespace CodeWalker.Project.Panels
                 tn.Text = node.MedTypeName + ": " + node.StringText;
             }
         }
-        public void UpdateAudioZoneTreeNode(AudioPlacement zone)
+        public void UpdateAudioAmbientZoneTreeNode(AudioPlacement zone)
         {
-            var tn = FindAudioZoneTreeNode(zone);
+            var tn = FindAudioAmbientZoneTreeNode(zone);
             if (tn != null)
             {
                 tn.Text = zone.NameHash.ToString();
             }
         }
-        public void UpdateAudioEmitterTreeNode(AudioPlacement emitter)
+        public void UpdateAudioAmbientRuleTreeNode(AudioPlacement rule)
         {
-            var tn = FindAudioEmitterTreeNode(emitter);
+            var tn = FindAudioAmbientRuleTreeNode(rule);
+            if (tn != null)
+            {
+                tn.Text = rule.NameHash.ToString();
+            }
+        }
+        public void UpdateAudioStaticEmitterTreeNode(AudioPlacement emitter)
+        {
+            var tn = FindAudioStaticEmitterTreeNode(emitter);
             if (tn != null)
             {
                 tn.Text = emitter.NameHash.ToString();
             }
         }
-        public void UpdateAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        public void UpdateAudioAmbientZoneListTreeNode(Dat151AmbientZoneList list)
         {
-            var tn = FindAudioZoneListTreeNode(list);
+            var tn = FindAudioAmbientZoneListTreeNode(list);
             if (tn != null)
             {
                 tn.Text = list.NameHash.ToString();
             }
         }
-        public void UpdateAudioEmitterListTreeNode(Dat151StaticEmitterList list)
+        public void UpdateAudioStaticEmitterListTreeNode(Dat151StaticEmitterList list)
         {
-            var tn = FindAudioEmitterListTreeNode(list);
+            var tn = FindAudioStaticEmitterListTreeNode(list);
             if (tn != null)
             {
                 tn.Text = list.NameHash.ToString();
             }
         }
-        public void UpdateAudioInteriorTreeNode(Dat151Interior interior)
+        public void UpdateAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             var tn = FindAudioInteriorTreeNode(interior);
             if (tn != null)
@@ -2485,9 +2581,9 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-        public void RemoveAudioZoneTreeNode(AudioPlacement zone)
+        public void RemoveAudioAmbientZoneTreeNode(AudioPlacement zone)
         {
-            var tn = FindAudioZoneTreeNode(zone);
+            var tn = FindAudioAmbientZoneTreeNode(zone);
             if ((tn != null) && (tn.Parent != null))
             {
                 var zones = new List<Dat151AmbientZone>();
@@ -2503,27 +2599,45 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-        public void RemoveAudioEmitterTreeNode(AudioPlacement emitter)
+        public void RemoveAudioAmbientRuleTreeNode(AudioPlacement rule)
         {
-            var tn = FindAudioEmitterTreeNode(emitter);
+            var tn = FindAudioAmbientRuleTreeNode(rule);
             if ((tn != null) && (tn.Parent != null))
             {
-                var emitters = new List<Dat151AmbientRule>();
-                foreach (var reldata in emitter.RelFile.RelDatas)
+                var rules = new List<Dat151AmbientRule>();
+                foreach (var reldata in rule.RelFile.RelDatas)
                 {
                     if (reldata is Dat151AmbientRule)
                     {
-                        emitters.Add(reldata as Dat151AmbientRule);
+                        rules.Add(reldata as Dat151AmbientRule);
                     }
                 }
 
-                tn.Parent.Text = "Ambient Emitters (" + emitters.Count.ToString() + ")";
+                tn.Parent.Text = "Ambient Rules (" + rules.Count.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-        public void RemoveAudioZoneListTreeNode(Dat151AmbientZoneList list)
+        public void RemoveAudioStaticEmitterTreeNode(AudioPlacement emitter)
         {
-            var tn = FindAudioZoneListTreeNode(list);
+            var tn = FindAudioStaticEmitterTreeNode(emitter);
+            if ((tn != null) && (tn.Parent != null))
+            {
+                var emitters = new List<Dat151StaticEmitter>();
+                foreach (var reldata in emitter.RelFile.RelDatas)
+                {
+                    if (reldata is Dat151StaticEmitter)
+                    {
+                        emitters.Add(reldata as Dat151StaticEmitter);
+                    }
+                }
+
+                tn.Parent.Text = "Static Emitters (" + emitters.Count.ToString() + ")";
+                tn.Parent.Nodes.Remove(tn);
+            }
+        }
+        public void RemoveAudioAmbientZoneListTreeNode(Dat151AmbientZoneList list)
+        {
+            var tn = FindAudioAmbientZoneListTreeNode(list);
             if ((tn != null) && (tn.Parent != null))
             {
                 var zonelists = new List<Dat151AmbientZoneList>();
@@ -2539,9 +2653,9 @@ namespace CodeWalker.Project.Panels
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-        public void RemoveAudioEmitterListTreeNode(Dat151StaticEmitterList list)
+        public void RemoveAudioStaticEmitterListTreeNode(Dat151StaticEmitterList list)
         {
-            var tn = FindAudioEmitterListTreeNode(list);
+            var tn = FindAudioStaticEmitterListTreeNode(list);
             if ((tn != null) && (tn.Parent != null))
             {
                 var emitterlists = new List<Dat151StaticEmitterList>();
@@ -2553,21 +2667,21 @@ namespace CodeWalker.Project.Panels
                     }
                 }
 
-                tn.Parent.Text = "Ambient Emitter Lists (" + emitterlists.Count.ToString() + ")";
+                tn.Parent.Text = "Static Emitter Lists (" + emitterlists.Count.ToString() + ")";
                 tn.Parent.Nodes.Remove(tn);
             }
         }
-        public void RemoveAudioInteriorTreeNode(Dat151Interior interior)
+        public void RemoveAudioInteriorTreeNode(Dat151InteriorSettings interior)
         {
             var tn = FindAudioInteriorTreeNode(interior);
             if ((tn != null) && (tn.Parent != null))
             {
-                var interiors = new List<Dat151Interior>();
+                var interiors = new List<Dat151InteriorSettings>();
                 foreach (var reldata in interior.Rel.RelDatas)
                 {
-                    if (reldata is Dat151Interior)
+                    if (reldata is Dat151InteriorSettings)
                     {
-                        interiors.Add(reldata as Dat151Interior);
+                        interiors.Add(reldata as Dat151InteriorSettings);
                     }
                 }
 

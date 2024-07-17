@@ -1,6 +1,6 @@
 ﻿namespace CodeWalker.Project.Panels
 {
-    partial class EditAudioZoneListPanel
+    partial class EditAudioAmbientZoneListPanel
     {
         /// <summary>
         /// Required designer variable.
@@ -28,14 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditAudioZoneListPanel));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditAudioAmbientZoneListPanel));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.DeleteButton = new System.Windows.Forms.Button();
             this.label12 = new System.Windows.Forms.Label();
             this.NameTextBox = new System.Windows.Forms.TextBox();
             this.label19 = new System.Windows.Forms.Label();
             this.HashesTextBox = new CodeWalker.WinForms.TextBoxFix();
-            this.DeleteButton = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.SuspendLayout();
@@ -66,6 +66,17 @@
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Ambient Zone List";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // DeleteButton
+            // 
+            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.DeleteButton.Location = new System.Drawing.Point(438, 381);
+            this.DeleteButton.Name = "DeleteButton";
+            this.DeleteButton.Size = new System.Drawing.Size(93, 23);
+            this.DeleteButton.TabIndex = 77;
+            this.DeleteButton.Text = "Delete list";
+            this.DeleteButton.UseVisualStyleBackColor = true;
+            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
             // label12
             // 
@@ -109,26 +120,15 @@
             this.HashesTextBox.WordWrap = false;
             this.HashesTextBox.TextChanged += new System.EventHandler(this.HashesTextBox_TextChanged);
             // 
-            // DeleteButton
-            // 
-            this.DeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.DeleteButton.Location = new System.Drawing.Point(438, 381);
-            this.DeleteButton.Name = "DeleteButton";
-            this.DeleteButton.Size = new System.Drawing.Size(93, 23);
-            this.DeleteButton.TabIndex = 77;
-            this.DeleteButton.Text = "Delete list";
-            this.DeleteButton.UseVisualStyleBackColor = true;
-            this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
-            // 
-            // EditAudioZoneListPanel
+            // EditAudioAmbientZoneListPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(562, 450);
             this.Controls.Add(this.tabControl1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "EditAudioZoneListPanel";
-            this.Text = "Edit Audio Zone List";
+            this.Name = "EditAudioAmbientZoneListPanel";
+            this.Text = "Edit Audio Ambient Zone List";
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();

@@ -11,23 +11,23 @@ using System.Windows.Forms;
 
 namespace CodeWalker.Project.Panels
 {
-    public partial class EditAudioEmitterListPanel : ProjectPanel
+    public partial class EditAudioAmbientZoneListPanel : ProjectPanel
     {
         public ProjectForm ProjectForm;
-        public Dat151StaticEmitterList CurrentEmitterList { get; set; }
+        public Dat151AmbientZoneList CurrentZoneList { get; set; }
 
         private bool populatingui = false;
 
 
-        public EditAudioEmitterListPanel(ProjectForm owner)
+        public EditAudioAmbientZoneListPanel(ProjectForm owner)
         {
             ProjectForm = owner;
             InitializeComponent();
         }
 
-        public void SetEmitterList(Dat151StaticEmitterList list)
+        public void SetZoneList(Dat151AmbientZoneList list)
         {
-            CurrentEmitterList = list;
+            CurrentZoneList = list;
             Tag = list;
             UpdateFormTitle();
             UpdateUI();
@@ -35,13 +35,13 @@ namespace CodeWalker.Project.Panels
 
         private void UpdateFormTitle()
         {
-            Text = CurrentEmitterList?.NameHash.ToString() ?? "";
+            Text = CurrentZoneList?.NameHash.ToString() ?? "";
         }
 
         private void UpdateUI()
         {
 
-            if (CurrentEmitterList == null)
+            if (CurrentZoneList == null)
             {
                 //AddToProjectButton.Enabled = false;
                 //DeleteButton.Enabled = false;
@@ -57,14 +57,14 @@ namespace CodeWalker.Project.Panels
                 //DeleteButton.Enabled = !AddToProjectButton.Enabled;
 
                 populatingui = true;
-                var el = CurrentEmitterList;
+                var zl = CurrentZoneList;
 
-                NameTextBox.Text = el.NameHash.ToString();
+                NameTextBox.Text = zl.NameHash.ToString();
 
                 StringBuilder sb = new StringBuilder();
-                if (el.EmitterHashes != null)
+                if (zl.ZoneHashes != null)
                 {
-                    foreach (var hash in el.EmitterHashes)
+                    foreach (var hash in zl.ZoneHashes)
                     {
                         sb.AppendLine(hash.ToString());
                     }
@@ -82,7 +82,7 @@ namespace CodeWalker.Project.Panels
 
         private void ProjectItemChanged()
         {
-            if (CurrentEmitterList?.Rel != null)
+            if (CurrentZoneList?.Rel != null)
             {
                 ProjectForm.SetAudioFileHasChanged(true);
             }
@@ -93,7 +93,7 @@ namespace CodeWalker.Project.Panels
         private void NameTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitterList == null) return;
+            if (CurrentZoneList == null) return;
 
             uint hash = 0;
             string name = NameTextBox.Text;
@@ -104,10 +104,10 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentEmitterList.NameHash != hash)
+            if (CurrentZoneList.NameHash != hash)
             {
-                CurrentEmitterList.Name = NameTextBox.Text;
-                CurrentEmitterList.NameHash = hash;
+                CurrentZoneList.Name = NameTextBox.Text;
+                CurrentZoneList.NameHash = hash;
 
                 ProjectItemChanged();
                 UpdateFormTitle();
@@ -117,7 +117,7 @@ namespace CodeWalker.Project.Panels
         private void HashesTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitterList == null) return;
+            if (CurrentZoneList == null) return;
 
             var hashstrs = HashesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (hashstrs?.Length > 0)
@@ -134,8 +134,8 @@ namespace CodeWalker.Project.Panels
                     hashlist.Add(hash);
                 }
 
-                CurrentEmitterList.EmitterHashes = hashlist.ToArray();
-                CurrentEmitterList.EmitterCount = (byte)hashlist.Count;
+                CurrentZoneList.ZoneHashes = hashlist.ToArray();
+                CurrentZoneList.ZoneCount = (byte)hashlist.Count;
 
                 ProjectItemChanged();
             }
@@ -143,8 +143,8 @@ namespace CodeWalker.Project.Panels
 
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            ProjectForm.SetProjectItem(CurrentEmitterList);
-            ProjectForm.DeleteAudioEmitterList();
+            ProjectForm.SetProjectItem(CurrentZoneList);
+            ProjectForm.DeleteAudioAmbientZoneList();
         }
     }
 }

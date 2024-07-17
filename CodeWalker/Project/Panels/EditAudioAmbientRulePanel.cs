@@ -13,37 +13,42 @@ using System.Windows.Forms;
 
 namespace CodeWalker.Project.Panels
 {
-    public partial class EditAudioEmitterPanel : ProjectPanel
+    public partial class EditAudioAmbientRulePanel : ProjectPanel
     {
         public ProjectForm ProjectForm;
-        public AudioPlacement CurrentEmitter { get; set; }
+        public AudioPlacement CurrentRule { get; set; }
 
         private bool populatingui = false;
 
 
-        public EditAudioEmitterPanel(ProjectForm owner)
+        public EditAudioAmbientRulePanel(ProjectForm owner)
         {
             ProjectForm = owner;
             InitializeComponent();
+
+            ExplicitSpawnCombo.Items.Clear();
+            ExplicitSpawnCombo.Items.Add(Dat151AmbientRule.ExplicitSpawnType.Disabled);
+            ExplicitSpawnCombo.Items.Add(Dat151AmbientRule.ExplicitSpawnType.WorldRelative);
+            ExplicitSpawnCombo.Items.Add(Dat151AmbientRule.ExplicitSpawnType.InteriorRelative);
         }
 
-        public void SetEmitter(AudioPlacement emitter)
+        public void SetRule(AudioPlacement rule)
         {
-            CurrentEmitter = emitter;
-            Tag = emitter;
+            CurrentRule = rule;
+            Tag = rule;
             UpdateFormTitle();
             UpdateUI();
         }
 
         private void UpdateFormTitle()
         {
-            Text = CurrentEmitter?.NameHash.ToString() ?? "";
+            Text = CurrentRule?.NameHash.ToString() ?? "";
         }
 
 
         private void UpdateUI()
         {
-            if (CurrentEmitter?.AudioEmitter == null)
+            if (CurrentRule?.AmbientRule == null)
             {
                 AddToProjectButton.Enabled = false;
                 DeleteButton.Enabled = false;
@@ -61,15 +66,12 @@ namespace CodeWalker.Project.Panels
                 FrequencyUpDown.Value = 0;
                 Unk07UpDown.Value = 0;
                 Unk08UpDown.Value = 0;
-                Unk09UpDown.Value = 0;
+                ExplicitSpawnCombo.SelectedItem = null;
                 Unk10UpDown.Value = 0;
                 Unk11UpDown.Value = 0;
                 Unk12UpDown.Value = 0;
                 Unk13UpDown.Value = 0;
-                Flags0TextBox.Text = string.Empty;
-                Flags1TextBox.Text = string.Empty;
                 Flags2TextBox.Text = string.Empty;
-                Flags3TextBox.Text = string.Empty;
                 Flags4TextBox.Text = string.Empty;
                 Flags5TextBox.Text = string.Empty;
                 VariablesTextBox.Text = string.Empty;
@@ -77,45 +79,42 @@ namespace CodeWalker.Project.Panels
             }
             else
             {
-                AddToProjectButton.Enabled = CurrentEmitter?.RelFile != null ? !ProjectForm.AudioFileExistsInProject(CurrentEmitter.RelFile) : false;
+                AddToProjectButton.Enabled = CurrentRule?.RelFile != null ? !ProjectForm.AudioFileExistsInProject(CurrentRule.RelFile) : false;
                 DeleteButton.Enabled = !AddToProjectButton.Enabled;
 
                 populatingui = true;
-                var e = CurrentEmitter.AudioEmitter;
+                var e = CurrentRule.AmbientRule;
                 NameTextBox.Text = e.NameHash.ToString();
                 PositionTextBox.Text = FloatUtil.GetVector3String(e.Position);
-                InnerRadiusTextBox.Text = FloatUtil.ToString(e.InnerRadius);
-                OuterRadiusTextBox.Text = FloatUtil.ToString(e.OuterRadius);
+                InnerRadiusTextBox.Text = FloatUtil.ToString(e.MinDist);
+                OuterRadiusTextBox.Text = FloatUtil.ToString(e.MaxDist);
                 ChildSoundTextBox.Text = e.ChildSound.ToString();
                 CategoryTextBox.Text = e.Category.ToString();
-                Unk01TextBox.Text = FloatUtil.ToString(e.Unk01);
-                StartTimeUpDown.Value = e.StartTime;
-                EndTimeUpDown.Value = e.EndTime;
-                FrequencyUpDown.Value = e.Frequency.Value;
-                Unk07UpDown.Value = e.Unk07.Value;
-                Unk08UpDown.Value = e.Unk08.Value;
-                Unk09UpDown.Value = e.Unk09.Value;
-                Unk10UpDown.Value = e.Unk10.Value;
-                Unk11UpDown.Value = e.Unk11.Value;
-                Unk12UpDown.Value = e.Unk12.Value;
-                Unk13UpDown.Value = e.Unk13.Value;
-                Flags0TextBox.Text = e.Flags0.Hex;
-                Flags1TextBox.Text = e.Flags1.Hex;
-                Flags2TextBox.Text = e.Flags2.Hex;
-                Flags3TextBox.Text = e.Flags3.Hex;
-                Flags4TextBox.Text = e.Flags4.Hex;
-                Flags5TextBox.Text = e.Flags5.Hex;
+                Unk01TextBox.Text = FloatUtil.ToString(e.Weight);
+                StartTimeUpDown.Value = e.MinTimeMinutes;
+                EndTimeUpDown.Value = e.MaxTimeMinutes;
+                FrequencyUpDown.Value = e.MinRepeatTime;
+                Unk07UpDown.Value = e.MinRepeatTimeVariance;
+                Unk08UpDown.Value = e.SpawnHeight;
+                ExplicitSpawnCombo.SelectedItem = e.ExplicitSpawn;
+                Unk10UpDown.Value = e.MaxLocalInstances;
+                Unk11UpDown.Value = e.MaxGlobalInstances;
+                Unk12UpDown.Value = e.BlockabilityFactor;
+                Unk13UpDown.Value = e.MaxPathDepth;
+                Flags2TextBox.Text = e.Flags.Hex;
+                Flags4TextBox.Text = FloatUtil.ToString(e.LastPlayTime);
+                Flags5TextBox.Text = FloatUtil.ToString(e.DynamicBankID);
 
                 StringBuilder sb = new StringBuilder();
-                if (e.Variables != null)
+                if (e.Conditions != null)
                 {
-                    foreach (var extparam in e.Variables)
+                    foreach (var extparam in e.Conditions)
                     {
                         sb.Append(extparam.Name.ToString());
                         sb.Append(", ");
                         sb.Append(FloatUtil.ToString(extparam.Value));
                         sb.Append(", ");
-                        sb.Append(extparam.Flags.ToString());
+                        sb.Append(extparam.ConditionType.ToString());
                         sb.AppendLine();
                     }
                 }
@@ -125,7 +124,7 @@ namespace CodeWalker.Project.Panels
 
                 if (ProjectForm.WorldForm != null)
                 {
-                    ProjectForm.WorldForm.SelectObject(CurrentEmitter);
+                    ProjectForm.WorldForm.SelectObject(CurrentRule);
                 }
 
             }
@@ -133,9 +132,9 @@ namespace CodeWalker.Project.Panels
 
         private void ProjectItemChanged()
         {
-            CurrentEmitter?.UpdateFromEmitter();//also update the placement wrapper
+            CurrentRule?.UpdateFromAmbientRule();//also update the placement wrapper
 
-            if (CurrentEmitter?.RelFile != null)
+            if (CurrentRule?.RelFile != null)
             {
                 ProjectForm.SetAudioFileHasChanged(true);
             }
@@ -145,7 +144,7 @@ namespace CodeWalker.Project.Panels
         private void NameTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             uint hash = 0;
             string name = NameTextBox.Text;
@@ -156,10 +155,10 @@ namespace CodeWalker.Project.Panels
             }
             //NameHashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentEmitter.AudioEmitter.NameHash != hash)
+            if (CurrentRule.AmbientRule.NameHash != hash)
             {
-                CurrentEmitter.AudioEmitter.Name = NameTextBox.Text;
-                CurrentEmitter.AudioEmitter.NameHash = hash;
+                CurrentRule.AmbientRule.Name = NameTextBox.Text;
+                CurrentRule.AmbientRule.NameHash = hash;
 
                 ProjectItemChanged();
                 UpdateFormTitle();
@@ -169,12 +168,12 @@ namespace CodeWalker.Project.Panels
         private void PositionTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             var vec = FloatUtil.ParseVector3String(PositionTextBox.Text);
-            if (CurrentEmitter.AudioEmitter.Position != vec)
+            if (CurrentRule.AmbientRule.Position != vec)
             {
-                CurrentEmitter.AudioEmitter.Position = vec;
+                CurrentRule.AmbientRule.Position = vec;
 
                 ProjectItemChanged();
 
@@ -192,12 +191,12 @@ namespace CodeWalker.Project.Panels
         private void InnerRadiusTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             float rad = FloatUtil.Parse(InnerRadiusTextBox.Text);
-            if (CurrentEmitter.AudioEmitter.InnerRadius != rad)
+            if (CurrentRule.AmbientRule.MinDist != rad)
             {
-                CurrentEmitter.AudioEmitter.InnerRadius = rad;
+                CurrentRule.AmbientRule.MinDist = rad;
 
                 ProjectItemChanged();
             }
@@ -206,12 +205,12 @@ namespace CodeWalker.Project.Panels
         private void OuterRadiusTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             float rad = FloatUtil.Parse(OuterRadiusTextBox.Text);
-            if (CurrentEmitter.AudioEmitter.OuterRadius != rad)
+            if (CurrentRule.AmbientRule.MaxDist != rad)
             {
-                CurrentEmitter.AudioEmitter.OuterRadius = rad;
+                CurrentRule.AmbientRule.MaxDist = rad;
 
                 ProjectItemChanged();
             }
@@ -220,7 +219,7 @@ namespace CodeWalker.Project.Panels
         private void ChildSoundTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             uint hash = 0;
             string name = ChildSoundTextBox.Text;
@@ -231,9 +230,9 @@ namespace CodeWalker.Project.Panels
             }
             //HashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentEmitter.AudioEmitter.ChildSound != hash)
+            if (CurrentRule.AmbientRule.ChildSound != hash)
             {
-                CurrentEmitter.AudioEmitter.ChildSound = hash;
+                CurrentRule.AmbientRule.ChildSound = hash;
 
                 ProjectItemChanged();
             }
@@ -242,7 +241,7 @@ namespace CodeWalker.Project.Panels
         private void CategoryTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             uint hash = 0;
             string name = CategoryTextBox.Text;
@@ -253,9 +252,9 @@ namespace CodeWalker.Project.Panels
             }
             //HashLabel.Text = "Hash: " + hash.ToString();
 
-            if (CurrentEmitter.AudioEmitter.Category != hash)
+            if (CurrentRule.AmbientRule.Category != hash)
             {
-                CurrentEmitter.AudioEmitter.Category = hash;
+                CurrentRule.AmbientRule.Category = hash;
 
                 ProjectItemChanged();
             }
@@ -264,12 +263,12 @@ namespace CodeWalker.Project.Panels
         private void Unk01TextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             float unk = FloatUtil.Parse(Unk01TextBox.Text);
-            if (CurrentEmitter.AudioEmitter.Unk01 != unk)
+            if (CurrentRule.AmbientRule.Weight != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk01 = unk;
+                CurrentRule.AmbientRule.Weight = unk;
 
                 ProjectItemChanged();
             }
@@ -278,12 +277,12 @@ namespace CodeWalker.Project.Panels
         private void StartTimeUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             ushort unk = (ushort)StartTimeUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.StartTime != unk)
+            if (CurrentRule.AmbientRule.MinTimeMinutes != unk)
             {
-                CurrentEmitter.AudioEmitter.StartTime = unk;
+                CurrentRule.AmbientRule.MinTimeMinutes = unk;
 
                 ProjectItemChanged();
             }
@@ -292,12 +291,12 @@ namespace CodeWalker.Project.Panels
         private void EndTimeUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             ushort unk = (ushort)EndTimeUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.EndTime != unk)
+            if (CurrentRule.AmbientRule.MaxTimeMinutes != unk)
             {
-                CurrentEmitter.AudioEmitter.EndTime = unk;
+                CurrentRule.AmbientRule.MaxTimeMinutes = unk;
 
                 ProjectItemChanged();
             }
@@ -306,12 +305,12 @@ namespace CodeWalker.Project.Panels
         private void FrequencyUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             ushort unk = (ushort)FrequencyUpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Frequency.Value != unk)
+            if (CurrentRule.AmbientRule.MinRepeatTime != unk)
             {
-                CurrentEmitter.AudioEmitter.Frequency = unk;
+                CurrentRule.AmbientRule.MinRepeatTime = unk;
 
                 ProjectItemChanged();
             }
@@ -320,12 +319,12 @@ namespace CodeWalker.Project.Panels
         private void Unk07UpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             ushort unk = (ushort)Unk07UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk07.Value != unk)
+            if (CurrentRule.AmbientRule.MinRepeatTimeVariance != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk07 = unk;
+                CurrentRule.AmbientRule.MinRepeatTimeVariance = unk;
 
                 ProjectItemChanged();
             }
@@ -334,26 +333,26 @@ namespace CodeWalker.Project.Panels
         private void Unk08UpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             byte unk = (byte)Unk08UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk08.Value != unk)
+            if (CurrentRule.AmbientRule.SpawnHeight != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk08 = unk;
+                CurrentRule.AmbientRule.SpawnHeight = unk;
 
                 ProjectItemChanged();
             }
         }
 
-        private void Unk09UpDown_ValueChanged(object sender, EventArgs e)
+        private void ExplicitSpawnCombo_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
-            byte unk = (byte)Unk09UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk09.Value != unk)
+            var val = (Dat151AmbientRule.ExplicitSpawnType)ExplicitSpawnCombo.SelectedItem;
+            if (CurrentRule.AmbientRule.ExplicitSpawn != val)
             {
-                CurrentEmitter.AudioEmitter.Unk09 = unk;
+                CurrentRule.AmbientRule.ExplicitSpawn = val;
 
                 ProjectItemChanged();
             }
@@ -362,12 +361,12 @@ namespace CodeWalker.Project.Panels
         private void Unk10UpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             byte unk = (byte)Unk10UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk10.Value != unk)
+            if (CurrentRule.AmbientRule.MaxLocalInstances != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk10 = unk;
+                CurrentRule.AmbientRule.MaxLocalInstances = unk;
 
                 ProjectItemChanged();
             }
@@ -376,12 +375,12 @@ namespace CodeWalker.Project.Panels
         private void Unk11UpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             byte unk = (byte)Unk11UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk11.Value != unk)
+            if (CurrentRule.AmbientRule.MaxGlobalInstances != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk11 = unk;
+                CurrentRule.AmbientRule.MaxGlobalInstances = unk;
 
                 ProjectItemChanged();
             }
@@ -390,12 +389,12 @@ namespace CodeWalker.Project.Panels
         private void Unk12UpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             byte unk = (byte)Unk12UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk12.Value != unk)
+            if (CurrentRule.AmbientRule.BlockabilityFactor != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk12 = unk;
+                CurrentRule.AmbientRule.BlockabilityFactor = unk;
 
                 ProjectItemChanged();
             }
@@ -404,79 +403,28 @@ namespace CodeWalker.Project.Panels
         private void Unk13UpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             byte unk = (byte)Unk13UpDown.Value;
-            if (CurrentEmitter.AudioEmitter.Unk13.Value != unk)
+            if (CurrentRule.AmbientRule.MaxPathDepth != unk)
             {
-                CurrentEmitter.AudioEmitter.Unk13 = unk;
+                CurrentRule.AmbientRule.MaxPathDepth = unk;
 
                 ProjectItemChanged();
-            }
-        }
-
-        private void Flags0TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
-
-            uint flags = 0;
-            if (uint.TryParse(Flags0TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
-            {
-                if (CurrentEmitter.AudioEmitter.Flags0 != flags)
-                {
-                    CurrentEmitter.AudioEmitter.Flags0 = flags;
-
-                    ProjectItemChanged();
-                }
-            }
-        }
-
-        private void Flags1TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
-
-            uint flags = 0;
-            if (uint.TryParse(Flags1TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
-            {
-                if (CurrentEmitter.AudioEmitter.Flags1 != flags)
-                {
-                    CurrentEmitter.AudioEmitter.Flags1 = flags;
-
-                    ProjectItemChanged();
-                }
             }
         }
 
         private void Flags2TextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             uint flags = 0;
             if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags2 != flags)
+                if (CurrentRule.AmbientRule.Flags != flags)
                 {
-                    CurrentEmitter.AudioEmitter.Flags2 = flags;
-
-                    ProjectItemChanged();
-                }
-            }
-        }
-
-        private void Flags3TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
-
-            uint flags = 0;
-            if (uint.TryParse(Flags3TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
-            {
-                if (CurrentEmitter.AudioEmitter.Flags3 != flags)
-                {
-                    CurrentEmitter.AudioEmitter.Flags3 = flags;
+                    CurrentRule.AmbientRule.Flags = flags;
 
                     ProjectItemChanged();
                 }
@@ -486,14 +434,14 @@ namespace CodeWalker.Project.Panels
         private void Flags4TextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             uint flags = 0;
             if (uint.TryParse(Flags4TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags4 != flags)
+                if (CurrentRule.AmbientRule.LastPlayTime != flags)
                 {
-                    CurrentEmitter.AudioEmitter.Flags4 = flags;
+                    CurrentRule.AmbientRule.LastPlayTime = flags;
 
                     ProjectItemChanged();
                 }
@@ -503,14 +451,14 @@ namespace CodeWalker.Project.Panels
         private void Flags5TextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             uint flags = 0;
             if (uint.TryParse(Flags5TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
-                if (CurrentEmitter.AudioEmitter.Flags5 != flags)
+                if (CurrentRule.AmbientRule.DynamicBankID != flags)
                 {
-                    CurrentEmitter.AudioEmitter.Flags5 = flags;
+                    CurrentRule.AmbientRule.DynamicBankID = (int)flags;
 
                     ProjectItemChanged();
                 }
@@ -520,18 +468,18 @@ namespace CodeWalker.Project.Panels
         private void VariablesTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
-            if (CurrentEmitter?.AudioEmitter == null) return;
+            if (CurrentRule?.AmbientRule == null) return;
 
             var paramstrs = VariablesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
             {
-                var paramlist = new List<Dat151AmbientRule.Variable>();
+                var paramlist = new List<Dat151AmbientRule.Condition>();
                 foreach (var paramstr in paramstrs)
                 {
                     var paramvals = paramstr.Split(',');
                     if (paramvals?.Length == 3)
                     {
-                        var param = new Dat151AmbientRule.Variable();
+                        var param = new Dat151AmbientRule.Condition();
                         var hashstr = paramvals[0].Trim();
                         var valstr = paramvals[1].Trim();
                         var flgstr = paramvals[2].Trim();
@@ -545,13 +493,13 @@ namespace CodeWalker.Project.Panels
                         uint.TryParse(flgstr, out flags);
                         param.Name = hash;
                         param.Value = FloatUtil.Parse(valstr);
-                        param.Flags = flags;
+                        param.ConditionType = (byte)flags;
                         paramlist.Add(param);
                     }
                 }
 
-                CurrentEmitter.AudioEmitter.Variables = paramlist.ToArray();
-                CurrentEmitter.AudioEmitter.VariablesCount = (ushort)paramlist.Count;
+                CurrentRule.AmbientRule.Conditions = paramlist.ToArray();
+                CurrentRule.AmbientRule.NumConditions = (ushort)paramlist.Count;
 
                 ProjectItemChanged();
             }
@@ -559,22 +507,21 @@ namespace CodeWalker.Project.Panels
 
         private void GoToButton_Click(object sender, EventArgs e)
         {
-            if (CurrentEmitter == null) return;
+            if (CurrentRule == null) return;
             if (ProjectForm.WorldForm == null) return;
-            ProjectForm.WorldForm.GoToPosition(CurrentEmitter.Position, CurrentEmitter.AudioZone.PlaybackZoneSize);
+            ProjectForm.WorldForm.GoToPosition(CurrentRule.Position, SharpDX.Vector3.One * CurrentRule.OuterRadius);
         }
 
         private void AddToProjectButton_Click(object sender, EventArgs e)
         {
-            ProjectForm.SetProjectItem(CurrentEmitter);
-            ProjectForm.AddAudioFileToProject(CurrentEmitter.RelFile);
+            ProjectForm.SetProjectItem(CurrentRule);
+            ProjectForm.AddAudioFileToProject(CurrentRule.RelFile);
         }
 
         private void DeleteButton_Click(object sender, EventArgs e)
         {
-            ProjectForm.SetProjectItem(CurrentEmitter);
-            ProjectForm.DeleteAudioEmitter();
+            ProjectForm.SetProjectItem(CurrentRule);
+            ProjectForm.DeleteAudioAmbientRule();
         }
-
     }
 }

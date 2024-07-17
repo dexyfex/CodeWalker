@@ -938,8 +938,9 @@ namespace CodeWalker
                 else if (NavPortal != null) return true;
                 else if (TrainTrackNode != null) return true;
                 else if (ScenarioNode != null) return true;
-                else if (Audio?.AudioZone != null) return true;
-                else if (Audio?.AudioEmitter != null) return true;
+                else if (Audio?.AmbientZone != null) return true;
+                else if (Audio?.AmbientRule != null) return true;
+                else if (Audio?.StaticEmitter != null) return true;
                 return false;
             }
         }
@@ -1491,8 +1492,9 @@ namespace CodeWalker
             else if (NavPortal != null) return NavPortal;
             else if (TrainTrackNode != null) return TrainTrackNode;
             else if (ScenarioNode != null) return ScenarioNode;
-            else if (Audio?.AudioZone != null) return Audio;
-            else if (Audio?.AudioEmitter != null) return Audio;
+            else if (Audio?.AmbientZone != null) return Audio;
+            else if (Audio?.AmbientRule != null) return Audio;
+            else if (Audio?.StaticEmitter != null) return Audio;
             return null;
         }
 

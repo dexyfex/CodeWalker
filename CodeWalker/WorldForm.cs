@@ -5216,7 +5216,7 @@ namespace CodeWalker
                 case MapSelectionMode.NavMesh: ProjectForm.NewNavPoly(); break; //.NewNavPoint/.NewNavPortal//how to add points/portals? project window
                 case MapSelectionMode.TrainTrack: ProjectForm.NewTrainNode(); break;
                 case MapSelectionMode.Scenario: ProjectForm.NewScenarioNode(); break; //how to add different node types? project window
-                case MapSelectionMode.Audio: ProjectForm.NewAudioZone(); break; //.NewAudioEmitter // how to add emitters as well? project window
+                case MapSelectionMode.Audio: ProjectForm.NewAudioAmbientZone(); break; //.NewAudioEmitter // how to add emitters as well? project window
             }
         }
         private void CopyItem()
@@ -5274,8 +5274,9 @@ namespace CodeWalker
             else if (item.NavPortal != null) DeleteNavPortal(item.NavPortal);
             else if (item.TrainTrackNode != null) DeleteTrainNode(item.TrainTrackNode);
             else if (item.ScenarioNode != null) DeleteScenarioNode(item.ScenarioNode);
-            else if (item.Audio?.AudioZone != null) DeleteAudioZone(item.Audio);
-            else if (item.Audio?.AudioEmitter != null) DeleteAudioEmitter(item.Audio);
+            else if (item.Audio?.AmbientZone != null) DeleteAudioAmbientZone(item.Audio);
+            else if (item.Audio?.AmbientRule != null) DeleteAudioAmbientRule(item.Audio);
+            else if (item.Audio?.StaticEmitter != null) DeleteAudioStaticEmitter(item.Audio);
         }
         private void DeleteEntity(YmapEntityDef ent)
         {
@@ -5478,30 +5479,45 @@ namespace CodeWalker
                 SelectItem(null);
             }
         }
-        private void DeleteAudioZone(AudioPlacement audio)
+        private void DeleteAudioAmbientZone(AudioPlacement audio)
         {
             if (audio == null) return;
 
             //project not open, or zone not selected there, just remove the zone from the rel...
             var rel = audio.RelFile;
-            if (!rel.RemoveRelData(audio.AudioZone))
+            if (!rel.RemoveRelData(audio.AmbientZone))
             {
-                MessageBox.Show("Unable to remove audio zone. Audio zone editing TODO!");
+                MessageBox.Show("Unable to remove audio ambient zone.");
             }
             else
             {
                 SelectItem(null);
             }
         }
-        private void DeleteAudioEmitter(AudioPlacement audio)
+        private void DeleteAudioAmbientRule(AudioPlacement audio)
         {
             if (audio == null) return;
 
-            //project not open, or zone not selected there, just remove the zone from the rel...
+            //project not open, or rule not selected there, just remove the rule from the rel...
             var rel = audio.RelFile;
-            if (!rel.RemoveRelData(audio.AudioEmitter))
+            if (!rel.RemoveRelData(audio.AmbientRule))
             {
-                MessageBox.Show("Unable to remove audio emitter. Audio zone editing TODO!");
+                MessageBox.Show("Unable to remove audio ambient rule.");
+            }
+            else
+            {
+                SelectItem(null);
+            }
+        }
+        private void DeleteAudioStaticEmitter(AudioPlacement audio)
+        {
+            if (audio == null) return;
+
+            //project not open, or emitter not selected there, just remove the emitter from the rel...
+            var rel = audio.RelFile;
+            if (!rel.RemoveRelData(audio.StaticEmitter))
+            {
+                MessageBox.Show("Unable to remove audio static emitter.");
             }
             else
             {

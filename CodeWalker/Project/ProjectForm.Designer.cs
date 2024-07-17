@@ -173,8 +173,8 @@
             this.AudioMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioNameMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
-            this.AudioNewAmbientEmitterMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.AudioNewAmbientEmitterListMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNewAmbientRuleMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.AudioNewStaticEmitterListMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioNewAmbientZoneMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioNewAmbientZoneListMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.AudioNewInteriorMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -213,6 +213,7 @@
             this.ToolbarSaveAllButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.AudioNewStaticEmitterMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.SuspendLayout();
@@ -1356,8 +1357,9 @@
             this.AudioMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.AudioNameMenu,
             this.toolStripSeparator23,
-            this.AudioNewAmbientEmitterMenu,
-            this.AudioNewAmbientEmitterListMenu,
+            this.AudioNewAmbientRuleMenu,
+            this.AudioNewStaticEmitterMenu,
+            this.AudioNewStaticEmitterListMenu,
             this.AudioNewAmbientZoneMenu,
             this.AudioNewAmbientZoneListMenu,
             this.AudioNewInteriorMenu,
@@ -1382,21 +1384,21 @@
             this.toolStripSeparator23.Name = "toolStripSeparator23";
             this.toolStripSeparator23.Size = new System.Drawing.Size(213, 6);
             // 
-            // AudioNewAmbientEmitterMenu
+            // AudioNewAmbientRuleMenu
             // 
-            this.AudioNewAmbientEmitterMenu.Enabled = false;
-            this.AudioNewAmbientEmitterMenu.Name = "AudioNewAmbientEmitterMenu";
-            this.AudioNewAmbientEmitterMenu.Size = new System.Drawing.Size(216, 22);
-            this.AudioNewAmbientEmitterMenu.Text = "New Ambient Emitter";
-            this.AudioNewAmbientEmitterMenu.Click += new System.EventHandler(this.AudioNewAmbientEmitterMenu_Click);
+            this.AudioNewAmbientRuleMenu.Enabled = false;
+            this.AudioNewAmbientRuleMenu.Name = "AudioNewAmbientRuleMenu";
+            this.AudioNewAmbientRuleMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewAmbientRuleMenu.Text = "New Ambient Rule";
+            this.AudioNewAmbientRuleMenu.Click += new System.EventHandler(this.AudioNewAmbientRuleMenu_Click);
             // 
-            // AudioNewAmbientEmitterListMenu
+            // AudioNewStaticEmitterListMenu
             // 
-            this.AudioNewAmbientEmitterListMenu.Enabled = false;
-            this.AudioNewAmbientEmitterListMenu.Name = "AudioNewAmbientEmitterListMenu";
-            this.AudioNewAmbientEmitterListMenu.Size = new System.Drawing.Size(216, 22);
-            this.AudioNewAmbientEmitterListMenu.Text = "New Ambient Emitter List";
-            this.AudioNewAmbientEmitterListMenu.Click += new System.EventHandler(this.AudioNewAmbientEmitterListMenu_Click);
+            this.AudioNewStaticEmitterListMenu.Enabled = false;
+            this.AudioNewStaticEmitterListMenu.Name = "AudioNewStaticEmitterListMenu";
+            this.AudioNewStaticEmitterListMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewStaticEmitterListMenu.Text = "New Static Emitter List";
+            this.AudioNewStaticEmitterListMenu.Click += new System.EventHandler(this.AudioNewStaticEmitterListMenu_Click);
             // 
             // AudioNewAmbientZoneMenu
             // 
@@ -1698,6 +1700,14 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
             // 
+            // AudioNewStaticEmitterMenu
+            // 
+            this.AudioNewStaticEmitterMenu.Enabled = false;
+            this.AudioNewStaticEmitterMenu.Name = "AudioNewStaticEmitterMenu";
+            this.AudioNewStaticEmitterMenu.Size = new System.Drawing.Size(216, 22);
+            this.AudioNewStaticEmitterMenu.Text = "New Static Emitter";
+            this.AudioNewStaticEmitterMenu.Click += new System.EventHandler(this.AudioNewStaticEmitterMenu_Click);
+            // 
             // ProjectForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1840,8 +1850,8 @@
         private System.Windows.Forms.ToolStripMenuItem AudioMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNameMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
-        private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientEmitterMenu;
-        private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientEmitterListMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientRuleMenu;
+        private System.Windows.Forms.ToolStripMenuItem AudioNewStaticEmitterListMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientZoneMenu;
         private System.Windows.Forms.ToolStripMenuItem AudioNewAmbientZoneListMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
@@ -1907,5 +1917,6 @@
         private System.Windows.Forms.ToolStripMenuItem YtdRemoveFromProjectMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator31;
         private System.Windows.Forms.ToolStripMenuItem deleteGrassToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem AudioNewStaticEmitterMenu;
     }
 }
