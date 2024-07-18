@@ -111,7 +111,7 @@
             this.EntityTabControl.Location = new System.Drawing.Point(2, 3);
             this.EntityTabControl.Name = "EntityTabControl";
             this.EntityTabControl.SelectedIndex = 0;
-            this.EntityTabControl.Size = new System.Drawing.Size(563, 502);
+            this.EntityTabControl.Size = new System.Drawing.Size(563, 432);
             this.EntityTabControl.TabIndex = 45;
             // 
             // EntityGeneralTabPage
@@ -153,7 +153,7 @@
             this.EntityGeneralTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityGeneralTabPage.Name = "EntityGeneralTabPage";
             this.EntityGeneralTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.EntityGeneralTabPage.Size = new System.Drawing.Size(555, 476);
+            this.EntityGeneralTabPage.Size = new System.Drawing.Size(555, 406);
             this.EntityGeneralTabPage.TabIndex = 0;
             this.EntityGeneralTabPage.Text = "General";
             this.EntityGeneralTabPage.UseVisualStyleBackColor = true;
@@ -219,9 +219,9 @@
             "536870912 - Only render mirror reflections",
             "1073741824 - Unused",
             "2147483648 - Unused"});
-            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(348, 113);
+            this.EntityFlagsCheckedListBox.Location = new System.Drawing.Point(298, 113);
             this.EntityFlagsCheckedListBox.Name = "EntityFlagsCheckedListBox";
-            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(201, 349);
+            this.EntityFlagsCheckedListBox.Size = new System.Drawing.Size(251, 289);
             this.EntityFlagsCheckedListBox.TabIndex = 32;
             this.EntityFlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.EntityFlagsCheckedListBox_ItemCheck);
             // 
@@ -245,7 +245,7 @@
             // 
             // EntityDeleteButton
             // 
-            this.EntityDeleteButton.Location = new System.Drawing.Point(175, 376);
+            this.EntityDeleteButton.Location = new System.Drawing.Point(175, 371);
             this.EntityDeleteButton.Name = "EntityDeleteButton";
             this.EntityDeleteButton.Size = new System.Drawing.Size(95, 23);
             this.EntityDeleteButton.TabIndex = 34;
@@ -259,13 +259,13 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityTintValueTextBox.Location = new System.Drawing.Point(93, 323);
             this.EntityTintValueTextBox.Name = "EntityTintValueTextBox";
-            this.EntityTintValueTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityTintValueTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityTintValueTextBox.TabIndex = 29;
             this.EntityTintValueTextBox.TextChanged += new System.EventHandler(this.EntityTintValueTextBox_TextChanged);
             // 
             // EntityAddToProjectButton
             // 
-            this.EntityAddToProjectButton.Location = new System.Drawing.Point(74, 376);
+            this.EntityAddToProjectButton.Location = new System.Drawing.Point(74, 371);
             this.EntityAddToProjectButton.Name = "EntityAddToProjectButton";
             this.EntityAddToProjectButton.Size = new System.Drawing.Size(95, 23);
             this.EntityAddToProjectButton.TabIndex = 33;
@@ -288,7 +288,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityArtificialAOTextBox.Location = new System.Drawing.Point(93, 297);
             this.EntityArtificialAOTextBox.Name = "EntityArtificialAOTextBox";
-            this.EntityArtificialAOTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityArtificialAOTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityArtificialAOTextBox.TabIndex = 27;
             this.EntityArtificialAOTextBox.TextChanged += new System.EventHandler(this.EntityArtificialAOTextBox_TextChanged);
             // 
@@ -307,7 +307,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityAOMultiplierTextBox.Location = new System.Drawing.Point(93, 271);
             this.EntityAOMultiplierTextBox.Name = "EntityAOMultiplierTextBox";
-            this.EntityAOMultiplierTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityAOMultiplierTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityAOMultiplierTextBox.TabIndex = 25;
             this.EntityAOMultiplierTextBox.TextChanged += new System.EventHandler(this.EntityAOMultiplierTextBox_TextChanged);
             // 
@@ -317,7 +317,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityGuidTextBox.Location = new System.Drawing.Point(93, 87);
             this.EntityGuidTextBox.Name = "EntityGuidTextBox";
-            this.EntityGuidTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityGuidTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityGuidTextBox.TabIndex = 11;
             this.EntityGuidTextBox.TextChanged += new System.EventHandler(this.EntityGuidTextBox_TextChanged);
             // 
@@ -329,7 +329,7 @@
             this.EntityPriorityLevelComboBox.FormattingEnabled = true;
             this.EntityPriorityLevelComboBox.Location = new System.Drawing.Point(93, 244);
             this.EntityPriorityLevelComboBox.Name = "EntityPriorityLevelComboBox";
-            this.EntityPriorityLevelComboBox.Size = new System.Drawing.Size(233, 21);
+            this.EntityPriorityLevelComboBox.Size = new System.Drawing.Size(196, 21);
             this.EntityPriorityLevelComboBox.TabIndex = 23;
             this.EntityPriorityLevelComboBox.SelectedIndexChanged += new System.EventHandler(this.EntityPriorityLevelComboBox_SelectedIndexChanged);
             // 
@@ -377,7 +377,7 @@
             this.EntityLodLevelComboBox.FormattingEnabled = true;
             this.EntityLodLevelComboBox.Location = new System.Drawing.Point(93, 217);
             this.EntityLodLevelComboBox.Name = "EntityLodLevelComboBox";
-            this.EntityLodLevelComboBox.Size = new System.Drawing.Size(233, 21);
+            this.EntityLodLevelComboBox.Size = new System.Drawing.Size(196, 21);
             this.EntityLodLevelComboBox.TabIndex = 21;
             this.EntityLodLevelComboBox.SelectedIndexChanged += new System.EventHandler(this.EntityLodLevelComboBox_SelectedIndexChanged);
             // 
@@ -406,7 +406,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityScaleXYTextBox.Location = new System.Drawing.Point(93, 113);
             this.EntityScaleXYTextBox.Name = "EntityScaleXYTextBox";
-            this.EntityScaleXYTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityScaleXYTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityScaleXYTextBox.TabIndex = 13;
             this.EntityScaleXYTextBox.TextChanged += new System.EventHandler(this.EntityScaleXYTextBox_TextChanged);
             // 
@@ -423,7 +423,7 @@
             // 
             this.EntityArchetypeHashLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityArchetypeHashLabel.AutoSize = true;
-            this.EntityArchetypeHashLabel.Location = new System.Drawing.Point(332, 64);
+            this.EntityArchetypeHashLabel.Location = new System.Drawing.Point(295, 64);
             this.EntityArchetypeHashLabel.Name = "EntityArchetypeHashLabel";
             this.EntityArchetypeHashLabel.Size = new System.Drawing.Size(23, 13);
             this.EntityArchetypeHashLabel.TabIndex = 9;
@@ -435,7 +435,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityChildLodDistTextBox.Location = new System.Drawing.Point(93, 191);
             this.EntityChildLodDistTextBox.Name = "EntityChildLodDistTextBox";
-            this.EntityChildLodDistTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityChildLodDistTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityChildLodDistTextBox.TabIndex = 19;
             this.EntityChildLodDistTextBox.TextChanged += new System.EventHandler(this.EntityChildLodDistTextBox_TextChanged);
             // 
@@ -463,7 +463,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityScaleZTextBox.Location = new System.Drawing.Point(93, 139);
             this.EntityScaleZTextBox.Name = "EntityScaleZTextBox";
-            this.EntityScaleZTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityScaleZTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityScaleZTextBox.TabIndex = 15;
             this.EntityScaleZTextBox.TextChanged += new System.EventHandler(this.EntityScaleZTextBox_TextChanged);
             // 
@@ -473,7 +473,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityLodDistTextBox.Location = new System.Drawing.Point(93, 165);
             this.EntityLodDistTextBox.Name = "EntityLodDistTextBox";
-            this.EntityLodDistTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityLodDistTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityLodDistTextBox.TabIndex = 17;
             this.EntityLodDistTextBox.TextChanged += new System.EventHandler(this.EntityLodDistTextBox_TextChanged);
             // 
@@ -483,7 +483,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityArchetypeTextBox.Location = new System.Drawing.Point(93, 61);
             this.EntityArchetypeTextBox.Name = "EntityArchetypeTextBox";
-            this.EntityArchetypeTextBox.Size = new System.Drawing.Size(233, 20);
+            this.EntityArchetypeTextBox.Size = new System.Drawing.Size(196, 20);
             this.EntityArchetypeTextBox.TabIndex = 8;
             this.EntityArchetypeTextBox.TextChanged += new System.EventHandler(this.EntityArchetypeTextBox_TextChanged);
             // 
@@ -535,7 +535,7 @@
             this.EntityLodTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityLodTabPage.Name = "EntityLodTabPage";
             this.EntityLodTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.EntityLodTabPage.Size = new System.Drawing.Size(555, 476);
+            this.EntityLodTabPage.Size = new System.Drawing.Size(555, 406);
             this.EntityLodTabPage.TabIndex = 1;
             this.EntityLodTabPage.Text = "LOD Hierarchy";
             this.EntityLodTabPage.UseVisualStyleBackColor = true;
@@ -583,7 +583,7 @@
             this.EntityExtensionsTabPage.Controls.Add(this.label1);
             this.EntityExtensionsTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityExtensionsTabPage.Name = "EntityExtensionsTabPage";
-            this.EntityExtensionsTabPage.Size = new System.Drawing.Size(555, 476);
+            this.EntityExtensionsTabPage.Size = new System.Drawing.Size(555, 406);
             this.EntityExtensionsTabPage.TabIndex = 2;
             this.EntityExtensionsTabPage.Text = "Extensions";
             this.EntityExtensionsTabPage.UseVisualStyleBackColor = true;
@@ -607,7 +607,7 @@
             this.EntityPivotTabPage.Controls.Add(this.label94);
             this.EntityPivotTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityPivotTabPage.Name = "EntityPivotTabPage";
-            this.EntityPivotTabPage.Size = new System.Drawing.Size(555, 476);
+            this.EntityPivotTabPage.Size = new System.Drawing.Size(555, 406);
             this.EntityPivotTabPage.TabIndex = 3;
             this.EntityPivotTabPage.Text = "Pivot";
             this.EntityPivotTabPage.UseVisualStyleBackColor = true;
@@ -685,7 +685,7 @@
             this.EntityMiloTabPage.Controls.Add(this.label2);
             this.EntityMiloTabPage.Location = new System.Drawing.Point(4, 22);
             this.EntityMiloTabPage.Name = "EntityMiloTabPage";
-            this.EntityMiloTabPage.Size = new System.Drawing.Size(555, 476);
+            this.EntityMiloTabPage.Size = new System.Drawing.Size(555, 406);
             this.EntityMiloTabPage.TabIndex = 4;
             this.EntityMiloTabPage.Text = "MLO Instance";
             this.EntityMiloTabPage.UseVisualStyleBackColor = true;
@@ -784,9 +784,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(565, 505);
+            this.ClientSize = new System.Drawing.Size(565, 435);
             this.Controls.Add(this.EntityTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MinimumSize = new System.Drawing.Size(561, 450);
             this.Name = "EditYmapEntityPanel";
             this.Text = "Entity";
             this.EntityTabControl.ResumeLayout(false);
