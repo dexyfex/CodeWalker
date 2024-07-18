@@ -4505,11 +4505,8 @@ namespace CodeWalker.GameFiles
                     case LightType.Point:
                         return Quaternion.Identity;
                     case LightType.Spot:
-                        tx = Vector3.Normalize(Tangent);
-                        ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
-                        break;
                     case LightType.Capsule:
-                        tx = -Vector3.Normalize(Tangent);
+                        tx = Vector3.Normalize(Tangent);
                         ty = Vector3.Normalize(Vector3.Cross(Direction, Tangent));
                         break;
                 }

@@ -1384,6 +1384,7 @@ namespace CodeWalker.Rendering
         public Vector3 CullingPlaneNormal;
         public float CullingPlaneOffset;
         public uint TimeFlags;
+        public uint Flags;
         public MetaHash TextureHash;
 
         public void Init(LightAttributes l)
@@ -1409,6 +1410,7 @@ namespace CodeWalker.Rendering
             CullingPlaneNormal = l.CullingPlaneNormal;
             CullingPlaneOffset = l.CullingPlaneOffset;
             TimeFlags = l.TimeFlags;
+            Flags = l.Flags;
             TextureHash = l.ProjectedTextureHash;
         }
     }

@@ -100,6 +100,10 @@
             this.ControlLightDirCheckBox = new System.Windows.Forms.CheckBox();
             this.SkydomeCheckBox = new System.Windows.Forms.CheckBox();
             this.TimeOfDayLabel = new System.Windows.Forms.Label();
+            this.OptionsHelperTabPage = new System.Windows.Forms.TabPage();
+            this.OptionsShowOutlinesCheckBox = new System.Windows.Forms.CheckBox();
+            this.SnapAngleUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label33 = new System.Windows.Forms.Label();
             this.ToolsPanelHideButton = new System.Windows.Forms.Button();
             this.ToolsDragPanel = new System.Windows.Forms.Panel();
             this.ToolsPanelShowButton = new System.Windows.Forms.Button();
@@ -119,6 +123,8 @@
             this.OptionsRenderTabPage.SuspendLayout();
             this.OptionsLightingTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).BeginInit();
+            this.OptionsHelperTabPage.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // StatsUpdateTimer
@@ -544,6 +550,7 @@
             // 
             this.OptionsTabControl.Controls.Add(this.OptionsRenderTabPage);
             this.OptionsTabControl.Controls.Add(this.OptionsLightingTabPage);
+            this.OptionsTabControl.Controls.Add(this.OptionsHelperTabPage);
             this.OptionsTabControl.Dock = System.Windows.Forms.DockStyle.Fill;
             this.OptionsTabControl.Location = new System.Drawing.Point(0, 0);
             this.OptionsTabControl.Name = "OptionsTabControl";
@@ -932,6 +939,59 @@
             this.TimeOfDayLabel.TabIndex = 5;
             this.TimeOfDayLabel.Text = "12:00";
             // 
+            // OptionsHelperTabPage
+            // 
+            this.OptionsHelperTabPage.Controls.Add(this.OptionsShowOutlinesCheckBox);
+            this.OptionsHelperTabPage.Controls.Add(this.SnapAngleUpDown);
+            this.OptionsHelperTabPage.Controls.Add(this.label33);
+            this.OptionsHelperTabPage.Location = new System.Drawing.Point(4, 22);
+            this.OptionsHelperTabPage.Margin = new System.Windows.Forms.Padding(4);
+            this.OptionsHelperTabPage.Name = "OptionsHelperTabPage";
+            this.OptionsHelperTabPage.Padding = new System.Windows.Forms.Padding(4);
+            this.OptionsHelperTabPage.Size = new System.Drawing.Size(233, 474);
+            this.OptionsHelperTabPage.TabIndex = 2;
+            this.OptionsHelperTabPage.Text = "Helpers";
+            this.OptionsHelperTabPage.UseVisualStyleBackColor = true;
+            // 
+            // OptionsShowOutlinesCheckBox
+            // 
+            this.OptionsShowOutlinesCheckBox.AutoSize = true;
+            this.OptionsShowOutlinesCheckBox.Checked = true;
+            this.OptionsShowOutlinesCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.OptionsShowOutlinesCheckBox.Location = new System.Drawing.Point(9, 7);
+            this.OptionsShowOutlinesCheckBox.Margin = new System.Windows.Forms.Padding(4);
+            this.OptionsShowOutlinesCheckBox.Name = "OptionsShowOutlinesCheckBox";
+            this.OptionsShowOutlinesCheckBox.Size = new System.Drawing.Size(120, 17);
+            this.OptionsShowOutlinesCheckBox.TabIndex = 37;
+            this.OptionsShowOutlinesCheckBox.Text = "Show Light Outlines";
+            this.OptionsShowOutlinesCheckBox.UseVisualStyleBackColor = true;
+            this.OptionsShowOutlinesCheckBox.CheckedChanged += new System.EventHandler(this.OptionsShowOutlinesCheckBox_CheckedChanged);
+            // 
+            // SnapAngleUpDown
+            // 
+            this.SnapAngleUpDown.DecimalPlaces = 1;
+            this.SnapAngleUpDown.Location = new System.Drawing.Point(130, 52);
+            this.SnapAngleUpDown.Margin = new System.Windows.Forms.Padding(4);
+            this.SnapAngleUpDown.Maximum = new decimal(new int[] {
+            180,
+            0,
+            0,
+            0});
+            this.SnapAngleUpDown.Name = "SnapAngleUpDown";
+            this.SnapAngleUpDown.Size = new System.Drawing.Size(95, 20);
+            this.SnapAngleUpDown.TabIndex = 34;
+            this.SnapAngleUpDown.ValueChanged += new System.EventHandler(this.SnapAngleUpDown_ValueChanged);
+            // 
+            // label33
+            // 
+            this.label33.AutoSize = true;
+            this.label33.Location = new System.Drawing.Point(8, 54);
+            this.label33.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label33.Name = "label33";
+            this.label33.Size = new System.Drawing.Size(91, 13);
+            this.label33.TabIndex = 33;
+            this.label33.Text = "Snap angle (deg):";
+            // 
             // ToolsPanelHideButton
             // 
             this.ToolsPanelHideButton.Location = new System.Drawing.Point(3, 3);
@@ -1011,6 +1071,9 @@
             this.OptionsLightingTabPage.ResumeLayout(false);
             this.OptionsLightingTabPage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimeOfDayTrackBar)).EndInit();
+            this.OptionsHelperTabPage.ResumeLayout(false);
+            this.OptionsHelperTabPage.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1093,5 +1156,9 @@
         private System.Windows.Forms.ToolStripMenuItem SaveAllTexturesMenuButton;
         private System.Windows.Forms.ToolStripMenuItem SaveSharedTexturesMenuButton;
         private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
+        private System.Windows.Forms.TabPage OptionsHelperTabPage;
+        private System.Windows.Forms.NumericUpDown SnapAngleUpDown;
+        private System.Windows.Forms.Label label33;
+        private System.Windows.Forms.CheckBox OptionsShowOutlinesCheckBox;
     }
 }

@@ -56,6 +56,10 @@ namespace CodeWalker.Rendering
         public uint InstType;
         public Vector3 InstCullingPlaneNormal;
         public float InstCullingPlaneOffset;
+        public uint InstCullingPlaneEnable;
+        public uint InstUnused1;
+        public uint InstUnused2;
+        public uint InstUnused3;
     }
 
     public struct DeferredSSAAPSVars
@@ -573,6 +577,7 @@ namespace CodeWalker.Rendering
                 LightInstVars.Vars.InstConeOuterAngle = rl.ConeOuterAngle;
                 LightInstVars.Vars.InstType = (uint)rl.Type;
                 LightInstVars.Vars.InstCullingPlaneOffset = rl.CullingPlaneOffset;
+                LightInstVars.Vars.InstCullingPlaneEnable = ((rl.Flags & 0x40000) != 0) ? 1u : 0u;
                 LightInstVars.Update(context);
                 LightInstVars.SetVSCBuffer(context, 1);
                 LightInstVars.SetPSCBuffer(context, 2);

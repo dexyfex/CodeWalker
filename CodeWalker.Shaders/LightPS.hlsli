@@ -38,6 +38,10 @@ cbuffer PSLightInstVars : register(b2)
     uint InstType;
     float3 InstCullingPlaneNormal;
     float InstCullingPlaneOffset;
+    uint InstCullingPlaneEnable;
+    uint InstUnused1;
+    uint InstUnused2;
+    uint InstUnused3;
 }
 
 
@@ -170,19 +174,20 @@ float4 DeferredLight(float3 camRel, float3 norm, float4 diffuse, float4 specular
 {
     float3 srpos = InstPosition - camRel; //light position relative to surface position
     float ldist = length(srpos);
+    if (InstCullingPlaneEnable == 1)
+    {
+        float d = dot(srpos, InstCullingPlaneNormal) - InstCullingPlaneOffset;
+        if (d > 0) return 0;
+    }
     if (InstType == 4)//capsule
     {
-        float3 ext = InstDirection.xyz * (InstCapsuleExtent.y * 0.5);
+        float3 ext = InstDirection.xyz * (InstCapsuleExtent.x * 0.5);
         float4 lsn = GetLineSegmentNearestPoint(srpos, ext, -ext);
         ldist = lsn.w;
         srpos.xyz = lsn.xyz;
     }
     if (ldist > InstFalloff) return 0;
     if (ldist <= 0) return 0;
-    
-    float d = dot(srpos, InstCullingPlaneNormal) - InstCullingPlaneOffset;
-    if (d > 0) return 0;
-    
     float4 rgbi = float4(InstColour, InstIntensity);
     float3 lcol = rgbi.rgb;// * rgbi.a; // * 5.0f;
     float3 ldir = srpos / ldist;

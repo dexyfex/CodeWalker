@@ -122,7 +122,8 @@ namespace CodeWalker.Forms
                 ColourBUpDown.Value = 0;
                 IntensityTextBox.Text = "";
                 FlagsTextBox.Text = "";
-                FlashinessUpDown.Value = 0;
+                FlashinessComboBox.SelectedIndex = 0;
+                LightHashUpDown.Value = 0;
                 BoneIDUpDown.Value = 0;
                 GroupIDUpDown.Value = 0;
                 FalloffTextBox.Text = "";
@@ -167,7 +168,9 @@ namespace CodeWalker.Forms
                 ColourLabel.BackColor = System.Drawing.Color.FromArgb(light.ColorR, light.ColorG, light.ColorB);
                 IntensityTextBox.Text = FloatUtil.ToString(light.Intensity);
                 FlagsTextBox.Text = light.Flags.ToString();
-                FlashinessUpDown.Value = light.Flashiness;
+                UpdateFlagsCheckBoxes();
+                FlashinessComboBox.SelectedIndex = light.Flashiness;
+                LightHashUpDown.Value = light.LightHash;
                 BoneIDUpDown.Value = light.BoneId;
                 GroupIDUpDown.Value = light.GroupId;
                 FalloffTextBox.Text = FloatUtil.ToString(light.Falloff);
@@ -195,7 +198,7 @@ namespace CodeWalker.Forms
                 CullingPlaneNormalTextBox.Text = FloatUtil.GetVector3String(light.CullingPlaneNormal);
                 CullingPlaneOffsetTextBox.Text = FloatUtil.ToString(light.CullingPlaneOffset);
                 TimeFlagsTextBox.Text = light.TimeFlags.ToString();
-                UpdateFlagsCheckBoxes();
+                UpdateTimeFlagsCheckBoxes();
                 populatingui = false;
             }
         }
@@ -206,12 +209,37 @@ namespace CodeWalker.Forms
             selectedLight.UpdateRenderable = true;
         }
 
+        public void UpdateWidgetTransform()
+        {
+            var sl = selectedLight;
+            var pos = sl.Position;
+            Bone bone = null;
+            ModelForm.Skeleton?.BonesMap?.TryGetValue(sl.BoneId, out bone);
+            if (bone != null)
+            {
+                var xform = bone.AbsTransform;
+                pos = xform.Multiply(pos);
+            }
+            if (sl == null) return;
+            if (sl.Type == LightType.Capsule)
+            {
+                ModelForm.SetWidgetTransform(pos, sl.Orientation, new Vector3(sl.Falloff, sl.Falloff, sl.Extent.X));
+            }
+            else if (sl.Type == LightType.Spot)
+            {
+                ModelForm.SetWidgetTransform(pos, sl.Orientation, new Vector3(sl.ConeOuterAngle, sl.ConeInnerAngle, sl.Falloff));
+            }
+            else
+            {
+                ModelForm.SetWidgetTransform(pos, sl.Orientation, new Vector3(sl.Falloff));
+            }
+        }
 
         private LightAttributes NewLightAttribute()
         {
             LightAttributes light = new LightAttributes();
             light.Direction = Vector3.BackwardLH;
-            light.Tangent = Vector3.Right;
+            light.Tangent = Vector3.Left;
             light.Intensity = 5;
             light.ConeInnerAngle = 5;
             light.ConeOuterAngle = 35;
@@ -221,7 +249,7 @@ namespace CodeWalker.Forms
             light.ColorR = 255;
             light.ColorG = 255;
             light.ColorB = 255;
-            light.TimeFlags = 14680191;
+            light.TimeFlags = 16777215;
             return light;
         }
         private LightAttributes DuplicateLightAttribute()
@@ -288,18 +316,7 @@ namespace CodeWalker.Forms
                 selectedLight = light;
                 ModelForm.selectedLight = light;
                 UpdateUI();
-
-                var pos = light.Position;
-                Bone bone = null;
-                ModelForm.Skeleton?.BonesMap?.TryGetValue(light.BoneId, out bone);
-                if (bone != null)
-                {
-                    var xform = bone.AbsTransform;
-                    pos = xform.Multiply(pos);
-                    //TODO:? handle bone's rotation correctly for widget??
-                }
-
-                ModelForm.SetWidgetTransform(pos, light.Orientation, new Vector3(light.Falloff));
+                UpdateWidgetTransform();
             }
         }
         private void SelectLightTreeNode(LightAttributes light)
@@ -445,7 +462,7 @@ namespace CodeWalker.Forms
             SelectLightTreeNode(selectedLight);
         }
 
-        private void UpdateFlagsCheckBoxes()
+        private void UpdateTimeFlagsCheckBoxes()
         {
             var l = selectedLight;
             var tfam = (l.TimeFlags >> 0) & 0xFFF;
@@ -457,6 +474,16 @@ namespace CodeWalker.Forms
             for (int i = 0; i < TimeFlagsPMCheckedListBox.Items.Count; i++)
             {
                 TimeFlagsPMCheckedListBox.SetItemCheckState(i, ((tfpm & (1u << i)) > 0) ? CheckState.Checked : CheckState.Unchecked);
+            }
+        }
+
+        private void UpdateFlagsCheckBoxes()
+        {
+            var l = selectedLight;
+            var f = l.Flags;
+            for (int i = 0; i < FlagsCheckedListBox.Items.Count; i++)
+            {
+                FlagsCheckedListBox.SetItemCheckState(i, ((f & (1u << i)) > 0) ? CheckState.Checked : CheckState.Unchecked);
             }
         }
 
@@ -533,6 +560,15 @@ namespace CodeWalker.Forms
         }
 
 
+        private void UpdateLightTreeNodeText()
+        {
+            if (LightsTreeView.Nodes.Count == 0 || LightsTreeView.SelectedNode == null) return;
+            var lnode = LightsTreeView.SelectedNode;
+            if (lnode.Index >= 0)
+            {
+                lnode.Text = "Light" + (lnode.Index + 1).ToString() + " : " + selectedLight.Type.ToString();
+            }
+        }
 
 
         private void LightsTreeView_AfterSelect(object sender, TreeViewEventArgs e)
@@ -558,6 +594,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Position != v)
             {
                 selectedLight.Position = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -579,6 +616,8 @@ namespace CodeWalker.Forms
                     selectedLight.Type = LightType.Spot;
                     break;
             }
+            UpdateWidgetTransform();
+            UpdateLightTreeNodeText();
             UpdateLightParams();
         }
 
@@ -629,6 +668,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Falloff != v)
             {
                 selectedLight.Falloff = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -653,6 +693,7 @@ namespace CodeWalker.Forms
             if (selectedLight.ConeInnerAngle != v)
             {
                 selectedLight.ConeInnerAngle = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -665,6 +706,7 @@ namespace CodeWalker.Forms
             if (selectedLight.ConeOuterAngle != v)
             {
                 selectedLight.ConeOuterAngle = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -701,6 +743,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Direction != v)
             {
                 selectedLight.Direction = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -711,6 +754,14 @@ namespace CodeWalker.Forms
             DirectionTextBox.Text = FloatUtil.GetVector3String(d);
         }
 
+        private void ResetDirectionButton_Click(object sender, EventArgs e)
+        {
+            Vector3 d = Vector3.ForwardRH;
+            Vector3 t = Vector3.Left;
+            DirectionTextBox.Text = FloatUtil.GetVector3String(d);
+            TangentTextBox.Text = FloatUtil.GetVector3String(t);
+        }
+
         private void TangentTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
@@ -719,6 +770,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Tangent != v)
             {
                 selectedLight.Tangent = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -729,27 +781,40 @@ namespace CodeWalker.Forms
             TangentTextBox.Text = FloatUtil.GetVector3String(t);
         }
 
-        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
+        private void CalculateTangentButton_Click(object sender, EventArgs e)
+        {
+            Vector3 d = Vector3.Normalize(FloatUtil.ParseVector3String(DirectionTextBox.Text));
+            Vector3 v = Vector3.Down;
+            Vector3 t = Vector3.Normalize(Vector3.Cross(d, v));
+            if (t == Vector3.Zero)
+            {
+                v = Vector3.Left;
+                t = Vector3.Normalize(Vector3.Cross(d, v));
+            }
+            TangentTextBox.Text = FloatUtil.GetVector3String(t);
+        }
+
+        private void FlashinessComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            uint.TryParse(FlagsTextBox.Text, out uint v);
-            if (selectedLight.Flags != v)
+            var v = (byte)FlashinessComboBox.SelectedIndex;
+            if (selectedLight.Flashiness != v)
             {
-                selectedLight.Flags = v;
+                selectedLight.Flashiness = v;
                 UpdateLightParams();
             }
 
         }
 
-        private void FlashinessUpDown_ValueChanged(object sender, EventArgs e)
+        private void LightHash_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (selectedLight == null) return;
-            var v = (byte)FlashinessUpDown.Value;
-            if (selectedLight.Flashiness != v)
+            var v = (byte)LightHashUpDown.Value;
+            if (selectedLight.LightHash != v)
             {
-                selectedLight.Flashiness = v;
+                selectedLight.LightHash = v;
                 UpdateLightParams();
             }
         }
@@ -762,6 +827,7 @@ namespace CodeWalker.Forms
             if (selectedLight.BoneId != v)
             {
                 selectedLight.BoneId = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -947,7 +1013,7 @@ namespace CodeWalker.Forms
                 selectedLight.TimeFlags = v;
             }
             populatingui = true;
-            UpdateFlagsCheckBoxes();
+            UpdateTimeFlagsCheckBoxes();
             populatingui = false;
         }
 
@@ -983,6 +1049,34 @@ namespace CodeWalker.Forms
             populatingui = false;
         }
 
+        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            uint.TryParse(FlagsTextBox.Text, out uint v);
+            if (selectedLight.Flags != v)
+            {
+                selectedLight.Flags = v;
+            }
+            populatingui = true;
+            UpdateFlagsCheckBoxes();
+            populatingui = false;
+        }
+
+        private void FlagsCheckedListBox_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            if (populatingui) return;
+            if (selectedLight == null) return;
+            var v = GetFlagsFromItemCheck(FlagsCheckedListBox, e);
+            if (selectedLight.Flags != v)
+            {
+                selectedLight.Flags = v;
+            }
+            populatingui = true;
+            FlagsTextBox.Text = selectedLight.Flags.ToString();
+            populatingui = false;
+        }
+
         private void TextureHashTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
@@ -1005,6 +1099,7 @@ namespace CodeWalker.Forms
             if (selectedLight.CullingPlaneNormal != v)
             {
                 selectedLight.CullingPlaneNormal = v;
+                UpdateLightParams();
             }
         }
 
@@ -1075,11 +1170,6 @@ namespace CodeWalker.Forms
         private void DuplicateLightButton_Click(object sender, EventArgs e)
         {
             DuplicateLight();
-        }
-
-        private void MainSplitContainer_Panel2_Paint(object sender, PaintEventArgs e)
-        {
-
         }
 
         private void newLightToolStripMenuItem_Click(object sender, EventArgs e)
