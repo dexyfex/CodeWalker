@@ -328,6 +328,189 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public static void AssignPositions2(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags, uint maxPageCount)
+        {
+            if ((blocks.Count > 0) && (blocks[0] is Meta))//TODO: try remove this?
+            {
+                //use naive packing strategy for Meta resources, due to crashes caused by the improved packing
+                AssignPositionsForMeta(blocks, basePosition, out pageFlags);
+                return;
+            }
+
+            //find optimal BaseShift value for the smallest block size
+            //for small system blocks should be 0, but for large physical blocks can be much bigger
+            //also, the largest block needs to fit into the largest page.
+            //BaseSize = 0x2000 << BaseShift   (max BaseShift = 0xF)
+            //then allocate page counts for the page sizes:
+            //allows for 5 page sizes, each double the size of the previous, with max counts 0x7F, 0x3F, 0xF, 3, 1
+            //also allows for 4 tail pages, each half the size of the previous, only one page of each size
+
+            var sys = (basePosition == 0x50000000);
+            var maxPageSizeMult = 16L;//the biggest page is 16x the base page size.
+            var maxPageSize = (0x2000 << 0xF) * maxPageSizeMult; //this is the size of the biggest possible page [256MB!]
+            var maxBlockSize = 0L;
+            var minBlockSize = (blocks.Count == 0) ? 0 : maxPageSize;
+            foreach (var block in blocks)
+            {
+                if (block.BlockLength > maxBlockSize) maxBlockSize = block.BlockLength;
+                if (block.BlockLength < minBlockSize) minBlockSize = block.BlockLength;
+            }
+
+            var baseShift = 0;//want to find the best value for this
+            var baseSize = 0x2000L;//corresponding size for the baseShift value
+            while (((baseSize < minBlockSize) || ((baseSize * maxPageSizeMult) < maxBlockSize)) && (baseShift < 0xF))
+            {
+                baseShift++;
+                baseSize = 0x2000L << baseShift;
+            }
+            if ((baseSize * maxPageSizeMult) < maxBlockSize) throw new Exception("Unable to fit largest block!");
+
+
+
+            var sortedBlocks = new List<IResourceBlock>();
+            var rootBlock = (sys && (blocks.Count > 0)) ? blocks[0] : null;
+            foreach (var block in blocks)
+            {
+                if (block == null) continue;
+                if (block != rootBlock) sortedBlocks.Add(block);
+            }
+            sortedBlocks.Sort((a, b) => b.BlockLength.CompareTo(a.BlockLength));
+            if (rootBlock != null) sortedBlocks.Insert(0, rootBlock);
+
+
+            var pageCounts = new uint[5];
+            var pageSizes = new List<long>[5];
+            var blockPages = new Dictionary<IResourceBlock, (int, int, long)>();//(pageSizeIndex, pageIndex, offset)
+            while (true)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    pageCounts[i] = 0;
+                    pageSizes[i] = null;
+                }
+
+                var testOk = true;
+                var largestPageSizeI = 0;
+                var largestPageSize = baseSize;
+                while (largestPageSize < maxBlockSize)
+                {
+                    largestPageSizeI++;
+                    largestPageSize *= 2;
+                }
+
+                for (int i = 0; i < sortedBlocks.Count; i++)
+                {
+                    var block = sortedBlocks[i];
+                    var size = block.BlockLength;
+                    if (i == 0)//first block should always go in the first page, it's either root block or largest
+                    {
+                        pageSizes[largestPageSizeI] = new List<long>() { size };//allocate the first new page
+                        blockPages[block] = (largestPageSizeI, 0, 0);
+                    }
+                    else
+                    {
+                        var pageSizeIndex = 0;
+                        var pageSize = baseSize;
+                        while ((size > pageSize) && (pageSizeIndex < largestPageSizeI))//find the smallest page that will fit this block
+                        {
+                            pageSizeIndex++;
+                            pageSize *= 2;
+                        }
+                        var found = false;//find an existing page of this size or larger which has space
+                        var testPageSizeI = pageSizeIndex;
+                        var testPageSize = pageSize;
+                        while ((found == false) && (testPageSizeI <= largestPageSizeI))
+                        {
+                            var list = pageSizes[testPageSizeI];
+                            if (list != null)
+                            {
+                                for (int p = 0; p < list.Count; p++)
+                                {
+                                    var s = list[p];
+                                    s += ((ALIGN_SIZE - (s % ALIGN_SIZE)) % ALIGN_SIZE);
+                                    var o = s;
+                                    s += size;
+                                    if (s <= testPageSize)
+                                    {
+                                        list[p] = s;
+                                        found = true;
+                                        blockPages[block] = (testPageSizeI, p, o);
+                                        break;
+                                    }
+                                }
+                            }
+                            testPageSizeI++;
+                            testPageSize *= 2;
+                        }
+                        if (found == false)//couldn't find an existing page for this block, so allocate a new page
+                        {
+                            var list = pageSizes[pageSizeIndex];
+                            if (list == null)
+                            {
+                                list = new List<long>();
+                                pageSizes[pageSizeIndex] = list;
+                            }
+                            var pageIndex = list.Count;
+                            list.Add(size);
+                            blockPages[block] = (pageSizeIndex, pageIndex, 0);
+                        }
+                    }
+                }
+
+                var totalPageCount = 0u;
+                for (int i = 0; i < 5; i++)
+                {
+                    var pc = (uint)(pageSizes[i]?.Count ?? 0);
+                    pageCounts[i] = pc;
+                    totalPageCount += pc;
+                }
+                if (totalPageCount > maxPageCount) testOk = false;
+                if (pageCounts[0] > 0x7F) testOk = false;
+                if (pageCounts[1] > 0x3F) testOk = false;
+                if (pageCounts[2] > 0xF) testOk = false;
+                if (pageCounts[3] > 0x3) testOk = false;
+                if (pageCounts[4] > 0x1) testOk = false;
+                if (testOk) break;//everything fits, so we're done here
+                if (baseShift >= 0xF) throw new Exception("Unable to pack blocks with largest possible base!");
+                baseShift++;
+                baseSize = 0x2000 << baseShift;
+            }
+
+
+            
+            var pageOffset = 0L;//pages are allocated, assign actual positions
+            var pageOffsets = new long[5];//base offsets for each page size
+            for (int i = 4; i >= 0; i--)
+            {
+                pageOffsets[i] = pageOffset;
+                var pageSize = baseSize * (1 << i);
+                var pageCount = pageCounts[i];
+                pageOffset += (pageSize * pageCount);
+            }
+            foreach (var kvp in blockPages)
+            {
+                var block = kvp.Key;
+                var pageSizeIndex = kvp.Value.Item1;
+                var pageIndex = kvp.Value.Item2;
+                var offset = kvp.Value.Item3;
+                var pageSize = baseSize * (1 << pageSizeIndex);
+                var blockPosition = pageOffsets[pageSizeIndex] + (pageSize * pageIndex) + offset;
+                block.FilePosition = basePosition + blockPosition;
+            }
+
+
+            var v = (uint)baseShift & 0xF;
+            v += (pageCounts[4] & 0x1) << 4;
+            v += (pageCounts[3] & 0x3) << 5;
+            v += (pageCounts[2] & 0xF) << 7;
+            v += (pageCounts[1] & 0x3F) << 11;
+            v += (pageCounts[0] & 0x7F) << 17;
+            pageFlags = new RpfResourcePageFlags(v);
+
+
+        }
+
+
         public static byte[] Build(ResourceFileBase fileBase, int version, bool compress = true)
         {
 
@@ -336,12 +519,12 @@ namespace CodeWalker.GameFiles
             IList<IResourceBlock> systemBlocks;
             IList<IResourceBlock> graphicBlocks;
             GetBlocks(fileBase, out systemBlocks, out graphicBlocks);
-            
-            RpfResourcePageFlags systemPageFlags;
-            AssignPositions(systemBlocks, 0x50000000, out systemPageFlags, 128);
-            
-            RpfResourcePageFlags graphicsPageFlags;
-            AssignPositions(graphicBlocks, 0x60000000, out graphicsPageFlags, 128 - systemPageFlags.Count);
+
+            //AssignPositions(systemBlocks, 0x50000000, out var systemPageFlags, 128);
+            //AssignPositions(graphicBlocks, 0x60000000, out var graphicsPageFlags, 128 - systemPageFlags.Count);
+
+            AssignPositions2(systemBlocks, 0x50000000, out var systemPageFlags, 128);
+            AssignPositions2(graphicBlocks, 0x60000000, out var graphicsPageFlags, 128 - systemPageFlags.Count);
 
 
             fileBase.FilePagesInfo.SystemPagesCount = (byte)systemPageFlags.Count;
