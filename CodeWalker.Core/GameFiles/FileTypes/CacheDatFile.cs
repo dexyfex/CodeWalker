@@ -381,39 +381,37 @@ namespace CodeWalker.GameFiles
     [TypeConverter(typeof(ExpandableObjectConverter))] public class CacheFileDate : IMetaXmlItem
     {
         public MetaHash FileName { get; set; } //"resource_surrogate:/%s.rpf"
-        public DateTime TimeStamp { get; set; }
+        public long TimeStamp { get; set; }
         public uint FileID { get; set; }
+
+        public DateTime TimeStampUTC => DateTime.FromFileTimeUtc(TimeStamp);
 
         public CacheFileDate()
         { }
         public CacheFileDate(string line)
         {
-            string[] parts = line.Split(' ');
-            if (parts.Length == 3)
-            {
-                FileName = new MetaHash(uint.Parse(parts[0]));
-                TimeStamp = DateTime.FromFileTimeUtc(long.Parse(parts[1]));
-                FileID = uint.Parse(parts[2]);
-            }
-            else
-            { } //testing
+            string[] p = line.Split(' ');
+            if (p.Length > 0) FileName = new MetaHash(uint.Parse(p[0]));
+            if (p.Length > 1) TimeStamp = long.Parse(p[1]);
+            if (p.Length > 2) FileID = uint.Parse(p[2]);
         }
 
         public string ToCacheFileString()
         {
-            return FileName.Hash.ToString() + " " + TimeStamp.ToFileTimeUtc().ToString() + " " + FileID.ToString();
+            if (FileID == 0) return $"{FileName.Hash} {TimeStamp}";
+            else return $"{FileName.Hash} {TimeStamp} {FileID}";
         }
 
         public void WriteXml(StringBuilder sb, int indent)
         {
             CacheDatXml.StringTag(sb, indent, "fileName", CacheDatXml.HashString(FileName));
-            CacheDatXml.ValueTag(sb, indent, "timeStamp", TimeStamp.ToFileTimeUtc().ToString());
+            CacheDatXml.ValueTag(sb, indent, "timeStamp", ((ulong)TimeStamp).ToString());
             CacheDatXml.ValueTag(sb, indent, "fileID", FileID.ToString());
         }
         public void ReadXml(XmlNode node)
         {
             FileName = XmlMeta.GetHash(Xml.GetChildInnerText(node, "fileName"));
-            TimeStamp = DateTime.FromFileTimeUtc((long)Xml.GetChildULongAttribute(node, "timeStamp"));
+            TimeStamp = (long)Xml.GetChildULongAttribute(node, "timeStamp");
             FileID = Xml.GetChildUIntAttribute(node, "fileID");
         }
 
