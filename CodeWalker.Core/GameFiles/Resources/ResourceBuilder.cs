@@ -343,11 +343,11 @@ namespace CodeWalker.GameFiles
             //BaseSize = 0x2000 << BaseShift   (max BaseShift = 0xF)
             //then allocate page counts for the page sizes:
             //allows for 5 page sizes, each double the size of the previous, with max counts 0x7F, 0x3F, 0xF, 3, 1
-            //also allows for 4 tail pages, each half the size of the previous, only one page of each size
+            //also allows for 4 tail pages, each half the size of the previous, only one page of each size [TODO?] 
 
             var sys = (basePosition == 0x50000000);
             var maxPageSizeMult = 16L;//the biggest page is 16x the base page size.
-            var maxPageSize = (0x2000 << 0xF) * maxPageSizeMult; //this is the size of the biggest possible page [256MB!]
+            var maxPageSize = (0x2000 << 0xF) * maxPageSizeMult; //this is the size of the biggest possible page [4GB!]
             var maxBlockSize = 0L;
             var minBlockSize = (blocks.Count == 0) ? 0 : maxPageSize;
             foreach (var block in blocks)
@@ -389,7 +389,6 @@ namespace CodeWalker.GameFiles
                     pageSizes[i] = null;
                 }
 
-                var testOk = true;
                 var largestPageSizeI = 0;
                 var largestPageSize = baseSize;
                 while (largestPageSize < maxBlockSize)
@@ -457,6 +456,7 @@ namespace CodeWalker.GameFiles
                     }
                 }
 
+                var testOk = true;
                 var totalPageCount = 0u;
                 for (int i = 0; i < 5; i++)
                 {

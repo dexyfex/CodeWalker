@@ -38,11 +38,8 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class ExpressionDictionary : ResourceFileBase
     {
-        // pgDictionaryBase
-        // pgDictionary<crExpressions>
+        // pgDictionary<crExpressions> : pgDictionaryBase
         public override long BlockLength => 0x40;
-
-        // structure data
         public uint Unknown_10h { get; set; } = 0;
         public uint Unknown_14h { get; set; } = 0;
         public uint Unknown_18h { get; set; } = 1;
@@ -50,40 +47,32 @@ namespace CodeWalker.GameFiles
         public ResourceSimpleList64_s<MetaHash> ExpressionNameHashes { get; set; }
         public ResourcePointerList64<Expression> Expressions { get; set; }
 
-        
         public Dictionary<MetaHash, Expression> ExprMap { get; set; }
 
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
             base.Read(reader, parameters);
-
-            // read structure data
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.ExpressionNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
-            this.Expressions = reader.ReadBlock<ResourcePointerList64<Expression>>();
-
+            Unknown_10h = reader.ReadUInt32();
+            Unknown_14h = reader.ReadUInt32();
+            Unknown_18h = reader.ReadUInt32();
+            Unknown_1Ch = reader.ReadUInt32();
+            ExpressionNameHashes = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            Expressions = reader.ReadBlock<ResourcePointerList64<Expression>>();
             BuildMap();
-
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
             base.Write(writer, parameters);
-
-            // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.WriteBlock(this.ExpressionNameHashes);
-            writer.WriteBlock(this.Expressions);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_14h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.WriteBlock(ExpressionNameHashes);
+            writer.WriteBlock(Expressions);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
-
             if (Expressions?.data_items != null)
             {
                 foreach (var e in Expressions.data_items)
@@ -93,7 +82,6 @@ namespace CodeWalker.GameFiles
                     YedXml.CloseTag(sb, indent, "Item");
                 }
             }
-
         }
         public void ReadXml(XmlNode node)
         {
@@ -108,6 +96,12 @@ namespace CodeWalker.GameFiles
                     var e = new Expression();
                     e.ReadXml(inode);
                     expressions.Add(e);
+                }
+
+                //expressions in the file should be sorted by hash
+                expressions.Sort((a, b) => a.NameHash.Hash.CompareTo(b.NameHash.Hash));
+                foreach (var e in expressions)
+                {
                     expressionhashes.Add(e.NameHash);
                 }
             }
@@ -182,11 +176,8 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class Expression : ResourceSystemBlock
     {
-        // pgBase
-        // crExpressions
+        // crExpressions : pgBase
         public override long BlockLength => 0x90;
-
-        // structure data
         public uint VFT { get; set; }
         public uint Unknown_4h { get; set; } = 1;
         public uint Unknown_8h { get; set; } // 0x00000000
@@ -206,13 +197,12 @@ namespace CodeWalker.GameFiles
         public uint Unknown_70h { get; set; } = 1;
         public uint Signature { get; set; }
         public uint MaxStreamSize { get; set; } // max length of any item in Streams
-        public uint Unknown_7Ch { get; set; } // 3 or 2
+        public uint Unknown_7Ch { get; set; } // 3 or 2  - type or flags?
         public uint Unknown_80h { get; set; } // 0x00000000
         public uint Unknown_84h { get; set; } // 0x00000000
         public uint Unknown_88h { get; set; } // 0x00000000
         public uint Unknown_8Ch { get; set; } // 0x00000000
 
-        // reference data
         public string_r Name { get; set; }
         public MetaHash NameHash { get; set; }
 
@@ -221,36 +211,32 @@ namespace CodeWalker.GameFiles
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            // read structure data
-            this.VFT = reader.ReadUInt32();
-            this.Unknown_4h = reader.ReadUInt32();
-            this.Unknown_8h = reader.ReadUInt32();
-            this.Unknown_Ch = reader.ReadUInt32();
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
-            this.Unknown_18h = reader.ReadUInt32();
-            this.Unknown_1Ch = reader.ReadUInt32();
-            this.Streams = reader.ReadBlock<ResourcePointerList64<ExpressionStream>>();
-            this.Tracks = reader.ReadBlock<ResourceSimpleList64_s<ExpressionTrack>>();
-            this.Springs = reader.ReadBlock<ResourceSimpleList64<ExpressionSpringDescriptionBlock>>();
-            this.Variables = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
-            this.NamePointer = reader.ReadUInt64();
-            this.NameLength = reader.ReadUInt16();
-            this.NameCapacity = reader.ReadUInt16();
-            this.Unknown_6Ch = reader.ReadUInt32();
-            this.Unknown_70h = reader.ReadUInt32();
-            this.Signature = reader.ReadUInt32();
-            this.MaxStreamSize = reader.ReadUInt32();
-            this.Unknown_7Ch = reader.ReadUInt32();
-            this.Unknown_80h = reader.ReadUInt32();
-            this.Unknown_84h = reader.ReadUInt32();
-            this.Unknown_88h = reader.ReadUInt32();
-            this.Unknown_8Ch = reader.ReadUInt32();
+            VFT = reader.ReadUInt32();
+            Unknown_4h = reader.ReadUInt32();
+            Unknown_8h = reader.ReadUInt32();
+            Unknown_Ch = reader.ReadUInt32();
+            Unknown_10h = reader.ReadUInt32();
+            Unknown_14h = reader.ReadUInt32();
+            Unknown_18h = reader.ReadUInt32();
+            Unknown_1Ch = reader.ReadUInt32();
+            Streams = reader.ReadBlock<ResourcePointerList64<ExpressionStream>>();
+            Tracks = reader.ReadBlock<ResourceSimpleList64_s<ExpressionTrack>>();
+            Springs = reader.ReadBlock<ResourceSimpleList64<ExpressionSpringDescriptionBlock>>();
+            Variables = reader.ReadBlock<ResourceSimpleList64_s<MetaHash>>();
+            NamePointer = reader.ReadUInt64();
+            NameLength = reader.ReadUInt16();
+            NameCapacity = reader.ReadUInt16();
+            Unknown_6Ch = reader.ReadUInt32();
+            Unknown_70h = reader.ReadUInt32();
+            Signature = reader.ReadUInt32();
+            MaxStreamSize = reader.ReadUInt32();
+            Unknown_7Ch = reader.ReadUInt32();
+            Unknown_80h = reader.ReadUInt32();
+            Unknown_84h = reader.ReadUInt32();
+            Unknown_88h = reader.ReadUInt32();
+            Unknown_8Ch = reader.ReadUInt32();
 
-            // read reference data
-            this.Name = reader.ReadBlockAt<string_r>(
-                this.NamePointer // offset
-            );
+            Name = reader.ReadBlockAt<string_r>(NamePointer);
 
             JenkIndex.Ensure(GetShortName());
 
@@ -261,120 +247,46 @@ namespace CodeWalker.GameFiles
 
             #region testing
 
-            //if (Streams?.data_items != null)
-            //{ }
-
-            ////if ((this.JiggleData?.data_items?.Length ?? 0) > 0)
-            //{
-            //    var cnt1 = JiggleData?.data_items?.Length ?? 0;
-            //    var cnt2 = 0;
-            //    foreach (var stream in Streams.data_items)
-            //    {
-            //        foreach (var node in stream.Items)
-            //        {
-            //            if (node is ExpressionNodeJiggle jnode)
-            //            {
-            //                var trackrot = BoneTracks.data_items[jnode.BoneTrackRot];
-            //                var trackpos = BoneTracks.data_items[jnode.BoneTrackPos];
-            //                var jd1 = jnode.JiggleData;
-            //                var jd2 = JiggleData.data_items[cnt2].JiggleData;
-            //                if (!jd1.Compare(jd2))
-            //                { }//no hit
-            //                if (jd2.BoneTag != trackrot.BoneTag)
-            //                { }//no hit
-            //                cnt2++;
-            //            }
-            //        }
-            //    }
-            //    if (cnt1 != cnt2)
-            //    { }//no hit
-            //}
-
             //long tlen = 0;
             //if (Streams?.data_items != null) foreach (var item in Streams.data_items) tlen = Math.Max(tlen, item.BlockLength);
             //if (MaxStreamSize != tlen)
             //{ }//no hit
 
-            //if (Unknown_4h != 1)
-            //{ }//no hit
-            //if (Unknown_8h != 0)
-            //{ }//no hit
-            //if (Unknown_Ch != 0)
-            //{ }//no hit
-            //if (Unknown_10h != 0)
-            //{ }//no hit
-            //if (Unknown_14h != 0)
-            //{ }//no hit
-            //if (Unknown_18h != 0)
-            //{ }//no hit
-            //if (Unknown_1Ch != 0)
-            //{ }//no hit
-            //if (NameLength != (Name?.Value?.Length ?? 0))
-            //{ }//no hit
-            //if (NameCapacity != (NameLength + 1))
-            //{ }//no hit
-            //if (Unknown_6Ch != 0)
-            //{ }//no hit
-            //if (Unknown_70h != 1)
-            //{ }//no hit
-            //switch (Unknown_74h)
-            //{
-            //    default:
-            //        break;
-            //}
-            //switch (Unknown_7Ch)
-            //{
-            //    case 3:
-            //    case 2:
-            //        break;
-            //    default:
-            //        break;//no hit
-            //}
-            //if (Unknown_80h != 0)
-            //{ }//no hit
-            //if (Unknown_84h != 0)
-            //{ }//no hit
-            //if (Unknown_88h != 0)
-            //{ }//no hit
-            //if (Unknown_8Ch != 0)
-            //{ }//no hit
             #endregion
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // update structure data
-            this.NamePointer = (ulong)(this.Name != null ? this.Name.FilePosition : 0);
+            NamePointer = (ulong)(Name != null ? Name.FilePosition : 0);
 
-            // write structure data
-            writer.Write(this.VFT);
-            writer.Write(this.Unknown_4h);
-            writer.Write(this.Unknown_8h);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_1Ch);
-            writer.WriteBlock(this.Streams);
-            writer.WriteBlock(this.Tracks);
-            writer.WriteBlock(this.Springs);
-            writer.WriteBlock(this.Variables);
-            writer.Write(this.NamePointer);
-            writer.Write(this.NameLength);
-            writer.Write(this.NameCapacity);
-            writer.Write(this.Unknown_6Ch);
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Signature);
-            writer.Write(this.MaxStreamSize);
-            writer.Write(this.Unknown_7Ch);
-            writer.Write(this.Unknown_80h);
-            writer.Write(this.Unknown_84h);
-            writer.Write(this.Unknown_88h);
-            writer.Write(this.Unknown_8Ch);
+            writer.Write(VFT);
+            writer.Write(Unknown_4h);
+            writer.Write(Unknown_8h);
+            writer.Write(Unknown_Ch);
+            writer.Write(Unknown_10h);
+            writer.Write(Unknown_14h);
+            writer.Write(Unknown_18h);
+            writer.Write(Unknown_1Ch);
+            writer.WriteBlock(Streams);
+            writer.WriteBlock(Tracks);
+            writer.WriteBlock(Springs);
+            writer.WriteBlock(Variables);
+            writer.Write(NamePointer);
+            writer.Write(NameLength);
+            writer.Write(NameCapacity);
+            writer.Write(Unknown_6Ch);
+            writer.Write(Unknown_70h);
+            writer.Write(Signature);
+            writer.Write(MaxStreamSize);
+            writer.Write(Unknown_7Ch);
+            writer.Write(Unknown_80h);
+            writer.Write(Unknown_84h);
+            writer.Write(Unknown_88h);
+            writer.Write(Unknown_8Ch);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YedXml.StringTag(sb, indent, "Name", Name?.Value ?? "");
-            YedXml.ValueTag(sb, indent, "Signature", Signature.ToString()); // TODO: calculate signature
+            YedXml.ValueTag(sb, indent, "Signature", Signature.ToString()); // TODO: calculate signature?
             YedXml.ValueTag(sb, indent, "Unk7C", Unknown_7Ch.ToString());
 
             if ((Tracks?.data_items?.Length ?? 0) > 0)
@@ -408,6 +320,7 @@ namespace CodeWalker.GameFiles
             BuildSpringsList();
             UpdateVariables();
             UpdateStreamBuffers();
+            UpdateJumpInstructions();
         }
 
         public override IResourceBlock[] GetReferences()
@@ -449,7 +362,6 @@ namespace CodeWalker.GameFiles
             }
 
         }
-
         public void BuildSpringsList()
         {
             var springs = new List<ExpressionSpringDescriptionBlock>();
@@ -471,7 +383,6 @@ namespace CodeWalker.GameFiles
             Springs = new ResourceSimpleList64<ExpressionSpringDescriptionBlock>();
             Springs.data_items = springs.ToArray();
         }
-
         public void UpdateVariables()
         {
             var dict = new Dictionary<MetaHash, uint>();
@@ -513,7 +424,6 @@ namespace CodeWalker.GameFiles
             Variables.data_items = list.ToArray();
 
         }
-
         public void UpdateStreamBuffers()
         {
             MaxStreamSize = 0;
@@ -523,6 +433,26 @@ namespace CodeWalker.GameFiles
                 {
                     item.WriteInstructions(); //makes sure the data buffers are updated to the correct length!
                     MaxStreamSize = Math.Max(MaxStreamSize, (uint)item.BlockLength);
+                }
+            }
+        }
+        public void UpdateJumpInstructions()
+        {
+            if (Streams?.data_items != null)
+            {
+                foreach (var stream in Streams.data_items)
+                {
+                    if (stream?.Instructions == null) continue;
+                    foreach (var node in stream.Instructions)
+                    {
+                        if (node is ExpressionInstrJump jump)
+                        {
+                            //indexes and offsets need to be updated already - done by UpdateMaxStreamSize()
+                            var target = stream.Instructions[jump.Index + jump.Data3Offset];
+                            jump.Data1Offset = (uint)(target.Offset1 - jump.Offset1);
+                            jump.Data2Offset = (uint)(target.Offset2 - jump.Offset2);
+                        }
+                    }
                 }
             }
         }
@@ -544,17 +474,12 @@ namespace CodeWalker.GameFiles
 
     [TC(typeof(EXP))] public class ExpressionStream : ResourceSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 16 + Data1.Length + Data2.Length + Data3.Length; }
-        }
-
-        // structure data
-        public MetaHash NameHash { get; set; }//presumably name hash
+        public override long BlockLength => 16 + Data1.Length + Data2.Length + Data3.Length;
+        public MetaHash NameHash { get; set; }
         public uint Data1Length { get; set; }
         public uint Data2Length { get; set; }
         public ushort Data3Length { get; set; }
-        public ushort Unk0E { get; set; }//what is this? possibly max hierarchy depth
+        public ushort Depth { get; set; }//or stack size?
         public byte[] Data1 { get; set; }
         public byte[] Data2 { get; set; }
         public byte[] Data3 { get; set; }
@@ -566,37 +491,32 @@ namespace CodeWalker.GameFiles
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            // read structure data
-            this.NameHash = reader.ReadUInt32();
-            this.Data1Length = reader.ReadUInt32();
-            this.Data2Length = reader.ReadUInt32();
-            this.Data3Length = reader.ReadUInt16();
-            this.Unk0E = reader.ReadUInt16();
-            this.Data1 = reader.ReadBytes((int)Data1Length);
-            this.Data2 = reader.ReadBytes((int)Data2Length);
-            this.Data3 = reader.ReadBytes((int)Data3Length);
-
-
+            NameHash = reader.ReadUInt32();
+            Data1Length = reader.ReadUInt32();
+            Data2Length = reader.ReadUInt32();
+            Data3Length = reader.ReadUInt16();
+            Depth = reader.ReadUInt16();
+            Data1 = reader.ReadBytes((int)Data1Length);
+            Data2 = reader.ReadBytes((int)Data2Length);
+            Data3 = reader.ReadBytes((int)Data3Length);
             ReadInstructions();
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            //WriteItems();//should already be done by Expression.UpdateStreamBuffers
-
-            // write structure data
-            writer.Write(this.NameHash);
-            writer.Write(this.Data1Length);
-            writer.Write(this.Data2Length);
-            writer.Write(this.Data3Length);
-            writer.Write(this.Unk0E);
-            writer.Write(this.Data1);
-            writer.Write(this.Data2);
-            writer.Write(this.Data3);
+            //WriteInstructions();//should already be done by Expression.UpdateStreamBuffers
+            writer.Write(NameHash);
+            writer.Write(Data1Length);
+            writer.Write(Data2Length);
+            writer.Write(Data3Length);
+            writer.Write(Depth);
+            writer.Write(Data1);
+            writer.Write(Data2);
+            writer.Write(Data3);
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
             YedXml.StringTag(sb, indent, "Name", YedXml.HashString(NameHash));
-            YedXml.ValueTag(sb, indent, "Unk0E", Unk0E.ToString());
+            YedXml.ValueTag(sb, indent, "Depth", Depth.ToString());
 
             YedXml.OpenTag(sb, indent, "Instructions");
             var cind = indent + 1;
@@ -621,7 +541,7 @@ namespace CodeWalker.GameFiles
         public void ReadXml(XmlNode node)
         {
             NameHash = XmlMeta.GetHash(Xml.GetChildInnerText(node, "Name"));
-            Unk0E = (ushort)Xml.GetChildUIntAttribute(node, "Unk0E", "value");
+            Depth = (ushort)Xml.GetChildUIntAttribute(node, "Depth", "value");
 
             var items = new List<ExpressionInstrBase>();
             var instnode = node.SelectSingleNode("Instructions");
@@ -639,6 +559,8 @@ namespace CodeWalker.GameFiles
                             item.ReadXml(inode);
                             items.Add(item);
                         }
+                        else
+                        { }
                     }
                 }
             }
@@ -647,81 +569,37 @@ namespace CodeWalker.GameFiles
 
         public void ReadInstructions()
         {
+            var insts = new ExpressionInstrBase[Data3.Length];
             var s1 = new MemoryStream(Data1);
             var s2 = new MemoryStream(Data2);
-            var s3 = new MemoryStream(Data3);
             var r1 = new DataReader(s1);
             var r2 = new DataReader(s2);
-            var r3 = new DataReader(s3);
 
-            var unresolvedJumps = new Dictionary<(long, long, long), List<ExpressionInstrJump>>();
-            var instructions = new List<ExpressionInstrBase>();
-            while (s3.Position < s3.Length)
+            //dexy: removed unresolvedjumps stuff from here as it should all resolve to jump.Data3Offset+1
+
+            for (int i = 0; i < insts.Length; i++)
             {
-                var loc = (s1.Position, s2.Position, s3.Position);
-
-                var type = (ExpressionInstrType)r3.ReadByte();
-                if (type == ExpressionInstrType.None)
+                var type = (ExpressionInstrType)Data3[i];
+                if (type == ExpressionInstrType.End)
                 {
-                    if (s3.Position != s3.Length)
+                    if (i != insts.Length - 1)
                     { }//no hit
-                    break;
                 }
                 var instr = CreateInstruction(type);
                 instr.Type = type;
+                instr.Index = i;
+                instr.Offset1 = (int)r1.Position;
+                instr.Offset2 = (int)r2.Position;
                 instr.Read(r1, r2);
-                var instrIndex = (uint)instructions.Count;
-                instructions.Add(instr);
-
-                // resolve jumps by converting data byte offsets to instruction indices offsets
-                // this is to make it easier to edit the XML
-                if (unresolvedJumps.TryGetValue(loc, out var jumps))
-                {
-                    foreach (var jump in jumps)
-                    {
-                        // relative offset between jump and target instructions
-                        jump.InstructionOffset = instrIndex - jump.InstructionOffset;
-                    }
-                    unresolvedJumps.Remove(loc);
-                }
-
-                if (instr is ExpressionInstrJump j)
-                {
-                    j.InstructionOffset = instrIndex;
-                    var targetLoc = (s1.Position + j.Data1Offset, s2.Position + j.Data2Offset, s3.Position + j.Data3Offset);
-                    if (!unresolvedJumps.TryGetValue(targetLoc, out jumps))
-                    {
-                        jumps = new List<ExpressionInstrJump>();
-                        unresolvedJumps[targetLoc] = jumps;
-                    }
-                    jumps.Add(j);
-                }
+                insts[i] = instr;
             }
-
-            // special case to resolve jumps to the end of the instructions list since we don't store the finish marker instruction
-            var endLoc = (s1.Position, s2.Position, s3.Position - 1);
-            if (unresolvedJumps.TryGetValue(endLoc, out var endJumps))
-            {
-                foreach (var jump in endJumps)
-                {
-                    jump.InstructionOffset = (uint)instructions.Count - jump.InstructionOffset;
-                }
-                unresolvedJumps.Remove(endLoc);
-            }
-
 
             if ((r1.Length - r1.Position) != 0)
             { }//no hit
             if ((r2.Length - r2.Position) != 0)
             { }//no hit
-            if ((r3.Length - r3.Position) != 0) 
-            { }//no hit
 
-            // there should be no unresolved jumps at this point
-            if (unresolvedJumps.Count != 0)
-            { }//no hit
-
-            Instructions = instructions.ToArray();
+            Instructions = insts;
         }
 
         public void WriteInstructions()
@@ -735,10 +613,12 @@ namespace CodeWalker.GameFiles
 
             foreach (var instr in Instructions)
             {
+                instr.Offset1 = (int)w1.Position;
+                instr.Offset2 = (int)w2.Position;
+                instr.Index = (int)w3.Position;
                 w3.Write((byte)instr.Type);
                 instr.Write(w1, w2);
             }
-            w3.Write((byte)0);
 
             Data1 = s1.ToArray();
             Data2 = s2.ToArray();
@@ -753,6 +633,7 @@ namespace CodeWalker.GameFiles
         {
             switch (type)
             {
+                case ExpressionInstrType.End:
                 case ExpressionInstrType.Pop:
                 case ExpressionInstrType.Dup:
                 case ExpressionInstrType.Push0:
@@ -838,7 +719,7 @@ namespace CodeWalker.GameFiles
 
     public enum ExpressionInstrType : byte
     {
-        None = 0,
+        End = 0,
         Pop = 0x01,
         Dup = 0x02,
         Push0 = 0x03,
@@ -903,6 +784,9 @@ namespace CodeWalker.GameFiles
     [TC(typeof(EXP))] public abstract class ExpressionInstrBase
     {
         public ExpressionInstrType Type { get; set; }
+        public int Offset1 { get; set; }
+        public int Offset2 { get; set; }
+        public int Index { get; set; }
 
         public virtual void Read(DataReader r1, DataReader r2)
         { }
@@ -922,12 +806,22 @@ namespace CodeWalker.GameFiles
     { }
     [TC(typeof(EXP))] public class ExpressionInstrBlend : ExpressionInstrBase
     {
+        public struct SourceInfo
+        {
+            public ushort TrackIndex;
+            public ushort ComponentOffset;
+            public override string ToString()
+            {
+                return $"{TrackIndex} : {ComponentOffset}";
+            }
+        }
         [TC(typeof(EXP))] public class SourceComponent : IMetaXmlItem
         {
             public float[] Weights { get; set; }
             public float[] Offsets { get; set; }
             public float[] Thresholds { get; set; }
 
+            public SourceComponent() { }
             public SourceComponent(uint numSourceWeights)
             {
                 Weights = new float[numSourceWeights];
@@ -941,25 +835,59 @@ namespace CodeWalker.GameFiles
                 YedXml.WriteRawArray(sb, Offsets, indent, "Offsets", "", FloatUtil.ToString, 32);
                 YedXml.WriteRawArray(sb, Thresholds, indent, "Thresholds", "", FloatUtil.ToString, 32);
             }
-
             public void ReadXml(XmlNode node)
             {
-                throw new NotImplementedException();
+                if (node == null) return;
+                Weights = Xml.GetChildRawFloatArray(node, "Weights");
+                Offsets = Xml.GetChildRawFloatArray(node, "Offsets");
+                Thresholds = Xml.GetChildRawFloatArray(node, "Thresholds");
             }
         }
-
         [TC(typeof(EXP))] public class Source : IMetaXmlItem
         {
-            public ushort TrackIndex { get; set; }
-            public ushort ComponentOffset { get; set; }
+            public SourceInfo Info { get; set; }
             public SourceComponent X { get; set; }
             public SourceComponent Y { get; set; }
             public SourceComponent Z { get; set; }
 
+            public Source()
+            { }
+            public Source(SourceInfo info, uint numSourceWeights, int index, Vector4[] values)
+            {
+                Info = info;
+                X = new SourceComponent(numSourceWeights);
+                Y = new SourceComponent(numSourceWeights);
+                Z = new SourceComponent(numSourceWeights);
+
+                var j = index / 4;
+                var k = index % 4;
+                var v = j * (6 + 9 * (int)(numSourceWeights - 1));
+                X.Weights[0] = values[v + 0][k];
+                Y.Weights[0] = values[v + 1][k];
+                Z.Weights[0] = values[v + 2][k];
+                X.Offsets[0] = values[v + 3][k];
+                Y.Offsets[0] = values[v + 4][k];
+                Z.Offsets[0] = values[v + 5][k];
+                for (int n = 1; n < numSourceWeights; n++)
+                {
+                    var m = n - 1;
+                    var b = v + 6 + (9 * m);
+                    X.Thresholds[m] = values[b + 0][k];
+                    Y.Thresholds[m] = values[b + 1][k];
+                    Z.Thresholds[m] = values[b + 2][k];
+                    X.Weights[n] = values[b + 3][k];
+                    Y.Weights[n] = values[b + 4][k];
+                    Z.Weights[n] = values[b + 5][k];
+                    X.Offsets[n] = values[b + 6][k];
+                    Y.Offsets[n] = values[b + 7][k];
+                    Z.Offsets[n] = values[b + 8][k];
+                }
+            }
+
             public void WriteXml(StringBuilder sb, int indent)
             {
-                YedXml.ValueTag(sb, indent, "TrackIndex", TrackIndex.ToString());
-                YedXml.ValueTag(sb, indent, "ComponentIndex", (ComponentOffset / 4).ToString());
+                YedXml.ValueTag(sb, indent, "TrackIndex", Info.TrackIndex.ToString());
+                YedXml.ValueTag(sb, indent, "ComponentIndex", (Info.ComponentOffset / 4).ToString());
                 YedXml.OpenTag(sb, indent, "X");
                 X.WriteXml(sb, indent + 1);
                 YedXml.CloseTag(sb, indent, "X");
@@ -970,24 +898,73 @@ namespace CodeWalker.GameFiles
                 Z.WriteXml(sb, indent + 1);
                 YedXml.CloseTag(sb, indent, "Z");
             }
-
             public void ReadXml(XmlNode node)
             {
-                throw new NotImplementedException();
+                var info = new SourceInfo();
+                info.TrackIndex = (ushort)Xml.GetChildUIntAttribute(node, "TrackIndex", "value");
+                info.ComponentOffset = (ushort)(Xml.GetChildUIntAttribute(node, "ComponentIndex", "value") * 4);
+                Info = info;
+                X = new SourceComponent();
+                X.ReadXml(node.SelectSingleNode("X"));
+                Y = new SourceComponent();
+                Y.ReadXml(node.SelectSingleNode("Y"));
+                Z = new SourceComponent();
+                Z.ReadXml(node.SelectSingleNode("Z"));
+            }
+
+            public void UpdateValues(uint numSourceWeights, int index, Vector4[] values)
+            {
+                if (X == null) return;
+                if (Y == null) return;
+                if (Z == null) return;
+                if (X.Weights?.Length < numSourceWeights) return;
+                if (Y.Weights?.Length < numSourceWeights) return;
+                if (Z.Weights?.Length < numSourceWeights) return;
+                if (X.Offsets?.Length < numSourceWeights) return;
+                if (Y.Offsets?.Length < numSourceWeights) return;
+                if (Z.Offsets?.Length < numSourceWeights) return;
+                if (X.Thresholds?.Length < (numSourceWeights - 1)) return;
+                if (Y.Thresholds?.Length < (numSourceWeights - 1)) return;
+                if (Z.Thresholds?.Length < (numSourceWeights - 1)) return;
+                var j = index / 4;
+                var k = index % 4;
+                var v = j * (6 + 9 * (int)(numSourceWeights - 1));
+                values[v + 0][k] = X.Weights[0];
+                values[v + 1][k] = Y.Weights[0];
+                values[v + 2][k] = Z.Weights[0];
+                values[v + 3][k] = X.Offsets[0];
+                values[v + 4][k] = Y.Offsets[0];
+                values[v + 5][k] = Z.Offsets[0];
+                for (int n = 1; n < numSourceWeights; n++)
+                {
+                    var m = n - 1;
+                    var b = v + 6 + (9 * m);
+                    values[b + 0][k] = X.Thresholds[m];
+                    values[b + 1][k] = Y.Thresholds[m];
+                    values[b + 2][k] = Z.Thresholds[m];
+                    values[b + 3][k] = X.Weights[n];
+                    values[b + 4][k] = Y.Weights[n];
+                    values[b + 5][k] = Z.Weights[n];
+                    values[b + 6][k] = X.Offsets[n];
+                    values[b + 7][k] = Y.Offsets[n];
+                    values[b + 8][k] = Z.Offsets[n];
+                }
             }
 
             public override string ToString()
             {
-                return "TODO"; // TODO
+                return $"TrackIndex {Info.TrackIndex}, ComponentIndex {Info.ComponentOffset / 4} (offset {Info.ComponentOffset})";
             }
         }
 
         public uint ByteLength { get; set; } //updated automatically
-        public uint SourceCount { get; set; } //updated automatically
-        public uint NumSourceWeights { get; set; }
+        public uint SourceCount { get; set; } //updated automatically //0-84+, multiple of 4
+        public uint NumSourceWeights { get; set; }//1-4
         public uint Unk1 { get; set; } // 0x00000000
-        public Source[] Sources { get; set; }
+        public SourceInfo[] SourceInfos { get; set; }
         public Vector4[] Values { get; set; }
+
+        public uint RequiredValueCount => (SourceCount / 4) * (6 + ((NumSourceWeights - 1) * 9));
 
         public override void Read(DataReader r1, DataReader r2)
         {
@@ -996,106 +973,23 @@ namespace CodeWalker.GameFiles
             NumSourceWeights = r1.ReadUInt32();
             Unk1 = r1.ReadUInt32();
 
-            Sources = new Source[SourceCount];
+            SourceInfos = new SourceInfo[SourceCount];
             for (int i = 0; i < SourceCount; i++)
             {
-                var s = new Source();
+                var s = new SourceInfo();
                 s.TrackIndex = r1.ReadUInt16();
                 s.ComponentOffset = r1.ReadUInt16();
-                s.X = new SourceComponent(NumSourceWeights);
-                s.Y = new SourceComponent(NumSourceWeights);
-                s.Z = new SourceComponent(NumSourceWeights);
-                Sources[i] = s;
+                SourceInfos[i] = s;
             }
-
-            // TODO: rename
-            var numIters = SourceCount / 4;
-            var numSubpasses = NumSourceWeights - 1;
-            var numValues = (numIters * 6) + (numIters * numSubpasses * 9);
-            Values = new Vector4[numValues];
-            for (int i = 0; i < numValues; i++)
+            Values = new Vector4[RequiredValueCount];
+            for (int i = 0; i < Values.Length; i++)
             {
                 Values[i] = r1.ReadVector4();
             }
-
-
-
-            switch (SourceCount)
-            {
-                case 0:
-                case 4:
-                case 8:
-                case 12:
-                case 20:
-                case 24:
-                case 48:
-                case 52:
-                case 76:
-                case 32:
-                case 16:
-                case 40:
-                case 44:
-                case 60:
-                case 72:
-                case 56:
-                case 28:
-                case 68:
-                    break;
-                default:
-                    break; //no hit
-            }
-
-            switch (NumSourceWeights)
-            {
-                case 1: break;
-                case 2: break;
-                case 3: break;
-                case 4: break;
-                default:
-                    break; //no hit
-            }
-
-            if (Unk1 != 0)
-            {
-            } //no hit
-
-
-            // organize data into more human-readable layout
-            // the file layout is optimized for vectorized operations
-            for (int i = 0; i < (Sources.Length / 4); i++)
-            {
-                var it = i * 4;
-                int v = i * 6 + (i * (int)(NumSourceWeights - 1) * 9);
-                for (int k = 0; k < 4; k++)
-                {
-                    Sources[it + k].X.Weights[0] = Values[v + 0][k];
-                    Sources[it + k].Y.Weights[0] = Values[v + 1][k];
-                    Sources[it + k].Z.Weights[0] = Values[v + 2][k];
-                    Sources[it + k].X.Offsets[0] = Values[v + 3][k];
-                    Sources[it + k].Y.Offsets[0] = Values[v + 4][k];
-                    Sources[it + k].Z.Offsets[0] = Values[v + 5][k];
-
-                    for (int n = 1; n < NumSourceWeights; n++)
-                    {
-                        int b = v + 6 + (n - 1) * 9;
-                        Sources[it + k].X.Thresholds[n - 1] = Values[b + 0][k];
-                        Sources[it + k].Y.Thresholds[n - 1] = Values[b + 1][k];
-                        Sources[it + k].Z.Thresholds[n - 1] = Values[b + 2][k];
-                        Sources[it + k].X.Weights[n] = Values[b + 3][k];
-                        Sources[it + k].Y.Weights[n] = Values[b + 4][k];
-                        Sources[it + k].Z.Weights[n] = Values[b + 5][k];
-                        Sources[it + k].X.Offsets[n] = Values[b + 6][k];
-                        Sources[it + k].Y.Offsets[n] = Values[b + 7][k];
-                        Sources[it + k].Z.Offsets[n] = Values[b + 8][k];
-                    }
-                }
-            }
         }
-
         public override void Write(DataWriter w1, DataWriter w2)
         {
-            // TODO
-            SourceCount = (uint)(Sources?.Length ?? 0);
+            SourceCount = (uint)(SourceInfos?.Length ?? 0);
             NumSourceWeights = Math.Max(NumSourceWeights, 1);
             var valcnt = (NumSourceWeights - 1) * 9 + 6;
             var hlen = SourceCount * 4 + 16;
@@ -1107,32 +1001,43 @@ namespace CodeWalker.GameFiles
             w1.Write(NumSourceWeights);
             w1.Write(Unk1);
 
-            // TODO
             for (int i = 0; i < SourceCount; i++)
             {
-                // Sources[i].Write(w1);
+                var si = SourceInfos[i];
+                w1.Write(si.TrackIndex);
+                w1.Write(si.ComponentOffset);
             }
-            // TODO
-            // for (int n = 0; n < valcnt; n++)
-            // {
-            //     for (int i = 0; i < ItemCount; i++)
-            //     {
-            //         var vals = Items[i].Values;
-            //         w1.Write((n < (vals?.Length ?? 0)) ? vals[n] : 0.0f);
-            //     }
-            // }
+            for (int i = 0; i < Values.Length; i++)
+            {
+                w1.Write(Values[i]);
+            }
         }
-
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            YedXml.ValueTag(sb, indent, "NumSourceWeights", NumSourceWeights.ToString());
-            YedXml.WriteItemArray(sb, Sources, indent, "Sources");
-        }
+            // organize data into more human-readable layout
+            // the file layout is optimized for vectorized operations
+            var sources = new Source[SourceCount];
+            for (int i = 0; i < SourceCount; i++)
+            {
+                sources[i] = new Source(SourceInfos[i], NumSourceWeights, i, Values);
+            }
 
+            YedXml.ValueTag(sb, indent, "NumSourceWeights", NumSourceWeights.ToString());
+            YedXml.WriteItemArray(sb, sources, indent, "Sources");
+        }
         public override void ReadXml(XmlNode node)
         {
-            NumSourceWeights = Xml.GetChildUIntAttribute(node, "NumSourceWeights");
-            Sources = XmlMeta.ReadItemArray<Source>(node, "Sources");
+            NumSourceWeights = Math.Max(Xml.GetChildUIntAttribute(node, "NumSourceWeights"), 1);
+            var sources = XmlMeta.ReadItemArray<Source>(node, "Sources");
+            SourceCount = (uint)(sources?.Length ?? 0);
+            SourceInfos = new SourceInfo[SourceCount];
+            Values = new Vector4[RequiredValueCount];
+            for (int i = 0; i < SourceCount; i++)
+            {
+                var s = sources[i];
+                SourceInfos[i] = s.Info;
+                s.UpdateValues(NumSourceWeights, i, Values);
+            }
         }
 
         public override string ToString()
@@ -1140,7 +1045,6 @@ namespace CodeWalker.GameFiles
             return base.ToString() + "  -  " + SourceCount + ", " + NumSourceWeights;
         }
     }
-
     [TC(typeof(EXP))] public class ExpressionInstrBone : ExpressionInstrBase
     {
         public ushort TrackIndex { get; set; } //index of the BoneTag in the Expression.BoneTracks array
@@ -1179,7 +1083,7 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            TrackIndex = (ushort)Xml.GetChildUIntAttribute(node, "BoneTrack", "value");
+            TrackIndex = (ushort)Xml.GetChildUIntAttribute(node, "TrackIndex", "value");
             BoneId = (ushort)Xml.GetChildUIntAttribute(node, "BoneId", "value");
             Track = (byte)Xml.GetChildUIntAttribute(node, "Track", "value");
             Format = (byte)Xml.GetChildUIntAttribute(node, "Format", "value");
@@ -1223,12 +1127,9 @@ namespace CodeWalker.GameFiles
     }
     [TC(typeof(EXP))] public class ExpressionInstrJump : ExpressionInstrBase
     {
-        // note: unsigned so can only jump forwards
-        public uint Data1Offset { get; set; }
+        public uint Data1Offset { get; set; } // note: unsigned so can only jump forwards
         public uint Data2Offset { get; set; }
-        public uint Data3Offset { get; set; }
-
-        public uint InstructionOffset { get; set; }
+        public uint Data3Offset { get; set; } //instruction offset
 
         public override void Read(DataReader r1, DataReader r2)
         {
@@ -1244,18 +1145,11 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
-            YedXml.ValueTag(sb, indent, "InstructionOffset", InstructionOffset.ToString());
-            // YedXml.ValueTag(sb, indent, "Data1Offset", Data1Offset.ToString());
-            // YedXml.ValueTag(sb, indent, "Data2Offset", Data2Offset.ToString());
-            // YedXml.ValueTag(sb, indent, "Data3Offset", Data3Offset.ToString());
+            YedXml.ValueTag(sb, indent, "InstructionOffset", Data3Offset.ToString());
         }
         public override void ReadXml(XmlNode node)
         {
-            // TODO: calculate data offsets
-            InstructionOffset = Xml.GetChildUIntAttribute(node, "InstructionOffset");
-            // Data1Offset = Xml.GetChildUIntAttribute(node, "Data1Offset");
-            // Data2Offset = Xml.GetChildUIntAttribute(node, "Data2Offset");
-            // Data3Offset = Xml.GetChildUIntAttribute(node, "Data3Offset");
+            Data3Offset = Xml.GetChildUIntAttribute(node, "InstructionOffset");
         }
 
         public override string ToString()

@@ -3203,9 +3203,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-#if !DEBUG
-                    try
-#endif
+                    //try
                     {
                         var n = entry.NameLower;
                         if (!(n.EndsWith(".pso") ||
@@ -3273,13 +3271,11 @@ namespace CodeWalker.GameFiles
                             }
                         }
                     }
-#if !DEBUG
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                        exceptions.Add(ex);
-                    }
-#endif
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //    exceptions.Add(ex);
+                    //}
                 }
             }
 
@@ -3381,9 +3377,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-#if !DEBUG
-                    try
-#endif
+                    //try
                     {
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
@@ -3398,13 +3392,11 @@ namespace CodeWalker.GameFiles
                             //PsoTypes.EnsurePsoTypes(cut.Pso);
                         }
                     }
-#if !DEBUG
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                        exceptions.Add(ex);
-                    }
-#endif
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //    exceptions.Add(ex);
+                    //}
                 }
             }
             
@@ -3422,9 +3414,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-#if !DEBUG
-                    try
-#endif
+                    //try
                     {
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
@@ -3438,13 +3428,11 @@ namespace CodeWalker.GameFiles
 
                         }
                     }
-#if !DEBUG
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                        exceptions.Add(ex);
-                    }
-#endif
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //    exceptions.Add(ex);
+                    //}
                 }
             }
 
@@ -3453,16 +3441,14 @@ namespace CodeWalker.GameFiles
         }
         public void TestYeds()
         {
-
+            bool xmltest = true;
             var exceptions = new List<Exception>();
 
             foreach (RpfFile file in AllRpfs)
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-#if !DEBUG
-                    try
-#endif
+                    //try
                     {
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
@@ -3474,24 +3460,25 @@ namespace CodeWalker.GameFiles
                             YedFile yed = new YedFile(rfe);
                             RpfMan.LoadFile(yed, rfe);
 
-                            var xml = YedXml.GetXml(yed);
-                            var yed2 = XmlYed.GetYed(xml);
-                            var data2 = yed2.Save();
-                            var yed3 = new YedFile();
-                            RpfFile.LoadResourceFile(yed3, data2, 25);//full roundtrip
-                            var xml2 = YedXml.GetXml(yed3);
-                            if (xml != xml2)
-                            { }
+                            if (xmltest)
+                            {
+                                var xml = YedXml.GetXml(yed);
+                                var yed2 = XmlYed.GetYed(xml);
+                                var data2 = yed2.Save();
+                                var yed3 = new YedFile();
+                                RpfFile.LoadResourceFile(yed3, data2, 25);//full roundtrip
+                                var xml2 = YedXml.GetXml(yed3);
+                                if (xml != xml2)
+                                { }//no hitting
+                            }
 
                         }
                     }
-#if !DEBUG
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                        exceptions.Add(ex);
-                    }
-#endif
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //    exceptions.Add(ex);
+                    //}
                 }
             }
 
@@ -4370,9 +4357,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-#if !DEBUG
-                    try
-#endif
+                    //try
                     {
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
@@ -4397,13 +4382,11 @@ namespace CodeWalker.GameFiles
 
                         }
                     }
-#if !DEBUG
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                        exceptions.Add(ex);
-                    }
-#endif
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //    exceptions.Add(ex);
+                    //}
                 }
             }
 
@@ -4419,9 +4402,7 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-#if !DEBUG
-                    try
-#endif
+                    //try
                     {
                         var rfe = entry as RpfFileEntry;
                         if (rfe == null) continue;
@@ -4444,13 +4425,11 @@ namespace CodeWalker.GameFiles
 
                         }
                     }
-#if !DEBUG
-                    catch (Exception ex)
-                    {
-                        UpdateStatus("Error! " + ex.ToString());
-                        exceptions.Add(ex);
-                    }
-#endif
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //    exceptions.Add(ex);
+                    //}
                 }
             }
 
