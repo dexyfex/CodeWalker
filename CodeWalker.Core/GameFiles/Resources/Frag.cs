@@ -512,6 +512,10 @@ namespace CodeWalker.GameFiles
             }
             LightAttributes = new ResourceSimpleList64<LightAttributes>();
             LightAttributes.data_items = XmlMeta.ReadItemArray<LightAttributes>(node, "Lights");
+            if (LightAttributes.data_items == null)
+            {
+                LightAttributes.data_items = new LightAttributes[0];
+            }
             Cloths = new ResourcePointerList64<EnvironmentCloth>();
             var cnode = node.SelectSingleNode("Cloths");
             if (cnode != null)
@@ -526,6 +530,10 @@ namespace CodeWalker.GameFiles
                         v.ReadXml(inode, ddsfolder);
                         vlist.Add(v);
 
+                        if (v.Drawable != null)
+                        {
+                            v.Drawable.OwnerCloth = v;
+                        }
                         if (Drawable == null)
                         {
                             Drawable = v.Drawable;
@@ -2898,6 +2906,7 @@ namespace CodeWalker.GameFiles
                 {
                     var type = Xml.GetEnumValue<FragJointType>(Xml.GetStringAttribute(jnode, "type"));
                     var j = FragPhysJointType.Create(type);
+                    j.Type = type;
                     j?.ReadXml(jnode);
                     jlist.Add(j);
                 }

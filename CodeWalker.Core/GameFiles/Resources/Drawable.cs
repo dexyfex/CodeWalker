@@ -3779,7 +3779,7 @@ namespace CodeWalker.GameFiles
                     case VertexComponentType.Float2: SetVector2(v, c, new Vector2(f(0), f(1))); break;
                     case VertexComponentType.Float3: SetVector3(v, c, new Vector3(f(0), f(1), f(2))); break;
                     case VertexComponentType.Float4: SetVector4(v, c, new Vector4(f(0), f(1), f(2), f(3))); break;
-                    case VertexComponentType.Dec3N: SetDec3N(v, c, new Vector3(f(0), f(1), f(2))); break;
+                    case VertexComponentType.Dec3N: SetDec3N(v, c, new Vector4(f(0), f(1), f(2), f(3))); break;
                     case VertexComponentType.Half2: SetHalf2(v, c, new Half2(f(0), f(1))); break;
                     case VertexComponentType.Half4: SetHalf4(v, c, new Half4(f(0), f(1), f(2), f(3))); break;
                     case VertexComponentType.Colour: SetColour(v, c, new Color(b(0), b(1), b(2), b(3))); break;
@@ -3862,7 +3862,7 @@ namespace CodeWalker.GameFiles
                 }
             }
         }
-        public void SetDec3N(int v, int c, Vector3 val)
+        public void SetDec3N(int v, int c, Vector4 val)
         {
             //see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb322868(v%3Dvs.85)
             if ((Info != null) && (VertexBytes != null))
@@ -3873,16 +3873,18 @@ namespace CodeWalker.GameFiles
                 var e = o + 4;//sizeof(Dec3N)
                 if (e <= VertexBytes.Length)
                 {
-                    var sx = (val.X < 0.0f);
-                    var sy = (val.X < 0.0f);
-                    var sz = (val.X < 0.0f);
+                    var sx = (val.X >= 0.0f);
+                    var sy = (val.Y >= 0.0f);
+                    var sz = (val.Z >= 0.0f);
+                    var sw = (val.W >= 0.0f);
                     var x = Math.Min((uint)(Math.Abs(val.X) * 511.0f), 511);
                     var y = Math.Min((uint)(Math.Abs(val.Y) * 511.0f), 511);
                     var z = Math.Min((uint)(Math.Abs(val.Z) * 511.0f), 511);
-                    var ux = ((sx ? ~x : x) & 0x1FF) + (sx ? 0x200 : 0);
-                    var uy = ((sy ? ~y : y) & 0x1FF) + (sy ? 0x200 : 0);
-                    var uz = ((sz ? ~z : z) & 0x1FF) + (sz ? 0x200 : 0);
-                    var uw = 0u;
+                    var w = Math.Min((uint)(val.W), 2);
+                    var ux = ((sx ? x : ~x) & 0x1FF) + (sx ? 0x200 : 0);
+                    var uy = ((sy ? y : ~y) & 0x1FF) + (sy ? 0x200 : 0);
+                    var uz = ((sz ? z : ~z) & 0x1FF) + (sz ? 0x200 : 0);
+                    var uw = sw ? w : 3;//(0,1,2)=>(0,1,2); (-1)=>(3)
                     var u = ux + (uy << 10) + (uz << 20) + (uw << 30);
                     var b = BitConverter.GetBytes(u);
                     Buffer.BlockCopy(b, 0, VertexBytes, o, 4);
@@ -3971,7 +3973,7 @@ namespace CodeWalker.GameFiles
                     case VertexComponentType.Float2: return FloatUtil.GetVector2String(GetVector2(v, c), d);
                     case VertexComponentType.Float3: return FloatUtil.GetVector3String(GetVector3(v, c), d);
                     case VertexComponentType.Float4: return FloatUtil.GetVector4String(GetVector4(v, c), d);
-                    case VertexComponentType.Dec3N: return FloatUtil.GetVector3String(GetDec3N(v, c), d);
+                    case VertexComponentType.Dec3N: return FloatUtil.GetVector4String(GetDec3N(v, c), d);
                     case VertexComponentType.Half2: return FloatUtil.GetHalf2String(GetHalf2(v, c), d);
                     case VertexComponentType.Half4: return FloatUtil.GetHalf4String(GetHalf4(v, c), d);
                     case VertexComponentType.Colour: return FloatUtil.GetColourString(GetColour(v, c), d);
@@ -4052,7 +4054,7 @@ namespace CodeWalker.GameFiles
             }
             return Vector4.Zero;
         }
-        public Vector3 GetDec3N(int v, int c)
+        public Vector4 GetDec3N(int v, int c)
         {
             //see https://docs.microsoft.com/en-us/previous-versions/windows/desktop/bb322868(v%3Dvs.85)
             if ((Info != null) && (VertexBytes != null))
@@ -4067,17 +4069,18 @@ namespace CodeWalker.GameFiles
                     var ux = (u >> 0) & 0x3FF;
                     var uy = (u >> 10) & 0x3FF;
                     var uz = (u >> 20) & 0x3FF;
-                    var uw = (u >> 30);
+                    var uw = (u >> 30) & 0x3;
                     var sx = (ux & 0x200) > 0;
                     var sy = (uy & 0x200) > 0;
                     var sz = (uz & 0x200) > 0;
-                    var x = ((sx ? ~ux : ux) & 0x1FF) / (sx ? -511.0f : 511.0f);
-                    var y = ((sy ? ~uy : uy) & 0x1FF) / (sy ? -511.0f : 511.0f);
-                    var z = ((sz ? ~uz : uz) & 0x1FF) / (sz ? -511.0f : 511.0f);
-                    return new Vector3(x, y, z);
+                    var x = ((sx ? ux : ~ux) & 0x1FF) / (sx ? 511.0f : -511.0f);
+                    var y = ((sy ? uy : ~uy) & 0x1FF) / (sy ? 511.0f : -511.0f);
+                    var z = ((sz ? uz : ~uz) & 0x1FF) / (sz ? 511.0f : -511.0f);
+                    var w = (uw == 3) ? -1.0f : uw;//(0,1,2)=>(0,1,2); (3)=>(-1)
+                    return new Vector4(x, y, z, w);
                 }
             }
-            return Vector3.Zero;
+            return Vector4.Zero;
         }
         public Half2 GetHalf2(int v, int c)
         {

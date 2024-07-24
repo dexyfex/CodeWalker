@@ -62,7 +62,7 @@ namespace CodeWalker.GameFiles
                 case VertexComponentType.Float4: return 4;
                 case VertexComponentType.UByte4: return 4;
                 case VertexComponentType.Colour: return 4;
-                case VertexComponentType.Dec3N: return 3;
+                case VertexComponentType.Dec3N: return 4;
                 default: return 0;
             }
         }

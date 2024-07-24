@@ -1248,13 +1248,13 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-            CalculateVertsShrunkByMargin();
-            CalculateOctants();
-
             BuildMaterials();
             CalculateQuantum();
             UpdateEdgeIndices();
             UpdateTriangleAreas();
+            CalculateVertsShrunk();
+            //CalculateVertsShrunkByNormals();
+            CalculateOctants();
 
             FileVFT = 1080226408;
         }
@@ -1327,7 +1327,17 @@ namespace CodeWalker.GameFiles
             }
             if (Materials != null)
             {
-                MaterialsBlock = new ResourceSystemStructBlock<BoundMaterial_s>(Materials);
+                var mats = Materials;
+                if (mats.Length < 4) //add padding to the array for writing if necessary
+                {
+                    mats = new BoundMaterial_s[4];
+                    for (int i = 0; i < Materials.Length; i++)
+                    {
+                        mats[i] = Materials[i];
+                    }
+                }
+
+                MaterialsBlock = new ResourceSystemStructBlock<BoundMaterial_s>(mats);
                 list.Add(MaterialsBlock);
             }
             if (MaterialColours != null)
@@ -1781,7 +1791,230 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public void CalculateVertsShrunkByMargin()
+        public void CalculateVertsShrunk()
+        {
+            //this will also adjust the Margin if it can't successfully shrink!
+            //thanks to ranstar74
+            //https://github.com/ranstar74/rageAm/blob/master/projects/app/src/rage/physics/bounds/boundgeometry.cpp
+
+            if (Vertices == null) return;//must have existing vertices for this!
+            VerticesShrunk = null;
+            var size = Vector3.Abs(BoxMax - BoxMin) * 0.5f;
+            var margin = Math.Min(Math.Min(Math.Min(Margin, size.X), size.Y), size.Z);
+            while (margin > 1e-6f)
+            {
+                var verts = ShrinkPolysByMargin(margin); //try shrink by this margin, if successful, break out
+                var check = CheckShrunkPolys(verts);
+                if (check)
+                {
+                    VerticesShrunk = verts;
+                    break;
+                }
+                margin *= 0.5f;
+            }
+            if (VerticesShrunk == null)
+            {
+                CalculateVertsShrunkByNormals();//fallback case, just shrink by normals
+                return;
+            }
+            margin = Math.Max(margin, 0.025f);
+            //Margin = margin;//should we actually update this here?
+
+            var shrunkMin = BoxMin + margin - CenterGeom;
+            var shrunkMax = BoxMax - margin - CenterGeom;
+            for (int i = 0; i < VerticesShrunk.Length; i++)//make sure the shrunk vertices fit in the box. (usually shouldn't do anything)
+            {
+                var vertex = VerticesShrunk[i];
+                vertex = Vector3.Min(vertex, shrunkMax);
+                vertex = Vector3.Max(vertex, shrunkMin);
+                if (VerticesShrunk[i] != vertex)
+                {
+                    VerticesShrunk[i] = vertex;
+                }
+            }
+
+        }
+        private Vector3[] ShrinkPolysByMargin(float margin)
+        {
+            var verts = new Vector3[Vertices.Length];
+            Array.Copy(Vertices, verts, Vertices.Length);
+
+            var vc = verts.Length;
+            var polyNormals = new Vector3[Polygons.Length];//precompute all the poly normals.
+            for (int polyIndex = 0; polyIndex < Polygons.Length; polyIndex++)
+            {
+                var tri = Polygons[polyIndex] as BoundPolygonTriangle;
+                if (tri == null) { continue; }//can only compute poly normals for triangles!
+                var vi1 = tri.vertIndex1;
+                var vi2 = tri.vertIndex2;
+                var vi3 = tri.vertIndex3;
+                if ((vi1 >= vc) || (vi2 >= vc) || (vi3 >= vc)) continue;//vertex index out of range!?
+                var v1 = Vertices[vi1];//test against non-shrunk triangle
+                var v2 = Vertices[vi2];
+                var v3 = Vertices[vi3];
+                polyNormals[polyIndex] = Vector3.Normalize(Vector3.Cross(v3 - v2, v1 - v2));
+            }
+
+            var normals = new Vector3[64];//first is current poly normal, and remaining are neighbours (assumes 63 neighbours is enough!) 
+            var processedVertices = new uint[2048];//2048*32 = 65536 vertices max
+            var negMargin = -margin;
+            for (int polyIndex = 0; polyIndex < Polygons.Length; polyIndex++)
+            {
+                var tri = Polygons[polyIndex] as BoundPolygonTriangle;
+                if (tri == null) { continue; }
+                for (int polyVertexIndex = 0; polyVertexIndex < 3; polyVertexIndex++)
+                {
+                    var vertexIndex = tri.GetVertexIndex(polyVertexIndex);
+                    var bucket = vertexIndex >> 5;
+                    var mask = 1u << (vertexIndex & 0x1F);
+                    if ((processedVertices[bucket] & mask) != 0) continue;//already processed this vertex
+                    processedVertices[bucket] |= mask;
+
+                    var vertex = verts[vertexIndex];
+                    var normal = polyNormals[polyIndex];
+                    normals[0] = normal;//used for weighted normal computation
+                    var averageNormal = normal;//compute average normal from surrounding polygons
+                    var prevNeighbour = polyIndex;
+                    var normalCount = 1;
+                    var neighbourCount = 0;
+                    var polyNeighbourIndex = (polyVertexIndex + 2) % 3;//find starting neighbour index
+                    var neighbour = tri.GetEdgeIndex(polyNeighbourIndex);
+                    if (neighbour < 0)
+                    {
+                        neighbour = tri.GetEdgeIndex(polyVertexIndex);
+                        polyNeighbourIndex = polyVertexIndex;//is this needed?
+                    }
+                    while (neighbour >= 0)
+                    {
+                        var neighbourPoly = Polygons[neighbour] as BoundPolygonTriangle;
+                        var neighbourNormal = polyNormals[neighbour];
+                        averageNormal += neighbourNormal;
+                        normals[neighbourCount + 1] = neighbourNormal;
+                        normalCount++;
+                        neighbourCount++;
+                        var newNeighbour = -1;
+                        if (neighbourPoly != null)
+                        {
+                            for (var j = 0; j < 3; j++)
+                            {
+                                var nextIndex = (j + 1) % 3;
+                                var n = neighbourPoly.GetVertexIndex(nextIndex);
+                                if (n == vertexIndex)
+                                {
+                                    newNeighbour = neighbourPoly.GetEdgeIndex(j);
+                                    if (newNeighbour == prevNeighbour)
+                                    {
+                                        newNeighbour = neighbourPoly.GetEdgeIndex(nextIndex);
+                                    }
+                                    prevNeighbour = neighbour;
+                                    neighbour = newNeighbour;
+                                    break;
+                                }
+                            }
+                        }
+                        if (newNeighbour == polyIndex) break; //check the circle is closed and iterated all neighbours
+                        if (neighbourCount >= 63) break;//too many neighbours! possibly a mesh error
+                    }
+                    averageNormal = Vector3.Normalize(averageNormal);
+
+                    if (normalCount == 1)
+                    {
+                        verts[vertexIndex] = vertex + (normal * negMargin);
+                    }
+                    else if (normalCount == 2)
+                    {
+                        var cross = Vector3.Cross(normal, normals[1]);
+                        var crossMagSq = cross.LengthSquared();
+                        if (crossMagSq < 0.1f)//small angle between normals, just shrink by base normal
+                        {
+                            verts[vertexIndex] = vertex + (normal * negMargin);
+                            continue;
+                        }
+                        var lengthInv = 1.0f / (float)Math.Sqrt(crossMagSq);//insert new normal to weighted set
+                        normals[2] = cross * lengthInv;
+                        normalCount = 3;
+                    }
+                    if (normalCount < 3) continue;
+
+                    var neighbourNormalCount = normalCount - 1;
+                    var shrunk = vertex + (averageNormal * negMargin);
+                    for (var i = 0; i < neighbourNormalCount - 1; i++)//traverse and compute weighted normals
+                    {
+                        for (var j = 0; j < neighbourNormalCount - i - 1; j++)
+                        {
+                            for (var k = 0; k < neighbourNormalCount - j - i - 1; k++)
+                            {
+                                var normal1 = normals[i];
+                                var normal2 = normals[i + j + 1];
+                                var normal3 = normals[i + j + k + 2];
+                                var cross23 = Vector3.Cross(normal2, normal3);
+                                var dot = Vector3.Dot(normal1, cross23);
+                                if (Math.Abs(dot) > 0.25f)//check only neighbours with large angle between neighbour normals and poly normal
+                                {
+                                    var dotinv = 1.0f / dot;//normals with angle closer to 0.25 will contribute more to weighted normal
+                                    var cross31 = Vector3.Cross(normal3, normal1);
+                                    var cross12 = Vector3.Cross(normal1, normal2);
+                                    var newNormal = (cross23 + cross31 + cross12) * dotinv;//compute weighted normal
+                                    var newShrink = vertex + (newNormal * negMargin);
+                                    var toOld = shrunk - vertex;//choose shrunk vertex that is furthest from original vertex
+                                    var toNew = newShrink - vertex;
+                                    if (toNew.LengthSquared() > toOld.LengthSquared())
+                                    {
+                                        shrunk = newShrink;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    verts[vertexIndex] = shrunk;
+                }
+            }
+
+            return verts;
+        }
+        private bool CheckShrunkPolys(Vector3[] verts)
+        {
+            bool rayIntersects(in Ray ray, ref Vector3 v1, ref Vector3 v2, ref Vector3 v3, float maxDist)
+            {
+                var hit = ray.Intersects(ref v1, ref v2, ref v3, out float dist);
+                return hit && (dist <= maxDist);
+            }
+            var vc = verts.Length;
+            if (vc != Vertices.Length) return false;//vertex count mismatch!?
+            for (var i = 0; i < vc; i++)
+            {
+                var vertex = Vertices[i];
+                var shrunkVertex = verts[i];
+                var segmentPos = shrunkVertex;
+                var segmentDir = vertex - shrunkVertex;
+                var segmentLength = segmentDir.Length();
+                if (segmentLength == 0) continue;//vertex wasn't shrunk!?
+                segmentDir *= (1.0f / segmentLength);
+                var segmentRay = new Ray(segmentPos, segmentDir);
+                for (int p = 0; p < Polygons.Length; p++)
+                {
+                    var tri = Polygons[p] as BoundPolygonTriangle;
+                    if (tri == null) { continue; }
+                    var vi1 = tri.vertIndex1;
+                    var vi2 = tri.vertIndex2;
+                    var vi3 = tri.vertIndex3;
+                    if ((vi1 >= vc) || (vi2 >= vc) || (vi3 >= vc)) return false;//vertex index out of range!?
+                    if ((vi1 == i) || (vi2 == i) || (vi3 == i)) continue;//only test polys not using this vertex
+                    var v1 = Vertices[vi1];//test against non-shrunk triangle
+                    var v2 = Vertices[vi2];
+                    var v3 = Vertices[vi3];
+                    if (rayIntersects(segmentRay, ref v1, ref v2, ref v3, segmentLength)) return false;
+                    var vs1 = verts[vi1];//test against shrunk triangle
+                    var vs2 = verts[vi2];
+                    var vs3 = verts[vi3];
+                    if (rayIntersects(segmentRay, ref vs1, ref vs2, ref vs3, segmentLength)) return false;
+                }
+            }
+            return true;
+        }
+
+
+        public void CalculateVertsShrunkByNormals()
         {
             Vector3[] vertNormals = CalculateVertNormals();
             VerticesShrunk = new Vector3[Vertices.Length];
@@ -1792,7 +2025,6 @@ namespace CodeWalker.GameFiles
                 VerticesShrunk[i] = Vertices[i] + normalShrunk;
             }
         }
-
         public Vector3[] CalculateVertNormals()
         {
             Vector3[] vertNormals = new Vector3[Vertices.Length];
@@ -1825,7 +2057,8 @@ namespace CodeWalker.GameFiles
             return vertNormals;
         }
 
-        public void CalculateQuantum()
+
+        public void CalculateMinMax()
         {
             var min = new Vector3(float.MaxValue);
             var max = new Vector3(float.MinValue);
@@ -1837,7 +2070,7 @@ namespace CodeWalker.GameFiles
                     max = Vector3.Max(max, v);
                 }
             }
-            if (VerticesShrunk != null)
+            if (VerticesShrunk != null)//this shouldn't be needed
             {
                 foreach (var v in VerticesShrunk)
                 {
@@ -1845,9 +2078,38 @@ namespace CodeWalker.GameFiles
                     max = Vector3.Max(max, v);
                 }
             }
-            var maxsiz = Vector3.Max(min.Abs(), max.Abs());
-            var q = (maxsiz+Margin) / 32767.0f;
-            Quantum = q;
+            if (min.X == float.MaxValue) min = Vector3.Zero;
+            if (max.X == float.MinValue) max = Vector3.Zero;
+            BoxMin = min - Margin;
+            BoxMax = max + Margin;
+        }
+
+        public void CalculateQuantum()
+        {
+            Quantum = (BoxMax - BoxMin) * 0.5f / 32767.0f;
+
+
+            //var min = new Vector3(float.MaxValue);
+            //var max = new Vector3(float.MinValue);
+            //if (Vertices != null)
+            //{
+            //    foreach (var v in Vertices)
+            //    {
+            //        min = Vector3.Min(min, v);
+            //        max = Vector3.Max(max, v);
+            //    }
+            //}
+            //if (VerticesShrunk != null)
+            //{
+            //    foreach (var v in VerticesShrunk)
+            //    {
+            //        min = Vector3.Min(min, v);
+            //        max = Vector3.Max(max, v);
+            //    }
+            //}
+            //var maxsiz = Vector3.Max(min.Abs(), max.Abs());
+            //var q = (maxsiz+Margin) / 32767.0f;
+            //Quantum = q;
         }
 
         public void BuildMaterials()
@@ -1878,13 +2140,6 @@ namespace CodeWalker.GameFiles
             }
 
             MaterialsCount = (byte)matlist.Count;
-
-            //add padding to the array for writing
-            for (int i = matlist.Count; i < 4; i++)
-            {
-                matlist.Add(new BoundMaterial_s());
-            }
-
             Materials = matlist.ToArray();
             PolygonMaterialIndices = polymats.ToArray();
         }
@@ -1918,49 +2173,49 @@ namespace CodeWalker.GameFiles
                     {
                         if (edge1.Triangle2 != null)
                         {
-                            btri.SetEdgeIndex(1, (short)edge1.Triangle1.Index);
+                            btri.SetEdgeIndex(0, edge1.Triangle1.Index);
                         }
                         else
                         {
                             edge1.Triangle2 = btri;
-                            edge1.EdgeID2 = 1;
+                            edge1.EdgeID2 = 0;
                         }
                     }
                     else
                     {
-                        edgedict[e1] = new BoundEdge(btri, 1);
+                        edgedict[e1] = new BoundEdge(btri, 0);
                     }
                     if (edgedict.TryGetValue(e2, out BoundEdge edge2))
                     {
                         if (edge2.Triangle2 != null)
                         {
-                            btri.SetEdgeIndex(2, (short)edge2.Triangle1.Index);
+                            btri.SetEdgeIndex(1, edge2.Triangle1.Index);
                         }
                         else
                         {
                             edge2.Triangle2 = btri;
-                            edge2.EdgeID2 = 2;
+                            edge2.EdgeID2 = 1;
                         }
                     }
                     else
                     {
-                        edgedict[e2] = new BoundEdge(btri, 2);
+                        edgedict[e2] = new BoundEdge(btri, 1);
                     }
                     if (edgedict.TryGetValue(e3, out BoundEdge edge3))
                     {
                         if (edge3.Triangle2 != null)
                         {
-                            btri.SetEdgeIndex(3, (short)edge3.Triangle1.Index);
+                            btri.SetEdgeIndex(2, edge3.Triangle1.Index);
                         }
                         else
                         {
                             edge3.Triangle2 = btri;
-                            edge3.EdgeID2 = 3;
+                            edge3.EdgeID2 = 2;
                         }
                     }
                     else
                     {
-                        edgedict[e3] = new BoundEdge(btri, 3);
+                        edgedict[e3] = new BoundEdge(btri, 2);
                     }
 
                 }
@@ -1981,8 +2236,8 @@ namespace CodeWalker.GameFiles
                 }
                 else
                 {
-                    edge.Triangle1.SetEdgeIndex(edge.EdgeID1, (short)edge.Triangle2.Index);
-                    edge.Triangle2.SetEdgeIndex(edge.EdgeID2, (short)edge.Triangle1.Index);
+                    edge.Triangle1.SetEdgeIndex(edge.EdgeID1, edge.Triangle2.Index);
+                    edge.Triangle2.SetEdgeIndex(edge.EdgeID2, edge.Triangle1.Index);
                 }
             }
 
@@ -2045,12 +2300,12 @@ namespace CodeWalker.GameFiles
                         var poly = Polygons[i];
                         if (poly is BoundPolygonTriangle btri)
                         {
-                            if (btri.edgeIndex1 == idx) btri.edgeIndex1 = -1;
-                            if (btri.edgeIndex1 > idx) btri.edgeIndex1--;
-                            if (btri.edgeIndex2 == idx) btri.edgeIndex2 = -1;
-                            if (btri.edgeIndex2 > idx) btri.edgeIndex2--;
-                            if (btri.edgeIndex3 == idx) btri.edgeIndex3 = -1;
-                            if (btri.edgeIndex3 > idx) btri.edgeIndex3--;
+                            if (btri.edgeIndex1 == idx) btri.edgeIndex1 = 0xFFFF;
+                            if ((btri.edgeIndex1 > idx) && (btri.edgeIndex1 != 0xFFFF)) btri.edgeIndex1--;
+                            if (btri.edgeIndex2 == idx) btri.edgeIndex2 = 0xFFFF;
+                            if ((btri.edgeIndex2 > idx) && (btri.edgeIndex2 != 0xFFFF)) btri.edgeIndex2--;
+                            if (btri.edgeIndex3 == idx) btri.edgeIndex3 = 0xFFFF;
+                            if ((btri.edgeIndex3 > idx) && (btri.edgeIndex3 != 0xFFFF)) btri.edgeIndex3--;
                         }
                         poly.Index = i;
                     }
@@ -2363,7 +2618,7 @@ namespace CodeWalker.GameFiles
 
             var newpolys = new BoundPolygon[items.Count];
             var newpolymats = new byte[items.Count];
-            var itemlookup = new short[items.Count];
+            var itemlookup = new int[items.Count];
             for (int i = 0; i < items.Count; i++)
             {
                 var poly = items[i]?.Polygon;
@@ -2371,7 +2626,7 @@ namespace CodeWalker.GameFiles
                 {
                     if (poly.Index < itemlookup.Length)
                     {
-                        itemlookup[poly.Index] = (short)i;
+                        itemlookup[poly.Index] = i;
                     }
                     else
                     { }//shouldn't happen
@@ -2389,9 +2644,12 @@ namespace CodeWalker.GameFiles
                     poly.Index = i;
                     if (poly is BoundPolygonTriangle ptri)
                     {
-                        ptri.edgeIndex1 = ((ptri.edgeIndex1 >= 0) && (ptri.edgeIndex1 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex1] : (short)-1;
-                        ptri.edgeIndex2 = ((ptri.edgeIndex2 >= 0) && (ptri.edgeIndex2 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex2] : (short)-1;
-                        ptri.edgeIndex3 = ((ptri.edgeIndex3 >= 0) && (ptri.edgeIndex3 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex3] : (short)-1;
+                        var edgeIndex1 = ((ptri.edgeIndex1 >= 0) && (ptri.edgeIndex1 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex1] : -1;
+                        var edgeIndex2 = ((ptri.edgeIndex2 >= 0) && (ptri.edgeIndex2 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex2] : -1;
+                        var edgeIndex3 = ((ptri.edgeIndex3 >= 0) && (ptri.edgeIndex3 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex3] : -1;
+                        ptri.SetEdgeIndex(1, edgeIndex1);
+                        ptri.SetEdgeIndex(2, edgeIndex2);
+                        ptri.SetEdgeIndex(3, edgeIndex3);
                     }
                 }
             }
@@ -3214,9 +3472,9 @@ namespace CodeWalker.GameFiles
         public ushort triIndex1 { get; set; }
         public ushort triIndex2 { get; set; }
         public ushort triIndex3 { get; set; }
-        public short edgeIndex1 { get; set; }
-        public short edgeIndex2 { get; set; }
-        public short edgeIndex3 { get; set; }
+        public ushort edgeIndex1 { get; set; }
+        public ushort edgeIndex2 { get; set; }
+        public ushort edgeIndex3 { get; set; }
 
         public int vertIndex1 { get { return (triIndex1 & 0x7FFF); } set { triIndex1 = (ushort)((value & 0x7FFF) + (vertFlag1 ? 0x8000 : 0)); } }
         public int vertIndex2 { get { return (triIndex2 & 0x7FFF); } set { triIndex2 = (ushort)((value & 0x7FFF) + (vertFlag2 ? 0x8000 : 0)); } }
@@ -3358,28 +3616,60 @@ namespace CodeWalker.GameFiles
             }
         }
 
-        public void SetEdgeIndex(int edgeid, short polyindex)
+        public int GetVertexIndex(int i)
         {
-            switch (edgeid)
+            switch (i)
             {
-                case 1:
-                    if (edgeIndex1 != polyindex)
+                default:
+                case 0: return vertIndex1;
+                case 1: return vertIndex2;
+                case 2: return vertIndex3;
+            }
+        }
+        public int GetEdgeIndex(int i)
+        {
+            switch (i)
+            {
+                default:
+                case 0: return UnpackEdgeIndex(edgeIndex1);
+                case 1: return UnpackEdgeIndex(edgeIndex2);
+                case 2: return UnpackEdgeIndex(edgeIndex3);
+            }
+        }
+        public void SetEdgeIndex(int i, int polyindex)
+        {
+            var e = PackEdgeIndex(polyindex);
+            switch (i)
+            {
+                case 0:
+                    if (edgeIndex1 != e)
                     { }
-                    edgeIndex1 = polyindex;
+                    edgeIndex1 = e;
+                    break;
+                case 1:
+                    if (edgeIndex2 != e)
+                    { }
+                    edgeIndex2 = e;
                     break;
                 case 2:
-                    if (edgeIndex2 != polyindex)
+                    if (edgeIndex3 != e)
                     { }
-                    edgeIndex2 = polyindex;
-                    break;
-                case 3:
-                    if (edgeIndex3 != polyindex)
-                    { }
-                    edgeIndex3 = polyindex;
+                    edgeIndex3 = e;
                     break;
                 default:
                     break;
             }
+        }
+        public static ushort PackEdgeIndex(int polyIndex)
+        {
+            if (polyIndex < 0) return 0xFFFF;
+            if (polyIndex > 0xFFFF) return 0xFFFF;
+            return (ushort)polyIndex;
+        }
+        public static int UnpackEdgeIndex(ushort edgeIndex)
+        {
+            if (edgeIndex == 0xFFFF) return -1;
+            return (int)edgeIndex;
         }
 
         public BoundPolygonTriangle()
@@ -3392,9 +3682,9 @@ namespace CodeWalker.GameFiles
             triIndex1 = BitConverter.ToUInt16(bytes, offset + 4);
             triIndex2 = BitConverter.ToUInt16(bytes, offset + 6);
             triIndex3 = BitConverter.ToUInt16(bytes, offset + 8);
-            edgeIndex1 = BitConverter.ToInt16(bytes, offset + 10);
-            edgeIndex2 = BitConverter.ToInt16(bytes, offset + 12);
-            edgeIndex3 = BitConverter.ToInt16(bytes, offset + 14);
+            edgeIndex1 = BitConverter.ToUInt16(bytes, offset + 10);
+            edgeIndex2 = BitConverter.ToUInt16(bytes, offset + 12);
+            edgeIndex3 = BitConverter.ToUInt16(bytes, offset + 14);
         }
         public override void Write(BinaryWriter bw)
         {

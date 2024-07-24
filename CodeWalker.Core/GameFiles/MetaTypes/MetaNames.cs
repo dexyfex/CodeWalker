@@ -3182,6 +3182,7 @@ namespace CodeWalker.GameFiles
         topcloudthreshold = 1907493970,
         toplum = 2532426199,
         totalelapsedtime = 3838297418,
+        track2animuv = 3640659359,
         trackanimuv = 3759799674,
         transcolor = 2460231751,
         transparentdstmapsampler = 2450925918,

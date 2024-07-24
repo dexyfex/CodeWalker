@@ -4346,9 +4346,9 @@ namespace CodeWalker.Project
 
             if (ptri != null)
             {
-                ptri.edgeIndex1 = -1;
-                ptri.edgeIndex2 = -1;
-                ptri.edgeIndex3 = -1;
+                ptri.edgeIndex1 = 0xFFFF;
+                ptri.edgeIndex2 = 0xFFFF;
+                ptri.edgeIndex3 = 0xFFFF;
             }
 
             if (copy != null)

@@ -1315,6 +1315,7 @@ namespace CodeWalker.GameFiles
         topLum = 2532426199,
         TotalElapsedTime = 3838297418,
         TrackAnimUV = 3759799674,
+        Track2AnimUV = 3640659359,
         TransColor = 2460231751,
         TransparentDstMapSampler = 2450925918,
         TransparentSrcMap = 2768420156,

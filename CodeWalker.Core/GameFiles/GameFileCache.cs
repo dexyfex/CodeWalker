@@ -4144,7 +4144,9 @@ namespace CodeWalker.GameFiles
         }
         public void TestYfts()
         {
+            bool xmltest = true;
             bool savetest = false;
+            bool glasstest = false;
             var errorfiles = new List<RpfEntry>();
             var sb = new StringBuilder();
             var flagdict = new Dictionary<uint, int>();
@@ -4166,6 +4168,14 @@ namespace CodeWalker.GameFiles
                             {
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
+                            }
+                            if (xmltest && (yft != null) && (yft.Fragment != null))
+                            {
+                                var xml = YftXml.GetXml(yft);
+                                var yft2 = XmlYft.GetYft(xml);//can't do full roundtrip here due to embedded textures
+                                var xml2 = YftXml.GetXml(yft2);
+                                if (xml != xml2)
+                                { }
                             }
                             if (savetest && (yft != null) && (yft.Fragment != null))
                             {
@@ -4189,7 +4199,7 @@ namespace CodeWalker.GameFiles
 
                             }
 
-                            if (yft?.Fragment?.GlassWindows?.data_items != null)
+                            if (glasstest && (yft?.Fragment?.GlassWindows?.data_items != null))
                             {
                                 var lastf = -1;
                                 for (int i = 0; i < yft.Fragment.GlassWindows.data_items.Length; i++)
