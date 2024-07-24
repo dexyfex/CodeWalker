@@ -39,25 +39,25 @@
             this.label9 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.Unk13UpDown = new System.Windows.Forms.NumericUpDown();
-            this.Unk12UpDown = new System.Windows.Forms.NumericUpDown();
-            this.Unk11UpDown = new System.Windows.Forms.NumericUpDown();
-            this.Unk10UpDown = new System.Windows.Forms.NumericUpDown();
-            this.Unk07UpDown = new System.Windows.Forms.NumericUpDown();
-            this.Unk08UpDown = new System.Windows.Forms.NumericUpDown();
-            this.FrequencyUpDown = new System.Windows.Forms.NumericUpDown();
+            this.MaxPathDepthUpDown = new System.Windows.Forms.NumericUpDown();
+            this.BlockabilityUpDown = new System.Windows.Forms.NumericUpDown();
+            this.MaxGlobalInstsUpDown = new System.Windows.Forms.NumericUpDown();
+            this.MaxLocalInstsUpDown = new System.Windows.Forms.NumericUpDown();
+            this.MinRepeatVarUpDown = new System.Windows.Forms.NumericUpDown();
+            this.SpawnHeightUpDown = new System.Windows.Forms.NumericUpDown();
+            this.MinRepeatUpDown = new System.Windows.Forms.NumericUpDown();
             this.EndTimeUpDown = new System.Windows.Forms.NumericUpDown();
             this.StartTimeUpDown = new System.Windows.Forms.NumericUpDown();
             this.label23 = new System.Windows.Forms.Label();
-            this.Flags5TextBox = new System.Windows.Forms.TextBox();
+            this.BankIDTextBox = new System.Windows.Forms.TextBox();
             this.label22 = new System.Windows.Forms.Label();
-            this.Flags4TextBox = new System.Windows.Forms.TextBox();
+            this.LastPlayedTextBox = new System.Windows.Forms.TextBox();
             this.DeleteButton = new System.Windows.Forms.Button();
             this.AddToProjectButton = new System.Windows.Forms.Button();
             this.label21 = new System.Windows.Forms.Label();
-            this.Flags2TextBox = new System.Windows.Forms.TextBox();
+            this.FlagsTextBox = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
-            this.VariablesTextBox = new CodeWalker.WinForms.TextBoxFix();
+            this.ConditionsTextBox = new CodeWalker.WinForms.TextBoxFix();
             this.label15 = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
@@ -68,7 +68,7 @@
             this.label10 = new System.Windows.Forms.Label();
             this.OuterRadiusTextBox = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.Unk01TextBox = new System.Windows.Forms.TextBox();
+            this.WeightTextBox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.CategoryTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -79,13 +79,13 @@
             this.PositionTextBox = new System.Windows.Forms.TextBox();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk13UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk12UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk11UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk10UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk07UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk08UpDown)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FrequencyUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxPathDepthUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BlockabilityUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxGlobalInstsUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxLocalInstsUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MinRepeatVarUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SpawnHeightUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MinRepeatUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.EndTimeUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.StartTimeUpDown)).BeginInit();
             this.SuspendLayout();
@@ -122,25 +122,25 @@
             this.tabPage1.Controls.Add(this.label9);
             this.tabPage1.Controls.Add(this.label8);
             this.tabPage1.Controls.Add(this.label5);
-            this.tabPage1.Controls.Add(this.Unk13UpDown);
-            this.tabPage1.Controls.Add(this.Unk12UpDown);
-            this.tabPage1.Controls.Add(this.Unk11UpDown);
-            this.tabPage1.Controls.Add(this.Unk10UpDown);
-            this.tabPage1.Controls.Add(this.Unk07UpDown);
-            this.tabPage1.Controls.Add(this.Unk08UpDown);
-            this.tabPage1.Controls.Add(this.FrequencyUpDown);
+            this.tabPage1.Controls.Add(this.MaxPathDepthUpDown);
+            this.tabPage1.Controls.Add(this.BlockabilityUpDown);
+            this.tabPage1.Controls.Add(this.MaxGlobalInstsUpDown);
+            this.tabPage1.Controls.Add(this.MaxLocalInstsUpDown);
+            this.tabPage1.Controls.Add(this.MinRepeatVarUpDown);
+            this.tabPage1.Controls.Add(this.SpawnHeightUpDown);
+            this.tabPage1.Controls.Add(this.MinRepeatUpDown);
             this.tabPage1.Controls.Add(this.EndTimeUpDown);
             this.tabPage1.Controls.Add(this.StartTimeUpDown);
             this.tabPage1.Controls.Add(this.label23);
-            this.tabPage1.Controls.Add(this.Flags5TextBox);
+            this.tabPage1.Controls.Add(this.BankIDTextBox);
             this.tabPage1.Controls.Add(this.label22);
-            this.tabPage1.Controls.Add(this.Flags4TextBox);
+            this.tabPage1.Controls.Add(this.LastPlayedTextBox);
             this.tabPage1.Controls.Add(this.DeleteButton);
             this.tabPage1.Controls.Add(this.AddToProjectButton);
             this.tabPage1.Controls.Add(this.label21);
-            this.tabPage1.Controls.Add(this.Flags2TextBox);
+            this.tabPage1.Controls.Add(this.FlagsTextBox);
             this.tabPage1.Controls.Add(this.label20);
-            this.tabPage1.Controls.Add(this.VariablesTextBox);
+            this.tabPage1.Controls.Add(this.ConditionsTextBox);
             this.tabPage1.Controls.Add(this.label15);
             this.tabPage1.Controls.Add(this.label17);
             this.tabPage1.Controls.Add(this.label18);
@@ -151,7 +151,7 @@
             this.tabPage1.Controls.Add(this.label10);
             this.tabPage1.Controls.Add(this.OuterRadiusTextBox);
             this.tabPage1.Controls.Add(this.label4);
-            this.tabPage1.Controls.Add(this.Unk01TextBox);
+            this.tabPage1.Controls.Add(this.WeightTextBox);
             this.tabPage1.Controls.Add(this.label3);
             this.tabPage1.Controls.Add(this.CategoryTextBox);
             this.tabPage1.Controls.Add(this.label2);
@@ -192,19 +192,19 @@
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(7, 380);
+            this.label24.Location = new System.Drawing.Point(7, 332);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(112, 13);
-            this.label24.TabIndex = 87;
+            this.label24.TabIndex = 57;
             this.label24.Text = "Max Global Instances:";
             // 
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(7, 354);
+            this.label11.Location = new System.Drawing.Point(7, 384);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(87, 13);
-            this.label11.TabIndex = 86;
+            this.label11.TabIndex = 61;
             this.label11.Text = "Max Path Depth:";
             // 
             // label9
@@ -230,100 +230,100 @@
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(7, 253);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(94, 13);
+            this.label5.Size = new System.Drawing.Size(84, 13);
             this.label5.TabIndex = 50;
-            this.label5.Text = "Max Repeat Time:";
+            this.label5.Text = "Min Repeat Var:";
             // 
-            // Unk13UpDown
+            // MaxPathDepthUpDown
             // 
-            this.Unk13UpDown.Location = new System.Drawing.Point(126, 352);
-            this.Unk13UpDown.Maximum = new decimal(new int[] {
+            this.MaxPathDepthUpDown.Location = new System.Drawing.Point(126, 382);
+            this.MaxPathDepthUpDown.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.Unk13UpDown.Name = "Unk13UpDown";
-            this.Unk13UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk13UpDown.TabIndex = 60;
-            this.Unk13UpDown.ValueChanged += new System.EventHandler(this.Unk13UpDown_ValueChanged);
+            this.MaxPathDepthUpDown.Name = "MaxPathDepthUpDown";
+            this.MaxPathDepthUpDown.Size = new System.Drawing.Size(48, 20);
+            this.MaxPathDepthUpDown.TabIndex = 62;
+            this.MaxPathDepthUpDown.ValueChanged += new System.EventHandler(this.MaxPathDepthUpDown_ValueChanged);
             // 
-            // Unk12UpDown
+            // BlockabilityUpDown
             // 
-            this.Unk12UpDown.Location = new System.Drawing.Point(126, 326);
-            this.Unk12UpDown.Maximum = new decimal(new int[] {
+            this.BlockabilityUpDown.Location = new System.Drawing.Point(126, 356);
+            this.BlockabilityUpDown.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.Unk12UpDown.Name = "Unk12UpDown";
-            this.Unk12UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk12UpDown.TabIndex = 59;
-            this.Unk12UpDown.ValueChanged += new System.EventHandler(this.Unk12UpDown_ValueChanged);
+            this.BlockabilityUpDown.Name = "BlockabilityUpDown";
+            this.BlockabilityUpDown.Size = new System.Drawing.Size(48, 20);
+            this.BlockabilityUpDown.TabIndex = 60;
+            this.BlockabilityUpDown.ValueChanged += new System.EventHandler(this.BlockabilityUpDown_ValueChanged);
             // 
-            // Unk11UpDown
+            // MaxGlobalInstsUpDown
             // 
-            this.Unk11UpDown.Location = new System.Drawing.Point(126, 378);
-            this.Unk11UpDown.Maximum = new decimal(new int[] {
+            this.MaxGlobalInstsUpDown.Location = new System.Drawing.Point(126, 330);
+            this.MaxGlobalInstsUpDown.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.Unk11UpDown.Name = "Unk11UpDown";
-            this.Unk11UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk11UpDown.TabIndex = 57;
-            this.Unk11UpDown.ValueChanged += new System.EventHandler(this.Unk11UpDown_ValueChanged);
+            this.MaxGlobalInstsUpDown.Name = "MaxGlobalInstsUpDown";
+            this.MaxGlobalInstsUpDown.Size = new System.Drawing.Size(48, 20);
+            this.MaxGlobalInstsUpDown.TabIndex = 58;
+            this.MaxGlobalInstsUpDown.ValueChanged += new System.EventHandler(this.MaxGlobalInstsUpDown_ValueChanged);
             // 
-            // Unk10UpDown
+            // MaxLocalInstsUpDown
             // 
-            this.Unk10UpDown.Location = new System.Drawing.Point(126, 302);
-            this.Unk10UpDown.Maximum = new decimal(new int[] {
+            this.MaxLocalInstsUpDown.Location = new System.Drawing.Point(126, 304);
+            this.MaxLocalInstsUpDown.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.Unk10UpDown.Name = "Unk10UpDown";
-            this.Unk10UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk10UpDown.TabIndex = 56;
-            this.Unk10UpDown.ValueChanged += new System.EventHandler(this.Unk10UpDown_ValueChanged);
+            this.MaxLocalInstsUpDown.Name = "MaxLocalInstsUpDown";
+            this.MaxLocalInstsUpDown.Size = new System.Drawing.Size(48, 20);
+            this.MaxLocalInstsUpDown.TabIndex = 56;
+            this.MaxLocalInstsUpDown.ValueChanged += new System.EventHandler(this.MaxLocalInstsUpDown_ValueChanged);
             // 
-            // Unk07UpDown
+            // MinRepeatVarUpDown
             // 
-            this.Unk07UpDown.Location = new System.Drawing.Point(104, 253);
-            this.Unk07UpDown.Maximum = new decimal(new int[] {
+            this.MinRepeatVarUpDown.Location = new System.Drawing.Point(104, 253);
+            this.MinRepeatVarUpDown.Maximum = new decimal(new int[] {
             65535,
             0,
             0,
             0});
-            this.Unk07UpDown.Name = "Unk07UpDown";
-            this.Unk07UpDown.Size = new System.Drawing.Size(102, 20);
-            this.Unk07UpDown.TabIndex = 51;
-            this.Unk07UpDown.ValueChanged += new System.EventHandler(this.Unk07UpDown_ValueChanged);
+            this.MinRepeatVarUpDown.Name = "MinRepeatVarUpDown";
+            this.MinRepeatVarUpDown.Size = new System.Drawing.Size(102, 20);
+            this.MinRepeatVarUpDown.TabIndex = 51;
+            this.MinRepeatVarUpDown.ValueChanged += new System.EventHandler(this.MinRepeatVarUpDown_ValueChanged);
             // 
-            // Unk08UpDown
+            // SpawnHeightUpDown
             // 
-            this.Unk08UpDown.Location = new System.Drawing.Point(126, 278);
-            this.Unk08UpDown.Maximum = new decimal(new int[] {
+            this.SpawnHeightUpDown.Location = new System.Drawing.Point(126, 278);
+            this.SpawnHeightUpDown.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
-            this.Unk08UpDown.Name = "Unk08UpDown";
-            this.Unk08UpDown.Size = new System.Drawing.Size(48, 20);
-            this.Unk08UpDown.TabIndex = 53;
-            this.Unk08UpDown.ValueChanged += new System.EventHandler(this.Unk08UpDown_ValueChanged);
+            this.SpawnHeightUpDown.Name = "SpawnHeightUpDown";
+            this.SpawnHeightUpDown.Size = new System.Drawing.Size(48, 20);
+            this.SpawnHeightUpDown.TabIndex = 53;
+            this.SpawnHeightUpDown.ValueChanged += new System.EventHandler(this.SpawnHeightUpDown_ValueChanged);
             // 
-            // FrequencyUpDown
+            // MinRepeatUpDown
             // 
-            this.FrequencyUpDown.Location = new System.Drawing.Point(104, 228);
-            this.FrequencyUpDown.Maximum = new decimal(new int[] {
+            this.MinRepeatUpDown.Location = new System.Drawing.Point(104, 228);
+            this.MinRepeatUpDown.Maximum = new decimal(new int[] {
             65535,
             0,
             0,
             0});
-            this.FrequencyUpDown.Name = "FrequencyUpDown";
-            this.FrequencyUpDown.Size = new System.Drawing.Size(102, 20);
-            this.FrequencyUpDown.TabIndex = 49;
-            this.FrequencyUpDown.ValueChanged += new System.EventHandler(this.FrequencyUpDown_ValueChanged);
+            this.MinRepeatUpDown.Name = "MinRepeatUpDown";
+            this.MinRepeatUpDown.Size = new System.Drawing.Size(102, 20);
+            this.MinRepeatUpDown.TabIndex = 49;
+            this.MinRepeatUpDown.ValueChanged += new System.EventHandler(this.MinRepeatUpDown_ValueChanged);
             // 
             // EndTimeUpDown
             // 
@@ -361,14 +361,14 @@
             this.label23.TabIndex = 80;
             this.label23.Text = "Bank ID:";
             // 
-            // Flags5TextBox
+            // BankIDTextBox
             // 
-            this.Flags5TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Flags5TextBox.Location = new System.Drawing.Point(412, 78);
-            this.Flags5TextBox.Name = "Flags5TextBox";
-            this.Flags5TextBox.Size = new System.Drawing.Size(132, 20);
-            this.Flags5TextBox.TabIndex = 81;
-            this.Flags5TextBox.TextChanged += new System.EventHandler(this.Flags5TextBox_TextChanged);
+            this.BankIDTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.BankIDTextBox.Location = new System.Drawing.Point(412, 78);
+            this.BankIDTextBox.Name = "BankIDTextBox";
+            this.BankIDTextBox.Size = new System.Drawing.Size(132, 20);
+            this.BankIDTextBox.TabIndex = 81;
+            this.BankIDTextBox.TextChanged += new System.EventHandler(this.BankIDTextBox_TextChanged);
             // 
             // label22
             // 
@@ -380,14 +380,14 @@
             this.label22.TabIndex = 78;
             this.label22.Text = "Last Played:";
             // 
-            // Flags4TextBox
+            // LastPlayedTextBox
             // 
-            this.Flags4TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Flags4TextBox.Location = new System.Drawing.Point(412, 54);
-            this.Flags4TextBox.Name = "Flags4TextBox";
-            this.Flags4TextBox.Size = new System.Drawing.Size(132, 20);
-            this.Flags4TextBox.TabIndex = 79;
-            this.Flags4TextBox.TextChanged += new System.EventHandler(this.Flags4TextBox_TextChanged);
+            this.LastPlayedTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.LastPlayedTextBox.Location = new System.Drawing.Point(412, 54);
+            this.LastPlayedTextBox.Name = "LastPlayedTextBox";
+            this.LastPlayedTextBox.Size = new System.Drawing.Size(132, 20);
+            this.LastPlayedTextBox.TabIndex = 79;
+            this.LastPlayedTextBox.TextChanged += new System.EventHandler(this.LastPlayedTextBox_TextChanged);
             // 
             // DeleteButton
             // 
@@ -421,14 +421,14 @@
             this.label21.TabIndex = 74;
             this.label21.Text = "Flags:";
             // 
-            // Flags2TextBox
+            // FlagsTextBox
             // 
-            this.Flags2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Flags2TextBox.Location = new System.Drawing.Point(412, 30);
-            this.Flags2TextBox.Name = "Flags2TextBox";
-            this.Flags2TextBox.Size = new System.Drawing.Size(132, 20);
-            this.Flags2TextBox.TabIndex = 75;
-            this.Flags2TextBox.TextChanged += new System.EventHandler(this.Flags2TextBox_TextChanged);
+            this.FlagsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.FlagsTextBox.Location = new System.Drawing.Point(412, 30);
+            this.FlagsTextBox.Name = "FlagsTextBox";
+            this.FlagsTextBox.Size = new System.Drawing.Size(132, 20);
+            this.FlagsTextBox.TabIndex = 75;
+            this.FlagsTextBox.TextChanged += new System.EventHandler(this.FlagsTextBox_TextChanged);
             // 
             // label20
             // 
@@ -440,31 +440,31 @@
             this.label20.TabIndex = 82;
             this.label20.Text = "Conditions:";
             // 
-            // VariablesTextBox
+            // ConditionsTextBox
             // 
-            this.VariablesTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.VariablesTextBox.Location = new System.Drawing.Point(282, 271);
-            this.VariablesTextBox.Multiline = true;
-            this.VariablesTextBox.Name = "VariablesTextBox";
-            this.VariablesTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.VariablesTextBox.Size = new System.Drawing.Size(262, 140);
-            this.VariablesTextBox.TabIndex = 83;
-            this.VariablesTextBox.WordWrap = false;
-            this.VariablesTextBox.TextChanged += new System.EventHandler(this.VariablesTextBox_TextChanged);
+            this.ConditionsTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConditionsTextBox.Location = new System.Drawing.Point(282, 271);
+            this.ConditionsTextBox.Multiline = true;
+            this.ConditionsTextBox.Name = "ConditionsTextBox";
+            this.ConditionsTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.ConditionsTextBox.Size = new System.Drawing.Size(262, 140);
+            this.ConditionsTextBox.TabIndex = 83;
+            this.ConditionsTextBox.WordWrap = false;
+            this.ConditionsTextBox.TextChanged += new System.EventHandler(this.ConditionsTextBox_TextChanged);
             // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(7, 328);
+            this.label15.Location = new System.Drawing.Point(7, 358);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(96, 13);
-            this.label15.TabIndex = 58;
+            this.label15.TabIndex = 59;
             this.label15.Text = "Blockability Factor:";
             // 
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(7, 304);
+            this.label17.Location = new System.Drawing.Point(7, 306);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(108, 13);
             this.label17.TabIndex = 55;
@@ -544,15 +544,15 @@
             this.label4.TabIndex = 41;
             this.label4.Text = "Weight:";
             // 
-            // Unk01TextBox
+            // WeightTextBox
             // 
-            this.Unk01TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.WeightTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Unk01TextBox.Location = new System.Drawing.Point(84, 151);
-            this.Unk01TextBox.Name = "Unk01TextBox";
-            this.Unk01TextBox.Size = new System.Drawing.Size(237, 20);
-            this.Unk01TextBox.TabIndex = 42;
-            this.Unk01TextBox.TextChanged += new System.EventHandler(this.Unk01TextBox_TextChanged);
+            this.WeightTextBox.Location = new System.Drawing.Point(84, 151);
+            this.WeightTextBox.Name = "WeightTextBox";
+            this.WeightTextBox.Size = new System.Drawing.Size(237, 20);
+            this.WeightTextBox.TabIndex = 42;
+            this.WeightTextBox.TextChanged += new System.EventHandler(this.WeightTextBox_TextChanged);
             // 
             // label3
             // 
@@ -644,13 +644,13 @@
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk13UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk12UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk11UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk10UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk07UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.Unk08UpDown)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.FrequencyUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxPathDepthUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.BlockabilityUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxGlobalInstsUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MaxLocalInstsUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MinRepeatVarUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SpawnHeightUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.MinRepeatUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.EndTimeUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.StartTimeUpDown)).EndInit();
             this.ResumeLayout(false);
@@ -665,9 +665,9 @@
         private System.Windows.Forms.Button DeleteButton;
         private System.Windows.Forms.Button AddToProjectButton;
         private System.Windows.Forms.Label label21;
-        private System.Windows.Forms.TextBox Flags2TextBox;
+        private System.Windows.Forms.TextBox FlagsTextBox;
         private System.Windows.Forms.Label label20;
-        private WinForms.TextBoxFix VariablesTextBox;
+        private WinForms.TextBoxFix ConditionsTextBox;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.Label label18;
@@ -678,7 +678,7 @@
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.TextBox OuterRadiusTextBox;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TextBox Unk01TextBox;
+        private System.Windows.Forms.TextBox WeightTextBox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox CategoryTextBox;
         private System.Windows.Forms.Label label2;
@@ -688,18 +688,18 @@
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.TextBox PositionTextBox;
         private System.Windows.Forms.Label label23;
-        private System.Windows.Forms.TextBox Flags5TextBox;
+        private System.Windows.Forms.TextBox BankIDTextBox;
         private System.Windows.Forms.Label label22;
-        private System.Windows.Forms.TextBox Flags4TextBox;
-        private System.Windows.Forms.NumericUpDown FrequencyUpDown;
+        private System.Windows.Forms.TextBox LastPlayedTextBox;
+        private System.Windows.Forms.NumericUpDown MinRepeatUpDown;
         private System.Windows.Forms.NumericUpDown EndTimeUpDown;
         private System.Windows.Forms.NumericUpDown StartTimeUpDown;
-        private System.Windows.Forms.NumericUpDown Unk07UpDown;
-        private System.Windows.Forms.NumericUpDown Unk08UpDown;
-        private System.Windows.Forms.NumericUpDown Unk13UpDown;
-        private System.Windows.Forms.NumericUpDown Unk12UpDown;
-        private System.Windows.Forms.NumericUpDown Unk11UpDown;
-        private System.Windows.Forms.NumericUpDown Unk10UpDown;
+        private System.Windows.Forms.NumericUpDown MinRepeatVarUpDown;
+        private System.Windows.Forms.NumericUpDown SpawnHeightUpDown;
+        private System.Windows.Forms.NumericUpDown MaxPathDepthUpDown;
+        private System.Windows.Forms.NumericUpDown BlockabilityUpDown;
+        private System.Windows.Forms.NumericUpDown MaxGlobalInstsUpDown;
+        private System.Windows.Forms.NumericUpDown MaxLocalInstsUpDown;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label5;

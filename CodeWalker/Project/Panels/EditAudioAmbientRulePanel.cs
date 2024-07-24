@@ -60,21 +60,21 @@ namespace CodeWalker.Project.Panels
                 OuterRadiusTextBox.Text = string.Empty;
                 ChildSoundTextBox.Text = string.Empty;
                 CategoryTextBox.Text = string.Empty;
-                Unk01TextBox.Text = string.Empty;
+                WeightTextBox.Text = string.Empty;
                 StartTimeUpDown.Value = 0;
                 EndTimeUpDown.Value = 0;
-                FrequencyUpDown.Value = 0;
-                Unk07UpDown.Value = 0;
-                Unk08UpDown.Value = 0;
+                MinRepeatUpDown.Value = 0;
+                MinRepeatVarUpDown.Value = 0;
+                SpawnHeightUpDown.Value = 0;
                 ExplicitSpawnCombo.SelectedItem = null;
-                Unk10UpDown.Value = 0;
-                Unk11UpDown.Value = 0;
-                Unk12UpDown.Value = 0;
-                Unk13UpDown.Value = 0;
-                Flags2TextBox.Text = string.Empty;
-                Flags4TextBox.Text = string.Empty;
-                Flags5TextBox.Text = string.Empty;
-                VariablesTextBox.Text = string.Empty;
+                MaxLocalInstsUpDown.Value = 0;
+                MaxGlobalInstsUpDown.Value = 0;
+                BlockabilityUpDown.Value = 0;
+                MaxPathDepthUpDown.Value = 0;
+                FlagsTextBox.Text = string.Empty;
+                LastPlayedTextBox.Text = string.Empty;
+                BankIDTextBox.Text = string.Empty;
+                ConditionsTextBox.Text = string.Empty;
                 populatingui = false;
             }
             else
@@ -90,20 +90,20 @@ namespace CodeWalker.Project.Panels
                 OuterRadiusTextBox.Text = FloatUtil.ToString(e.MaxDist);
                 ChildSoundTextBox.Text = e.ChildSound.ToString();
                 CategoryTextBox.Text = e.Category.ToString();
-                Unk01TextBox.Text = FloatUtil.ToString(e.Weight);
+                WeightTextBox.Text = FloatUtil.ToString(e.Weight);
                 StartTimeUpDown.Value = e.MinTimeMinutes;
                 EndTimeUpDown.Value = e.MaxTimeMinutes;
-                FrequencyUpDown.Value = e.MinRepeatTime;
-                Unk07UpDown.Value = e.MinRepeatTimeVariance;
-                Unk08UpDown.Value = e.SpawnHeight;
+                MinRepeatUpDown.Value = e.MinRepeatTime;
+                MinRepeatVarUpDown.Value = e.MinRepeatTimeVariance;
+                SpawnHeightUpDown.Value = e.SpawnHeight;
                 ExplicitSpawnCombo.SelectedItem = e.ExplicitSpawn;
-                Unk10UpDown.Value = e.MaxLocalInstances;
-                Unk11UpDown.Value = e.MaxGlobalInstances;
-                Unk12UpDown.Value = e.BlockabilityFactor;
-                Unk13UpDown.Value = e.MaxPathDepth;
-                Flags2TextBox.Text = e.Flags.Hex;
-                Flags4TextBox.Text = FloatUtil.ToString(e.LastPlayTime);
-                Flags5TextBox.Text = FloatUtil.ToString(e.DynamicBankID);
+                MaxLocalInstsUpDown.Value = e.MaxLocalInstances;
+                MaxGlobalInstsUpDown.Value = e.MaxGlobalInstances;
+                BlockabilityUpDown.Value = e.BlockabilityFactor;
+                MaxPathDepthUpDown.Value = e.MaxPathDepth;
+                FlagsTextBox.Text = e.Flags.Hex;
+                LastPlayedTextBox.Text = FloatUtil.ToString(e.LastPlayTime);
+                BankIDTextBox.Text = FloatUtil.ToString(e.DynamicBankID);
 
                 StringBuilder sb = new StringBuilder();
                 if (e.Conditions != null)
@@ -118,7 +118,7 @@ namespace CodeWalker.Project.Panels
                         sb.AppendLine();
                     }
                 }
-                VariablesTextBox.Text = sb.ToString();
+                ConditionsTextBox.Text = sb.ToString();
 
                 populatingui = false;
 
@@ -260,12 +260,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk01TextBox_TextChanged(object sender, EventArgs e)
+        private void WeightTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            float unk = FloatUtil.Parse(Unk01TextBox.Text);
+            float unk = FloatUtil.Parse(WeightTextBox.Text);
             if (CurrentRule.AmbientRule.Weight != unk)
             {
                 CurrentRule.AmbientRule.Weight = unk;
@@ -302,12 +302,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void FrequencyUpDown_ValueChanged(object sender, EventArgs e)
+        private void MinRepeatUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            ushort unk = (ushort)FrequencyUpDown.Value;
+            ushort unk = (ushort)MinRepeatUpDown.Value;
             if (CurrentRule.AmbientRule.MinRepeatTime != unk)
             {
                 CurrentRule.AmbientRule.MinRepeatTime = unk;
@@ -316,12 +316,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk07UpDown_ValueChanged(object sender, EventArgs e)
+        private void MinRepeatVarUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            ushort unk = (ushort)Unk07UpDown.Value;
+            ushort unk = (ushort)MinRepeatVarUpDown.Value;
             if (CurrentRule.AmbientRule.MinRepeatTimeVariance != unk)
             {
                 CurrentRule.AmbientRule.MinRepeatTimeVariance = unk;
@@ -330,12 +330,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk08UpDown_ValueChanged(object sender, EventArgs e)
+        private void SpawnHeightUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            byte unk = (byte)Unk08UpDown.Value;
+            byte unk = (byte)SpawnHeightUpDown.Value;
             if (CurrentRule.AmbientRule.SpawnHeight != unk)
             {
                 CurrentRule.AmbientRule.SpawnHeight = unk;
@@ -358,12 +358,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk10UpDown_ValueChanged(object sender, EventArgs e)
+        private void MaxLocalInstsUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            byte unk = (byte)Unk10UpDown.Value;
+            byte unk = (byte)MaxLocalInstsUpDown.Value;
             if (CurrentRule.AmbientRule.MaxLocalInstances != unk)
             {
                 CurrentRule.AmbientRule.MaxLocalInstances = unk;
@@ -372,12 +372,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk11UpDown_ValueChanged(object sender, EventArgs e)
+        private void MaxGlobalInstsUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            byte unk = (byte)Unk11UpDown.Value;
+            byte unk = (byte)MaxGlobalInstsUpDown.Value;
             if (CurrentRule.AmbientRule.MaxGlobalInstances != unk)
             {
                 CurrentRule.AmbientRule.MaxGlobalInstances = unk;
@@ -386,12 +386,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk12UpDown_ValueChanged(object sender, EventArgs e)
+        private void BlockabilityUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            byte unk = (byte)Unk12UpDown.Value;
+            byte unk = (byte)BlockabilityUpDown.Value;
             if (CurrentRule.AmbientRule.BlockabilityFactor != unk)
             {
                 CurrentRule.AmbientRule.BlockabilityFactor = unk;
@@ -400,12 +400,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Unk13UpDown_ValueChanged(object sender, EventArgs e)
+        private void MaxPathDepthUpDown_ValueChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            byte unk = (byte)Unk13UpDown.Value;
+            byte unk = (byte)MaxPathDepthUpDown.Value;
             if (CurrentRule.AmbientRule.MaxPathDepth != unk)
             {
                 CurrentRule.AmbientRule.MaxPathDepth = unk;
@@ -414,13 +414,13 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Flags2TextBox_TextChanged(object sender, EventArgs e)
+        private void FlagsTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
             uint flags = 0;
-            if (uint.TryParse(Flags2TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            if (uint.TryParse(FlagsTextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
                 if (CurrentRule.AmbientRule.Flags != flags)
                 {
@@ -431,13 +431,13 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Flags4TextBox_TextChanged(object sender, EventArgs e)
+        private void LastPlayedTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
             uint flags = 0;
-            if (uint.TryParse(Flags4TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            if (uint.TryParse(LastPlayedTextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
                 if (CurrentRule.AmbientRule.LastPlayTime != flags)
                 {
@@ -448,13 +448,13 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void Flags5TextBox_TextChanged(object sender, EventArgs e)
+        private void BankIDTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
             uint flags = 0;
-            if (uint.TryParse(Flags5TextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
+            if (uint.TryParse(BankIDTextBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out flags))
             {
                 if (CurrentRule.AmbientRule.DynamicBankID != flags)
                 {
@@ -465,12 +465,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void VariablesTextBox_TextChanged(object sender, EventArgs e)
+        private void ConditionsTextBox_TextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentRule?.AmbientRule == null) return;
 
-            var paramstrs = VariablesTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+            var paramstrs = ConditionsTextBox.Text.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             if (paramstrs?.Length > 0)
             {
                 var paramlist = new List<Dat151AmbientRule.Condition>();
