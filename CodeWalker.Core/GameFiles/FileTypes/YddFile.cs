@@ -76,13 +76,7 @@ namespace CodeWalker.GameFiles
                     var hash = hashes[i];
                     if ((drawable.Name == null) || (drawable.Name.EndsWith("#dd")))
                     {
-                        string hstr = JenkIndex.TryGetString(hash);
-                        if (!string.IsNullOrEmpty(hstr))
-                        {
-                            drawable.Name = hstr;
-                        }
-                        else
-                        { }
+                        drawable.Name = YddXml.HashString((MetaHash)hash);
                     }
                 }
 

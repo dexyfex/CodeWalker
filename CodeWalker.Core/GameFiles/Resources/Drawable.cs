@@ -5847,7 +5847,7 @@ namespace CodeWalker.GameFiles
                     var d = new Drawable();
                     d.ReadXml(inode, ddsfolder);
                     drawables.Add(d);
-                    drawablehashes.Add(JenkHash.GenHash(d.Name));//TODO: check this!
+                    drawablehashes.Add(XmlMeta.GetHash(d.Name));
                 }
             }
 
