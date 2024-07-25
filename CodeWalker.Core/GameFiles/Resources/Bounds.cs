@@ -4465,15 +4465,20 @@ namespace CodeWalker.GameFiles
 
         public BoundVertex_s(Vector3 v)
         {
-            X = (short)v.X;
-            Y = (short)v.Y;
-            Z = (short)v.Z;
+            X = (short)Math.Min(Math.Max(v.X, -32767f), 32767f);
+            Y = (short)Math.Min(Math.Max(v.Y, -32767f), 32767f);
+            Z = (short)Math.Min(Math.Max(v.Z, -32767f), 32767f);
         }
 
         public Vector3 Vector
         {
             get { return new Vector3(X, Y, Z); }
-            set { X = (short)value.X; Y = (short)value.Y; Z = (short)value.Z; }
+            set
+            {
+                X = (short)Math.Min(Math.Max(value.X, -32767f), 32767f);
+                Y = (short)Math.Min(Math.Max(value.Y, -32767f), 32767f);
+                Z = (short)Math.Min(Math.Max(value.Z, -32767f), 32767f);
+            }
         }
     }
 
