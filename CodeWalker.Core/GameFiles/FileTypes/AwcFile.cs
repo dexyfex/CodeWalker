@@ -40,9 +40,10 @@ namespace CodeWalker.GameFiles
         public Dictionary<uint, AwcStream> StreamDict { get; set; }
 
 
-        static public void Decrypt_RSXXTEA(byte[] data, uint[] key)
+        public static void Decrypt_RSXXTEA(byte[] data)
         {
             // Rockstar's modified version of XXTEA
+            var key = GTA5Keys.PC_AWC_KEY;
             uint[] blocks = new uint[data.Length / 4];
             Buffer.BlockCopy(data, 0, blocks, 0, data.Length);
 
@@ -62,6 +63,39 @@ namespace CodeWalker.GameFiles
 
             Buffer.BlockCopy(blocks, 0, data, 0, data.Length);
         }
+
+        public static void Encrypt_RSXXTEA(byte[] data)
+        {
+            //https://en.wikipedia.org/wiki/XXTEA#Reference_code
+            //original is
+            //#define MX ((z>>5^y<<2) + (y>>3^z<<4) ^ (sum^y) + (k[p&3^e]^z))
+            //R * is
+            //#define MX ((z>>5^y<<2) + (y>>3^z<<4) ^ (sum^y) + (k[p&3^e]^z ^ 0x7B3A207F))
+            //(thanks alex)
+            //TODO: update the Decrypt method to use the "clarified" version without undefined behaviour?
+
+            var key = GTA5Keys.PC_AWC_KEY;
+            uint[] blocks = new uint[data.Length / 4];
+            Buffer.BlockCopy(data, 0, blocks, 0, data.Length);
+
+            int n = blocks.Length;
+            int rounds = 6 + (52 / n);
+            uint sum = 0;
+            uint y, z = blocks[n - 1];
+            do
+            {
+                sum += 0x9E3779B9;
+                uint e = (sum >> 2) & 3;
+                for (int p = 0; p < n; p++)
+                {
+                    y = blocks[(p + 1) % n];
+                    z = blocks[p] += (z >> 5 ^ y << 2) + (y >> 3 ^ z << 4) ^ (sum ^ y) + (key[p & 3 ^ e] ^ z ^ 0x7B3A207F);
+                }
+            } while ((--rounds) != 0);
+
+            Buffer.BlockCopy(blocks, 0, data, 0, data.Length);
+        }
+
 
         public void Load(byte[] data, RpfFileEntry entry)
         {
@@ -89,7 +123,7 @@ namespace CodeWalker.GameFiles
             {
                 if (data.Length % 4 == 0)
                 {
-                    Decrypt_RSXXTEA(data, GTA5Keys.PC_AWC_KEY);
+                    Decrypt_RSXXTEA(data);
                     Magic = BitConverter.ToUInt32(data, 0);
                     WholeFileEncrypted = true;
                 }
@@ -127,10 +161,24 @@ namespace CodeWalker.GameFiles
 
             Write(w);
 
-            var buf = new byte[s.Length];
+            var data = new byte[s.Length];
             s.Position = 0;
-            s.Read(buf, 0, buf.Length);
-            return buf;
+            s.Read(data, 0, data.Length);
+
+            if (WholeFileEncrypted)
+            {
+                if (data.Length % 4 != 0)
+                {
+                    var pad = 4 - (data.Length % 4);
+                    var len = data.Length + pad;
+                    var newdata = new byte[len];
+                    Buffer.BlockCopy(data, 0, newdata, 0, data.Length);
+                    data = newdata;
+                }
+                Encrypt_RSXXTEA(data);
+            }
+
+            return data;
         }
 
 
@@ -270,6 +318,33 @@ namespace CodeWalker.GameFiles
                     var padc = (align - (w.Position % align)) % align;
                     if (padc > 0) w.Write(new byte[padc]);
                 }
+                if (chunk is AwcDataChunk datachunk && (datachunk.Data != null))
+                {
+                    if (MultiChannelFlag)
+                    {
+                        if (MultiChannelEncryptFlag && !WholeFileEncrypted)
+                        {
+                            var bcount = (int)(MultiChannelSource.StreamFormatChunk?.BlockCount ?? 0);
+                            var bsize = (int)(MultiChannelSource.StreamFormatChunk?.BlockSize ?? 0);
+                            for (int b = 0; b < bcount; b++)
+                            {
+                                int srcoff = b * bsize;
+                                int blen = Math.Max(Math.Min(bsize, datachunk.Data.Length - srcoff), 0);
+                                var bdat = new byte[blen];
+                                Buffer.BlockCopy(datachunk.Data, srcoff, bdat, 0, blen);
+                                Encrypt_RSXXTEA(bdat);
+                                Buffer.BlockCopy(bdat, 0, datachunk.Data, srcoff, blen);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (SingleChannelEncryptFlag && !WholeFileEncrypted)
+                        {
+                            Encrypt_RSXXTEA(datachunk.Data);
+                        }
+                    }
+                }
                 chunk.Write(w);
             }
 
@@ -285,9 +360,21 @@ namespace CodeWalker.GameFiles
             {
                 AwcXml.ValueTag(sb, indent, "ChunkIndices", true.ToString());
             }
+            if (SingleChannelEncryptFlag)
+            {
+                AwcXml.ValueTag(sb, indent, "SingleChannelEncrypt", true.ToString());
+            }
             if (MultiChannelFlag)
             {
                 AwcXml.ValueTag(sb, indent, "MultiChannel", true.ToString());
+            }
+            if (MultiChannelEncryptFlag)
+            {
+                AwcXml.ValueTag(sb, indent, "MultiChannelEncrypt", true.ToString());
+            }
+            if (WholeFileEncrypted)
+            {
+                AwcXml.ValueTag(sb, indent, "WholeFileEncrypt", true.ToString());
             }
             if ((Streams?.Length ?? 0) > 0)
             {
@@ -308,7 +395,10 @@ namespace CodeWalker.GameFiles
         {
             Version = (ushort)Xml.GetChildUIntAttribute(node, "Version");
             ChunkIndicesFlag = Xml.GetChildBoolAttribute(node, "ChunkIndices");
+            SingleChannelEncryptFlag = Xml.GetChildBoolAttribute(node, "SingleChannelEncrypt");
             MultiChannelFlag = Xml.GetChildBoolAttribute(node, "MultiChannel");
+            MultiChannelEncryptFlag = Xml.GetChildBoolAttribute(node, "MultiChannelEncrypt");
+            WholeFileEncrypted = Xml.GetChildBoolAttribute(node, "WholeFileEncrypt");
 
             var snode = node.SelectSingleNode("Streams");
             if (snode != null)
@@ -1177,7 +1267,7 @@ namespace CodeWalker.GameFiles
                         Buffer.BlockCopy(DataChunk.Data, srcoff, bdat, 0, blen);
                         if (Awc.MultiChannelEncryptFlag && !Awc.WholeFileEncrypted)
                         {
-                            AwcFile.Decrypt_RSXXTEA(bdat, GTA5Keys.PC_AWC_KEY);
+                            AwcFile.Decrypt_RSXXTEA(bdat);
                         }
                         var blk = new AwcStreamDataBlock(bdat, StreamFormatChunk, endianess, mcsoff);
                         blist.Add(blk);
@@ -1188,7 +1278,7 @@ namespace CodeWalker.GameFiles
                 {
                     if (Awc.SingleChannelEncryptFlag && !Awc.WholeFileEncrypted)
                     {
-                        AwcFile.Decrypt_RSXXTEA(DataChunk.Data, GTA5Keys.PC_AWC_KEY);
+                        AwcFile.Decrypt_RSXXTEA(DataChunk.Data);
                     }
                 }
             }
