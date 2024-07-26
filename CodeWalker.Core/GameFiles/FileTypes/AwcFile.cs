@@ -341,6 +341,10 @@ namespace CodeWalker.GameFiles
                     {
                         if (SingleChannelEncryptFlag && !WholeFileEncrypted)
                         {
+                            if (datachunk.Data.Length % 4 != 0)
+                            {
+                                throw new Exception($"Unable to encrypt data chunk of length {datachunk.Data.Length}: Data to encrypt must be a multiple of 4 bytes long.\nEnsure that PCM streams have an even number of samples, and ADPCM streams have a multiple of 8 samples.");
+                            }
                             Encrypt_RSXXTEA(datachunk.Data);
                         }
                     }
