@@ -86,6 +86,22 @@ namespace CodeWalker.World
 
         }
 
+        public AudioPlacement FindPlacement(RelFile relfile, Dat151RelData reldata)
+        {
+            if (relfile == null) return null;
+            if (reldata == null) return null;
+            if (PlacementsDict.TryGetValue(relfile, out var placements))
+            {
+                foreach (var placement in placements)
+                {
+                    if (placement.AmbientZone == reldata) return placement;
+                    if (placement.AmbientRule == reldata) return placement;
+                    if (placement.StaticEmitter == reldata) return placement;
+                }
+            }
+            return null;
+        }
+
 
     }
 

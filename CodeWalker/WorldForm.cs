@@ -2038,6 +2038,17 @@ namespace CodeWalker
         {
             audiozones.PlacementsDict.Remove(rel); //should cause a rebuild to add/remove items
         }
+        public AudioPlacement GetAudioPlacement(RelFile rel, Dat151RelData reldata)
+        {
+            var placement = audiozones.FindPlacement(rel, reldata);
+            if (placement == null)
+            {
+                if (reldata is Dat151AmbientZone az) placement = new AudioPlacement(rel, az);
+                if (reldata is Dat151AmbientRule ar) placement = new AudioPlacement(rel, ar);
+                if (reldata is Dat151StaticEmitter se) placement = new AudioPlacement(rel, se);
+            }
+            return placement;
+        }
 
 
         public void SetCameraTransform(Vector3 pos, Quaternion rot)
@@ -3619,7 +3630,7 @@ namespace CodeWalker
             if (change)
             {
                 // If an item has been selected the user is likely to use a keybind. We need focus!
-                Focus();
+                //Focus();//DISABLED THIS due to causing problems with using arrows to select in project window!
             }
         }
         public void SelectMulti(MapSelection[] items, bool addSelection = false, bool notifyProject = true)

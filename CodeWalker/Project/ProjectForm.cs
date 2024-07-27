@@ -114,6 +114,7 @@ namespace CodeWalker.Project
         private List<YmapEntityDef> interiorslist = new List<YmapEntityDef>(); //used for handling interiors ybns
 
         private bool ShowProjectItemInProcess = false;
+        private bool WorldSelectionChangeInProcess = false;
 
 
         public ProjectForm(WorldForm worldForm = null)
@@ -886,13 +887,13 @@ namespace CodeWalker.Project
             if (CurrentAudioAmbientRule?.AmbientRule == null) CurrentAudioAmbientRule = null;
             if (CurrentAudioStaticEmitter?.StaticEmitter == null) CurrentAudioStaticEmitter = null;
 
-            //need to create a temporary AudioPlacement wrapper for these, since AudioPlacements usually come from WorldForm
-            var daz = item as Dat151AmbientZone;
+            
+            var daz = item as Dat151AmbientZone;//need to get these from WorldForm, project tree only contains the Dat151Rel items
             var dae = item as Dat151AmbientRule;
             var dse = item as Dat151StaticEmitter;
-            if (daz != null) CurrentAudioAmbientZone = new AudioPlacement(daz.Rel, daz);
-            if (dae != null) CurrentAudioAmbientRule = new AudioPlacement(dae.Rel, dae);
-            if (dse != null) CurrentAudioStaticEmitter = new AudioPlacement(dse.Rel, dse);
+            if (daz != null) CurrentAudioAmbientZone = WorldForm?.GetAudioPlacement(daz.Rel, daz);
+            if (dae != null) CurrentAudioAmbientRule = WorldForm?.GetAudioPlacement(dae.Rel, dae);
+            if (dse != null) CurrentAudioStaticEmitter = WorldForm?.GetAudioPlacement(dse.Rel, dse);
 
 
 
@@ -7610,231 +7611,235 @@ namespace CodeWalker.Project
 
         public void OnWorldSelectionChanged(MapSelection sel)
         {
+            if (WorldSelectionChangeInProcess) return;
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => { OnWorldSelectionChanged(sel); }));
+                return;
+            }
+            WorldSelectionChangeInProcess = true;
+
             try
             {
-                if (InvokeRequired)
+                var wasmult = (CurrentMulti != null);
+                if ((sel.MultipleSelectionItems != null) && (sel.MultipleSelectionItems.Length > 0))
                 {
-                    BeginInvoke(new Action(() => { OnWorldSelectionChanged(sel); }));
+                    SetObject(ref sel.MultipleSelectionItems[sel.MultipleSelectionItems.Length - 1]);
+                    SetObject(ref sel);
+                    ProjectExplorer?.DeselectNode();
+                    ShowProjectItemInProcess = true;
+                    ShowCurrentProjectItem(false);
+                    ShowProjectItemInProcess = false;
+                    WorldSelectionChangeInProcess = false;
+                    return;
                 }
                 else
                 {
-                    var wasmult = (CurrentMulti != null);
-                    if ((sel.MultipleSelectionItems != null) && (sel.MultipleSelectionItems.Length > 0))
+                    CurrentMulti = null;
+                }
+
+                var mlo = sel.MloEntityDef;
+                var room = sel.MloRoomDef;
+                var ent = sel.EntityDef;
+                var cargen = sel.CarGenerator;
+                var lodlight = sel.LodLight;
+                var boxoccluder = sel.BoxOccluder;
+                var occludetri = sel.OccludeModelTri;
+                var grassbatch = sel.GrassBatch;
+                var collvert = sel.CollisionVertex;
+                var collpoly = sel.CollisionPoly;
+                var collbound = sel.CollisionBounds ?? collpoly?.Owner ?? collvert?.Owner;
+                var pathnode = sel.PathNode;
+                var pathlink = sel.PathLink;
+                var navpoly = sel.NavPoly;
+                var navpoint = sel.NavPoint;
+                var navportal = sel.NavPortal;
+                var trainnode = sel.TrainTrackNode;
+                var scenariond = sel.ScenarioNode;
+                var scenarioedge = sel.ScenarioEdge;
+                var audiopl = sel.Audio;
+                Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
+                YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
+                YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? lodlight?.Ymap ?? boxoccluder?.Ymap ?? occludetri?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
+                YbnFile ybn = collbound?.GetRootYbn();
+                YndFile ynd = pathnode?.Ynd;
+                YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
+                TrainTrack traintrack = trainnode?.Track;
+                YmtFile scenario = scenariond?.Ymt ?? scenarioedge?.Region?.Ymt;
+                RelFile audiofile = audiopl?.RelFile;
+                bool showcurrent = false;
+
+                if (YmapExistsInProject(ymap) && (ybn == null))
+                {
+                    if (wasmult || (ent != CurrentEntity))
                     {
-                        SetObject(ref sel.MultipleSelectionItems[sel.MultipleSelectionItems.Length - 1]);
-                        SetObject(ref sel);
-                        ProjectExplorer?.DeselectNode();
-                        ShowProjectItemInProcess = true;
-                        ShowCurrentProjectItem(false);
-                        ShowProjectItemInProcess = false;
-                        return;
+                        ProjectExplorer?.TrySelectEntityTreeNode(ent);
                     }
-                    else
+                    if (wasmult || (cargen != CurrentCarGen))
                     {
-                        CurrentMulti = null;
+                        ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
+                    }
+                    if (wasmult || (lodlight != CurrentLodLight))
+                    {
+                        ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
+                    }
+                    if (wasmult || (boxoccluder != CurrentBoxOccluder))
+                    {
+                        ProjectExplorer?.TrySelectBoxOccluderTreeNode(boxoccluder);
+                    }
+                    if (wasmult || (occludetri != CurrentOccludeModelTri))
+                    {
+                        ProjectExplorer?.TrySelectOccludeModelTriangleTreeNode(occludetri);
+                    }
+                    if (wasmult || (grassbatch != CurrentGrassBatch))
+                    {
+                        ProjectExplorer?.TrySelectGrassBatchTreeNode(grassbatch);
                     }
 
-                    var mlo = sel.MloEntityDef;
-                    var room = sel.MloRoomDef;
-                    var ent = sel.EntityDef;
-                    var cargen = sel.CarGenerator;
-                    var lodlight = sel.LodLight;
-                    var boxoccluder = sel.BoxOccluder;
-                    var occludetri = sel.OccludeModelTri;
-                    var grassbatch = sel.GrassBatch;
-                    var collvert = sel.CollisionVertex;
-                    var collpoly = sel.CollisionPoly;
-                    var collbound = sel.CollisionBounds ?? collpoly?.Owner ?? collvert?.Owner;
-                    var pathnode = sel.PathNode;
-                    var pathlink = sel.PathLink;
-                    var navpoly = sel.NavPoly;
-                    var navpoint = sel.NavPoint;
-                    var navportal = sel.NavPortal;
-                    var trainnode = sel.TrainTrackNode;
-                    var scenariond = sel.ScenarioNode;
-                    var scenarioedge = sel.ScenarioEdge;
-                    var audiopl = sel.Audio;
-                    Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
-                    YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
-                    YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? lodlight?.Ymap ?? boxoccluder?.Ymap ?? occludetri?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
-                    YbnFile ybn = collbound?.GetRootYbn();
-                    YndFile ynd = pathnode?.Ynd;
-                    YnvFile ynv = navpoly?.Ynv ?? navpoint?.Ynv ?? navportal?.Ynv;
-                    TrainTrack traintrack = trainnode?.Track;
-                    YmtFile scenario = scenariond?.Ymt ?? scenarioedge?.Region?.Ymt;
-                    RelFile audiofile = audiopl?.RelFile;
-                    bool showcurrent = false;
+                }
+                else if (YtypExistsInProject(ytyp))
+                {
+                    if (wasmult || (arch != CurrentArchetype))
+                    {
+                        ProjectExplorer?.TrySelectArchetypeTreeNode(mlo?.Archetype);
+                    }
+                    if (wasmult || (ent != CurrentEntity))
+                    {
+                        MloInstanceData mloInstance = ent.MloParent?.MloInstance;
+                        if (mloInstance != null)
+                        {
+                            MCEntityDef entityDef = mloInstance.TryGetArchetypeEntity(ent);
+                            ProjectExplorer?.TrySelectMloEntityTreeNode(entityDef);
+                        }
+                    }
+                    if (wasmult || (room != CurrentMloRoom))
+                    {
+                        ProjectExplorer?.TrySelectMloRoomTreeNode(room);
+                    }
+                }
+                else if (YbnExistsInProject(ybn))
+                {
+                    if ((collvert != null) && (wasmult || (collvert != CurrentCollisionVertex)))
+                    {
+                        ProjectExplorer?.TrySelectCollisionVertexTreeNode(collvert);
+                    }
+                    else if ((collpoly != null) && (wasmult || (collpoly != CurrentCollisionPoly)))
+                    {
+                        ProjectExplorer?.TrySelectCollisionPolyTreeNode(collpoly);
+                    }
+                    else if (wasmult || (collbound != CurrentCollisionBounds))
+                    {
+                        ProjectExplorer?.TrySelectCollisionBoundsTreeNode(collbound);
+                    }
+                }
+                else if (YndExistsInProject(ynd))
+                {
+                    if (wasmult || (pathnode != CurrentPathNode))
+                    {
+                        ProjectExplorer?.TrySelectPathNodeTreeNode(pathnode);
+                    }
+                }
+                else if (YnvExistsInProject(ynv))
+                {
+                    if (wasmult || (navpoly != CurrentNavPoly))
+                    {
+                        ProjectExplorer?.TrySelectNavPolyTreeNode(navpoly);
+                    }
+                    if (wasmult || (navpoint != CurrentNavPoint))
+                    {
+                        ProjectExplorer?.TrySelectNavPointTreeNode(navpoint);
+                    }
+                    if (wasmult || (navportal != CurrentNavPortal))
+                    {
+                        ProjectExplorer?.TrySelectNavPortalTreeNode(navportal);
+                    }
+                }
+                else if (TrainTrackExistsInProject(traintrack))
+                {
+                    if (wasmult || (trainnode != CurrentTrainNode))
+                    {
+                        ProjectExplorer?.TrySelectTrainNodeTreeNode(trainnode);
+                    }
+                }
+                else if (ScenarioExistsInProject(scenario))
+                {
+                    if ((scenariond != null) && (wasmult || (scenariond != CurrentScenarioNode)))
+                    {
+                        ProjectExplorer?.TrySelectScenarioNodeTreeNode(scenariond);
+                    }
+                }
+                else if (AudioFileExistsInProject(audiofile))
+                {
+                    if ((audiopl?.AmbientZone != null) && (wasmult || (audiopl != CurrentAudioAmbientZone)))
+                    {
+                        ProjectExplorer?.TrySelectAudioAmbientZoneTreeNode(audiopl);
+                    }
+                    if ((audiopl?.AmbientRule != null) && (wasmult || (audiopl != CurrentAudioAmbientRule)))
+                    {
+                        ProjectExplorer?.TrySelectAudioAmbientRuleTreeNode(audiopl);
+                    }
+                    if ((audiopl?.StaticEmitter != null) && (wasmult || (audiopl != CurrentAudioStaticEmitter)))
+                    {
+                        ProjectExplorer?.TrySelectAudioStaticEmitterTreeNode(audiopl);
+                    }
+                }
+                else
+                {
+                    ProjectExplorer?.DeselectNode();
 
-                    if (YmapExistsInProject(ymap) && (ybn == null))
-                    {
-                        if (wasmult || (ent != CurrentEntity))
-                        {
-                            ProjectExplorer?.TrySelectEntityTreeNode(ent);
-                        }
-                        if (wasmult || (cargen != CurrentCarGen))
-                        {
-                            ProjectExplorer?.TrySelectCarGenTreeNode(cargen);
-                        }
-                        if (wasmult || (lodlight != CurrentLodLight))
-                        {
-                            ProjectExplorer?.TrySelectLodLightTreeNode(lodlight);
-                        }
-                        if (wasmult || (boxoccluder != CurrentBoxOccluder))
-                        {
-                            ProjectExplorer?.TrySelectBoxOccluderTreeNode(boxoccluder);
-                        }
-                        if (wasmult || (occludetri != CurrentOccludeModelTri))
-                        {
-                            ProjectExplorer?.TrySelectOccludeModelTriangleTreeNode(occludetri);
-                        }
-                        if (wasmult || (grassbatch != CurrentGrassBatch))
-                        {
-                            ProjectExplorer?.TrySelectGrassBatchTreeNode(grassbatch);
-                        }
+                    showcurrent = true;
+                }
 
-                    }
-                    else if (YtypExistsInProject(ytyp))
-                    {
-                        if (wasmult || (arch != CurrentArchetype))
-                        {
-                            ProjectExplorer?.TrySelectArchetypeTreeNode(mlo?.Archetype);
-                        }
-                        if (wasmult || (ent != CurrentEntity))
-                        {
-                            MloInstanceData mloInstance = ent.MloParent?.MloInstance;
-                            if (mloInstance != null)
-                            {
-                                MCEntityDef entityDef = mloInstance.TryGetArchetypeEntity(ent);
-                                ProjectExplorer?.TrySelectMloEntityTreeNode(entityDef);
-                            }
-                        }
-                        if (wasmult || (room != CurrentMloRoom))
-                        {
-                            ProjectExplorer?.TrySelectMloRoomTreeNode(room);
-                        }
-                    }
-                    else if (YbnExistsInProject(ybn))
-                    {
-                        if ((collvert != null) && (wasmult || (collvert != CurrentCollisionVertex)))
-                        {
-                            ProjectExplorer?.TrySelectCollisionVertexTreeNode(collvert);
-                        }
-                        else if ((collpoly != null) && (wasmult || (collpoly != CurrentCollisionPoly)))
-                        {
-                            ProjectExplorer?.TrySelectCollisionPolyTreeNode(collpoly);
-                        }
-                        else if (wasmult || (collbound != CurrentCollisionBounds))
-                        {
-                            ProjectExplorer?.TrySelectCollisionBoundsTreeNode(collbound);
-                        }
-                    }
-                    else if (YndExistsInProject(ynd))
-                    {
-                        if (wasmult || (pathnode != CurrentPathNode))
-                        {
-                            ProjectExplorer?.TrySelectPathNodeTreeNode(pathnode);
-                        }
-                    }
-                    else if (YnvExistsInProject(ynv))
-                    {
-                        if (wasmult || (navpoly != CurrentNavPoly))
-                        {
-                            ProjectExplorer?.TrySelectNavPolyTreeNode(navpoly);
-                        }
-                        if (wasmult || (navpoint != CurrentNavPoint))
-                        {
-                            ProjectExplorer?.TrySelectNavPointTreeNode(navpoint);
-                        }
-                        if (wasmult || (navportal != CurrentNavPortal))
-                        {
-                            ProjectExplorer?.TrySelectNavPortalTreeNode(navportal);
-                        }
-                    }
-                    else if (TrainTrackExistsInProject(traintrack))
-                    {
-                        if (wasmult || (trainnode != CurrentTrainNode))
-                        {
-                            ProjectExplorer?.TrySelectTrainNodeTreeNode(trainnode);
-                        }
-                    }
-                    else if (ScenarioExistsInProject(scenario))
-                    {
-                        if ((scenariond != null) && (wasmult || (scenariond != CurrentScenarioNode)))
-                        {
-                            ProjectExplorer?.TrySelectScenarioNodeTreeNode(scenariond);
-                        }
-                    }
-                    else if (AudioFileExistsInProject(audiofile))
-                    {
-                        if ((audiopl?.AmbientZone != null) && (wasmult || (audiopl != CurrentAudioAmbientZone)))
-                        {
-                            ProjectExplorer?.TrySelectAudioAmbientZoneTreeNode(audiopl);
-                        }
-                        if ((audiopl?.AmbientRule != null) && (wasmult || (audiopl != CurrentAudioAmbientRule)))
-                        {
-                            ProjectExplorer?.TrySelectAudioAmbientRuleTreeNode(audiopl);
-                        }
-                        if ((audiopl?.StaticEmitter != null) && (wasmult || (audiopl != CurrentAudioStaticEmitter)))
-                        {
-                            ProjectExplorer?.TrySelectAudioStaticEmitterTreeNode(audiopl);
-                        }
-                    }
-                    else
-                    {
-                        ProjectExplorer?.DeselectNode();
-
-                        showcurrent = true;
-                    }
-
-                    CurrentMloRoom = room;
-                    CurrentMloPortal = null;
-                    CurrentMloEntitySet = null;
-                    CurrentYmapFile = ymap;
-                    CurrentYtypFile = ytyp;
-                    CurrentArchetype = arch;
-                    CurrentEntity = ent ?? mlo;
-                    CurrentCarGen = cargen;
-                    CurrentLodLight = lodlight;
-                    CurrentBoxOccluder = boxoccluder;
-                    CurrentOccludeModelTri = occludetri;
-                    CurrentOccludeModel = occludetri?.Model;
-                    CurrentGrassBatch = grassbatch;
-                    CurrentYbnFile = ybn;
-                    CurrentCollisionVertex = collvert;
-                    CurrentCollisionPoly = collpoly;
-                    CurrentCollisionBounds = collbound;
-                    CurrentYndFile = ynd;
-                    CurrentPathNode = pathnode;
-                    CurrentPathLink = pathlink;
-                    CurrentYnvFile = ynv;
-                    CurrentNavPoly = navpoly;
-                    CurrentNavPoint = navpoint;
-                    CurrentNavPortal = navportal;
-                    CurrentTrainTrack = traintrack;
-                    CurrentTrainNode = trainnode;
-                    CurrentScenario = scenario;
-                    CurrentScenarioNode = scenariond;
-                    CurrentScenarioChainEdge = scenarioedge;
-                    CurrentAudioFile = audiofile;
-                    CurrentAudioAmbientZone = (audiopl?.AmbientZone != null) ? audiopl : null;
-                    CurrentAudioAmbientRule = (audiopl?.AmbientRule != null) ? audiopl : null;
-                    CurrentAudioStaticEmitter = (audiopl?.StaticEmitter != null) ? audiopl : null;
-                    CurrentAudioAmbientZoneList = null;
-                    CurrentAudioStaticEmitterList = null;
-                    CurrentYdrFile = null;
-                    CurrentYddFile = null;
-                    CurrentYftFile = null;
-                    CurrentYtdFile = null;
-                    RefreshUI();
-                    if (showcurrent)
-                    {
-                        ShowProjectItemInProcess = true;
-                        ShowCurrentProjectItem(false);
-                        ShowProjectItemInProcess = false;
-                    }
+                CurrentMloRoom = room;
+                CurrentMloPortal = null;
+                CurrentMloEntitySet = null;
+                CurrentYmapFile = ymap;
+                CurrentYtypFile = ytyp;
+                CurrentArchetype = arch;
+                CurrentEntity = ent ?? mlo;
+                CurrentCarGen = cargen;
+                CurrentLodLight = lodlight;
+                CurrentBoxOccluder = boxoccluder;
+                CurrentOccludeModelTri = occludetri;
+                CurrentOccludeModel = occludetri?.Model;
+                CurrentGrassBatch = grassbatch;
+                CurrentYbnFile = ybn;
+                CurrentCollisionVertex = collvert;
+                CurrentCollisionPoly = collpoly;
+                CurrentCollisionBounds = collbound;
+                CurrentYndFile = ynd;
+                CurrentPathNode = pathnode;
+                CurrentPathLink = pathlink;
+                CurrentYnvFile = ynv;
+                CurrentNavPoly = navpoly;
+                CurrentNavPoint = navpoint;
+                CurrentNavPortal = navportal;
+                CurrentTrainTrack = traintrack;
+                CurrentTrainNode = trainnode;
+                CurrentScenario = scenario;
+                CurrentScenarioNode = scenariond;
+                CurrentScenarioChainEdge = scenarioedge;
+                CurrentAudioFile = audiofile;
+                CurrentAudioAmbientZone = (audiopl?.AmbientZone != null) ? audiopl : null;
+                CurrentAudioAmbientRule = (audiopl?.AmbientRule != null) ? audiopl : null;
+                CurrentAudioStaticEmitter = (audiopl?.StaticEmitter != null) ? audiopl : null;
+                CurrentAudioAmbientZoneList = null;
+                CurrentAudioStaticEmitterList = null;
+                CurrentYdrFile = null;
+                CurrentYddFile = null;
+                CurrentYftFile = null;
+                CurrentYtdFile = null;
+                RefreshUI();
+                if (showcurrent)
+                {
+                    ShowProjectItemInProcess = true;
+                    ShowCurrentProjectItem(false);
+                    ShowProjectItemInProcess = false;
                 }
             }
             catch { }
+
+            WorldSelectionChangeInProcess = false;
         }
         public void OnWorldSelectionModified(MapSelection sel)
         {
