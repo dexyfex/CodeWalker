@@ -1720,6 +1720,12 @@ namespace CodeWalker.GameFiles
 
         public void CalculateOctants()
         {
+            if (Type != BoundsType.Geometry)
+            {
+                Octants = null;//don't use octants for BoundBVH
+                return;
+            }
+
             Octants = new BoundGeomOctants();
 
             Vector3[] flipDirection = new Vector3[8]
@@ -1797,8 +1803,9 @@ namespace CodeWalker.GameFiles
             //thanks to ranstar74
             //https://github.com/ranstar74/rageAm/blob/master/projects/app/src/rage/physics/bounds/boundgeometry.cpp
 
-            if (Vertices == null) return;//must have existing vertices for this!
             VerticesShrunk = null;
+            if (Type != BoundsType.Geometry) return;//don't use VerticesShrunk for BoundBVH
+            if (Vertices == null) return;//must have existing vertices for this!
             var size = Vector3.Abs(BoxMax - BoxMin) * 0.5f;
             var margin = Math.Min(Math.Min(Math.Min(Margin, size.X), size.Y), size.Z);
             while (margin > 1e-6f)
@@ -2016,6 +2023,12 @@ namespace CodeWalker.GameFiles
 
         public void CalculateVertsShrunkByNormals()
         {
+            if (Type != BoundsType.Geometry)
+            {
+                VerticesShrunk = null;//don't use VerticesShrunk for BoundBVH
+                return;
+            }
+
             Vector3[] vertNormals = CalculateVertNormals();
             VerticesShrunk = new Vector3[Vertices.Length];
 
