@@ -938,5 +938,41 @@ namespace CodeWalker.Properties {
                 this["ColourPickerRecentColours"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public float StartPosX {
+            get {
+                return ((float)(this["StartPosX"]));
+            }
+            set {
+                this["StartPosX"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public float StartPosY {
+            get {
+                return ((float)(this["StartPosY"]));
+            }
+            set {
+                this["StartPosY"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public float StartPosZ {
+            get {
+                return ((float)(this["StartPosZ"]));
+            }
+            set {
+                this["StartPosZ"] = value;
+            }
+        }
     }
 }
