@@ -243,14 +243,8 @@
     <Setting Name="ColourPickerRecentColours" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="StartPosX" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="StartPosY" Type="System.String" Scope="User">
-      <Value Profile="(Default)">0</Value>
-    </Setting>
-    <Setting Name="StartPosZ" Type="System.String" Scope="User">
-      <Value Profile="(Default)">100</Value>
+    <Setting Name="StartPosition" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0, 0, 100</Value>
     </Setting>
   </Settings>
 </SettingsFile>

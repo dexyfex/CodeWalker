@@ -60,11 +60,8 @@ namespace CodeWalker
         string modelname = "dt1_tc_dufo_core";//"dt1_11_fount_decal";//"v_22_overlays";//
         string[] ymaplist;
 
-        Vector3 prevworldpos = new Vector3(
-            (float)Settings.Default.StartPosX,
-            (float)Settings.Default.StartPosY,
-            (float)Settings.Default.StartPosZ
-        );
+
+        Vector3 prevworldpos = FloatUtil.ParseVector3String(Settings.Default.StartPosition);
 
 
         public GameFileCache GameFileCache { get { return gameFileCache; } }
@@ -4881,9 +4878,7 @@ namespace CodeWalker
             s.ArtificialAmbientLight = ArtificialAmbientLightCheckBox.Checked;
             s.Region = WeatherRegionComboBox.Text;
             s.Clouds = CloudsComboBox.Text;
-            Settings.Default.StartPosX = camera.Position.X;
-            Settings.Default.StartPosY = camera.Position.Y;
-            Settings.Default.StartPosZ = camera.Position.Z;
+            Settings.Default.StartPosition = FloatUtil.GetVector3String(camera.Position);
 
             //additional settings from gamefilecache...
             s.EnableMods = gameFileCache.EnableMods;
