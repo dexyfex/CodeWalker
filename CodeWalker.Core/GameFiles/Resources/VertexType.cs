@@ -19,7 +19,7 @@ namespace CodeWalker.GameFiles
         Float4 = 7,
         UByte4 = 8,
         Colour = 9,
-        Dec3N = 10,
+        RGBA8SNorm = 10,
         Unk1 = 11,
         Unk2 = 12,
         Unk3 = 13,
@@ -43,7 +43,7 @@ namespace CodeWalker.GameFiles
                 case VertexComponentType.Float4: return 16;
                 case VertexComponentType.UByte4: return 4;
                 case VertexComponentType.Colour: return 4;
-                case VertexComponentType.Dec3N: return 4;
+                case VertexComponentType.RGBA8SNorm: return 4;
                 default: return 0;
             }
         }
@@ -62,7 +62,7 @@ namespace CodeWalker.GameFiles
                 case VertexComponentType.Float4: return 4;
                 case VertexComponentType.UByte4: return 4;
                 case VertexComponentType.Colour: return 4;
-                case VertexComponentType.Dec3N: return 4;
+                case VertexComponentType.RGBA8SNorm: return 4;
                 default: return 0;
             }
         }
