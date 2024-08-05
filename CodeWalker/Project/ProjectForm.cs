@@ -3588,7 +3588,7 @@ namespace CodeWalker.Project
 
             var createindex = mloArch.entities.Length;
             var ment = new MCEntityDef(ref cent, mloArch);
-            var outEnt = mloInstance.CreateYmapEntity(mloInstance.Owner, ment, createindex);
+            var outEnt = new YmapEntityDef(mloInstance.Owner, ment, createindex);
 
             try
             {

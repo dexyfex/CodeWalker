@@ -620,7 +620,7 @@ namespace CodeWalker.GameFiles
             var entlist = new List<YmapEntityDef>();
             for (int i = 0; i < ec; i++)
             {
-                var e = CreateYmapEntity(Owner, MloArch.entities[i], i);
+                var e = new YmapEntityDef(Owner, MloArch.entities[i], i);
                 entlist.Add(e);
             }
 
@@ -638,7 +638,7 @@ namespace CodeWalker.GameFiles
                     {
                         for (int j = 0; j < entitySet.Entities.Length; j++)
                         {
-                            var e = CreateYmapEntity(Owner, entitySet.Entities[j], lasti);
+                            var e = new YmapEntityDef(Owner, entitySet.Entities[j], lasti);
                             instset.Entities.Add(e);
                             e.MloEntitySet = instset;
                             lasti++;
@@ -760,21 +760,6 @@ namespace CodeWalker.GameFiles
                 mloa.BBMin = mlobbmin;
                 mloa.BBMax = mlobbmax;
             }
-        }
-
-        public YmapEntityDef CreateYmapEntity(YmapEntityDef owner, MCEntityDef ment, int index)
-        {
-            YmapEntityDef e = new YmapEntityDef(null, index, ref ment._Data);
-            e.Extensions = ment.Extensions;
-            e.MloRefPosition = e.Position;
-            e.MloRefOrientation = e.Orientation;
-            e.MloParent = owner;
-            e.Position = owner.Position + owner.Orientation.Multiply(e.MloRefPosition);
-            e.Orientation = Quaternion.Multiply(owner.Orientation, e.MloRefOrientation);
-            e.UpdateWidgetPosition();
-            e.UpdateWidgetOrientation();
-            e.UpdateEntityHash();
-            return e;
         }
 
         public MCEntityDef TryGetArchetypeEntity(YmapEntityDef ymapEntity)

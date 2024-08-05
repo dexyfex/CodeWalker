@@ -381,26 +381,17 @@ namespace CodeWalker.Project.Panels
             Vector3 v = FloatUtil.ParseVector3String(EntityPositionTextBox.Text);
             lock (ProjectForm.ProjectSyncRoot)
             {
-                if (CurrentEntity.MloParent != null)
+                if (CurrentEntity._CEntityDef.position != v)
                 {
-                    v = CurrentEntity.MloParent.Position + CurrentEntity.MloParent.Orientation.Multiply(v);
-                    CurrentEntity.SetPosition(v);
+                    CurrentEntity.SetPositionRaw(v);
                     ProjectItemChanged();
-                }
-                else
-                {
-                    if (CurrentEntity.Position != v)
+                    var wf = ProjectForm.WorldForm;
+                    if (wf != null)
                     {
-                        CurrentEntity.SetPosition(v);
-                        ProjectItemChanged();
-                        var wf = ProjectForm.WorldForm;
-                        if (wf != null)
+                        wf.BeginInvoke(new Action(() =>
                         {
-                            wf.BeginInvoke(new Action(() =>
-                            {
-                                wf.SetWidgetPosition(CurrentEntity.WidgetPosition, true);
-                            }));
-                        }
+                            wf.SetWidgetPosition(CurrentEntity.WidgetPosition, true);
+                        }));
                     }
                 }
             }
@@ -416,20 +407,9 @@ namespace CodeWalker.Project.Panels
             {
                 if (CurrentEntity._CEntityDef.rotation != v)
                 {
-                    var wf = ProjectForm.WorldForm;
-
-                    if (CurrentEntity.MloParent != null)
-                    {
-                        var world = Quaternion.Normalize(Quaternion.Multiply(q, CurrentEntity.MloParent.Orientation));
-                        CurrentEntity.SetOrientation(world);
-                    }
-                    else
-                    {
-                        bool useInverse = (CurrentEntity.MloInstance == null);
-                        CurrentEntity.SetOrientation(q, useInverse);
-                    }
-
+                    CurrentEntity.SetOrientationRaw(q);
                     ProjectItemChanged();
+                    var wf = ProjectForm.WorldForm;
                     wf?.BeginInvoke(new Action(() =>
                     {
                         wf.SetWidgetRotation(CurrentEntity.WidgetOrientation, true);

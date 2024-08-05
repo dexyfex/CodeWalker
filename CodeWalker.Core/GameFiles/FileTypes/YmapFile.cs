@@ -1776,6 +1776,31 @@ namespace CodeWalker.GameFiles
             UpdateEntityHash();
         }
 
+        public YmapEntityDef(YmapEntityDef mloParent, MCEntityDef ent, int index)
+        {
+            Ymap = null;
+            Index = index;
+            CEntityDef = ent._Data;
+            Scale = new Vector3(new Vector2(_CEntityDef.scaleXY), _CEntityDef.scaleZ);
+            MloRefPosition = _CEntityDef.position;
+            MloRefOrientation = new Quaternion(_CEntityDef.rotation);
+            if (MloRefOrientation != Quaternion.Identity)
+            {
+                MloRefOrientation = Quaternion.Invert(MloRefOrientation);
+            }
+            IsMlo = false;
+
+            Extensions = ent.Extensions;
+            MloParent = mloParent;
+            Position = mloParent.Position + mloParent.Orientation.Multiply(MloRefPosition);
+            Orientation = Quaternion.Multiply(mloParent.Orientation, MloRefOrientation);
+            
+            UpdateWidgetPosition();
+            UpdateWidgetOrientation();
+            UpdateEntityHash();
+        }
+
+
 
         public void SetArchetype(Archetype arch)
         {
@@ -1848,6 +1873,36 @@ namespace CodeWalker.GameFiles
                 UpdateBB();
             }
 
+
+            if (MloInstance != null)
+            {
+                MloInstance.SetPosition(Position);
+                MloInstance.UpdateEntities();
+            }
+
+            UpdateEntityHash();
+            UpdateWidgetPosition();
+        }
+
+        public void SetPositionRaw(Vector3 pos)
+        {
+            //set the raw position value in the CEntityDef, and update everything from that.
+            //used by the EditYmapEntityPanel
+
+            _CEntityDef.position = pos;
+
+            if (MloParent != null)
+            {
+                MloRefPosition = pos;
+                Position = MloParent.Position + MloParent.Orientation.Multiply(MloRefPosition);
+                UpdateBB();
+                UpdateMloArchetype();
+            }
+            else
+            {
+                Position = pos;
+                UpdateBB();
+            }
 
             if (MloInstance != null)
             {
@@ -1937,6 +1992,45 @@ namespace CodeWalker.GameFiles
             if (MloInstance != null)
             {
                 MloInstance.SetOrientation(ori);
+                MloInstance.UpdateEntities();
+            }
+
+            UpdateBB();
+            UpdateWidgetPosition();
+            UpdateWidgetOrientation();
+        }
+
+        public void SetOrientationRaw(Quaternion ori)
+        {
+            //set the raw rotation value in the CEntityDef, and update everything from that.
+            //used by the EditYmapEntityPanel
+
+            _CEntityDef.rotation = ori.ToVector4();
+
+            if (MloParent != null)
+            {
+                MloRefOrientation = ori;
+                if (MloRefOrientation != Quaternion.Identity)
+                {
+                    MloRefOrientation = Quaternion.Invert(MloRefOrientation);
+                }
+                Orientation = Quaternion.Multiply(MloParent.Orientation, MloRefOrientation);
+            }
+            else
+            {
+                Orientation = ori;
+                if (MloInstance == null)//CMloInstanceDef quaternions aren't inverted, but CEntityDef ones are
+                {
+                    if (Orientation != Quaternion.Identity)
+                    {
+                        Orientation = Quaternion.Invert(Orientation);
+                    }
+                }
+            }
+
+            if (MloInstance != null)
+            {
+                MloInstance.SetOrientation(Orientation);
                 MloInstance.UpdateEntities();
             }
 
