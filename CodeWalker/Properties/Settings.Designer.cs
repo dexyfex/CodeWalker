@@ -866,12 +866,12 @@ namespace CodeWalker.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool NatrualAmbientLight {
+        public bool NaturalAmbientLight {
             get {
-                return ((bool)(this["NatrualAmbientLight"]));
+                return ((bool)(this["NaturalAmbientLight"]));
             }
             set {
-                this["NatrualAmbientLight"] = value;
+                this["NaturalAmbientLight"] = value;
             }
         }
         
@@ -936,6 +936,42 @@ namespace CodeWalker.Properties {
             }
             set {
                 this["ColourPickerRecentColours"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0, 100")]
+        public string StartPosition {
+            get {
+                return ((string)(this["StartPosition"]));
+            }
+            set {
+                this["StartPosition"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SavePosition {
+            get {
+                return ((bool)(this["SavePosition"]));
+            }
+            set {
+                this["SavePosition"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SaveTimeOfDay {
+            get {
+                return ((bool)(this["SaveTimeOfDay"]));
+            }
+            set {
+                this["SaveTimeOfDay"] = value;
             }
         }
     }

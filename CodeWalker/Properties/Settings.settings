@@ -212,7 +212,7 @@
     <Setting Name="Weather" Type="System.String" Scope="User">
       <Value Profile="(Default)">EXTRASUNNY</Value>
     </Setting>
-    <Setting Name="NatrualAmbientLight" Type="System.Boolean" Scope="User">
+    <Setting Name="NaturalAmbientLight" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="ArtificialAmbientLight" Type="System.Boolean" Scope="User">
@@ -242,6 +242,15 @@
     </Setting>
     <Setting Name="ColourPickerRecentColours" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="StartPosition" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0, 0, 100</Value>
+    </Setting>
+    <Setting Name="SavePosition" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="SaveTimeOfDay" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

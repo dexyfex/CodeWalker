@@ -60,7 +60,7 @@ namespace CodeWalker
         string modelname = "dt1_tc_dufo_core";//"dt1_11_fount_decal";//"v_22_overlays";//
         string[] ymaplist;
 
-        Vector3 prevworldpos = new Vector3(0, 0, 100); //also the start pos
+        Vector3 prevworldpos = FloatUtil.ParseVector3String(Settings.Default.StartPosition);
 
 
         public GameFileCache GameFileCache { get { return gameFileCache; } }
@@ -4827,8 +4827,10 @@ namespace CodeWalker
             WeatherComboBox.SelectedIndex = Math.Max(WeatherComboBox.FindString(s.Weather), 0);
             WeatherRegionComboBox.SelectedIndex = Math.Max(WeatherRegionComboBox.FindString(s.Region), 0);
             Renderer.individualcloudfrag = s.Clouds;
-            NaturalAmbientLightCheckBox.Checked = s.NatrualAmbientLight;
+            NaturalAmbientLightCheckBox.Checked = s.NaturalAmbientLight;
             ArtificialAmbientLightCheckBox.Checked = s.ArtificialAmbientLight;
+            SavePositionCheckBox.Checked = s.SavePosition;
+            SaveTimeOfDayCheckBox.Checked = s.SaveTimeOfDay;
             
             SetTimeOfDay(s.TimeOfDay);
             Renderer.SetWeatherType(s.Weather);
@@ -4870,19 +4872,45 @@ namespace CodeWalker
             s.ShowStatusBar = StatusBarCheckBox.Checked;
             s.SnapRotationDegrees = (float)SnapAngleUpDown.Value;
             s.SnapGridSize = (float)SnapGridSizeUpDown.Value;
-            s.TimeOfDay = TimeOfDayTrackBar.Value;
             s.LODLights = LODLightsCheckBox.Checked;
-            s.Weather = WeatherComboBox.Text;
-            s.NatrualAmbientLight = NaturalAmbientLightCheckBox.Checked;
+            s.NaturalAmbientLight = NaturalAmbientLightCheckBox.Checked;
             s.ArtificialAmbientLight = ArtificialAmbientLightCheckBox.Checked;
-            s.Region = WeatherRegionComboBox.Text;
-            s.Clouds = CloudsComboBox.Text;
+            s.SavePosition = SavePositionCheckBox.Checked;
+            s.SaveTimeOfDay = SaveTimeOfDayCheckBox.Checked;
+            if (s.SavePosition)
+            {
+                s.StartPosition = FloatUtil.GetVector3String(camEntity?.Position ?? camera.Position);
+            }
+            if (s.SaveTimeOfDay)
+            {
+                s.TimeOfDay = TimeOfDayTrackBar.Value;
+                s.Weather = WeatherComboBox.Text;
+                s.Region = WeatherRegionComboBox.Text;
+                s.Clouds = CloudsComboBox.Text;
+            }
 
             //additional settings from gamefilecache...
             s.EnableMods = gameFileCache.EnableMods;
             s.DLC = gameFileCache.EnableDlc ? gameFileCache.SelectedDlc : "";
 
             s.Save();
+        }
+        private void ResetSettings()
+        {
+            if (MessageBox.Show("Are you sure you want to reset all settings to their default values?", "Reset All Settings", MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+
+            Settings.Default.Reset();
+            LoadSettings();
+
+            if (camEntity != null)
+            {
+                camEntity.Position = FloatUtil.ParseVector3String(Settings.Default.StartPosition);
+                camEntity.Orientation = Quaternion.LookAtLH(Vector3.Zero, Vector3.Up, Vector3.ForwardLH);
+                camera.CurrentRotation = Vector3.Zero;
+                camera.TargetRotation = Vector3.Zero;
+            }
+
+            MessageBox.Show("All settings have been reset to their default values. Please restart CodeWalker.");
         }
 
         private void ShowSettingsForm(string tab = "")
@@ -6746,6 +6774,7 @@ namespace CodeWalker
 
         private void ReloadShadersButton_Click(object sender, EventArgs e)
         {
+            //### NO LONGER USED
             if (Renderer.Device == null) return; //can't do this with no device
 
             Cursor = Cursors.WaitCursor;
@@ -6970,22 +6999,14 @@ namespace CodeWalker
             ShowSettingsForm("Advanced");
         }
 
-        private void ReloadSettingsButton_Click(object sender, EventArgs e)
+        private void ResetSettingsButton_Click(object sender, EventArgs e)
         {
-            LoadSettings();
+            ResetSettings();
         }
 
         private void SaveSettingsButton_Click(object sender, EventArgs e)
         {
             SaveSettings();
-        }
-
-        private void QuitButton_Click(object sender, EventArgs e)
-        {
-            if (MessageBox.Show("Really quit?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
-            {
-                Close();
-            }
         }
 
         private void AboutButton_Click(object sender, EventArgs e)
