@@ -46,7 +46,7 @@ namespace CodeWalker.Rendering
                 case VertexComponentType.Float4: return Format.R32G32B32A32_Float;
                 case VertexComponentType.UByte4: return Format.R8G8B8A8_UInt;
                 case VertexComponentType.Colour: return Format.R8G8B8A8_UNorm;
-                case VertexComponentType.Dec3N: return Format.R10G10B10A2_UNorm;
+                case VertexComponentType.RGBA8SNorm: return Format.R8G8B8A8_SNorm;
                 default: return Format.Unknown;
             }
         }
