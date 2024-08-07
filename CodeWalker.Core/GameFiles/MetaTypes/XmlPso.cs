@@ -613,12 +613,13 @@ namespace CodeWalker.GameFiles
 
                 case PsoDataType.String:
                     {
-                        switch (entry.Unk_5h)
+                        switch (arrEntry.Unk_5h)
                         {
                             default:
                                 //ErrorXml(sb, indent, ename + ": Unexpected String array subtype: " + entry.Unk_5h.ToString());
                                 break;
-                            case 0: //hash array...
+                            case 7: //hash array...
+                            case 8:
                                 var hashes = TraverseHashArrayRaw(node);
                                 if (embedded)
                                 {
@@ -629,6 +630,39 @@ namespace CodeWalker.GameFiles
                                 {
                                     results.Hashes[offset] = pb.AddHashArrayPtr(hashes);
                                 }
+                                break;
+                            case 2: //string array  (array of pointers)
+                                var strs = TraverseStringArrayRaw(node);
+                                var cnt = strs?.Length ?? 0;
+                                var ptrs = (cnt > 0) ? new DataBlockPointer[strs.Length] : null;
+                                for (int i = 0; i < cnt; i++)
+                                {
+                                    var str = strs[i];
+                                    if (string.IsNullOrEmpty(str)) continue;
+                                    var bptr = pb.AddString(str);
+                                    var ptr = new DataBlockPointer(bptr.BlockID, bptr.Offset);
+                                    ptr.SwapEnd();
+                                    ptrs[i] = ptr;
+                                }
+                                var aptr = (cnt > 0) ? pb.AddItemArray((MetaName)MetaTypeName.PsoPOINTER, ptrs) : new PsoBuilderPointer();
+                                results.Structures[offset] = (cnt > 0) ? new Array_Structure(aptr.Pointer, aptr.Length) : new Array_Structure();
+                                break;
+                            case 3: //char array array  (array of CharPointer)
+                                var strs2 = TraverseStringArrayRaw(node);
+                                var cnt2 = strs2?.Length ?? 0;
+                                var ptrs2 = (cnt2 > 0) ? new CharPointer[strs2.Length] : null;
+                                for (int i = 0; i < cnt2; i++)
+                                {
+                                    var str = strs2[i];
+                                    if (string.IsNullOrEmpty(str)) continue;
+                                    var bptr = pb.AddString(str);
+                                    var ptr = new CharPointer(bptr.Pointer, str.Length);
+                                    ptr.Count1 += 1;
+                                    ptr.SwapEnd();
+                                    ptrs2[i] = ptr;
+                                }
+                                var aptr2 = (cnt2 > 0) ? pb.AddItemArray((MetaName)200, ptrs2) : new PsoBuilderPointer();
+                                results.Structures[offset] = (cnt2 > 0) ? new Array_Structure(aptr2.Pointer, aptr2.Length) : new Array_Structure();
                                 break;
                         }
 
@@ -1035,6 +1069,17 @@ namespace CodeWalker.GameFiles
             {
                 var val = GetHash(cnode.InnerText);
                 items.Add(MetaTypes.SwapBytes(val));
+            }
+
+            return items.ToArray();
+        }
+        private static string[] TraverseStringArrayRaw(XmlNode node)
+        {
+            var items = new List<string>();
+
+            foreach (XmlNode cnode in node.ChildNodes)
+            {
+                items.Add(cnode.InnerText);
             }
 
             return items.ToArray();

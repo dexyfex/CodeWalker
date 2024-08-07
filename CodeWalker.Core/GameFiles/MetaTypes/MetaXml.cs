@@ -1333,18 +1333,45 @@ namespace CodeWalker.GameFiles
                     }
                     break;
                 case PsoDataType.String:
-                    switch (entry.Unk_5h)
+                    switch (arrEntry.Unk_5h)
                     {
                         default:
                             ErrorXml(sb, indent, ename + ": Unexpected String array subtype: " + entry.Unk_5h.ToString());
                             break;
-                        case 0: //hash array...
+                        case 7: //hash array...
+                        case 8:
                             if (embedded)
                             { }
                             var arrHash = MetaTypes.ConvertData<Array_uint>(data, eoffset);
                             arrHash.SwapEnd();
                             var hashArr = PsoTypes.GetHashArray(cont.Pso, arrHash);
                             WriteItemArray(sb, hashArr, indent, ename, "Hash", HashString);
+                            break;
+                        case 2: //string array  (array of pointers)
+                            var arrStrs = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
+                            arrStrs.SwapEnd();
+                            var strPtrArr = PsoTypes.GetItemArrayRaw<DataBlockPointer>(cont.Pso, arrStrs);
+                            var strs = (strPtrArr != null) ? new string[strPtrArr.Length] : null;
+                            var cnt = strPtrArr?.Length ?? 0;
+                            for (int i = 0; i < cnt; i++)
+                            {
+                                strPtrArr[i].SwapEnd();
+                                strs[i] = PsoTypes.GetString(cont.Pso, strPtrArr[i]);
+                            }
+                            WriteStringItemArray(sb, strs, indent, ename);
+                            break;
+                        case 3: //char array array  (array of CharPointer)
+                            var arrChars = MetaTypes.ConvertData<Array_Structure>(data, eoffset);
+                            arrChars.SwapEnd();
+                            var charPtrArr = PsoTypes.GetItemArrayRaw<CharPointer>(cont.Pso, arrChars);//namehash 200
+                            var strs2 = (charPtrArr != null) ? new string[charPtrArr.Length] : null;
+                            var cnt2 = charPtrArr?.Length ?? 0;
+                            for (int i = 0; i < cnt2; i++)
+                            {
+                                charPtrArr[i].SwapEnd();
+                                strs2[i] = PsoTypes.GetString(cont.Pso, charPtrArr[i]);
+                            }
+                            WriteStringItemArray(sb, strs2, indent, ename);
                             break;
                     }
                     break;
@@ -2074,6 +2101,28 @@ namespace CodeWalker.GameFiles
             else
             {
                 SelfClosingTag(sb, ind, name);
+            }
+        }
+        public static void WriteStringItemArray(StringBuilder sb, string[] arr, int ind, string name)
+        {
+            var aCount = arr?.Length ?? 0;
+            var arrTag = name;// + " itemType=\"Hash\"";
+            var aind = ind + 1;
+            if (aCount > 0)
+            {
+                OpenTag(sb, ind, arrTag);
+                for (int n = 0; n < aCount; n++)
+                {
+                    Indent(sb, aind);
+                    sb.Append("<Item>");
+                    sb.Append(arr[n]);//TODO: escape this??!
+                    sb.AppendLine("</Item>");
+                }
+                CloseTag(sb, ind, name);
+            }
+            else
+            {
+                SelfClosingTag(sb, ind, arrTag);
             }
         }
 

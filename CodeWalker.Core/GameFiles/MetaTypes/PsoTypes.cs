@@ -15883,7 +15883,7 @@ namespace CodeWalker.GameFiles
             if ((arr.Count1 > 0) && (arr.Pointer > 0))
             {
                 var entry = pso.DataMapSection.Entries[arr.PointerDataIndex];
-                return ConvertDataArrayRaw<T>(pso.DataSection.Data, entry.Offset, arr.Count1);
+                return ConvertDataArrayRaw<T>(pso.DataSection.Data, entry.Offset + (int)arr.PointerDataOffset, arr.Count1);
             }
             return null;
         }
@@ -15892,7 +15892,7 @@ namespace CodeWalker.GameFiles
             if ((arr.Count1 > 0) && (arr.Pointer > 0))
             {
                 var entry = pso.DataMapSection.Entries[arr.PointerDataIndex];
-                var res = ConvertDataArrayRaw<T>(pso.DataSection.Data, entry.Offset, arr.Count1);
+                var res = ConvertDataArrayRaw<T>(pso.DataSection.Data, entry.Offset + (int)arr.PointerDataOffset, arr.Count1);
                 if (res != null)
                 {
                     for (int i = 0; i < res.Length; i++)
@@ -16116,6 +16116,10 @@ namespace CodeWalker.GameFiles
             //{ }
 
             var length = ptr.Count1;
+            if (ptr.Count2 != 0)
+            {
+                length = Math.Min(ptr.Count1, ptr.Count2);
+            }
             var lastbyte = offset + length;
             if (lastbyte >= block.Length)
             { return null; }
