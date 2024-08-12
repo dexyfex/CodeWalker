@@ -30,9 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RelForm));
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            OxyPlot.PlotModel plotView = new OxyPlot.PlotModel();
             this.RelPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.XmlTabPage = new System.Windows.Forms.TabPage();
@@ -53,7 +51,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.SynthVariablesTextBox = new System.Windows.Forms.TextBox();
             this.SynthOutputsTextBox = new System.Windows.Forms.TextBox();
-            this.SynthBufferChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.plotView1 = new OxyPlot.WindowsForms.PlotView();
             this.SynthPlayButton = new System.Windows.Forms.Button();
             this.SynthCopyXMLButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -86,7 +84,7 @@
             this.NameTableTabPage.SuspendLayout();
             this.SearchTabPage.SuspendLayout();
             this.SynthsTabPage.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SynthBufferChart)).BeginInit();
+            this.plotView1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SynthTextBox)).BeginInit();
             this.MainToolbar.SuspendLayout();
             this.MainStatusStrip.SuspendLayout();
@@ -297,7 +295,7 @@
             this.SynthsTabPage.Controls.Add(this.label2);
             this.SynthsTabPage.Controls.Add(this.SynthVariablesTextBox);
             this.SynthsTabPage.Controls.Add(this.SynthOutputsTextBox);
-            this.SynthsTabPage.Controls.Add(this.SynthBufferChart);
+            this.SynthsTabPage.Controls.Add(this.plotView1);
             this.SynthsTabPage.Controls.Add(this.SynthPlayButton);
             this.SynthsTabPage.Controls.Add(this.SynthCopyXMLButton);
             this.SynthsTabPage.Controls.Add(this.label1);
@@ -360,23 +358,18 @@
             // 
             // SynthBufferChart
             // 
-            this.SynthBufferChart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.plotView1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea1.Name = "ChartArea1";
-            this.SynthBufferChart.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.SynthBufferChart.Legends.Add(legend1);
-            this.SynthBufferChart.Location = new System.Drawing.Point(363, 31);
-            this.SynthBufferChart.Name = "SynthBufferChart";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series1.IsXValueIndexed = true;
-            series1.Legend = "Legend1";
-            series1.Name = "Buffer";
-            this.SynthBufferChart.Series.Add(series1);
-            this.SynthBufferChart.Size = new System.Drawing.Size(460, 112);
-            this.SynthBufferChart.TabIndex = 38;
-            this.SynthBufferChart.Text = "chart1";
+            var plotModel = new OxyPlot.PlotModel();
+            this.plotView1.Location = new System.Drawing.Point(363, 31);
+            this.plotView1.Name = "SynthBufferChart";
+            plotModel.Series.Add(new OxyPlot.Series.LineSeries { Title = "Buffer", LegendKey = "Main" });
+            plotModel.IsLegendVisible = true;
+            plotModel.Legends.Add(new OxyPlot.Legends.Legend { LegendPosition = OxyPlot.Legends.LegendPosition.RightMiddle, LegendPlacement = OxyPlot.Legends.LegendPlacement.Outside, LegendOrientation = OxyPlot.Legends.LegendOrientation.Horizontal, Key = "Main" });
+            this.plotView1.Model = plotModel;
+            this.plotView1.Size = new System.Drawing.Size(460, 112);
+            this.plotView1.TabIndex = 38;
+            this.plotView1.Text = "chart1";
             // 
             // SynthPlayButton
             // 
@@ -649,7 +642,8 @@
             this.SearchTabPage.PerformLayout();
             this.SynthsTabPage.ResumeLayout(false);
             this.SynthsTabPage.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.SynthBufferChart)).EndInit();
+            this.plotView1.ResumeLayout(false);
+            this.plotView1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SynthTextBox)).EndInit();
             this.MainToolbar.ResumeLayout(false);
             this.MainToolbar.PerformLayout();
@@ -704,7 +698,7 @@
         private FastColoredTextBoxNS.FastColoredTextBox SynthTextBox;
         private System.Windows.Forms.Button SynthCopyXMLButton;
         private System.Windows.Forms.Button SynthPlayButton;
-        private System.Windows.Forms.DataVisualization.Charting.Chart SynthBufferChart;
+        private OxyPlot.WindowsForms.PlotView plotView1;
         private System.Windows.Forms.TextBox SynthOutputsTextBox;
         private System.Windows.Forms.TextBox SynthVariablesTextBox;
         private System.Windows.Forms.Label label3;

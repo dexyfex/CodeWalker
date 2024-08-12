@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SharpDX;
 using Color = SharpDX.Color;
+using Half = SharpDX.Half;
 
 namespace CodeWalker
 {
