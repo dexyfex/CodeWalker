@@ -2660,9 +2660,9 @@ namespace CodeWalker.GameFiles
                         var edgeIndex1 = ((ptri.edgeIndex1 >= 0) && (ptri.edgeIndex1 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex1] : -1;
                         var edgeIndex2 = ((ptri.edgeIndex2 >= 0) && (ptri.edgeIndex2 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex2] : -1;
                         var edgeIndex3 = ((ptri.edgeIndex3 >= 0) && (ptri.edgeIndex3 < itemlookup.Length)) ? itemlookup[ptri.edgeIndex3] : -1;
-                        ptri.SetEdgeIndex(1, edgeIndex1);
-                        ptri.SetEdgeIndex(2, edgeIndex2);
-                        ptri.SetEdgeIndex(3, edgeIndex3);
+                        ptri.SetEdgeIndex(0, edgeIndex1);
+                        ptri.SetEdgeIndex(1, edgeIndex2);
+                        ptri.SetEdgeIndex(2, edgeIndex3);
                     }
                 }
             }
