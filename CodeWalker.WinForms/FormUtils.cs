@@ -5,6 +5,9 @@ using System.Drawing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+
+using Microsoft.Win32;
+
 using WeifenLuo.WinFormsUI.Docking;
 using Point = System.Drawing.Point;
 
@@ -240,34 +243,18 @@ namespace CodeWalker
         {
             if (Environment.OSVersion.Version.Major >= 6)
             {
-                var ofd = new OpenFileDialog();
-                ofd.Filter = "Folders|\n";
-                ofd.AddExtension = false;
-                ofd.CheckFileExists = false;
+                var ofd = new OpenFolderDialog();
                 ofd.DereferenceLinks = true;
                 ofd.Multiselect = false;
                 ofd.InitialDirectory = fbd.SelectedPath;
 
-                int result = 0;
-                var ns = "System.Windows.Forms";
-                var asmb = Assembly.GetAssembly(typeof(OpenFileDialog));
-                var dialogint = GetType(asmb, ns, "FileDialogNative.IFileDialog");
-                var dialog = Call(typeof(OpenFileDialog), ofd, "CreateVistaDialog");
-                Call(typeof(OpenFileDialog), ofd, "OnBeforeVistaDialog", dialog);
-                var options = Convert.ToUInt32(Call(typeof(FileDialog), ofd, "GetOptions"));
-                options |= Convert.ToUInt32(GetEnumValue(asmb, ns, "FileDialogNative.FOS", "FOS_PICKFOLDERS"));
-                Call(dialogint, dialog, "SetOptions", options);
-                var pfde = New(asmb, ns, "FileDialog.VistaDialogEvents", ofd);
-                var parameters = new object[] { pfde, (uint)0 };
-                Call(dialogint, dialog, "Advise", parameters);
-                var adviseres = Convert.ToUInt32(parameters[1]);
-                try { result = Convert.ToInt32(Call(dialogint, dialog, "Show", hWndOwner)); }
-                finally { Call(dialogint, dialog, "Unadvise", adviseres); }
-                GC.KeepAlive(pfde);
+                ofd.ValidateNames = true;
 
-                fbd.SelectedPath = ofd.FileName;
+                var result = ofd.ShowDialog() ?? false;
 
-                return (result == 0) ? DialogResult.OK : DialogResult.Cancel;
+                fbd.SelectedPath = ofd.FolderName;
+
+                return result ? DialogResult.OK : DialogResult.Cancel;
             }
             else
             {
