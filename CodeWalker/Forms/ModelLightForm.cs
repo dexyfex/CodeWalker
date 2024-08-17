@@ -1057,6 +1057,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Flags != v)
             {
                 selectedLight.Flags = v;
+                UpdateLightParams();
             }
             populatingui = true;
             UpdateFlagsCheckBoxes();
@@ -1071,6 +1072,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Flags != v)
             {
                 selectedLight.Flags = v;
+                UpdateLightParams();
             }
             populatingui = true;
             FlagsTextBox.Text = selectedLight.Flags.ToString();
