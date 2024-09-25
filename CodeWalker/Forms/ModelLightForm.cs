@@ -804,7 +804,6 @@ namespace CodeWalker.Forms
                 selectedLight.Flashiness = v;
                 UpdateLightParams();
             }
-
         }
 
         private void LightHash_ValueChanged(object sender, EventArgs e)
@@ -852,6 +851,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Extent != v)
             {
                 selectedLight.Extent = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
