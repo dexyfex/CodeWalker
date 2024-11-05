@@ -3,16 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace CodeWalker.GameFiles
 {
 
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureDictionary : ResourceFileBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class TextureDictionary : ResourceFileBase
     {
         public override long BlockLength
         {
@@ -172,7 +171,7 @@ namespace CodeWalker.GameFiles
         public void BuildFromTextureList(List<Texture> textures)
         {
             textures.Sort((a, b) => a.NameHash.CompareTo(b.NameHash));
-            
+
             var texturehashes = new List<uint>();
             foreach (var tex in textures)
             {
@@ -188,7 +187,8 @@ namespace CodeWalker.GameFiles
 
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureBase : ResourceSystemBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class TextureBase : ResourceSystemBlock
     {
         public override long BlockLength
         {
@@ -430,7 +430,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class Texture : TextureBase
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class Texture : TextureBase
     {
         public override long BlockLength
         {
@@ -472,6 +473,23 @@ namespace CodeWalker.GameFiles
                     val += Data.FullData.LongLength;
                 }
                 return val;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the <see cref="Texture.Width"/> and <see cref="Texture.Height"/> are powers of two.
+        /// </summary>
+        /// <remarks>
+        /// It is not necessary for the <see cref="Texture.Width"/> and <see cref="Texture.Height"/> to be the same.
+        /// </remarks>
+        /// <value>
+        /// <see langword="true"/> if the <see cref="Texture.Width"/> and <see cref="Texture.Height"/> are powers of two; otherwise, <see langword="false"/>.
+        /// </value>
+        public bool IsPowerOf2
+        {
+            get
+            {
+                return (Width & (Width - 1)) == 0 && (Height & (Height - 1)) == 0;
             }
         }
 
@@ -612,7 +630,8 @@ namespace CodeWalker.GameFiles
         }
     }
 
-    [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureData : ResourceGraphicsBlock
+    [TypeConverter(typeof(ExpandableObjectConverter))]
+    public class TextureData : ResourceGraphicsBlock
     {
         public override long BlockLength
         {
