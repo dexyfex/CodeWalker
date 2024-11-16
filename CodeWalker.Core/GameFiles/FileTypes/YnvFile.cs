@@ -768,6 +768,7 @@ namespace CodeWalker.GameFiles
         public byte Flags2 { get { return _RawData.Flags2; } set { _RawData.Flags2 = value; } }
         public byte Flags3 { get { return _RawData.Flags3; } set { _RawData.Flags3 = value; } }
         public byte Flags4 { get { return _RawData.Flags4; } set { _RawData.Flags4 = value; } }
+        public byte Flags5 { get { return _RawData.Flags5; } set { _RawData.Flags5 = value; } }
         public bool B00_AvoidUnk        { get { return (_RawData.PolyFlags0 & 1) > 0; } set { _RawData.PolyFlags0 = (ushort)BitUtil.UpdateBit(_RawData.PolyFlags0, 0, value); } }
         public bool B01_AvoidUnk        { get { return (_RawData.PolyFlags0 & 2) > 0; } set { _RawData.PolyFlags0 = (ushort)BitUtil.UpdateBit(_RawData.PolyFlags0, 1, value); } }
         public bool B02_IsFootpath      { get { return (_RawData.PolyFlags0 & 4) > 0; } set { _RawData.PolyFlags0 = (ushort)BitUtil.UpdateBit(_RawData.PolyFlags0, 2, value); } }
@@ -997,7 +998,7 @@ namespace CodeWalker.GameFiles
 
         public void WriteXml(StringBuilder sb, int indent)
         {
-            byte[] flags = { Flags1, Flags2, Flags3, Flags4, UnkX, UnkY };
+            byte[] flags = { Flags1, Flags2, Flags3, Flags4, UnkX, UnkY, Flags5 };
             YnvXml.WriteRawArray(sb, flags, indent, "Flags", "");
             YnvXml.WriteRawArray(sb, Vertices, indent, "Vertices", "", YnvXml.FormatVector3, 1);
             var cind = indent + 1;
@@ -1009,6 +1010,14 @@ namespace CodeWalker.GameFiles
                 sb.AppendLine();
             }
             YnvXml.CloseTag(sb, indent, "Edges");
+            YnvXml.OpenTag(sb, indent, "EdgesFlags");
+            foreach (var e in Edges)
+            {
+                YnvXml.Indent(sb, cind);
+                sb.AppendFormat("{0}:{1}, {2}:{3}", e.Poly1Unk2, e.Poly1Unk3, e.Poly2Unk2, e.Poly2Unk3);
+                sb.AppendLine();
+            }
+            YnvXml.CloseTag(sb, indent, "EdgesFlags");
             if ((PortalLinks != null) && (PortalLinks.Length > 0))
             {
                 YnvXml.WriteRawArray(sb, PortalLinks, indent, "Portals", "");
@@ -1025,6 +1034,7 @@ namespace CodeWalker.GameFiles
                 Flags4 = (flags.Length > 3) ? flags[3] : (byte)0;
                 UnkX = (flags.Length > 4) ? flags[4] : (byte)0;
                 UnkY = (flags.Length > 5) ? flags[5] : (byte)0;
+                Flags5 = (flags.Length > 6) ? flags[6] : (byte)0;
             }
             Vertices = Xml.GetChildRawVector3Array(node, "Vertices");
             Indices = new ushort[Vertices?.Length ?? 0];//needs to be present for later
@@ -1059,6 +1069,34 @@ namespace CodeWalker.GameFiles
             if (edges.Count > 0)
             {
                 Edges = edges.ToArray();
+            }
+            var edgesflagsstr = Xml.GetChildInnerText(node, "EdgesFlags");
+            var edgesflagsstrarr = edgesflagsstr.Trim().Split('\n');
+            int edgeflagidx = -1;
+            foreach (var edgeflagsstr in edgesflagsstrarr)
+            {
+                edgeflagidx++;
+                var estrparts = edgeflagsstr.Trim().Split(',');
+                if (estrparts.Length != 2)
+                { continue; }
+                var estrp0 = estrparts[0].Trim().Split(':');
+                var estrp1 = estrparts[1].Trim().Split(':');
+                if (estrp0.Length != 2)
+                { continue; }
+                if (estrp1.Length != 2)
+                { continue; }
+
+                uint p1u2, p1u3, p2u2, p2u3;
+                uint.TryParse(estrp0[0].Trim(), out p1u2);
+                uint.TryParse(estrp0[1].Trim(), out p1u3);
+                uint.TryParse(estrp1[0].Trim(), out p2u2);
+                uint.TryParse(estrp1[1].Trim(), out p2u3);
+
+                var e = Edges[edgeflagidx];
+                e.Poly1Unk2 = p1u2;
+                e.Poly1Unk3 = p1u3;
+                e.Poly2Unk2 = p2u2;
+                e.Poly2Unk3 = p2u3;
             }
 
             PortalLinks = Xml.GetChildRawUshortArrayNullable(node, "Portals");
@@ -1242,6 +1280,10 @@ namespace CodeWalker.GameFiles
         public uint AreaID2 { get; set; }
         public uint PolyID1 { get { return _RawData._Poly1.PolyID; } set { _RawData._Poly1.PolyID = value; } }
         public uint PolyID2 { get { return _RawData._Poly2.PolyID; } set { _RawData._Poly2.PolyID = value; } }
+        public uint Poly1Unk2 { get { return _RawData._Poly1.Unk2; } set { _RawData._Poly1.Unk2 = value; } }
+        public uint Poly2Unk2 { get { return _RawData._Poly2.Unk2; } set { _RawData._Poly2.Unk2 = value; } }
+        public uint Poly1Unk3 { get { return _RawData._Poly1.Unk3; } set { _RawData._Poly1.Unk3 = value; } }
+        public uint Poly2Unk3 { get { return _RawData._Poly2.Unk3; } set { _RawData._Poly2.Unk3 = value; } }
         public YnvPoly Poly1 { get; set; }
         public YnvPoly Poly2 { get; set; }
 
