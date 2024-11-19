@@ -627,11 +627,17 @@ namespace CodeWalker.Project.Panels
             if (populatingui) return;
             if (CurrentZone?.AmbientZone == null) return;
 
-            var vec = FloatUtil.Parse(WindElevationSoundsTextBox.Text);
-            if (CurrentZone.AmbientZone.WindElevationSounds != vec)
+            var hashstr = WindElevationSoundsTextBox.Text;
+            uint hash = 0;
+            if (!uint.TryParse(hashstr, out hash))//don't re-hash hashes
             {
-                CurrentZone.AmbientZone.WindElevationSounds = (uint)vec;
+                hash = JenkHash.GenHash(hashstr);
+                JenkIndex.Ensure(hashstr);
+            }
 
+            if (CurrentZone.AmbientZone.WindElevationSounds != hash)
+            {
+                CurrentZone.AmbientZone.WindElevationSounds = hash;
                 ProjectItemChanged();
             }
         }
