@@ -166,7 +166,10 @@ namespace CodeWalker.Project.Panels
                                     light.hash = h;
                                     light.coneInnerAngle = inner;
                                     light.coneOuterAngleOrCapExt = outer;
-                                    light.coronaIntensity = (byte)(la.CoronaIntensity * 6);
+                                    if (la.CoronaSize != 0)
+                                    {
+                                        light.coronaIntensity = (byte)(la.CoronaIntensity * 6);
+                                    }
                                     light.isStreetLight = isStreetLight;
                                     lights.Add(light);
 
