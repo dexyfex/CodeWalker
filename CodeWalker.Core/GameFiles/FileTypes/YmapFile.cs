@@ -298,7 +298,7 @@ namespace CodeWalker.GameFiles
                     for (int i = 0; i < CMloInstanceDefs.Length; i++)
                     {
                         YmapEntityDef d = new YmapEntityDef(this, i, ref CMloInstanceDefs[i]);
-                        uint[] defentsets = MetaTypes.GetUintArray(Meta, CMloInstanceDefs[i].defaultEntitySets);
+                        MetaHash[] defentsets = MetaTypes.GetHashArray(Meta, CMloInstanceDefs[i].defaultEntitySets);
                         if (d.MloInstance != null)
                         {
                             d.MloInstance.defaultEntitySets = defentsets;
@@ -657,7 +657,7 @@ namespace CodeWalker.GameFiles
                         ent.MloInstance.UpdateDefaultEntitySets();
 
                         ent.MloInstance._Instance.CEntityDef = ent.CEntityDef; //overwrite with all the updated values..
-                        ent.MloInstance._Instance.defaultEntitySets = mb.AddUintArrayPtr(ent.MloInstance.defaultEntitySets);
+                        ent.MloInstance._Instance.defaultEntitySets = mb.AddHashArrayPtr(ent.MloInstance.defaultEntitySets);
 
                         ptrs[i] = mb.AddItemPtr(MetaName.CMloInstanceDef, ent.MloInstance.Instance);
                     }
