@@ -966,18 +966,19 @@ namespace CodeWalker.GameFiles
         public void UpdateDefaultEntitySets()
         {
             if (EntitySets == null) return;
-            var visibleSets = new List<MetaHash>();
+            var list = new List<MetaHash>();
 
             for (int i = 0; i < EntitySets.Length; i++)
             {
                 if (EntitySets[i].Visible)
                 {
-                    string entitySetName = EntitySets[i].EntitySet.Name;
-                    uint namehash = JenkHash.GenHash(entitySetName);
-                    visibleSets.Add(new MetaHash(namehash));
+                    string entsetName = EntitySets[i].EntitySet.Name;
+                    uint nameHash = JenkHash.GenHash(entsetName);
+                    list.Add(new MetaHash(nameHash));
                 }
             }
-            defaultEntitySets = visibleSets.ToArray();
+
+            defaultEntitySets = list.ToArray();
         }
 
         private void UpdateAllEntityIndexes()
