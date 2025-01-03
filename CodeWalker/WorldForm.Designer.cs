@@ -536,6 +536,7 @@ namespace CodeWalker
             // 
             // StatusBarCheckBox
             // 
+            this.StatusBarCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.StatusBarCheckBox.AutoSize = true;
             this.StatusBarCheckBox.Checked = true;
             this.StatusBarCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -903,6 +904,7 @@ namespace CodeWalker
             // 
             // ErrorConsoleCheckBox
             // 
+            this.ErrorConsoleCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.ErrorConsoleCheckBox.AutoSize = true;
             this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(10, 565);
             this.ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
