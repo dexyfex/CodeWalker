@@ -1,4 +1,5 @@
 ﻿using CodeWalker.GameFiles;
+using CodeWalker.Project;
 using CodeWalker.Properties;
 using CodeWalker.World;
 using SharpDX;
@@ -4022,6 +4023,8 @@ namespace CodeWalker.Rendering
         public bool ShowScriptedYmaps = true;
         public bool HDLightsEnabled = true;
         public bool LODLightsEnabled = true;
+        public bool RenderItems => ProjectForm.renderitems;
+        public bool HideGtavMap => ProjectForm.hidegtavmap;
 
         public Camera Camera = null;
         public Vector3 Position = Vector3.Zero;
@@ -4061,10 +4064,10 @@ namespace CodeWalker.Rendering
             {
                 YmapFile ymap = null;
                 if (!ymaps.TryGetValue(kvp.Key, out ymap) || (ymap != kvp.Value) || (ymap.IsScripted && !ShowScriptedYmaps) || (ymap.LodManagerUpdate))
-                {
-                    RemoveYmaps.Add(kvp.Key);
+                    {
+                        RemoveYmaps.Add(kvp.Key);
+                    }
                 }
-            }
             foreach (var remYmap in RemoveYmaps)
             {
                 var ymap = CurrentYmaps[remYmap];
@@ -4075,16 +4078,16 @@ namespace CodeWalker.Rendering
                     for (int i = 0; i < remEnts.Length; i++)
                     {
                         var ent = remEnts[i];
-                        RootEntities.Remove(ent);
-                        ent.LodManagerChildren?.Clear();
-                        ent.LodManagerChildren = null;
-                        ent.LodManagerRenderable = null;
-                        if ((ent.Parent != null) && (ent.Parent.Ymap != ymap))
-                        {
-                            ent.Parent.LodManagerRemoveChild(ent);
+                            RootEntities.Remove(ent);
+                            ent.LodManagerChildren?.Clear();
+                            ent.LodManagerChildren = null;
+                            ent.LodManagerRenderable = null;
+                            if ((ent.Parent != null) && (ent.Parent.Ymap != ymap))
+                            {
+                                ent.Parent.LodManagerRemoveChild(ent);
+                            }
                         }
                     }
-                }
                 var remLodLights = ymap.LODLights?.LodLights;
                 if (remLodLights != null)
                 {
@@ -4136,16 +4139,31 @@ namespace CodeWalker.Rendering
 
             VisibleLeaves.Clear();
             VisibleLights.Clear();
-            foreach (var kvp in RootEntities)
+
+            if (HideGtavMap)
             {
-                var ent = kvp.Key;
-                if (EntityVisibleAtMaxLodLevel(ent))
+                foreach (var kvp in CurrentYmaps)
                 {
-                    ent.Distance = MapViewEnabled ? MapViewDist : (ent.Position - Position).Length();
-                    if (ent.Distance <= (ent.LodDist * LodDistMult))
+                    var ymap = kvp.Value;
+                    if (ymap.HasChanged && ymap.AllEntities != null)
                     {
-                        RecurseAddVisibleLeaves(ent);
+                        if (!RenderItems) continue;
+                        foreach (var ent in ymap.AllEntities)
+                        {
+                            ProcessEntitiesForVisibility(ent);
+                        }
                     }
+                }
+            }
+            else
+            {
+                foreach (var kvp in RootEntities)
+                {
+                    var ent = kvp.Key;
+                    if (ent.Ymap.HasChanged && !RenderItems)
+                        continue;
+
+                    ProcessEntitiesForVisibility(ent);
                 }
             }
 
@@ -4178,7 +4196,17 @@ namespace CodeWalker.Rendering
             VisibleLights = VisibleLightsPrev;
             VisibleLightsPrev = vl;
         }
-
+        private void ProcessEntitiesForVisibility(YmapEntityDef ent)
+        {
+            if (EntityVisibleAtMaxLodLevel(ent))
+            {
+                ent.Distance = MapViewEnabled ? MapViewDist : (ent.Position - Position).Length();
+                if (ent.Distance <= (ent.LodDist * LodDistMult))
+                {
+                    RecurseAddVisibleLeaves(ent);
+                }
+            }
+        }
         private void RecurseAddVisibleLeaves(YmapEntityDef ent)
         {
             var clist = GetEntityChildren(ent);
@@ -4195,6 +4223,9 @@ namespace CodeWalker.Rendering
             {
                 if (EntityVisible(ent))
                 {
+                    if (!RenderItems && ent.Ymap.HasChanged)
+                        return;
+
                     VisibleLeaves.Add(ent);
 
                     if (HDLightsEnabled && (ent.Lights != null))
