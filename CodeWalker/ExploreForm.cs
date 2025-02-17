@@ -3265,6 +3265,18 @@ namespace CodeWalker
                     path = path.Substring(0, bsind);
                 }
                 Navigate(path);
+                for (int i = 0; i < CurrentFiles?.Count; i++)
+                {
+                    if (CurrentFiles[i].Name == file.Name)
+                    {
+                        MainListView.BeginUpdate();
+                        MainListView.SelectedIndices.Clear();
+                        MainListView.SelectedIndices.Add(i);
+                        MainListView.EnsureVisible(i);
+                        MainListView.EndUpdate();
+                        break;
+                    }
+                }
             }
         }
         private void OpenFolder()
