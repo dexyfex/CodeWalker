@@ -3230,7 +3230,7 @@ namespace CodeWalker.Project
                     cent.scaleZ = 1.0f;
                     cent.flags = placement.Dynamic ? 0 : 32u;// 1572872; //32 = static
                     cent.parentIndex = -1;
-                    cent.lodDist = (placement.LodDistance < 10000) ? placement.LodDistance : -1;
+                    cent.lodDist = (placement.LodDistance < 10000 ) ? placement.LodDistance : 10000;
                     cent.lodLevel = rage__eLodType.LODTYPES_DEPTH_ORPHANHD;
                     cent.priorityLevel = rage__ePriorityLevel.PRI_REQUIRED;
                     cent.ambientOcclusionMultiplier = 255;
