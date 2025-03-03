@@ -8779,30 +8779,35 @@ namespace CodeWalker.Project
         private void LoadYndFromFile(YndFile ynd, string filename)
         {
             byte[] data = File.ReadAllBytes(filename);
-
             ynd.Load(data);
             WorldForm.Space.PatchYndFile(ynd);
 
             if (WorldForm != null)
             {
-                // TODO: Wasteful -- be smarter about this
+                HashSet<YndFile> updatedFiles = new HashSet<YndFile>();
+                Dictionary<YndFile, List<YndFile>> dependencyCache = new Dictionary<YndFile, List<YndFile>>();
+
                 foreach (var file in CurrentProjectFile.YndFiles)
                 {
-                    foreach (var affected in WorldForm.Space.GetYndFilesThatDependOnYndFile(file))
+                    if (!dependencyCache.TryGetValue(file, out var dependencies))
                     {
-                        if (CurrentProjectFile.ContainsYnd(affected))
-                        {
-                            continue;
-                        }
-
-                        WorldForm.UpdatePathYndGraphics(affected, true);
+                        dependencies = WorldForm.Space.GetYndFilesThatDependOnYndFile(file).ToList();
+                        dependencyCache[file] = dependencies;
                     }
 
-                    WorldForm.UpdatePathYndGraphics(file, true); //links don't get drawn until something changes otherwise
+                    foreach (var affected in dependencies)
+                    {
+                        if (!CurrentProjectFile.ContainsYnd(affected) && updatedFiles.Add(affected))
+                        {
+                            WorldForm.UpdatePathYndGraphics(affected, true);
+                        }
+                    }
+
+                    WorldForm.UpdatePathYndGraphics(file, true); // No need for HashSet check here
                 }
-                //note: this is actually necessary to properly populate junctions data........
             }
         }
+
         private void LoadYnvFromFile(YnvFile ynv, string filename)
         {
             byte[] data = File.ReadAllBytes(filename);

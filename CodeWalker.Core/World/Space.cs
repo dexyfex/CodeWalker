@@ -697,9 +697,24 @@ namespace CodeWalker.World
 
         }
 
-        public YndFile[] GetYndFilesThatDependOnYndFile(YndFile file)
+        public HashSet<YndFile> GetYndFilesThatDependOnYndFile(YndFile file)
         {
-            return AllYnds.Values.Where(y => y.Links.Any(l => l.Node2.AreaID == file.AreaID)).ToArray();
+            HashSet<YndFile> result = new HashSet<YndFile>();
+            int targetAreaID = file.AreaID; // Cache to avoid repeated property access
+
+            foreach (var ynd in AllYnds.Values)
+            {
+                foreach (var link in ynd.Links)
+                {
+                    if (link.Node2.AreaID == targetAreaID)
+                    {
+                        result.Add(ynd);
+                        break; // No need to check more links for this YndFile
+                    }
+                }
+            }
+
+            return result;
         }
 
         public void MoveYndArea(YndFile ynd, int desiredX, int desiredY)
