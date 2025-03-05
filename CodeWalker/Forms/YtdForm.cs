@@ -200,8 +200,13 @@ namespace CodeWalker.Forms
             var tex = OpenDDSFile();
             if (tex == null) return;
 
-            var textures = new List<Texture>();
-            textures.AddRange(TexDict.Textures.data_items);
+            var textures = new List<Texture>(TexDict.Textures.data_items);
+            if (textures.Any(t => t.Name.Equals(tex.Name, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                MessageBox.Show($"A texture with the name {tex.Name} already exists in this YTD.\nAll textures must have unique names in a YTD.");
+                return;
+            }
+
             textures.Add(tex);
 
             TexDict.BuildFromTextureList(textures);
@@ -322,6 +327,12 @@ namespace CodeWalker.Forms
             {
                 var dds = File.ReadAllBytes(fn);
                 var tex = DDSIO.GetTexture(dds);
+                if (!tex.IsPowerOf2)
+                {
+                    MessageBox.Show($"The texture is not a power of two texture.\nThe texture must have a width and height equal to a power of two e.g. 256, 512, 1024, etc...");
+                    return null;
+                }
+
                 tex.Name = Path.GetFileNameWithoutExtension(fn);
                 tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
                 JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
@@ -648,6 +659,121 @@ namespace CodeWalker.Forms
         private void SelTextureNameTextBox_TextChanged(object sender, EventArgs e)
         {
             RenameTexture(SelTextureNameTextBox.Text);
+        }
+
+        /// <summary>
+        /// Add one or more textures to the YTD by dragging and dropping them into the YTD.
+        /// </summary>
+        /// <param name="sender">
+        /// The source of the event.
+        /// </param>
+        /// <param name="e">
+        /// The <see cref="DragEventArgs"/> that contains the event data.
+        /// </param>
+        private void TexturesListView_DragDrop(object sender, DragEventArgs e)
+        {
+            if (TexDict.Textures?.data_items == null)
+            {
+                return;
+            }
+
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                return;
+            }
+
+            string[] filePaths = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (filePaths == null)
+            {
+                // Couldn't get files paths?
+                return;
+            }
+
+            List<Texture> newTextures = new List<Texture>(TexDict.Textures.data_items);
+            foreach (string filePath in filePaths)
+            {
+                if (!filePath.EndsWith(".dds", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // Not a DDS file?
+                    MessageBox.Show("You can only drag and drop DDS files into an YTD.");
+                    return;
+                }
+
+                if (!File.Exists(filePath))
+                {
+                    // Couldn't find file?
+                    MessageBox.Show($"Couldn't find file {filePath}.");
+                    return;
+                }
+
+                // Check if a texture with the same name already exists in the YTD.
+                string textureName = Path.GetFileNameWithoutExtension(filePath);
+                if(newTextures.Any(t => t.Name.Equals(textureName, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    MessageBox.Show($"A texture with the name {textureName} already exists in this YTD.\nAll textures must have unique names in a YTD.");
+                    return;
+                }
+
+                byte[] dds = File.ReadAllBytes(filePath);
+                try
+                {
+                    Texture texture = DDSIO.GetTexture(dds);
+                    if(texture == null)
+                    {
+                        throw new Exception("Something went wrong while loading the texture.");
+                    }
+
+                    if(!texture.IsPowerOf2)
+                    {
+                        MessageBox.Show($"The texture {filePath} is not a power of two texture.\nThe texture must have a width and height equal to a power of two e.g. 256, 512, 1024, etc...");
+                        return;
+                    }
+
+                    texture.Name = textureName;
+                    texture.NameHash = JenkHash.GenHash(texture.Name?.ToLowerInvariant());
+                    JenkIndex.Ensure(texture.Name?.ToLowerInvariant());
+                    newTextures.Add(texture);
+                }
+                catch
+                {
+                    MessageBox.Show($"Unable to load {filePath}.\nAre you sure it's a valid .dds file?");
+                }
+            }
+
+            TexDict.BuildFromTextureList(newTextures);
+
+            Modified = true;
+
+            LoadTexDict(TexDict, FileName);
+
+            UpdateModelFormTextures();
+        }
+
+        /// <summary>
+        /// Checks if the files can be dropped into the YTD.
+        /// </summary>
+        /// <param name="sender">
+        /// The source of the event.
+        /// </param>
+        /// <param name="e">
+        /// The <see cref="DragEventArgs"/> that contains the event data.
+        /// </param>
+        private void TexturesListView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.None;
+                return;
+            }
+
+            string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (files == null)
+            {
+                e.Effect = DragDropEffects.None;
+                return;
+            }
+
+            e.Effect = DragDropEffects.Copy;
         }
     }
 }
