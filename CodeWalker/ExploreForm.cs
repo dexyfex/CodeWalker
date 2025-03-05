@@ -371,7 +371,19 @@ namespace CodeWalker
             }
         }
 
-        
+
+
+        public void ConfigureGame()
+        {
+            var result = GTAFolder.UpdateGTAFolder(false, false);
+            if (result)
+            {
+                MessageBox.Show("Please restart CodeWalker to use the new folder.");
+            }
+        }
+
+
+
 
         public void UpdateStatus(string text)
         {
@@ -4013,6 +4025,11 @@ namespace CodeWalker
         private void ListContextSelectAllMenu_Click(object sender, EventArgs e)
         {
             SelectAll();
+        }
+
+        private void FileConfigureGameMenu_Click(object sender, EventArgs e)
+        {
+            ConfigureGame();
         }
 
         private void FileOpenFolderMenu_Click(object sender, EventArgs e)

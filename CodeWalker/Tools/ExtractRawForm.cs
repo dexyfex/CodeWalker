@@ -113,6 +113,7 @@ namespace CodeWalker.Tools
             string matchstr = FileMatchTextBox.Text;
             bool endswith = MatchEndsWithRadio.Checked;
             bool compress = CompressCheckBox.Checked;
+            bool gen9 = GTAFolder.IsGen9Folder(searchpath);
 
             Task.Run(() =>
             {
@@ -122,7 +123,7 @@ namespace CodeWalker.Tools
 
 
                 RpfManager rpfman = new RpfManager();
-                rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
+                rpfman.Init(searchpath, gen9, UpdateExtractStatus, UpdateExtractStatus);
 
 
                 UpdateExtractStatus("Beginning file extraction...");

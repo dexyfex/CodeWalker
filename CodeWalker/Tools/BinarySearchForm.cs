@@ -43,7 +43,7 @@ namespace CodeWalker.Tools
                 {
                     GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
                     RpfMan = new RpfManager();
-                    RpfMan.Init(GTAFolder.CurrentGTAFolder, UpdateStatus, UpdateStatus, false, false);
+                    RpfMan.Init(GTAFolder.CurrentGTAFolder, GTAFolder.IsGen9, UpdateStatus, UpdateStatus, false, false);
                     RPFScanComplete();
                 });
             }

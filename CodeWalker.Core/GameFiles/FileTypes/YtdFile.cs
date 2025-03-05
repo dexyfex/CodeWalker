@@ -54,6 +54,8 @@ namespace CodeWalker.GameFiles
             //    MemoryUsage += TextureDict.MemoryUsage;
             //}
 
+            //var analyzer = new ResourceAnalyzer(rd);
+
         }
 
 

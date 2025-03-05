@@ -543,8 +543,9 @@ namespace CodeWalker.GameFiles
                 var pos_before = resourceWriter.Position;
                 block.Write(resourceWriter);
                 var pos_after = resourceWriter.Position;
+                var blen = resourceWriter.IsGen9 ? block.BlockLength_Gen9 : block.BlockLength;
 
-                if ((pos_after - pos_before) != block.BlockLength)
+                if ((pos_after - pos_before) != blen)
                 {
                     throw new Exception("error in system length");
                 }
@@ -558,8 +559,9 @@ namespace CodeWalker.GameFiles
                 var pos_before = resourceWriter.Position;
                 block.Write(resourceWriter);
                 var pos_after = resourceWriter.Position;
+                var blen = resourceWriter.IsGen9 ? block.BlockLength_Gen9 : block.BlockLength;
 
-                if ((pos_after - pos_before) != block.BlockLength)
+                if ((pos_after - pos_before) != blen)
                 {
                     throw new Exception("error in graphics length");
                 }

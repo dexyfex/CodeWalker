@@ -61,13 +61,14 @@ namespace CodeWalker.GameFiles
             FileEntry = reader.FileEntry;
             SystemPages = FileEntry?.SystemFlags.Pages;
             GraphicsPages = FileEntry?.GraphicsFlags.Pages;
+            var gen9 = reader.IsGen9;
 
             var dlist = new List<ResourceAnalyzerItem>();
             foreach (var kvp in reader.blockPool)
             {
                 var item = new ResourceAnalyzerItem();
                 item.Position = kvp.Key;
-                item.Length = kvp.Value.BlockLength;
+                item.Length = gen9 ? kvp.Value.BlockLength_Gen9 : kvp.Value.BlockLength;
                 item.SystemBlock = kvp.Value as ResourceSystemBlock;
                 item.GraphicsBlock = kvp.Value as ResourceGraphicsBlock;
                 if (kvp.Value is ResourcePagesInfo rpi)

@@ -97,6 +97,7 @@ namespace CodeWalker.Tools
             string searchpath = FolderTextBox.Text;
             string outputpath = OutputFolderTextBox.Text;
             string replpath = searchpath + "\\";
+            bool gen9 = GTAFolder.IsGen9Folder(searchpath);
 
             bool cso = CsoCheckBox.Checked;
             bool asm = AsmCheckBox.Checked;
@@ -110,7 +111,7 @@ namespace CodeWalker.Tools
 
 
                 RpfManager rpfman = new RpfManager();
-                rpfman.Init(searchpath, UpdateExtractStatus, UpdateExtractStatus);
+                rpfman.Init(searchpath, gen9, UpdateExtractStatus, UpdateExtractStatus);
 
 
                 UpdateExtractStatus("Beginning shader extraction...");

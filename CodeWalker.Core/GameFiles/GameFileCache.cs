@@ -114,6 +114,7 @@ namespace CodeWalker.GameFiles
         public bool LoadAudio = true;
         private bool PreloadedMode = false;
 
+        private bool GTAGen9;
         private string GTAFolder;
         private string ExcludeFolders;
 
@@ -143,12 +144,13 @@ namespace CodeWalker.GameFiles
 
 
 
-        public GameFileCache(long size, double cacheTime, string folder, string dlc, bool mods, string excludeFolders)
+        public GameFileCache(long size, double cacheTime, string folder, bool gen9, string dlc, bool mods, string excludeFolders)
         {
             mainCache = new Cache<GameFileCacheKey, GameFile>(size, cacheTime);//2GB is good as default
             SelectedDlc = dlc;
             EnableDlc = !string.IsNullOrEmpty(SelectedDlc);
             EnableMods = mods;
+            GTAGen9 = gen9;
             GTAFolder = folder;
             ExcludeFolders = excludeFolders;
         }
@@ -185,7 +187,7 @@ namespace CodeWalker.GameFiles
                 RpfMan.ExcludePaths = GetExcludePaths();
                 RpfMan.EnableMods = EnableMods;
                 RpfMan.BuildExtendedJenkIndex = BuildExtendedJenkIndex;
-                RpfMan.Init(GTAFolder, UpdateStatus, ErrorLog);//, true);
+                RpfMan.Init(GTAFolder, GTAGen9, UpdateStatus, ErrorLog);//, true);
 
 
                 InitGlobal();
@@ -249,7 +251,7 @@ namespace CodeWalker.GameFiles
             EnableDlc = true;//just so everything (mainly archetypes) will load..
             EnableMods = false;
             RpfMan = new RpfManager(); //try not to use this in this mode...
-            RpfMan.Init(allRpfs);
+            RpfMan.Init(allRpfs, GTAGen9);
 
             AllRpfs = allRpfs;
             BaseRpfs = allRpfs;

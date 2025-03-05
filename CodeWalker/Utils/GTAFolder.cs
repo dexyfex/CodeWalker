@@ -15,8 +15,14 @@ namespace CodeWalker
     public static class GTAFolder
     {
         public static string CurrentGTAFolder { get; private set; } = Settings.Default.GTAFolder;
+        public static bool IsGen9 { get; private set; } = Settings.Default.GTAGen9;
 
-        public static bool ValidateGTAFolder(string folder, out string failReason)
+        public static bool IsGen9Folder(string folder)
+        {
+            return File.Exists(folder + @"\gta5_enhanced.exe");
+        }
+
+        public static bool ValidateGTAFolder(string folder, bool gen9, out string failReason)
         {
             failReason = "";
 
@@ -32,70 +38,95 @@ namespace CodeWalker
                 return false;
             }
 
-            if(!File.Exists(folder + @"\gta5.exe"))
+            if (gen9)
             {
-                failReason = $"GTA5.exe not found in folder \"{folder}\"";
-                return false;
+                if (!File.Exists(folder + @"\gta5_enhanced.exe"))
+                {
+                    failReason = $"GTA5_Enhanced.exe not found in folder \"{folder}\"";
+                    return false;
+                }
+            }
+            else
+            {
+                if(!File.Exists(folder + @"\gta5.exe"))
+                {
+                    failReason = $"GTA5.exe not found in folder \"{folder}\"";
+                    return false;
+                }
             }
 
             return true;
         }
 
-        public static bool ValidateGTAFolder(string folder) => ValidateGTAFolder(folder, out string reason);
+        public static bool ValidateGTAFolder(string folder, bool gen9) => ValidateGTAFolder(folder, gen9, out string reason);
 
-        public static bool IsCurrentGTAFolderValid() => ValidateGTAFolder(CurrentGTAFolder);
+        public static bool IsCurrentGTAFolderValid() => ValidateGTAFolder(CurrentGTAFolder, IsGen9);
 
-        public static bool UpdateGTAFolder(bool UseCurrentIfValid = false)
+        public static bool UpdateGTAFolder(bool useCurrentIfValid = false, bool autoDetect = true)
         {
-            if(UseCurrentIfValid && IsCurrentGTAFolderValid())
+            if (useCurrentIfValid && IsCurrentGTAFolderValid())
             {
                 return true;
             }
 
+            var gen9 = IsGen9;
             string origFolder = CurrentGTAFolder;
             string folder = CurrentGTAFolder;
             SelectFolderForm f = new SelectFolderForm();
 
-            string autoFolder = AutoDetectFolder(out string source);
-            if (autoFolder != null && MessageBox.Show($"Auto-detected game folder \"{autoFolder}\" from {source}.\n\nContinue with auto-detected folder?", "Auto-detected game folder", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
+            if (autoDetect)
             {
-                f.SelectedFolder = autoFolder;
+                string autoFolder = AutoDetectFolder(out string source);
+                if (autoFolder != null && MessageBox.Show($"Auto-detected game folder \"{autoFolder}\" from {source}.\n\nContinue with auto-detected folder?", "Auto-detected game folder", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
+                {
+                    f.SelectedFolder = autoFolder;
+                    f.IsGen9 = IsGen9Folder(autoFolder);
+                }
             }
 
             f.ShowDialog();
-            if(f.Result == DialogResult.OK && Directory.Exists(f.SelectedFolder))
+            if (f.Result == DialogResult.Cancel)
+            {
+                return false;
+            }
+            if (f.Result == DialogResult.OK && Directory.Exists(f.SelectedFolder))
             {
                 folder = f.SelectedFolder;
+                gen9 = f.IsGen9;
             }
 
             string failReason;
-            if(ValidateGTAFolder(folder, out failReason))
+            if (ValidateGTAFolder(folder, gen9, out failReason))
             {
-                SetGTAFolder(folder);
-                if(folder != origFolder)
+                SetGTAFolder(folder, gen9);
+                if (folder != origFolder)
                 {
                     MessageBox.Show($"Successfully changed GTA Folder to \"{folder}\"", "Set GTA Folder", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 return true;
-            } else
+            }
+            else
             {
                 var tryAgain = MessageBox.Show($"Folder \"{folder}\" is not a valid GTA folder:\n\n{failReason}\n\nDo you want to try choosing a different folder?", "Unable to set GTA Folder", MessageBoxButtons.RetryCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
-                if(tryAgain == DialogResult.Retry)
+                if (tryAgain == DialogResult.Retry)
                 {
                     return UpdateGTAFolder(false);
-                } else
+                }
+                else
                 {
                     return false;
                 }
             }
         }
 
-        public static bool SetGTAFolder(string folder)
+        public static bool SetGTAFolder(string folder, bool gen9)
         {
-            if(ValidateGTAFolder(folder))
+            if(ValidateGTAFolder(folder, gen9))
             {
                 CurrentGTAFolder = folder;
+                IsGen9 = gen9;
                 Settings.Default.GTAFolder = folder;
+                Settings.Default.GTAGen9 = gen9;
                 Settings.Default.Save();
                 return true;
             }
@@ -109,7 +140,7 @@ namespace CodeWalker
         {
             matches = new Dictionary<string, string>();
 
-            if(ValidateGTAFolder(CurrentGTAFolder))
+            if(ValidateGTAFolder(CurrentGTAFolder, IsGen9))
             {
                 matches.Add("Current CodeWalker Folder", CurrentGTAFolder);
             }
@@ -124,17 +155,17 @@ namespace CodeWalker
                 steamPathValue = steamPathValue.Substring(0, steamPathValue.LastIndexOf("\\GTAV"));
             }
 
-            if(ValidateGTAFolder(steamPathValue))
+            if(ValidateGTAFolder(steamPathValue, false))
             {
                 matches.Add("Steam", steamPathValue);
             }
 
-            if(ValidateGTAFolder(retailPathValue))
+            if(ValidateGTAFolder(retailPathValue, false))
             {
                 matches.Add("Retail", retailPathValue);
             }
 
-            if(ValidateGTAFolder(oivPathValue))
+            if(ValidateGTAFolder(oivPathValue, false))
             {
                 matches.Add("OpenIV", oivPathValue);
             }

@@ -158,6 +158,8 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
+            this.FileConfigureGameMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -190,8 +192,10 @@
             // FileMenu
             // 
             this.FileMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.FileOpenFolderMenu,
+            this.FileConfigureGameMenu,
             this.toolStripSeparator7,
+            this.FileOpenFolderMenu,
+            this.toolStripSeparator14,
             this.FileExitMenu});
             this.FileMenu.Name = "FileMenu";
             this.FileMenu.Size = new System.Drawing.Size(37, 20);
@@ -200,20 +204,20 @@
             // FileOpenFolderMenu
             // 
             this.FileOpenFolderMenu.Name = "FileOpenFolderMenu";
-            this.FileOpenFolderMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileOpenFolderMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenFolderMenu.Text = "Open Folder...";
             this.FileOpenFolderMenu.Click += new System.EventHandler(this.FileOpenFolderMenu_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(145, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(177, 6);
             // 
             // FileExitMenu
             // 
             this.FileExitMenu.Name = "FileExitMenu";
             this.FileExitMenu.ShortcutKeyDisplayString = "Alt+F4";
-            this.FileExitMenu.Size = new System.Drawing.Size(148, 22);
+            this.FileExitMenu.Size = new System.Drawing.Size(180, 22);
             this.FileExitMenu.Text = "Exit";
             this.FileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -418,21 +422,21 @@
             // ViewLargeIconsMenu
             // 
             this.ViewLargeIconsMenu.Name = "ViewLargeIconsMenu";
-            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewLargeIconsMenu.Text = "Large Icons";
             this.ViewLargeIconsMenu.Click += new System.EventHandler(this.ViewLargeIconsMenu_Click);
             // 
             // ViewSmallIconsMenu
             // 
             this.ViewSmallIconsMenu.Name = "ViewSmallIconsMenu";
-            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewSmallIconsMenu.Text = "Small Icons";
             this.ViewSmallIconsMenu.Click += new System.EventHandler(this.ViewSmallIconsMenu_Click);
             // 
             // ViewListMenu
             // 
             this.ViewListMenu.Name = "ViewListMenu";
-            this.ViewListMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewListMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewListMenu.Text = "List";
             this.ViewListMenu.Click += new System.EventHandler(this.ViewListMenu_Click);
             // 
@@ -441,14 +445,14 @@
             this.ViewDetailsMenu.Checked = true;
             this.ViewDetailsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewDetailsMenu.Name = "ViewDetailsMenu";
-            this.ViewDetailsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewDetailsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewDetailsMenu.Text = "Details";
             this.ViewDetailsMenu.Click += new System.EventHandler(this.ViewDetailsMenu_Click);
             // 
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(131, 6);
+            this.toolStripSeparator11.Size = new System.Drawing.Size(177, 6);
             // 
             // ViewThemeMenu
             // 
@@ -458,7 +462,7 @@
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
-            this.ViewThemeMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewThemeMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewThemeMenu.Text = "Theme";
             // 
             // ViewThemeWindowsMenu
@@ -550,7 +554,7 @@
             // OptionsStartInEditModeMenu
             // 
             this.OptionsStartInEditModeMenu.Name = "OptionsStartInEditModeMenu";
-            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(180, 22);
             this.OptionsStartInEditModeMenu.Text = "Start in Edit mode";
             this.OptionsStartInEditModeMenu.Click += new System.EventHandler(this.OptionsStartInEditModeMenu_Click);
             // 
@@ -562,7 +566,7 @@
             this.OptionsStartInFolderDefaultMenu,
             this.OptionsStartInFolderCurrentMenu});
             this.OptionsStartInFolderMenu.Name = "OptionsStartInFolderMenu";
-            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(180, 22);
             this.OptionsStartInFolderMenu.Text = "Start in Folder";
             // 
             // OptionsStartInFolderValueMenu
@@ -1308,6 +1312,18 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
+            // FileConfigureGameMenu
+            // 
+            this.FileConfigureGameMenu.Name = "FileConfigureGameMenu";
+            this.FileConfigureGameMenu.Size = new System.Drawing.Size(180, 22);
+            this.FileConfigureGameMenu.Text = "Configure Game...";
+            this.FileConfigureGameMenu.Click += new System.EventHandler(this.FileConfigureGameMenu_Click);
+            // 
+            // toolStripSeparator14
+            // 
+            this.toolStripSeparator14.Name = "toolStripSeparator14";
+            this.toolStripSeparator14.Size = new System.Drawing.Size(177, 6);
+            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1476,5 +1492,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
         private System.Windows.Forms.ToolStripMenuItem ListContextNewYtdFileMenu;
         private System.Windows.Forms.ToolStripMenuItem ToolsAudioExplorerMenu;
+        private System.Windows.Forms.ToolStripMenuItem FileConfigureGameMenu;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
     }
 }

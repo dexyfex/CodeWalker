@@ -40,6 +40,8 @@ namespace CodeWalker.GameFiles
     /// </summary>
     public class ResourceDataReader : DataReader
     {
+        public bool IsGen9 = RpfManager.IsGen9;
+
         private const long SYSTEM_BASE = 0x50000000;
         private const long GRAPHICS_BASE = 0x60000000;
 
@@ -456,6 +458,8 @@ namespace CodeWalker.GameFiles
     /// </summary>
     public class ResourceDataWriter : DataWriter
     {
+        public bool IsGen9 = RpfManager.IsGen9;
+
         private const long SYSTEM_BASE = 0x50000000;
         private const long GRAPHICS_BASE = 0x60000000;
 
@@ -617,6 +621,7 @@ namespace CodeWalker.GameFiles
         /// Gets the length of the data block.
         /// </summary>
         long BlockLength { get; }
+        long BlockLength_Gen9 { get; }
 
         /// <summary>
         /// Reads the data block.
@@ -698,6 +703,7 @@ namespace CodeWalker.GameFiles
         {
             get;
         }
+        public virtual long BlockLength_Gen9 => BlockLength;
 
         /// <summary>
         /// Reads the data block.
@@ -752,6 +758,7 @@ namespace CodeWalker.GameFiles
         {
             get;
         }
+        public virtual long BlockLength_Gen9 => BlockLength;
 
         /// <summary>
         /// Reads the data block.

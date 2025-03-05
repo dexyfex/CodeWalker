@@ -7020,6 +7020,15 @@ namespace CodeWalker
             ToolsMenu.Show(ToolsButton, 0, ToolsButton.Height);
         }
 
+        private void ToolsMenuConfigureGame_Click(object sender, EventArgs e)
+        {
+            var result = GTAFolder.UpdateGTAFolder(false, false);
+            if (result)
+            {
+                MessageBox.Show("Please restart CodeWalker to use the new folder.");
+            }
+        }
+
         private void ToolsMenuRPFBrowser_Click(object sender, EventArgs e)
         {
             BrowseForm f = new BrowseForm();

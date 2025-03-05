@@ -476,7 +476,7 @@ namespace CodeWalker.Utils
 
 
 
-        private static TextureFormat GetTextureFormat(DXGI_FORMAT f)
+        public static TextureFormat GetTextureFormat(DXGI_FORMAT f)
         {
             var format = (TextureFormat)0;
             switch (f)
@@ -500,7 +500,7 @@ namespace CodeWalker.Utils
             return format;
         }
 
-        private static DXGI_FORMAT GetDXGIFormat(TextureFormat f)
+        public static DXGI_FORMAT GetDXGIFormat(TextureFormat f)
         {
             var format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
             switch (f)

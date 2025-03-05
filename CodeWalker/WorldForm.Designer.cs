@@ -218,6 +218,7 @@ namespace CodeWalker
             this.SelectedMarkerPositionTextBox = new System.Windows.Forms.TextBox();
             this.SelectedMarkerNameTextBox = new System.Windows.Forms.TextBox();
             this.ToolsMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ToolsMenuConfigureGame = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuRPFBrowser = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuRPFExplorer = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuSelectionInfo = new System.Windows.Forms.ToolStripMenuItem();
@@ -233,6 +234,7 @@ namespace CodeWalker
             this.ToolsMenuExtractRawFiles = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuExtractShaders = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolsMenuOptions = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.Toolbar = new CodeWalker.WinForms.ToolStripFix();
             this.ToolbarNewButton = new System.Windows.Forms.ToolStripSplitButton();
             this.ToolbarNewProjectButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -308,7 +310,6 @@ namespace CodeWalker
             this.ToolbarCameraPerspectiveButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraMapViewButton = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarCameraOrthographicButton = new System.Windows.Forms.ToolStripMenuItem();
-            this.ToolbarPanel = new System.Windows.Forms.Panel();
             this.SubtitleLabel = new System.Windows.Forms.Label();
             this.SubtitleTimer = new System.Windows.Forms.Timer(this.components);
             this.StatusStrip.SuspendLayout();
@@ -353,8 +354,8 @@ namespace CodeWalker
             this.ConsolePanel.SuspendLayout();
             this.SelectedMarkerPanel.SuspendLayout();
             this.ToolsMenu.SuspendLayout();
-            this.Toolbar.SuspendLayout();
             this.ToolbarPanel.SuspendLayout();
+            this.Toolbar.SuspendLayout();
             this.SuspendLayout();
             // 
             // StatusStrip
@@ -536,6 +537,7 @@ namespace CodeWalker
             // 
             // StatusBarCheckBox
             // 
+            this.StatusBarCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.StatusBarCheckBox.AutoSize = true;
             this.StatusBarCheckBox.Checked = true;
             this.StatusBarCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -903,6 +905,7 @@ namespace CodeWalker
             // 
             // ErrorConsoleCheckBox
             // 
+            this.ErrorConsoleCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.ErrorConsoleCheckBox.AutoSize = true;
             this.ErrorConsoleCheckBox.Location = new System.Drawing.Point(10, 565);
             this.ErrorConsoleCheckBox.Name = "ErrorConsoleCheckBox";
@@ -2744,6 +2747,7 @@ namespace CodeWalker
             // ToolsMenu
             // 
             this.ToolsMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ToolsMenuConfigureGame,
             this.ToolsMenuRPFBrowser,
             this.ToolsMenuRPFExplorer,
             this.ToolsMenuSelectionInfo,
@@ -2760,12 +2764,19 @@ namespace CodeWalker
             this.ToolsMenuExtractShaders,
             this.ToolsMenuOptions});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(170, 334);
+            this.ToolsMenu.Size = new System.Drawing.Size(171, 356);
+            // 
+            // ToolsMenuConfigureGame
+            // 
+            this.ToolsMenuConfigureGame.Name = "ToolsMenuConfigureGame";
+            this.ToolsMenuConfigureGame.Size = new System.Drawing.Size(170, 22);
+            this.ToolsMenuConfigureGame.Text = "Configure Game...";
+            this.ToolsMenuConfigureGame.Click += new System.EventHandler(this.ToolsMenuConfigureGame_Click);
             // 
             // ToolsMenuRPFBrowser
             // 
             this.ToolsMenuRPFBrowser.Name = "ToolsMenuRPFBrowser";
-            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuRPFBrowser.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuRPFBrowser.Text = "RPF Browser...";
             this.ToolsMenuRPFBrowser.Visible = false;
             this.ToolsMenuRPFBrowser.Click += new System.EventHandler(this.ToolsMenuRPFBrowser_Click);
@@ -2773,14 +2784,14 @@ namespace CodeWalker
             // ToolsMenuRPFExplorer
             // 
             this.ToolsMenuRPFExplorer.Name = "ToolsMenuRPFExplorer";
-            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuRPFExplorer.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuRPFExplorer.Text = "RPF Explorer...";
             this.ToolsMenuRPFExplorer.Click += new System.EventHandler(this.ToolsMenuRPFExplorer_Click);
             // 
             // ToolsMenuSelectionInfo
             // 
             this.ToolsMenuSelectionInfo.Name = "ToolsMenuSelectionInfo";
-            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuSelectionInfo.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuSelectionInfo.Text = "Selection info...";
             this.ToolsMenuSelectionInfo.Click += new System.EventHandler(this.ToolsMenuSelectionInfo_Click);
             // 
@@ -2788,7 +2799,7 @@ namespace CodeWalker
             // 
             this.ToolsMenuProjectWindow.Enabled = false;
             this.ToolsMenuProjectWindow.Name = "ToolsMenuProjectWindow";
-            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuProjectWindow.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuProjectWindow.Text = "Project window...";
             this.ToolsMenuProjectWindow.Click += new System.EventHandler(this.ToolsMenuProjectWindow_Click);
             // 
@@ -2796,7 +2807,7 @@ namespace CodeWalker
             // 
             this.ToolsMenuCutsceneViewer.Enabled = false;
             this.ToolsMenuCutsceneViewer.Name = "ToolsMenuCutsceneViewer";
-            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuCutsceneViewer.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuCutsceneViewer.Text = "Cutscene viewer...";
             this.ToolsMenuCutsceneViewer.Click += new System.EventHandler(this.ToolsMenuCutsceneViewer_Click);
             // 
@@ -2804,14 +2815,14 @@ namespace CodeWalker
             // 
             this.ToolsMenuAudioExplorer.Enabled = false;
             this.ToolsMenuAudioExplorer.Name = "ToolsMenuAudioExplorer";
-            this.ToolsMenuAudioExplorer.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuAudioExplorer.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuAudioExplorer.Text = "Audio explorer...";
             this.ToolsMenuAudioExplorer.Click += new System.EventHandler(this.ToolsMenuAudioExplorer_Click);
             // 
             // ToolsMenuWorldSearch
             // 
             this.ToolsMenuWorldSearch.Name = "ToolsMenuWorldSearch";
-            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuWorldSearch.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuWorldSearch.Text = "World search...";
             this.ToolsMenuWorldSearch.Click += new System.EventHandler(this.ToolsMenuWorldSearch_Click);
             // 
@@ -2819,14 +2830,14 @@ namespace CodeWalker
             // 
             this.ToolsMenuBinarySearch.Enabled = false;
             this.ToolsMenuBinarySearch.Name = "ToolsMenuBinarySearch";
-            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuBinarySearch.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuBinarySearch.Text = "Binary search...";
             this.ToolsMenuBinarySearch.Click += new System.EventHandler(this.ToolsMenuBinarySearch_Click);
             // 
             // ToolsMenuJenkGen
             // 
             this.ToolsMenuJenkGen.Name = "ToolsMenuJenkGen";
-            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuJenkGen.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuJenkGen.Text = "JenkGen...";
             this.ToolsMenuJenkGen.Click += new System.EventHandler(this.ToolsMenuJenkGen_Click);
             // 
@@ -2834,44 +2845,55 @@ namespace CodeWalker
             // 
             this.ToolsMenuJenkInd.Enabled = false;
             this.ToolsMenuJenkInd.Name = "ToolsMenuJenkInd";
-            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuJenkInd.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuJenkInd.Text = "JenkInd...";
             this.ToolsMenuJenkInd.Click += new System.EventHandler(this.ToolsMenuJenkInd_Click);
             // 
             // ToolsMenuExtractScripts
             // 
             this.ToolsMenuExtractScripts.Name = "ToolsMenuExtractScripts";
-            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractScripts.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuExtractScripts.Text = "Extract scripts...";
             this.ToolsMenuExtractScripts.Click += new System.EventHandler(this.ToolsMenuExtractScripts_Click);
             // 
             // ToolsMenuExtractTextures
             // 
             this.ToolsMenuExtractTextures.Name = "ToolsMenuExtractTextures";
-            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractTextures.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuExtractTextures.Text = "Extract textures...";
             this.ToolsMenuExtractTextures.Click += new System.EventHandler(this.ToolsMenuExtractTextures_Click);
             // 
             // ToolsMenuExtractRawFiles
             // 
             this.ToolsMenuExtractRawFiles.Name = "ToolsMenuExtractRawFiles";
-            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractRawFiles.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuExtractRawFiles.Text = "Extract raw files...";
             this.ToolsMenuExtractRawFiles.Click += new System.EventHandler(this.ToolsMenuExtractRawFiles_Click);
             // 
             // ToolsMenuExtractShaders
             // 
             this.ToolsMenuExtractShaders.Name = "ToolsMenuExtractShaders";
-            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuExtractShaders.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuExtractShaders.Text = "Extract shaders...";
             this.ToolsMenuExtractShaders.Click += new System.EventHandler(this.ToolsMenuExtractShaders_Click);
             // 
             // ToolsMenuOptions
             // 
             this.ToolsMenuOptions.Name = "ToolsMenuOptions";
-            this.ToolsMenuOptions.Size = new System.Drawing.Size(169, 22);
+            this.ToolsMenuOptions.Size = new System.Drawing.Size(170, 22);
             this.ToolsMenuOptions.Text = "Options...";
             this.ToolsMenuOptions.Click += new System.EventHandler(this.ToolsMenuOptions_Click);
+            // 
+            // ToolbarPanel
+            // 
+            this.ToolbarPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.ToolbarPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ToolbarPanel.Controls.Add(this.Toolbar);
+            this.ToolbarPanel.Location = new System.Drawing.Point(12, 12);
+            this.ToolbarPanel.Name = "ToolbarPanel";
+            this.ToolbarPanel.Size = new System.Drawing.Size(557, 26);
+            this.ToolbarPanel.TabIndex = 7;
+            this.ToolbarPanel.Visible = false;
             // 
             // Toolbar
             // 
@@ -3565,17 +3587,6 @@ namespace CodeWalker
             this.ToolbarCameraOrthographicButton.Text = "Orthographic";
             this.ToolbarCameraOrthographicButton.Click += new System.EventHandler(this.ToolbarCameraOrthographicButton_Click);
             // 
-            // ToolbarPanel
-            // 
-            this.ToolbarPanel.BackColor = System.Drawing.SystemColors.Control;
-            this.ToolbarPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.ToolbarPanel.Controls.Add(this.Toolbar);
-            this.ToolbarPanel.Location = new System.Drawing.Point(12, 12);
-            this.ToolbarPanel.Name = "ToolbarPanel";
-            this.ToolbarPanel.Size = new System.Drawing.Size(557, 26);
-            this.ToolbarPanel.TabIndex = 7;
-            this.ToolbarPanel.Visible = false;
-            // 
             // SubtitleLabel
             // 
             this.SubtitleLabel.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
@@ -3677,10 +3688,10 @@ namespace CodeWalker
             this.SelectedMarkerPanel.ResumeLayout(false);
             this.SelectedMarkerPanel.PerformLayout();
             this.ToolsMenu.ResumeLayout(false);
-            this.Toolbar.ResumeLayout(false);
-            this.Toolbar.PerformLayout();
             this.ToolbarPanel.ResumeLayout(false);
             this.ToolbarPanel.PerformLayout();
+            this.Toolbar.ResumeLayout(false);
+            this.Toolbar.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3753,6 +3764,7 @@ namespace CodeWalker
         private System.Windows.Forms.Button SaveSettingsButton;
         private System.Windows.Forms.Button ToolsButton;
         private System.Windows.Forms.ContextMenuStrip ToolsMenu;
+        private System.Windows.Forms.ToolStripMenuItem ToolsMenuConfigureGame;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuRPFBrowser;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuBinarySearch;
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuJenkGen;
