@@ -12,7 +12,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
+using OxyPlot;
+using OxyPlot.Series;
 using System.Xml;
 using Range = FastColoredTextBoxNS.Range;
 using TextStyle = FastColoredTextBoxNS.TextStyle;
@@ -750,12 +751,16 @@ namespace CodeWalker.Forms
                                 int i = synthesizer.Synth.OutputsIndices[0];
                                 try
                                 {
-                                    var series = SynthBufferChart.Series.FindByName($"B{i}");
+                                    var series = plotView1.Model.Series.FirstOrDefault(p => p.Title == $"B{i}") as LineSeries;
                                     if (series != null)
                                     {
                                         series.Points.Clear();
-                                        foreach (var v in buffersCopy[i])
-                                            series.Points.AddY(Math.Max(Math.Min(v, 2.0f), -2.0f));//make sure crazy accidental values don't crash it later
+                                        var thisBuffer = buffersCopy[i];
+                                        for (int j = 0; j < thisBuffer.Length; j++)
+                                        {
+                                            series.Points.Add(new DataPoint(j, Math.Max(Math.Min(thisBuffer[j], 2.0f), -2.0f)));
+                                        }
+                                        plotView1.InvalidatePlot(true);
                                     }
                                 }
                                 catch { }
@@ -763,12 +768,13 @@ namespace CodeWalker.Forms
                         };
                     }
 
-                    SynthBufferChart.Series.Clear();
+                    plotView1.Model.Series.Clear();
+                    //plotView1.Model.GetLegend("Main");
                     for (int i = 0; i < newSynth.BuffersCount; i++)
                     {
-                        var series = SynthBufferChart.Series.Add($"B{i}");
-                        series.IsXValueIndexed = true;
-                        series.ChartType = SeriesChartType.FastLine;
+                        
+                        plotView1.Model.Series.Add(new LineSeries { Title = $"B{i}", RenderInLegend = true, LegendKey = $"Main" });
+                        //plotView1.Model.Legends.Add(new OxyPlot.Legends.Legend { LegendPosition = OxyPlot.Legends.LegendPosition.RightMiddle, LegendPlacement = OxyPlot.Legends.LegendPlacement.Outside, LegendOrientation = OxyPlot.Legends.LegendOrientation.Vertical, Key = $"B{i}" });
                     }
 
                     SynthPlayButton.Enabled = false;
