@@ -41,18 +41,37 @@ namespace CodeWalker.GameFiles
 
             ResourceDataReader rd = new ResourceDataReader(resentry, data);
 
+            if (rd.IsGen9)
+            {
+                switch (resentry.Version)
+                {
+                    case 159:
+                    case 154:
+                        break;
+                    case 165:
+                        rd.IsGen9 = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
             //MemoryUsage = 0;
 
+#if !DEBUG
             try
+#endif
             {
                 Drawable = rd.ReadBlock<Drawable>();
                 Drawable.Owner = this;
                 //MemoryUsage += Drawable.MemoryUsage; //uses decompressed filesize now...
             }
+#if !DEBUG
             catch (Exception ex)
             {
                 string err = ex.ToString();
             }
+#endif
 
             Loaded = true;
 

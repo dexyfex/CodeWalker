@@ -338,6 +338,7 @@ namespace CodeWalker.GameFiles
                 {
                     case 0x00260208:
                     case 0x00260228:
+                    case 0x00260000:
                         break;
                     default:
                         break;
@@ -442,12 +443,14 @@ namespace CodeWalker.GameFiles
                     case 0x020a:
                     case 0x0210:
                     case 0x0212:
+                    case 0x0220:
                         break;
                     default:
                         break;
                 }
                 switch (Unknown_42h)
                 {
+                    case 0:
                     case 0x0080:
                     case 0x0028:
                     case 0x0040:
@@ -463,6 +466,7 @@ namespace CodeWalker.GameFiles
                 switch (Unknown_44h)
                 {
                     case 2:
+                    case 0:
                         break;
                     default:
                         break;
@@ -689,6 +693,7 @@ namespace CodeWalker.GameFiles
 
         public int CalcDataSize()
         {
+            if (Format == 0) return 0;
             var dxgifmt = DDSIO.GetDXGIFormat(Format);
             int div = 1;
             int len = 0;
@@ -704,6 +709,7 @@ namespace CodeWalker.GameFiles
         }
         public ushort CalculateStride()
         {
+            if (Format == 0) return 0;
             var dxgifmt = DDSIO.GetDXGIFormat(Format);
             DDSIO.DXTex.ComputePitch(dxgifmt, Width, Height, out var rowPitch, out var slicePitch, 0);
             return (ushort)rowPitch;
@@ -712,6 +718,7 @@ namespace CodeWalker.GameFiles
         {
             switch (format)
             {
+                case TextureFormatG9.UNKNOWN: return 0;
                 case TextureFormatG9.R8G8B8A8_UNORM: return TextureFormat.D3DFMT_A8B8G8R8;
                 case TextureFormatG9.B8G8R8A8_UNORM: return TextureFormat.D3DFMT_A8R8G8B8;
                 case TextureFormatG9.A8_UNORM: return TextureFormat.D3DFMT_A8;
@@ -1392,6 +1399,8 @@ namespace CodeWalker.GameFiles
                 case ShaderResourceViewDimensionG9.Texture2D:
                 case ShaderResourceViewDimensionG9.Texture2DArray:
                 case ShaderResourceViewDimensionG9.Texture3D:
+                    break;
+                case ShaderResourceViewDimensionG9.Buffer:
                     break;
                 default:
                     break;
