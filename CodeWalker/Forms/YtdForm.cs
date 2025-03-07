@@ -193,24 +193,25 @@ namespace CodeWalker.Forms
         }
 
 
-        private void AddTexture()
+        private void AddTextures()
         {
             if (TexDict.Textures?.data_items == null) return;
 
-            var tex = OpenDDSFile();
-            if (tex == null) return;
-
             var textures = new List<Texture>();
             textures.AddRange(TexDict.Textures.data_items);
-            textures.Add(tex);
 
-            TexDict.BuildFromTextureList(textures);
+            foreach (var tex in OpenDDSFiles())
+            {
+                textures.Add(tex);
 
-            Modified = true;
+                TexDict.BuildFromTextureList(textures);
 
-            LoadTexDict(TexDict, FileName);
+                Modified = true;
 
-            SelectTexture(tex);
+                LoadTexDict(TexDict, FileName);
+            }
+
+            SelectTexture(textures.Last());
 
             UpdateModelFormTextures();
         }
@@ -245,7 +246,7 @@ namespace CodeWalker.Forms
             if (TexDict?.Textures?.data_items == null) return;
             if (CurrentTexture == null) return;
 
-            var tex = OpenDDSFile();
+            var tex = OpenDDSFiles(true).FirstOrDefault();
             if (tex == null) return;
 
             tex.Name = CurrentTexture.Name;
@@ -310,29 +311,35 @@ namespace CodeWalker.Forms
         }
 
 
-        private Texture OpenDDSFile()
+        private List<Texture> OpenDDSFiles(bool single = false)
         {
+            OpenDDSFileDialog.Multiselect = !single;
+
             if (OpenDDSFileDialog.ShowDialog() != DialogResult.OK) return null;
-            
-            var fn = OpenDDSFileDialog.FileName;
 
-            if (!File.Exists(fn)) return null; //couldn't find file?
+            var textures = new List<Texture>();
 
-            try
+            foreach (var fn in OpenDDSFileDialog.FileNames)
             {
-                var dds = File.ReadAllBytes(fn);
-                var tex = DDSIO.GetTexture(dds);
-                tex.Name = Path.GetFileNameWithoutExtension(fn);
-                tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
-                JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
-                return tex;
-            }
-            catch
-            {
-                MessageBox.Show("Unable to load " + fn + ".\nAre you sure it's a valid .dds file?");
+                if (!File.Exists(fn)) return null; //couldn't find file?
+
+                try
+                {
+                    var dds = File.ReadAllBytes(fn);
+                    var tex = DDSIO.GetTexture(dds);
+                    tex.Name = Path.GetFileNameWithoutExtension(fn);
+                    tex.NameHash = JenkHash.GenHash(tex.Name?.ToLowerInvariant());
+                    JenkIndex.Ensure(tex.Name?.ToLowerInvariant());
+
+                    textures.Add(tex);
+                }
+                catch
+                {
+                    MessageBox.Show("Unable to load " + fn + ".\nAre you sure it's a valid .dds file?");
+                }
             }
 
-            return null;
+            return textures;
         }
 
 
@@ -632,7 +639,7 @@ namespace CodeWalker.Forms
 
         private void AddTextureButton_Click(object sender, EventArgs e)
         {
-            AddTexture();
+            AddTextures();
         }
 
         private void RemoveTextureButton_Click(object sender, EventArgs e)
