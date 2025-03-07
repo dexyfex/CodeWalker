@@ -15793,6 +15793,97 @@ namespace CodeWalker.GameFiles
                      new PsoEnumEntryInfo(MetaName.PRI_OPTIONAL_MEDIUM, 2),
                      new PsoEnumEntryInfo(MetaName.PRI_OPTIONAL_LOW, 3)
                     );
+                case MetaName.CBaseStatsSaveStructure__CIntStatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CIntStatStruct, 0, 0, 8, 
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.Data, PsoDataType.SInt, 4, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CFloatStatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CFloatStatStruct, 0, 0, 8, 
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.Data, PsoDataType.Float, 4, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CBoolStatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CBoolStatStruct, 0, 0, 8,
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.Data, PsoDataType.Bool, 4, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CStringStatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CStringStatStruct, 0, 0, 24,
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.Data, PsoDataType.String, 8, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CUInt8StatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CUInt8StatStruct, 0, 0, 8,
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.Data, PsoDataType.UByte, 4, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CUInt16StatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CUInt16StatStruct, 0, 0, 8,
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.Data, PsoDataType.UShort, 4, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CUInt32StatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CUInt32StatStruct, 0, 0, 8,
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.Data, PsoDataType.UInt, 4, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CUInt64StatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CUInt64StatStruct, 0, 0, 12,
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.DataHigh, PsoDataType.UInt, 4, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.DataLow, PsoDataType.UInt, 8, 0, 0)
+                        );
+                case MetaName.CBaseStatsSaveStructure__CInt64StatStruct:
+                    return new PsoStructureInfo(MetaName.CBaseStatsSaveStructure__CInt64StatStruct, 0, 0, 12,
+                            new PsoStructureEntryInfo(MetaName.NameHash, PsoDataType.SInt, 0, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.DataHigh, PsoDataType.UInt, 4, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.DataLow, PsoDataType.UInt, 8, 0, 0)
+                        );
+                case MetaName.CMultiplayerStatsSaveStructure:
+                    return new PsoStructureInfo(MetaName.CMultiplayerStatsSaveStructure, 0, 0, 168,
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CIntStatStruct),
+                        new PsoStructureEntryInfo(MetaName.IntData, PsoDataType.Array, 8, 0, 0),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CFloatStatStruct),
+                        new PsoStructureEntryInfo(MetaName.FloatData, PsoDataType.Array, 24, 0, (MetaName)2),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CBoolStatStruct),
+                        new PsoStructureEntryInfo(MetaName.BoolData, PsoDataType.Array, 40, 0, (MetaName)4),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CStringStatStruct),
+                        new PsoStructureEntryInfo(MetaName.StringData, PsoDataType.Array, 56, 0, (MetaName)6),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CUInt8StatStruct),
+                        new PsoStructureEntryInfo(MetaName.UInt8Data, PsoDataType.Array, 72, 0, (MetaName)8),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CUInt16StatStruct),
+                        new PsoStructureEntryInfo(MetaName.UInt16Data, PsoDataType.Array, 88, 0, (MetaName)10),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CUInt32StatStruct),
+                        new PsoStructureEntryInfo(MetaName.UInt32Data, PsoDataType.Array, 104, 0, (MetaName)12),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CUInt64StatStruct),
+                        new PsoStructureEntryInfo(MetaName.UInt64Data, PsoDataType.Array, 120, 0, (MetaName)14),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CBaseStatsSaveStructure__CInt64StatStruct),
+                        new PsoStructureEntryInfo(MetaName.Int64Data, PsoDataType.Array, 136, 0, (MetaName)16),
+
+                        new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.UInt, 0, 0, 0),
+                        new PsoStructureEntryInfo(MetaName.MpVehiclesDriven, PsoDataType.Array, 152, 0, (MetaName)18)
+                        );
+                case MetaName.CPosixTimeStampForMultiplayerSaves:
+                    return new PsoStructureInfo(MetaName.CPosixTimeStampForMultiplayerSaves, 0, 0, 16, 
+                            new PsoStructureEntryInfo(MetaName.PosixHigh, PsoDataType.UInt, 8, 0, 0),
+                            new PsoStructureEntryInfo(MetaName.PosixLow, PsoDataType.UInt, 12, 0, 0)
+                        );
+                case (MetaName)658792150:
+                    return new PsoStructureInfo((MetaName)658792150, 0, 0, 692,
+                        //new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CMultiplayerStatsSaveStructure),
+                        new PsoStructureEntryInfo((MetaName)3563952879, PsoDataType.Structure, 0, 4, 0),
+                        //new PsoStructureEntryInfo((MetaName)MetaTypeName.ARRAYINFO, PsoDataType.Structure, 0, 0, MetaName.CPosixTimeStampForMultiplayerSaves),
+                        new PsoStructureEntryInfo((MetaName)1392079769, PsoDataType.Structure, 8, 4, 0)
+                      );
                 default:
                     return null;
             }
