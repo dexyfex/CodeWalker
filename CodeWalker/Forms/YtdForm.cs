@@ -199,17 +199,12 @@ namespace CodeWalker.Forms
 
             var textures = new List<Texture>();
             textures.AddRange(TexDict.Textures.data_items);
+            textures.AddRange(OpenDDSFiles());
 
-            foreach (var tex in OpenDDSFiles())
-            {
-                textures.Add(tex);
+            Modified = true;
 
-                TexDict.BuildFromTextureList(textures);
-
-                Modified = true;
-
-                LoadTexDict(TexDict, FileName);
-            }
+            TexDict.BuildFromTextureList(textures);
+            LoadTexDict(TexDict, FileName);
 
             SelectTexture(textures.Last());
 
