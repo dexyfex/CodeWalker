@@ -328,7 +328,7 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static void AssignPositions2(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags, uint maxPageCount)
+        public static void AssignPositions2(IList<IResourceBlock> blocks, uint basePosition, out RpfResourcePageFlags pageFlags, uint maxPageCount, bool gen9)
         {
             if ((blocks.Count > 0) && (blocks[0] is Meta))//TODO: try remove this?
             {
@@ -350,10 +350,21 @@ namespace CodeWalker.GameFiles
             var maxPageSize = (0x2000 << 0xF) * maxPageSizeMult; //this is the size of the biggest possible page [4GB!]
             var maxBlockSize = 0L;
             var minBlockSize = (blocks.Count == 0) ? 0 : maxPageSize;
-            foreach (var block in blocks)
+            if (gen9)
             {
-                if (block.BlockLength > maxBlockSize) maxBlockSize = block.BlockLength;
-                if (block.BlockLength < minBlockSize) minBlockSize = block.BlockLength;
+                foreach (var block in blocks)
+                {
+                    if (block.BlockLength_Gen9 > maxBlockSize) maxBlockSize = block.BlockLength_Gen9;
+                    if (block.BlockLength_Gen9 < minBlockSize) minBlockSize = block.BlockLength_Gen9;
+                }
+            }
+            else
+            {
+                foreach (var block in blocks)
+                {
+                    if (block.BlockLength > maxBlockSize) maxBlockSize = block.BlockLength;
+                    if (block.BlockLength < minBlockSize) minBlockSize = block.BlockLength;
+                }
             }
 
             var baseShift = 0;//want to find the best value for this
@@ -374,7 +385,14 @@ namespace CodeWalker.GameFiles
                 if (block == null) continue;
                 if (block != rootBlock) sortedBlocks.Add(block);
             }
-            sortedBlocks.Sort((a, b) => b.BlockLength.CompareTo(a.BlockLength));
+            if (gen9)
+            {
+                sortedBlocks.Sort((a, b) => b.BlockLength_Gen9.CompareTo(a.BlockLength_Gen9));
+            }
+            else
+            {
+                sortedBlocks.Sort((a, b) => b.BlockLength.CompareTo(a.BlockLength));
+            }
             if (rootBlock != null) sortedBlocks.Insert(0, rootBlock);
 
 
@@ -400,7 +418,7 @@ namespace CodeWalker.GameFiles
                 for (int i = 0; i < sortedBlocks.Count; i++)
                 {
                     var block = sortedBlocks[i];
-                    var size = block.BlockLength;
+                    var size = gen9 ? block.BlockLength_Gen9 : block.BlockLength;
                     if (i == 0)//first block should always go in the first page, it's either root block or largest
                     {
                         pageSizes[largestPageSizeI] = new List<long>() { size };//allocate the first new page
@@ -511,7 +529,7 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static byte[] Build(ResourceFileBase fileBase, int version, bool compress = true)
+        public static byte[] Build(ResourceFileBase fileBase, int version, bool compress = true, bool gen9 = false)
         {
 
             fileBase.FilePagesInfo = new ResourcePagesInfo();
@@ -523,8 +541,8 @@ namespace CodeWalker.GameFiles
             //AssignPositions(systemBlocks, 0x50000000, out var systemPageFlags, 128);
             //AssignPositions(graphicBlocks, 0x60000000, out var graphicsPageFlags, 128 - systemPageFlags.Count);
 
-            AssignPositions2(systemBlocks, 0x50000000, out var systemPageFlags, 128);
-            AssignPositions2(graphicBlocks, 0x60000000, out var graphicsPageFlags, 128 - systemPageFlags.Count);
+            AssignPositions2(systemBlocks, 0x50000000, out var systemPageFlags, 128, gen9);
+            AssignPositions2(graphicBlocks, 0x60000000, out var graphicsPageFlags, 128 - systemPageFlags.Count, gen9);
 
 
             fileBase.FilePagesInfo.SystemPagesCount = (byte)systemPageFlags.Count;
@@ -534,6 +552,7 @@ namespace CodeWalker.GameFiles
             var systemStream = new MemoryStream();
             var graphicsStream = new MemoryStream();
             var resourceWriter = new ResourceDataWriter(systemStream, graphicsStream);
+            resourceWriter.IsGen9 = gen9;
 
             resourceWriter.Position = 0x50000000;
             foreach (var block in systemBlocks)

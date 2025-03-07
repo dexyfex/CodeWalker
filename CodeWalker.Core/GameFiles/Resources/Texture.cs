@@ -14,13 +14,7 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureDictionary : ResourceFileBase
     {
-        public override long BlockLength
-        {
-            get
-            {
-                return 64;
-            }
-        }
+        public override long BlockLength => 64;
 
         // structure data
         public uint Unknown_10h { get; set; } // 0x00000000
@@ -186,6 +180,19 @@ namespace CodeWalker.GameFiles
             BuildDict();
         }
 
+
+        public void EnsureGen9()
+        {
+            //make sure textures all have SRVs and are appropriately formatted for gen9
+            var texs = Textures?.data_items;
+            if (texs == null) return;
+            foreach (var tex in texs)
+            {
+                if (tex == null) continue;
+                tex.EnsureGen9();
+            }
+        }
+
     }
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class TextureBase : ResourceSystemBlock
@@ -238,20 +245,19 @@ namespace CodeWalker.GameFiles
 
 
         //gen9 extra structure data
-        public uint BlockCount { get; set; }
-        public uint BlockStride { get; set; }
-        public uint Flags { get; set; }
-        public TextureDimensionG9 Dimension { get; set; } = TextureDimensionG9.Texture2D;
-        public TextureFormatG9 FormatG9 { get; set; }
-        public TextureTileModeG9 TileMode { get; set; } = TextureTileModeG9.Auto;
-        public byte AntiAliasType { get; set; } //0
-        public byte Unknown_23h { get; set; }
-        public byte Unknown_25h { get; set; }
-        public ushort UsageCount { get; set; } = 1;
-        public ulong SRVPointer { get; set; }
-        public ushort Unknown_40h { get; set; }
-        public ushort Unknown_42h { get; set; }
-        public ulong Unknown_48h { get; set; }
+        public uint G9_BlockCount { get; set; }
+        public uint G9_BlockStride { get; set; }
+        public uint G9_Flags { get; set; }
+        public TextureDimensionG9 G9_Dimension { get; set; } = TextureDimensionG9.Texture2D;
+        public TextureFormatG9 G9_Format { get; set; }
+        public TextureTileModeG9 G9_TileMode { get; set; } = TextureTileModeG9.Auto;
+        public byte G9_AntiAliasType { get; set; } //0
+        public byte G9_Unknown_23h { get; set; }
+        public byte G9_Unknown_25h { get; set; }
+        public ushort G9_UsageCount { get; set; } = 1;
+        public ulong G9_SRVPointer { get; set; }
+        public uint G9_UsageData { get; set; }
+        public ulong G9_Unknown_48h { get; set; }
 
 
         // reference data
@@ -262,7 +268,7 @@ namespace CodeWalker.GameFiles
 
         public TextureData Data { get; set; }
 
-        public ShaderResourceViewG9 SRV { get; set; }//make sure this is null if saving legacy version!
+        public ShaderResourceViewG9 G9_SRV { get; set; }//make sure this is null if saving legacy version!
 
 
 
@@ -298,35 +304,35 @@ namespace CodeWalker.GameFiles
 
                 VFT = reader.ReadUInt32();
                 Unknown_4h = reader.ReadUInt32();
-                BlockCount = reader.ReadUInt32();
-                BlockStride = reader.ReadUInt32();
-                Flags = reader.ReadUInt32();
+                G9_BlockCount = reader.ReadUInt32();
+                G9_BlockStride = reader.ReadUInt32();
+                G9_Flags = reader.ReadUInt32();
                 Unknown_14h = reader.ReadUInt32();
                 Width = reader.ReadUInt16();                    // rage::sga::ImageParams 24
                 Height = reader.ReadUInt16();
                 Depth = reader.ReadUInt16();
-                Dimension = (TextureDimensionG9)reader.ReadByte();
-                FormatG9 = (TextureFormatG9)reader.ReadByte();
-                TileMode = (TextureTileModeG9)reader.ReadByte();
-                AntiAliasType = reader.ReadByte();
+                G9_Dimension = (TextureDimensionG9)reader.ReadByte();
+                G9_Format = (TextureFormatG9)reader.ReadByte();
+                G9_TileMode = (TextureTileModeG9)reader.ReadByte();
+                G9_AntiAliasType = reader.ReadByte();
                 Levels = reader.ReadByte();
-                Unknown_23h = reader.ReadByte();
+                G9_Unknown_23h = reader.ReadByte();
                 Unknown_24h = reader.ReadByte();
-                Unknown_25h = reader.ReadByte();
-                UsageCount = reader.ReadUInt16();
+                G9_Unknown_25h = reader.ReadByte();
+                G9_UsageCount = reader.ReadUInt16();
                 NamePointer = reader.ReadUInt64();
-                SRVPointer = reader.ReadUInt64();
+                G9_SRVPointer = reader.ReadUInt64();
                 DataPointer = reader.ReadUInt64();
-                Unknown_40h = reader.ReadUInt16();
-                Unknown_42h = reader.ReadUInt16();
-                Unknown_44h = reader.ReadUInt32();//2
-                Unknown_48h = reader.ReadUInt64();
+                G9_UsageData = reader.ReadUInt32();
+                Unknown_44h = reader.ReadUInt32();//2 (or 0 for shader param)
+                G9_Unknown_48h = reader.ReadUInt64();
 
-                Format = GetLegacyFormat(FormatG9);
+                Format = GetLegacyFormat(G9_Format);
                 Stride = CalculateStride();
-                
+                Usage = (TextureUsage)(G9_UsageData & 0x1F);
+
                 Data = reader.ReadBlockAt<TextureData>(DataPointer, CalcDataSize());
-                SRV = reader.ReadBlockAt<ShaderResourceViewG9>(SRVPointer);
+                G9_SRV = reader.ReadBlockAt<ShaderResourceViewG9>(G9_SRVPointer);
 
                 Name = reader.ReadStringAt(NamePointer);
                 if (!string.IsNullOrEmpty(Name))
@@ -334,7 +340,7 @@ namespace CodeWalker.GameFiles
                     NameHash = JenkHash.GenHash(Name.ToLowerInvariant());
                 }
 
-                switch (Flags)
+                switch (G9_Flags)
                 {
                     case 0x00260208:
                     case 0x00260228:
@@ -343,14 +349,9 @@ namespace CodeWalker.GameFiles
                     default:
                         break;
                 }
-                switch (Unknown_14h)
-                {
-                    case 0:
-                        break;
-                    default:
-                        break;
-                }
-                switch (Dimension)
+                if (Unknown_14h != 0)
+                { }
+                switch (G9_Dimension)
                 {
                     case TextureDimensionG9.Texture2D:
                     case TextureDimensionG9.Texture3D:
@@ -358,107 +359,74 @@ namespace CodeWalker.GameFiles
                     default:
                         break;
                 }
-                switch (TileMode)
+                if (G9_TileMode != TextureTileModeG9.Auto)
+                { }
+                if (G9_AntiAliasType != 0)
+                { }
+                switch (G9_Unknown_23h)
                 {
-                    case TextureTileModeG9.Auto:
-                        break;
-                    default:
-                        break;
-                }
-                switch (AntiAliasType)
-                {
-                    case 0:
-                        break;
-                    default:
-                        break;
-                }
-                switch (Unknown_23h)
-                {
-                    case 0:
                     case 0x28:
                     case 0x2a:
-                        break;
-                    default:
-                        break;
-                }
-                switch (Unknown_24h)
-                {
                     case 0:
                         break;
                     default:
                         break;
                 }
-                switch (Unknown_25h)
+                if (Unknown_24h != 0)
+                { }
+                if (G9_Unknown_25h != 0)
+                { }
+                if (G9_UsageCount != 1)
+                { }
+                switch (Usage)
                 {
-                    case 0:
+                    case TextureUsage.DETAIL:
+                    case TextureUsage.NORMAL:
+                    case TextureUsage.DIFFUSE:
+                    case TextureUsage.SPECULAR:
+                    case TextureUsage.DEFAULT:
+                    case TextureUsage.SKIPPROCESSING:
+                    case TextureUsage.UNKNOWN:
+                    case TextureUsage.WATEROCEAN:
+                    case TextureUsage.CLOUDNORMAL:
+                    case TextureUsage.CLOUDDENSITY:
+                    case TextureUsage.TERRAIN:
+                    case TextureUsage.CABLE:
+                    case TextureUsage.FENCE:
+                    case TextureUsage.SCRIPT:
+                    case TextureUsage.DIFFUSEDARK:
+                    case TextureUsage.DIFFUSEALPHAOPAQUE:
+                    case TextureUsage.TINTPALETTE:
+                    case TextureUsage.FOAMOPACITY:
+                    case TextureUsage.WATERFLOW:
+                    case TextureUsage.WATERFOG:
+                    case TextureUsage.EMISSIVE:
+                    case TextureUsage.WATERFOAM:
+                    case TextureUsage.DIFFUSEMIPSHARPEN:
                         break;
                     default:
                         break;
                 }
-                switch (UsageCount)
+                switch (G9_UsageData >> 5)//usage flags??
                 {
-                    case 1:
-                        break;
-                    default:
-                        break;
-                }
-                switch (Unknown_40h)
-                {
-                    case 0x0000:
-                    case 0x0215:
-                    case 0x0216:
-                    case 0x0214:
-                    case 0x0217:
-                    case 0x0201:
-                    case 0x021a:
-                    case 0x0200:
-                    case 0x020c:
-                    case 0x0204:
-                    case 0x0203:
-                    case 0x0276:
-                    case 0x0274:
-                    case 0x0234:
-                    case 0x0202:
-                    case 0x0236:
-                    case 0x0205:
-                    case 0x0254:
-                    case 0x0256:
-                    case 0x0277:
-                    case 0x0242:
-                    case 0x0237:
-                    case 0x0257:
-                    case 0x0206:
-                    case 0x0226:
-                    case 0x0208:
-                    case 0x0296:
-                    case 0x0294:
-                    case 0x0297:
-                    case 0x0292:
-                    case 0x0213:
-                    case 0x0219:
-                    case 0x020e:
-                    case 0x0209:
-                    case 0x020b:
-                    case 0x0218:
-                    case 0x020a:
-                    case 0x0210:
-                    case 0x0212:
-                    case 0x0220:
-                        break;
-                    default:
-                        break;
-                }
-                switch (Unknown_42h)
-                {
-                    case 0:
-                    case 0x0080:
-                    case 0x0028:
-                    case 0x0040:
-                    case 0x0030:
-                    case 0x0020:
-                    case 0x0090:
-                    case 0x0038:
-                    case 0x0048:
+                    case 0x00040010:
+                    case 0x00014010:
+                    case 0x00020010:
+                    case 0x00018010:
+                    case 0x00010010:
+                    case 0x00040000:
+                    case 0x00048010:
+                    case 0x0001c010:
+                    case 0x00010000:
+                    case 0x00024010:
+                    case 0x00040013:
+                    case 0x00040011:
+                    case 0x00040012:
+                    case 0x00010012:
+                    case 0x00010013:
+                    case 0x00014012:
+                    case 0x00040014:
+                    case 0x00010011:
                         break;
                     default:
                         break;
@@ -466,18 +434,13 @@ namespace CodeWalker.GameFiles
                 switch (Unknown_44h)
                 {
                     case 2:
-                    case 0:
+                    case 0://shader params
                         break;
                     default:
                         break;
                 }
-                switch (Unknown_48h)
-                {
-                    case 0:
-                        break;
-                    default:
-                        break;
-                }
+                if (G9_Unknown_48h != 0)
+                { }
 
             }
             else
@@ -606,39 +569,40 @@ namespace CodeWalker.GameFiles
             {
                 NamePointer = (ulong)(NameBlock != null ? NameBlock.FilePosition : 0);
                 DataPointer = (ulong)(Data != null ? Data.FilePosition : 0);
-                SRVPointer = (ulong)(SRV != null ? SRV.FilePosition : 0);
-                if (FormatG9 == 0) FormatG9 = GetEnhancedFormat(Format);
-                if (Dimension == 0) Dimension = TextureDimensionG9.Texture2D;//TODO?
-                if (TileMode == 0) TileMode = TextureTileModeG9.Auto;//TODO?
-                if (BlockCount == 0) BlockCount = GetBlockCount(FormatG9, Width, Height, Depth, Levels, Flags, BlockCount);
-                if (BlockStride == 0) BlockStride = GetBlockStride(FormatG9);
-                //Flags = ... TODO??
+                G9_SRVPointer = (ulong)(G9_SRV != null ? G9_SRV.FilePosition : 0);
+                if (G9_Format == 0) G9_Format = GetEnhancedFormat(Format);
+                if (G9_Dimension == 0) G9_Dimension = TextureDimensionG9.Texture2D;//TODO?
+                if (G9_TileMode == 0) G9_TileMode = TextureTileModeG9.Auto;//TODO?
+                G9_BlockCount = GetBlockCount(G9_Format, Width, Height, Depth, Levels, G9_Flags, G9_BlockCount);
+                G9_BlockStride = GetBlockStride(G9_Format);
+                G9_UsageData = (G9_UsageData & 0xFFFFFFE0) + (((uint)Usage) & 0x1F);
+                //G9_Flags = ... TODO??
+
 
                 writer.Write(VFT);
                 writer.Write(Unknown_4h);
-                writer.Write(BlockCount);
-                writer.Write(BlockStride);
-                writer.Write(Flags);
+                writer.Write(G9_BlockCount);
+                writer.Write(G9_BlockStride);
+                writer.Write(G9_Flags);
                 writer.Write(Unknown_14h);
                 writer.Write(Width);                    // rage::sga::ImageParams 24
                 writer.Write(Height);
                 writer.Write(Depth);
-                writer.Write((byte)Dimension);
-                writer.Write((byte)FormatG9);
-                writer.Write((byte)TileMode);
-                writer.Write(AntiAliasType);
+                writer.Write((byte)G9_Dimension);
+                writer.Write((byte)G9_Format);
+                writer.Write((byte)G9_TileMode);
+                writer.Write(G9_AntiAliasType);
                 writer.Write(Levels);
-                writer.Write(Unknown_23h);
+                writer.Write(G9_Unknown_23h);
                 writer.Write((byte)Unknown_24h);
-                writer.Write(Unknown_25h);
-                writer.Write(UsageCount);
+                writer.Write(G9_Unknown_25h);
+                writer.Write(G9_UsageCount);
                 writer.Write(NamePointer);
-                writer.Write(SRVPointer);
+                writer.Write(G9_SRVPointer);
                 writer.Write(DataPointer);
-                writer.Write(Unknown_40h);
-                writer.Write(Unknown_42h);
+                writer.Write(G9_UsageData);
                 writer.Write(Unknown_44h);
-                writer.Write(Unknown_48h);
+                writer.Write(G9_Unknown_48h);
 
             }
             else
@@ -689,6 +653,32 @@ namespace CodeWalker.GameFiles
         }
 
 
+
+        public void EnsureGen9()
+        {
+
+            Unknown_44h = (this is Texture) ? 2 : 0u;
+
+            if (G9_Flags == 0)
+            {
+                G9_Flags = 0x00260208;//TODO...
+            }
+            if ((G9_Unknown_23h == 0) && (this is Texture))
+            {
+                G9_Unknown_23h = 0x28;//TODO...
+            }
+
+            if (G9_SRV == null)
+            {
+                G9_SRV = new ShaderResourceViewG9();
+                G9_SRV.Dimension = ShaderResourceViewDimensionG9.Texture2D;
+                if (Depth > 1)
+                {
+                    G9_SRV.Dimension = ShaderResourceViewDimensionG9.Texture2DArray;
+                    //TODO: handle Texture3D!
+                }
+            }
+        }
 
 
         public int CalcDataSize()
@@ -822,7 +812,7 @@ namespace CodeWalker.GameFiles
             var bd = (uint)depth;
             var bm = (uint)mips;
 
-            var align = (bs == 1) ? 16u : 8u;
+            var align = 1u;// (bs == 1) ? 16u : 8u;
             if (mips > 1)
             {
                 bw = 1; while (bw < width) bw *= 2;
@@ -843,11 +833,7 @@ namespace CodeWalker.GameFiles
             }
 
 
-            if (flags == 0x18228002)
-            {
-                bc += 0x2000;
-            }
-            else if (bc != oldval)
+            if (bc != oldval)
             {
                 if (f != TextureFormatG9.A8_UNORM)
                 {
@@ -949,7 +935,7 @@ namespace CodeWalker.GameFiles
             if (writer.IsGen9)
             {
                 writer.Write(0UL);
-                writer.WriteBlock(SRV);//SRV embedded at offset 88 (base+8)
+                writer.WriteBlock(G9_SRV);//SRV embedded at offset 88 (base+8)
                 writer.Write(0UL);
             }
             else
@@ -1043,21 +1029,6 @@ namespace CodeWalker.GameFiles
                 }
             }
 
-
-
-            if (RpfManager.IsGen9)
-            {
-                SRV = new ShaderResourceViewG9();
-                SRV.Dimension = ShaderResourceViewDimensionG9.Texture2D;
-                if (Depth > 1)
-                {
-                    SRV.Dimension = ShaderResourceViewDimensionG9.Texture2DArray;
-                    //TODO: handle Texture3D!
-                }
-            }
-
-
-
         }
 
         public override IResourceBlock[] GetReferences()
@@ -1068,10 +1039,10 @@ namespace CodeWalker.GameFiles
         }
         public override Tuple<long, IResourceBlock>[] GetParts()
         {
-            if (SRV != null)//G9 only
+            if (G9_SRV != null)//G9 only
             {
                 return new Tuple<long, IResourceBlock>[] {
-                    new Tuple<long, IResourceBlock>(88, SRV),
+                    new Tuple<long, IResourceBlock>(88, G9_SRV),
                 };
             }
             return base.GetParts();
@@ -1359,10 +1330,6 @@ namespace CodeWalker.GameFiles
         public ushort Unknown_12h { get; set; } = 0xFFFF;
         public uint Unknown_14h { get; set; } = 0xFFFFFFFF;
         public ulong Unknown_18h { get; set; }
-        //public ulong Unknown_20h { get; set; }
-        //public ulong Unknown_28h { get; set; }
-        //public ulong Unknown_30h { get; set; }
-        //public ulong Unknown_38h { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -1372,10 +1339,6 @@ namespace CodeWalker.GameFiles
             Unknown_12h = reader.ReadUInt16();
             Unknown_14h = reader.ReadUInt32();
             Unknown_18h = reader.ReadUInt64();
-            //Unknown_20h = reader.ReadUInt64();
-            //Unknown_28h = reader.ReadUInt64();
-            //Unknown_30h = reader.ReadUInt64();
-            //Unknown_38h = reader.ReadUInt64();
 
             switch (VFT)
             {
@@ -1405,6 +1368,10 @@ namespace CodeWalker.GameFiles
                 default:
                     break;
             }
+            if (Unknown_08h != 0)
+            { }
+            if (Unknown_18h != 0)
+            { }
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
@@ -1414,10 +1381,6 @@ namespace CodeWalker.GameFiles
             writer.Write(Unknown_12h);
             writer.Write(Unknown_14h);
             writer.Write(Unknown_18h);
-            //writer.Write(Unknown_20h);
-            //writer.Write(Unknown_28h);
-            //writer.Write(Unknown_30h);
-            //writer.Write(Unknown_38h);
         }
     }
 

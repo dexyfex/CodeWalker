@@ -61,7 +61,15 @@ namespace CodeWalker.GameFiles
 
         public byte[] Save()
         {
-            byte[] data = ResourceBuilder.Build(TextureDict, 13); //ytd is type/version 13...
+            var gen9 = RpfManager.IsGen9;
+            var version = gen9 ? 5 : 13;
+
+            if (gen9)
+            {
+                TextureDict?.EnsureGen9();
+            }
+
+            byte[] data = ResourceBuilder.Build(TextureDict, version, true, gen9);
 
             return data;
         }

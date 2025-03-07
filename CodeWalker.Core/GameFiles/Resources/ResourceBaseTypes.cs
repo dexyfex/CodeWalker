@@ -654,6 +654,19 @@ namespace CodeWalker.GameFiles
                 return length;
             }
         }
+        public override long BlockLength_Gen9
+        {
+            get
+            {
+                long length = 0;
+                if (Data != null)
+                {
+                    foreach (var x in Data)
+                        length += x.BlockLength_Gen9;
+                }
+                return length;
+            }
+        }
 
 
         public ResourceSimpleArray()
@@ -698,6 +711,7 @@ namespace CodeWalker.GameFiles
         {
             var list = new List<Tuple<long, IResourceBlock>>();
 
+            var gen9 = RpfManager.IsGen9;//TODO: this is BAD to have here, but what other option is there?
             long length = 0;
 
             if (Data != null)
@@ -705,7 +719,7 @@ namespace CodeWalker.GameFiles
                 foreach (var x in Data)
                 {
                     list.Add(new Tuple<long, IResourceBlock>(length, x));
-                    length += x.BlockLength;
+                    length += gen9 ? x.BlockLength_Gen9 : x.BlockLength;
                 }
             }
             
