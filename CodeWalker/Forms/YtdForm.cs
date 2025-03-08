@@ -197,9 +197,12 @@ namespace CodeWalker.Forms
         {
             if (TexDict.Textures?.data_items == null) return;
 
+            var texs = OpenDDSFiles();
+            if (texs == null) return;
+
             var textures = new List<Texture>();
             textures.AddRange(TexDict.Textures.data_items);
-            textures.AddRange(OpenDDSFiles());
+            textures.AddRange(texs);
 
             Modified = true;
 
@@ -241,7 +244,7 @@ namespace CodeWalker.Forms
             if (TexDict?.Textures?.data_items == null) return;
             if (CurrentTexture == null) return;
 
-            var tex = OpenDDSFiles(true).FirstOrDefault();
+            var tex = OpenDDSFiles(true)?.FirstOrDefault();
             if (tex == null) return;
 
             tex.Name = CurrentTexture.Name;
