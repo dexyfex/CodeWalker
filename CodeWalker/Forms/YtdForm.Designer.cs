@@ -510,6 +510,7 @@
             // OpenDDSFileDialog
             // 
             this.OpenDDSFileDialog.Filter = "DDS files|*.dds|All files|*.*";
+            this.OpenDDSFileDialog.Multiselect = true;
             // 
             // SaveYTDFileDialog
             // 
