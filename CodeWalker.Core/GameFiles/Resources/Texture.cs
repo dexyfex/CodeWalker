@@ -427,6 +427,7 @@ namespace CodeWalker.GameFiles
                     case 0x00014012:
                     case 0x00040014:
                     case 0x00010011:
+                    case 0://(shader params)
                         break;
                     default:
                         break;
@@ -434,7 +435,7 @@ namespace CodeWalker.GameFiles
                 switch (Unknown_44h)
                 {
                     case 2:
-                    case 0://shader params
+                    case 0://(shader params)
                         break;
                     default:
                         break;

@@ -304,26 +304,34 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // update structure data
-            this.ParametersPointer = (ulong)(this.ParametersList != null ? this.ParametersList.FilePosition : 0);
-            this.ParameterCount = (byte)(this.ParametersList != null ? this.ParametersList.Count : 0);
+            if (writer.IsGen9)
+            {
+                //TODO
 
-            // write structure data
-            writer.Write(this.ParametersPointer);
-            writer.Write(this.Name.Hash);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.ParameterCount);
-            writer.Write(this.RenderBucket);
-            writer.Write(this.Unknown_12h);
-            writer.Write(this.ParameterSize);
-            writer.Write(this.ParameterDataSize);
-            writer.Write(this.FileName.Hash);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.RenderBucketMask);
-            writer.Write(this.Unknown_24h);
-            writer.Write(this.Unknown_26h);
-            writer.Write(this.TextureParametersCount);
-            writer.Write(this.Unknown_28h);
+            }
+            else
+            {
+                // update structure data
+                this.ParametersPointer = (ulong)(this.ParametersList != null ? this.ParametersList.FilePosition : 0);
+                this.ParameterCount = (byte)(this.ParametersList != null ? this.ParametersList.Count : 0);
+
+                // write structure data
+                writer.Write(this.ParametersPointer);
+                writer.Write(this.Name.Hash);
+                writer.Write(this.Unknown_Ch);
+                writer.Write(this.ParameterCount);
+                writer.Write(this.RenderBucket);
+                writer.Write(this.Unknown_12h);
+                writer.Write(this.ParameterSize);
+                writer.Write(this.ParameterDataSize);
+                writer.Write(this.FileName.Hash);
+                writer.Write(this.Unknown_1Ch);
+                writer.Write(this.RenderBucketMask);
+                writer.Write(this.Unknown_24h);
+                writer.Write(this.Unknown_26h);
+                writer.Write(this.TextureParametersCount);
+                writer.Write(this.Unknown_28h);
+            }
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -711,64 +719,72 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-
-            // update pointers...
-            for (int i = 0; i < Parameters.Length; i++)
+            if (writer.IsGen9)
             {
-                var param = Parameters[i];
-                if (param.DataType == 0)
+                //TODO
+
+            }
+            else
+            {
+
+                // update pointers...
+                for (int i = 0; i < Parameters.Length; i++)
                 {
-                    param.DataPointer = (ulong)((param.Data as TextureBase)?.FilePosition ?? 0);
-                }
-                else
-                {
-                    var block = (i < ParameterDataBlocks?.Length) ? ParameterDataBlocks[i] : null;
-                    if (block != null)
+                    var param = Parameters[i];
+                    if (param.DataType == 0)
                     {
-                        param.DataPointer = (ulong)block.FilePosition;
+                        param.DataPointer = (ulong)((param.Data as TextureBase)?.FilePosition ?? 0);
                     }
                     else
                     {
-                        param.DataPointer = 0;//shouldn't happen!
+                        var block = (i < ParameterDataBlocks?.Length) ? ParameterDataBlocks[i] : null;
+                        if (block != null)
+                        {
+                            param.DataPointer = (ulong)block.FilePosition;
+                        }
+                        else
+                        {
+                            param.DataPointer = 0;//shouldn't happen!
+                        }
                     }
                 }
-            }
 
 
 
-            // write parameter infos
-            foreach (var f in Parameters)
-            {
-                f.Write(writer);
-            }
-
-            // write vector data
-            for (int i = 0; i < Parameters.Length; i++)
-            {
-                var param = Parameters[i];
-                if (param.DataType != 0)
+                // write parameter infos
+                foreach (var f in Parameters)
                 {
-                    var block = (i < ParameterDataBlocks?.Length) ? ParameterDataBlocks[i] : null;
-                    if (block != null)
-                    {
-                        writer.WriteBlock(block);
-                    }
-                    else
-                    { } //shouldn't happen!
+                    f.Write(writer);
                 }
+
+                // write vector data
+                for (int i = 0; i < Parameters.Length; i++)
+                {
+                    var param = Parameters[i];
+                    if (param.DataType != 0)
+                    {
+                        var block = (i < ParameterDataBlocks?.Length) ? ParameterDataBlocks[i] : null;
+                        if (block != null)
+                        {
+                            writer.WriteBlock(block);
+                        }
+                        else
+                        { } //shouldn't happen!
+                    }
+                }
+
+                // write hashes
+                foreach (var h in Hashes)
+                {
+                    writer.Write((uint)h);
+                }
+
+
+                //write end padding stuff
+                var psiz = ParametersDataSize;
+                writer.Write(new byte[32 + psiz*4]);
+
             }
-
-            // write hashes
-            foreach (var h in Hashes)
-            {
-                writer.Write((uint)h);
-            }
-
-
-            //write end padding stuff
-            var psiz = ParametersDataSize;
-            writer.Write(new byte[32 + psiz*4]);
-
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -3680,7 +3696,7 @@ namespace CodeWalker.GameFiles
         public ulong G9_Unknown_20h;
         public ulong G9_SRVPointer { get; set; }
         public ShaderResourceViewG9 G9_SRV { get; set; }
-        //public VertexFormatG9 G9_Format { get; set; }
+        public VertexDeclarationG9 G9_Info { get; set; }
 
 
 
@@ -3709,12 +3725,11 @@ namespace CodeWalker.GameFiles
                 InfoPointer = reader.ReadUInt64();     // m_vertexFormat (rage::grcFvf)
 
                 G9_SRV = reader.ReadBlockAt<ShaderResourceViewG9>(G9_SRVPointer);
-
+                G9_Info = reader.ReadBlockAt<VertexDeclarationG9>(InfoPointer);
 
                 var datalen = VertexCount * VertexStride;
                 var vertexBytes = reader.ReadBytesAt(DataPointer1, datalen);
-                //TODO: remap vertex data into Data1.VertexBytes
-
+                InitVertexDataFromGen9Data(vertexBytes);
 
                 if (G9_Unknown_Eh != 0)
                 { }
@@ -3887,6 +3902,133 @@ namespace CodeWalker.GameFiles
                 Data2 = new VertexData();
                 Data2.ReadXml(dnode2, Info);
             }
+        }
+
+
+
+        public void InitVertexDataFromGen9Data(byte[] gen9bytes)
+        {
+            if (gen9bytes == null) return;
+            if (G9_Info == null) return;
+
+            //create VertexDeclaration (Info) from G9_Info
+            //and remap vertex data into Data1.VertexBytes (and Data2)
+
+            var vdtypes = VertexDeclarationTypes.GTAV1;
+            var vdflags = 0u;
+            var g9types = G9_Info.Types;
+            var g9sizes = G9_Info.Sizes;//these seem to just contain the vertex stride - not sizes but offsets to next item
+            var g9offs = G9_Info.Offsets;
+            var g9cnt = G9_Info.ElementCount;
+            for (int i = 0; i < g9types.Length; i++)//52
+            {
+                var t = g9types[i];
+                if (t == 0) continue;
+                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);
+                if (lci < 0)
+                {
+                    //this component type won't work for GTAV1 type...
+                    //TODO: try a different type! eg GTAV4
+                    continue;
+                }
+                vdflags = BitUtil.SetBit(vdflags, lci);
+            }
+            var vtype = (VertexType)vdflags;
+            switch (vtype)//just testing converted flags
+            {
+                case VertexType.Default:
+                case VertexType.DefaultEx:
+                case VertexType.PCTT:
+                case VertexType.PNCCT:
+                case VertexType.PNCCTTTX:
+                case VertexType.PNCTTX:
+                case VertexType.PNCCTT:
+                case VertexType.PNCTTTX:
+                case VertexType.PNCCTTX_2:
+                case VertexType.PNCCTX:
+                case VertexType.PNCCTTX:
+                case VertexType.PBBNCTX:
+                case VertexType.PBBNCT:
+                case VertexType.PBBNCCTX:
+                case VertexType.PBBCCT:
+                case VertexType.PBBNCTTX:
+                case VertexType.PNC:
+                case VertexType.PCT:
+                case VertexType.PNCTTTX_2:
+                case VertexType.PNCTTTTX:
+                case VertexType.PBBNCCT:
+                case VertexType.PT:
+                case VertexType.PNCCTTTT:
+                case VertexType.PNCTTTX_3:
+                case VertexType.PCC:
+                case (VertexType)113://PCCT: decal_diff_only_um, ch_chint02_floor_mural_01.ydr
+                case (VertexType)1://P: farlods.ydd
+                case VertexType.PTT:
+                case VertexType.PC:
+                case VertexType.PBBNCCTTX:
+                case VertexType.PBBNCCTT:
+                case VertexType.PBBNCTT:
+                case VertexType.PBBNCTTT:
+                case VertexType.PNCTT:
+                case VertexType.PNCTTT:
+                case VertexType.PBBNCTTTX:
+                    break;
+                default:
+                    break;
+            }
+
+            var vd = new VertexDeclaration();
+            vd.Types = vdtypes;
+            vd.Flags = vdflags;
+            vd.UpdateCountAndStride();
+            if (vd.Count != g9cnt)
+            { }//just testing converted component count actually matches
+            if (vd.Stride != VertexStride)
+            { }//just testing converted stride actually matches
+
+
+            //this really sucks that we have to rebuild the vertex data, but component ordering is different!
+            //maybe some layouts still have the same ordering so this could be bypassed, but probably not many.
+            var buf = new byte[gen9bytes.Length];
+            for (int i = 0; i < g9types.Length; i++)//52
+            {
+                var t = g9types[i];
+                if (t == 0) continue;
+                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);//TODO: handle other vdtypes
+                if (lci < 0) continue;
+                var cssize = (int)g9sizes[i];
+                var csoff = (int)g9offs[i];
+                var cdoff = vd.GetComponentOffset(lci);
+                var cdtype = vd.GetComponentType(lci);
+                var cdsize = VertexComponentTypes.GetSizeInBytes(cdtype);
+                for (int v = 0; v < VertexCount; v++)
+                {
+                    var srcoff = csoff + (cssize * v);
+                    var dstoff = cdoff + (VertexStride * v);
+                    Buffer.BlockCopy(gen9bytes, srcoff, buf, dstoff, cdsize);
+                }
+            }
+
+            var data = new VertexData();
+            data.VertexStride = VertexStride;
+            data.VertexCount = (int)VertexCount;
+            data.Info = vd;
+            data.VertexType = vtype;
+            data.VertexBytes = buf;
+
+            Data1 = data;
+            Data2 = data;
+            Info = vd;
+
+        }
+        public byte[] InitGen9DataFromVertexData()
+        {
+            //TODO: create G9_Info from Info
+            //TODO: and remap vertex data from Data1.VertexBytes into the result
+
+
+
+            return null;
         }
 
 
@@ -4563,6 +4705,210 @@ namespace CodeWalker.GameFiles
             return Stride.ToString() + ": " + Count.ToString() + ": " + Flags.ToString() + ": " + Types.ToString(); 
         }
     }
+
+    [TypeConverter(typeof(ExpandableObjectConverter))] public class VertexDeclarationG9 : ResourceSystemBlock
+    {
+        public override long BlockLength => 320;//316;
+        public uint[] Offsets { get; set; }//[52]
+        public byte[] Sizes { get; set; }//[52]
+        public byte[] Types { get; set; }//[52] //(VertexDeclarationG9ElementFormat)
+        public ulong Data { get; set; }
+
+        public bool HasSOA //seems to always be true
+        {
+            get => (Data & 1) > 0;
+        }
+        public bool Flag //seems to always be false
+        {
+            get => ((Data >> 1) & 1) > 0;
+        }
+        public byte VertexSize
+        {
+            get => (byte)((Data >> 2) & 0xFF);
+            set => Data = (Data & 0xFFFFFC03) + ((value & 0xFFu) << 2);
+        }
+        public uint VertexCount
+        {
+            get => (uint)((Data >> 10) & 0x3FFFFF);
+            set => Data = (Data & 0x3FF) + ((value & 0x3FFFFF) << 10);
+        }
+        public uint ElementCount
+        {
+            get
+            {
+                if (Types == null) return 0;
+                var n = 0u;
+                foreach (var t in Types)
+                {
+                    if (t != 0) n++;
+                }
+                return n;
+            }
+        }
+
+        public VertexDeclarationG9ElementFormat[] G9Formats
+        {
+            get
+            {
+                if (Types == null) return null;
+                var n = ElementCount;
+                var a = new VertexDeclarationG9ElementFormat[n];
+                var c = 0;
+                foreach (var t in Types)
+                {
+                    if (t == 0) continue;
+                    a[c] = (VertexDeclarationG9ElementFormat)t;
+                    c++;
+                }
+                return a;
+            }
+        }
+
+        public override void Read(ResourceDataReader reader, params object[] parameters)
+        {
+            Offsets = reader.ReadStructs<uint>(52);
+            Sizes = reader.ReadBytes(52);
+            Types = reader.ReadBytes(52);
+            Data = reader.ReadUInt64();
+
+
+            //if (Types != null)
+            //{
+            //    foreach (var t in Types)
+            //    {
+            //        if (t == 0) continue;
+            //        var f = (VertexDeclarationG9ElementFormat)t;
+            //        switch (f)
+            //        {
+            //            case VertexDeclarationG9ElementFormat.R32G32B32_FLOAT:
+            //            case VertexDeclarationG9ElementFormat.R32G32B32A32_FLOAT:
+            //            case VertexDeclarationG9ElementFormat.R8G8B8A8_UNORM:
+            //            case VertexDeclarationG9ElementFormat.R32G32_TYPELESS:
+            //            case VertexDeclarationG9ElementFormat.R8G8B8A8_UINT:
+            //                break;
+            //            default:
+            //                break;
+            //        }
+            //    }
+            //}
+
+        }
+        public override void Write(ResourceDataWriter writer, params object[] parameters)
+        {
+            writer.WriteStructs<uint>(Offsets);
+            writer.Write(Sizes);
+            writer.Write(Types);
+            writer.Write(Data);
+
+        }
+
+
+        public static VertexComponentType GetLegacyComponentType(VertexDeclarationG9ElementFormat f)
+        {
+            switch (f)
+            {
+                case VertexDeclarationG9ElementFormat.R32G32B32_FLOAT: return VertexComponentType.Float3;
+                case VertexDeclarationG9ElementFormat.R32G32B32A32_FLOAT: return VertexComponentType.Float4;
+                case VertexDeclarationG9ElementFormat.R8G8B8A8_UNORM: return VertexComponentType.Colour;
+                case VertexDeclarationG9ElementFormat.R32G32_TYPELESS: return VertexComponentType.Float2;
+                case VertexDeclarationG9ElementFormat.R8G8B8A8_UINT: return VertexComponentType.Colour;//for bone inds
+                default: return VertexComponentType.Float4;
+            }
+        }
+        public static int GetLegacyComponentIndexGTAV1(int i)
+        {
+            //GTAV1 = 0x7755555555996996, // GTAV - used by most drawables
+            switch (i)
+            {
+                case 0: return 0;//POSITION0
+                case 4: return 3;//NORMAL0
+                case 8: return 14;//TANGENT0
+                case 16: return 1;//BLENDWEIGHTS0
+                case 20: return 2;//BLENDINDICES0
+                case 24: return 4;//COLOR0
+                case 25: return 5;//COLOR1
+                case 28: return 6;//TEXCOORD0
+                case 29: return 7;//TEXCOORD1
+                case 30: return 8;//TEXCOORD2
+                case 31: return 9;//TEXCOORD3
+                case 32: return 10;//TEXCOORD4
+                case 33: return 11;//TEXCOORD5
+                default: return -1;
+            }
+            /*
+            private static string[] RageSemanticNames =
+            {
+                00"POSITION",
+                01"POSITION1",
+                02"POSITION2",
+                03"POSITION3",
+                04"NORMAL",
+                05"NORMAL1",
+                06"NORMAL2",
+                07"NORMAL3",
+                08"TANGENT",
+                09"TANGENT1",
+                10"TANGENT2",
+                11"TANGENT3",
+                12"BINORMAL",
+                13"BINORMAL1",
+                14"BINORMAL2",
+                15"BINORMAL3",
+                16"BLENDWEIGHT",
+                17"BLENDWEIGHT1",
+                18"BLENDWEIGHT2",
+                19"BLENDWEIGHT3",
+                20"BLENDINDICIES",
+                21"BLENDINDICIES1",
+                22"BLENDINDICIES2",
+                23"BLENDINDICIES3",
+                24"COLOR0",
+                25"COLOR1",
+                26"COLOR2",
+                27"COLOR3",
+                28"TEXCOORD0",
+                29"TEXCOORD1",
+                30"TEXCOORD2",
+                31"TEXCOORD3",
+                32"TEXCOORD4",
+                33"TEXCOORD5",
+                34"TEXCOORD6",
+                35"TEXCOORD7",
+                36"TEXCOORD8",
+                37"TEXCOORD9",
+                38"TEXCOORD10",
+                39"TEXCOORD11",
+                40"TEXCOORD12",
+                41"TEXCOORD13",
+                42"TEXCOORD14",
+                43"TEXCOORD15",
+                44"TEXCOORD16",
+                45"TEXCOORD17",
+                46"TEXCOORD18",
+                47"TEXCOORD19",
+                48"TEXCOORD20",
+                49"TEXCOORD21",
+                50"TEXCOORD22",
+                51"TEXCOORD23",
+            };
+             */
+        }
+
+
+    }
+    public enum VertexDeclarationG9ElementFormat : byte
+    {
+        NONE = 0,
+        R32G32B32A32_FLOAT = 2,
+        R32G32B32_FLOAT = 6,
+        R16G16B16A16_FLOAT = 10,
+        R32G32_TYPELESS = 16,
+        D3DX_R10G10B10A2 = 24,
+        R8G8B8A8_UNORM = 28,
+        R8G8B8A8_UINT = 30,
+        R16G16_FLOAT = 34,
+    }
+
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class IndexBuffer : ResourceSystemBlock
     {
