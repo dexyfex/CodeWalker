@@ -199,6 +199,7 @@ namespace CodeWalker.GameFiles
         public ShaderParametersBlock ParametersList { get; set; }
 
         // gen9 structure data
+        public MetaHash G9_Preset { get; set; }
         public ulong G9_TextureRefsPointer { get; set; }
         public ulong G9_UnknownParamsPointer { get; set; }
         public ulong G9_ParametersListPointer { get; set; }
@@ -212,7 +213,7 @@ namespace CodeWalker.GameFiles
             if (reader.IsGen9)
             {
                 Name = new MetaHash(reader.ReadUInt32());
-                FileName = reader.ReadUInt32();
+                G9_Preset = reader.ReadUInt32();
                 ParametersPointer = reader.ReadUInt64();                   // m_parameters
                 G9_TextureRefsPointer = reader.ReadUInt64();
                 G9_UnknownParamsPointer = reader.ReadUInt64();//something to do with grass_batch (instance data?)
@@ -227,6 +228,7 @@ namespace CodeWalker.GameFiles
 
                 G9_ParamInfos = reader.ReadBlockAt<ShaderParamInfosG9>(G9_ParametersListPointer);
                 ParametersList = reader.ReadBlockAt<ShaderParametersBlock>(ParametersPointer, ParameterCount, this);
+                FileName = G9_Preset;//TODO: get mapping from G9_Preset to legacy FileName
 
                 if (G9_UnknownParamsPointer != 0)
                 { }
@@ -306,7 +308,23 @@ namespace CodeWalker.GameFiles
         {
             if (writer.IsGen9)
             {
-                //TODO
+                ParametersPointer = (ulong)(ParametersList != null ? ParametersList.FilePosition : 0);
+                ParameterCount = (byte)(ParametersList != null ? ParametersList.Count : 0);
+                //TODO: update G9_TextureRefsPointer, G9_UnknownParamsPointer, G9_ParametersListPointer
+
+                writer.Write((uint)Name);
+                writer.Write((uint)G9_Preset);
+                writer.Write(ParametersPointer);
+                writer.Write(G9_TextureRefsPointer);
+                writer.Write(G9_UnknownParamsPointer);
+                writer.Write(G9_ParametersListPointer);
+                writer.Write(G9_Unknown_28h);
+                writer.Write(G9_Unknown_30h);
+                writer.Write(G9_Unknown_38h);
+                writer.Write(RenderBucket);
+                writer.Write((byte)ParameterDataSize);
+                writer.Write(ParameterCount);
+                writer.Write(RenderBucketMask);
 
             }
             else
@@ -368,6 +386,7 @@ namespace CodeWalker.GameFiles
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
+            if (G9_ParamInfos != null) list.Add(G9_ParamInfos);
             if (ParametersList != null) list.Add(ParametersList);
             return list.ToArray();
         }
@@ -565,6 +584,7 @@ namespace CodeWalker.GameFiles
                     else if (info.Type == ShaderParamTypeG9.CBuffer)
                     {
                         var p = new ShaderParameter();
+                        p.DataType = (byte)(info.ParamLength / 4u);
                         if ((info.ParamLength) % 4 != 0)
                         { }
                         var cbi = info.CBufferIndex;
@@ -3691,7 +3711,7 @@ namespace CodeWalker.GameFiles
 
         // gen9 structure data
         public ushort G9_Unknown_Eh;
-        public uint G9_BindFlags { get; set; }   // m_bindFlags
+        public uint G9_BindFlags { get; set; }   // m_bindFlags    0x00580409 or 0x00586409
         public uint G9_Unknown_14h;
         public ulong G9_Unknown_20h;
         public ulong G9_SRVPointer { get; set; }
@@ -3699,11 +3719,11 @@ namespace CodeWalker.GameFiles
         public VertexDeclarationG9 G9_Info { get; set; }
 
 
-
         // reference data
         public VertexData Data1 { get; set; }
         public VertexData Data2 { get; set; }
         public VertexDeclaration Info { get; set; }
+
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
@@ -3837,24 +3857,34 @@ namespace CodeWalker.GameFiles
             // write structure data
             writer.Write(this.VFT);
             writer.Write(this.Unknown_4h);
-            writer.Write(this.VertexStride);
-            writer.Write(this.Flags);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.DataPointer1);
-            writer.Write(this.VertexCount);
-            writer.Write(this.Unknown_1Ch);
-            writer.Write(this.DataPointer2);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.InfoPointer);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_58h);
-            writer.Write(this.Unknown_60h);
-            writer.Write(this.Unknown_68h);
-            writer.Write(this.Unknown_70h);
-            writer.Write(this.Unknown_78h);
+
+            if (writer.IsGen9)
+            {
+                //TODO
+
+            }
+            else
+            {
+                writer.Write(this.VertexStride);
+                writer.Write(this.Flags);
+                writer.Write(this.Unknown_Ch);
+                writer.Write(this.DataPointer1);
+                writer.Write(this.VertexCount);
+                writer.Write(this.Unknown_1Ch);
+                writer.Write(this.DataPointer2);
+                writer.Write(this.Unknown_28h);
+                writer.Write(this.InfoPointer);
+                writer.Write(this.Unknown_38h);
+                writer.Write(this.Unknown_40h);
+                writer.Write(this.Unknown_48h);
+                writer.Write(this.Unknown_50h);
+                writer.Write(this.Unknown_58h);
+                writer.Write(this.Unknown_60h);
+                writer.Write(this.Unknown_68h);
+                writer.Write(this.Unknown_70h);
+                writer.Write(this.Unknown_78h);
+            }
+
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -4714,7 +4744,7 @@ namespace CodeWalker.GameFiles
         public byte[] Types { get; set; }//[52] //(VertexDeclarationG9ElementFormat)
         public ulong Data { get; set; }
 
-        public bool HasSOA //seems to always be true
+        public bool HasSOA //seems to always be false for GTAV gen9  (but true for RDR2)
         {
             get => (Data & 1) > 0;
         }
@@ -4791,7 +4821,12 @@ namespace CodeWalker.GameFiles
             //        }
             //    }
             //}
-
+            //if (HasSOA == true)
+            //{ }
+            //if (Flag == true)
+            //{ }
+            //if ((Data >> 32) != 0)
+            //{ }
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
