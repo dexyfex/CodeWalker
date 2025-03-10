@@ -136,7 +136,7 @@ namespace CodeWalker.World
                 }
                 LocalLookAt = Vector3.Zero;
                 Position = cpos;
-                //Position.Z = 1000.0f;
+                Position.Z = 1000.0f;
                 ViewDirection = -Vector3.UnitZ;
                 UpDirection = Vector3.UnitY;
             }
