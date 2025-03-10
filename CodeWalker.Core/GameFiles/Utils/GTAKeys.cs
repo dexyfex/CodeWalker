@@ -250,8 +250,19 @@ namespace CodeWalker.GameFiles
 
             if (string.IsNullOrEmpty(key))
             {
-                byte[] exedata = File.ReadAllBytes(path + "\\gta5.exe");
+                byte[] exedata = null;
+                if (File.Exists(path + "\\gta5.exe"))
+                {
+                     exedata = File.ReadAllBytes(path + "\\gta5.exe");
+                }
+                else if(File.Exists(path + "\\gta5_enhanced.exe")) // GTA V Gen9
+                {
+                    exedata = File.ReadAllBytes(path + "\\gta5_enhanced.exe");
+                } 
+
+            
                 GenerateV2(exedata, null);
+
             }
             else
             {
