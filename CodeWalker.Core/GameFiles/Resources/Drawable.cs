@@ -222,12 +222,11 @@ namespace CodeWalker.GameFiles
                 G9_Unknown_30h = reader.ReadUInt64();//pad
                 G9_Unknown_38h = reader.ReadByte();
                 RenderBucket = reader.ReadByte();
-                ParameterDataSize = reader.ReadByte();
-                ParameterCount = reader.ReadByte();
+                ParameterDataSize = reader.ReadUInt16();//==ParametersList.G9_DataSize
                 RenderBucketMask = reader.ReadUInt32();
 
                 G9_ParamInfos = reader.ReadBlockAt<ShaderParamInfosG9>(G9_ParametersListPointer);
-                ParametersList = reader.ReadBlockAt<ShaderParametersBlock>(ParametersPointer, ParameterCount, this);
+                ParametersList = reader.ReadBlockAt<ShaderParametersBlock>(ParametersPointer, 0, this);
                 FileName = G9_Preset;//TODO: get mapping from G9_Preset to legacy FileName
 
                 if (G9_UnknownParamsPointer != 0)
@@ -322,8 +321,7 @@ namespace CodeWalker.GameFiles
                 writer.Write(G9_Unknown_30h);
                 writer.Write(G9_Unknown_38h);
                 writer.Write(RenderBucket);
-                writer.Write((byte)ParameterDataSize);
-                writer.Write(ParameterCount);
+                writer.Write(ParameterDataSize);
                 writer.Write(RenderBucketMask);
 
             }
@@ -619,7 +617,7 @@ namespace CodeWalker.GameFiles
                 }
                 Parameters = paras.ToArray();
                 Hashes = hashes.ToArray();
-
+                Count = paras.Count;
             }
             else
             {
