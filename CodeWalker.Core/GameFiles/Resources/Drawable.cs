@@ -583,8 +583,10 @@ namespace CodeWalker.GameFiles
                     }
                     else if (info.Type == ShaderParamTypeG9.CBuffer)
                     {
+                        uint fcnt = info.ParamLength / 4u;
+                        uint arrsiz = info.ParamLength / 16u;
                         var p = new ShaderParameter();
-                        p.DataType = (byte)(info.ParamLength / 4u);
+                        p.DataType = (byte)Math.Max(arrsiz, 1);
                         if ((info.ParamLength) % 4 != 0)
                         { }
                         var cbi = info.CBufferIndex;
@@ -592,18 +594,14 @@ namespace CodeWalker.GameFiles
                         if (baseptr != 0)
                         {
                             var ptr = baseptr + info.ParamOffset;
-                            uint fcnt = info.ParamLength / 4u;
-                            uint arrsiz = info.ParamLength / 16u;
                             switch (fcnt)
                             {
                                 case 0:
                                     break;
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                    p.Data = reader.ReadStructAt<Vector4>(ptr);
-                                    break;
+                                case 1: p.Data = new Vector4(reader.ReadStructAt<float>(ptr), 0, 0, 0); break;
+                                case 2: p.Data = new Vector4(reader.ReadStructAt<Vector2>(ptr), 0, 0); break;
+                                case 3: p.Data = new Vector4(reader.ReadStructAt<Vector3>(ptr), 0); break;
+                                case 4: p.Data = reader.ReadStructAt<Vector4>(ptr); break;
                                 default:
                                     if (arrsiz == 0)
                                     { }
