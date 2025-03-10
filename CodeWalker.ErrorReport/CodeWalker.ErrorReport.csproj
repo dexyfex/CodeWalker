@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>CW.ico</ApplicationIcon>
     <AssemblyName>CodeWalker Error Report Tool</AssemblyName>
   </PropertyGroup>
-
 </Project>

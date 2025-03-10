@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net48</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>CWPeds.ico</ApplicationIcon>
     <Copyright>dexyfex</Copyright>
@@ -10,13 +9,10 @@
     <Authors>dexyfex</Authors>
     <AssemblyName>CodeWalker Ped Viewer</AssemblyName>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\CodeWalker\CodeWalker.csproj" />
   </ItemGroup>
-
 </Project>
