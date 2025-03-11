@@ -227,6 +227,8 @@ namespace CodeWalker.GameFiles
                 //TestHeightmaps();
                 //TestWatermaps();
                 //GetShadersXml();
+                //GetShadersLegacyConversionXml();
+                //GetShadersGen9ConversionXml();
                 //GetArchetypeTimesList();
                 //string typestr = PsoTypes.GetTypesString();
             }
@@ -1863,8 +1865,8 @@ namespace CodeWalker.GameFiles
                 var t = relfile.RelType;
                 switch (t)
                 {
-                    case RelDatFileType.Dat4: 
-                        d = relfile.IsAudioConfig ? audioConfigDict : audioSpeechDict; 
+                    case RelDatFileType.Dat4:
+                        d = relfile.IsAudioConfig ? audioConfigDict : audioSpeechDict;
                         break;
                     case RelDatFileType.Dat10ModularSynth:
                         d = audioSynthsDict;
@@ -2525,51 +2527,51 @@ namespace CodeWalker.GameFiles
                 {
 #endif
 
-                    switch (req.Type)
-                    {
-                        case GameFileType.Ydr:
-                            req.Loaded = LoadFile(req as YdrFile);
-                            break;
-                        case GameFileType.Ydd:
-                            req.Loaded = LoadFile(req as YddFile);
-                            break;
-                        case GameFileType.Ytd:
-                            req.Loaded = LoadFile(req as YtdFile);
-                            //if (req.Loaded) AddTextureLookups(req as YtdFile);
-                            break;
-                        case GameFileType.Ymap:
-                            YmapFile y = req as YmapFile;
-                            req.Loaded = LoadFile(y);
-                            if (req.Loaded) y.InitYmapEntityArchetypes(this);
-                            break;
-                        case GameFileType.Yft:
-                            req.Loaded = LoadFile(req as YftFile);
-                            break;
-                        case GameFileType.Ybn:
-                            req.Loaded = LoadFile(req as YbnFile);
-                            break;
-                        case GameFileType.Ycd:
-                            req.Loaded = LoadFile(req as YcdFile);
-                            break;
-                        case GameFileType.Yed:
-                            req.Loaded = LoadFile(req as YedFile);
-                            break;
-                        case GameFileType.Ynv:
-                            req.Loaded = LoadFile(req as YnvFile);
-                            break;
-                        case GameFileType.Yld:
-                            req.Loaded = LoadFile(req as YldFile);
-                            break;
-                        default:
-                            break;
-                    }
+                switch (req.Type)
+                {
+                    case GameFileType.Ydr:
+                        req.Loaded = LoadFile(req as YdrFile);
+                        break;
+                    case GameFileType.Ydd:
+                        req.Loaded = LoadFile(req as YddFile);
+                        break;
+                    case GameFileType.Ytd:
+                        req.Loaded = LoadFile(req as YtdFile);
+                        //if (req.Loaded) AddTextureLookups(req as YtdFile);
+                        break;
+                    case GameFileType.Ymap:
+                        YmapFile y = req as YmapFile;
+                        req.Loaded = LoadFile(y);
+                        if (req.Loaded) y.InitYmapEntityArchetypes(this);
+                        break;
+                    case GameFileType.Yft:
+                        req.Loaded = LoadFile(req as YftFile);
+                        break;
+                    case GameFileType.Ybn:
+                        req.Loaded = LoadFile(req as YbnFile);
+                        break;
+                    case GameFileType.Ycd:
+                        req.Loaded = LoadFile(req as YcdFile);
+                        break;
+                    case GameFileType.Yed:
+                        req.Loaded = LoadFile(req as YedFile);
+                        break;
+                    case GameFileType.Ynv:
+                        req.Loaded = LoadFile(req as YnvFile);
+                        break;
+                    case GameFileType.Yld:
+                        req.Loaded = LoadFile(req as YldFile);
+                        break;
+                    default:
+                        break;
+                }
 
-                    UpdateStatus((req.Loaded ? "Loaded " : "Error loading ") + req.ToString());
+                UpdateStatus((req.Loaded ? "Loaded " : "Error loading ") + req.ToString());
 
-                    if (!req.Loaded)
-                    {
-                        ErrorLog("Error loading " + req.ToString());
-                    }
+                if (!req.Loaded)
+                {
+                    ErrorLog("Error loading " + req.ToString());
+                }
 #if !DEBUG
                 }
                 catch (Exception ex)
@@ -2915,7 +2917,7 @@ namespace CodeWalker.GameFiles
                                 if (rel3.RelDatasSorted?.Length != rel.RelDatasSorted?.Length)
                                 { } //check nothing went missing...
 
-                                
+
                                 data = rel3.Save(); //full roundtrip!
                                 if (data != null)
                                 {
@@ -3100,14 +3102,14 @@ namespace CodeWalker.GameFiles
                 {
                     //try
                     //{
-                        var n = entry.NameLower;
-                        if (n.EndsWith(".awc"))
-                        {
-                            UpdateStatus(entry.Path);
-                            var awcfile = RpfMan.GetFile<AwcFile>(entry);
-                            if (awcfile != null)
-                            { }
-                        }
+                    var n = entry.NameLower;
+                    if (n.EndsWith(".awc"))
+                    {
+                        UpdateStatus(entry.Path);
+                        var awcfile = RpfMan.GetFile<AwcFile>(entry);
+                        if (awcfile != null)
+                        { }
+                    }
                     //}
                     //catch (Exception ex)
                     //{
@@ -3401,7 +3403,7 @@ namespace CodeWalker.GameFiles
                     //}
                 }
             }
-            
+
             string str = PsoTypes.GetTypesInitString();
             if (!string.IsNullOrEmpty(str))
             {
@@ -3496,8 +3498,8 @@ namespace CodeWalker.GameFiles
             {
                 foreach (RpfEntry entry in file.AllEntries)
                 {
-                //try
-                //{
+                    //try
+                    //{
                     if (entry.NameLower.EndsWith(".ycd"))
                     {
                         UpdateStatus(entry.Path);
@@ -3745,10 +3747,10 @@ namespace CodeWalker.GameFiles
                     //    { }
                     //}
                     //}
-                //catch (Exception ex)
-                //{
-                //    UpdateStatus("Error! " + ex.ToString());
-                //}
+                    //catch (Exception ex)
+                    //{
+                    //    UpdateStatus("Error! " + ex.ToString());
+                    //}
                 }
             }
 
@@ -3775,7 +3777,7 @@ namespace CodeWalker.GameFiles
                             {
                                 ytdfile = RpfMan.GetFile<YtdFile>(entry);
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 UpdateStatus("Error! " + ex.ToString());
                                 errorfiles.Add(entry);
@@ -4128,7 +4130,7 @@ namespace CodeWalker.GameFiles
                                 uint h = 0;
                                 foreach (uint th in ydd.DrawableDict.Hashes)
                                 {
-                                    if (th <= h) 
+                                    if (th <= h)
                                     { } //should never happen
                                     h = th;
                                 }
@@ -4579,7 +4581,7 @@ namespace CodeWalker.GameFiles
                             UpdateStatus(entry.Path);
                             MrfFile mrffile = RpfMan.GetFile<MrfFile>(entry);
                             if (mrffile != null)
-                            { 
+                            {
                                 var odata = entry.File.ExtractFile(entry as RpfFileEntry);
                                 var ndata = mrffile.Save();
                                 if (ndata.Length == odata.Length)
@@ -5427,6 +5429,311 @@ namespace CodeWalker.GameFiles
 
 
         }
+        public void GetShadersLegacyConversionXml()
+        {
+            //on legacy game files, iterate fxc files and generate mapping of old>new param names
+            //for use by legacy/gen9 conversions
+            //gen9 param names seem to use the other name as speficied in the fxc files...
+
+
+            var dict = new Dictionary<string, Dictionary<string, string>>();//shadername:(legacyparam:gen9param)
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    if (entry.NameLower.EndsWith(".fxc"))
+                    {
+                        UpdateStatus(entry.Path);
+                        var fxcfile = RpfMan.GetFile<FxcFile>(entry);
+                        if (fxcfile != null)
+                        {
+                            var sname = entry.GetShortNameLower();
+                            dict.TryGetValue(sname, out var pdict);
+                            if (pdict == null)
+                            {
+                                pdict = new Dictionary<string, string>();
+                                dict[sname] = pdict;
+                            }
+
+                            var paras = fxcfile.Variables2;
+                            if (paras != null)
+                            {
+                                foreach (var para in paras)
+                                {
+                                    if (para == null) continue;
+                                    pdict[para.Name1] = para.Name2;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            var shadernames = dict.Keys.ToList();
+            shadernames.Sort();
+
+            var sb = new StringBuilder();
+            sb.AppendLine(MetaXml.XmlHeader);
+            MetaXml.OpenTag(sb, 0, "ShadersLegacyConversion");
+            foreach (var shadername in shadernames)
+            {
+                MetaXml.OpenTag(sb, 1, "Item");
+                MetaXml.StringTag(sb, 2, "Name", shadername);
+                MetaXml.StringTag(sb, 2, "FileName", shadername.ToLowerInvariant() + ".sps");
+                MetaXml.OpenTag(sb, 2, "Parameters");
+                dict.TryGetValue(shadername, out var pdict);
+                if (pdict != null)
+                {
+                    var otstr = "Item name=\"{0}\" gen9=\"{1}\"";
+                    foreach (var kvp in pdict)
+                    {
+                        MetaXml.SelfClosingTag(sb, 3, string.Format(otstr, kvp.Key, kvp.Value));
+                    }
+                }
+                MetaXml.CloseTag(sb, 2, "Parameters");
+                MetaXml.CloseTag(sb, 1, "Item");
+            }
+            MetaXml.CloseTag(sb, 0, "ShadersLegacyConversion");
+
+            var xml = sb.ToString();
+
+            File.WriteAllText("C:\\ShadersLegacyConversion.xml", xml);
+
+
+        }
+        public void GetShadersGen9ConversionXml()
+        {
+            //on gen9 game files, iterate drawables and find param offsets and types
+            //use the ShadersLegacyConversion.xml to generate ShadersGen9Conversion.xml,
+            //filtering to required shaders only and including the offsets and types.
+            //this should allow for rebuilding the gen9 params buffers from legacy ones.
+
+
+            bool doydr = true;
+            bool doydd = true;
+            bool doyft = true;
+            bool doypt = true;
+
+            var data = new Dictionary<MetaHash, ShaderGen9XmlDataCollection>();
+
+            void updateDC(ShaderGen9XmlDataCollection dc, ShaderParamInfoG9[] infos, ShaderFX s)
+            {
+                var pi = s.G9_ParamInfos;
+                var pb = s.ParametersList;
+                var bc = pi.NumBuffers;
+                var bsizs = pb.G9_BufferSizes;
+
+                var blens = new int[bc];
+                for (int i = 0; i < bc; i++)
+                {
+                    blens[i] = (int)bsizs[i];
+                }
+                dc.BufferSizes = blens;
+                dc.ParamInfos = infos;
+                dc.SamplerValues = pb.G9_Samplers;
+
+            }
+            void collectDrawable(DrawableBase d)
+            {
+                if (d?.AllModels == null) return;
+                foreach (var model in d.AllModels)
+                {
+                    if (model?.Geometries == null) continue;
+                    foreach (var geom in model.Geometries)
+                    {
+                        var s = geom?.Shader;
+                        if (s == null) continue;
+                        data.TryGetValue(s.Name, out var dc);
+                        if (dc == null)
+                        {
+                            dc = new ShaderGen9XmlDataCollection();
+                            dc.Name = s.Name;
+                            updateDC(dc, s.G9_ParamInfos.Params, s);
+                            data[s.Name] = dc;
+                        }
+                        else
+                        {
+                            var pi = s.G9_ParamInfos;
+                            var pb = s.ParametersList;
+                            var bc = pi.NumBuffers;
+                            var bsizs = pb.G9_BufferSizes;
+                            var changed = false;//sometimes params don't all match... ugh
+                            if (dc.BufferSizes.Length != bc)
+                            { changed = true; }
+                            for (int i = 0; i < bc; i++)
+                            {
+                                if (dc.BufferSizes[i] != bsizs[i])
+                                { /*changed = true;*/ break; }
+                            }
+                            if (dc.ParamInfos.Length < pi.Params.Length)
+                            { changed = true; }//just take whichever has the most params.. maybe not 100% correct since really we want the latest ones
+                            if (changed)
+                            {
+                                updateDC(dc, pi.Params, s);
+                            }
+                        }
+
+                    }
+                }
+            }
+
+            foreach (RpfFile file in AllRpfs)
+            {
+                foreach (RpfEntry entry in file.AllEntries)
+                {
+                    try
+                    {
+                        if (doydr && entry.NameLower.EndsWith(".ydr"))
+                        {
+                            if (entry is RpfResourceFileEntry re)
+                            {
+                                if (re.Version != 159) continue;
+                            }
+
+                            UpdateStatus(entry.Path);
+                            YdrFile ydr = RpfMan.GetFile<YdrFile>(entry);
+
+                            if (ydr == null) { continue; }
+                            if (ydr.Drawable == null) { continue; }
+                            collectDrawable(ydr.Drawable);
+                        }
+                        else if (doydd & entry.NameLower.EndsWith(".ydd"))
+                        {
+                            UpdateStatus(entry.Path);
+                            YddFile ydd = RpfMan.GetFile<YddFile>(entry);
+
+                            if (ydd == null) { continue; }
+                            if (ydd.Dict == null) { continue; }
+                            foreach (var drawable in ydd.Dict.Values)
+                            {
+                                collectDrawable(drawable);
+                            }
+                        }
+                        else if (doyft && entry.NameLower.EndsWith(".yft"))
+                        {
+                            UpdateStatus(entry.Path);
+                            YftFile yft = RpfMan.GetFile<YftFile>(entry);
+
+                            if (yft == null) { continue; }
+                            if (yft.Fragment == null) { continue; }
+                            if (yft.Fragment.Drawable != null)
+                            {
+                                collectDrawable(yft.Fragment.Drawable);
+                            }
+                            if ((yft.Fragment.Cloths != null) && (yft.Fragment.Cloths.data_items != null))
+                            {
+                                foreach (var cloth in yft.Fragment.Cloths.data_items)
+                                {
+                                    collectDrawable(cloth.Drawable);
+                                }
+                            }
+                            if ((yft.Fragment.DrawableArray != null) && (yft.Fragment.DrawableArray.data_items != null))
+                            {
+                                foreach (var drawable in yft.Fragment.DrawableArray.data_items)
+                                {
+                                    collectDrawable(drawable);
+                                }
+                            }
+                        }
+                        else if (doypt && entry.NameLower.EndsWith(".ypt"))
+                        {
+                            UpdateStatus(entry.Path);
+                            YptFile ypt = RpfMan.GetFile<YptFile>(entry);
+
+                            if (ypt == null) { continue; }
+                            if (ypt.DrawableDict == null) { continue; }
+                            foreach (var drawable in ypt.DrawableDict.Values)
+                            {
+                                collectDrawable(drawable);
+                            }
+                        }
+                    }
+                    catch //(Exception ex)
+                    { }
+                }
+            }
+
+
+
+
+
+            var legxml = File.ReadAllText("C:\\ShadersLegacyConversion.xml");
+            var xdoc = new XmlDocument();
+            xdoc.LoadXml(legxml);
+            var shaders = xdoc.SelectNodes("ShadersLegacyConversion/Item");
+            var shadernodes = new Dictionary<MetaHash, XmlNode>();
+            var shadernames = new List<string>();
+            foreach (XmlNode shader in shaders)
+            {
+                var name = Xml.GetChildInnerText(shader, "Name")?.ToLowerInvariant();
+                var hash = new MetaHash(JenkHash.GenHash(name));
+                if (data.ContainsKey(hash) == false) continue;
+                shadernodes[hash] = shader;
+                shadernames.Add(name);
+            }
+            shadernames.Sort();
+
+            if (shadernames.Count != data.Count)
+            { }//this shouldn't happen - something was missing?
+
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(MetaXml.XmlHeader);
+            MetaXml.OpenTag(sb, 0, "ShadersGen9Conversion");
+            foreach (var name in shadernames)
+            {
+                var hash = new MetaHash(JenkHash.GenHash(name));
+                data.TryGetValue(hash, out var cd);
+                shadernodes.TryGetValue(hash, out var sn);
+                if (cd == null) continue;//shouldn't happen
+                if (sn == null) continue;//shouldn't happen
+
+                var pdict = new Dictionary<MetaHash, (string, string)>();//gen9hash:(gen9str:legacystr)
+                var pnodes = sn.SelectNodes("Parameters/Item");
+                foreach (XmlNode p in pnodes)
+                {
+                    var old = Xml.GetStringAttribute(p, "name");
+                    var gen9 = Xml.GetStringAttribute(p, "gen9");
+                    var phash = new MetaHash(JenkHash.GenHash(gen9?.ToLowerInvariant()));
+                    pdict[phash] = (gen9, old);
+                }
+
+                MetaXml.OpenTag(sb, 1, "Item");
+                MetaXml.StringTag(sb, 2, "Name", name);
+                MetaXml.StringTag(sb, 2, "FileName", Xml.GetChildInnerText(sn, "FileName"));
+                MetaXml.StringTag(sb, 2, "BufferSizes", string.Join(" ", cd.BufferSizes));
+                MetaXml.OpenTag(sb, 2, "Parameters");
+                foreach (var p in cd.ParamInfos)
+                {
+                    var istr = $"Item type=\"{p.Type}\"";
+                    if (pdict.TryGetValue(p.Name, out var pdv))
+                    {
+                        istr += $" name=\"{pdv.Item1}\" old=\"{pdv.Item2}\"";
+                    }
+                    else
+                    {
+                        istr += $" name=\"{MetaXml.HashString(p.Name)}\"";
+                    }
+                    switch (p.Type)
+                    {
+                        case ShaderParamTypeG9.Texture: istr += $" index=\"{p.TextureIndex}\""; break;
+                        case ShaderParamTypeG9.Unknown: istr += $" index=\"{p.SamplerIndex}\""; break;
+                        case ShaderParamTypeG9.Sampler: istr += $" index=\"{p.SamplerIndex}\" sampler=\"{cd.SamplerValues[p.SamplerIndex]}\""; break;
+                        case ShaderParamTypeG9.CBuffer: istr += $" buffer=\"{p.CBufferIndex}\" length=\"{p.ParamLength}\" offset=\"{p.ParamOffset}\""; break;
+                    }
+                    MetaXml.SelfClosingTag(sb, 3, istr);
+                }
+                MetaXml.CloseTag(sb, 2, "Parameters");
+                MetaXml.CloseTag(sb, 1, "Item");
+            }
+            MetaXml.CloseTag(sb, 0, "ShadersGen9Conversion");
+            var xml = sb.ToString();
+
+            File.WriteAllText("C:\\ShadersGen9Conversion.xml", xml);
+
+        }
         public void GetArchetypeTimesList()
         {
 
@@ -5462,6 +5769,109 @@ namespace CodeWalker.GameFiles
         }
 
 
+
+        public static Dictionary<MetaHash, ShaderGen9XmlDataCollection> ShadersGen9ConversionData;
+        public static void EnsureShadersGen9ConversionData()
+        {
+            if (ShadersGen9ConversionData != null) return;
+
+            var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var dir = Path.GetDirectoryName(path);
+            var fpath = Path.Combine(dir, "ShadersGen9Conversion.xml");
+            if (File.Exists(fpath) == false) throw new Exception("Unable to load ShadersGen9Conversion.xml");//where's the XML file huh?
+            var gen9xml = File.ReadAllText(fpath);
+            var xdoc = new XmlDocument();
+            xdoc.LoadXml(gen9xml);
+            var shaders = xdoc.SelectNodes("ShadersGen9Conversion/Item");
+            var dict = new Dictionary<MetaHash, ShaderGen9XmlDataCollection>();
+            var infos = new List<ShaderParamInfoG9>();
+            var svdict = new Dictionary<byte, byte>();
+            foreach (XmlNode shader in shaders)
+            {
+                infos.Clear();
+                svdict.Clear();
+
+                var name = Xml.GetChildInnerText(shader, "Name")?.ToLowerInvariant();
+                var hash = new MetaHash(JenkHash.GenHash(name));
+                var dc = new ShaderGen9XmlDataCollection();
+                dc.Name = hash;
+                dc.BufferSizes = Xml.GetChildRawIntArray(shader, "BufferSizes");
+                dc.ParamsMapLegacyToGen9 = new Dictionary<MetaHash, MetaHash>();
+                dc.ParamsMapGen9ToLegacy = new Dictionary<MetaHash, MetaHash>();
+
+                var pnodes = shader.SelectNodes("Parameters/Item");
+                foreach (XmlNode p in pnodes)
+                {
+                    var ptype = Xml.GetStringAttribute(p, "type");
+                    var pname = Xml.GetStringAttribute(p, "name")?.ToLowerInvariant();
+                    var pnameold = Xml.GetStringAttribute(p, "old")?.ToLowerInvariant();
+                    var phash = JenkHash.GenHash(pname);
+                    var phashold = JenkHash.GenHash(pnameold);
+                    if (phash != 0)
+                    {
+                        if (pname.StartsWith("hash_"))
+                        {
+                            phash = (MetaHash)Convert.ToUInt32(pname.Substring(5), 16);
+                        }
+                        else
+                        {
+                            JenkIndex.Ensure(pname);
+                        }
+                    }
+                    Enum.TryParse<ShaderParamTypeG9>(ptype, out var pt);
+                    var ps = new ShaderParamInfoG9();
+                    ps.Name = phash;
+                    ps.Type = pt;
+                    switch (pt)
+                    {
+                        case ShaderParamTypeG9.Texture: 
+                            ps.TextureIndex = (byte)Xml.GetIntAttribute(p, "index"); 
+                            break;
+                        case ShaderParamTypeG9.Unknown: 
+                            ps.SamplerIndex = (byte)Xml.GetIntAttribute(p, "index"); 
+                            break;
+                        case ShaderParamTypeG9.Sampler: 
+                            ps.SamplerIndex = (byte)Xml.GetIntAttribute(p, "index"); 
+                            svdict[ps.SamplerIndex] = (byte)Xml.GetIntAttribute(p, "sampler"); 
+                            break;
+                        case ShaderParamTypeG9.CBuffer: 
+                            ps.CBufferIndex = (byte)Xml.GetIntAttribute(p, "buffer"); 
+                            ps.ParamLength = (ushort)Xml.GetUIntAttribute(p, "length"); 
+                            ps.ParamOffset = (ushort)Xml.GetUIntAttribute(p, "offset");
+                            break;
+                    }
+                    infos.Add(ps);
+
+                    if ((phash != 0) && (phashold != 0))
+                    {
+                        dc.ParamsMapLegacyToGen9[phashold] = phash;
+                        dc.ParamsMapGen9ToLegacy[phash] = phashold;
+                    }
+
+                }
+                dc.ParamInfos = infos.ToArray();
+
+                var scnt = 0;
+                foreach (var kvp in svdict) if (kvp.Key >= scnt) scnt = kvp.Key + 1;
+                var svals = new byte[scnt];
+                foreach (var kvp in svdict) svals[kvp.Key] = kvp.Value;
+                dc.SamplerValues = svals;
+
+                dict[hash] = dc;
+            }
+
+            ShadersGen9ConversionData = dict;
+
+        }
+        public class ShaderGen9XmlDataCollection
+        {
+            public MetaHash Name;
+            public int[] BufferSizes;
+            public byte[] SamplerValues;
+            public ShaderParamInfoG9[] ParamInfos;
+            public Dictionary<MetaHash, MetaHash> ParamsMapGen9ToLegacy;
+            public Dictionary<MetaHash, MetaHash> ParamsMapLegacyToGen9;
+        }
         private class ShaderXmlDataCollection
         {
             public MetaHash Name { get; set; }

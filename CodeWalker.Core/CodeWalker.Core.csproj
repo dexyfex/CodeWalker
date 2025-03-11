@@ -17,4 +17,13 @@
     <Resource Include="Resources\magic.dat" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ShadersGen9Conversion.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="strings.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

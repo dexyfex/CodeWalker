@@ -499,6 +499,26 @@ namespace CodeWalker.GameFiles
             {
                 JenkIndex.Ensure(i.ToString("00"));
             }
+
+
+            var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var dir = Path.GetDirectoryName(path);
+            var fpath = Path.Combine(dir, "strings.txt");
+            if (File.Exists(fpath))
+            {
+                var lines = File.ReadAllLines(fpath);
+                if (lines != null)
+                {
+                    foreach (var line in lines)
+                    {
+                        var str = line?.Trim();
+                        if (string.IsNullOrEmpty(str)) continue;
+                        if (str.StartsWith("//")) continue;
+                        JenkIndex.Ensure(str);
+                    }
+                }
+            }
+
         }
 
     }

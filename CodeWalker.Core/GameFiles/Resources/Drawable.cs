@@ -199,7 +199,7 @@ namespace CodeWalker.GameFiles
         public ShaderParametersBlock ParametersList { get; set; }
 
         // gen9 structure data
-        public MetaHash G9_Preset { get; set; }
+        public MetaHash G9_Preset { get; set; } = 0x6D657461;
         public ulong G9_TextureRefsPointer { get; set; }
         public ulong G9_UnknownParamsPointer { get; set; }
         public ulong G9_ParametersListPointer { get; set; }
@@ -227,7 +227,7 @@ namespace CodeWalker.GameFiles
 
                 G9_ParamInfos = reader.ReadBlockAt<ShaderParamInfosG9>(G9_ParametersListPointer);
                 ParametersList = reader.ReadBlockAt<ShaderParametersBlock>(ParametersPointer, 0, this);
-                FileName = G9_Preset;//TODO: get mapping from G9_Preset to legacy FileName
+                FileName = JenkHash.GenHash(Name.ToCleanString() + ".sps");//TODO: get mapping from G9_Preset to legacy FileName
 
                 if (G9_UnknownParamsPointer != 0)
                 { }
@@ -237,6 +237,13 @@ namespace CodeWalker.GameFiles
                 { }
                 if (G9_Unknown_38h != 0)
                 { }
+                switch (G9_Preset)
+                {
+                    case 0x6D657461:
+                        break;
+                    default:
+                        break;
+                }
 
             }
             else
@@ -523,6 +530,10 @@ namespace CodeWalker.GameFiles
 
             if (reader.IsGen9)
             {
+                GameFileCache.EnsureShadersGen9ConversionData();
+                GameFileCache.ShadersGen9ConversionData.TryGetValue(Owner.Name, out var dc);
+                var paramap = dc?.ParamsMapGen9ToLegacy;
+
                 G9_ParamInfos = Owner.G9_ParamInfos;
                 var multi = (int)G9_ParamInfos.Unknown2;//12  ... wtf
                 var mult = (uint)multi;
@@ -570,6 +581,12 @@ namespace CodeWalker.GameFiles
                 var hashes = new List<MetaName>();
                 foreach (var info in G9_ParamInfos.Params)
                 {
+                    var hash = info.Name.Hash;
+                    if ((paramap != null) && paramap.TryGetValue(hash, out var oldhash))
+                    {
+                        hash = oldhash;
+                    }
+
                     if (info.Type == ShaderParamTypeG9.Texture)
                     {
                         var p = new ShaderParameter();
@@ -577,7 +594,7 @@ namespace CodeWalker.GameFiles
                         p.DataPointer = G9_TexturePtrs[info.TextureIndex];
                         p.Data = reader.ReadBlockAt<TextureBase>(p.DataPointer);
                         paras.Add(p);
-                        hashes.Add((MetaName)info.Name.Hash);
+                        hashes.Add((MetaName)hash);
                     }
                     else if (info.Type == ShaderParamTypeG9.CBuffer)
                     {
@@ -610,7 +627,7 @@ namespace CodeWalker.GameFiles
                         else
                         { }
                         paras.Add(p);
-                        hashes.Add((MetaName)info.Name.Hash);
+                        hashes.Add((MetaName)hash);
                     }
                     else
                     { }//todo?
@@ -737,6 +754,9 @@ namespace CodeWalker.GameFiles
         {
             if (writer.IsGen9)
             {
+                GameFileCache.EnsureShadersGen9ConversionData();
+                //TODO: update shader params mappings
+
                 //TODO
 
             }
