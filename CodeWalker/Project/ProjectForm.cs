@@ -137,7 +137,7 @@ namespace CodeWalker.Project
                 GameFileCache = GameFileCacheFactory.Create();
                 new Thread(new ThreadStart(() =>
                 {
-                    GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
+                    GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, GTAFolder.IsGen9, Settings.Default.Key);
                     GameFileCache.Init(UpdateStatus, UpdateError);
                     RpfMan = GameFileCache.RpfMan;
                 })).Start();

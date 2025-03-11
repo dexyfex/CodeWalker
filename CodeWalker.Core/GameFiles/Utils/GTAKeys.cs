@@ -165,7 +165,7 @@ namespace CodeWalker.GameFiles
 
 
 
-        public static void LoadFromPath(string path = ".\\Keys", string key = null)
+        public static void LoadFromPath(string path = ".\\Keys", bool gen9 = false, string key = null)
         {
             //PC_AES_KEY = File.ReadAllBytes(path + "\\gtav_aes_key.dat");
             //PC_NG_KEYS = CryptoIO.ReadNgKeys(path + "\\gtav_ng_key.dat");
@@ -175,7 +175,7 @@ namespace CodeWalker.GameFiles
             //PC_LUT = File.ReadAllBytes(path + "\\gtav_hash_lut.dat");
 
             //GenerateMagicData(path);
-            UseMagicData(path, key);
+            UseMagicData(path, gen9, key);
         }
 
         public static void SaveToPath(string path = ".\\Keys")
@@ -245,12 +245,13 @@ namespace CodeWalker.GameFiles
 
         }
 
-        private static void UseMagicData(string path, string key)
+        private static void UseMagicData(string path, bool gen9, string key)
         {
 
             if (string.IsNullOrEmpty(key))
             {
-                byte[] exedata = File.ReadAllBytes(path + "\\gta5.exe");
+                var exefile = gen9 ? "\\gta5_enhanced.exe" : "\\gta5.exe";
+                byte[] exedata = File.ReadAllBytes(path + exefile);
                 GenerateV2(exedata, null);
             }
             else

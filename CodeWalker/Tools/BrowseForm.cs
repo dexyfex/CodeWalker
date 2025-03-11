@@ -64,7 +64,7 @@ namespace CodeWalker.Tools
 
             try
             {
-                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, Settings.Default.Key);
+                GTA5Keys.LoadFromPath(GTAFolder.CurrentGTAFolder, GTAFolder.IsGen9, Settings.Default.Key);
                 KeysLoaded = true;
                 UpdateStatus("Ready to scan...");
             }
