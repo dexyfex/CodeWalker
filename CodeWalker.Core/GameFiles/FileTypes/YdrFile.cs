@@ -23,7 +23,7 @@ namespace CodeWalker.GameFiles
         {
             //direct load from a raw, compressed ydr file
 
-            RpfFile.LoadResourceFile(this, data, 165);
+            RpfFile.LoadResourceFile(this, data, (uint)GetVersion(RpfManager.IsGen9));
 
             Loaded = true;
         }
@@ -79,11 +79,22 @@ namespace CodeWalker.GameFiles
 
         public byte[] Save()
         {
-            byte[] data = ResourceBuilder.Build(Drawable, 165); //ydr is type/version 165...
+            var gen9 = RpfManager.IsGen9;
+            if (gen9)
+            {
+                Drawable?.EnsureGen9();
+            }
+
+            byte[] data = ResourceBuilder.Build(Drawable, GetVersion(gen9), true, gen9);
 
             return data;
         }
 
+
+        public int GetVersion(bool gen9)
+        {
+            return gen9 ? 159 : 165;
+        }
 
     }
 

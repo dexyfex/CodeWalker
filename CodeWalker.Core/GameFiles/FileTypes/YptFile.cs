@@ -74,9 +74,24 @@ namespace CodeWalker.GameFiles
 
         public byte[] Save()
         {
-            byte[] data = ResourceBuilder.Build(PtfxList, 68); //ypt is type/version 68...
+            var drawables = PtfxList?.DrawableDictionary?.Drawables?.data_items;
+            var gen9 = RpfManager.IsGen9;
+            if (gen9 && (drawables != null))
+            {
+                foreach (var drawable in drawables)
+                {
+                    drawable?.EnsureGen9();
+                }
+            }
+
+            byte[] data = ResourceBuilder.Build(PtfxList, GetVersion(gen9), true, gen9);
 
             return data;
+        }
+
+        public int GetVersion(bool gen9)
+        {
+            return gen9 ? 71 : 68;
         }
 
 

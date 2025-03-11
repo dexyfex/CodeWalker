@@ -4025,8 +4025,8 @@ namespace CodeWalker.GameFiles
         }
         public void TestYdrs()
         {
-            bool savetest = false;
-            bool boundsonly = true;
+            bool savetest = true;
+            bool boundsonly = false;
             var errorfiles = new List<RpfEntry>();
             foreach (RpfFile file in AllRpfs)
             {
@@ -4062,7 +4062,7 @@ namespace CodeWalker.GameFiles
                                 string bytelen = TextUtil.GetBytesReadable(bytes.Length);
 
                                 var ydr2 = new YdrFile();
-                                RpfFile.LoadResourceFile(ydr2, bytes, 165);
+                                RpfFile.LoadResourceFile(ydr2, bytes, (uint)ydr.GetVersion(RpfManager.IsGen9));
 
                                 if (ydr2.Drawable == null)
                                 { continue; }

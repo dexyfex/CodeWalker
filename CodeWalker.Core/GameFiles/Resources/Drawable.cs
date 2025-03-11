@@ -388,6 +388,13 @@ namespace CodeWalker.GameFiles
             }
         }
 
+
+        public void EnsureGen9()
+        {
+            //TODO
+        }
+
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -1016,7 +1023,7 @@ namespace CodeWalker.GameFiles
         public byte NumParams { get; set; }
         public byte Unknown0 { get; set; }
         public byte Unknown1 { get; set; }
-        public byte Unknown2 { get; set; }
+        public byte Unknown2 { get; set; } = 0xc;//12  threads buffer copy count..?
         public ShaderParamInfoG9[] Params { get; set; }
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
@@ -3876,6 +3883,9 @@ namespace CodeWalker.GameFiles
 
             if (writer.IsGen9)
             {
+                G9_SRVPointer = (ulong)(G9_SRV != null ? G9_SRV.FilePosition : 0);
+                InfoPointer = (ulong)(G9_Info != null ? G9_Info.FilePosition : 0);
+
                 //TODO
 
             }
@@ -4069,12 +4079,103 @@ namespace CodeWalker.GameFiles
         }
         public byte[] InitGen9DataFromVertexData()
         {
-            //TODO: create G9_Info from Info
-            //TODO: and remap vertex data from Data1.VertexBytes into the result
+            if (Info == null) return null;
+            if (Data1?.VertexBytes == null) return null;
 
+            //create G9_Info from Info
+            //and remap vertex data from Data1.VertexBytes into the result
 
+            var vd = Info;
+            var vstride = (byte)VertexStride;
+            var vdtypes = vd.Types;// VertexDeclarationTypes.GTAV1;
+            var vdflags = vd.Flags;
+            var g9offs = new uint[52];
+            var g9sizes = new byte[52];//these seem to just contain the vertex stride - not sizes but offsets to next item
+            var g9types = new byte[52];
 
-            return null;
+            if (vdtypes != VertexDeclarationTypes.GTAV1)
+            {
+                throw new Exception($"Unsupported VertexDeclarationTypes ({vdtypes}) - Only GTAV1  is supported - TODO!");
+            }
+
+            var offset = 0u;
+            for (int i = 0; i < 52; i++)
+            {
+                g9offs[i] = offset;
+                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);
+                if (lci < 0) continue;//can't be used, unavailable for GTAV1
+                if ((vdflags & (1u << lci)) == 0) continue;
+                var ctype = (VertexComponentType)(((ulong)vdtypes >> (lci * 4)) & 0xF);
+                var csize = VertexComponentTypes.GetSizeInBytes(ctype);
+                offset += (uint)csize;
+                g9sizes[i] = vstride;
+                g9types[i] = (byte)VertexDeclarationG9.GetGen9ComponentTypeGTAV1(lci);
+            }
+            var info = new VertexDeclarationG9();
+            info.Offsets = g9offs;
+            info.Sizes = g9sizes;
+            info.Types = g9types;
+            info.VertexSize = vstride;
+            info.VertexCount = 0;//it's actually supposed to be 0
+
+            if (G9_Info != null)//sanity check with existing layout
+            {
+                if (info.VertexSize != G9_Info.VertexSize)
+                { }
+                if (info.VertexCount != G9_Info.VertexCount)
+                { }
+                if (info.ElementCount != G9_Info.ElementCount)
+                { }
+                for (int i = 0; i < 52; i++)
+                {
+                    if (info.Offsets[i] != G9_Info.Offsets[i])
+                    { }
+                    if (info.Sizes[i] != G9_Info.Sizes[i])
+                    { }
+                    if (info.Types[i] != G9_Info.Types[i])
+                    { }
+                }
+            }
+            G9_Info = info;
+
+            var legabytes = Data1.VertexBytes;
+            var buf = new byte[legabytes.Length];
+            for (int i = 0; i < g9types.Length; i++)//52
+            {
+                var t = g9types[i];
+                if (t == 0) continue;
+                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);//TODO: handle other vdtypes
+                if (lci < 0) continue;
+                var cssize = (int)g9sizes[i];
+                var csoff = (int)g9offs[i];
+                var cdoff = vd.GetComponentOffset(lci);
+                var cdtype = vd.GetComponentType(lci);
+                var cdsize = VertexComponentTypes.GetSizeInBytes(cdtype);
+                for (int v = 0; v < VertexCount; v++)
+                {
+                    var srcoff = cdoff + (VertexStride * v);
+                    var dstoff = csoff + (cssize * v);
+                    Buffer.BlockCopy(legabytes, srcoff, buf, dstoff, cdsize);
+                }
+            }
+
+            return buf;
+        }
+
+        public void EnsureGen9()
+        {
+            if (Data1 != null)
+            {
+                Data1.G9_VertexBytes = InitGen9DataFromVertexData();
+            }
+            Data2 = Data1;
+
+            if (G9_SRV == null)
+            {
+                G9_SRV = new ShaderResourceViewG9();
+                G9_SRV.Dimension = ShaderResourceViewDimensionG9.Buffer;
+            }
+
         }
 
 
@@ -4083,7 +4184,15 @@ namespace CodeWalker.GameFiles
             var list = new List<IResourceBlock>();
             if (Data1 != null) list.Add(Data1);
             if (Data2 != null) list.Add(Data2);
-            if (Info != null) list.Add(Info);
+            if (G9_SRV != null) list.Add(G9_SRV);
+            if (G9_Info != null)
+            {
+                list.Add(G9_Info);
+            }
+            else
+            {
+                if (Info != null) list.Add(Info);
+            }
             return list.ToArray();
         }
     }
@@ -4108,6 +4217,7 @@ namespace CodeWalker.GameFiles
         public VertexType VertexType { get; set; }
 
         public byte[] VertexBytes { get; set; }
+        public byte[] G9_VertexBytes { get; set; }//only use when saving
 
 
         public long MemoryUsage
@@ -4120,6 +4230,8 @@ namespace CodeWalker.GameFiles
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
+            //not used by gen9 reader
+
             VertexStride = Convert.ToInt32(parameters[0]);
             VertexCount = Convert.ToInt32(parameters[1]);
             Info = (VertexDeclaration)parameters[2];
@@ -4152,9 +4264,19 @@ namespace CodeWalker.GameFiles
         }
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            if (VertexBytes != null)
+            if (writer.IsGen9)
             {
-                writer.Write(VertexBytes); //not dealing with individual vertex data here any more!
+                if (G9_VertexBytes != null)
+                {
+                    writer.Write(G9_VertexBytes);
+                }
+            }
+            else
+            {
+                if (VertexBytes != null)
+                {
+                    writer.Write(VertexBytes); //not dealing with individual vertex data here any more!
+                }
             }
         }
         public void WriteXml(StringBuilder sb, int indent)
@@ -4943,6 +5065,31 @@ namespace CodeWalker.GameFiles
                 51"TEXCOORD23",
             };
              */
+        }
+        public static VertexDeclarationG9ElementFormat GetGen9ComponentTypeGTAV1(int lci)
+        {
+            //(lci=legacy component index)
+            //GTAV1 = 0x7755555555996996, // GTAV - used by most drawables
+            switch (lci)
+            {
+                case 0: return VertexDeclarationG9ElementFormat.R32G32B32_FLOAT;
+                case 1: return VertexDeclarationG9ElementFormat.R8G8B8A8_UNORM;
+                case 2: return VertexDeclarationG9ElementFormat.R8G8B8A8_UINT;
+                case 3: return VertexDeclarationG9ElementFormat.R32G32B32_FLOAT;
+                case 4:
+                case 5: return VertexDeclarationG9ElementFormat.R8G8B8A8_UNORM;
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                case 12:
+                case 13: return VertexDeclarationG9ElementFormat.R32G32_TYPELESS;
+                case 14:
+                case 15: return VertexDeclarationG9ElementFormat.R32G32B32A32_FLOAT;
+                default: return VertexDeclarationG9ElementFormat.R32G32B32A32_FLOAT;
+            }
         }
 
 
@@ -6078,6 +6225,35 @@ namespace CodeWalker.GameFiles
                 r.Owner = Owner;
             }
             return r;
+        }
+
+
+
+        public void EnsureGen9()
+        {
+
+            var shaders = ShaderGroup?.Shaders?.data_items;
+            if (shaders != null)
+            {
+                foreach (var shader in shaders)
+                {
+                    shader?.EnsureGen9();
+                }
+            }
+
+            if (AllModels != null)
+            {
+                foreach (var model in AllModels)
+                {
+                    var geoms = model?.Geometries;
+                    if (geoms == null) continue;
+                    foreach (var geom in geoms)
+                    {
+                        geom?.VertexBuffer?.EnsureGen9();
+                    }
+                }
+            }
+
         }
 
     }

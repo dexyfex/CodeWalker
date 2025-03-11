@@ -27,7 +27,7 @@ namespace CodeWalker.GameFiles
         {
             //direct load from a raw, compressed ytd file
 
-            RpfFile.LoadResourceFile(this, data, 13);
+            RpfFile.LoadResourceFile(this, data, (uint)GetVersion(RpfManager.IsGen9));
 
             Loaded = true;
         }
@@ -62,18 +62,20 @@ namespace CodeWalker.GameFiles
         public byte[] Save()
         {
             var gen9 = RpfManager.IsGen9;
-            var version = gen9 ? 5 : 13;
-
             if (gen9)
             {
                 TextureDict?.EnsureGen9();
             }
 
-            byte[] data = ResourceBuilder.Build(TextureDict, version, true, gen9);
+            byte[] data = ResourceBuilder.Build(TextureDict, GetVersion(gen9), true, gen9);
 
             return data;
         }
 
+        public int GetVersion(bool gen9)
+        {
+            return gen9 ? 5 : 13;
+        }
 
     }
 

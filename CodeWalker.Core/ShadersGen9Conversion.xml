@@ -1407,8 +1407,8 @@
    <Item type="Sampler" name="diffusesampler" index="1" sampler="1" />
    <Item type="Sampler" name="specsampler" index="2" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="2" />
-   <Item type="CBuffer" name="hash_B5FE3ACB" buffer="0" length="4" offset="0" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="0" length="4" offset="4" />
+   <Item type="CBuffer" name="fresnel" buffer="0" length="4" offset="0" />
+   <Item type="CBuffer" name="specular" buffer="0" length="4" offset="4" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="0" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="0" length="12" offset="16" />
    <Item type="CBuffer" name="hash_4DC15BF2" buffer="0" length="4" offset="28" />
@@ -1453,8 +1453,8 @@
    <Item type="Sampler" name="diffusesampler" index="1" sampler="1" />
    <Item type="Sampler" name="specsampler" index="2" sampler="4" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="2" />
-   <Item type="CBuffer" name="hash_B5FE3ACB" buffer="0" length="4" offset="0" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="0" length="4" offset="4" />
+   <Item type="CBuffer" name="fresnel" buffer="0" length="4" offset="0" />
+   <Item type="CBuffer" name="specular" buffer="0" length="4" offset="4" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="0" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="0" length="12" offset="16" />
    <Item type="CBuffer" name="hash_4DC15BF2" buffer="0" length="4" offset="28" />
@@ -1539,7 +1539,7 @@
    <Item type="Texture" name="heightTexture" old="heightSampler" index="2" />
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="3" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="7" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="2" />
    <Item type="Sampler" name="bumpsampler" index="4" sampler="3" />
@@ -1569,7 +1569,7 @@
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="4" />
    <Item type="Sampler" name="pointclamp" index="0" sampler="8" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="1" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="1" />
    <Item type="Sampler" name="diffusesampler" index="3" sampler="2" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="4" sampler="3" />
    <Item type="Sampler" name="bumpsampler" index="5" sampler="4" />
@@ -1643,7 +1643,7 @@
    <Item type="Texture" name="DetailTex" old="DetailSampler" index="3" />
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="6" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="6" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
    <Item type="Sampler" name="detailsampler" index="3" sampler="7" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="4" sampler="2" />
@@ -1675,7 +1675,7 @@
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="2" />
    <Item type="Sampler" name="bumpsampler" index="4" sampler="5" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="0" length="4" offset="0" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="0" length="4" offset="4" />
+   <Item type="CBuffer" name="specular" buffer="0" length="4" offset="4" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="0" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="0" length="12" offset="16" />
    <Item type="CBuffer" name="SpecDesaturateIntensity" old="SpecDesaturateIntensity" buffer="0" length="16" offset="32" />
@@ -1701,7 +1701,7 @@
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="2" />
    <Item type="Sampler" name="bumpsampler" index="4" sampler="5" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="0" length="4" offset="0" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="0" length="4" offset="4" />
+   <Item type="CBuffer" name="specular" buffer="0" length="4" offset="4" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="0" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="0" length="12" offset="16" />
    <Item type="CBuffer" name="SpecDesaturateIntensity" old="SpecDesaturateIntensity" buffer="0" length="16" offset="32" />
@@ -1724,7 +1724,7 @@
    <Item type="Texture" name="DetailTex" old="DetailSampler" index="3" />
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="8" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="8" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="3" sampler="3" />
    <Item type="Sampler" name="detailsampler" index="4" sampler="6" />
@@ -1732,7 +1732,7 @@
    <Item type="Sampler" name="bumpsampler" index="6" sampler="5" />
    <Item type="CBuffer" name="TessellationMultiplier" old="tessellationMultiplier" buffer="0" length="4" offset="0" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="0" length="4" offset="4" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="0" length="4" offset="8" />
+   <Item type="CBuffer" name="specular" buffer="0" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="0" length="4" offset="12" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="0" length="12" offset="16" />
    <Item type="CBuffer" name="SpecDesaturateIntensity" old="SpecDesaturateIntensity" buffer="0" length="16" offset="32" />
@@ -1760,14 +1760,14 @@
    <Item type="Sampler" name="pointclamp" index="0" sampler="7" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="0" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="8" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="8" />
    <Item type="Sampler" name="detailsampler" index="4" sampler="6" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="2" />
    <Item type="Sampler" name="bumpsampler" index="6" sampler="5" />
    <Item type="CBuffer" name="TintPaletteSelector" old="tintPaletteSelector" buffer="0" length="8" offset="0" />
    <Item type="CBuffer" name="TessellationMultiplier" old="tessellationMultiplier" buffer="1" length="4" offset="0" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="4" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="1" length="4" offset="8" />
+   <Item type="CBuffer" name="specular" buffer="1" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="1" length="4" offset="12" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="16" />
    <Item type="CBuffer" name="SpecDesaturateIntensity" old="SpecDesaturateIntensity" buffer="1" length="16" offset="32" />
@@ -1799,7 +1799,7 @@
    <Item type="Sampler" name="bumpsampler" index="5" sampler="3" />
    <Item type="CBuffer" name="TintPaletteSelector" old="tintPaletteSelector" buffer="0" length="8" offset="0" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="0" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="1" length="4" offset="4" />
+   <Item type="CBuffer" name="specular" buffer="1" length="4" offset="4" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="1" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="16" />
    <Item type="CBuffer" name="SpecDesaturateIntensity" old="SpecDesaturateIntensity" buffer="1" length="16" offset="32" />
@@ -1827,7 +1827,7 @@
    <Item type="Sampler" name="bumpsampler" index="4" sampler="3" />
    <Item type="CBuffer" name="TintPaletteSelector" old="tintPaletteSelector" buffer="0" length="8" offset="0" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="0" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="1" length="4" offset="4" />
+   <Item type="CBuffer" name="specular" buffer="1" length="4" offset="4" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="1" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="16" />
    <Item type="CBuffer" name="SpecDesaturateIntensity" old="SpecDesaturateIntensity" buffer="1" length="16" offset="32" />
@@ -1848,7 +1848,7 @@
    <Item type="Texture" name="heightTexture" old="heightSampler" index="2" />
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="3" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="7" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="2" />
    <Item type="Sampler" name="bumpsampler" index="4" sampler="5" />
@@ -1878,7 +1878,7 @@
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="4" />
    <Item type="Sampler" name="pointclamp" index="0" sampler="4" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="8" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="8" />
    <Item type="Sampler" name="diffusesampler" index="3" sampler="1" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="4" sampler="2" />
    <Item type="Sampler" name="bumpsampler" index="5" sampler="3" />
@@ -2123,7 +2123,7 @@
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="3" />
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="1" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="1" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="2" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="3" />
    <Item type="Sampler" name="bumpsampler" index="4" sampler="4" />
@@ -2209,7 +2209,7 @@
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="4" />
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="5" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="7" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="3" sampler="3" />
    <Item type="Sampler" name="detailsampler" index="4" sampler="6" />
@@ -2245,7 +2245,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="pointclamp" index="1" sampler="0" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="7" />
    <Item type="Sampler" name="miplinearclamp" index="4" sampler="8" />
    <Item type="Sampler" name="detailsampler" index="5" sampler="3" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="4" />
@@ -2282,7 +2282,7 @@
    <Item type="Sampler" name="pointclamp" index="0" sampler="5" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="0" />
    <Item type="Sampler" name="trilinearwrap" index="2" sampler="6" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="8" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="8" />
    <Item type="Sampler" name="miplinearclamp" index="4" sampler="9" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="1" />
    <Item type="Sampler" name="detailsampler" index="6" sampler="2" />
@@ -2346,7 +2346,7 @@
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="3" />
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="7" />
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="3" sampler="4" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="4" sampler="2" />
@@ -2400,7 +2400,7 @@
    <Item type="Texture" name="BumpTex" old="BumpSampler" index="3" />
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="1" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="1" sampler="7" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="3" sampler="1" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="4" sampler="2" />
@@ -2432,7 +2432,7 @@
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="5" />
    <Item type="Sampler" name="pointclamp" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="2" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="2" />
    <Item type="Sampler" name="diffusesampler" index="3" sampler="3" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="4" sampler="4" />
    <Item type="Sampler" name="bumpsampler" index="5" sampler="5" />
@@ -3905,7 +3905,7 @@
    <Item type="Sampler" name="diffusesampler" index="2" sampler="1" />
    <Item type="Sampler" name="bumpsampler" index="3" sampler="4" />
    <Item type="Sampler" name="heightmapsampler" index="4" sampler="5" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="0" length="4" offset="0" />
+   <Item type="CBuffer" name="specular" buffer="0" length="4" offset="0" />
    <Item type="CBuffer" name="specularFalloffMultSpecMap" old="specularFalloffMultSpecMap" buffer="0" length="4" offset="4" />
    <Item type="CBuffer" name="specFalloffAdjust" old="specFalloffAdjust" buffer="0" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="0" length="4" offset="12" />
@@ -4179,7 +4179,7 @@
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="0" />
    <Item type="Sampler" name="bumpsampler" index="2" sampler="5" />
    <Item type="Sampler" name="heightmapsampler" index="3" sampler="7" />
-   <Item type="CBuffer" name="hash_A1F60489" buffer="0" length="4" offset="0" />
+   <Item type="CBuffer" name="specular" buffer="0" length="4" offset="0" />
    <Item type="CBuffer" name="specularFalloffMultSpecMap" old="specularFalloffMultSpecMap" buffer="0" length="4" offset="4" />
    <Item type="CBuffer" name="specFalloffAdjust" old="specFalloffAdjust" buffer="0" length="4" offset="8" />
    <Item type="CBuffer" name="SpecularColor" old="specularIntensityMult" buffer="0" length="4" offset="12" />
@@ -4635,8 +4635,8 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_DBA71FCC" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="matdiffusespecularrampenabled" buffer="1" length="4" offset="12" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="48" />
    <Item type="CBuffer" name="Specular" old="specularFalloffMult" buffer="1" length="4" offset="52" />
@@ -4662,7 +4662,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -4673,7 +4673,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="48" />
    <Item type="CBuffer" name="Specular" old="specularFalloffMult" buffer="1" length="4" offset="52" />
@@ -4699,7 +4699,7 @@
    <Item type="Sampler" name="diffusesampler" index="2" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="6" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="0" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="0" length="16" offset="32" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="0" length="12" offset="48" />
    <Item type="CBuffer" name="Reflectivity" old="reflectivePower" buffer="0" length="4" offset="60" />
@@ -4721,7 +4721,7 @@
    <Item type="Sampler" name="diffusesampler" index="2" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="3" sampler="6" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="0" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="0" length="4" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="0" length="16" offset="48" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="0" length="12" offset="64" />
@@ -4745,7 +4745,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -4756,7 +4756,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="60" />
@@ -4783,7 +4783,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -4820,7 +4820,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -4831,7 +4831,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="48" />
    <Item type="CBuffer" name="Specular" old="specularFalloffMult" buffer="1" length="4" offset="52" />
@@ -4865,7 +4865,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="dimmerSetPacked" old="dimmerSetPacked" buffer="1" length="80" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="112" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="128" />
@@ -4888,7 +4888,7 @@
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="trilinearwrap" index="2" sampler="4" />
    <Item type="Sampler" name="miplinearclamp" index="3" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="4" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="4" sampler="3" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
    <Item type="CBuffer" name="BoundRadius" old="BoundRadius" buffer="0" length="4" offset="0" />
@@ -4898,7 +4898,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Reflectivity" old="reflectivePower" buffer="1" length="4" offset="60" />
@@ -4929,7 +4929,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Reflectivity" old="reflectivePower" buffer="1" length="4" offset="60" />
@@ -4951,7 +4951,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -4962,7 +4962,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="60" />
@@ -4989,7 +4989,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="detailsampler" index="6" sampler="8" />
@@ -5001,7 +5001,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="60" />
@@ -5029,7 +5029,7 @@
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="2" sampler="2" />
    <Item type="Sampler" name="miplinearclamp" index="3" sampler="6" />
-   <Item type="Sampler" name="hash_738CA901" index="4" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="4" sampler="7" />
    <Item type="Sampler" name="trilinearwrap" index="5" sampler="3" />
    <Item type="Sampler" name="diffusesampler" index="6" sampler="4" />
    <Item type="Sampler" name="detailsampler" index="7" sampler="8" />
@@ -5041,7 +5041,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Reflectivity" old="reflectivePower" buffer="1" length="4" offset="60" />
@@ -5073,7 +5073,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="1" length="4" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="48" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="64" />
@@ -5097,7 +5097,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5108,7 +5108,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="1" length="4" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="48" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="64" />
@@ -5132,7 +5132,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5143,7 +5143,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="48" />
    <Item type="CBuffer" name="Specular" old="specularFalloffMult" buffer="1" length="4" offset="52" />
@@ -5169,7 +5169,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5180,7 +5180,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="dirtlevelmod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="48" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="52" />
@@ -5205,7 +5205,7 @@
    <Item type="Sampler" name="trilinearwrap" index="2" sampler="3" />
    <Item type="Sampler" name="trilinearclamp" index="3" sampler="2" />
    <Item type="Sampler" name="miplinearclamp" index="4" sampler="6" />
-   <Item type="Sampler" name="hash_738CA901" index="5" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="5" sampler="7" />
    <Item type="Sampler" name="diffusesampler" index="6" sampler="4" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="7" sampler="5" />
    <Item type="CBuffer" name="BoundRadius" old="BoundRadius" buffer="0" length="4" offset="0" />
@@ -5215,7 +5215,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="dirtlevelmod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="48" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="52" />
@@ -5241,7 +5241,7 @@
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="2" />
    <Item type="Sampler" name="damagesampler" index="2" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="3" sampler="3" />
-   <Item type="Sampler" name="hash_738CA901" index="4" sampler="4" />
+   <Item type="Sampler" name="miplinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="trilinearwrap" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="7" />
    <Item type="Sampler" name="hash_309920E8" index="7" sampler="9" />
@@ -5253,7 +5253,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Bumpiness" old="bumpiness" buffer="1" length="4" offset="60" />
@@ -5297,7 +5297,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="1" length="4" offset="32" />
    <Item type="CBuffer" name="dimmerSetPacked" old="dimmerSetPacked" buffer="1" length="80" offset="48" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="128" />
@@ -5331,7 +5331,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="1" length="4" offset="32" />
    <Item type="CBuffer" name="dimmerSetPacked" old="dimmerSetPacked" buffer="1" length="80" offset="48" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="128" />
@@ -5358,7 +5358,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5370,7 +5370,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Specular2Color" old="specular2Color_DirLerp" buffer="1" length="16" offset="64" />
@@ -5397,7 +5397,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5409,7 +5409,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="SpecTexTileUV" old="specTexTileUV" buffer="1" length="4" offset="60" />
@@ -5436,7 +5436,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5448,7 +5448,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="SpecTexTileUV" old="specTexTileUV" buffer="1" length="4" offset="60" />
@@ -5473,7 +5473,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5486,7 +5486,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="60" />
@@ -5517,7 +5517,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5530,7 +5530,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="60" />
@@ -5560,7 +5560,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5572,7 +5572,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="60" />
@@ -5603,7 +5603,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5615,7 +5615,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Fresnel" old="specularFresnel" buffer="1" length="4" offset="60" />
@@ -5646,7 +5646,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5692,7 +5692,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5737,7 +5737,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5781,7 +5781,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5828,7 +5828,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5878,7 +5878,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5928,7 +5928,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -5977,7 +5977,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -6028,7 +6028,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -6077,7 +6077,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -6124,7 +6124,7 @@
    <Item type="Sampler" name="damagesampler" index="0" sampler="0" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -6174,7 +6174,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -6227,7 +6227,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -6274,7 +6274,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="damagesampler" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="5" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="6" />
@@ -6286,7 +6286,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="SpecularMapIntensityMask" old="specMapIntMask" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Reflectivity" old="reflectivePower" buffer="1" length="4" offset="60" />
@@ -6308,7 +6308,7 @@
    <Item type="Texture" name="DiffuseRampTexture" old="DiffuseRampTextureSampler" index="5" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="1" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="3" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="4" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="6" />
@@ -6316,7 +6316,7 @@
    <Item type="CBuffer" name="tyreDeformParams2" old="tyreDeformParams2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
    <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="48" />
    <Item type="CBuffer" name="Specular2Color" old="specular2Color_DirLerp" buffer="1" length="16" offset="64" />
@@ -6326,7 +6326,7 @@
    <Item type="CBuffer" name="envEffTexTileUV" old="envEffTexTileUV" buffer="1" length="4" offset="96" />
    <Item type="CBuffer" name="matWheelWorld0" old="matWheelWorld" buffer="2" length="64" offset="0" />
    <Item type="CBuffer" name="matWorldViewProj0" old="matWheelWorldViewProj" buffer="2" length="64" offset="64" />
-   <Item type="CBuffer" name="hash_E549D61D" buffer="2" length="64" offset="128" />
+   <Item type="CBuffer" name="matwheelprevworldviewproj0" buffer="2" length="64" offset="128" />
   </Parameters>
  </Item>
  <Item>
@@ -6341,12 +6341,12 @@
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="1" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="3" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="4" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="6" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="0" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="TrackAnimUV0" old="TrackAnimUV" buffer="0" length="16" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="0" length="16" offset="48" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="0" length="12" offset="64" />
@@ -6373,12 +6373,12 @@
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="1" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="3" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="4" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="6" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="0" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="TrackAmmoAnimUV0" old="TrackAmmoAnimUV" buffer="0" length="16" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="0" length="16" offset="48" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="0" length="12" offset="64" />
@@ -6405,12 +6405,12 @@
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="1" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="3" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="4" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="6" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="0" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="0" length="4" offset="32" />
    <Item type="CBuffer" name="TrackAnimUV0" old="TrackAnimUV" buffer="0" length="16" offset="48" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="0" length="16" offset="64" />
@@ -6448,7 +6448,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="1" length="4" offset="32" />
    <Item type="CBuffer" name="dimmerSetPacked" old="dimmerSetPacked" buffer="1" length="80" offset="48" />
    <Item type="CBuffer" name="Track2AnimUV0" old="Track2AnimUV" buffer="1" length="16" offset="128" />
@@ -6473,12 +6473,12 @@
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="1" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="3" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="4" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="6" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="0" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="Track2AnimUV0" old="Track2AnimUV" buffer="0" length="16" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="0" length="16" offset="48" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="0" length="12" offset="64" />
@@ -6505,12 +6505,12 @@
    <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
    <Item type="Sampler" name="miplinearclamp" index="1" sampler="2" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="3" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="3" />
    <Item type="Sampler" name="trilinearwrap" index="3" sampler="4" />
    <Item type="Sampler" name="diffusesampler" index="4" sampler="5" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="6" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="0" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="0" length="16" offset="16" />
    <Item type="CBuffer" name="EmissiveMultiplier" old="emissiveMultiplier" buffer="0" length="4" offset="32" />
    <Item type="CBuffer" name="Track2AnimUV0" old="Track2AnimUV" buffer="0" length="16" offset="48" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="0" length="16" offset="64" />
@@ -6548,7 +6548,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DiffuseColorTint" old="matDiffuseColorTint" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="48" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="64" />
@@ -6581,7 +6581,7 @@
    <Item type="CBuffer" name="bDebugDisplayDamageMap" old="bDebugDisplayDamageMap" buffer="0" length="4" offset="64" />
    <Item type="CBuffer" name="bDebugDisplayDamageScale" old="bDebugDisplayDamageScale" buffer="0" length="4" offset="68" />
    <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
-   <Item type="CBuffer" name="hash_C0C2FE4C" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
    <Item type="CBuffer" name="DiffuseColorTint" old="matDiffuseColorTint" buffer="1" length="16" offset="32" />
    <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="48" />
    <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="64" />
@@ -6648,7 +6648,7 @@
    <Item type="Sampler" name="pointclamp" index="0" sampler="8" />
    <Item type="Sampler" name="miplinearclamp" index="1" sampler="5" />
    <Item type="Sampler" name="trilinearclamp" index="2" sampler="0" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="9" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="9" />
    <Item type="Sampler" name="hash_D189F67B" index="4" sampler="10" />
    <Item type="Sampler" name="trilinearwrap" index="5" sampler="13" />
    <Item type="Sampler" name="anisotropic4xwrap" index="6" sampler="11" />
@@ -6715,7 +6715,7 @@
    <Item type="Texture" name="FogTexture" old="FogSampler" index="1" />
    <Item type="Sampler" name="miplinearclamp" index="0" sampler="5" />
    <Item type="Sampler" name="pointclamp" index="1" sampler="8" />
-   <Item type="Sampler" name="hash_738CA901" index="2" sampler="9" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="9" />
    <Item type="Sampler" name="trilinearclamp" index="3" sampler="0" />
    <Item type="Sampler" name="trilinearwrap" index="4" sampler="13" />
    <Item type="Sampler" name="hash_D189F67B" index="5" sampler="10" />
@@ -6742,7 +6742,7 @@
    <Item type="Sampler" name="pointclamp" index="0" sampler="11" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="0" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="6" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="1" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="1" />
    <Item type="Sampler" name="hash_D189F67B" index="4" sampler="9" />
    <Item type="Sampler" name="trilinearwrap" index="5" sampler="7" />
    <Item type="Sampler" name="gcsmshadowtexturesamp" index="6" sampler="3" />
@@ -6768,7 +6768,7 @@
    <Item type="Sampler" name="trilinearclamp" index="0" sampler="0" />
    <Item type="Sampler" name="pointclamp" index="1" sampler="8" />
    <Item type="Sampler" name="miplinearclamp" index="2" sampler="3" />
-   <Item type="Sampler" name="hash_738CA901" index="3" sampler="5" />
+   <Item type="Sampler" name="miplinearwrap" index="3" sampler="5" />
    <Item type="Sampler" name="hash_D189F67B" index="4" sampler="6" />
    <Item type="Sampler" name="trilinearwrap" index="5" sampler="9" />
    <Item type="Sampler" name="anisotropic4xwrap" index="6" sampler="7" />
@@ -6789,7 +6789,7 @@
   <Parameters>
    <Item type="Texture" name="depthbuffertex" index="0" />
    <Item type="Texture" name="FoamTexture" old="FoamSampler" index="1" />
-   <Item type="Sampler" name="hash_738CA901" index="0" sampler="7" />
+   <Item type="Sampler" name="miplinearwrap" index="0" sampler="7" />
    <Item type="Sampler" name="trilinearclamp" index="1" sampler="0" />
    <Item type="Sampler" name="anisotropic4xwrap" index="2" sampler="8" />
    <Item type="Sampler" name="foamsampler" index="3" sampler="9" />

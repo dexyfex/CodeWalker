@@ -725,6 +725,40 @@ namespace CodeWalker.GameFiles
         }
 
 
+
+        public void EnsureGen9()
+        {
+
+            Drawable?.EnsureGen9();
+            DrawableCloth?.EnsureGen9();
+
+            if (DrawableArray?.data_items != null)
+            {
+                foreach (var arrd in DrawableArray.data_items)
+                {
+                    arrd?.EnsureGen9();
+                }
+            }
+
+            void ensure(FragPhysicsLOD lod)
+            {
+                var children = lod?.Children?.data_items;
+                if (children == null) return;
+                for (int i = 0; i < children.Length; i++)
+                {
+                    var child = children[i];
+                    child?.Drawable1?.EnsureGen9();
+                    child?.Drawable2?.EnsureGen9();
+                }
+            };
+
+            ensure(PhysicsLODGroup.PhysicsLOD1);
+            ensure(PhysicsLODGroup.PhysicsLOD2);
+            ensure(PhysicsLODGroup.PhysicsLOD3);
+
+        }
+
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>(base.GetReferences());
