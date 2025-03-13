@@ -933,7 +933,10 @@ namespace CodeWalker.GameFiles
                     for (int i = 0; i < excnt; i++)
                     {
                         var exhash = (uint)Hashes[i];
-                        paramap.TryGetValue(exhash, out var g9hash);
+                        if (paramap.TryGetValue(exhash, out var g9hash) == false)
+                        {
+                            g9hash = exhash;
+                        }
                         if (g9hash != 0)
                         {
                             exmap[g9hash] = Parameters[i];
