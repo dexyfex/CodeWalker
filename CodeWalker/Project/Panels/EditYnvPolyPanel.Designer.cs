@@ -127,17 +127,17 @@
             this.FlagsCheckedListBox1.CheckOnClick = true;
             this.FlagsCheckedListBox1.FormattingEnabled = true;
             this.FlagsCheckedListBox1.Items.AddRange(new object[] {
-            "0 - AvoidUnk0",
-            "1 - AvoidUnk1",
-            "2 - IsFootpath",
+            "0 - SmallPoly",
+            "1 - LargePoly",
+            "2 - IsPavement",
             "3 - IsUnderground",
             "4 - [Not used]",
             "5 - [Not used]",
-            "6 - IsSteepSlope",
+            "6 - IsTooSteepToWalk",
             "7 - IsWater"});
             this.FlagsCheckedListBox1.Location = new System.Drawing.Point(10, 68);
             this.FlagsCheckedListBox1.Name = "FlagsCheckedListBox1";
-            this.FlagsCheckedListBox1.Size = new System.Drawing.Size(131, 124);
+            this.FlagsCheckedListBox1.Size = new System.Drawing.Size(143, 124);
             this.FlagsCheckedListBox1.TabIndex = 10;
             this.FlagsCheckedListBox1.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox1_ItemCheck);
             // 
@@ -146,17 +146,18 @@
             this.FlagsCheckedListBox2.CheckOnClick = true;
             this.FlagsCheckedListBox2.FormattingEnabled = true;
             this.FlagsCheckedListBox2.Items.AddRange(new object[] {
-            "0 - UndergroundUnk0",
-            "1 - UndergroundUnk1",
-            "2 - UndergroundUnk2",
-            "3 - UndergroundUnk3",
+            "0 - AudioProperties1",
+            "1 - AudioProperties2",
+            "2 - AudioProperties3",
+            "3 - AudioProperties4",
             "4 - [Not used]",
-            "5 - HasPathNode",
+            "5 - NearPathNode",
             "6 - IsInterior",
-            "7 - InteractionUnk"});
-            this.FlagsCheckedListBox2.Location = new System.Drawing.Point(147, 68);
+            "7 - IsIsolated",
+            "8 - ZeroAreaStitchPoly"});
+            this.FlagsCheckedListBox2.Location = new System.Drawing.Point(159, 68);
             this.FlagsCheckedListBox2.Name = "FlagsCheckedListBox2";
-            this.FlagsCheckedListBox2.Size = new System.Drawing.Size(131, 124);
+            this.FlagsCheckedListBox2.Size = new System.Drawing.Size(142, 124);
             this.FlagsCheckedListBox2.TabIndex = 11;
             this.FlagsCheckedListBox2.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox2_ItemCheck);
             // 
@@ -165,15 +166,15 @@
             this.FlagsCheckedListBox3.CheckOnClick = true;
             this.FlagsCheckedListBox3.FormattingEnabled = true;
             this.FlagsCheckedListBox3.Items.AddRange(new object[] {
-            "1 - IsFlatGround",
+            "1 - CanSpawnPeds",
             "2 - IsRoad",
-            "3 - IsCellEdge",
+            "3 - AlongEdgeOfMesh",
             "4 - IsTrainTrack",
             "5 - IsShallowWater",
-            "6 - FootpathUnk1",
-            "7 - FootpathUnk2",
-            "8 - FootpathMall"});
-            this.FlagsCheckedListBox3.Location = new System.Drawing.Point(284, 68);
+            "6 - PedDensity1",
+            "7 - PedDensity2",
+            "8 - PedDensity3"});
+            this.FlagsCheckedListBox3.Location = new System.Drawing.Point(307, 68);
             this.FlagsCheckedListBox3.Name = "FlagsCheckedListBox3";
             this.FlagsCheckedListBox3.Size = new System.Drawing.Size(131, 124);
             this.FlagsCheckedListBox3.TabIndex = 12;
@@ -193,15 +194,15 @@
             this.FlagsCheckedListBox4.CheckOnClick = true;
             this.FlagsCheckedListBox4.FormattingEnabled = true;
             this.FlagsCheckedListBox4.Items.AddRange(new object[] {
-            "0 - SlopeSouth",
-            "1 - SlopeSouthEast",
-            "2 - SlopeEast",
-            "3 - SlopeNorthEast",
-            "4 - SlopeNorth",
-            "5 - SlopeNorthWest",
-            "6 - SlopeWest",
-            "7 - SlopeSouthWest"});
-            this.FlagsCheckedListBox4.Location = new System.Drawing.Point(421, 68);
+            "0 - CoverSouth",
+            "1 - CoverSouthEast",
+            "2 - CoverEast",
+            "3 - CoverNorthEast",
+            "4 - CoverNorth",
+            "5 - CoverNorthWest",
+            "6 - CoverWest",
+            "7 - CoverSouthWest"});
+            this.FlagsCheckedListBox4.Location = new System.Drawing.Point(444, 68);
             this.FlagsCheckedListBox4.Name = "FlagsCheckedListBox4";
             this.FlagsCheckedListBox4.Size = new System.Drawing.Size(131, 124);
             this.FlagsCheckedListBox4.TabIndex = 13;
@@ -209,7 +210,7 @@
             // 
             // UnkXUpDown
             // 
-            this.UnkXUpDown.Location = new System.Drawing.Point(82, 213);
+            this.UnkXUpDown.Location = new System.Drawing.Point(209, 219);
             this.UnkXUpDown.Maximum = new decimal(new int[] {
             255,
             0,
@@ -223,15 +224,15 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 215);
+            this.label3.Location = new System.Drawing.Point(140, 221);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(63, 13);
+            this.label3.Size = new System.Drawing.Size(56, 13);
             this.label3.TabIndex = 14;
-            this.label3.Text = "UnknownX:";
+            this.label3.Text = "CentroidX:";
             // 
             // UnkYUpDown
             // 
-            this.UnkYUpDown.Location = new System.Drawing.Point(219, 213);
+            this.UnkYUpDown.Location = new System.Drawing.Point(346, 219);
             this.UnkYUpDown.Maximum = new decimal(new int[] {
             255,
             0,
@@ -245,16 +246,16 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(150, 215);
+            this.label4.Location = new System.Drawing.Point(277, 221);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(63, 13);
+            this.label4.Size = new System.Drawing.Size(56, 13);
             this.label4.TabIndex = 16;
-            this.label4.Text = "UnknownY:";
+            this.label4.Text = "CentroidY:";
             // 
             // DeletePolyButton
             // 
             this.DeletePolyButton.Enabled = false;
-            this.DeletePolyButton.Location = new System.Drawing.Point(123, 263);
+            this.DeletePolyButton.Location = new System.Drawing.Point(274, 269);
             this.DeletePolyButton.Name = "DeletePolyButton";
             this.DeletePolyButton.Size = new System.Drawing.Size(90, 23);
             this.DeletePolyButton.TabIndex = 19;
@@ -265,7 +266,7 @@
             // AddToProjectButton
             // 
             this.AddToProjectButton.Enabled = false;
-            this.AddToProjectButton.Location = new System.Drawing.Point(27, 263);
+            this.AddToProjectButton.Location = new System.Drawing.Point(178, 269);
             this.AddToProjectButton.Name = "AddToProjectButton";
             this.AddToProjectButton.Size = new System.Drawing.Size(90, 23);
             this.AddToProjectButton.TabIndex = 18;
@@ -299,7 +300,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(562, 404);
+            this.ClientSize = new System.Drawing.Size(587, 424);
             this.Controls.Add(this.PortalCountUpDown);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.DeletePolyButton);
