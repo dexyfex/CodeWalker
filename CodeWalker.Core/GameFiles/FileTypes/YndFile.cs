@@ -665,14 +665,13 @@ namespace CodeWalker.GameFiles
 
 
 
-        public YndNode AddYndNode(Space space, out YndFile[] affectedFiles)
+        public YndNode AddYndNode(Space space, out HashSet<YndFile> affectedFiles)
         {
-
             var n = AddNode();
-
             affectedFiles = space.GetYndFilesThatDependOnYndFile(this);
             return n;
         }
+
 
         public bool RemoveYndNode(Space space, YndNode node, bool removeLinks, out YndFile[] affectedFiles)
         {
