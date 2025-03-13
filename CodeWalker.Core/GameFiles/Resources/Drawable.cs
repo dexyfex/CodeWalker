@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -101,7 +102,8 @@ namespace CodeWalker.GameFiles
             // In vanilla files this includes the size of the Shaders array, ShaderFX blocks and, sometimes,
             // ShaderParametersBlocks since they are placed contiguously after the ShaderGroup in the file.
             // But CW doesn't always do this so we only include the ShaderGroup size.
-            this.ShaderGroupBlocksSize = (uint)this.BlockLength / 16;
+            //(ignore for gen9)
+            this.ShaderGroupBlocksSize = writer.IsGen9 ? 0 : (uint)this.BlockLength / 16;
 
             // write structure data
             writer.Write(this.VFT);
@@ -202,7 +204,7 @@ namespace CodeWalker.GameFiles
         public MetaHash G9_Preset { get; set; } = 0x6D657461;
         public ulong G9_TextureRefsPointer { get; set; }
         public ulong G9_UnknownParamsPointer { get; set; }
-        public ulong G9_ParametersListPointer { get; set; }
+        public ulong G9_ParamInfosPointer { get; set; }
         public ulong G9_Unknown_28h;
         public ulong G9_Unknown_30h;
         public byte G9_Unknown_38h;
@@ -217,7 +219,7 @@ namespace CodeWalker.GameFiles
                 ParametersPointer = reader.ReadUInt64();                   // m_parameters
                 G9_TextureRefsPointer = reader.ReadUInt64();
                 G9_UnknownParamsPointer = reader.ReadUInt64();//something to do with grass_batch (instance data?)
-                G9_ParametersListPointer = reader.ReadUInt64();                // m_parameterData (sgaShaderParamData)
+                G9_ParamInfosPointer = reader.ReadUInt64();                // m_parameterData (sgaShaderParamData)
                 G9_Unknown_28h = reader.ReadUInt64();//pad
                 G9_Unknown_30h = reader.ReadUInt64();//pad
                 G9_Unknown_38h = reader.ReadByte();
@@ -225,7 +227,7 @@ namespace CodeWalker.GameFiles
                 ParameterDataSize = reader.ReadUInt16();//==ParametersList.G9_DataSize
                 RenderBucketMask = reader.ReadUInt32();
 
-                G9_ParamInfos = reader.ReadBlockAt<ShaderParamInfosG9>(G9_ParametersListPointer);
+                G9_ParamInfos = reader.ReadBlockAt<ShaderParamInfosG9>(G9_ParamInfosPointer);
                 ParametersList = reader.ReadBlockAt<ShaderParametersBlock>(ParametersPointer, 0, this);
                 FileName = JenkHash.GenHash(Name.ToCleanString() + ".sps");//TODO: get mapping from G9_Preset to legacy FileName
 
@@ -314,16 +316,19 @@ namespace CodeWalker.GameFiles
         {
             if (writer.IsGen9)
             {
-                ParametersPointer = (ulong)(ParametersList != null ? ParametersList.FilePosition : 0);
-                ParameterCount = (byte)(ParametersList != null ? ParametersList.Count : 0);
-                //TODO: update G9_TextureRefsPointer, G9_UnknownParamsPointer, G9_ParametersListPointer
+                ParameterCount = (byte)(ParametersList?.Count ?? 0);
+                ParameterDataSize = (ushort)ParametersList.G9_DataSize;
+                ParametersPointer = (ulong)(ParametersList?.FilePosition ?? 0);
+                G9_ParamInfosPointer = (ulong)(G9_ParamInfos?.FilePosition ?? 0);
+                G9_TextureRefsPointer = (ParametersPointer != 0) ? (ParametersPointer + ParametersList.G9_TexturesOffset) : 0;
+                G9_UnknownParamsPointer = (ParametersPointer != 0) ? (ParametersPointer + ParametersList.G9_UnknownsOffset) : 0;
 
                 writer.Write((uint)Name);
                 writer.Write((uint)G9_Preset);
                 writer.Write(ParametersPointer);
                 writer.Write(G9_TextureRefsPointer);
                 writer.Write(G9_UnknownParamsPointer);
-                writer.Write(G9_ParametersListPointer);
+                writer.Write(G9_ParamInfosPointer);
                 writer.Write(G9_Unknown_28h);
                 writer.Write(G9_Unknown_30h);
                 writer.Write(G9_Unknown_38h);
@@ -391,7 +396,120 @@ namespace CodeWalker.GameFiles
 
         public void EnsureGen9()
         {
-            //TODO
+            if (ParametersList == null) return;//need this
+            //get G9_ParamInfos from GameFileCache.ShadersGen9ConversionData
+            //calculate ParametersList.G9_DataSize
+            //build ParametersList.G9_ fields from G9_ParamInfos
+
+
+            GameFileCache.EnsureShadersGen9ConversionData();
+            GameFileCache.ShadersGen9ConversionData.TryGetValue(Name, out var dc);
+
+            var bsizs = dc?.BufferSizes;
+            var pinfs = dc?.ParamInfos;
+            var tc = 0;
+            var uc = 0;
+            var sc = 0;
+            var bs = 0;
+            var multi = 1;
+            var bsizsu = new uint[bsizs?.Length ?? 0];
+            if (bsizs != null)
+            {
+                multi = 3;
+                for (int i = 0; i < bsizs.Length; i++)
+                {
+                    var bsiz = bsizs[i];
+                    bsizsu[i] = (uint)bsiz;
+                    bs += bsiz;
+                }
+            }
+            if (pinfs != null)
+            {
+                multi = multi << 2;
+                foreach (var pinf in pinfs)
+                {
+                    switch (pinf.Type)
+                    {
+                        case ShaderParamTypeG9.Texture: tc++; break;
+                        case ShaderParamTypeG9.Unknown: uc++; break;
+                        case ShaderParamTypeG9.Sampler: sc++; break;
+                    }
+                }
+            }
+            var pinfos = new ShaderParamInfosG9();
+            pinfos.Params = pinfs;
+            pinfos.NumBuffers = (byte)(bsizs?.Length ?? 0);
+            pinfos.NumParams = (byte)(pinfs?.Length ?? 0);
+            pinfos.NumTextures = (byte)tc;
+            pinfos.NumUnknowns = (byte)uc;
+            pinfos.NumSamplers = (byte)sc;
+            pinfos.Unknown0 = (byte)0x00;
+            pinfos.Unknown1 = (byte)0x01;
+            pinfos.Unknown2 = (byte)multi;
+
+
+            var ptrslen = pinfos.NumBuffers * 8 * multi;
+            var bufslen = (int)(bs) * multi;
+            var texslen = tc * 8 * multi;
+            var unkslen = uc * 8 * multi;
+            var smpslen = sc;
+            var totlen = ptrslen + bufslen + texslen + unkslen + smpslen;
+            ParametersList.G9_BuffersDataSize = (uint)bufslen;
+            ParametersList.G9_TexturesOffset = (uint)(ptrslen + bufslen);
+            ParametersList.G9_UnknownsOffset = (uint)(ptrslen + bufslen + texslen);
+            ParametersList.G9_DataSize = totlen;
+            ParameterDataSize = (ushort)totlen;
+
+
+
+            if (G9_ParamInfos != null)
+            { }
+            G9_ParamInfos = pinfos;
+            ParametersList.G9_ParamInfos = pinfos;
+
+            if (ParametersList.G9_Samplers != null)
+            { }
+            ParametersList.G9_Samplers = dc?.SamplerValues;
+
+            if (ParametersList.G9_BufferSizes != null)
+            { }
+            ParametersList.G9_BufferSizes = bsizsu;
+
+
+            var parr = ParametersList.Parameters;
+            if (parr != null)
+            {
+                foreach (var p in parr)
+                {
+                    if (p.Data is Texture etex)//in case embedded textures are actual texture refs, convert them to TextureBase
+                    {
+                        var btex = new TextureBase();
+                        btex.Name = etex.Name;
+                        btex.NameHash = etex.NameHash;
+                        btex.G9_Dimension = etex.G9_Dimension;
+                        btex.G9_Flags = 0x00260000;
+                        //btex.G9_SRV = new ShaderResourceViewG9();
+                        //btex.G9_SRV.Dimension = etex.G9_SRV?.Dimension ?? ShaderResourceViewDimensionG9.Texture2D;
+                        p.Data = btex;
+                    }
+                    else if (p.Data is TextureBase btex)
+                    {
+                        if (btex.G9_Flags == 0) btex.G9_Flags = 0x00260000;
+                        //if (btex.G9_SRV == null)//make sure the SRVs for these params exist
+                        //{
+                        //    btex.G9_SRV = new ShaderResourceViewG9();
+                        //    switch (btex.G9_Dimension)
+                        //    {
+                        //        case TextureDimensionG9.Texture2D: btex.G9_SRV.Dimension = ShaderResourceViewDimensionG9.Texture2D; break;
+                        //        case TextureDimensionG9.Texture3D: btex.G9_SRV.Dimension = ShaderResourceViewDimensionG9.Texture3D; break;
+                        //        case TextureDimensionG9.TextureCube: btex.G9_SRV.Dimension = ShaderResourceViewDimensionG9.TextureCube; break;
+                        //    }
+                        //}
+                    }
+                }
+            }
+
+
         }
 
 
@@ -525,6 +643,8 @@ namespace CodeWalker.GameFiles
         public ulong[] G9_BufferPtrs { get; set; }//4x copies of buffers.. buffer data immediately follows pointers array
         public uint[] G9_BufferSizes { get; set; }//sizes of all buffers
         public uint G9_BuffersDataSize { get; set; }
+        public uint G9_TexturesOffset { get; set; }
+        public uint G9_UnknownsOffset { get; set; }
         public ulong[] G9_TexturePtrs { get; set; }
         public ulong[] G9_UnknownData { get; set; }
         public byte[] G9_Samplers { get; set; }
@@ -553,8 +673,6 @@ namespace CodeWalker.GameFiles
                 {
                     G9_BufferSizes[i] = (uint)(G9_BufferPtrs[i + 1] - G9_BufferPtrs[i]);
                 }
-                var texturesOffset = Math.Max(0, (long)Owner.G9_TextureRefsPointer - spos);
-                var unknownsOffset = Math.Max(0, (long)Owner.G9_UnknownParamsPointer - spos);
                 var p0 = 0ul;
                 var p1 = 0ul;
                 if ((G9_BufferPtrs != null) && (G9_BufferPtrs.Length > bcnt))
@@ -569,6 +687,8 @@ namespace CodeWalker.GameFiles
                 var smpslen = G9_ParamInfos.NumSamplers;
                 var totlen = ptrslen + bufslen + texslen + unkslen + smpslen;
                 G9_BuffersDataSize = (uint)bufslen;
+                G9_TexturesOffset = (uint)(ptrslen + bufslen);
+                G9_UnknownsOffset = (uint)(ptrslen + bufslen + texslen);
                 G9_DataSize = totlen;
 
                 if (Owner.G9_TextureRefsPointer != 0)
@@ -602,6 +722,11 @@ namespace CodeWalker.GameFiles
                         p.Data = reader.ReadBlockAt<TextureBase>(p.DataPointer);
                         paras.Add(p);
                         hashes.Add((MetaName)hash);
+                        if (p.Data is TextureBase ptex)
+                        {
+                            if (ptex.G9_SRV != null)
+                            { }
+                        }
                     }
                     else if (info.Type == ShaderParamTypeG9.CBuffer)
                     {
@@ -762,9 +887,139 @@ namespace CodeWalker.GameFiles
             if (writer.IsGen9)
             {
                 GameFileCache.EnsureShadersGen9ConversionData();
-                //TODO: update shader params mappings
+                GameFileCache.ShadersGen9ConversionData.TryGetValue(Owner.Name, out var dc);
+                var paramap = dc?.ParamsMapLegacyToGen9;
 
-                //TODO
+                if (G9_ParamInfos == null) G9_ParamInfos = Owner.G9_ParamInfos;
+                var multi = (int)G9_ParamInfos.Unknown2;
+                var mult = (uint)multi;
+                var bcnt = G9_ParamInfos.NumBuffers;
+                var tcnt = G9_ParamInfos.NumTextures;
+                var ucnt = G9_ParamInfos.NumUnknowns;
+                var spos = FilePosition;//this position should definitely be assigned by this point
+                var bsizes = G9_BufferSizes;
+                var boffs = new uint[bsizes?.Length ?? 0];
+                var ptrslen = bcnt * 8 * multi;
+                var bptrs = new ulong[bcnt * mult];
+                var bptr = (ulong)(spos + ptrslen);
+                for (int i = 0; i < mult; i++)
+                {
+                    for (int j = 0; j < bcnt; j++)
+                    {
+                        bptrs[(i * bcnt) + j] = bptr;
+                        bptr += bsizes[j];
+                    }
+                }
+                var boff = 0u;
+                for (int i = 0; i < bsizes.Length; i++)
+                {
+                    boffs[i] = boff;
+                    boff += bsizes[i];
+                }
+                if (G9_BufferPtrs != null)
+                { }
+                G9_BufferPtrs = bptrs;
+
+                writer.WriteUlongs(bptrs);
+
+
+                var buf0len = (int)(G9_BuffersDataSize / mult);
+                var buf0 = new byte[buf0len];
+                var texptrs = new ulong[tcnt * mult];
+                if ((Parameters != null) && (paramap != null))
+                {
+                    var exmap = new Dictionary<uint, ShaderParameter>();
+                    var excnt = Math.Min(Parameters.Length, Hashes?.Length ?? 0);
+                    for (int i = 0; i < excnt; i++)
+                    {
+                        var exhash = (uint)Hashes[i];
+                        paramap.TryGetValue(exhash, out var g9hash);
+                        if (g9hash != 0)
+                        {
+                            exmap[g9hash] = Parameters[i];
+                        }
+                        else
+                        { }
+                    }
+                    void writeStruct<T>(int o, T val) where T : struct
+                    {
+                        int size = Marshal.SizeOf(typeof(T));
+                        IntPtr ptr = Marshal.AllocHGlobal(size);
+                        Marshal.StructureToPtr(val, ptr, true);
+                        Marshal.Copy(ptr, buf0, o, size);
+                        Marshal.FreeHGlobal(ptr);
+                    }
+                    void writeStructs<T>(int o, T[] val) where T : struct
+                    {
+                        if (val == null) return;
+                        int size = Marshal.SizeOf(typeof(T));
+                        foreach (var v in val)
+                        {
+                            writeStruct(o, v);
+                            o += size;
+                        }
+
+                    }
+                    foreach (var info in G9_ParamInfos.Params)
+                    {
+                        exmap.TryGetValue(info.Name, out var exparam);
+                        if (info.Type == ShaderParamTypeG9.Texture)
+                        {
+                            var btex = exparam?.Data as TextureBase;
+                            texptrs[info.TextureIndex] = (ulong)(btex?.FilePosition ?? 0);
+                        }
+                        else if (info.Type == ShaderParamTypeG9.CBuffer)
+                        {
+                            var data = exparam?.Data;
+                            uint fcnt = info.ParamLength / 4u;
+                            uint arrsiz = info.ParamLength / 16u;
+                            var cbi = info.CBufferIndex;
+                            var baseoff = ((boffs != null) && (boffs.Length > cbi)) ? boffs[cbi] : 0;
+                            var off = (int)(baseoff + info.ParamOffset);
+                            var v = (data is Vector4) ? (Vector4)data : Vector4.Zero;
+                            switch (fcnt)
+                            {
+                                case 0: break;
+                                case 1: writeStruct(off, v.X); break;
+                                case 2: writeStruct(off, new Vector2(v.X, v.Y)); break;
+                                case 3: writeStruct(off, new Vector3(v.X, v.Y, v.Z)); break;
+                                case 4: writeStruct(off, v); break;
+                                default:
+                                    if (arrsiz == 0)
+                                    { }
+                                    writeStructs(off, data as Vector4[]);
+                                    break;
+                            }
+                        }
+
+                    }
+                }
+                for (int i = 0; i < mult; i++)
+                {
+                    writer.Write(buf0);
+                }
+
+                if (G9_TexturePtrs != null)
+                { }
+                G9_TexturePtrs = (texptrs.Length > 0) ? texptrs : null;
+                if (G9_TexturePtrs != null)
+                {
+                    writer.WriteUlongs(G9_TexturePtrs);
+                }
+
+                if (G9_UnknownData != null)
+                { }
+                G9_UnknownData = (ucnt > 0) ? new ulong[ucnt * mult] : null;
+                if (G9_UnknownData != null)
+                {
+                    writer.WriteUlongs(G9_UnknownData);
+                }
+
+                if (G9_Samplers != null)
+                {
+                    writer.Write(G9_Samplers);
+                }
+
 
             }
             else
@@ -3788,6 +4043,8 @@ namespace CodeWalker.GameFiles
                 { }
                 if (G9_Unknown_20h != 0)
                 { }
+                if (Unknown_28h != 0)
+                { }
 
             }
             else
@@ -3886,7 +4143,19 @@ namespace CodeWalker.GameFiles
                 G9_SRVPointer = (ulong)(G9_SRV != null ? G9_SRV.FilePosition : 0);
                 InfoPointer = (ulong)(G9_Info != null ? G9_Info.FilePosition : 0);
 
-                //TODO
+                if (G9_BindFlags == 0) G9_BindFlags = 0x00580409;
+                //G9_BindFlags = //TODO?
+
+                writer.Write(VertexCount);
+                writer.Write(VertexStride);         // m_vertexSize
+                writer.Write(G9_Unknown_Eh);
+                writer.Write(G9_BindFlags);
+                writer.Write(G9_Unknown_14h);
+                writer.Write(DataPointer1);    // m_vertexData
+                writer.Write(G9_Unknown_20h);             // m_pad
+                writer.Write(Unknown_28h);     // m_pad2
+                writer.Write(G9_SRVPointer);     // m_srv
+                writer.Write(InfoPointer);     // m_vertexFormat (rage::grcFvf)
 
             }
             else
@@ -4095,7 +4364,9 @@ namespace CodeWalker.GameFiles
 
             if (vdtypes != VertexDeclarationTypes.GTAV1)
             {
-                throw new Exception($"Unsupported VertexDeclarationTypes ({vdtypes}) - Only GTAV1  is supported - TODO!");
+                //throw new Exception($"Unsupported VertexDeclarationTypes ({vdtypes}) - Only GTAV1  is supported - TODO!");
+                //probably not good if we get here...
+                //TODO: try and convert from other types
             }
 
             var offset = 0u;
@@ -5249,17 +5520,39 @@ namespace CodeWalker.GameFiles
             writer.Write(this.VFT);
             writer.Write(this.Unknown_4h);
             writer.Write(this.IndicesCount);
-            writer.Write(this.Unknown_Ch);
-            writer.Write(this.IndicesPointer);
-            writer.Write(this.Unknown_18h);
-            writer.Write(this.Unknown_20h);
-            writer.Write(this.Unknown_28h);
-            writer.Write(this.Unknown_30h);
-            writer.Write(this.Unknown_38h);
-            writer.Write(this.Unknown_40h);
-            writer.Write(this.Unknown_48h);
-            writer.Write(this.Unknown_50h);
-            writer.Write(this.Unknown_58h);
+
+            if (writer.IsGen9)
+            {
+                G9_SRVPointer = (ulong)(G9_SRV != null ? G9_SRV.FilePosition : 0);
+
+                if (G9_BindFlags == 0) G9_BindFlags = 0x0058020a;
+
+                writer.Write(G9_IndexSize);
+                writer.Write(G9_Unknown_Eh);
+                writer.Write(G9_BindFlags);
+                writer.Write(G9_Unknown_14h);
+                writer.Write(IndicesPointer);
+                writer.Write(Unknown_20h);
+                writer.Write(Unknown_28h);
+                writer.Write(G9_SRVPointer);
+                writer.Write(Unknown_38h);
+
+            }
+            else
+            {
+                writer.Write(this.Unknown_Ch);
+                writer.Write(this.IndicesPointer);
+                writer.Write(this.Unknown_18h);
+                writer.Write(this.Unknown_20h);
+                writer.Write(this.Unknown_28h);
+                writer.Write(this.Unknown_30h);
+                writer.Write(this.Unknown_38h);
+                writer.Write(this.Unknown_40h);
+                writer.Write(this.Unknown_48h);
+                writer.Write(this.Unknown_50h);
+                writer.Write(this.Unknown_58h);
+
+            }
         }
         public void WriteXml(StringBuilder sb, int indent)
         {
@@ -5279,6 +5572,16 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public void EnsureGen9()
+        {
+            if (G9_SRV == null)
+            {
+                G9_SRV = new ShaderResourceViewG9();
+                G9_SRV.Dimension = ShaderResourceViewDimensionG9.Buffer;
+            }
+
+        }
+
         public override IResourceBlock[] GetReferences()
         {
             var list = new List<IResourceBlock>();
@@ -5286,6 +5589,10 @@ namespace CodeWalker.GameFiles
             {
                 IndicesBlock = new ResourceSystemStructBlock<ushort>(Indices);
                 list.Add(IndicesBlock);
+            }
+            if (G9_SRV != null)
+            {
+                list.Add(G9_SRV);
             }
             return list.ToArray();
         }
@@ -6232,12 +6539,17 @@ namespace CodeWalker.GameFiles
         public void EnsureGen9()
         {
 
-            var shaders = ShaderGroup?.Shaders?.data_items;
-            if (shaders != null)
+            if (ShaderGroup != null)
             {
-                foreach (var shader in shaders)
+                ShaderGroup.TextureDictionary?.EnsureGen9();
+
+                var shaders = ShaderGroup.Shaders?.data_items;
+                if (shaders != null)
                 {
-                    shader?.EnsureGen9();
+                    foreach (var shader in shaders)
+                    {
+                        shader?.EnsureGen9();
+                    }
                 }
             }
 
@@ -6249,7 +6561,9 @@ namespace CodeWalker.GameFiles
                     if (geoms == null) continue;
                     foreach (var geom in geoms)
                     {
-                        geom?.VertexBuffer?.EnsureGen9();
+                        if (geom == null) continue;
+                        geom.VertexBuffer?.EnsureGen9();
+                        geom.IndexBuffer?.EnsureGen9();
                     }
                 }
             }

@@ -731,6 +731,7 @@ namespace CodeWalker.GameFiles
         {
             switch (format)
             {
+                case (TextureFormat)0: return TextureFormatG9.UNKNOWN;
                 case TextureFormat.D3DFMT_A8B8G8R8: return TextureFormatG9.R8G8B8A8_UNORM;
                 case TextureFormat.D3DFMT_A8R8G8B8: return TextureFormatG9.B8G8R8A8_UNORM;
                 case TextureFormat.D3DFMT_A8: return TextureFormatG9.A8_UNORM;
@@ -755,7 +756,7 @@ namespace CodeWalker.GameFiles
             switch (f)
             {
                 default: return 8;
-                case TextureFormatG9.UNKNOWN: return 1;
+                case TextureFormatG9.UNKNOWN: return 0;
                 case TextureFormatG9.BC1_UNORM: return 8;
                 case TextureFormatG9.BC2_UNORM: return 16;
                 case TextureFormatG9.BC3_UNORM: return 16;
@@ -806,6 +807,8 @@ namespace CodeWalker.GameFiles
         }
         public static uint GetBlockCount(TextureFormatG9 f, uint width, uint height, uint depth, uint mips, uint flags, uint oldval = 0)
         {
+            if (f == TextureFormatG9.UNKNOWN) return 0;
+
             var bs = GetBlockStride(f);
             var bp = GetBlockPixelCount(f);
             var bw = (uint)width;
