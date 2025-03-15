@@ -1507,9 +1507,14 @@ namespace CodeWalker.GameFiles
             //create a new, empty RPF file in the filesystem
             //this will assume that the folder the file is going into already exists!
 
+            if ((encryption == RpfEncryption.OPEN) && RpfManager.IsGen9)
+            {
+                encryption = RpfEncryption.NONE;
+            }
+
             string fpath = gtafolder;
             fpath = fpath.EndsWith("\\") ? fpath : fpath + "\\";
-            fpath = fpath + relpath;
+            fpath = relpath.Contains(":") ? relpath : fpath + relpath;
 
             if (File.Exists(fpath))
             {
@@ -1534,6 +1539,11 @@ namespace CodeWalker.GameFiles
         public static RpfFile CreateNew(RpfDirectoryEntry dir, string name, RpfEncryption encryption = RpfEncryption.OPEN)
         {
             //create a new empty RPF inside the given parent RPF directory.
+
+            if ((encryption == RpfEncryption.OPEN) && RpfManager.IsGen9)
+            {
+                encryption = RpfEncryption.NONE;
+            }
 
             string namel = name.ToLowerInvariant();
             RpfFile parent = dir.File;
@@ -1899,12 +1909,18 @@ namespace CodeWalker.GameFiles
             //currently assumes OPEN is the valid encryption type.
             //TODO: support other encryption types!
 
+            var targetType = RpfEncryption.OPEN;
+            if (RpfManager.IsGen9)
+            {
+                targetType = RpfEncryption.NONE;
+            }
+
             bool needsupd = false;
             var f = file;
             List<RpfFile> files = new List<RpfFile>();
             while (f != null)
             {
-                if (f.Encryption != RpfEncryption.OPEN)
+                if (f.Encryption != targetType)
                 {
                     if (!confirm(f))
                     {
@@ -1923,7 +1939,7 @@ namespace CodeWalker.GameFiles
             files.Reverse();
             foreach (var cfile in files)
             {
-                SetEncryptionType(cfile, RpfEncryption.OPEN);
+                SetEncryptionType(cfile, targetType);
             }
 
             return true;
