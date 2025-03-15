@@ -98,11 +98,15 @@ namespace CodeWalker.GameFiles
         {
             var drawables = PtfxList?.DrawableDictionary?.Drawables?.data_items;
             var gen9 = RpfManager.IsGen9;
-            if (gen9 && (drawables != null))
+            if (gen9)
             {
-                foreach (var drawable in drawables)
+                PtfxList?.TextureDictionary?.EnsureGen9();
+                if (drawables != null)
                 {
-                    drawable?.EnsureGen9();
+                    foreach (var drawable in drawables)
+                    {
+                        drawable?.EnsureGen9();
+                    }
                 }
             }
 
