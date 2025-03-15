@@ -32,7 +32,7 @@ namespace CodeWalker.GameFiles
 
         public volatile bool IsInited = false;
 
-        public static bool IsGen9 { get; private set; } //not ideal for this to be static, but it's most convenient for ResourceData
+        public static bool IsGen9 { get; set; } //not ideal for this to be static, but it's most convenient for ResourceData
 
         public void Init(string folder, bool gen9, Action<string> updateStatus, Action<string> errorLog, bool rootOnly = false, bool buildIndex = true)
         {

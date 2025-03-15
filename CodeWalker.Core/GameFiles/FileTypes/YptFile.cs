@@ -32,6 +32,14 @@ namespace CodeWalker.GameFiles
         {
         }
 
+        public void Load(byte[] data)
+        {
+            //direct load from a raw, compressed ypt file
+
+            RpfFile.LoadResourceFile(this, data, (uint)GetVersion(RpfManager.IsGen9));
+
+            Loaded = true;
+        }
         public void Load(byte[] data, RpfFileEntry entry)
         {
             Name = entry.Name;
@@ -45,6 +53,20 @@ namespace CodeWalker.GameFiles
             }
 
             ResourceDataReader rd = new ResourceDataReader(resentry, data);
+
+            if (rd.IsGen9)
+            {
+                switch (resentry.Version)
+                {
+                    case 71:
+                        break;
+                    case 68:
+                        rd.IsGen9 = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             //MemoryUsage = 0;
 

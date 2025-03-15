@@ -42,6 +42,21 @@ namespace CodeWalker.GameFiles
 
             ResourceDataReader rd = new ResourceDataReader(resentry, data);
 
+            if (rd.IsGen9)
+            {
+                switch (resentry.Version)
+                {
+                    case 171:
+                        break;
+                    case 162:
+                        rd.IsGen9 = false;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
             Fragment = rd.ReadBlock<FragType>();
 
             if (Fragment != null)

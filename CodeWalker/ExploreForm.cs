@@ -4187,6 +4187,12 @@ namespace CodeWalker
             f.Show(this);
         }
 
+        private void ToolsAssetConverterMenu_Click(object sender, EventArgs e)
+        {
+            ConvertAssetsForm f = new ConvertAssetsForm();
+            f.Show(this);
+        }
+
         private void OptionsStartInEditModeMenu_Click(object sender, EventArgs e)
         {
             OptionsStartInEditModeMenu.Checked = !OptionsStartInEditModeMenu.Checked;

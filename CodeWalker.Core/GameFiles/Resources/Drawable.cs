@@ -4438,6 +4438,10 @@ namespace CodeWalker.GameFiles
 
         public void EnsureGen9()
         {
+            if ((Data1 == null) && (Data2 != null))
+            {
+                Data1 = Data2;
+            }
             if (Data1 != null)
             {
                 Data1.G9_VertexBytes = InitGen9DataFromVertexData();
