@@ -752,9 +752,9 @@ namespace CodeWalker.GameFiles
                 }
             };
 
-            ensure(PhysicsLODGroup.PhysicsLOD1);
-            ensure(PhysicsLODGroup.PhysicsLOD2);
-            ensure(PhysicsLODGroup.PhysicsLOD3);
+            ensure(PhysicsLODGroup?.PhysicsLOD1);
+            ensure(PhysicsLODGroup?.PhysicsLOD2);
+            ensure(PhysicsLODGroup?.PhysicsLOD3);
 
         }
 
