@@ -1154,7 +1154,7 @@ namespace CodeWalker.Project
             CurrentProjectFile = new ProjectFile();
             CurrentProjectFile.Name = "New CodeWalker Project";
             CurrentProjectFile.Version = 1;
-            CurrentProjectFile.HasChanged = true;
+            CurrentProjectFile.HasChanged = false;
             LoadProjectUI();
         }
         public void OpenProject()
@@ -9400,7 +9400,7 @@ namespace CodeWalker.Project
 
         private void ProjectForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (CurrentProjectFile != null)
+            if (CurrentProjectFile.HasChanged)
             {
                 var msg = "Are you sure you want to close the project window?";
                 var tit = "Confirm close";
