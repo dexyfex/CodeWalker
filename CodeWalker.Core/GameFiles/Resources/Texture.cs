@@ -183,6 +183,9 @@ namespace CodeWalker.GameFiles
 
         public void EnsureGen9()
         {
+            FileVFT = 0;
+            FileUnknown = 1;
+
             //make sure textures all have SRVs and are appropriately formatted for gen9
             var texs = Textures?.data_items;
             if (texs == null) return;
@@ -657,14 +660,22 @@ namespace CodeWalker.GameFiles
 
         public void EnsureGen9()
         {
+            VFT = 0;
+            Unknown_4h = 1;
 
-            Unknown_44h = (this is Texture) ? 2 : 0u;
+            var istex = this is Texture;
+
+            Unknown_44h = istex ? 2 : 0u;
 
             if (G9_Flags == 0)
             {
                 G9_Flags = 0x00260208;//TODO...
+                if (Name?.ToLowerInvariant()?.StartsWith("script_rt_") ?? false)
+                {
+                    G9_Flags = 0x00260228;
+                }
             }
-            if ((G9_Unknown_23h == 0) && (this is Texture))
+            if ((G9_Unknown_23h == 0) && istex)
             {
                 G9_Unknown_23h = 0x28;//TODO...
             }

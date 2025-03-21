@@ -4438,6 +4438,9 @@ namespace CodeWalker.GameFiles
 
         public void EnsureGen9()
         {
+            VFT = 1080153080;
+            Unknown_4h = 1;
+
             if ((Data1 == null) && (Data2 != null))
             {
                 Data1 = Data2;
@@ -5581,6 +5584,9 @@ namespace CodeWalker.GameFiles
 
         public void EnsureGen9()
         {
+            VFT = 1080152408;
+            Unknown_4h = 1;
+
             if (G9_SRV == null)
             {
                 G9_SRV = new ShaderResourceViewG9();
@@ -6545,9 +6551,27 @@ namespace CodeWalker.GameFiles
 
         public void EnsureGen9()
         {
+            FileVFT = 1079456120;
+            FileUnknown = 1;
+            Unknown_3Ch = 0x7f800001;
+            Unknown_4Ch = 0x7f800001;
+
+            if (Skeleton != null)
+            {
+                Skeleton.VFT = 1080114336;
+                Skeleton.Unknown_4h = 1;
+            }
+            if (Joints != null)
+            {
+                Joints.VFT = 1080130656;
+                Joints.Unknown_4h = 1;
+            }
 
             if (ShaderGroup != null)
             {
+                ShaderGroup.VFT = 1080113136;
+                ShaderGroup.Unknown_4h = 1;
+
                 ShaderGroup.TextureDictionary?.EnsureGen9();
 
                 var shaders = ShaderGroup.Shaders?.data_items;
@@ -6564,14 +6588,28 @@ namespace CodeWalker.GameFiles
             {
                 foreach (var model in AllModels)
                 {
-                    var geoms = model?.Geometries;
+                    if (model == null) continue;
+                    model.VFT = 1080101528;
+                    model.Unknown_4h = 1;
+                    var geoms = model.Geometries;
                     if (geoms == null) continue;
                     foreach (var geom in geoms)
                     {
                         if (geom == null) continue;
+                        geom.VFT = 1080133528;
+                        geom.Unknown_4h = 1;
                         geom.VertexBuffer?.EnsureGen9();
                         geom.IndexBuffer?.EnsureGen9();
                     }
+                }
+            }
+
+            if ((this is Drawable dwbl) && (dwbl.LightAttributes?.data_items != null))
+            {
+                foreach (var light in dwbl.LightAttributes.data_items)
+                {
+                    light.Unknown_0h = 0;
+                    light.Unknown_4h = 0;
                 }
             }
 
