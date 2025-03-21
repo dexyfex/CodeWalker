@@ -494,6 +494,8 @@ namespace CodeWalker.GameFiles
                     }
                     else if (p.Data is TextureBase btex)
                     {
+                        btex.VFT = 0;
+                        btex.Unknown_4h = 1;
                         if (btex.G9_Flags == 0) btex.G9_Flags = 0x00260000;
                         //if (btex.G9_SRV == null)//make sure the SRVs for these params exist
                         //{
@@ -6560,6 +6562,12 @@ namespace CodeWalker.GameFiles
             {
                 Skeleton.VFT = 1080114336;
                 Skeleton.Unknown_4h = 1;
+                if (Skeleton.Bones != null)
+                {
+                    Skeleton.Bones.Unk0 = 0;
+                    Skeleton.Bones.Unk1 = 0;
+                    Skeleton.Bones.Unk2 = 0;
+                }
             }
             if (Joints != null)
             {
