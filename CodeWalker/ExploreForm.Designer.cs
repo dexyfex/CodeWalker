@@ -47,6 +47,7 @@
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.EditImportFbxMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditImportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.EditImportRecursiveMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditImportRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.EditImportMenuSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.EditCopyMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -133,6 +134,7 @@
             this.ListContextNewYtdFileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportFbxMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportXmlMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextImportRecursiveMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextImportSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextCopyMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -246,6 +248,7 @@
             this.toolStripSeparator4,
             this.EditImportFbxMenu,
             this.EditImportXmlMenu,
+            this.EditImportRecursiveMenu,
             this.EditImportRawMenu,
             this.EditImportMenuSeparator,
             this.EditCopyMenu,
@@ -332,6 +335,14 @@
             this.EditImportXmlMenu.Text = "Import XML...";
             this.EditImportXmlMenu.Visible = false;
             this.EditImportXmlMenu.Click += new System.EventHandler(this.EditImportXmlMenu_Click);
+            // 
+            // EditImportRecursiveMenu
+            // 
+            this.EditImportRecursiveMenu.Name = "EditImportRecursiveMenu";
+            this.EditImportRecursiveMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditImportRecursiveMenu.Text = "Import Recursive...";
+            this.EditImportRecursiveMenu.Visible = false;
+            this.EditImportRecursiveMenu.Click += new System.EventHandler(this.EditImportRecursiveMenu_Click);
             // 
             // EditImportRawMenu
             // 
@@ -1019,6 +1030,7 @@
             this.ListContextNewMenu,
             this.ListContextImportFbxMenu,
             this.ListContextImportXmlMenu,
+            this.ListContextImportRecursiveMenu,
             this.ListContextImportRawMenu,
             this.ListContextImportSeparator,
             this.ListContextCopyMenu,
@@ -1150,6 +1162,14 @@
             this.ListContextImportXmlMenu.Size = new System.Drawing.Size(208, 22);
             this.ListContextImportXmlMenu.Text = "Import XML...";
             this.ListContextImportXmlMenu.Click += new System.EventHandler(this.ListContextImportXmlMenu_Click);
+            // 
+            // ListContextImportXmlMenu
+            // 
+            this.ListContextImportRecursiveMenu.Name = "ListContextImportRecursiveMenu";
+            this.ListContextImportRecursiveMenu.ShortcutKeyDisplayString = "Shift+Ins";
+            this.ListContextImportRecursiveMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextImportRecursiveMenu.Text = "Import Recursive...";
+            this.ListContextImportRecursiveMenu.Click += new System.EventHandler(this.ListContextImportRecursiveMenu_Click);
             // 
             // ListContextImportRawMenu
             // 
@@ -1416,6 +1436,7 @@
         private System.Windows.Forms.ToolStripMenuItem ListContextCopyFileListMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem ListContextImportXmlMenu;
+        private System.Windows.Forms.ToolStripMenuItem ListContextImportRecursiveMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextImportRawMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextCopyMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
@@ -1440,6 +1461,7 @@
         private System.Windows.Forms.ToolStripMenuItem EditExtractAllMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem EditImportXmlMenu;
+        private System.Windows.Forms.ToolStripMenuItem EditImportRecursiveMenu;
         private System.Windows.Forms.ToolStripMenuItem EditImportRawMenu;
         private System.Windows.Forms.ToolStripSeparator EditImportMenuSeparator;
         private System.Windows.Forms.ToolStripMenuItem EditCopyMenu;
