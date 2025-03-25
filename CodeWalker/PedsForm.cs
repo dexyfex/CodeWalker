@@ -153,6 +153,8 @@ namespace CodeWalker
             Renderer.renderskeletons = false;
             Renderer.SelectionFlagsTestAll = true;
             Renderer.swaphemisphere = true;
+
+            GTAFolder.UpdateEnhancedFormTitle(this);
         }
 
         public void InitScene(Device device)

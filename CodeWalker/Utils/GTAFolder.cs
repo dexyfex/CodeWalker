@@ -197,5 +197,14 @@ namespace CodeWalker
                 Settings.Default.Save();
             }
         }
+
+        public static string GetEnhancedFormTitle(string t)
+        {
+            return t + " (GTAV Enhanced)";
+        }
+        public static void UpdateEnhancedFormTitle(Form form)
+        {
+            if (IsGen9) form.Text = GetEnhancedFormTitle(form.Text);
+        }
     }
 }

@@ -231,6 +231,9 @@ namespace CodeWalker.Tools
                                     dataout = ypt.Save();
                                 }
                                 break;
+                            case ".rpf":
+                                Log($"{relpath} - Cannot convert RPF files! Extract the contents of the RPF and convert that instead.");
+                                break;
                             default:
                                 if (copyunconverted)
                                 {

@@ -925,6 +925,7 @@ namespace CodeWalker.Forms
         private void UpdateFormTitle()
         {
             Text = fileName + (modelModified ? "*" : "") + " - CodeWalker by dexyfex";
+            GTAFolder.UpdateEnhancedFormTitle(this);
         }
 
 

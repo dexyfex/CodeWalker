@@ -104,6 +104,7 @@ namespace CodeWalker
             Renderer.renderfragwindows = false;
             Renderer.SelectionFlagsTestAll = true;
 
+            GTAFolder.UpdateEnhancedFormTitle(this);
         }
 
 

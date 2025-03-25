@@ -227,6 +227,8 @@ namespace CodeWalker
             PrevMouseHit.WorldForm = this;
 
             initedOk = Renderer.Init();
+
+            GTAFolder.UpdateEnhancedFormTitle(this);
         }
 
 

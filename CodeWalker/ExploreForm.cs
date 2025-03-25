@@ -63,6 +63,8 @@ namespace CodeWalker
             ShowMainListViewPathColumn(false);
 
             LoadSettings();
+
+            GTAFolder.UpdateEnhancedFormTitle(this);
         }
 
         private void SetTheme(string themestr, bool changing = true)
@@ -2071,7 +2073,7 @@ namespace CodeWalker
         private void EnsureEditModeWarning()
         {
             var mods = CurrentFolder?.Path.StartsWith("mods", StringComparison.InvariantCultureIgnoreCase) ?? false;
-            var extn = CurrentFolder?.FullPath.StartsWith(RootFolder.FullPath, StringComparison.InvariantCultureIgnoreCase) == false;
+            var extn = CurrentFolder?.FullPath?.StartsWith(RootFolder.FullPath, StringComparison.InvariantCultureIgnoreCase) == false;
             var srch = CurrentFolder?.IsSearchResults ?? false;
             var fsys = CurrentFolder?.RpfFolder == null;
             var game = CurrentFolder?.Path != CurrentFolder?.FullPath;

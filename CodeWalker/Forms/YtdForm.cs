@@ -351,6 +351,7 @@ namespace CodeWalker.Forms
         private void UpdateFormTitle()
         {
             Text = FileName + (Modified ? "*" : "") + " - Texture Dictionary - CodeWalker by dexyfex";
+            GTAFolder.UpdateEnhancedFormTitle(this);
         }
 
         private void UpdateStatus(string text)
