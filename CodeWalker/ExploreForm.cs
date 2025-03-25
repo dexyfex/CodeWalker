@@ -473,8 +473,24 @@ namespace CodeWalker
             if (!Ready) return;
             var pathl = path.ToLowerInvariant().Replace('/', '\\');
             if ((CurrentFolder != null) && (CurrentFolder.Path.ToLowerInvariant() == pathl)) return; //already there
-            var hierarchy = pathl.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
-            TreeNode n = MainTreeView.Nodes[0];// FindTreeNode("gta v", null);
+            var root = RootFolder;
+            var relpath = pathl;
+            if (pathl.Contains(':'))
+            {
+                foreach (var extf in ExtraRootFolders)
+                {
+                    if (extf == null) continue;
+                    if (pathl.StartsWith(extf.FullPath, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        root = extf;
+                        relpath = pathl.Substring(extf.FullPath.Length);
+                        break;
+                    }
+                }
+            }
+            
+            var hierarchy = relpath.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            TreeNode n = root.TreeNode;// FindTreeNode("gta v", null);
             if (!string.IsNullOrEmpty(path))
             {
                 for (int i = 0; i < hierarchy.Length; i++)
@@ -718,7 +734,7 @@ namespace CodeWalker
 
                 if (Directory.Exists(extraroot.FullPath))
                 {
-                    RefreshMainTreeViewRoot(extraroot);
+                    RefreshMainTreeViewRoot(extraroot, true);
                 }
                 else
                 {
@@ -736,7 +752,7 @@ namespace CodeWalker
 
             MainTreeViewRefreshComplete();
         }
-        private void RefreshMainTreeViewRoot(MainTreeFolder f)
+        private void RefreshMainTreeViewRoot(MainTreeFolder f, bool extra = false)
         {
             var allRpfs = new List<RpfFile>();
             var fullPath = f.FullPath;
@@ -798,6 +814,11 @@ namespace CodeWalker
                             continue;
                         }
 
+                        if (extra)
+                        {
+                            relpath = path;
+                        }
+
                         node = CreateRpfTreeFolder(rpf, relpath, path);
 
                         RecurseMainTreeViewRPF(node, allRpfs);
@@ -855,7 +876,14 @@ namespace CodeWalker
                 {
                     foreach (var dir in fld.Directories)
                     {
-                        var dtnf = CreateRpfDirTreeFolder(dir, dir.Path, rootpath + dir.Path);
+                        var relpath = dir.Path.Substring(fld.Path.Length);
+                        var fullpath = f.FullPath + relpath;
+                        var dirpath = dir.Path;
+                        if (fullpath.StartsWith(rootpath, StringComparison.InvariantCultureIgnoreCase) == false)
+                        {
+                            dirpath = fullpath;
+                        }
+                        var dtnf = CreateRpfDirTreeFolder(dir, dirpath, fullpath);
                         f.AddChild(dtnf);
                         RecurseMainTreeViewRPF(dtnf, allRpfs);
                     }
@@ -1029,6 +1057,50 @@ namespace CodeWalker
             CurrentFolder.AddChild(f);
 
             RefreshMainListView();
+        }
+        private void EnsureRpfTreeNodeHierarchy(MainTreeFolder f)
+        {
+            //ensure this root rpf is in the tree, with all its children.
+            //also create parent nodes if necessary
+            //remove any existing node at this path first
+
+            var relpath = f.Path.ToLowerInvariant();
+            var hierarchy = relpath.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+            var tf = RootFolder;
+            var createdroot = (MainTreeFolder)null;
+            for (int i = 0; i < hierarchy.Length - 1; i++)
+            {
+                var name = hierarchy[i];
+                var tt = tf.FindChild(name);
+                if (tt == null)//not found in hierarchy - need to create this tree folder object
+                {
+                    var tpath = tf.Path + "\\" + name;
+                    var tfull = tf.FullPath + "\\" + name;
+                    tt = CreateRootDirTreeFolder(name, tpath, tfull);
+                    tf.AddChild(tt);
+                    if (createdroot == null) createdroot = tt;
+                }
+                tf = tt;
+            }
+
+            var exchild = tf.FindChild(f.Name);
+            if (exchild != null)
+            {
+                tf.RemoveChild(exchild);
+                exchild.TreeNode?.Remove();
+            }
+
+            tf.AddChild(f);
+
+            if (createdroot != null)
+            {
+                RecurseAddMainTreeViewNodes(createdroot, createdroot.Parent.TreeNode);
+            }
+            else
+            {
+                RecurseAddMainTreeViewNodes(f, tf.TreeNode);
+            }
+
         }
         private MainTreeFolder CreateRpfTreeFolder(RpfFile rpf, string relpath, string fullpath)
         {
@@ -1998,22 +2070,106 @@ namespace CodeWalker
 
         private void EnsureEditModeWarning()
         {
-            bool mods = CurrentFolder.Path.ToLowerInvariant().StartsWith("mods");
-            bool srch = CurrentFolder?.IsSearchResults ?? false;
-            bool fsys = CurrentFolder?.RpfFolder == null;
-            bool game = CurrentFolder?.Path != CurrentFolder?.FullPath;
-            bool show = EditMode && !mods && !srch && (!fsys || game);
-            int gap = 3;
-            int bot = MainListView.Bottom;
+            var mods = CurrentFolder?.Path.StartsWith("mods", StringComparison.InvariantCultureIgnoreCase) ?? false;
+            var extn = CurrentFolder?.FullPath.StartsWith(RootFolder.FullPath, StringComparison.InvariantCultureIgnoreCase) == false;
+            var srch = CurrentFolder?.IsSearchResults ?? false;
+            var fsys = CurrentFolder?.RpfFolder == null;
+            var game = CurrentFolder?.Path != CurrentFolder?.FullPath;
+            var show = EditMode && !mods && !extn && !srch && (!fsys || game);
+            var copy = show && (CurrentFolder?.RpfFolder != null);
+            var gap = 3;
+            var bot = MainListView.Bottom;
 
             EditModeBaseWarningPanel.Top = gap;
             EditModeModsWarningPanel.Top = gap;
             EditModeModsWarningPanel.Visible = false;
+            CopyToModsFolderButton.Visible = copy;
 
             MainListView.Top = show ? EditModeBaseWarningPanel.Bottom + gap : gap;
             MainListView.Height = bot - MainListView.Top;
         }
 
+        private void CopyToModsFolder()
+        {
+            if (CurrentFolder == null) return;
+            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
+            var modspath = rootpath + "mods\\";
+            var curpath = CurrentFolder.FullPath;
+            var rpfpath = CurrentFolder.GetCurrentRpfFile()?.GetPhysicalFilePath();
+            if (string.IsNullOrEmpty(rpfpath)) return;
+            if (rpfpath.StartsWith(rootpath, StringComparison.InvariantCultureIgnoreCase) != true) return;
+            var relpath = rpfpath.Substring(rootpath.Length);
+            var destpath = modspath + relpath;
+            var newrelpath = destpath.Substring(rootpath.Length);
+            var navtarget = "mods\\" + curpath.Substring(rootpath.Length);
+
+            if (File.Exists(destpath))
+            {
+                var msg = $"File {relpath} already exists in the mods folder!\nDo you want to replace it?";
+                if (MessageBox.Show(msg, "File already exists", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                {
+                    Navigate(navtarget);
+                    return;
+                }
+            }
+
+            Cursor = Cursors.WaitCursor;
+            CopyToModsFolderButton.Enabled = false;
+            Task.Run(() =>
+            {
+                try
+                {
+                    var destdir = Path.GetDirectoryName(destpath);
+                    if (Directory.Exists(destdir) == false)
+                    {
+                        Directory.CreateDirectory(destdir);
+                    }
+
+                    if (File.Exists(destpath))
+                    {
+                        File.Delete(destpath);
+                    }
+
+                    File.Copy(rpfpath, destpath);
+
+                }
+                catch (Exception ex)
+                {
+                    Invoke(new Action(() => { MessageBox.Show("Error copying file:\n" + ex.ToString()); }));
+                    CopyToModsFolderButton.Enabled = true;
+                    Cursor = Cursors.Default;
+                    return;
+                }
+
+                var rpf = new RpfFile(destpath, newrelpath);
+
+                rpf.ScanStructure(UpdateStatus, UpdateErrorLog);
+
+                if (rpf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
+                {
+                    Invoke(new Action(() => { MessageBox.Show("Error scanning file:\n" + rpf.LastException.ToString()); }));
+                    CopyToModsFolderButton.Enabled = true;
+                    Cursor = Cursors.Default;
+                    return;
+                }
+
+                UpdateStatus($"Copied {newrelpath}.");
+
+                Invoke(new Action(() =>
+                {
+                    Cursor = Cursors.Default;
+
+                    var node = CreateRpfTreeFolder(rpf, newrelpath, destpath);
+                    var allrpfs = new List<RpfFile>();
+                    RecurseMainTreeViewRPF(node, allrpfs);
+                    EnsureRpfTreeNodeHierarchy(node);
+
+                    Navigate(navtarget);
+
+                    CopyToModsFolderButton.Enabled = true;
+                }));
+            });
+        }
 
 
 
@@ -4244,6 +4400,11 @@ namespace CodeWalker
             Settings.Default.RPFExplorerStartFolder = CurrentFolder.Path;
             OptionsStartInFolderValueMenu.Text = string.IsNullOrEmpty(CurrentFolder.Path) ? "(Default)" : CurrentFolder.Path;
         }
+
+        private void CopyToModsFolderButton_Click(object sender, EventArgs e)
+        {
+            CopyToModsFolder();
+        }
     }
 
 
@@ -4298,6 +4459,11 @@ namespace CodeWalker
                 idx = relpath.IndexOf('\\', lidx);
             }
             parent.AddChild(child);
+        }
+        public void RemoveChild(MainTreeFolder child)
+        {
+            if (Children == null) return;
+            Children.Remove(child);
         }
 
         public void EnsureFile(string file)
@@ -4435,6 +4601,26 @@ namespace CodeWalker
             Children = null;
             ListItems = null;
             TreeNode = null;
+        }
+
+        public MainTreeFolder FindChild(string name)
+        {
+            if (Children == null) return null;
+            foreach (var child in Children)
+            {
+                if (child == null) continue;
+                if (child.Name == null) continue;
+                if (child.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return child;
+                }
+            }
+            return null;
+        }
+        public RpfFile GetCurrentRpfFile()
+        {
+            if (RpfFile != null) return RpfFile;
+            return Parent?.GetCurrentRpfFile();
         }
 
         public override string ToString()

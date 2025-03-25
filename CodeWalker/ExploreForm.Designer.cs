@@ -161,6 +161,7 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
+            this.CopyToModsFolderButton = new System.Windows.Forms.Button();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -524,42 +525,42 @@
             // ToolsBinSearchMenu
             // 
             this.ToolsBinSearchMenu.Name = "ToolsBinSearchMenu";
-            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsBinSearchMenu.Text = "Binary Search...";
             this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
             // 
             // ToolsAudioExplorerMenu
             // 
             this.ToolsAudioExplorerMenu.Name = "ToolsAudioExplorerMenu";
-            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsAudioExplorerMenu.Text = "Audio Explorer";
             this.ToolsAudioExplorerMenu.Click += new System.EventHandler(this.ToolsAudioExplorerMenu_Click);
             // 
             // ToolsRpfBrowserMenu
             // 
             this.ToolsRpfBrowserMenu.Name = "ToolsRpfBrowserMenu";
-            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsRpfBrowserMenu.Text = "Old RPF Browser";
             this.ToolsRpfBrowserMenu.Click += new System.EventHandler(this.ToolsRpfBrowserMenu_Click);
             // 
             // ToolsJenkGenMenu
             // 
             this.ToolsJenkGenMenu.Name = "ToolsJenkGenMenu";
-            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsJenkGenMenu.Text = "JenkGen";
             this.ToolsJenkGenMenu.Click += new System.EventHandler(this.ToolsJenkGenMenu_Click);
             // 
             // ToolsJenkIndMenu
             // 
             this.ToolsJenkIndMenu.Name = "ToolsJenkIndMenu";
-            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsJenkIndMenu.Text = "JenkInd";
             this.ToolsJenkIndMenu.Click += new System.EventHandler(this.ToolsJenkIndMenu_Click);
             // 
             // ToolsAssetConverterMenu
             // 
             this.ToolsAssetConverterMenu.Name = "ToolsAssetConverterMenu";
-            this.ToolsAssetConverterMenu.Size = new System.Drawing.Size(180, 22);
+            this.ToolsAssetConverterMenu.Size = new System.Drawing.Size(161, 22);
             this.ToolsAssetConverterMenu.Text = "Asset Converter";
             this.ToolsAssetConverterMenu.Click += new System.EventHandler(this.ToolsAssetConverterMenu_Click);
             // 
@@ -944,6 +945,7 @@
             this.EditModeBaseWarningPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EditModeBaseWarningPanel.BackColor = System.Drawing.Color.DarkRed;
+            this.EditModeBaseWarningPanel.Controls.Add(this.CopyToModsFolderButton);
             this.EditModeBaseWarningPanel.Controls.Add(this.pictureBox1);
             this.EditModeBaseWarningPanel.Controls.Add(this.label1);
             this.EditModeBaseWarningPanel.Location = new System.Drawing.Point(1, 3);
@@ -1333,6 +1335,17 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
+            // CopyToModsFolderButton
+            // 
+            this.CopyToModsFolderButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.CopyToModsFolderButton.Location = new System.Drawing.Point(420, 1);
+            this.CopyToModsFolderButton.Name = "CopyToModsFolderButton";
+            this.CopyToModsFolderButton.Size = new System.Drawing.Size(110, 22);
+            this.CopyToModsFolderButton.TabIndex = 2;
+            this.CopyToModsFolderButton.Text = "Copy to mods folder";
+            this.CopyToModsFolderButton.UseVisualStyleBackColor = true;
+            this.CopyToModsFolderButton.Click += new System.EventHandler(this.CopyToModsFolderButton_Click);
+            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1504,5 +1517,6 @@
         private System.Windows.Forms.ToolStripMenuItem FileConfigureGameMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
         private System.Windows.Forms.ToolStripMenuItem ToolsAssetConverterMenu;
+        private System.Windows.Forms.Button CopyToModsFolderButton;
     }
 }
