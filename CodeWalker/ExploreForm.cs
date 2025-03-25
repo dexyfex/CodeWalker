@@ -2033,7 +2033,7 @@ namespace CodeWalker
 
 
 
-        public bool EnsureRpfValidEncryption(RpfFile file = null)
+        public bool EnsureRpfValidEncryption(RpfFile file = null, bool recursive = false)
         {
             if ((file == null) && (CurrentFolder.RpfFolder == null)) return false;
 
@@ -2041,13 +2041,25 @@ namespace CodeWalker
 
             if (rpf == null) return false;
 
+            var msgr = recursive ? "(including all its parents and children) " : "";
+            var msg1 = $"Are you sure you want to change this archive {msgr}to OPEN encryption?";
+            var msg2 = "Loading by the game will require a mod loader such as OpenRPF.asi or OpenIV.asi.";
+
             var confirm = new Func<RpfFile, bool>((f) => 
             {
-                var msg = "Archive " + f.Name + " is currently set to " + f.Encryption.ToString() + " encryption.\nAre you sure you want to change this archive to OPEN encryption?\nLoading by the game will require OpenIV.asi.";
+                var msg = $"Archive {f.Name} is currently set to {f.Encryption} encryption.\n{msg1}\n{msg2}";
                 return (MessageBox.Show(msg, "Change RPF encryption type", MessageBoxButtons.YesNo) == DialogResult.Yes);
             });
 
-            return RpfFile.EnsureValidEncryption(rpf, confirm);
+            if (recursive)
+            {
+                if (confirm(rpf) == false)
+                {
+                    return false;
+                }
+            }
+
+            return RpfFile.EnsureValidEncryption(rpf, recursive ? null : confirm, recursive);
         }
 
 
@@ -2701,10 +2713,20 @@ namespace CodeWalker
 
             OpenFileDialog.Filter = "XML Files|*.xml";
             if (OpenFileDialog.ShowDialog(this) != DialogResult.OK) return;
-            ImportXml(OpenFileDialog.FileNames);
+            ImportXml(OpenFileDialog.FileNames, false);//already checked encryption before the file dialog...
         }
-        private void ImportXml(string[] fpaths)
+        private void ImportXml(string[] fpaths, bool checkEncryption = true)
         {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+            if (!EnsureCurrentFolderEditable()) return;
+
+            if (checkEncryption)
+            {
+                if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
+            }
+
             foreach (var fpath in fpaths)
             {
 #if !DEBUG
@@ -3189,29 +3211,34 @@ namespace CodeWalker
                 MaximizeBox = false,
                 MinimizeBox = false
             };
-            var addCtrl = new Func<Control, Control>(c => { form.Controls.Add(c); return c; });
-            var addLabel = new Func<int, string, Control>((y, t) => {
+            Control addCtrl(Control c) { form.Controls.Add(c); return c; }
+            Control addLabel(int y, string t)
+            {
                 return addCtrl(new Label() { Left = 30, Top = y, Width = 370, Height = 20, Text = t });
-            });
-            var addCheckbox = new Func<int, string, bool, Control>((y, t, defaultVal) =>
+            }
+            Control addCheckbox(int y, string t, bool defaultVal)
             {
                 return addCtrl(new CheckBox() { Left = 33, Top = y, Width = 370, Height = 20, Text = t, Checked = defaultVal });
-            });
+            }
             var rpfNameLabel = addLabel(20, "Archive: " + rpf.Path);
             var curSizeLabel = addLabel(40, string.Empty);
             var newSizeLabel = addLabel(60, string.Empty);
             var redSizeLabel = addLabel(80, string.Empty);
             var statusLabel = addLabel(110, string.Empty);
-            CheckBox recursiveCheckbox = addCheckbox(130, "Recursive", true) as CheckBox;
+            var recursiveCheckbox = addCheckbox(130, "Recursive", true) as CheckBox;
             var progressBar = addCtrl(new ProgressBar() { Left = 30, Top = 180, Width = 370, Height = 20, Minimum = 0, Maximum = 1000, MarqueeAnimationSpeed = 50 }) as ProgressBar;
             var beginButton = addCtrl(new Button() { Text = "Begin Defragment", Left = 30, Top = 210, Width = 120 }) as Button;
             var closeButton = addCtrl(new Button() { Text = "Close", Left = 320, Top = 210, Width = 80 }) as Button;
             var inProgress = false;
-            var updateProgress = new Action<string, float>((s, p) => { form.Invoke(new Action(() => {
-                statusLabel.Text = s;
-                progressBar.Value = Math.Max(0, Math.Min((int)(p * 1000), 1000));//p in range 0..1
-            }));});
-            var updateSizeLabels = new Action<bool>((init) => {
+            void updateProgress(string s, float p)
+            {
+                form.Invoke(new Action(() => {
+                    statusLabel.Text = s;
+                    progressBar.Value = Math.Max(0, Math.Min((int)(p * 1000), 1000));//p in range 0..1
+                }));
+            }
+            void updateSizeLabels(bool init)
+            {
                 var curSize = rpf.FileSize;
                 var newSize = rpf.GetDefragmentedFileSize(recursiveCheckbox.Checked);
                 var redSize = curSize - newSize;
@@ -3219,24 +3246,30 @@ namespace CodeWalker
                 newSizeLabel.Text = "Defragmented size: " + TextUtil.GetBytesReadable(newSize);
                 redSizeLabel.Text = "Size reduction: " + TextUtil.GetBytesReadable(redSize);
                 if (init) statusLabel.Text = (redSize <= 0) ? "Defragmentation not required." : "Ready to defragment.";
-            });
-            var enableUi = new Action<bool>(enable => { form.Invoke(new Action(() => {
-                beginButton.Enabled = enable;
-                closeButton.Enabled = enable;
-            }));});
-            var defragment = new Action(() => { Task.Run(() => {
-                if (inProgress) return;
-                if (!EnsureRpfValidEncryption(rpf)) return;
-                inProgress = true;
-                enableUi(false);
-                RpfFile.Defragment(rpf, updateProgress, recursiveCheckbox.Checked);
-                updateProgress("Defragment complete.", 1.0f);
-                enableUi(true);
-                form.Invoke(new Action(() => { updateSizeLabels(false); }));
-                inProgress = false;
-            });});
+            }
+            void enableUi(bool enable)
+            {
+                form.Invoke(new Action(() => {
+                    beginButton.Enabled = enable;
+                    closeButton.Enabled = enable;
+                }));
+            }
+            void defragment(bool recursive)
+            {
+                Task.Run(() => {
+                    if (inProgress) return;
+                    if (!EnsureRpfValidEncryption(rpf, recursive)) return;
+                    inProgress = true;
+                    enableUi(false);
+                    RpfFile.Defragment(rpf, updateProgress, recursive);
+                    updateProgress("Defragment complete.", 1.0f);
+                    enableUi(true);
+                    form.Invoke(new Action(() => { updateSizeLabels(false); }));
+                    inProgress = false;
+                });
+            }
             updateSizeLabels(true);
-            beginButton.Click += (sender, e) => { defragment(); };
+            beginButton.Click += (sender, e) => { defragment(recursiveCheckbox.Checked); };
             closeButton.Click += (sender, e) => { form.Close(); };
             recursiveCheckbox.Click += (sender, e) => { updateSizeLabels(false); };
             form.FormClosing += (s, e) => { e.Cancel = inProgress; };

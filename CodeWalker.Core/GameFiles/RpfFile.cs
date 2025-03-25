@@ -1892,21 +1892,42 @@ namespace CodeWalker.GameFiles
         }
 
 
-        public static bool EnsureValidEncryption(RpfFile file, Func<RpfFile, bool> confirm)
+        public static bool EnsureValidEncryption(RpfFile file, Func<RpfFile, bool> confirm, bool recursive = false)
         {
             if (file == null) return false;
 
             //currently assumes OPEN is the valid encryption type.
             //TODO: support other encryption types!
 
-            bool needsupd = false;
+            var files = new List<RpfFile>();
+            if (recursive && (file.Children != null))
+            {
+                var stack = new Stack<RpfFile>(file.Children);
+                while (stack.Count > 0)
+                {
+                    var child = stack.Pop();
+                    if (child == null) continue;
+                    if (child.Encryption != RpfEncryption.OPEN)
+                    {
+                        files.Add(child);
+                    }
+                    if (child.Children != null)
+                    {
+                        foreach (var cchild in child.Children)
+                        {
+                            stack.Push(cchild);
+                        }
+                    }
+                }
+                files.Reverse();//the list is in parent>child order, needs to be in child>parent order here
+            }
+            var needsupd = (files.Count > 0);
             var f = file;
-            List<RpfFile> files = new List<RpfFile>();
             while (f != null)
             {
                 if (f.Encryption != RpfEncryption.OPEN)
                 {
-                    if (!confirm(f))
+                    if ((confirm != null) && !confirm(f))
                     {
                         return false;
                     }
