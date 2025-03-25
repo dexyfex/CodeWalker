@@ -652,6 +652,7 @@ namespace CodeWalker
             EditImportRawMenu.Visible = canimport;
             EditImportFbxMenu.Visible = canimport;
             EditImportXmlMenu.Visible = canimport;
+            EditImportRecursiveMenu.Visible = canimport;
             EditImportMenuSeparator.Visible = canimport;
 
             EditCopyMenu.Enabled = isfile;
@@ -1949,6 +1950,7 @@ namespace CodeWalker
             ListContextImportRawMenu.Visible = canimport;
             ListContextImportFbxMenu.Visible = canimport;
             ListContextImportXmlMenu.Visible = canimport;
+            ListContextImportRecursiveMenu.Visible = canimport;
             ListContextImportSeparator.Visible = cancreate;
 
             ListContextCopyMenu.Enabled = isfile;
@@ -2796,6 +2798,118 @@ namespace CodeWalker
 
             RefreshMainListView();
 
+        }
+        private void ImportXmlWithDestination(string fpath, string fdest)
+        {
+#if !DEBUG
+    try
+#endif
+            {
+                if (!File.Exists(fpath))
+                {
+                    return; //this shouldn't happen...
+                }
+
+                var fi = new FileInfo(fpath);
+                var fname = fi.Name;
+                var fnamel = fname.ToLowerInvariant();
+                var fpathin = fpath;
+
+                if (!fnamel.EndsWith(".xml"))
+                {
+                    MessageBox.Show(fname + ": Not an XML file!", "Cannot import XML");
+                    return;
+                }
+
+                var trimlength = 4;
+                var mformat = XmlMeta.GetXMLFormat(fnamel, out trimlength);
+
+                fname = fname.Substring(0, fname.Length - trimlength);
+                fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
+                fpathin = fpathin.Substring(0, fpathin.Length - trimlength);
+                fpathin = Path.Combine(Path.GetDirectoryName(fpathin), Path.GetFileNameWithoutExtension(fpathin));
+
+                var doc = new XmlDocument();
+                string text = File.ReadAllText(fpath);
+                if (!string.IsNullOrEmpty(text))
+                {
+                    doc.LoadXml(text);
+                }
+
+                byte[] data = XmlMeta.GetData(doc, mformat, fpathin);
+
+                if (data != null)
+                {
+                    // Verifica se la cartella di destinazione esiste, altrimenti la crea
+                    if (!Directory.Exists(fdest))
+                    {
+                        Directory.CreateDirectory(fdest);
+                    }
+
+                    var outfpath = Path.Combine(fdest, fname);
+
+                    if (CurrentFolder.RpfFolder != null)
+                    {
+                        RpfFile.CreateFile(CurrentFolder.RpfFolder, fname, data);
+                    }
+                    else if (!string.IsNullOrEmpty(CurrentFolder.FullPath))
+                    {
+                        File.WriteAllBytes(outfpath, data);
+                        CurrentFolder.EnsureFile(outfpath);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(fname + ": Schema not supported.", "Cannot import " + XmlMeta.GetXMLFormatName(mformat));
+                }
+#if !DEBUG
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show(ex.Message, "Unable to import file");
+    }
+#endif
+
+                RefreshMainListView();
+            }
+        }
+
+        private void ImportRecursiveDialog()
+        {
+            if (!EditMode) return;
+            if (CurrentFolder?.IsSearchResults ?? false) return;
+
+            if (!EnsureCurrentFolderEditable()) return;
+
+            if (!EnsureRpfValidEncryption() && (CurrentFolder.RpfFolder != null)) return;
+
+            using (FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog())
+            {
+                folderBrowserDialog.Description = "Select the folder to import XML files from";
+                folderBrowserDialog.ShowNewFolderButton = false;
+
+                if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string sourceFolder = folderBrowserDialog.SelectedPath;
+                    string[] fpaths = Directory.GetFiles(sourceFolder, "*.xml", SearchOption.AllDirectories);
+
+                    foreach (string fpath in fpaths)
+                    {
+                        // Calcola la struttura della cartella di destinazione
+                        string relativePath = GetRelativePath(sourceFolder, fpath);
+                        string destFolder = Path.Combine(CurrentFolder.FullPath, Path.GetDirectoryName(relativePath));
+
+                        // Verifica se la cartella di destinazione esiste, altrimenti la crea
+                        if (!Directory.Exists(destFolder))
+                        {
+                            Directory.CreateDirectory(destFolder);
+                        }
+
+                        // Chiamata a ImportXmlWithDestination con il percorso del file e la cartella di destinazione
+                        ImportXmlWithDestination(fpath, destFolder);
+                    }
+                }
+            }
         }
         private void ImportRaw()
         {
@@ -4009,7 +4123,10 @@ namespace CodeWalker
         {
             ImportXmlDialog();
         }
-
+        private void ListContextImportRecursiveMenu_Click(object sender, EventArgs e)
+        {
+            ImportRecursiveDialog();
+        }
         private void ListContextImportRawMenu_Click(object sender, EventArgs e)
         {
             ImportRaw();
@@ -4108,6 +4225,10 @@ namespace CodeWalker
         private void EditImportXmlMenu_Click(object sender, EventArgs e)
         {
             ImportXmlDialog();
+        }
+        private void EditImportRecursiveMenu_Click(object sender, EventArgs e)
+        {
+            ImportRecursiveDialog();
         }
 
         private void EditImportRawMenu_Click(object sender, EventArgs e)
@@ -4243,6 +4364,12 @@ namespace CodeWalker
             if (CurrentFolder == null) return;
             Settings.Default.RPFExplorerStartFolder = CurrentFolder.Path;
             OptionsStartInFolderValueMenu.Text = string.IsNullOrEmpty(CurrentFolder.Path) ? "(Default)" : CurrentFolder.Path;
+        }
+        private string GetRelativePath(string basePath, string fullPath)
+        {
+            Uri baseUri = new Uri(basePath);
+            Uri fullUri = new Uri(fullPath);
+            return Uri.UnescapeDataString(baseUri.MakeRelativeUri(fullUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
     }
 
