@@ -427,6 +427,186 @@ namespace CodeWalker
 
 
 
+
+
+
+    public static class MessageBoxEx
+    {
+        //custom version of MessageBox to center in the parent, and apply theming
+        //TODO: handle MessageBoxIcon and MessageBoxOptions
+        private static DialogResult ShowCore(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton, MessageBoxOptions options)
+        {
+            if (owner == null) return MessageBox.Show(text, caption, buttons, icon, defaultButton, options);//fallback case
+
+            var box = new Form()
+            {
+                Text = caption,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                ShowInTaskbar = false,
+            };
+            var label = new Label();
+            var font = label.Font;
+            var btns = new Button[3];
+            switch (buttons)
+            {
+                case MessageBoxButtons.OK:
+                    btns[0] = new Button() { Text = "OK", DialogResult = DialogResult.OK };
+                    break;
+                case MessageBoxButtons.OKCancel:
+                    btns[0] = new Button() { Text = "OK", DialogResult = DialogResult.OK };
+                    btns[1] = new Button() { Text = "Cancel", DialogResult = DialogResult.Cancel };
+                    break;
+                case MessageBoxButtons.AbortRetryIgnore:
+                    btns[0] = new Button() { Text = "Abort", DialogResult = DialogResult.Abort };
+                    btns[1] = new Button() { Text = "Retry", DialogResult = DialogResult.Retry };
+                    btns[2] = new Button() { Text = "Ignore", DialogResult = DialogResult.Ignore };
+                    box.ControlBox = false;
+                    break;
+                case MessageBoxButtons.YesNoCancel:
+                    btns[0] = new Button() { Text = "Yes", DialogResult = DialogResult.Yes };
+                    btns[1] = new Button() { Text = "No", DialogResult = DialogResult.No };
+                    btns[2] = new Button() { Text = "Cancel", DialogResult = DialogResult.Cancel };
+                    break;
+                case MessageBoxButtons.YesNo:
+                    btns[0] = new Button() { Text = "Yes", DialogResult = DialogResult.Yes };
+                    btns[1] = new Button() { Text = "No", DialogResult = DialogResult.No };
+                    box.ControlBox = false;
+                    break;
+                case MessageBoxButtons.RetryCancel:
+                    btns[0] = new Button() { Text = "Retry", DialogResult = DialogResult.Retry };
+                    btns[1] = new Button() { Text = "Cancel", DialogResult = DialogResult.Cancel };
+                    break;
+                //case MessageBoxButtons.CancelTryContinue:
+                //    btns[0] = new Button() { Text = "Cancel", DialogResult = DialogResult.Cancel };
+                //    btns[1] = new Button() { Text = "Try Again", DialogResult = DialogResult.TryAgain };
+                //    btns[2] = new Button() { Text = "Continue", DialogResult = DialogResult.Continue };
+                //    break;
+            }
+            var tpad = 25;//padding above text
+            var bpad = 15;//padding below text
+            var lpad = 10;//padding left of text
+            var rpad = 15;// padding right of text (and some extra?)
+            var btnh = 45;//height of the button row
+            var btnw = 75;//width of a button
+            var btnp = 10;//spacing between buttons
+            var btnl = 25;//spacing left of buttons
+            var minw = 120;//absolute minimum width
+            var btnsw = btnl;
+            for (int i = 0; i < btns.Length; i++)
+            {
+                if (btns[i] == null) continue;
+                btnsw += btnw + btnp;
+            }
+            minw = Math.Max(minw, btnsw);
+            var maxw = Math.Min(Math.Max(150, (owner.Width * 5) / 8), label.LogicalToDeviceUnits(400));
+            var size = TextRenderer.MeasureText(text, font);
+            if (size.Width > maxw)
+            {
+                size.Width = maxw;
+                size = TextRenderer.MeasureText(text, font, size, TextFormatFlags.WordBreak);
+            }
+            var maxh = Math.Max(250, (owner.Height * 7) / 8);
+            var exth = bpad + tpad + btnh;//total extra height which isn't the label
+            var toth = size.Height + exth;
+            var w = Math.Max(minw, size.Width + lpad + rpad);
+            var h = Math.Min(maxh, toth);
+            var tw = size.Width;
+            var th = h - exth;
+            box.ClientSize = new Size(w, h);
+            label.Location = new Point(lpad, tpad);
+            label.Size = new Size(tw, th);
+            label.AutoEllipsis = true;
+            label.Text = text;
+            box.Controls.Add(label);
+            var btnbg = new Control();
+            btnbg.Size = new Size(w, btnh);
+            btnbg.Location = new Point(0, h - btnh);
+            box.Controls.Add(btnbg);
+            var x = w - rpad - btnw;
+            var y = btnp;
+            for (int i = btns.Length - 1; i >= 0; i--)
+            {
+                var btn = btns[i];
+                if (btn == null) continue;
+                btn.Width = btnw;
+                btn.Location = new Point(x, y);
+                btnbg.Controls.Add(btn);
+                x -= (btnw + btnp);
+            }
+            var selbut = btns[0];
+            switch (defaultButton)
+            {
+                case MessageBoxDefaultButton.Button1: selbut = btns[0]; break;
+                case MessageBoxDefaultButton.Button2: selbut = btns[1]; break;
+                case MessageBoxDefaultButton.Button3: selbut = btns[3]; break;
+            }
+            box.ActiveControl = selbut;
+
+            //Themes.Theme.Apply(box);
+            //var theme = Themes.Theme.GetTheme();
+            //btnbg.BackColor = theme.WindowBack;
+
+            return box.ShowDialog(owner);
+            //MessageBox.Show(owner, res.ToString());
+            //return MessageBox.Show(owner, text, caption, buttons, icon, defaultButton, options);
+        }
+
+        /// <summary>
+        ///  Displays a message box with specified text, caption, and style.
+        /// </summary>
+        public static DialogResult Show(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton, MessageBoxOptions options)
+        {
+            return ShowCore(owner, text, caption, buttons, icon, defaultButton, options);
+        }
+
+        /// <summary>
+        ///  Displays a message box with specified text, caption, and style.
+        /// </summary>
+        public static DialogResult Show(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon, MessageBoxDefaultButton defaultButton)
+        {
+            return ShowCore(owner, text, caption, buttons, icon, defaultButton, 0);
+        }
+
+        /// <summary>
+        ///  Displays a message box with specified text, caption, and style.
+        /// </summary>
+        public static DialogResult Show(Form owner, string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
+        {
+            return ShowCore(owner, text, caption, buttons, icon, MessageBoxDefaultButton.Button1, 0);
+        }
+
+        /// <summary>
+        ///  Displays a message box with specified text, caption, and style.
+        /// </summary>
+        public static DialogResult Show(Form owner, string text, string caption, MessageBoxButtons buttons)
+        {
+            return ShowCore(owner, text, caption, buttons, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, 0);
+        }
+
+        /// <summary>
+        ///  Displays a message box with specified text and caption.
+        /// </summary>
+        public static DialogResult Show(Form owner, string text, string caption)
+        {
+            return ShowCore(owner, text, caption, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, 0);
+        }
+
+        /// <summary>
+        ///  Displays a message box with specified text.
+        /// </summary>
+        public static DialogResult Show(Form owner, string text)
+        {
+            return ShowCore(owner, text, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, 0);
+        }
+
+    }
+
+
+
+
     //unused
     //public class AccurateTimer
     //{
