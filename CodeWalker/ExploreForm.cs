@@ -33,6 +33,7 @@ namespace CodeWalker
         private List<MainListItem> CurrentFiles;
         private bool FirstRefreshed = false;
         private List<MainListItem> CopiedFiles = new List<MainListItem>();
+        private bool DropFolderCreated;
 
         private Stack<MainTreeFolder> BackSteps = new Stack<MainTreeFolder>();
         private Stack<MainTreeFolder> ForwardSteps = new Stack<MainTreeFolder>();
@@ -3604,10 +3605,12 @@ namespace CodeWalker
             {
                 Directory.CreateDirectory(dir);
             }
+            DropFolderCreated = true;
             return dir;
         }
         private void CleanupDropFolder()
         {
+            if (DropFolderCreated == false) return;
             string drop = GetDropFolder();
             if (Directory.Exists(drop))
             {
