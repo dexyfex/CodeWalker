@@ -36,6 +36,7 @@
             this.LightMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.newLightToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteLightToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.LightTablePanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.NewLightButton = new System.Windows.Forms.Button();
             this.DeleteLightButton = new System.Windows.Forms.Button();
             this.DuplicateLightButton = new System.Windows.Forms.Button();
@@ -45,12 +46,12 @@
             this.GoToButton = new System.Windows.Forms.Button();
             this.DirectionLabel = new System.Windows.Forms.Label();
             this.DirectionTextBox = new System.Windows.Forms.TextBox();
-            this.ResetDirectionButton = new System.Windows.Forms.Button();
             this.NormalizeDirectionButton = new System.Windows.Forms.Button();
+            this.ResetDirectionButton = new System.Windows.Forms.Button();
             this.TangentLabel = new System.Windows.Forms.Label();
             this.TangentTextBox = new System.Windows.Forms.TextBox();
-            this.CalculateTangentButton = new System.Windows.Forms.Button();
             this.NormalizeTangentButton = new System.Windows.Forms.Button();
+            this.CalculateTangentButton = new System.Windows.Forms.Button();
             this.TypeLabel = new System.Windows.Forms.Label();
             this.TypeComboBox = new System.Windows.Forms.ComboBox();
             this.ColourRGBLabel = new System.Windows.Forms.Label();
@@ -136,6 +137,7 @@
             this.MainSplitContainer.SuspendLayout();
             this.LightPropertiesPanel1.SuspendLayout();
             this.LightMenuStrip.SuspendLayout();
+            this.LightTablePanel1.SuspendLayout();
             this.LightPropertiesPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ColourRUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.ColourGUpDown)).BeginInit();
@@ -167,36 +169,35 @@
             // MainSplitContainer.Panel2
             // 
             this.MainSplitContainer.Panel2.Controls.Add(this.LightPropertiesPanel2);
-            this.MainSplitContainer.Size = new System.Drawing.Size(673, 746);
-            this.MainSplitContainer.SplitterDistance = 169;
-            this.MainSplitContainer.SplitterWidth = 3;
+            this.MainSplitContainer.Size = new System.Drawing.Size(629, 746);
+            this.MainSplitContainer.SplitterDistance = 128;
             this.MainSplitContainer.TabIndex = 0;
             // 
             // LightPropertiesPanel1
             // 
-            this.LightPropertiesPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.LightPropertiesPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LightPropertiesPanel1.Controls.Add(this.LightTablePanel1);
             this.LightPropertiesPanel1.Controls.Add(this.LightsTreeView);
-            this.LightPropertiesPanel1.Controls.Add(this.NewLightButton);
-            this.LightPropertiesPanel1.Controls.Add(this.DeleteLightButton);
-            this.LightPropertiesPanel1.Controls.Add(this.DuplicateLightButton);
             this.LightPropertiesPanel1.Location = new System.Drawing.Point(3, 3);
             this.LightPropertiesPanel1.Name = "LightPropertiesPanel1";
-            this.LightPropertiesPanel1.Size = new System.Drawing.Size(164, 741);
-            this.LightPropertiesPanel1.TabIndex = 9;
+            this.LightPropertiesPanel1.Size = new System.Drawing.Size(122, 740);
+            this.LightPropertiesPanel1.TabIndex = 2;
             // 
             // LightsTreeView
             // 
-            this.LightsTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
+            this.LightsTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.LightsTreeView.ContextMenuStrip = this.LightMenuStrip;
             this.LightsTreeView.FullRowSelect = true;
             this.LightsTreeView.HideSelection = false;
             this.LightsTreeView.Location = new System.Drawing.Point(3, 3);
             this.LightsTreeView.Name = "LightsTreeView";
             this.LightsTreeView.ShowRootLines = false;
-            this.LightsTreeView.Size = new System.Drawing.Size(158, 677);
-            this.LightsTreeView.TabIndex = 5;
+            this.LightsTreeView.Size = new System.Drawing.Size(116, 672);
+            this.LightsTreeView.TabIndex = 3;
             this.LightsTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.LightsTreeView_AfterSelect);
             // 
             // LightMenuStrip
@@ -222,36 +223,58 @@
             this.deleteLightToolStripMenuItem.Text = "Delete Light";
             this.deleteLightToolStripMenuItem.Click += new System.EventHandler(this.deleteLightToolStripMenuItem_Click);
             // 
+            // LightTablePanel1
+            // 
+            this.LightTablePanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LightTablePanel1.ColumnCount = 2;
+            this.LightTablePanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.LightTablePanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.LightTablePanel1.Controls.Add(this.NewLightButton, 0, 0);
+            this.LightTablePanel1.Controls.Add(this.DeleteLightButton, 1, 0);
+            this.LightTablePanel1.Controls.Add(this.DuplicateLightButton, 0, 1);
+            this.LightTablePanel1.Location = new System.Drawing.Point(3, 677);
+            this.LightTablePanel1.Name = "LightTablePanel1";
+            this.LightTablePanel1.RowCount = 2;
+            this.LightTablePanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.LightTablePanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.LightTablePanel1.Size = new System.Drawing.Size(116, 60);
+            this.LightTablePanel1.TabIndex = 4;
+            // 
             // NewLightButton
             // 
-            this.NewLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.NewLightButton.Location = new System.Drawing.Point(3, 686);
+            this.NewLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.NewLightButton.Location = new System.Drawing.Point(3, 4);
             this.NewLightButton.Name = "NewLightButton";
-            this.NewLightButton.Size = new System.Drawing.Size(75, 23);
-            this.NewLightButton.TabIndex = 6;
+            this.NewLightButton.Size = new System.Drawing.Size(52, 23);
+            this.NewLightButton.TabIndex = 5;
             this.NewLightButton.Text = "New Light";
             this.NewLightButton.UseVisualStyleBackColor = true;
             this.NewLightButton.Click += new System.EventHandler(this.NewLightButton_Click);
             // 
             // DeleteLightButton
             // 
-            this.DeleteLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.DeleteLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.DeleteLightButton.Enabled = false;
-            this.DeleteLightButton.Location = new System.Drawing.Point(86, 686);
+            this.DeleteLightButton.Location = new System.Drawing.Point(61, 4);
             this.DeleteLightButton.Name = "DeleteLightButton";
-            this.DeleteLightButton.Size = new System.Drawing.Size(75, 23);
-            this.DeleteLightButton.TabIndex = 7;
+            this.DeleteLightButton.Size = new System.Drawing.Size(52, 23);
+            this.DeleteLightButton.TabIndex = 6;
             this.DeleteLightButton.Text = "Delete Light";
             this.DeleteLightButton.UseVisualStyleBackColor = true;
             this.DeleteLightButton.Click += new System.EventHandler(this.DeleteLightButton_Click);
             // 
             // DuplicateLightButton
             // 
-            this.DuplicateLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.DuplicateLightButton.Location = new System.Drawing.Point(3, 718);
+            this.DuplicateLightButton.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.LightTablePanel1.SetColumnSpan(this.DuplicateLightButton, 2);
+            this.DuplicateLightButton.Location = new System.Drawing.Point(3, 34);
             this.DuplicateLightButton.Name = "DuplicateLightButton";
-            this.DuplicateLightButton.Size = new System.Drawing.Size(158, 23);
-            this.DuplicateLightButton.TabIndex = 8;
+            this.DuplicateLightButton.Size = new System.Drawing.Size(110, 23);
+            this.DuplicateLightButton.TabIndex = 7;
             this.DuplicateLightButton.Text = "Duplicate Light";
             this.DuplicateLightButton.UseVisualStyleBackColor = true;
             this.DuplicateLightButton.Click += new System.EventHandler(this.DuplicateLightButton_Click);
@@ -267,12 +290,12 @@
             this.LightPropertiesPanel2.Controls.Add(this.GoToButton);
             this.LightPropertiesPanel2.Controls.Add(this.DirectionLabel);
             this.LightPropertiesPanel2.Controls.Add(this.DirectionTextBox);
-            this.LightPropertiesPanel2.Controls.Add(this.ResetDirectionButton);
             this.LightPropertiesPanel2.Controls.Add(this.NormalizeDirectionButton);
+            this.LightPropertiesPanel2.Controls.Add(this.ResetDirectionButton);
             this.LightPropertiesPanel2.Controls.Add(this.TangentLabel);
             this.LightPropertiesPanel2.Controls.Add(this.TangentTextBox);
-            this.LightPropertiesPanel2.Controls.Add(this.CalculateTangentButton);
             this.LightPropertiesPanel2.Controls.Add(this.NormalizeTangentButton);
+            this.LightPropertiesPanel2.Controls.Add(this.CalculateTangentButton);
             this.LightPropertiesPanel2.Controls.Add(this.TypeLabel);
             this.LightPropertiesPanel2.Controls.Add(this.TypeComboBox);
             this.LightPropertiesPanel2.Controls.Add(this.ColourRGBLabel);
@@ -344,8 +367,8 @@
             this.LightPropertiesPanel2.Controls.Add(this.FlagsCheckedListBox);
             this.LightPropertiesPanel2.Location = new System.Drawing.Point(3, 3);
             this.LightPropertiesPanel2.Name = "LightPropertiesPanel2";
-            this.LightPropertiesPanel2.Size = new System.Drawing.Size(495, 741);
-            this.LightPropertiesPanel2.TabIndex = 1;
+            this.LightPropertiesPanel2.Size = new System.Drawing.Size(491, 740);
+            this.LightPropertiesPanel2.TabIndex = 8;
             // 
             // PositionLabel
             // 
@@ -353,26 +376,23 @@
             this.PositionLabel.Location = new System.Drawing.Point(3, 5);
             this.PositionLabel.Name = "PositionLabel";
             this.PositionLabel.Size = new System.Drawing.Size(47, 13);
-            this.PositionLabel.TabIndex = 100;
+            this.PositionLabel.TabIndex = 101;
             this.PositionLabel.Text = "Position:";
             // 
             // PositionTextBox
             // 
-            this.PositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.PositionTextBox.Location = new System.Drawing.Point(88, 2);
             this.PositionTextBox.Name = "PositionTextBox";
-            this.PositionTextBox.Size = new System.Drawing.Size(339, 20);
-            this.PositionTextBox.TabIndex = 101;
+            this.PositionTextBox.Size = new System.Drawing.Size(337, 20);
+            this.PositionTextBox.TabIndex = 102;
             this.PositionTextBox.TextChanged += new System.EventHandler(this.PositionTextBox_TextChanged);
             // 
             // GoToButton
             // 
-            this.GoToButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.GoToButton.Location = new System.Drawing.Point(429, 0);
+            this.GoToButton.Location = new System.Drawing.Point(427, 0);
             this.GoToButton.Name = "GoToButton";
             this.GoToButton.Size = new System.Drawing.Size(63, 23);
-            this.GoToButton.TabIndex = 102;
+            this.GoToButton.TabIndex = 103;
             this.GoToButton.Text = "Go to";
             this.GoToButton.UseVisualStyleBackColor = true;
             this.GoToButton.Click += new System.EventHandler(this.GoToButton_Click);
@@ -388,35 +408,31 @@
             // 
             // DirectionTextBox
             // 
-            this.DirectionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.DirectionTextBox.Location = new System.Drawing.Point(88, 26);
             this.DirectionTextBox.Name = "DirectionTextBox";
-            this.DirectionTextBox.Size = new System.Drawing.Size(274, 20);
+            this.DirectionTextBox.Size = new System.Drawing.Size(272, 20);
             this.DirectionTextBox.TabIndex = 112;
             this.DirectionTextBox.TextChanged += new System.EventHandler(this.DirectionTextBox_TextChanged);
             // 
-            // ResetDirectionButton
-            // 
-            this.ResetDirectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ResetDirectionButton.Location = new System.Drawing.Point(429, 24);
-            this.ResetDirectionButton.Name = "ResetDirectionButton";
-            this.ResetDirectionButton.Size = new System.Drawing.Size(63, 23);
-            this.ResetDirectionButton.TabIndex = 113;
-            this.ResetDirectionButton.Text = "Reset";
-            this.ResetDirectionButton.UseVisualStyleBackColor = true;
-            this.ResetDirectionButton.Click += new System.EventHandler(this.ResetDirectionButton_Click);
-            // 
             // NormalizeDirectionButton
             // 
-            this.NormalizeDirectionButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NormalizeDirectionButton.Location = new System.Drawing.Point(363, 24);
+            this.NormalizeDirectionButton.Location = new System.Drawing.Point(361, 24);
             this.NormalizeDirectionButton.Name = "NormalizeDirectionButton";
             this.NormalizeDirectionButton.Size = new System.Drawing.Size(63, 23);
             this.NormalizeDirectionButton.TabIndex = 113;
             this.NormalizeDirectionButton.Text = "Normalize";
             this.NormalizeDirectionButton.UseVisualStyleBackColor = true;
             this.NormalizeDirectionButton.Click += new System.EventHandler(this.NormalizeDirectionButton_Click);
+            // 
+            // ResetDirectionButton
+            // 
+            this.ResetDirectionButton.Location = new System.Drawing.Point(427, 24);
+            this.ResetDirectionButton.Name = "ResetDirectionButton";
+            this.ResetDirectionButton.Size = new System.Drawing.Size(63, 23);
+            this.ResetDirectionButton.TabIndex = 114;
+            this.ResetDirectionButton.Text = "Reset";
+            this.ResetDirectionButton.UseVisualStyleBackColor = true;
+            this.ResetDirectionButton.Click += new System.EventHandler(this.ResetDirectionButton_Click);
             // 
             // TangentLabel
             // 
@@ -429,35 +445,31 @@
             // 
             // TangentTextBox
             // 
-            this.TangentTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.TangentTextBox.Location = new System.Drawing.Point(88, 50);
             this.TangentTextBox.Name = "TangentTextBox";
-            this.TangentTextBox.Size = new System.Drawing.Size(274, 20);
+            this.TangentTextBox.Size = new System.Drawing.Size(272, 20);
             this.TangentTextBox.TabIndex = 122;
             this.TangentTextBox.TextChanged += new System.EventHandler(this.TangentTextBox_TextChanged);
             // 
-            // CalculateTangentButton
-            // 
-            this.CalculateTangentButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.CalculateTangentButton.Location = new System.Drawing.Point(429, 47);
-            this.CalculateTangentButton.Name = "CalculateTangentButton";
-            this.CalculateTangentButton.Size = new System.Drawing.Size(63, 23);
-            this.CalculateTangentButton.TabIndex = 123;
-            this.CalculateTangentButton.Text = "Calculate";
-            this.CalculateTangentButton.UseVisualStyleBackColor = true;
-            this.CalculateTangentButton.Click += new System.EventHandler(this.CalculateTangentButton_Click);
-            // 
             // NormalizeTangentButton
             // 
-            this.NormalizeTangentButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NormalizeTangentButton.Location = new System.Drawing.Point(363, 47);
+            this.NormalizeTangentButton.Location = new System.Drawing.Point(361, 47);
             this.NormalizeTangentButton.Name = "NormalizeTangentButton";
             this.NormalizeTangentButton.Size = new System.Drawing.Size(63, 23);
             this.NormalizeTangentButton.TabIndex = 123;
             this.NormalizeTangentButton.Text = "Normalize";
             this.NormalizeTangentButton.UseVisualStyleBackColor = true;
             this.NormalizeTangentButton.Click += new System.EventHandler(this.NormalizeTangentButton_Click);
+            // 
+            // CalculateTangentButton
+            // 
+            this.CalculateTangentButton.Location = new System.Drawing.Point(427, 47);
+            this.CalculateTangentButton.Name = "CalculateTangentButton";
+            this.CalculateTangentButton.Size = new System.Drawing.Size(63, 23);
+            this.CalculateTangentButton.TabIndex = 124;
+            this.CalculateTangentButton.Text = "Calculate";
+            this.CalculateTangentButton.UseVisualStyleBackColor = true;
+            this.CalculateTangentButton.Click += new System.EventHandler(this.CalculateTangentButton_Click);
             // 
             // TypeLabel
             // 
@@ -578,7 +590,7 @@
             this.FlashinessLabel.Location = new System.Drawing.Point(3, 149);
             this.FlashinessLabel.Name = "FlashinessLabel";
             this.FlashinessLabel.Size = new System.Drawing.Size(59, 13);
-            this.FlashinessLabel.TabIndex = 171;
+            this.FlashinessLabel.TabIndex = 161;
             this.FlashinessLabel.Text = "Flashiness:";
             // 
             // FlashinessComboBox
@@ -611,7 +623,7 @@
             this.FlashinessComboBox.Location = new System.Drawing.Point(113, 145);
             this.FlashinessComboBox.Name = "FlashinessComboBox";
             this.FlashinessComboBox.Size = new System.Drawing.Size(166, 21);
-            this.FlashinessComboBox.TabIndex = 172;
+            this.FlashinessComboBox.TabIndex = 162;
             this.FlashinessComboBox.SelectedIndexChanged += new System.EventHandler(this.FlashinessComboBox_SelectedIndexChanged);
             // 
             // LightHashLabel
@@ -620,7 +632,7 @@
             this.LightHashLabel.Location = new System.Drawing.Point(3, 173);
             this.LightHashLabel.Name = "LightHashLabel";
             this.LightHashLabel.Size = new System.Drawing.Size(58, 13);
-            this.LightHashLabel.TabIndex = 301;
+            this.LightHashLabel.TabIndex = 171;
             this.LightHashLabel.Text = "LightHash:";
             // 
             // LightHashUpDown
@@ -633,7 +645,7 @@
             0});
             this.LightHashUpDown.Name = "LightHashUpDown";
             this.LightHashUpDown.Size = new System.Drawing.Size(165, 20);
-            this.LightHashUpDown.TabIndex = 152;
+            this.LightHashUpDown.TabIndex = 172;
             this.LightHashUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -769,7 +781,7 @@
             this.ExtentLabel.Location = new System.Drawing.Point(3, 338);
             this.ExtentLabel.Name = "ExtentLabel";
             this.ExtentLabel.Size = new System.Drawing.Size(40, 13);
-            this.ExtentLabel.TabIndex = 261;
+            this.ExtentLabel.TabIndex = 241;
             this.ExtentLabel.Text = "Extent:";
             // 
             // ExtentTextBox
@@ -777,7 +789,7 @@
             this.ExtentTextBox.Location = new System.Drawing.Point(113, 336);
             this.ExtentTextBox.Name = "ExtentTextBox";
             this.ExtentTextBox.Size = new System.Drawing.Size(166, 20);
-            this.ExtentTextBox.TabIndex = 262;
+            this.ExtentTextBox.TabIndex = 242;
             this.ExtentTextBox.TextChanged += new System.EventHandler(this.ExtentTextBox_TextChanged);
             // 
             // TextureHashLabel
@@ -786,7 +798,7 @@
             this.TextureHashLabel.Location = new System.Drawing.Point(3, 362);
             this.TextureHashLabel.Name = "TextureHashLabel";
             this.TextureHashLabel.Size = new System.Drawing.Size(72, 13);
-            this.TextureHashLabel.TabIndex = 301;
+            this.TextureHashLabel.TabIndex = 251;
             this.TextureHashLabel.Text = "Texture hash:";
             // 
             // TextureHashTextBox
@@ -794,7 +806,7 @@
             this.TextureHashTextBox.Location = new System.Drawing.Point(113, 359);
             this.TextureHashTextBox.Name = "TextureHashTextBox";
             this.TextureHashTextBox.Size = new System.Drawing.Size(166, 20);
-            this.TextureHashTextBox.TabIndex = 302;
+            this.TextureHashTextBox.TabIndex = 252;
             this.TextureHashTextBox.TextChanged += new System.EventHandler(this.TextureHashTextBox_TextChanged);
             // 
             // CoronaSizeLabel
@@ -803,7 +815,7 @@
             this.CoronaSizeLabel.Location = new System.Drawing.Point(3, 385);
             this.CoronaSizeLabel.Name = "CoronaSizeLabel";
             this.CoronaSizeLabel.Size = new System.Drawing.Size(65, 13);
-            this.CoronaSizeLabel.TabIndex = 241;
+            this.CoronaSizeLabel.TabIndex = 261;
             this.CoronaSizeLabel.Text = "Corona size:";
             // 
             // CoronaSizeTextBox
@@ -811,7 +823,7 @@
             this.CoronaSizeTextBox.Location = new System.Drawing.Point(113, 383);
             this.CoronaSizeTextBox.Name = "CoronaSizeTextBox";
             this.CoronaSizeTextBox.Size = new System.Drawing.Size(166, 20);
-            this.CoronaSizeTextBox.TabIndex = 242;
+            this.CoronaSizeTextBox.TabIndex = 262;
             this.CoronaSizeTextBox.TextChanged += new System.EventHandler(this.CoronaSizeTextBox_TextChanged);
             // 
             // CoronaIntensityLabel
@@ -820,7 +832,7 @@
             this.CoronaIntensityLabel.Location = new System.Drawing.Point(3, 409);
             this.CoronaIntensityLabel.Name = "CoronaIntensityLabel";
             this.CoronaIntensityLabel.Size = new System.Drawing.Size(85, 13);
-            this.CoronaIntensityLabel.TabIndex = 251;
+            this.CoronaIntensityLabel.TabIndex = 271;
             this.CoronaIntensityLabel.Text = "Corona intensity:";
             // 
             // CoronaIntensityTextBox
@@ -828,7 +840,7 @@
             this.CoronaIntensityTextBox.Location = new System.Drawing.Point(113, 406);
             this.CoronaIntensityTextBox.Name = "CoronaIntensityTextBox";
             this.CoronaIntensityTextBox.Size = new System.Drawing.Size(166, 20);
-            this.CoronaIntensityTextBox.TabIndex = 252;
+            this.CoronaIntensityTextBox.TabIndex = 272;
             this.CoronaIntensityTextBox.TextChanged += new System.EventHandler(this.CoronaIntensityTextBox_TextChanged);
             // 
             // CoronaZBiasLabel
@@ -837,7 +849,7 @@
             this.CoronaZBiasLabel.Location = new System.Drawing.Point(3, 432);
             this.CoronaZBiasLabel.Name = "CoronaZBiasLabel";
             this.CoronaZBiasLabel.Size = new System.Drawing.Size(71, 13);
-            this.CoronaZBiasLabel.TabIndex = 291;
+            this.CoronaZBiasLabel.TabIndex = 281;
             this.CoronaZBiasLabel.Text = "Corona zbias:";
             // 
             // CoronaZBiasTextBox
@@ -845,7 +857,7 @@
             this.CoronaZBiasTextBox.Location = new System.Drawing.Point(113, 430);
             this.CoronaZBiasTextBox.Name = "CoronaZBiasTextBox";
             this.CoronaZBiasTextBox.Size = new System.Drawing.Size(166, 20);
-            this.CoronaZBiasTextBox.TabIndex = 292;
+            this.CoronaZBiasTextBox.TabIndex = 282;
             this.CoronaZBiasTextBox.TextChanged += new System.EventHandler(this.CoronaZBiasTextBox_TextChanged);
             // 
             // ShadowNearClipLabel
@@ -854,7 +866,7 @@
             this.ShadowNearClipLabel.Location = new System.Drawing.Point(3, 456);
             this.ShadowNearClipLabel.Name = "ShadowNearClipLabel";
             this.ShadowNearClipLabel.Size = new System.Drawing.Size(92, 13);
-            this.ShadowNearClipLabel.TabIndex = 381;
+            this.ShadowNearClipLabel.TabIndex = 291;
             this.ShadowNearClipLabel.Text = "Shadow near clip:";
             // 
             // ShadowNearClipTextBox
@@ -862,7 +874,7 @@
             this.ShadowNearClipTextBox.Location = new System.Drawing.Point(113, 453);
             this.ShadowNearClipTextBox.Name = "ShadowNearClipTextBox";
             this.ShadowNearClipTextBox.Size = new System.Drawing.Size(166, 20);
-            this.ShadowNearClipTextBox.TabIndex = 382;
+            this.ShadowNearClipTextBox.TabIndex = 292;
             this.ShadowNearClipTextBox.TextChanged += new System.EventHandler(this.ShadowNearClipTextBox_TextChanged);
             // 
             // ShadowBlurLabel
@@ -871,7 +883,7 @@
             this.ShadowBlurLabel.Location = new System.Drawing.Point(3, 479);
             this.ShadowBlurLabel.Name = "ShadowBlurLabel";
             this.ShadowBlurLabel.Size = new System.Drawing.Size(69, 13);
-            this.ShadowBlurLabel.TabIndex = 271;
+            this.ShadowBlurLabel.TabIndex = 301;
             this.ShadowBlurLabel.Text = "Shadow blur:";
             // 
             // ShadowBlurUpDown
@@ -884,7 +896,7 @@
             0});
             this.ShadowBlurUpDown.Name = "ShadowBlurUpDown";
             this.ShadowBlurUpDown.Size = new System.Drawing.Size(165, 20);
-            this.ShadowBlurUpDown.TabIndex = 272;
+            this.ShadowBlurUpDown.TabIndex = 302;
             this.ShadowBlurUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -898,7 +910,7 @@
             this.ShadowFadeDistanceLabel.Location = new System.Drawing.Point(3, 503);
             this.ShadowFadeDistanceLabel.Name = "ShadowFadeDistanceLabel";
             this.ShadowFadeDistanceLabel.Size = new System.Drawing.Size(90, 13);
-            this.ShadowFadeDistanceLabel.TabIndex = 351;
+            this.ShadowFadeDistanceLabel.TabIndex = 311;
             this.ShadowFadeDistanceLabel.Text = "Shadow fade dst:";
             // 
             // ShadowFadeDistanceUpDown
@@ -911,7 +923,7 @@
             0});
             this.ShadowFadeDistanceUpDown.Name = "ShadowFadeDistanceUpDown";
             this.ShadowFadeDistanceUpDown.Size = new System.Drawing.Size(165, 20);
-            this.ShadowFadeDistanceUpDown.TabIndex = 352;
+            this.ShadowFadeDistanceUpDown.TabIndex = 312;
             this.ShadowFadeDistanceUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -925,7 +937,7 @@
             this.LightFadeDistanceLabel.Location = new System.Drawing.Point(3, 526);
             this.LightFadeDistanceLabel.Name = "LightFadeDistanceLabel";
             this.LightFadeDistanceLabel.Size = new System.Drawing.Size(74, 13);
-            this.LightFadeDistanceLabel.TabIndex = 281;
+            this.LightFadeDistanceLabel.TabIndex = 321;
             this.LightFadeDistanceLabel.Text = "Light fade dst:";
             // 
             // LightFadeDistanceUpDown
@@ -938,7 +950,7 @@
             0});
             this.LightFadeDistanceUpDown.Name = "LightFadeDistanceUpDown";
             this.LightFadeDistanceUpDown.Size = new System.Drawing.Size(165, 20);
-            this.LightFadeDistanceUpDown.TabIndex = 282;
+            this.LightFadeDistanceUpDown.TabIndex = 322;
             this.LightFadeDistanceUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -952,7 +964,7 @@
             this.SpecularFadeDistanceLabel.Location = new System.Drawing.Point(3, 550);
             this.SpecularFadeDistanceLabel.Name = "SpecularFadeDistanceLabel";
             this.SpecularFadeDistanceLabel.Size = new System.Drawing.Size(93, 13);
-            this.SpecularFadeDistanceLabel.TabIndex = 361;
+            this.SpecularFadeDistanceLabel.TabIndex = 331;
             this.SpecularFadeDistanceLabel.Text = "Specular fade dst:";
             // 
             // SpecularFadeDistanceUpDown
@@ -965,7 +977,7 @@
             0});
             this.SpecularFadeDistanceUpDown.Name = "SpecularFadeDistanceUpDown";
             this.SpecularFadeDistanceUpDown.Size = new System.Drawing.Size(165, 20);
-            this.SpecularFadeDistanceUpDown.TabIndex = 362;
+            this.SpecularFadeDistanceUpDown.TabIndex = 332;
             this.SpecularFadeDistanceUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -979,7 +991,7 @@
             this.VolumetricFadeDistanceLabel.Location = new System.Drawing.Point(3, 574);
             this.VolumetricFadeDistanceLabel.Name = "VolumetricFadeDistanceLabel";
             this.VolumetricFadeDistanceLabel.Size = new System.Drawing.Size(100, 13);
-            this.VolumetricFadeDistanceLabel.TabIndex = 371;
+            this.VolumetricFadeDistanceLabel.TabIndex = 341;
             this.VolumetricFadeDistanceLabel.Text = "Volumetric fade dst:";
             // 
             // VolumetricFadeDistanceUpDown
@@ -992,7 +1004,7 @@
             0});
             this.VolumetricFadeDistanceUpDown.Name = "VolumetricFadeDistanceUpDown";
             this.VolumetricFadeDistanceUpDown.Size = new System.Drawing.Size(165, 20);
-            this.VolumetricFadeDistanceUpDown.TabIndex = 372;
+            this.VolumetricFadeDistanceUpDown.TabIndex = 342;
             this.VolumetricFadeDistanceUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -1006,7 +1018,7 @@
             this.VolumeColorRGBLabel.Location = new System.Drawing.Point(3, 597);
             this.VolumeColorRGBLabel.Name = "VolumeColorRGBLabel";
             this.VolumeColorRGBLabel.Size = new System.Drawing.Size(109, 13);
-            this.VolumeColorRGBLabel.TabIndex = 331;
+            this.VolumeColorRGBLabel.TabIndex = 351;
             this.VolumeColorRGBLabel.Text = "Volume colour (RGB):";
             // 
             // VolumeColorLabel
@@ -1016,7 +1028,7 @@
             this.VolumeColorLabel.Location = new System.Drawing.Point(113, 595);
             this.VolumeColorLabel.Name = "VolumeColorLabel";
             this.VolumeColorLabel.Size = new System.Drawing.Size(30, 20);
-            this.VolumeColorLabel.TabIndex = 332;
+            this.VolumeColorLabel.TabIndex = 352;
             this.VolumeColorLabel.Click += new System.EventHandler(this.VolumeColorLabel_Click);
             // 
             // VolumeColorRUpDown
@@ -1029,7 +1041,7 @@
             0});
             this.VolumeColorRUpDown.Name = "VolumeColorRUpDown";
             this.VolumeColorRUpDown.Size = new System.Drawing.Size(38, 20);
-            this.VolumeColorRUpDown.TabIndex = 333;
+            this.VolumeColorRUpDown.TabIndex = 353;
             this.VolumeColorRUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -1047,7 +1059,7 @@
             0});
             this.VolumeColorGUpDown.Name = "VolumeColorGUpDown";
             this.VolumeColorGUpDown.Size = new System.Drawing.Size(38, 20);
-            this.VolumeColorGUpDown.TabIndex = 334;
+            this.VolumeColorGUpDown.TabIndex = 354;
             this.VolumeColorGUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -1065,7 +1077,7 @@
             0});
             this.VolumeColorBUpDown.Name = "VolumeColorBUpDown";
             this.VolumeColorBUpDown.Size = new System.Drawing.Size(38, 20);
-            this.VolumeColorBUpDown.TabIndex = 335;
+            this.VolumeColorBUpDown.TabIndex = 355;
             this.VolumeColorBUpDown.Value = new decimal(new int[] {
             255,
             0,
@@ -1079,7 +1091,7 @@
             this.VolumeIntensityLabel.Location = new System.Drawing.Point(3, 621);
             this.VolumeIntensityLabel.Name = "VolumeIntensityLabel";
             this.VolumeIntensityLabel.Size = new System.Drawing.Size(86, 13);
-            this.VolumeIntensityLabel.TabIndex = 311;
+            this.VolumeIntensityLabel.TabIndex = 361;
             this.VolumeIntensityLabel.Text = "Volume intensity:";
             // 
             // VolumeIntensityTextBox
@@ -1087,7 +1099,7 @@
             this.VolumeIntensityTextBox.Location = new System.Drawing.Point(113, 618);
             this.VolumeIntensityTextBox.Name = "VolumeIntensityTextBox";
             this.VolumeIntensityTextBox.Size = new System.Drawing.Size(166, 20);
-            this.VolumeIntensityTextBox.TabIndex = 312;
+            this.VolumeIntensityTextBox.TabIndex = 362;
             this.VolumeIntensityTextBox.TextChanged += new System.EventHandler(this.VolumeIntensityTextBox_TextChanged);
             // 
             // VolumeSizeScaleLabel
@@ -1096,7 +1108,7 @@
             this.VolumeSizeScaleLabel.Location = new System.Drawing.Point(3, 644);
             this.VolumeSizeScaleLabel.Name = "VolumeSizeScaleLabel";
             this.VolumeSizeScaleLabel.Size = new System.Drawing.Size(94, 13);
-            this.VolumeSizeScaleLabel.TabIndex = 321;
+            this.VolumeSizeScaleLabel.TabIndex = 371;
             this.VolumeSizeScaleLabel.Text = "Volume size scale:";
             // 
             // VolumeSizeScaleTextBox
@@ -1104,7 +1116,7 @@
             this.VolumeSizeScaleTextBox.Location = new System.Drawing.Point(113, 642);
             this.VolumeSizeScaleTextBox.Name = "VolumeSizeScaleTextBox";
             this.VolumeSizeScaleTextBox.Size = new System.Drawing.Size(166, 20);
-            this.VolumeSizeScaleTextBox.TabIndex = 322;
+            this.VolumeSizeScaleTextBox.TabIndex = 372;
             this.VolumeSizeScaleTextBox.TextChanged += new System.EventHandler(this.VolumeSizeScaleTextBox_TextChanged);
             // 
             // VolumeOuterExponentLabel
@@ -1113,7 +1125,7 @@
             this.VolumeOuterExponentLabel.Location = new System.Drawing.Point(3, 668);
             this.VolumeOuterExponentLabel.Name = "VolumeOuterExponentLabel";
             this.VolumeOuterExponentLabel.Size = new System.Drawing.Size(92, 13);
-            this.VolumeOuterExponentLabel.TabIndex = 341;
+            this.VolumeOuterExponentLabel.TabIndex = 381;
             this.VolumeOuterExponentLabel.Text = "Volume outer exp:";
             // 
             // VolumeOuterExponentTextBox
@@ -1121,7 +1133,7 @@
             this.VolumeOuterExponentTextBox.Location = new System.Drawing.Point(113, 665);
             this.VolumeOuterExponentTextBox.Name = "VolumeOuterExponentTextBox";
             this.VolumeOuterExponentTextBox.Size = new System.Drawing.Size(166, 20);
-            this.VolumeOuterExponentTextBox.TabIndex = 342;
+            this.VolumeOuterExponentTextBox.TabIndex = 382;
             this.VolumeOuterExponentTextBox.TextChanged += new System.EventHandler(this.VolumeOuterExponentTextBox_TextChanged);
             // 
             // CullingPlaneNormalLabel
@@ -1227,7 +1239,7 @@
             this.FlagsLabel.Location = new System.Drawing.Point(293, 291);
             this.FlagsLabel.Name = "FlagsLabel";
             this.FlagsLabel.Size = new System.Drawing.Size(35, 13);
-            this.FlagsLabel.TabIndex = 161;
+            this.FlagsLabel.TabIndex = 421;
             this.FlagsLabel.Text = "Flags:";
             // 
             // FlagsTextBox
@@ -1235,7 +1247,7 @@
             this.FlagsTextBox.Location = new System.Drawing.Point(333, 288);
             this.FlagsTextBox.Name = "FlagsTextBox";
             this.FlagsTextBox.Size = new System.Drawing.Size(157, 20);
-            this.FlagsTextBox.TabIndex = 162;
+            this.FlagsTextBox.TabIndex = 422;
             this.FlagsTextBox.TextChanged += new System.EventHandler(this.FlagsTextBox_TextChanged);
             // 
             // FlagsCheckedListBox
@@ -1279,8 +1291,8 @@
             "Already Tested For Occlusion"});
             this.FlagsCheckedListBox.Location = new System.Drawing.Point(295, 313);
             this.FlagsCheckedListBox.Name = "FlagsCheckedListBox";
-            this.FlagsCheckedListBox.Size = new System.Drawing.Size(195, 409);
-            this.FlagsCheckedListBox.TabIndex = 413;
+            this.FlagsCheckedListBox.Size = new System.Drawing.Size(195, 424);
+            this.FlagsCheckedListBox.TabIndex = 423;
             this.FlagsCheckedListBox.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.FlagsCheckedListBox_ItemCheck);
             // 
             // MainMenu
@@ -1295,7 +1307,7 @@
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
             this.MainMenu.Name = "MainMenu";
             this.MainMenu.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
-            this.MainMenu.Size = new System.Drawing.Size(673, 28);
+            this.MainMenu.Size = new System.Drawing.Size(629, 28);
             this.MainMenu.TabIndex = 1;
             this.MainMenu.Text = "menuStripFix1";
             // 
@@ -1379,7 +1391,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(673, 774);
+            this.ClientSize = new System.Drawing.Size(629, 774);
             this.Controls.Add(this.MainSplitContainer);
             this.Controls.Add(this.MainMenu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -1393,6 +1405,7 @@
             this.MainSplitContainer.ResumeLayout(false);
             this.LightPropertiesPanel1.ResumeLayout(false);
             this.LightMenuStrip.ResumeLayout(false);
+            this.LightTablePanel1.ResumeLayout(false);
             this.LightPropertiesPanel2.ResumeLayout(false);
             this.LightPropertiesPanel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ColourRUpDown)).EndInit();
@@ -1518,5 +1531,6 @@
         private System.Windows.Forms.Panel LightPropertiesPanel1;
         private System.Windows.Forms.Button ResetDirectionButton;
         private System.Windows.Forms.Button CalculateTangentButton;
+        private System.Windows.Forms.TableLayoutPanel LightTablePanel1;
     }
 }
