@@ -8,4 +8,8 @@
     <AssemblyName>CodeWalker Error Report Tool</AssemblyName>
   </PropertyGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy &quot;$(TargetDir)*&quot; &quot;$(SolutionDir)Build&quot;  /s /i /Y" />
+  </Target>
+
 </Project>
