@@ -20,8 +20,10 @@ namespace CodeWalker.ModManager
         public string AESKey;
 
         public string GameName => GameFolderOk ? IsGen9 ? "GTAV (Enhanced)" : "GTAV (Legacy)" : "(None selected)";
+        public string GameTitle => IsGen9 ? "GTAV Enhanced" : "GTAV Legacy";
         public string GameExeName => IsGen9 ? "gta5_enhanced.exe" : "gta5.exe";
         public string GameExePath => $"{GameFolder}\\{GameExeName}";
+        public string GameModCache => IsGen9 ? "GTAVEnhanced" : "GTAVLegacy";
         public bool GameFolderOk
         {
             get
