@@ -242,7 +242,7 @@
             this.BuildButton.Name = "BuildButton";
             this.BuildButton.Size = new System.Drawing.Size(110, 23);
             this.BuildButton.TabIndex = 1;
-            this.BuildButton.Text = "Build";
+            this.BuildButton.Text = "Build mods folder";
             this.BuildButton.UseVisualStyleBackColor = true;
             // 
             // CleanButton

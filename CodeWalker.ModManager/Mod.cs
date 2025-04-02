@@ -106,6 +106,7 @@ namespace CodeWalker.ModManager
             //TODO: set LoadOrder using what is specified in DLCs etc
             if (Type == ModType.OIV)
             {
+                Log($"Extracting {SourcePath}");
                 System.IO.Compression.ZipFile.ExtractToDirectory(SourcePath, localDir);
 
                 Files.Clear();
