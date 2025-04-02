@@ -804,7 +804,6 @@ namespace CodeWalker.Forms
                 selectedLight.Flashiness = v;
                 UpdateLightParams();
             }
-
         }
 
         private void LightHash_ValueChanged(object sender, EventArgs e)
@@ -852,6 +851,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Extent != v)
             {
                 selectedLight.Extent = v;
+                UpdateWidgetTransform();
                 UpdateLightParams();
             }
         }
@@ -1057,6 +1057,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Flags != v)
             {
                 selectedLight.Flags = v;
+                UpdateLightParams();
             }
             populatingui = true;
             UpdateFlagsCheckBoxes();
@@ -1071,6 +1072,7 @@ namespace CodeWalker.Forms
             if (selectedLight.Flags != v)
             {
                 selectedLight.Flags = v;
+                UpdateLightParams();
             }
             populatingui = true;
             FlagsTextBox.Text = selectedLight.Flags.ToString();
