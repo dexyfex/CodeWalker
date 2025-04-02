@@ -1814,7 +1814,12 @@ namespace CodeWalker.GameFiles
                     //transform interior entities into world space...
                     var mloa = Archetype as MloArchetype;
                     var mloi = MloInstance;
-                    MloInstance = new MloInstanceData(this, mloa) { Instance = mloi.Instance, defaultEntitySets = mloi.defaultEntitySets };
+                    MloInstance = new MloInstanceData(this, mloa);
+                    if (mloi != null)
+                    {
+                        MloInstance.Instance = mloi.Instance;
+                        MloInstance.defaultEntitySets = mloi.defaultEntitySets;
+                    }
                     if (mloa != null)
                     {
                         if (!IsMlo)
