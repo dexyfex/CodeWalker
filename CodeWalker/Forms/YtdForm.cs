@@ -193,16 +193,41 @@ namespace CodeWalker.Forms
         }
 
 
-        private void AddTextures()
+        private void AddTextures(string[] filenames = null)
         {
             if (TexDict.Textures?.data_items == null) return;
 
-            var texs = OpenDDSFiles();
+            var texs = (filenames != null) ? OpenDDSFiles(filenames) : OpenDDSFiles();
             if (texs == null) return;
 
             var textures = new List<Texture>();
-            textures.AddRange(TexDict.Textures.data_items);
-            textures.AddRange(texs);
+            if (TexDict.Textures.data_items != null)
+            {
+                textures.AddRange(TexDict.Textures.data_items);
+            }
+            var errors = new List<string>();
+            var anyok = false;
+            foreach (var tex in texs)
+            {
+                var txn = tex?.Name;
+                if (string.IsNullOrEmpty(txn)) continue;
+                var found = textures.Any(t => txn.Equals(t.Name, StringComparison.InvariantCultureIgnoreCase));
+                if (found)
+                {
+                    errors.Add(tex.Name);
+                }
+                else
+                {
+                    textures.Add(tex);
+                    anyok = true;
+                }
+            }
+            if (errors.Count > 0)
+            {
+                var errstr = string.Join("\n", errors);
+                MessageBox.Show($"The following texture(s) already exist in this YTD:\n{errstr}\nAll textures must have unique names in a YTD.");
+            }
+            if (anyok == false) return;
 
             Modified = true;
 
@@ -315,12 +340,17 @@ namespace CodeWalker.Forms
 
             if (OpenDDSFileDialog.ShowDialog() != DialogResult.OK) return null;
 
+            return OpenDDSFiles(OpenDDSFileDialog.FileNames);
+        }
+        private List<Texture> OpenDDSFiles(string[] filenames)
+        {
             var textures = new List<Texture>();
 
-            foreach (var fn in OpenDDSFileDialog.FileNames)
+            foreach (var fn in filenames)
             {
-                if (!File.Exists(fn)) return null; //couldn't find file?
-
+                if (string.IsNullOrEmpty(fn)) continue;
+                if (fn.EndsWith(".dds", StringComparison.InvariantCultureIgnoreCase) == false) continue;
+                if (!File.Exists(fn)) continue; //couldn't find file?
                 try
                 {
                     var dds = File.ReadAllBytes(fn);
@@ -554,6 +584,45 @@ namespace CodeWalker.Forms
                 tex = TexturesListView.SelectedItems[0].Tag as Texture;
             }
             ShowTextureMip(tex, 0, false);
+        }
+
+        private void TexturesListView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                e.Effect = DragDropEffects.None;
+                return;
+            }
+
+            var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (files == null)
+            {
+                e.Effect = DragDropEffects.None;
+                return;
+            }
+
+            e.Effect = DragDropEffects.Copy;
+        }
+
+        private void TexturesListView_DragDrop(object sender, DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                return;
+            }
+            if (TexDict.Textures?.data_items == null)
+            {
+                return;
+            }
+
+            var filePaths = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (filePaths == null)
+            {
+                return;// Couldn't get files paths?
+            }
+
+            AddTextures(filePaths);
+
         }
 
         private void SelTextureMipTrackBar_Scroll(object sender, EventArgs e)
