@@ -845,6 +845,7 @@ namespace CodeWalker.GameFiles
         public byte Flags2 { get { return (byte)((PolyFlags1 >> 0) & 0xFF); } set { PolyFlags1 = ((PolyFlags1 & 0xFFFFFF00u) | ((value & 0xFFu) << 0)); } }
         public byte Flags3 { get { return (byte)((PolyFlags1 >> 9) & 0xFF); } set { PolyFlags1 = ((PolyFlags1 & 0xFFFE01FFu) | ((value & 0xFFu) << 9)); } }
         public byte Flags4 { get { return (byte)((PolyFlags2 >> 16) & 0xFF); } set { PolyFlags2 = ((PolyFlags2 & 0xFF00FFFFu) | ((value & 0xFFu) << 16)); } }
+        public byte Flags5 { get { return (byte)((PolyFlags1 >> 8) & 0x1); } set { PolyFlags1 = ((PolyFlags1 & 0xFFFFFEFFu) | ((value & 0x1u) << 8)); } }
 
         //public uint UnkFlags0 { get { return (uint)((PolyFlags0 >> 8) & 0xFF); } } //always 0
         //public uint UnkFlags1 { get { return (uint)((PolyFlags1 >> 17) & 0xFFFF); } } //always 0
