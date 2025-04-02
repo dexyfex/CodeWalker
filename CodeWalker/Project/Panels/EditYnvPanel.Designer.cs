@@ -44,6 +44,7 @@
             this.YnvPointCountLabel = new System.Windows.Forms.Label();
             this.YnvByteCountLabel = new System.Windows.Forms.Label();
             this.YnvFlagsGroupBox = new System.Windows.Forms.GroupBox();
+            this.YnvFlagsUnknown16CheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsUnknown8CheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsVehicleCheckBox = new System.Windows.Forms.CheckBox();
             this.YnvFlagsPortalsCheckBox = new System.Windows.Forms.CheckBox();
@@ -57,7 +58,6 @@
             this.YnvProjectPathTextBox = new System.Windows.Forms.TextBox();
             this.label47 = new System.Windows.Forms.Label();
             this.YnvRpfPathTextBox = new System.Windows.Forms.TextBox();
-            this.YnvFlagsUnknown16CheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.YnvAreaIDYUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.YnvAreaIDXUpDown)).BeginInit();
             this.YnvFlagsGroupBox.SuspendLayout();
@@ -210,14 +210,25 @@
             this.YnvFlagsGroupBox.TabStop = false;
             this.YnvFlagsGroupBox.Text = "Content flags";
             // 
+            // YnvFlagsUnknown16CheckBox
+            // 
+            this.YnvFlagsUnknown16CheckBox.AutoSize = true;
+            this.YnvFlagsUnknown16CheckBox.Location = new System.Drawing.Point(12, 95);
+            this.YnvFlagsUnknown16CheckBox.Name = "YnvFlagsUnknown16CheckBox";
+            this.YnvFlagsUnknown16CheckBox.Size = new System.Drawing.Size(47, 17);
+            this.YnvFlagsUnknown16CheckBox.TabIndex = 4;
+            this.YnvFlagsUnknown16CheckBox.Text = "DLC";
+            this.YnvFlagsUnknown16CheckBox.UseVisualStyleBackColor = true;
+            this.YnvFlagsUnknown16CheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknown16CheckBox_CheckedChanged);
+            // 
             // YnvFlagsUnknown8CheckBox
             // 
             this.YnvFlagsUnknown8CheckBox.AutoSize = true;
             this.YnvFlagsUnknown8CheckBox.Location = new System.Drawing.Point(12, 76);
             this.YnvFlagsUnknown8CheckBox.Name = "YnvFlagsUnknown8CheckBox";
-            this.YnvFlagsUnknown8CheckBox.Size = new System.Drawing.Size(84, 17);
+            this.YnvFlagsUnknown8CheckBox.Size = new System.Drawing.Size(55, 17);
             this.YnvFlagsUnknown8CheckBox.TabIndex = 3;
-            this.YnvFlagsUnknown8CheckBox.Text = "[Unknown8]";
+            this.YnvFlagsUnknown8CheckBox.Text = "Water";
             this.YnvFlagsUnknown8CheckBox.UseVisualStyleBackColor = true;
             this.YnvFlagsUnknown8CheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknown8CheckBox_CheckedChanged);
             // 
@@ -342,17 +353,6 @@
             this.YnvRpfPathTextBox.ReadOnly = true;
             this.YnvRpfPathTextBox.Size = new System.Drawing.Size(470, 20);
             this.YnvRpfPathTextBox.TabIndex = 54;
-            // 
-            // YnvFlagsUnknown16CheckBox
-            // 
-            this.YnvFlagsUnknown16CheckBox.AutoSize = true;
-            this.YnvFlagsUnknown16CheckBox.Location = new System.Drawing.Point(12, 95);
-            this.YnvFlagsUnknown16CheckBox.Name = "YnvFlagsUnknown16CheckBox";
-            this.YnvFlagsUnknown16CheckBox.Size = new System.Drawing.Size(90, 17);
-            this.YnvFlagsUnknown16CheckBox.TabIndex = 4;
-            this.YnvFlagsUnknown16CheckBox.Text = "[Unknown16]";
-            this.YnvFlagsUnknown16CheckBox.UseVisualStyleBackColor = true;
-            this.YnvFlagsUnknown16CheckBox.CheckedChanged += new System.EventHandler(this.YnvFlagsUnknown16CheckBox_CheckedChanged);
             // 
             // EditYnvPanel
             // 

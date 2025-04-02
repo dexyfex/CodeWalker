@@ -217,7 +217,7 @@
             this.PathNodeTabControl.Location = new System.Drawing.Point(2, 3);
             this.PathNodeTabControl.Name = "PathNodeTabControl";
             this.PathNodeTabControl.SelectedIndex = 0;
-            this.PathNodeTabControl.Size = new System.Drawing.Size(606, 458);
+            this.PathNodeTabControl.Size = new System.Drawing.Size(561, 469);
             this.PathNodeTabControl.TabIndex = 29;
             // 
             // PathNodePropertiesTabPage
@@ -248,7 +248,7 @@
             this.PathNodePropertiesTabPage.Controls.Add(this.label55);
             this.PathNodePropertiesTabPage.Location = new System.Drawing.Point(4, 22);
             this.PathNodePropertiesTabPage.Name = "PathNodePropertiesTabPage";
-            this.PathNodePropertiesTabPage.Size = new System.Drawing.Size(598, 432);
+            this.PathNodePropertiesTabPage.Size = new System.Drawing.Size(553, 443);
             this.PathNodePropertiesTabPage.TabIndex = 2;
             this.PathNodePropertiesTabPage.Text = "Node Properties";
             this.PathNodePropertiesTabPage.UseVisualStyleBackColor = true;
@@ -256,7 +256,7 @@
             // PathNodeEnableDisableButton
             // 
             this.PathNodeEnableDisableButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PathNodeEnableDisableButton.Location = new System.Drawing.Point(409, 56);
+            this.PathNodeEnableDisableButton.Location = new System.Drawing.Point(364, 56);
             this.PathNodeEnableDisableButton.Name = "PathNodeEnableDisableButton";
             this.PathNodeEnableDisableButton.Size = new System.Drawing.Size(90, 23);
             this.PathNodeEnableDisableButton.TabIndex = 53;
@@ -267,7 +267,7 @@
             // PathNodeFloodCopyButton
             // 
             this.PathNodeFloodCopyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PathNodeFloodCopyButton.Location = new System.Drawing.Point(505, 56);
+            this.PathNodeFloodCopyButton.Location = new System.Drawing.Point(460, 56);
             this.PathNodeFloodCopyButton.Name = "PathNodeFloodCopyButton";
             this.PathNodeFloodCopyButton.Size = new System.Drawing.Size(90, 23);
             this.PathNodeFloodCopyButton.TabIndex = 52;
@@ -373,7 +373,7 @@
             this.PathNodeFlags4GroupBox.Controls.Add(this.label71);
             this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags4UpDown);
             this.PathNodeFlags4GroupBox.Controls.Add(this.PathNodeFlags4Label);
-            this.PathNodeFlags4GroupBox.Location = new System.Drawing.Point(370, 105);
+            this.PathNodeFlags4GroupBox.Location = new System.Drawing.Point(401, 107);
             this.PathNodeFlags4GroupBox.Name = "PathNodeFlags4GroupBox";
             this.PathNodeFlags4GroupBox.Size = new System.Drawing.Size(145, 123);
             this.PathNodeFlags4GroupBox.TabIndex = 47;
@@ -540,9 +540,9 @@
             this.PathNodeFlags2GroupBox.Controls.Add(this.PathNodeFlags25CheckBox);
             this.PathNodeFlags2GroupBox.Controls.Add(this.PathNodeFlags2UpDown);
             this.PathNodeFlags2GroupBox.Controls.Add(this.PathNodeFlags2Label);
-            this.PathNodeFlags2GroupBox.Location = new System.Drawing.Point(249, 105);
+            this.PathNodeFlags2GroupBox.Location = new System.Drawing.Point(262, 105);
             this.PathNodeFlags2GroupBox.Name = "PathNodeFlags2GroupBox";
-            this.PathNodeFlags2GroupBox.Size = new System.Drawing.Size(115, 216);
+            this.PathNodeFlags2GroupBox.Size = new System.Drawing.Size(133, 216);
             this.PathNodeFlags2GroupBox.TabIndex = 45;
             this.PathNodeFlags2GroupBox.TabStop = false;
             this.PathNodeFlags2GroupBox.Text = "Flags 2";
@@ -552,9 +552,9 @@
             this.PathNodeFlags21CheckBox.AutoSize = true;
             this.PathNodeFlags21CheckBox.Location = new System.Drawing.Point(6, 45);
             this.PathNodeFlags21CheckBox.Name = "PathNodeFlags21CheckBox";
-            this.PathNodeFlags21CheckBox.Size = new System.Drawing.Size(65, 17);
+            this.PathNodeFlags21CheckBox.Size = new System.Drawing.Size(62, 17);
             this.PathNodeFlags21CheckBox.TabIndex = 35;
-            this.PathNodeFlags21CheckBox.Text = "No GPS";
+            this.PathNodeFlags21CheckBox.Text = "NoGPS";
             this.PathNodeFlags21CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags21CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags21CheckBox_CheckedChanged);
             // 
@@ -563,9 +563,9 @@
             this.PathNodeFlags28CheckBox.AutoSize = true;
             this.PathNodeFlags28CheckBox.Location = new System.Drawing.Point(6, 192);
             this.PathNodeFlags28CheckBox.Name = "PathNodeFlags28CheckBox";
-            this.PathNodeFlags28CheckBox.Size = new System.Drawing.Size(97, 17);
+            this.PathNodeFlags28CheckBox.Size = new System.Drawing.Size(84, 17);
             this.PathNodeFlags28CheckBox.TabIndex = 42;
-            this.PathNodeFlags28CheckBox.Text = "Disabled unk 2";
+            this.PathNodeFlags28CheckBox.Text = "SwitchedOff";
             this.PathNodeFlags28CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags28CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags28CheckBox_CheckedChanged);
             // 
@@ -574,9 +574,9 @@
             this.PathNodeFlags22CheckBox.AutoSize = true;
             this.PathNodeFlags22CheckBox.Location = new System.Drawing.Point(6, 66);
             this.PathNodeFlags22CheckBox.Name = "PathNodeFlags22CheckBox";
-            this.PathNodeFlags22CheckBox.Size = new System.Drawing.Size(72, 17);
+            this.PathNodeFlags22CheckBox.Size = new System.Drawing.Size(78, 17);
             this.PathNodeFlags22CheckBox.TabIndex = 36;
-            this.PathNodeFlags22CheckBox.Text = "Unused 2";
+            this.PathNodeFlags22CheckBox.Text = " [Not used]";
             this.PathNodeFlags22CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags22CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags22CheckBox_CheckedChanged);
             // 
@@ -585,9 +585,9 @@
             this.PathNodeFlags27CheckBox.AutoSize = true;
             this.PathNodeFlags27CheckBox.Location = new System.Drawing.Point(6, 171);
             this.PathNodeFlags27CheckBox.Name = "PathNodeFlags27CheckBox";
-            this.PathNodeFlags27CheckBox.Size = new System.Drawing.Size(66, 17);
+            this.PathNodeFlags27CheckBox.Size = new System.Drawing.Size(128, 17);
             this.PathNodeFlags27CheckBox.TabIndex = 41;
-            this.PathNodeFlags27CheckBox.Text = "Freeway";
+            this.PathNodeFlags27CheckBox.Text = "HighwayOrLowBridge";
             this.PathNodeFlags27CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags27CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags27CheckBox_CheckedChanged);
             // 
@@ -607,9 +607,9 @@
             this.PathNodeFlags26CheckBox.AutoSize = true;
             this.PathNodeFlags26CheckBox.Location = new System.Drawing.Point(6, 150);
             this.PathNodeFlags26CheckBox.Name = "PathNodeFlags26CheckBox";
-            this.PathNodeFlags26CheckBox.Size = new System.Drawing.Size(86, 17);
+            this.PathNodeFlags26CheckBox.Size = new System.Drawing.Size(81, 17);
             this.PathNodeFlags26CheckBox.TabIndex = 40;
-            this.PathNodeFlags26CheckBox.Text = "Water/boats";
+            this.PathNodeFlags26CheckBox.Text = "WaterNode";
             this.PathNodeFlags26CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags26CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags26CheckBox_CheckedChanged);
             // 
@@ -618,9 +618,9 @@
             this.PathNodeFlags24CheckBox.AutoSize = true;
             this.PathNodeFlags24CheckBox.Location = new System.Drawing.Point(6, 108);
             this.PathNodeFlags24CheckBox.Name = "PathNodeFlags24CheckBox";
-            this.PathNodeFlags24CheckBox.Size = new System.Drawing.Size(72, 17);
+            this.PathNodeFlags24CheckBox.Size = new System.Drawing.Size(78, 17);
             this.PathNodeFlags24CheckBox.TabIndex = 38;
-            this.PathNodeFlags24CheckBox.Text = "Unused 8";
+            this.PathNodeFlags24CheckBox.Text = " [Not used]";
             this.PathNodeFlags24CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags24CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags24CheckBox_CheckedChanged);
             // 
@@ -629,9 +629,9 @@
             this.PathNodeFlags25CheckBox.AutoSize = true;
             this.PathNodeFlags25CheckBox.Location = new System.Drawing.Point(6, 129);
             this.PathNodeFlags25CheckBox.Name = "PathNodeFlags25CheckBox";
-            this.PathNodeFlags25CheckBox.Size = new System.Drawing.Size(97, 17);
+            this.PathNodeFlags25CheckBox.Size = new System.Drawing.Size(119, 17);
             this.PathNodeFlags25CheckBox.TabIndex = 39;
-            this.PathNodeFlags25CheckBox.Text = "Disabled unk 1";
+            this.PathNodeFlags25CheckBox.Text = "SwitchedOffOriginal";
             this.PathNodeFlags25CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags25CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags25CheckBox_CheckedChanged);
             // 
@@ -667,7 +667,7 @@
             this.PathNodeFlags1GroupBox.Controls.Add(this.PathNodeFlags1Label);
             this.PathNodeFlags1GroupBox.Location = new System.Drawing.Point(128, 105);
             this.PathNodeFlags1GroupBox.Name = "PathNodeFlags1GroupBox";
-            this.PathNodeFlags1GroupBox.Size = new System.Drawing.Size(115, 216);
+            this.PathNodeFlags1GroupBox.Size = new System.Drawing.Size(128, 216);
             this.PathNodeFlags1GroupBox.TabIndex = 44;
             this.PathNodeFlags1GroupBox.TabStop = false;
             this.PathNodeFlags1GroupBox.Text = "Flags 1";
@@ -677,9 +677,9 @@
             this.PathNodeFlags11CheckBox.AutoSize = true;
             this.PathNodeFlags11CheckBox.Location = new System.Drawing.Point(6, 45);
             this.PathNodeFlags11CheckBox.Name = "PathNodeFlags11CheckBox";
-            this.PathNodeFlags11CheckBox.Size = new System.Drawing.Size(70, 17);
+            this.PathNodeFlags11CheckBox.Size = new System.Drawing.Size(67, 17);
             this.PathNodeFlags11CheckBox.TabIndex = 35;
-            this.PathNodeFlags11CheckBox.Text = "Slip Lane";
+            this.PathNodeFlags11CheckBox.Text = "SlipLane";
             this.PathNodeFlags11CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags11CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags11CheckBox_CheckedChanged);
             // 
@@ -752,9 +752,9 @@
             this.PathNodeFlags01CheckBox.AutoSize = true;
             this.PathNodeFlags01CheckBox.Location = new System.Drawing.Point(6, 45);
             this.PathNodeFlags01CheckBox.Name = "PathNodeFlags01CheckBox";
-            this.PathNodeFlags01CheckBox.Size = new System.Drawing.Size(65, 17);
+            this.PathNodeFlags01CheckBox.Size = new System.Drawing.Size(73, 17);
             this.PathNodeFlags01CheckBox.TabIndex = 35;
-            this.PathNodeFlags01CheckBox.Text = "Scripted";
+            this.PathNodeFlags01CheckBox.Text = "FillGroup1";
             this.PathNodeFlags01CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags01CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags01CheckBox_CheckedChanged);
             // 
@@ -774,9 +774,9 @@
             this.PathNodeFlags02CheckBox.AutoSize = true;
             this.PathNodeFlags02CheckBox.Location = new System.Drawing.Point(6, 66);
             this.PathNodeFlags02CheckBox.Name = "PathNodeFlags02CheckBox";
-            this.PathNodeFlags02CheckBox.Size = new System.Drawing.Size(90, 17);
+            this.PathNodeFlags02CheckBox.Size = new System.Drawing.Size(73, 17);
             this.PathNodeFlags02CheckBox.TabIndex = 36;
-            this.PathNodeFlags02CheckBox.Text = "GPS Enabled";
+            this.PathNodeFlags02CheckBox.Text = "FillGroup2";
             this.PathNodeFlags02CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags02CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags02CheckBox_CheckedChanged);
             // 
@@ -796,9 +796,9 @@
             this.PathNodeFlags03CheckBox.AutoSize = true;
             this.PathNodeFlags03CheckBox.Location = new System.Drawing.Point(6, 87);
             this.PathNodeFlags03CheckBox.Name = "PathNodeFlags03CheckBox";
-            this.PathNodeFlags03CheckBox.Size = new System.Drawing.Size(72, 17);
+            this.PathNodeFlags03CheckBox.Size = new System.Drawing.Size(73, 17);
             this.PathNodeFlags03CheckBox.TabIndex = 37;
-            this.PathNodeFlags03CheckBox.Text = "Unused 4";
+            this.PathNodeFlags03CheckBox.Text = "FillGroup3";
             this.PathNodeFlags03CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags03CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags03CheckBox_CheckedChanged);
             // 
@@ -831,7 +831,7 @@
             this.PathNodeFlags05CheckBox.Name = "PathNodeFlags05CheckBox";
             this.PathNodeFlags05CheckBox.Size = new System.Drawing.Size(78, 17);
             this.PathNodeFlags05CheckBox.TabIndex = 39;
-            this.PathNodeFlags05CheckBox.Text = "Unused 16";
+            this.PathNodeFlags05CheckBox.Text = " [Not used]";
             this.PathNodeFlags05CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeFlags05CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeFlags05CheckBox_CheckedChanged);
             // 
@@ -861,7 +861,7 @@
             // PathNodeDeleteButton
             // 
             this.PathNodeDeleteButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.PathNodeDeleteButton.Location = new System.Drawing.Point(505, 27);
+            this.PathNodeDeleteButton.Location = new System.Drawing.Point(460, 27);
             this.PathNodeDeleteButton.Name = "PathNodeDeleteButton";
             this.PathNodeDeleteButton.Size = new System.Drawing.Size(90, 23);
             this.PathNodeDeleteButton.TabIndex = 12;
@@ -887,7 +887,7 @@
             // 
             this.PathNodeAddToProjectButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.PathNodeAddToProjectButton.Enabled = false;
-            this.PathNodeAddToProjectButton.Location = new System.Drawing.Point(409, 27);
+            this.PathNodeAddToProjectButton.Location = new System.Drawing.Point(364, 27);
             this.PathNodeAddToProjectButton.Name = "PathNodeAddToProjectButton";
             this.PathNodeAddToProjectButton.Size = new System.Drawing.Size(90, 23);
             this.PathNodeAddToProjectButton.TabIndex = 11;
@@ -995,7 +995,7 @@
             this.PathNodeLinksTabPage.Location = new System.Drawing.Point(4, 22);
             this.PathNodeLinksTabPage.Name = "PathNodeLinksTabPage";
             this.PathNodeLinksTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.PathNodeLinksTabPage.Size = new System.Drawing.Size(598, 432);
+            this.PathNodeLinksTabPage.Size = new System.Drawing.Size(553, 443);
             this.PathNodeLinksTabPage.TabIndex = 0;
             this.PathNodeLinksTabPage.Text = "Path Links";
             this.PathNodeLinksTabPage.UseVisualStyleBackColor = true;
@@ -1017,14 +1017,14 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.PathNodeLinkPanel);
-            this.splitContainer2.Size = new System.Drawing.Size(592, 426);
+            this.splitContainer2.Size = new System.Drawing.Size(547, 437);
             this.splitContainer2.SplitterDistance = 168;
             this.splitContainer2.TabIndex = 0;
             // 
             // PathNodeRemoveLinkButton
             // 
             this.PathNodeRemoveLinkButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.PathNodeRemoveLinkButton.Location = new System.Drawing.Point(85, 400);
+            this.PathNodeRemoveLinkButton.Location = new System.Drawing.Point(85, 411);
             this.PathNodeRemoveLinkButton.Name = "PathNodeRemoveLinkButton";
             this.PathNodeRemoveLinkButton.Size = new System.Drawing.Size(76, 23);
             this.PathNodeRemoveLinkButton.TabIndex = 2;
@@ -1035,7 +1035,7 @@
             // PathNodeAddLinkButton
             // 
             this.PathNodeAddLinkButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.PathNodeAddLinkButton.Location = new System.Drawing.Point(3, 400);
+            this.PathNodeAddLinkButton.Location = new System.Drawing.Point(3, 411);
             this.PathNodeAddLinkButton.Name = "PathNodeAddLinkButton";
             this.PathNodeAddLinkButton.Size = new System.Drawing.Size(76, 23);
             this.PathNodeAddLinkButton.TabIndex = 1;
@@ -1059,7 +1059,7 @@
             // 
             this.PathNodeLinkCountLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.PathNodeLinkCountLabel.AutoSize = true;
-            this.PathNodeLinkCountLabel.Location = new System.Drawing.Point(3, 385);
+            this.PathNodeLinkCountLabel.Location = new System.Drawing.Point(3, 396);
             this.PathNodeLinkCountLabel.Name = "PathNodeLinkCountLabel";
             this.PathNodeLinkCountLabel.Size = new System.Drawing.Size(70, 13);
             this.PathNodeLinkCountLabel.TabIndex = 31;
@@ -1082,7 +1082,7 @@
             this.PathNodeLinkPanel.Enabled = false;
             this.PathNodeLinkPanel.Location = new System.Drawing.Point(0, 0);
             this.PathNodeLinkPanel.Name = "PathNodeLinkPanel";
-            this.PathNodeLinkPanel.Size = new System.Drawing.Size(420, 426);
+            this.PathNodeLinkPanel.Size = new System.Drawing.Size(375, 437);
             this.PathNodeLinkPanel.TabIndex = 0;
             // 
             // PathNodeSelectPartnerButton
@@ -1108,7 +1108,7 @@
             this.PathLinkFlags2GroupBox.Controls.Add(this.PathNodeLinkFlags2Label);
             this.PathLinkFlags2GroupBox.Location = new System.Drawing.Point(13, 240);
             this.PathLinkFlags2GroupBox.Name = "PathLinkFlags2GroupBox";
-            this.PathLinkFlags2GroupBox.Size = new System.Drawing.Size(147, 145);
+            this.PathLinkFlags2GroupBox.Size = new System.Drawing.Size(159, 145);
             this.PathLinkFlags2GroupBox.TabIndex = 18;
             this.PathLinkFlags2GroupBox.TabStop = false;
             this.PathLinkFlags2GroupBox.Text = "Flags 2";
@@ -1212,9 +1212,9 @@
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags14CheckBox);
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags1UpDown);
             this.PathLinkFlags1GroupBox.Controls.Add(this.PathNodeLinkFlags1Label);
-            this.PathLinkFlags1GroupBox.Location = new System.Drawing.Point(168, 93);
+            this.PathLinkFlags1GroupBox.Location = new System.Drawing.Point(178, 93);
             this.PathLinkFlags1GroupBox.Name = "PathLinkFlags1GroupBox";
-            this.PathLinkFlags1GroupBox.Size = new System.Drawing.Size(125, 181);
+            this.PathLinkFlags1GroupBox.Size = new System.Drawing.Size(133, 181);
             this.PathLinkFlags1GroupBox.TabIndex = 17;
             this.PathLinkFlags1GroupBox.TabStop = false;
             this.PathLinkFlags1GroupBox.Text = "Flags 1";
@@ -1257,9 +1257,9 @@
             this.PathNodeLinkFlags11CheckBox.AutoSize = true;
             this.PathNodeLinkFlags11CheckBox.Location = new System.Drawing.Point(6, 45);
             this.PathNodeLinkFlags11CheckBox.Name = "PathNodeLinkFlags11CheckBox";
-            this.PathNodeLinkFlags11CheckBox.Size = new System.Drawing.Size(72, 17);
+            this.PathNodeLinkFlags11CheckBox.Size = new System.Drawing.Size(80, 17);
             this.PathNodeLinkFlags11CheckBox.TabIndex = 30;
-            this.PathNodeLinkFlags11CheckBox.Text = "Unused 1";
+            this.PathNodeLinkFlags11CheckBox.Text = "Tilt Falloff 2";
             this.PathNodeLinkFlags11CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeLinkFlags11CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags11CheckBox_CheckedChanged);
             // 
@@ -1279,9 +1279,9 @@
             this.PathNodeLinkFlags13CheckBox.AutoSize = true;
             this.PathNodeLinkFlags13CheckBox.Location = new System.Drawing.Point(6, 87);
             this.PathNodeLinkFlags13CheckBox.Name = "PathNodeLinkFlags13CheckBox";
-            this.PathNodeLinkFlags13CheckBox.Size = new System.Drawing.Size(73, 17);
+            this.PathNodeLinkFlags13CheckBox.Size = new System.Drawing.Size(113, 17);
             this.PathNodeLinkFlags13CheckBox.TabIndex = 32;
-            this.PathNodeLinkFlags13CheckBox.Text = "Dead end";
+            this.PathNodeLinkFlags13CheckBox.Text = "LeadsToDeadEnd";
             this.PathNodeLinkFlags13CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeLinkFlags13CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags13CheckBox_CheckedChanged);
             // 
@@ -1290,9 +1290,9 @@
             this.PathNodeLinkFlags14CheckBox.AutoSize = true;
             this.PathNodeLinkFlags14CheckBox.Location = new System.Drawing.Point(6, 108);
             this.PathNodeLinkFlags14CheckBox.Name = "PathNodeLinkFlags14CheckBox";
-            this.PathNodeLinkFlags14CheckBox.Size = new System.Drawing.Size(92, 17);
+            this.PathNodeLinkFlags14CheckBox.Size = new System.Drawing.Size(123, 17);
             this.PathNodeLinkFlags14CheckBox.TabIndex = 33;
-            this.PathNodeLinkFlags14CheckBox.Text = "Dead end exit";
+            this.PathNodeLinkFlags14CheckBox.Text = "LeadsFromDeadEnd";
             this.PathNodeLinkFlags14CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeLinkFlags14CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags14CheckBox_CheckedChanged);
             // 
@@ -1330,7 +1330,7 @@
             this.PathLinkFlags0GroupBox.Controls.Add(this.PathNodeLinkFlags0Label);
             this.PathLinkFlags0GroupBox.Location = new System.Drawing.Point(13, 93);
             this.PathLinkFlags0GroupBox.Name = "PathLinkFlags0GroupBox";
-            this.PathLinkFlags0GroupBox.Size = new System.Drawing.Size(147, 141);
+            this.PathLinkFlags0GroupBox.Size = new System.Drawing.Size(159, 141);
             this.PathLinkFlags0GroupBox.TabIndex = 16;
             this.PathLinkFlags0GroupBox.TabStop = false;
             this.PathLinkFlags0GroupBox.Text = "Flags 0";
@@ -1351,11 +1351,11 @@
             // label60
             // 
             this.label60.AutoSize = true;
-            this.label60.Location = new System.Drawing.Point(26, 114);
+            this.label60.Location = new System.Drawing.Point(10, 114);
             this.label60.Name = "label60";
-            this.label60.Size = new System.Drawing.Size(39, 13);
+            this.label60.Size = new System.Drawing.Size(55, 13);
             this.label60.TabIndex = 31;
-            this.label60.Text = "Unk 2:";
+            this.label60.Text = "Tilt Offset:";
             // 
             // PathNodeLinkFlags03UpDown
             // 
@@ -1373,11 +1373,11 @@
             // label58
             // 
             this.label58.AutoSize = true;
-            this.label58.Location = new System.Drawing.Point(26, 90);
+            this.label58.Location = new System.Drawing.Point(41, 91);
             this.label58.Name = "label58";
-            this.label58.Size = new System.Drawing.Size(39, 13);
+            this.label58.Size = new System.Drawing.Size(24, 13);
             this.label58.TabIndex = 29;
-            this.label58.Text = "Unk 1:";
+            this.label58.Text = "Tilt:";
             // 
             // PathNodeLinkFlags01CheckBox
             // 
@@ -1395,9 +1395,9 @@
             this.PathNodeLinkFlags02CheckBox.AutoSize = true;
             this.PathNodeLinkFlags02CheckBox.Location = new System.Drawing.Point(6, 66);
             this.PathNodeLinkFlags02CheckBox.Name = "PathNodeLinkFlags02CheckBox";
-            this.PathNodeLinkFlags02CheckBox.Size = new System.Drawing.Size(149, 17);
+            this.PathNodeLinkFlags02CheckBox.Size = new System.Drawing.Size(111, 17);
             this.PathNodeLinkFlags02CheckBox.TabIndex = 28;
-            this.PathNodeLinkFlags02CheckBox.Text = "Block if no lanes (no func)";
+            this.PathNodeLinkFlags02CheckBox.Text = "Block If No Lanes";
             this.PathNodeLinkFlags02CheckBox.UseVisualStyleBackColor = true;
             this.PathNodeLinkFlags02CheckBox.CheckedChanged += new System.EventHandler(this.PathNodeLinkFlags02CheckBox_CheckedChanged);
             // 
@@ -1780,7 +1780,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(609, 462);
+            this.ClientSize = new System.Drawing.Size(564, 473);
             this.Controls.Add(this.PathNodeTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "EditYndNodePanel";
