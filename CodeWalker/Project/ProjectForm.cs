@@ -9400,7 +9400,7 @@ namespace CodeWalker.Project
 
         private void ProjectForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (CurrentProjectFile.HasChanged)
+            if (CurrentProjectFile?.HasChanged ?? false)
             {
                 var msg = "Are you sure you want to close the project window?";
                 var tit = "Confirm close";
