@@ -7028,7 +7028,7 @@ namespace CodeWalker.GameFiles
             FadeInTime = br.ReadUInt16();
             FadeOutTime = br.ReadUInt16();
             AmbMusicDuckingVol = br.ReadSingle();
-            NumStemMixes = br.ReadUInt32();
+            NumStemMixes = br.ReadUInt32() & 0xFF;
             var items = new Dat151InteractiveMusicMoodItem[NumStemMixes];
             for (int i = 0; i < NumStemMixes; i++)
             {
@@ -7461,6 +7461,7 @@ namespace CodeWalker.GameFiles
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
+            RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
             RelXml.ValueTag(sb, indent, "Constrain", Constrain.ToString());
             RelXml.ValueTag(sb, indent, "numTimingConstraints", numTimingConstraints.ToString());
             RelXml.StringTag(sb, indent, "TimingConstraint1", RelXml.HashString(TimingConstraint1));
@@ -7469,6 +7470,7 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
+            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Constrain = (byte)Xml.GetChildIntAttribute(node, "Constrain", "value");
             numTimingConstraints = Xml.GetChildIntAttribute(node, "numTimingConstraints", "value");
             TimingConstraint1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "TimingConstraint1"));
@@ -7955,8 +7957,7 @@ namespace CodeWalker.GameFiles
         public short padding01 { get; set; }
         public float MinImpulseMag { get; set; }
         public float MaxImpulseMag { get; set; }
-        public byte ImpulseMagScalar { get; set; }
-        public byte padding02 { get; set; }
+        public ushort ImpulseMagScalar { get; set; }
         public short padding03 { get; set; }
         public float MaxScrapeSpeed { get; set; }
         public float MinScrapeSpeed { get; set; }
@@ -8067,8 +8068,7 @@ namespace CodeWalker.GameFiles
             padding01 = br.ReadInt16();
             MinImpulseMag = br.ReadSingle();
             MaxImpulseMag = br.ReadSingle();
-            ImpulseMagScalar = br.ReadByte();
-            padding02 = br.ReadByte();
+            ImpulseMagScalar = br.ReadUInt16();
             padding03 = br.ReadInt16();
             MaxScrapeSpeed = br.ReadSingle();
             MinScrapeSpeed = br.ReadSingle();
@@ -8179,7 +8179,6 @@ namespace CodeWalker.GameFiles
             bw.Write(MinImpulseMag);
             bw.Write(MaxImpulseMag);
             bw.Write(ImpulseMagScalar);
-            bw.Write(padding02);
             bw.Write(padding03);
             bw.Write(MaxScrapeSpeed);
             bw.Write(MinScrapeSpeed);
@@ -8385,7 +8384,7 @@ namespace CodeWalker.GameFiles
             Hardness = (byte)Xml.GetChildUIntAttribute(node, "Hardness", "value");
             MinImpulseMag = Xml.GetChildFloatAttribute(node, "MinImpulseMag", "value");
             MaxImpulseMag = Xml.GetChildFloatAttribute(node, "MaxImpulseMag", "value");
-            ImpulseMagScalar = (byte)Xml.GetChildUIntAttribute(node, "ImpulseMagScalar", "value");
+            ImpulseMagScalar = (ushort)Xml.GetChildUIntAttribute(node, "ImpulseMagScalar", "value");
             MaxScrapeSpeed = Xml.GetChildFloatAttribute(node, "MaxScrapeSpeed", "value");
             MinScrapeSpeed = Xml.GetChildFloatAttribute(node, "MinScrapeSpeed", "value");
             ScrapeImpactMag = Xml.GetChildFloatAttribute(node, "ScrapeImpactMag", "value");
@@ -9762,7 +9761,7 @@ namespace CodeWalker.GameFiles
     {
         public FlagsUint Flags { get; set; }
         public Vector4 ActivationBox { get; set; }
-        public float RotationAngle { get; set; }
+        public float RotationAngle { get; set; } // rage::ShoreLineAudioSettings
         public int WaterLappingMinDelay { get; set; }
         public int WaterLappingMaxDelay { get; set; }
         public int WaterSplashMinDelay { get; set; }
@@ -9772,7 +9771,8 @@ namespace CodeWalker.GameFiles
         public int ThirdQuadIndex { get; set; }
         public int FourthQuadIndex { get; set; }
         public float SmallestDistanceToPoint { get; set; }
-        public int PointsCount { get; set; }
+        public ushort PointsCount { get; set; }
+        public short padding00 { get; set; }
         public Vector2[] Points { get; set; }
 
 
@@ -9785,7 +9785,7 @@ namespace CodeWalker.GameFiles
         {
             Flags = br.ReadUInt32();
             ActivationBox = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
-            RotationAngle = br.ReadInt32();
+            RotationAngle = br.ReadSingle();
             WaterLappingMinDelay = br.ReadInt32();
             WaterLappingMaxDelay = br.ReadInt32();
             WaterSplashMinDelay = br.ReadInt32();
@@ -9796,7 +9796,8 @@ namespace CodeWalker.GameFiles
             FourthQuadIndex = br.ReadInt32();
             SmallestDistanceToPoint = br.ReadSingle();
 
-            PointsCount = br.ReadInt32();
+            PointsCount = br.ReadUInt16();
+            padding00 = br.ReadInt16();
             var points = new Vector2[PointsCount];
             for (int i = 0; i < PointsCount; i++)
             {
@@ -9825,6 +9826,7 @@ namespace CodeWalker.GameFiles
             bw.Write(SmallestDistanceToPoint);
 
             bw.Write(PointsCount);
+            bw.Write(padding00);
             for (int i = 0; i < PointsCount; i++)
             {
                 bw.Write(Points[i].X);
@@ -9862,7 +9864,7 @@ namespace CodeWalker.GameFiles
             FourthQuadIndex = Xml.GetChildIntAttribute(node, "FourthQuadIndex", "value");
             SmallestDistanceToPoint = Xml.GetChildFloatAttribute(node, "SmallestDistanceToPoint", "value");
             Points = Xml.GetChildRawVector2Array(node, "Points");
-            PointsCount = Points?.Length ?? 0;
+            PointsCount = (ushort)(Points?.Length ?? 0);
         }
     }
 
@@ -15967,6 +15969,10 @@ namespace CodeWalker.GameFiles
             {
                 Sound[i] = br.ReadUInt32();
             }
+            if (NumSounds < 4)
+            {
+                br.BaseStream.Seek((4 - NumSounds) * 4, SeekOrigin.Current);
+            }
 
             padding06 = br.ReadUInt32();
         }
@@ -15989,6 +15995,12 @@ namespace CodeWalker.GameFiles
             {
                 bw.Write(Sound[i]);
             }
+
+            for (int i = NumSounds; i < 4; i++)
+            {
+                bw.Write(0u);
+            }
+
             bw.Write(padding06);
         }
         public override void WriteXml(StringBuilder sb, int indent)
@@ -16999,9 +17011,9 @@ namespace CodeWalker.GameFiles
             {
                 AngryContexts[i].Write(bw);
             }
-            if (AngryContextsCount < 8)
+            for (int i = AngryContextsCount; i < 8; i++)
             {
-                bw.Write(new byte[(8 - AngryContextsCount) * 8]);
+                new Contexts() { Weight = 1 }.Write(bw);
             }
 
             bw.Write(PlayfulContextsCount);
@@ -17009,9 +17021,9 @@ namespace CodeWalker.GameFiles
             {
                 PlayfulContexts[i].Write(bw);
             }
-            if (PlayfulContextsCount < 8)
+            for (int i = PlayfulContextsCount; i < 8; i++)
             {
-                bw.Write(new byte[(8 - PlayfulContextsCount) * 8]);
+                new Contexts() { Weight = 1 }.Write(bw);
             }
         }
         public void WriteXml(StringBuilder sb, int indent)
