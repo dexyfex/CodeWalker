@@ -12183,6 +12183,7 @@ namespace CodeWalker.GameFiles
             GangVoicesCount = (byte)(GangVoices?.Length ?? 0);
             BackupPVGs = XmlRel.ReadHashItemArray(node, "BackupPVGs");
             BackupPVGCount = (byte)(BackupPVGs?.Length ?? 0);
+            Version = (BackupPVGCount == 0) ? 0 : 1;
         }
         public override MetaHash[] GetSpeechHashes()
         {
@@ -12566,7 +12567,7 @@ namespace CodeWalker.GameFiles
             RelXml.StringTag(sb, indent, "EngineSynthDef", RelXml.HashString(EngineSynthDef));
             RelXml.StringTag(sb, indent, "EngineSynthPreset", RelXml.HashString(EngineSynthPreset));
             RelXml.StringTag(sb, indent, "ExhaustSynthDef", RelXml.HashString(ExhaustSynthDef));
-            RelXml.StringTag(sb, indent, "ExhaustSubmixPreset", RelXml.HashString(ExhaustSynthPreset));
+            RelXml.StringTag(sb, indent, "ExhaustSynthPreset", RelXml.HashString(ExhaustSynthPreset));
             RelXml.StringTag(sb, indent, "VehicleCollisions", RelXml.HashString(VehicleCollisions));
             RelXml.StringTag(sb, indent, "EngineSubmixVoice", RelXml.HashString(EngineSubmixVoice));
             RelXml.StringTag(sb, indent, "ExhaustSubmixVoice", RelXml.HashString(ExhaustSubmixVoice));
