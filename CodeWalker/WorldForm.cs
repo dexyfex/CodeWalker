@@ -189,6 +189,7 @@ namespace CodeWalker
         WorldSnapMode SnapModePrev = WorldSnapMode.Ground;//also the default snap mode
         float SnapGridSize = 1.0f;
 
+        public bool SnapMultiSelectEach = false;
 
         public bool EditEntityPivot { get; set; } = false;
 
@@ -1757,12 +1758,31 @@ namespace CodeWalker
         {
             //called during UpdateWidgets()
 
-            newpos = SnapPosition(newpos);
+            
 
-            if (newpos == oldpos) return;
+            if (SnapMultiSelectEach && SelectedItem.MultipleSelectionItems != null)
+            {
+                for (int i = 0; i < SelectedItem.MultipleSelectionItems.Length; i++)
+                {
+                    MapSelection item = SelectedItem.MultipleSelectionItems[i];
+                    Vector3 posToGround = item.WidgetPosition;
+                    posToGround.Z = newpos.Z;
+                    
+                    Vector3 tempNewPos = SnapPosition(posToGround);
 
-            SelectedItem.SetPosition(newpos, EditEntityPivot);
+                    if (tempNewPos == item.WidgetPosition) continue;
 
+                    item.SetPosition(tempNewPos, EditEntityPivot);
+                }
+            }
+            else
+            {
+                newpos = SnapPosition(newpos);
+
+                if (newpos == oldpos) return;
+
+                SelectedItem.SetPosition(newpos, EditEntityPivot);
+            }
             SelectedItem.UpdateGraphics(this);
 
             if (ProjectForm != null)
@@ -8013,6 +8033,12 @@ namespace CodeWalker
         {
             SubtitleTimer.Enabled = false;
             SubtitleLabel.Visible = false;
+        }
+
+        private void RelativeSnapForEachItemToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RelativeGroundForEachItemToolStripMenuItem.Checked = !RelativeGroundForEachItemToolStripMenuItem.Checked;
+            SnapMultiSelectEach = RelativeGroundForEachItemToolStripMenuItem.Checked;
         }
     }
 
