@@ -137,105 +137,20 @@ namespace CodeWalker.Core.Utils
                         }
 
                         //Log($"{relpath}...");
-                        var datain = File.ReadAllBytes(path);
-                        var dataout = (byte[])null;
-                        var rfe = (RpfResourceFileEntry)null;
                         var ext = Path.GetExtension(pathl);
-                        switch (ext)
+                        if (ext == ".rpf")
                         {
-                            case ".ytd":
-                                var ytd = new YtdFile();
-                                ytd.Load(datain);
-                                rfe = ytd.RpfFileEntry as RpfResourceFileEntry;
-                                if (rfe?.Version == 5)
-                                {
-                                    Log($"{relpath} - already gen9 format, directly copying file.");
-                                    dataout = datain;
-                                }
-                                else
-                                {
-                                    Log($"{relpath} - converting...");
-                                    dataout = ytd.Save();
-                                }
-                                break;
-                            case ".ydr":
-                                var ydr = new YdrFile();
-                                ydr.Load(datain);
-                                rfe = ydr.RpfFileEntry as RpfResourceFileEntry;
-                                if (rfe?.Version == 159)
-                                {
-                                    Log($"{relpath} - already gen9 format, directly copying file.");
-                                    dataout = datain;
-                                }
-                                else
-                                {
-                                    Log($"{relpath} - converting...");
-                                    dataout = ydr.Save();
-                                }
-                                break;
-                            case ".ydd":
-                                var ydd = new YddFile();
-                                ydd.Load(datain);
-                                rfe = ydd.RpfFileEntry as RpfResourceFileEntry;
-                                if (rfe?.Version == 159)
-                                {
-                                    Log($"{relpath} - already gen9 format, directly copying file.");
-                                    dataout = datain;
-                                }
-                                else
-                                {
-                                    Log($"{relpath} - converting...");
-                                    dataout = ydd.Save();
-                                }
-                                break;
-                            case ".yft":
-                                var yft = new YftFile();
-                                yft.Load(datain);
-                                rfe = yft.RpfFileEntry as RpfResourceFileEntry;
-                                if (rfe?.Version == 171)
-                                {
-                                    Log($"{relpath} - already gen9 format, directly copying file.");
-                                    dataout = datain;
-                                }
-                                else
-                                {
-                                    Log($"{relpath} - converting...");
-                                    dataout = yft.Save();
-                                }
-                                break;
-                            case ".ypt":
-                                var ypt = new YptFile();
-                                ypt.Load(datain);
-                                rfe = ypt.RpfFileEntry as RpfResourceFileEntry;
-                                if (rfe?.Version == 71)
-                                {
-                                    Log($"{relpath} - already gen9 format, directly copying file.");
-                                    dataout = datain;
-                                }
-                                else
-                                {
-                                    Log($"{relpath} - converting...");
-                                    dataout = ypt.Save();
-                                }
-                                break;
-                            case ".rpf":
-                                Log($"{relpath} - Cannot convert RPF files! Extract the contents of the RPF and convert that instead.");
-                                break;
-                            default:
-                                if (copyunconverted)
-                                {
-                                    Log($"{relpath} - conversion not required, directly copying file.");
-                                    dataout = datain;
-                                }
-                                else
-                                {
-                                    Log($"{relpath} - conversion not required, skipping.");
-                                }
-                                break;
+                            Log($"{relpath} - Cannot convert RPF files! Extract the contents of the RPF and convert that instead.");
+
                         }
-                        if (dataout != null)
+                        else
                         {
-                            File.WriteAllBytes(outpath, dataout);
+                            var datain = File.ReadAllBytes(path);
+                            var dataout = TryConvert(datain, ext, Log, relpath, copyunconverted, out var converted);
+                            if (dataout != null)
+                            {
+                                File.WriteAllBytes(outpath, dataout);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -252,6 +167,115 @@ namespace CodeWalker.Core.Utils
 
         }
 
+        public static byte[] TryConvert(byte[] data, string fileType, bool copyunconverted = false)
+        {
+            var log = new Action<string>((str) => { });
+            var relpath = fileType;
+            var dataout = TryConvert(data, fileType, log, relpath, copyunconverted, out var converted);
+            if (converted) return dataout;
+            if (copyunconverted) return dataout;
+            return null;
+        }
+        public static byte[] TryConvert(byte[] data, string fileType, Action<string> log, string relpath, bool copyunconverted, out bool converted)
+        {
+            converted = false;
+            var exmsg = " - already gen9 format";
+            if (copyunconverted) exmsg += ", directly copying file.";
+            var rfe = (RpfResourceFileEntry)null;
+            switch (fileType)
+            {
+                case ".ytd":
+                    var ytd = new YtdFile();
+                    ytd.Load(data);
+                    rfe = ytd.RpfFileEntry as RpfResourceFileEntry;
+                    if (rfe?.Version == 5)
+                    {
+                        log($"{relpath}{exmsg}");
+                        return data;
+                    }
+                    else
+                    {
+                        log($"{relpath} - converting...");
+                        converted = true;
+                        return ytd.Save();
+                    }
+                case ".ydr":
+                    var ydr = new YdrFile();
+                    ydr.Load(data);
+                    rfe = ydr.RpfFileEntry as RpfResourceFileEntry;
+                    if (rfe?.Version == 159)
+                    {
+                        log($"{relpath}{exmsg}");
+                        return data;
+                    }
+                    else
+                    {
+                        log($"{relpath} - converting...");
+                        converted = true;
+                        return ydr.Save();
+                    }
+                case ".ydd":
+                    var ydd = new YddFile();
+                    ydd.Load(data);
+                    rfe = ydd.RpfFileEntry as RpfResourceFileEntry;
+                    if (rfe?.Version == 159)
+                    {
+                        log($"{relpath}{exmsg}");
+                        return data;
+                    }
+                    else
+                    {
+                        log($"{relpath} - converting...");
+                        converted = true;
+                        return ydd.Save();
+                    }
+                case ".yft":
+                    var yft = new YftFile();
+                    yft.Load(data);
+                    rfe = yft.RpfFileEntry as RpfResourceFileEntry;
+                    if (rfe?.Version == 171)
+                    {
+                        log($"{relpath}{exmsg}");
+                        return data;
+                    }
+                    else
+                    {
+                        log($"{relpath} - converting...");
+                        converted = true;
+                        return yft.Save();
+                    }
+                case ".ypt":
+                    var ypt = new YptFile();
+                    ypt.Load(data);
+                    rfe = ypt.RpfFileEntry as RpfResourceFileEntry;
+                    if (rfe?.Version == 71)
+                    {
+                        log($"{relpath}{exmsg}");
+                        return data;
+                    }
+                    else
+                    {
+                        log($"{relpath} - converting...");
+                        converted = true;
+                        return ypt.Save();
+                    }
+                case ".rpf":
+                    log($"{relpath} - Cannot convert RPF files! Extract the contents of the RPF and convert that instead.");
+                    return null;
+                default:
+                    if (copyunconverted)
+                    {
+                        log($"{relpath} - conversion not required, directly copying file.");
+                        return data;
+                    }
+                    else
+                    {
+                        log($"{relpath} - conversion not required, skipping.");
+                        return null;
+                    }
+            }
+
+        }
 
 
         private bool Question(string msg, string title, bool nullChoice)
