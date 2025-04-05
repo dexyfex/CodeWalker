@@ -187,8 +187,11 @@ namespace CodeWalker
 
         WorldSnapMode SnapMode = WorldSnapMode.None;
         WorldSnapMode SnapModePrev = WorldSnapMode.Ground;//also the default snap mode
+        float SnapGroundDown = 20.0f;
+        float SnapGroundUp = 3.0f;
         float SnapGridSize = 1.0f;
 
+        public bool SnapMultiSelectEach = false;
 
         public bool EditEntityPivot { get; set; } = false;
 
@@ -1717,17 +1720,15 @@ namespace CodeWalker
 
         private Vector3 GetGroundPoint(Vector3 p)
         {
-            float uplimit = 3.0f;
-            float downlimit = 20.0f;
             Ray ray = new Ray(p, new Vector3(0, 0, -1.0f));
             ray.Position.Z += 0.1f;
-            SpaceRayIntersectResult hit = space.RayIntersect(ray, downlimit);
+            SpaceRayIntersectResult hit = space.RayIntersect(ray, SnapGroundDown);
             if (hit.Hit)
             {
                 return hit.Position;
             }
-            ray.Position.Z += uplimit;
-            hit = space.RayIntersect(ray, downlimit);
+            ray.Position.Z += SnapGroundUp;
+            hit = space.RayIntersect(ray, SnapGroundDown);
             if (hit.Hit)
             {
                 return hit.Position;
@@ -1757,12 +1758,33 @@ namespace CodeWalker
         {
             //called during UpdateWidgets()
 
-            newpos = SnapPosition(newpos);
+            
 
-            if (newpos == oldpos) return;
+            if (SnapMultiSelectEach && SelectedItem.MultipleSelectionItems != null)
+            {
+                for (int i = 0; i < SelectedItem.MultipleSelectionItems.Length; i++)
+                {
+                    MapSelection item = SelectedItem.MultipleSelectionItems[i];
+                    Vector3 posToGround = item.WidgetPosition;
+                    posToGround.Z = newpos.Z;
+                    
+                    Vector3 tempNewPos = SnapPosition(posToGround);
 
-            SelectedItem.SetPosition(newpos, EditEntityPivot);
+                    if (tempNewPos == item.WidgetPosition) continue;
 
+                    item.SetPosition(tempNewPos, EditEntityPivot);
+                }
+
+                SelectedItem.MultipleSelectionCenter = newpos;
+            }
+            else
+            {
+                newpos = SnapPosition(newpos);
+
+                if (newpos == oldpos) return;
+
+                SelectedItem.SetPosition(newpos, EditEntityPivot);
+            }
             SelectedItem.UpdateGraphics(this);
 
             if (ProjectForm != null)
@@ -4822,6 +4844,8 @@ namespace CodeWalker
             BoundsRangeTrackBar.Value = s.BoundsRange;
             ErrorConsoleCheckBox.Checked = s.ShowErrorConsole;
             StatusBarCheckBox.Checked = s.ShowStatusBar;
+            SnapGroundDown_UpDown.Value=(decimal)s.SnapGroundDown;
+            SnapGroundUp_UpDown.Value = (decimal)s.SnapGroundUp;
             SnapGridSizeUpDown.Value = (decimal)s.SnapGridSize;
             SetRotationSnapping(s.SnapRotationDegrees);
             TimeOfDayTrackBar.Value = s.TimeOfDay;
@@ -4872,6 +4896,8 @@ namespace CodeWalker
             s.BoundsRange = BoundsRangeTrackBar.Value;
             s.ShowErrorConsole = ErrorConsoleCheckBox.Checked;
             s.ShowStatusBar = StatusBarCheckBox.Checked;
+            s.SnapGroundDown = (float)SnapGroundDown_UpDown.Value;
+            s.SnapGroundUp = (float)SnapGroundUp_UpDown.Value;
             s.SnapRotationDegrees = (float)SnapAngleUpDown.Value;
             s.SnapGridSize = (float)SnapGridSizeUpDown.Value;
             s.LODLights = LODLightsCheckBox.Checked;
@@ -7980,6 +8006,16 @@ namespace CodeWalker
             e.Handled = true;
         }
 
+        private void SnapGroundDown_UpDown_ValueChanged(object sender, EventArgs e)
+        { 
+            SnapGroundDown = (float)SnapGroundDown_UpDown.Value;
+        }
+
+        private void SnapGroundUp_UpDown_ValueChanged(object sender, EventArgs e)
+        {  
+            SnapGroundUp = (float)SnapGroundUp_UpDown.Value;
+        }
+
         private void SnapGridSizeUpDown_ValueChanged(object sender, EventArgs e)
         {
             SnapGridSize = (float)SnapGridSizeUpDown.Value;
@@ -8013,6 +8049,12 @@ namespace CodeWalker
         {
             SubtitleTimer.Enabled = false;
             SubtitleLabel.Visible = false;
+        }
+
+        private void RelativeSnapForEachItemToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RelativeGroundForEachItemToolStripMenuItem.Checked = !RelativeGroundForEachItemToolStripMenuItem.Checked;
+            SnapMultiSelectEach = RelativeGroundForEachItemToolStripMenuItem.Checked;
         }
     }
 
