@@ -1892,6 +1892,43 @@ namespace CodeWalker.GameFiles
         }
 
 
+        public static bool IsValidEncryption(RpfFile file, bool recursive = false)
+        {
+            if (file == null) return false;
+
+            if (file.Encryption != RpfEncryption.OPEN) return false;
+
+            var parent = file.Parent;
+            while (parent != null)
+            {
+                if (parent.Encryption != RpfEncryption.OPEN) return false;
+                parent = parent.Parent;
+            }
+
+            if (recursive && (file.Children != null))
+            {
+                var stack = new Stack<RpfFile>(file.Children);
+                while (stack.Count > 0)
+                {
+                    var child = stack.Pop();
+                    if (child == null) continue;
+                    if (child.Encryption != RpfEncryption.OPEN)
+                    {
+                        return false;
+                    }
+                    if (child.Children != null)
+                    {
+                        foreach (var cchild in child.Children)
+                        {
+                            stack.Push(cchild);
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
         public static bool EnsureValidEncryption(RpfFile file, Func<RpfFile, bool> confirm, bool recursive = false)
         {
             if (file == null) return false;

@@ -2228,19 +2228,23 @@ namespace CodeWalker
 
             if (rpf == null) return false;
 
+            if (RpfFile.IsValidEncryption(rpf, recursive)) return true;//it's already valid...
+
             var msgr = recursive ? "(including all its parents and children) " : "";
             var msg1 = $"Are you sure you want to change this archive {msgr}to OPEN encryption?";
             var msg2 = "Loading by the game will require a mod loader such as OpenRPF.asi or OpenIV.asi.";
 
             var confirm = new Func<RpfFile, bool>((f) => 
             {
-                var msg = $"Archive {f.Name} is currently set to {f.Encryption} encryption.\n{msg1}\n{msg2}";
+                var msg0 = (f != null) ? $"Archive {f.Name} is currently set to {f.Encryption} encryption.\n" : "";
+                var msg = $"{msg0}{msg1}\n{msg2}";
                 return (MessageBox.Show(msg, "Change RPF encryption type", MessageBoxButtons.YesNo) == DialogResult.Yes);
             });
 
+
             if (recursive)
             {
-                if (confirm(rpf) == false)
+                if (confirm(null) == false)
                 {
                     return false;
                 }
