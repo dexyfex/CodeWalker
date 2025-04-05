@@ -58,13 +58,13 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.InputFolderTextBox.Location = new System.Drawing.Point(92, 38);
             this.InputFolderTextBox.Name = "InputFolderTextBox";
-            this.InputFolderTextBox.Size = new System.Drawing.Size(327, 20);
+            this.InputFolderTextBox.Size = new System.Drawing.Size(449, 20);
             this.InputFolderTextBox.TabIndex = 2;
             // 
             // InputFolderBrowseButton
             // 
             this.InputFolderBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.InputFolderBrowseButton.Location = new System.Drawing.Point(434, 37);
+            this.InputFolderBrowseButton.Location = new System.Drawing.Point(556, 37);
             this.InputFolderBrowseButton.Name = "InputFolderBrowseButton";
             this.InputFolderBrowseButton.Size = new System.Drawing.Size(31, 22);
             this.InputFolderBrowseButton.TabIndex = 3;
@@ -75,7 +75,7 @@
             // OutputFolderBrowseButton
             // 
             this.OutputFolderBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.OutputFolderBrowseButton.Location = new System.Drawing.Point(434, 63);
+            this.OutputFolderBrowseButton.Location = new System.Drawing.Point(556, 63);
             this.OutputFolderBrowseButton.Name = "OutputFolderBrowseButton";
             this.OutputFolderBrowseButton.Size = new System.Drawing.Size(31, 22);
             this.OutputFolderBrowseButton.TabIndex = 6;
@@ -89,7 +89,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.OutputFolderTextBox.Location = new System.Drawing.Point(92, 64);
             this.OutputFolderTextBox.Name = "OutputFolderTextBox";
-            this.OutputFolderTextBox.Size = new System.Drawing.Size(327, 20);
+            this.OutputFolderTextBox.Size = new System.Drawing.Size(449, 20);
             this.OutputFolderTextBox.TabIndex = 5;
             // 
             // label2
@@ -153,14 +153,14 @@
             this.LogTextBox.Multiline = true;
             this.LogTextBox.Name = "LogTextBox";
             this.LogTextBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.LogTextBox.Size = new System.Drawing.Size(327, 108);
+            this.LogTextBox.Size = new System.Drawing.Size(449, 108);
             this.LogTextBox.TabIndex = 10;
             // 
             // ConvertAssetsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(512, 293);
+            this.ClientSize = new System.Drawing.Size(634, 293);
             this.Controls.Add(this.LogTextBox);
             this.Controls.Add(this.ProcessButton);
             this.Controls.Add(this.OverwriteCheckbox);
