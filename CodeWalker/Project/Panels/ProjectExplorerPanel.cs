@@ -601,30 +601,46 @@ namespace CodeWalker.Project.Panels
 
 
         }
-        private void LoadTrainTrackTreeNodes(TrainTrack track, TreeNode node)
+        public async Task LoadTrainTrackTreeNodes(TrainTrack track, TreeNode node)
         {
             if (track == null) return;
 
             if (!string.IsNullOrEmpty(node.Name)) return; //named nodes are eg Nodes
 
-            node.Nodes.Clear();
-
-
-
-            if ((track.Nodes != null) && (track.Nodes.Count > 0))
+            await Task.Run(() =>
             {
-                var nodesnode = node.Nodes.Add("Nodes (" + track.Nodes.Count.ToString() + ")");
-                nodesnode.Name = "Nodes";
-                nodesnode.Tag = track;
-                var nodes = track.Nodes;
-                for (int i = 0; i < nodes.Count; i++)
+                // Invoke the method on the form's thread.
+                ProjectForm.Invoke((MethodInvoker)delegate
                 {
-                    var ynode = nodes[i];
-                    var tnode = nodesnode.Nodes.Add(ynode.ToString());
-                    tnode.Tag = ynode;
-                }
-            }
+                    node.Nodes.Clear();
+                });
 
+                if ((track.Nodes != null) && (track.Nodes.Count > 0))
+                {
+                    TreeNode nodesnode = null;
+                    ProjectForm.Invoke((MethodInvoker)delegate
+                    {
+                        nodesnode = node.Nodes.Add("Nodes (" + track.Nodes.Count.ToString() + ")");
+                        nodesnode.Name = "Nodes";
+                        nodesnode.Tag = track;
+                    });
+
+                    var nodes = track.Nodes;
+
+                    TreeNode[] tempList = new TreeNode[track.Nodes.Count];
+                    for (int i = 0; i < nodes.Count; i++)
+                    {
+                        var ynode = nodes[i];
+                        tempList[i] = new TreeNode(ynode.ToString());
+                        tempList[i].Tag = ynode;
+                    }
+
+                    ProjectForm.Invoke((MethodInvoker)delegate
+                    {
+                        nodesnode.Nodes.AddRange(tempList);
+                    });
+                }
+            });
         }
         private void LoadScenarioTreeNodes(YmtFile ymt, TreeNode node)
         {
