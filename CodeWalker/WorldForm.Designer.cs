@@ -159,8 +159,12 @@ namespace CodeWalker
             this.label14 = new System.Windows.Forms.Label();
             this.OptionsHelpersTabPage = new System.Windows.Forms.TabPage();
             this.SnapAngleUpDown = new System.Windows.Forms.NumericUpDown();
-            this.label33 = new System.Windows.Forms.Label();
+            this.label34 = new System.Windows.Forms.Label();
             this.SnapGridSizeUpDown = new System.Windows.Forms.NumericUpDown();
+            this.label35 = new System.Windows.Forms.Label();
+            this.SnapGroundUp_UpDown = new System.Windows.Forms.NumericUpDown();
+            this.label33 = new System.Windows.Forms.Label();
+            this.SnapGroundDown_UpDown = new System.Windows.Forms.NumericUpDown();
             this.label26 = new System.Windows.Forms.Label();
             this.SkeletonsCheckBox = new System.Windows.Forms.CheckBox();
             this.AudioOuterBoundsCheckBox = new System.Windows.Forms.CheckBox();
@@ -348,6 +352,8 @@ namespace CodeWalker
             this.OptionsHelpersTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGroundUp_UpDown)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGroundDown_UpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).BeginInit();
             this.OptionsLightingTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.CloudParamTrackBar)).BeginInit();
@@ -1992,8 +1998,12 @@ namespace CodeWalker
             // OptionsHelpersTabPage
             // 
             this.OptionsHelpersTabPage.Controls.Add(this.SnapAngleUpDown);
-            this.OptionsHelpersTabPage.Controls.Add(this.label33);
+            this.OptionsHelpersTabPage.Controls.Add(this.label34);
             this.OptionsHelpersTabPage.Controls.Add(this.SnapGridSizeUpDown);
+            this.OptionsHelpersTabPage.Controls.Add(this.label35);
+            this.OptionsHelpersTabPage.Controls.Add(this.SnapGroundUp_UpDown);
+            this.OptionsHelpersTabPage.Controls.Add(this.label33);
+            this.OptionsHelpersTabPage.Controls.Add(this.SnapGroundDown_UpDown);
             this.OptionsHelpersTabPage.Controls.Add(this.label26);
             this.OptionsHelpersTabPage.Controls.Add(this.SkeletonsCheckBox);
             this.OptionsHelpersTabPage.Controls.Add(this.AudioOuterBoundsCheckBox);
@@ -2026,15 +2036,15 @@ namespace CodeWalker
             // SnapAngleUpDown
             // 
             this.SnapAngleUpDown.DecimalPlaces = 1;
-            this.SnapAngleUpDown.Location = new System.Drawing.Point(98, 279);
+            this.SnapAngleUpDown.Location = new System.Drawing.Point(110, 332);
             this.SnapAngleUpDown.Maximum = new decimal(new int[] {
             180,
             0,
             0,
             0});
             this.SnapAngleUpDown.Name = "SnapAngleUpDown";
-            this.SnapAngleUpDown.Size = new System.Drawing.Size(96, 20);
-            this.SnapAngleUpDown.TabIndex = 32;
+            this.SnapAngleUpDown.Size = new System.Drawing.Size(84, 20);
+            this.SnapAngleUpDown.TabIndex = 36;
             this.SnapAngleUpDown.Value = new decimal(new int[] {
             50,
             0,
@@ -2042,19 +2052,19 @@ namespace CodeWalker
             65536});
             this.SnapAngleUpDown.ValueChanged += new System.EventHandler(this.SnapAngleUpDown_ValueChanged);
             // 
-            // label33
+            // label34
             // 
-            this.label33.AutoSize = true;
-            this.label33.Location = new System.Drawing.Point(4, 281);
-            this.label33.Name = "label33";
-            this.label33.Size = new System.Drawing.Size(91, 13);
-            this.label33.TabIndex = 31;
-            this.label33.Text = "Snap angle (deg):";
+            this.label34.AutoSize = true;
+            this.label34.Location = new System.Drawing.Point(4, 334);
+            this.label34.Name = "label34";
+            this.label34.Size = new System.Drawing.Size(91, 13);
+            this.label34.TabIndex = 35;
+            this.label34.Text = "Snap angle (deg):";
             // 
             // SnapGridSizeUpDown
             // 
             this.SnapGridSizeUpDown.DecimalPlaces = 2;
-            this.SnapGridSizeUpDown.Location = new System.Drawing.Point(98, 253);
+            this.SnapGridSizeUpDown.Location = new System.Drawing.Point(110, 306);
             this.SnapGridSizeUpDown.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -2066,8 +2076,8 @@ namespace CodeWalker
             0,
             131072});
             this.SnapGridSizeUpDown.Name = "SnapGridSizeUpDown";
-            this.SnapGridSizeUpDown.Size = new System.Drawing.Size(96, 20);
-            this.SnapGridSizeUpDown.TabIndex = 30;
+            this.SnapGridSizeUpDown.Size = new System.Drawing.Size(84, 20);
+            this.SnapGridSizeUpDown.TabIndex = 34;
             this.SnapGridSizeUpDown.Value = new decimal(new int[] {
             100,
             0,
@@ -2075,22 +2085,78 @@ namespace CodeWalker
             131072});
             this.SnapGridSizeUpDown.ValueChanged += new System.EventHandler(this.SnapGridSizeUpDown_ValueChanged);
             // 
+            // label35
+            // 
+            this.label35.AutoSize = true;
+            this.label35.Location = new System.Drawing.Point(4, 308);
+            this.label35.Name = "label35";
+            this.label35.Size = new System.Drawing.Size(76, 13);
+            this.label35.TabIndex = 33;
+            this.label35.Text = "Snap grid size:";
+            // 
+            // SnapGroundUp_UpDown
+            // 
+            this.SnapGroundUp_UpDown.DecimalPlaces = 1;
+            this.SnapGroundUp_UpDown.Location = new System.Drawing.Point(110, 279);
+            this.SnapGroundUp_UpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.SnapGroundUp_UpDown.Name = "SnapGroundUp_UpDown";
+            this.SnapGroundUp_UpDown.Size = new System.Drawing.Size(84, 20);
+            this.SnapGroundUp_UpDown.TabIndex = 32;
+            this.SnapGroundUp_UpDown.Value = new decimal(new int[] {
+            300,
+            0,
+            0,
+            131072});
+            this.SnapGroundUp_UpDown.ValueChanged += new System.EventHandler(this.SnapGroundUp_UpDown_ValueChanged);
+            // 
+            // label33
+            // 
+            this.label33.AutoSize = true;
+            this.label33.Location = new System.Drawing.Point(4, 281);
+            this.label33.Name = "label33";
+            this.label33.Size = new System.Drawing.Size(86, 13);
+            this.label33.TabIndex = 31;
+            this.label33.Text = "Snap ground up:";
+            // 
+            // SnapGroundDown_UpDown
+            // 
+            this.SnapGroundDown_UpDown.DecimalPlaces = 1;
+            this.SnapGroundDown_UpDown.Location = new System.Drawing.Point(110, 253);
+            this.SnapGroundDown_UpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+            this.SnapGroundDown_UpDown.Name = "SnapGroundDown_UpDown";
+            this.SnapGroundDown_UpDown.Size = new System.Drawing.Size(84, 20);
+            this.SnapGroundDown_UpDown.TabIndex = 30;
+            this.SnapGroundDown_UpDown.Value = new decimal(new int[] {
+            2000,
+            0,
+            0,
+            131072});
+            this.SnapGroundDown_UpDown.ValueChanged += new System.EventHandler(this.SnapGroundDown_UpDown_ValueChanged);
+            // 
             // label26
             // 
             this.label26.AutoSize = true;
             this.label26.Location = new System.Drawing.Point(4, 255);
             this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(76, 13);
+            this.label26.Size = new System.Drawing.Size(100, 13);
             this.label26.TabIndex = 29;
-            this.label26.Text = "Snap grid size:";
+            this.label26.Text = "Snap ground down:";
             // 
             // SkeletonsCheckBox
             // 
             this.SkeletonsCheckBox.AutoSize = true;
-            this.SkeletonsCheckBox.Location = new System.Drawing.Point(10, 411);
+            this.SkeletonsCheckBox.Location = new System.Drawing.Point(10, 466);
             this.SkeletonsCheckBox.Name = "SkeletonsCheckBox";
             this.SkeletonsCheckBox.Size = new System.Drawing.Size(101, 17);
-            this.SkeletonsCheckBox.TabIndex = 38;
+            this.SkeletonsCheckBox.TabIndex = 42;
             this.SkeletonsCheckBox.Text = "Show skeletons";
             this.SkeletonsCheckBox.UseVisualStyleBackColor = true;
             this.SkeletonsCheckBox.CheckedChanged += new System.EventHandler(this.SkeletonsCheckBox_CheckedChanged);
@@ -2100,10 +2166,10 @@ namespace CodeWalker
             this.AudioOuterBoundsCheckBox.AutoSize = true;
             this.AudioOuterBoundsCheckBox.Checked = true;
             this.AudioOuterBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(10, 457);
+            this.AudioOuterBoundsCheckBox.Location = new System.Drawing.Point(10, 512);
             this.AudioOuterBoundsCheckBox.Name = "AudioOuterBoundsCheckBox";
             this.AudioOuterBoundsCheckBox.Size = new System.Drawing.Size(147, 17);
-            this.AudioOuterBoundsCheckBox.TabIndex = 40;
+            this.AudioOuterBoundsCheckBox.TabIndex = 44;
             this.AudioOuterBoundsCheckBox.Text = "Show audio outer bounds";
             this.AudioOuterBoundsCheckBox.UseVisualStyleBackColor = true;
             this.AudioOuterBoundsCheckBox.CheckedChanged += new System.EventHandler(this.AudioOuterBoundsCheckBox_CheckedChanged);
@@ -2111,10 +2177,10 @@ namespace CodeWalker
             // PopZonesCheckBox
             // 
             this.PopZonesCheckBox.AutoSize = true;
-            this.PopZonesCheckBox.Location = new System.Drawing.Point(10, 388);
+            this.PopZonesCheckBox.Location = new System.Drawing.Point(10, 443);
             this.PopZonesCheckBox.Name = "PopZonesCheckBox";
             this.PopZonesCheckBox.Size = new System.Drawing.Size(136, 17);
-            this.PopZonesCheckBox.TabIndex = 37;
+            this.PopZonesCheckBox.TabIndex = 41;
             this.PopZonesCheckBox.Text = "Show population zones";
             this.PopZonesCheckBox.UseVisualStyleBackColor = true;
             this.PopZonesCheckBox.CheckedChanged += new System.EventHandler(this.PopZonesCheckBox_CheckedChanged);
@@ -2122,10 +2188,10 @@ namespace CodeWalker
             // NavMeshesCheckBox
             // 
             this.NavMeshesCheckBox.AutoSize = true;
-            this.NavMeshesCheckBox.Location = new System.Drawing.Point(10, 365);
+            this.NavMeshesCheckBox.Location = new System.Drawing.Point(10, 420);
             this.NavMeshesCheckBox.Name = "NavMeshesCheckBox";
             this.NavMeshesCheckBox.Size = new System.Drawing.Size(113, 17);
-            this.NavMeshesCheckBox.TabIndex = 36;
+            this.NavMeshesCheckBox.TabIndex = 40;
             this.NavMeshesCheckBox.Text = "Show nav meshes";
             this.NavMeshesCheckBox.UseVisualStyleBackColor = true;
             this.NavMeshesCheckBox.CheckedChanged += new System.EventHandler(this.NavMeshesCheckBox_CheckedChanged);
@@ -2133,10 +2199,10 @@ namespace CodeWalker
             // TrainPathsCheckBox
             // 
             this.TrainPathsCheckBox.AutoSize = true;
-            this.TrainPathsCheckBox.Location = new System.Drawing.Point(10, 342);
+            this.TrainPathsCheckBox.Location = new System.Drawing.Point(10, 397);
             this.TrainPathsCheckBox.Name = "TrainPathsCheckBox";
             this.TrainPathsCheckBox.Size = new System.Drawing.Size(105, 17);
-            this.TrainPathsCheckBox.TabIndex = 35;
+            this.TrainPathsCheckBox.TabIndex = 39;
             this.TrainPathsCheckBox.Text = "Show train paths";
             this.TrainPathsCheckBox.UseVisualStyleBackColor = true;
             this.TrainPathsCheckBox.CheckedChanged += new System.EventHandler(this.TrainPathsCheckBox_CheckedChanged);
@@ -2146,10 +2212,10 @@ namespace CodeWalker
             this.PathsDepthClipCheckBox.AutoSize = true;
             this.PathsDepthClipCheckBox.Checked = true;
             this.PathsDepthClipCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 434);
+            this.PathsDepthClipCheckBox.Location = new System.Drawing.Point(10, 489);
             this.PathsDepthClipCheckBox.Name = "PathsDepthClipCheckBox";
             this.PathsDepthClipCheckBox.Size = new System.Drawing.Size(102, 17);
-            this.PathsDepthClipCheckBox.TabIndex = 39;
+            this.PathsDepthClipCheckBox.TabIndex = 43;
             this.PathsDepthClipCheckBox.Text = "Paths depth clip";
             this.PathsDepthClipCheckBox.UseVisualStyleBackColor = true;
             this.PathsDepthClipCheckBox.CheckedChanged += new System.EventHandler(this.PathsDepthClipCheckBox_CheckedChanged);
@@ -2159,10 +2225,10 @@ namespace CodeWalker
             this.PathBoundsCheckBox.AutoSize = true;
             this.PathBoundsCheckBox.Checked = true;
             this.PathBoundsCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.PathBoundsCheckBox.Location = new System.Drawing.Point(98, 319);
+            this.PathBoundsCheckBox.Location = new System.Drawing.Point(98, 374);
             this.PathBoundsCheckBox.Name = "PathBoundsCheckBox";
             this.PathBoundsCheckBox.Size = new System.Drawing.Size(86, 17);
-            this.PathBoundsCheckBox.TabIndex = 34;
+            this.PathBoundsCheckBox.TabIndex = 38;
             this.PathBoundsCheckBox.Text = "Path bounds";
             this.PathBoundsCheckBox.UseVisualStyleBackColor = true;
             this.PathBoundsCheckBox.CheckedChanged += new System.EventHandler(this.PathBoundsCheckBox_CheckedChanged);
@@ -2244,10 +2310,10 @@ namespace CodeWalker
             // PathsCheckBox
             // 
             this.PathsCheckBox.AutoSize = true;
-            this.PathsCheckBox.Location = new System.Drawing.Point(10, 319);
+            this.PathsCheckBox.Location = new System.Drawing.Point(10, 374);
             this.PathsCheckBox.Name = "PathsCheckBox";
             this.PathsCheckBox.Size = new System.Drawing.Size(82, 17);
-            this.PathsCheckBox.TabIndex = 33;
+            this.PathsCheckBox.TabIndex = 37;
             this.PathsCheckBox.Text = "Show paths";
             this.PathsCheckBox.UseVisualStyleBackColor = true;
             this.PathsCheckBox.CheckedChanged += new System.EventHandler(this.PathsCheckBox_CheckedChanged);
@@ -2930,7 +2996,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(585, 25);
+            this.Toolbar.Size = new System.Drawing.Size(554, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -3429,7 +3495,7 @@ namespace CodeWalker
             // RelativeGroundForEachItemToolStripMenuItem
             // 
             this.RelativeGroundForEachItemToolStripMenuItem.Name = "RelativeGroundForEachItemToolStripMenuItem";
-            this.RelativeGroundForEachItemToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.RelativeGroundForEachItemToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.RelativeGroundForEachItemToolStripMenuItem.Text = "Relative Item Snap";
             this.RelativeGroundForEachItemToolStripMenuItem.Click += new System.EventHandler(this.RelativeSnapForEachItemToolStripMenuItem_Click);
             // 
@@ -3695,6 +3761,8 @@ namespace CodeWalker
             this.OptionsHelpersTabPage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.SnapAngleUpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.SnapGridSizeUpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGroundUp_UpDown)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SnapGroundDown_UpDown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BoundsRangeTrackBar)).EndInit();
             this.OptionsLightingTabPage.ResumeLayout(false);
             this.OptionsLightingTabPage.PerformLayout();
@@ -3961,8 +4029,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGroundButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGridButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSnapToGroundGridButton;
-        private System.Windows.Forms.NumericUpDown SnapGridSizeUpDown;
-        private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox RenderEntitiesCheckBox;
         private System.Windows.Forms.ToolStripMenuItem ToolbarSelectOcclusionButton;
         private System.Windows.Forms.CheckBox CarGeneratorsCheckBox;
@@ -3978,8 +4044,6 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewYbnButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarNewYtypButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarOpenFolderButton;
-        private System.Windows.Forms.NumericUpDown SnapAngleUpDown;
-        private System.Windows.Forms.Label label33;
         private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnappingButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnappingOffButton;
         private System.Windows.Forms.ToolStripMenuItem ToolbarRotationSnapping1Button;
@@ -3998,5 +4062,13 @@ namespace CodeWalker
         private System.Windows.Forms.CheckBox SavePositionCheckBox;
         private System.Windows.Forms.ToolStripMenuItem multiSelectionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem RelativeGroundForEachItemToolStripMenuItem;
+        private System.Windows.Forms.NumericUpDown SnapAngleUpDown;
+        private System.Windows.Forms.Label label34;
+        private System.Windows.Forms.NumericUpDown SnapGridSizeUpDown;
+        private System.Windows.Forms.Label label35;
+        private System.Windows.Forms.NumericUpDown SnapGroundUp_UpDown;
+        private System.Windows.Forms.Label label33;
+        private System.Windows.Forms.NumericUpDown SnapGroundDown_UpDown;
+        private System.Windows.Forms.Label label26;
     }
 }
