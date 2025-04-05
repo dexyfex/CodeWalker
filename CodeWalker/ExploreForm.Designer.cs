@@ -1,4 +1,4 @@
-﻿namespace CodeWalker
+﻿﻿namespace CodeWalker
 {
     partial class ExploreForm
     {
@@ -112,6 +112,7 @@
             this.MainAttrColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.MainPathColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.EditModeBaseWarningPanel = new System.Windows.Forms.Panel();
+            this.CopyToModsFolderButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.EditModeModsWarningPanel = new System.Windows.Forms.Panel();
@@ -125,6 +126,9 @@
             this.ListContextExtractRawMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractUncompressedMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextExtractAllMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.RpfSeparator = new System.Windows.Forms.ToolStripSeparator();
+            this.ListContextExtractRPFMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.ListContextConvertRPF = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.ListContextNewMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ListContextNewFolderMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -161,7 +165,6 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
-            this.CopyToModsFolderButton = new System.Windows.Forms.Button();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -179,6 +182,7 @@
             // 
             // MainMenu
             // 
+            this.MainMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.MainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FileMenu,
             this.EditMenu,
@@ -187,7 +191,7 @@
             this.OptionsMenu});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
             this.MainMenu.Name = "MainMenu";
-            this.MainMenu.Size = new System.Drawing.Size(876, 24);
+            this.MainMenu.Size = new System.Drawing.Size(1168, 28);
             this.MainMenu.TabIndex = 0;
             this.MainMenu.Text = "menuStrip1";
             // 
@@ -200,38 +204,38 @@
             this.toolStripSeparator14,
             this.FileExitMenu});
             this.FileMenu.Name = "FileMenu";
-            this.FileMenu.Size = new System.Drawing.Size(37, 20);
+            this.FileMenu.Size = new System.Drawing.Size(46, 24);
             this.FileMenu.Text = "File";
             // 
             // FileConfigureGameMenu
             // 
             this.FileConfigureGameMenu.Name = "FileConfigureGameMenu";
-            this.FileConfigureGameMenu.Size = new System.Drawing.Size(170, 22);
+            this.FileConfigureGameMenu.Size = new System.Drawing.Size(209, 26);
             this.FileConfigureGameMenu.Text = "Configure Game...";
             this.FileConfigureGameMenu.Click += new System.EventHandler(this.FileConfigureGameMenu_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(167, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(206, 6);
             // 
             // FileOpenFolderMenu
             // 
             this.FileOpenFolderMenu.Name = "FileOpenFolderMenu";
-            this.FileOpenFolderMenu.Size = new System.Drawing.Size(170, 22);
+            this.FileOpenFolderMenu.Size = new System.Drawing.Size(209, 26);
             this.FileOpenFolderMenu.Text = "Open Folder...";
             this.FileOpenFolderMenu.Click += new System.EventHandler(this.FileOpenFolderMenu_Click);
             // 
             // toolStripSeparator14
             // 
             this.toolStripSeparator14.Name = "toolStripSeparator14";
-            this.toolStripSeparator14.Size = new System.Drawing.Size(167, 6);
+            this.toolStripSeparator14.Size = new System.Drawing.Size(206, 6);
             // 
             // FileExitMenu
             // 
             this.FileExitMenu.Name = "FileExitMenu";
             this.FileExitMenu.ShortcutKeyDisplayString = "Alt+F4";
-            this.FileExitMenu.Size = new System.Drawing.Size(170, 22);
+            this.FileExitMenu.Size = new System.Drawing.Size(209, 26);
             this.FileExitMenu.Text = "Exit";
             this.FileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -259,7 +263,7 @@
             this.EditEditModeMenuSeparator,
             this.EditSelectAllMenu});
             this.EditMenu.Name = "EditMenu";
-            this.EditMenu.Size = new System.Drawing.Size(39, 20);
+            this.EditMenu.Size = new System.Drawing.Size(49, 24);
             this.EditMenu.Text = "Edit";
             // 
             // EditViewMenu
@@ -267,7 +271,7 @@
             this.EditViewMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditViewMenu.Image")));
             this.EditViewMenu.Name = "EditViewMenu";
             this.EditViewMenu.ShortcutKeyDisplayString = "Ctrl+P";
-            this.EditViewMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditViewMenu.Size = new System.Drawing.Size(258, 26);
             this.EditViewMenu.Text = "View...";
             this.EditViewMenu.Click += new System.EventHandler(this.EditViewMenu_Click);
             // 
@@ -276,21 +280,21 @@
             this.EditViewHexMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditViewHexMenu.Image")));
             this.EditViewHexMenu.Name = "EditViewHexMenu";
             this.EditViewHexMenu.ShortcutKeyDisplayString = "Ctrl+H";
-            this.EditViewHexMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditViewHexMenu.Size = new System.Drawing.Size(258, 26);
             this.EditViewHexMenu.Text = "View Hex...";
             this.EditViewHexMenu.Click += new System.EventHandler(this.EditViewHexMenu_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(205, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(255, 6);
             // 
             // EditExportXmlMenu
             // 
             this.EditExportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditExportXmlMenu.Image")));
             this.EditExportXmlMenu.Name = "EditExportXmlMenu";
             this.EditExportXmlMenu.ShortcutKeyDisplayString = "Ctrl+S";
-            this.EditExportXmlMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditExportXmlMenu.Size = new System.Drawing.Size(258, 26);
             this.EditExportXmlMenu.Text = "Export XML...";
             this.EditExportXmlMenu.Click += new System.EventHandler(this.EditExportXmlMenu_Click);
             // 
@@ -299,7 +303,7 @@
             this.EditExtractRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditExtractRawMenu.Image")));
             this.EditExtractRawMenu.Name = "EditExtractRawMenu";
             this.EditExtractRawMenu.ShortcutKeyDisplayString = "Ctrl+E";
-            this.EditExtractRawMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditExtractRawMenu.Size = new System.Drawing.Size(258, 26);
             this.EditExtractRawMenu.Text = "Extract Raw...";
             this.EditExtractRawMenu.Click += new System.EventHandler(this.EditExtractRawMenu_Click);
             // 
@@ -307,19 +311,19 @@
             // 
             this.EditExtractAllMenu.Name = "EditExtractAllMenu";
             this.EditExtractAllMenu.ShortcutKeyDisplayString = "Ctrl+Shift+E";
-            this.EditExtractAllMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditExtractAllMenu.Size = new System.Drawing.Size(258, 26);
             this.EditExtractAllMenu.Text = "Extract All...";
             this.EditExtractAllMenu.Click += new System.EventHandler(this.EditExtractAllMenu_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(205, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(255, 6);
             // 
             // EditImportFbxMenu
             // 
             this.EditImportFbxMenu.Name = "EditImportFbxMenu";
-            this.EditImportFbxMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditImportFbxMenu.Size = new System.Drawing.Size(258, 26);
             this.EditImportFbxMenu.Text = "Import FBX...";
             this.EditImportFbxMenu.Visible = false;
             this.EditImportFbxMenu.Click += new System.EventHandler(this.EditImportFbxMenu_Click);
@@ -329,7 +333,7 @@
             this.EditImportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditImportXmlMenu.Image")));
             this.EditImportXmlMenu.Name = "EditImportXmlMenu";
             this.EditImportXmlMenu.ShortcutKeyDisplayString = "Shift+Ins";
-            this.EditImportXmlMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditImportXmlMenu.Size = new System.Drawing.Size(258, 26);
             this.EditImportXmlMenu.Text = "Import XML...";
             this.EditImportXmlMenu.Visible = false;
             this.EditImportXmlMenu.Click += new System.EventHandler(this.EditImportXmlMenu_Click);
@@ -339,7 +343,7 @@
             this.EditImportRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditImportRawMenu.Image")));
             this.EditImportRawMenu.Name = "EditImportRawMenu";
             this.EditImportRawMenu.ShortcutKeyDisplayString = "Ins";
-            this.EditImportRawMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditImportRawMenu.Size = new System.Drawing.Size(258, 26);
             this.EditImportRawMenu.Text = "Import Raw...";
             this.EditImportRawMenu.Visible = false;
             this.EditImportRawMenu.Click += new System.EventHandler(this.EditImportRawMenu_Click);
@@ -347,7 +351,7 @@
             // EditImportMenuSeparator
             // 
             this.EditImportMenuSeparator.Name = "EditImportMenuSeparator";
-            this.EditImportMenuSeparator.Size = new System.Drawing.Size(205, 6);
+            this.EditImportMenuSeparator.Size = new System.Drawing.Size(255, 6);
             this.EditImportMenuSeparator.Visible = false;
             // 
             // EditCopyMenu
@@ -355,7 +359,7 @@
             this.EditCopyMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditCopyMenu.Image")));
             this.EditCopyMenu.Name = "EditCopyMenu";
             this.EditCopyMenu.ShortcutKeyDisplayString = "Ctrl+C";
-            this.EditCopyMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditCopyMenu.Size = new System.Drawing.Size(258, 26);
             this.EditCopyMenu.Text = "Copy";
             this.EditCopyMenu.Click += new System.EventHandler(this.EditCopyMenu_Click);
             // 
@@ -363,35 +367,35 @@
             // 
             this.EditCopyPathMenu.Name = "EditCopyPathMenu";
             this.EditCopyPathMenu.ShortcutKeyDisplayString = "Ctrl+Shift+C";
-            this.EditCopyPathMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditCopyPathMenu.Size = new System.Drawing.Size(258, 26);
             this.EditCopyPathMenu.Text = "Copy Path";
             this.EditCopyPathMenu.Click += new System.EventHandler(this.EditCopyPathMenu_Click);
             // 
             // EditCopyFileListMenu
             // 
             this.EditCopyFileListMenu.Name = "EditCopyFileListMenu";
-            this.EditCopyFileListMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditCopyFileListMenu.Size = new System.Drawing.Size(258, 26);
             this.EditCopyFileListMenu.Text = "Copy File List";
             this.EditCopyFileListMenu.Click += new System.EventHandler(this.EditCopyFileListMenu_Click);
             // 
             // EditPasteMenu
             // 
             this.EditPasteMenu.Name = "EditPasteMenu";
-            this.EditPasteMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditPasteMenu.Size = new System.Drawing.Size(258, 26);
             this.EditPasteMenu.Text = "Paste";
             this.EditPasteMenu.Click += new System.EventHandler(this.EditPasteMenu_Click);
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
-            this.toolStripSeparator9.Size = new System.Drawing.Size(205, 6);
+            this.toolStripSeparator9.Size = new System.Drawing.Size(255, 6);
             // 
             // EditRenameMenu
             // 
             this.EditRenameMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditRenameMenu.Image")));
             this.EditRenameMenu.Name = "EditRenameMenu";
             this.EditRenameMenu.ShortcutKeyDisplayString = "F2";
-            this.EditRenameMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditRenameMenu.Size = new System.Drawing.Size(258, 26);
             this.EditRenameMenu.Text = "Rename...";
             this.EditRenameMenu.Visible = false;
             this.EditRenameMenu.Click += new System.EventHandler(this.EditRenameMenu_Click);
@@ -401,7 +405,7 @@
             this.EditDeleteMenu.Image = ((System.Drawing.Image)(resources.GetObject("EditDeleteMenu.Image")));
             this.EditDeleteMenu.Name = "EditDeleteMenu";
             this.EditDeleteMenu.ShortcutKeyDisplayString = "Shift+Del";
-            this.EditDeleteMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditDeleteMenu.Size = new System.Drawing.Size(258, 26);
             this.EditDeleteMenu.Text = "Delete";
             this.EditDeleteMenu.Visible = false;
             this.EditDeleteMenu.Click += new System.EventHandler(this.EditDeleteMenu_Click);
@@ -409,14 +413,14 @@
             // EditEditModeMenuSeparator
             // 
             this.EditEditModeMenuSeparator.Name = "EditEditModeMenuSeparator";
-            this.EditEditModeMenuSeparator.Size = new System.Drawing.Size(205, 6);
+            this.EditEditModeMenuSeparator.Size = new System.Drawing.Size(255, 6);
             this.EditEditModeMenuSeparator.Visible = false;
             // 
             // EditSelectAllMenu
             // 
             this.EditSelectAllMenu.Name = "EditSelectAllMenu";
             this.EditSelectAllMenu.ShortcutKeyDisplayString = "Ctrl+A";
-            this.EditSelectAllMenu.Size = new System.Drawing.Size(208, 22);
+            this.EditSelectAllMenu.Size = new System.Drawing.Size(258, 26);
             this.EditSelectAllMenu.Text = "Select All";
             this.EditSelectAllMenu.Click += new System.EventHandler(this.EditSelectAllMenu_Click);
             // 
@@ -430,27 +434,27 @@
             this.toolStripSeparator11,
             this.ViewThemeMenu});
             this.ViewMenu.Name = "ViewMenu";
-            this.ViewMenu.Size = new System.Drawing.Size(44, 20);
+            this.ViewMenu.Size = new System.Drawing.Size(55, 24);
             this.ViewMenu.Text = "View";
             // 
             // ViewLargeIconsMenu
             // 
             this.ViewLargeIconsMenu.Name = "ViewLargeIconsMenu";
-            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(167, 26);
             this.ViewLargeIconsMenu.Text = "Large Icons";
             this.ViewLargeIconsMenu.Click += new System.EventHandler(this.ViewLargeIconsMenu_Click);
             // 
             // ViewSmallIconsMenu
             // 
             this.ViewSmallIconsMenu.Name = "ViewSmallIconsMenu";
-            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(167, 26);
             this.ViewSmallIconsMenu.Text = "Small Icons";
             this.ViewSmallIconsMenu.Click += new System.EventHandler(this.ViewSmallIconsMenu_Click);
             // 
             // ViewListMenu
             // 
             this.ViewListMenu.Name = "ViewListMenu";
-            this.ViewListMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewListMenu.Size = new System.Drawing.Size(167, 26);
             this.ViewListMenu.Text = "List";
             this.ViewListMenu.Click += new System.EventHandler(this.ViewListMenu_Click);
             // 
@@ -459,14 +463,14 @@
             this.ViewDetailsMenu.Checked = true;
             this.ViewDetailsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewDetailsMenu.Name = "ViewDetailsMenu";
-            this.ViewDetailsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewDetailsMenu.Size = new System.Drawing.Size(167, 26);
             this.ViewDetailsMenu.Text = "Details";
             this.ViewDetailsMenu.Click += new System.EventHandler(this.ViewDetailsMenu_Click);
             // 
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(131, 6);
+            this.toolStripSeparator11.Size = new System.Drawing.Size(164, 6);
             // 
             // ViewThemeMenu
             // 
@@ -476,7 +480,7 @@
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
-            this.ViewThemeMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewThemeMenu.Size = new System.Drawing.Size(167, 26);
             this.ViewThemeMenu.Text = "Theme";
             // 
             // ViewThemeWindowsMenu
@@ -484,28 +488,28 @@
             this.ViewThemeWindowsMenu.Checked = true;
             this.ViewThemeWindowsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewThemeWindowsMenu.Name = "ViewThemeWindowsMenu";
-            this.ViewThemeWindowsMenu.Size = new System.Drawing.Size(123, 22);
+            this.ViewThemeWindowsMenu.Size = new System.Drawing.Size(153, 26);
             this.ViewThemeWindowsMenu.Text = "Windows";
             this.ViewThemeWindowsMenu.Click += new System.EventHandler(this.ViewThemeWindowsMenu_Click);
             // 
             // ViewThemeBlueMenu
             // 
             this.ViewThemeBlueMenu.Name = "ViewThemeBlueMenu";
-            this.ViewThemeBlueMenu.Size = new System.Drawing.Size(123, 22);
+            this.ViewThemeBlueMenu.Size = new System.Drawing.Size(153, 26);
             this.ViewThemeBlueMenu.Text = "Blue";
             this.ViewThemeBlueMenu.Click += new System.EventHandler(this.ViewThemeBlueMenu_Click);
             // 
             // ViewThemeLightMenu
             // 
             this.ViewThemeLightMenu.Name = "ViewThemeLightMenu";
-            this.ViewThemeLightMenu.Size = new System.Drawing.Size(123, 22);
+            this.ViewThemeLightMenu.Size = new System.Drawing.Size(153, 26);
             this.ViewThemeLightMenu.Text = "Light";
             this.ViewThemeLightMenu.Click += new System.EventHandler(this.ViewThemeLightMenu_Click);
             // 
             // ViewThemeDarkMenu
             // 
             this.ViewThemeDarkMenu.Name = "ViewThemeDarkMenu";
-            this.ViewThemeDarkMenu.Size = new System.Drawing.Size(123, 22);
+            this.ViewThemeDarkMenu.Size = new System.Drawing.Size(153, 26);
             this.ViewThemeDarkMenu.Text = "Dark";
             this.ViewThemeDarkMenu.Click += new System.EventHandler(this.ViewThemeDarkMenu_Click);
             // 
@@ -519,48 +523,48 @@
             this.ToolsJenkIndMenu,
             this.ToolsAssetConverterMenu});
             this.ToolsMenu.Name = "ToolsMenu";
-            this.ToolsMenu.Size = new System.Drawing.Size(46, 20);
+            this.ToolsMenu.Size = new System.Drawing.Size(58, 24);
             this.ToolsMenu.Text = "Tools";
             // 
             // ToolsBinSearchMenu
             // 
             this.ToolsBinSearchMenu.Name = "ToolsBinSearchMenu";
-            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(201, 26);
             this.ToolsBinSearchMenu.Text = "Binary Search...";
             this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
             // 
             // ToolsAudioExplorerMenu
             // 
             this.ToolsAudioExplorerMenu.Name = "ToolsAudioExplorerMenu";
-            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(201, 26);
             this.ToolsAudioExplorerMenu.Text = "Audio Explorer";
             this.ToolsAudioExplorerMenu.Click += new System.EventHandler(this.ToolsAudioExplorerMenu_Click);
             // 
             // ToolsRpfBrowserMenu
             // 
             this.ToolsRpfBrowserMenu.Name = "ToolsRpfBrowserMenu";
-            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(201, 26);
             this.ToolsRpfBrowserMenu.Text = "Old RPF Browser";
             this.ToolsRpfBrowserMenu.Click += new System.EventHandler(this.ToolsRpfBrowserMenu_Click);
             // 
             // ToolsJenkGenMenu
             // 
             this.ToolsJenkGenMenu.Name = "ToolsJenkGenMenu";
-            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(201, 26);
             this.ToolsJenkGenMenu.Text = "JenkGen";
             this.ToolsJenkGenMenu.Click += new System.EventHandler(this.ToolsJenkGenMenu_Click);
             // 
             // ToolsJenkIndMenu
             // 
             this.ToolsJenkIndMenu.Name = "ToolsJenkIndMenu";
-            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(201, 26);
             this.ToolsJenkIndMenu.Text = "JenkInd";
             this.ToolsJenkIndMenu.Click += new System.EventHandler(this.ToolsJenkIndMenu_Click);
             // 
             // ToolsAssetConverterMenu
             // 
             this.ToolsAssetConverterMenu.Name = "ToolsAssetConverterMenu";
-            this.ToolsAssetConverterMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsAssetConverterMenu.Size = new System.Drawing.Size(201, 26);
             this.ToolsAssetConverterMenu.Text = "Asset Converter";
             this.ToolsAssetConverterMenu.Click += new System.EventHandler(this.ToolsAssetConverterMenu_Click);
             // 
@@ -570,13 +574,13 @@
             this.OptionsStartInEditModeMenu,
             this.OptionsStartInFolderMenu});
             this.OptionsMenu.Name = "OptionsMenu";
-            this.OptionsMenu.Size = new System.Drawing.Size(61, 20);
+            this.OptionsMenu.Size = new System.Drawing.Size(75, 24);
             this.OptionsMenu.Text = "Options";
             // 
             // OptionsStartInEditModeMenu
             // 
             this.OptionsStartInEditModeMenu.Name = "OptionsStartInEditModeMenu";
-            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(212, 26);
             this.OptionsStartInEditModeMenu.Text = "Start in Edit mode";
             this.OptionsStartInEditModeMenu.Click += new System.EventHandler(this.OptionsStartInEditModeMenu_Click);
             // 
@@ -588,38 +592,39 @@
             this.OptionsStartInFolderDefaultMenu,
             this.OptionsStartInFolderCurrentMenu});
             this.OptionsStartInFolderMenu.Name = "OptionsStartInFolderMenu";
-            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(212, 26);
             this.OptionsStartInFolderMenu.Text = "Start in Folder";
             // 
             // OptionsStartInFolderValueMenu
             // 
             this.OptionsStartInFolderValueMenu.Enabled = false;
             this.OptionsStartInFolderValueMenu.Name = "OptionsStartInFolderValueMenu";
-            this.OptionsStartInFolderValueMenu.Size = new System.Drawing.Size(183, 22);
+            this.OptionsStartInFolderValueMenu.Size = new System.Drawing.Size(229, 26);
             this.OptionsStartInFolderValueMenu.Text = "(Default)";
             // 
             // toolStripSeparator12
             // 
             this.toolStripSeparator12.Name = "toolStripSeparator12";
-            this.toolStripSeparator12.Size = new System.Drawing.Size(180, 6);
+            this.toolStripSeparator12.Size = new System.Drawing.Size(226, 6);
             // 
             // OptionsStartInFolderDefaultMenu
             // 
             this.OptionsStartInFolderDefaultMenu.Name = "OptionsStartInFolderDefaultMenu";
-            this.OptionsStartInFolderDefaultMenu.Size = new System.Drawing.Size(183, 22);
+            this.OptionsStartInFolderDefaultMenu.Size = new System.Drawing.Size(229, 26);
             this.OptionsStartInFolderDefaultMenu.Text = "Set to Default";
             this.OptionsStartInFolderDefaultMenu.Click += new System.EventHandler(this.OptionsStartInFolderDefaultMenu_Click);
             // 
             // OptionsStartInFolderCurrentMenu
             // 
             this.OptionsStartInFolderCurrentMenu.Name = "OptionsStartInFolderCurrentMenu";
-            this.OptionsStartInFolderCurrentMenu.Size = new System.Drawing.Size(183, 22);
+            this.OptionsStartInFolderCurrentMenu.Size = new System.Drawing.Size(229, 26);
             this.OptionsStartInFolderCurrentMenu.Text = "Set to Current Folder";
             this.OptionsStartInFolderCurrentMenu.Click += new System.EventHandler(this.OptionsStartInFolderCurrentMenu_Click);
             // 
             // MainToolbar
             // 
             this.MainToolbar.CanOverflow = false;
+            this.MainToolbar.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.MainToolbar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.BackButton,
             this.ForwardButton,
@@ -632,9 +637,9 @@
             this.toolStripSeparator1,
             this.SearchTextBox,
             this.SearchButton});
-            this.MainToolbar.Location = new System.Drawing.Point(0, 24);
+            this.MainToolbar.Location = new System.Drawing.Point(0, 28);
             this.MainToolbar.Name = "MainToolbar";
-            this.MainToolbar.Size = new System.Drawing.Size(876, 25);
+            this.MainToolbar.Size = new System.Drawing.Size(1168, 27);
             this.MainToolbar.TabIndex = 1;
             this.MainToolbar.Text = "Main Toolbar";
             // 
@@ -647,14 +652,14 @@
             this.BackButton.Image = ((System.Drawing.Image)(resources.GetObject("BackButton.Image")));
             this.BackButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.BackButton.Name = "BackButton";
-            this.BackButton.Size = new System.Drawing.Size(32, 22);
+            this.BackButton.Size = new System.Drawing.Size(39, 24);
             this.BackButton.Text = "Back";
             this.BackButton.ButtonClick += new System.EventHandler(this.BackButton_ButtonClick);
             // 
             // BackListButton
             // 
             this.BackListButton.Name = "BackListButton";
-            this.BackListButton.Size = new System.Drawing.Size(100, 22);
+            this.BackListButton.Size = new System.Drawing.Size(124, 26);
             this.BackListButton.Text = "[List]";
             this.BackListButton.Click += new System.EventHandler(this.BackListButton_Click);
             // 
@@ -667,14 +672,14 @@
             this.ForwardButton.Image = ((System.Drawing.Image)(resources.GetObject("ForwardButton.Image")));
             this.ForwardButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ForwardButton.Name = "ForwardButton";
-            this.ForwardButton.Size = new System.Drawing.Size(32, 22);
+            this.ForwardButton.Size = new System.Drawing.Size(39, 24);
             this.ForwardButton.Text = "Forward";
             this.ForwardButton.ButtonClick += new System.EventHandler(this.ForwardButton_ButtonClick);
             // 
             // ForwardListButton
             // 
             this.ForwardListButton.Name = "ForwardListButton";
-            this.ForwardListButton.Size = new System.Drawing.Size(100, 22);
+            this.ForwardListButton.Size = new System.Drawing.Size(124, 26);
             this.ForwardListButton.Text = "[List]";
             this.ForwardListButton.Click += new System.EventHandler(this.ForwardListButton_Click);
             // 
@@ -687,14 +692,14 @@
             this.UpButton.Image = ((System.Drawing.Image)(resources.GetObject("UpButton.Image")));
             this.UpButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.UpButton.Name = "UpButton";
-            this.UpButton.Size = new System.Drawing.Size(32, 22);
+            this.UpButton.Size = new System.Drawing.Size(39, 24);
             this.UpButton.Text = "Up";
             this.UpButton.ButtonClick += new System.EventHandler(this.UpButton_ButtonClick);
             // 
             // UpListButton
             // 
             this.UpListButton.Name = "UpListButton";
-            this.UpListButton.Size = new System.Drawing.Size(100, 22);
+            this.UpListButton.Size = new System.Drawing.Size(124, 26);
             this.UpListButton.Text = "[List]";
             this.UpListButton.Click += new System.EventHandler(this.UpListButton_Click);
             // 
@@ -702,7 +707,7 @@
             // 
             this.LocationTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.LocationTextBox.Name = "LocationTextBox";
-            this.LocationTextBox.Size = new System.Drawing.Size(423, 25);
+            this.LocationTextBox.Size = new System.Drawing.Size(632, 27);
             this.LocationTextBox.Enter += new System.EventHandler(this.LocationTextBox_Enter);
             this.LocationTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.LocationTextBox_KeyPress);
             // 
@@ -713,7 +718,7 @@
             this.GoButton.Image = ((System.Drawing.Image)(resources.GetObject("GoButton.Image")));
             this.GoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.GoButton.Name = "GoButton";
-            this.GoButton.Size = new System.Drawing.Size(23, 22);
+            this.GoButton.Size = new System.Drawing.Size(29, 24);
             this.GoButton.Text = "Go";
             this.GoButton.Click += new System.EventHandler(this.GoButton_Click);
             // 
@@ -724,14 +729,14 @@
             this.RefreshButton.Image = ((System.Drawing.Image)(resources.GetObject("RefreshButton.Image")));
             this.RefreshButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.RefreshButton.Name = "RefreshButton";
-            this.RefreshButton.Size = new System.Drawing.Size(23, 22);
+            this.RefreshButton.Size = new System.Drawing.Size(29, 24);
             this.RefreshButton.Text = "Refresh All";
             this.RefreshButton.Click += new System.EventHandler(this.RefreshButton_Click);
             // 
             // toolStripSeparator10
             // 
             this.toolStripSeparator10.Name = "toolStripSeparator10";
-            this.toolStripSeparator10.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator10.Size = new System.Drawing.Size(6, 27);
             // 
             // EditModeButton
             // 
@@ -740,20 +745,20 @@
             this.EditModeButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
             this.EditModeButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.EditModeButton.Name = "EditModeButton";
-            this.EditModeButton.Size = new System.Drawing.Size(81, 22);
+            this.EditModeButton.Size = new System.Drawing.Size(98, 24);
             this.EditModeButton.Text = "Edit mode";
             this.EditModeButton.Click += new System.EventHandler(this.EditModeButton_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 27);
             // 
             // SearchTextBox
             // 
             this.SearchTextBox.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.SearchTextBox.Name = "SearchTextBox";
-            this.SearchTextBox.Size = new System.Drawing.Size(140, 25);
+            this.SearchTextBox.Size = new System.Drawing.Size(185, 27);
             this.SearchTextBox.Enter += new System.EventHandler(this.SearchTextBox_Enter);
             this.SearchTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SearchTextBox_KeyPress);
             // 
@@ -768,7 +773,7 @@
             this.SearchButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.SearchButton.Margin = new System.Windows.Forms.Padding(0, 1, 1, 2);
             this.SearchButton.Name = "SearchButton";
-            this.SearchButton.Size = new System.Drawing.Size(32, 22);
+            this.SearchButton.Size = new System.Drawing.Size(39, 24);
             this.SearchButton.Text = "Global Search";
             this.SearchButton.ButtonClick += new System.EventHandler(this.SearchButton_ButtonClick);
             // 
@@ -778,7 +783,7 @@
             this.SearchGlobalButton.CheckState = System.Windows.Forms.CheckState.Checked;
             this.SearchGlobalButton.Image = ((System.Drawing.Image)(resources.GetObject("SearchGlobalButton.Image")));
             this.SearchGlobalButton.Name = "SearchGlobalButton";
-            this.SearchGlobalButton.Size = new System.Drawing.Size(146, 22);
+            this.SearchGlobalButton.Size = new System.Drawing.Size(184, 26);
             this.SearchGlobalButton.Text = "Global Search";
             this.SearchGlobalButton.Click += new System.EventHandler(this.SearchGlobalButton_Click);
             // 
@@ -786,17 +791,19 @@
             // 
             this.SearchFilterButton.Image = ((System.Drawing.Image)(resources.GetObject("SearchFilterButton.Image")));
             this.SearchFilterButton.Name = "SearchFilterButton";
-            this.SearchFilterButton.Size = new System.Drawing.Size(146, 22);
+            this.SearchFilterButton.Size = new System.Drawing.Size(184, 26);
             this.SearchFilterButton.Text = "Filter";
             this.SearchFilterButton.Click += new System.EventHandler(this.SearchFilterButton_Click);
             // 
             // MainStatusBar
             // 
+            this.MainStatusBar.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.MainStatusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.StatusLabel});
-            this.MainStatusBar.Location = new System.Drawing.Point(0, 565);
+            this.MainStatusBar.Location = new System.Drawing.Point(0, 696);
             this.MainStatusBar.Name = "MainStatusBar";
-            this.MainStatusBar.Size = new System.Drawing.Size(876, 22);
+            this.MainStatusBar.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
+            this.MainStatusBar.Size = new System.Drawing.Size(1168, 26);
             this.MainStatusBar.TabIndex = 2;
             this.MainStatusBar.Text = "MainStatusBar";
             // 
@@ -804,7 +811,7 @@
             // 
             this.StatusLabel.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(861, 17);
+            this.StatusLabel.Size = new System.Drawing.Size(1148, 20);
             this.StatusLabel.Spring = true;
             this.StatusLabel.Text = "Initialising...";
             this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -842,7 +849,8 @@
             // 
             this.MainSplitContainer.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MainSplitContainer.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-            this.MainSplitContainer.Location = new System.Drawing.Point(0, 49);
+            this.MainSplitContainer.Location = new System.Drawing.Point(0, 55);
+            this.MainSplitContainer.Margin = new System.Windows.Forms.Padding(4);
             this.MainSplitContainer.Name = "MainSplitContainer";
             // 
             // MainSplitContainer.Panel1
@@ -854,8 +862,9 @@
             this.MainSplitContainer.Panel2.Controls.Add(this.MainListView);
             this.MainSplitContainer.Panel2.Controls.Add(this.EditModeBaseWarningPanel);
             this.MainSplitContainer.Panel2.Controls.Add(this.EditModeModsWarningPanel);
-            this.MainSplitContainer.Size = new System.Drawing.Size(876, 516);
+            this.MainSplitContainer.Size = new System.Drawing.Size(1168, 641);
             this.MainSplitContainer.SplitterDistance = 309;
+            this.MainSplitContainer.SplitterWidth = 5;
             this.MainSplitContainer.TabIndex = 3;
             // 
             // MainTreeView
@@ -869,12 +878,13 @@
             this.MainTreeView.ImageIndex = 0;
             this.MainTreeView.ImageList = this.FileImageList16;
             this.MainTreeView.ItemHeight = 20;
-            this.MainTreeView.Location = new System.Drawing.Point(3, 3);
+            this.MainTreeView.Location = new System.Drawing.Point(4, 4);
+            this.MainTreeView.Margin = new System.Windows.Forms.Padding(4);
             this.MainTreeView.Name = "MainTreeView";
             this.MainTreeView.SelectedImageIndex = 0;
             this.MainTreeView.ShowLines = false;
             this.MainTreeView.ShowNodeToolTips = true;
-            this.MainTreeView.Size = new System.Drawing.Size(305, 513);
+            this.MainTreeView.Size = new System.Drawing.Size(304, 637);
             this.MainTreeView.TabIndex = 0;
             this.MainTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.MainTreeView_AfterSelect);
             this.MainTreeView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.MainTreeView_MouseUp);
@@ -894,10 +904,11 @@
             this.MainPathColumnHeader});
             this.MainListView.FullRowSelect = true;
             this.MainListView.HideSelection = false;
-            this.MainListView.Location = new System.Drawing.Point(1, 3);
+            this.MainListView.Location = new System.Drawing.Point(1, 4);
+            this.MainListView.Margin = new System.Windows.Forms.Padding(4);
             this.MainListView.Name = "MainListView";
             this.MainListView.ShowItemToolTips = true;
-            this.MainListView.Size = new System.Drawing.Size(559, 513);
+            this.MainListView.Size = new System.Drawing.Size(843, 637);
             this.MainListView.SmallImageList = this.FileImageList16;
             this.MainListView.TabIndex = 0;
             this.MainListView.UseCompatibleStateImageBehavior = false;
@@ -948,17 +959,31 @@
             this.EditModeBaseWarningPanel.Controls.Add(this.CopyToModsFolderButton);
             this.EditModeBaseWarningPanel.Controls.Add(this.pictureBox1);
             this.EditModeBaseWarningPanel.Controls.Add(this.label1);
-            this.EditModeBaseWarningPanel.Location = new System.Drawing.Point(1, 3);
+            this.EditModeBaseWarningPanel.Location = new System.Drawing.Point(1, 4);
+            this.EditModeBaseWarningPanel.Margin = new System.Windows.Forms.Padding(4);
             this.EditModeBaseWarningPanel.Name = "EditModeBaseWarningPanel";
-            this.EditModeBaseWarningPanel.Size = new System.Drawing.Size(559, 24);
+            this.EditModeBaseWarningPanel.Size = new System.Drawing.Size(843, 30);
             this.EditModeBaseWarningPanel.TabIndex = 1;
+            // 
+            // CopyToModsFolderButton
+            // 
+            this.CopyToModsFolderButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.CopyToModsFolderButton.Location = new System.Drawing.Point(658, 1);
+            this.CopyToModsFolderButton.Margin = new System.Windows.Forms.Padding(4);
+            this.CopyToModsFolderButton.Name = "CopyToModsFolderButton";
+            this.CopyToModsFolderButton.Size = new System.Drawing.Size(147, 27);
+            this.CopyToModsFolderButton.TabIndex = 2;
+            this.CopyToModsFolderButton.Text = "Copy to mods folder";
+            this.CopyToModsFolderButton.UseVisualStyleBackColor = true;
+            this.CopyToModsFolderButton.Click += new System.EventHandler(this.CopyToModsFolderButton_Click);
             // 
             // pictureBox1
             // 
             this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
-            this.pictureBox1.Location = new System.Drawing.Point(6, 3);
+            this.pictureBox1.Location = new System.Drawing.Point(8, 4);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox1.Size = new System.Drawing.Size(21, 20);
             this.pictureBox1.TabIndex = 1;
             this.pictureBox1.TabStop = false;
             // 
@@ -968,9 +993,10 @@
             this.label1.BackColor = System.Drawing.Color.Transparent;
             this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(25, 5);
+            this.label1.Location = new System.Drawing.Point(33, 6);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(285, 13);
+            this.label1.Size = new System.Drawing.Size(366, 17);
             this.label1.TabIndex = 0;
             this.label1.Text = "Warning: You are directly editing base game files";
             // 
@@ -981,17 +1007,19 @@
             this.EditModeModsWarningPanel.BackColor = System.Drawing.Color.DarkGreen;
             this.EditModeModsWarningPanel.Controls.Add(this.pictureBox2);
             this.EditModeModsWarningPanel.Controls.Add(this.label2);
-            this.EditModeModsWarningPanel.Location = new System.Drawing.Point(1, 28);
+            this.EditModeModsWarningPanel.Location = new System.Drawing.Point(1, 34);
+            this.EditModeModsWarningPanel.Margin = new System.Windows.Forms.Padding(4);
             this.EditModeModsWarningPanel.Name = "EditModeModsWarningPanel";
-            this.EditModeModsWarningPanel.Size = new System.Drawing.Size(559, 24);
+            this.EditModeModsWarningPanel.Size = new System.Drawing.Size(843, 30);
             this.EditModeModsWarningPanel.TabIndex = 2;
             // 
             // pictureBox2
             // 
             this.pictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox2.Image")));
-            this.pictureBox2.Location = new System.Drawing.Point(6, 3);
+            this.pictureBox2.Location = new System.Drawing.Point(8, 4);
+            this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(16, 16);
+            this.pictureBox2.Size = new System.Drawing.Size(21, 20);
             this.pictureBox2.TabIndex = 1;
             this.pictureBox2.TabStop = false;
             // 
@@ -1001,14 +1029,16 @@
             this.label2.BackColor = System.Drawing.Color.Transparent;
             this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(25, 5);
+            this.label2.Location = new System.Drawing.Point(33, 6);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(225, 13);
+            this.label2.Size = new System.Drawing.Size(290, 17);
             this.label2.TabIndex = 0;
             this.label2.Text = "You are editing files in the mods folder";
             // 
             // ListContextMenu
             // 
+            this.ListContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.ListContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ListContextViewMenu,
             this.ListContextViewHexMenu,
@@ -1017,6 +1047,9 @@
             this.ListContextExtractRawMenu,
             this.ListContextExtractUncompressedMenu,
             this.ListContextExtractAllMenu,
+            this.RpfSeparator,
+            this.ListContextExtractRPFMenu,
+            this.ListContextConvertRPF,
             this.toolStripSeparator5,
             this.ListContextNewMenu,
             this.ListContextImportFbxMenu,
@@ -1037,14 +1070,14 @@
             this.ListContextDefragmentSeparator,
             this.ListContextSelectAllMenu});
             this.ListContextMenu.Name = "MainContextMenu";
-            this.ListContextMenu.Size = new System.Drawing.Size(209, 464);
+            this.ListContextMenu.Size = new System.Drawing.Size(249, 626);
             // 
             // ListContextViewMenu
             // 
             this.ListContextViewMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextViewMenu.Image")));
             this.ListContextViewMenu.Name = "ListContextViewMenu";
             this.ListContextViewMenu.ShortcutKeyDisplayString = "Ctrl+P";
-            this.ListContextViewMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextViewMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextViewMenu.Text = "View...";
             this.ListContextViewMenu.Click += new System.EventHandler(this.ListContextViewMenu_Click);
             // 
@@ -1053,21 +1086,21 @@
             this.ListContextViewHexMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextViewHexMenu.Image")));
             this.ListContextViewHexMenu.Name = "ListContextViewHexMenu";
             this.ListContextViewHexMenu.ShortcutKeyDisplayString = "Ctrl+H";
-            this.ListContextViewHexMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextViewHexMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextViewHexMenu.Text = "View Hex...";
             this.ListContextViewHexMenu.Click += new System.EventHandler(this.ListContextViewHexMenu_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(205, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(245, 6);
             // 
             // ListContextExportXmlMenu
             // 
             this.ListContextExportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextExportXmlMenu.Image")));
             this.ListContextExportXmlMenu.Name = "ListContextExportXmlMenu";
             this.ListContextExportXmlMenu.ShortcutKeyDisplayString = "Ctrl+S";
-            this.ListContextExportXmlMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextExportXmlMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextExportXmlMenu.Text = "Export XML...";
             this.ListContextExportXmlMenu.Click += new System.EventHandler(this.ListContextExportXmlMenu_Click);
             // 
@@ -1076,14 +1109,14 @@
             this.ListContextExtractRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextExtractRawMenu.Image")));
             this.ListContextExtractRawMenu.Name = "ListContextExtractRawMenu";
             this.ListContextExtractRawMenu.ShortcutKeyDisplayString = "Ctrl+E";
-            this.ListContextExtractRawMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextExtractRawMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextExtractRawMenu.Text = "Extract Raw...";
             this.ListContextExtractRawMenu.Click += new System.EventHandler(this.ListContextExtractRawMenu_Click);
             // 
             // ListContextExtractUncompressedMenu
             // 
             this.ListContextExtractUncompressedMenu.Name = "ListContextExtractUncompressedMenu";
-            this.ListContextExtractUncompressedMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextExtractUncompressedMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextExtractUncompressedMenu.Text = "Extract Uncompressed...";
             this.ListContextExtractUncompressedMenu.Click += new System.EventHandler(this.ListContextExtractUncompressedMenu_Click);
             // 
@@ -1091,14 +1124,33 @@
             // 
             this.ListContextExtractAllMenu.Name = "ListContextExtractAllMenu";
             this.ListContextExtractAllMenu.ShortcutKeyDisplayString = "Ctrl+Shift+E";
-            this.ListContextExtractAllMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextExtractAllMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextExtractAllMenu.Text = "Extract All...";
             this.ListContextExtractAllMenu.Click += new System.EventHandler(this.ListContextExtractAllMenu_Click);
+            // 
+            // RpfSeparator
+            // 
+            this.RpfSeparator.Name = "RpfSeparator";
+            this.RpfSeparator.Size = new System.Drawing.Size(245, 6);
+            // 
+            // ListContextExtractRPFMenu
+            // 
+            this.ListContextExtractRPFMenu.Name = "ListContextExtractRPFMenu";
+            this.ListContextExtractRPFMenu.Size = new System.Drawing.Size(248, 26);
+            this.ListContextExtractRPFMenu.Text = "Extract RPF Content...";
+            this.ListContextExtractRPFMenu.Click += new System.EventHandler(this.ListContextExtractRPFMenu_Click);
+            // 
+            // ListContextConvertRPF
+            // 
+            this.ListContextConvertRPF.Name = "ListContextConvertRPF";
+            this.ListContextConvertRPF.Size = new System.Drawing.Size(248, 26);
+            this.ListContextConvertRPF.Text = "Convert RPF...";
+            this.ListContextConvertRPF.Click += new System.EventHandler(this.ListContextConvertRPF_Click);
             // 
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(205, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(245, 6);
             // 
             // ListContextNewMenu
             // 
@@ -1108,39 +1160,39 @@
             this.toolStripSeparator13,
             this.ListContextNewYtdFileMenu});
             this.ListContextNewMenu.Name = "ListContextNewMenu";
-            this.ListContextNewMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextNewMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextNewMenu.Text = "New";
             // 
             // ListContextNewFolderMenu
             // 
             this.ListContextNewFolderMenu.Name = "ListContextNewFolderMenu";
-            this.ListContextNewFolderMenu.Size = new System.Drawing.Size(146, 22);
+            this.ListContextNewFolderMenu.Size = new System.Drawing.Size(178, 26);
             this.ListContextNewFolderMenu.Text = "Folder...";
             this.ListContextNewFolderMenu.Click += new System.EventHandler(this.ListContextNewFolderMenu_Click);
             // 
             // ListContextNewRpfArchiveMenu
             // 
             this.ListContextNewRpfArchiveMenu.Name = "ListContextNewRpfArchiveMenu";
-            this.ListContextNewRpfArchiveMenu.Size = new System.Drawing.Size(146, 22);
+            this.ListContextNewRpfArchiveMenu.Size = new System.Drawing.Size(178, 26);
             this.ListContextNewRpfArchiveMenu.Text = "RPF Archive...";
             this.ListContextNewRpfArchiveMenu.Click += new System.EventHandler(this.ListContextNewRpfArchiveMenu_Click);
             // 
             // toolStripSeparator13
             // 
             this.toolStripSeparator13.Name = "toolStripSeparator13";
-            this.toolStripSeparator13.Size = new System.Drawing.Size(143, 6);
+            this.toolStripSeparator13.Size = new System.Drawing.Size(175, 6);
             // 
             // ListContextNewYtdFileMenu
             // 
             this.ListContextNewYtdFileMenu.Name = "ListContextNewYtdFileMenu";
-            this.ListContextNewYtdFileMenu.Size = new System.Drawing.Size(146, 22);
+            this.ListContextNewYtdFileMenu.Size = new System.Drawing.Size(178, 26);
             this.ListContextNewYtdFileMenu.Text = "YTD File...";
             this.ListContextNewYtdFileMenu.Click += new System.EventHandler(this.ListContextNewYtdFileMenu_Click);
             // 
             // ListContextImportFbxMenu
             // 
             this.ListContextImportFbxMenu.Name = "ListContextImportFbxMenu";
-            this.ListContextImportFbxMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextImportFbxMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextImportFbxMenu.Text = "Import FBX...";
             this.ListContextImportFbxMenu.Click += new System.EventHandler(this.ListContextImportFbxMenu_Click);
             // 
@@ -1149,7 +1201,7 @@
             this.ListContextImportXmlMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextImportXmlMenu.Image")));
             this.ListContextImportXmlMenu.Name = "ListContextImportXmlMenu";
             this.ListContextImportXmlMenu.ShortcutKeyDisplayString = "Shift+Ins";
-            this.ListContextImportXmlMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextImportXmlMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextImportXmlMenu.Text = "Import XML...";
             this.ListContextImportXmlMenu.Click += new System.EventHandler(this.ListContextImportXmlMenu_Click);
             // 
@@ -1158,21 +1210,21 @@
             this.ListContextImportRawMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextImportRawMenu.Image")));
             this.ListContextImportRawMenu.Name = "ListContextImportRawMenu";
             this.ListContextImportRawMenu.ShortcutKeyDisplayString = "Ins";
-            this.ListContextImportRawMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextImportRawMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextImportRawMenu.Text = "Import Raw...";
             this.ListContextImportRawMenu.Click += new System.EventHandler(this.ListContextImportRawMenu_Click);
             // 
             // ListContextImportSeparator
             // 
             this.ListContextImportSeparator.Name = "ListContextImportSeparator";
-            this.ListContextImportSeparator.Size = new System.Drawing.Size(205, 6);
+            this.ListContextImportSeparator.Size = new System.Drawing.Size(245, 6);
             // 
             // ListContextCopyMenu
             // 
             this.ListContextCopyMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextCopyMenu.Image")));
             this.ListContextCopyMenu.Name = "ListContextCopyMenu";
             this.ListContextCopyMenu.ShortcutKeyDisplayString = "Ctrl+C";
-            this.ListContextCopyMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextCopyMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextCopyMenu.Text = "Copy";
             this.ListContextCopyMenu.Click += new System.EventHandler(this.ListContextCopyMenu_Click);
             // 
@@ -1180,14 +1232,14 @@
             // 
             this.ListContextCopyPathMenu.Name = "ListContextCopyPathMenu";
             this.ListContextCopyPathMenu.ShortcutKeyDisplayString = "Ctrl+Shift+C";
-            this.ListContextCopyPathMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextCopyPathMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextCopyPathMenu.Text = "Copy Path";
             this.ListContextCopyPathMenu.Click += new System.EventHandler(this.ListContextCopyPathMenu_Click);
             // 
             // ListContextCopyFileListMenu
             // 
             this.ListContextCopyFileListMenu.Name = "ListContextCopyFileListMenu";
-            this.ListContextCopyFileListMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextCopyFileListMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextCopyFileListMenu.Text = "Copy File List";
             this.ListContextCopyFileListMenu.Click += new System.EventHandler(this.ListContextCopyFileListMenu_Click);
             // 
@@ -1195,33 +1247,33 @@
             // 
             this.ListContextPasteMenu.Name = "ListContextPasteMenu";
             this.ListContextPasteMenu.ShortcutKeyDisplayString = "Ctrl+V";
-            this.ListContextPasteMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextPasteMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextPasteMenu.Text = "Paste";
             this.ListContextPasteMenu.Click += new System.EventHandler(this.ListContextPasteMenu_Click);
             // 
             // toolStripSeparator6
             // 
             this.toolStripSeparator6.Name = "toolStripSeparator6";
-            this.toolStripSeparator6.Size = new System.Drawing.Size(205, 6);
+            this.toolStripSeparator6.Size = new System.Drawing.Size(245, 6);
             // 
             // ListContextOpenFileLocationMenu
             // 
             this.ListContextOpenFileLocationMenu.Name = "ListContextOpenFileLocationMenu";
-            this.ListContextOpenFileLocationMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextOpenFileLocationMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextOpenFileLocationMenu.Text = "Open File Location";
             this.ListContextOpenFileLocationMenu.Click += new System.EventHandler(this.ListContextOpenFileLocationMenu_Click);
             // 
             // ListContextOpenFileLocationSeparator
             // 
             this.ListContextOpenFileLocationSeparator.Name = "ListContextOpenFileLocationSeparator";
-            this.ListContextOpenFileLocationSeparator.Size = new System.Drawing.Size(205, 6);
+            this.ListContextOpenFileLocationSeparator.Size = new System.Drawing.Size(245, 6);
             // 
             // ListContextRenameMenu
             // 
             this.ListContextRenameMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextRenameMenu.Image")));
             this.ListContextRenameMenu.Name = "ListContextRenameMenu";
             this.ListContextRenameMenu.ShortcutKeyDisplayString = "F2";
-            this.ListContextRenameMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextRenameMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextRenameMenu.Text = "Rename";
             this.ListContextRenameMenu.Click += new System.EventHandler(this.ListContextRenameMenu_Click);
             // 
@@ -1230,37 +1282,38 @@
             this.ListContextDeleteMenu.Image = ((System.Drawing.Image)(resources.GetObject("ListContextDeleteMenu.Image")));
             this.ListContextDeleteMenu.Name = "ListContextDeleteMenu";
             this.ListContextDeleteMenu.ShortcutKeyDisplayString = "Shift+Del";
-            this.ListContextDeleteMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextDeleteMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextDeleteMenu.Text = "Delete";
             this.ListContextDeleteMenu.Click += new System.EventHandler(this.ListContextDeleteMenu_Click);
             // 
             // ListContextEditSeparator
             // 
             this.ListContextEditSeparator.Name = "ListContextEditSeparator";
-            this.ListContextEditSeparator.Size = new System.Drawing.Size(205, 6);
+            this.ListContextEditSeparator.Size = new System.Drawing.Size(245, 6);
             // 
             // ListContextDefragmentMenu
             // 
             this.ListContextDefragmentMenu.Name = "ListContextDefragmentMenu";
-            this.ListContextDefragmentMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextDefragmentMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextDefragmentMenu.Text = "Defragment Archive...";
             this.ListContextDefragmentMenu.Click += new System.EventHandler(this.ListContextDefragmentMenu_Click);
             // 
             // ListContextDefragmentSeparator
             // 
             this.ListContextDefragmentSeparator.Name = "ListContextDefragmentSeparator";
-            this.ListContextDefragmentSeparator.Size = new System.Drawing.Size(205, 6);
+            this.ListContextDefragmentSeparator.Size = new System.Drawing.Size(245, 6);
             // 
             // ListContextSelectAllMenu
             // 
             this.ListContextSelectAllMenu.Name = "ListContextSelectAllMenu";
             this.ListContextSelectAllMenu.ShortcutKeyDisplayString = "Ctrl+A";
-            this.ListContextSelectAllMenu.Size = new System.Drawing.Size(208, 22);
+            this.ListContextSelectAllMenu.Size = new System.Drawing.Size(248, 26);
             this.ListContextSelectAllMenu.Text = "Select All";
             this.ListContextSelectAllMenu.Click += new System.EventHandler(this.ListContextSelectAllMenu_Click);
             // 
             // TreeContextMenu
             // 
+            this.TreeContextMenu.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.TreeContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.TreeContextCopyPathMenu,
             this.TreeContextWinExplorerMenu,
@@ -1271,13 +1324,13 @@
             this.TreeContextCloseFolderSeparator,
             this.TreeContextCloseFolderMenu});
             this.TreeContextMenu.Name = "MainContextMenu";
-            this.TreeContextMenu.Size = new System.Drawing.Size(215, 148);
+            this.TreeContextMenu.Size = new System.Drawing.Size(259, 172);
             // 
             // TreeContextCopyPathMenu
             // 
             this.TreeContextCopyPathMenu.Image = ((System.Drawing.Image)(resources.GetObject("TreeContextCopyPathMenu.Image")));
             this.TreeContextCopyPathMenu.Name = "TreeContextCopyPathMenu";
-            this.TreeContextCopyPathMenu.Size = new System.Drawing.Size(214, 22);
+            this.TreeContextCopyPathMenu.Size = new System.Drawing.Size(258, 26);
             this.TreeContextCopyPathMenu.Text = "Copy Path";
             this.TreeContextCopyPathMenu.Click += new System.EventHandler(this.TreeContextCopyPathMenu_Click);
             // 
@@ -1285,45 +1338,45 @@
             // 
             this.TreeContextWinExplorerMenu.Image = ((System.Drawing.Image)(resources.GetObject("TreeContextWinExplorerMenu.Image")));
             this.TreeContextWinExplorerMenu.Name = "TreeContextWinExplorerMenu";
-            this.TreeContextWinExplorerMenu.Size = new System.Drawing.Size(214, 22);
+            this.TreeContextWinExplorerMenu.Size = new System.Drawing.Size(258, 26);
             this.TreeContextWinExplorerMenu.Text = "Show in Windows Explorer";
             this.TreeContextWinExplorerMenu.Click += new System.EventHandler(this.TreeContextWinExplorerMenu_Click);
             // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
-            this.toolStripSeparator8.Size = new System.Drawing.Size(211, 6);
+            this.toolStripSeparator8.Size = new System.Drawing.Size(255, 6);
             // 
             // TreeContextExpandMenu
             // 
             this.TreeContextExpandMenu.Name = "TreeContextExpandMenu";
-            this.TreeContextExpandMenu.Size = new System.Drawing.Size(214, 22);
+            this.TreeContextExpandMenu.Size = new System.Drawing.Size(258, 26);
             this.TreeContextExpandMenu.Text = "Expand";
             this.TreeContextExpandMenu.Click += new System.EventHandler(this.TreeContextExpandMenu_Click);
             // 
             // TreeContextCollapseMenu
             // 
             this.TreeContextCollapseMenu.Name = "TreeContextCollapseMenu";
-            this.TreeContextCollapseMenu.Size = new System.Drawing.Size(214, 22);
+            this.TreeContextCollapseMenu.Size = new System.Drawing.Size(258, 26);
             this.TreeContextCollapseMenu.Text = "Collapse";
             this.TreeContextCollapseMenu.Click += new System.EventHandler(this.TreeContextCollapseMenu_Click);
             // 
             // TreeContextCollapseAllMenu
             // 
             this.TreeContextCollapseAllMenu.Name = "TreeContextCollapseAllMenu";
-            this.TreeContextCollapseAllMenu.Size = new System.Drawing.Size(214, 22);
+            this.TreeContextCollapseAllMenu.Size = new System.Drawing.Size(258, 26);
             this.TreeContextCollapseAllMenu.Text = "Collapse All";
             this.TreeContextCollapseAllMenu.Click += new System.EventHandler(this.TreeContextCollapseAllMenu_Click);
             // 
             // TreeContextCloseFolderSeparator
             // 
             this.TreeContextCloseFolderSeparator.Name = "TreeContextCloseFolderSeparator";
-            this.TreeContextCloseFolderSeparator.Size = new System.Drawing.Size(211, 6);
+            this.TreeContextCloseFolderSeparator.Size = new System.Drawing.Size(255, 6);
             // 
             // TreeContextCloseFolderMenu
             // 
             this.TreeContextCloseFolderMenu.Name = "TreeContextCloseFolderMenu";
-            this.TreeContextCloseFolderMenu.Size = new System.Drawing.Size(214, 22);
+            this.TreeContextCloseFolderMenu.Size = new System.Drawing.Size(258, 26);
             this.TreeContextCloseFolderMenu.Text = "Close Folder";
             this.TreeContextCloseFolderMenu.Click += new System.EventHandler(this.TreeContextCloseFolderMenu_Click);
             // 
@@ -1335,28 +1388,18 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
-            // CopyToModsFolderButton
-            // 
-            this.CopyToModsFolderButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.CopyToModsFolderButton.Location = new System.Drawing.Point(420, 1);
-            this.CopyToModsFolderButton.Name = "CopyToModsFolderButton";
-            this.CopyToModsFolderButton.Size = new System.Drawing.Size(110, 22);
-            this.CopyToModsFolderButton.TabIndex = 2;
-            this.CopyToModsFolderButton.Text = "Copy to mods folder";
-            this.CopyToModsFolderButton.UseVisualStyleBackColor = true;
-            this.CopyToModsFolderButton.Click += new System.EventHandler(this.CopyToModsFolderButton_Click);
-            // 
             // ExploreForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(876, 587);
+            this.ClientSize = new System.Drawing.Size(1168, 722);
             this.Controls.Add(this.MainSplitContainer);
             this.Controls.Add(this.MainStatusBar);
             this.Controls.Add(this.MainToolbar);
             this.Controls.Add(this.MainMenu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.MainMenu;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "ExploreForm";
             this.Text = "RPF Explorer - CodeWalker by dexyfex";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ExploreForm_FormClosed);
@@ -1422,6 +1465,7 @@
         private System.Windows.Forms.ToolStripMenuItem ListContextExportXmlMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextExtractAllMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextImportSeparator;
+        private System.Windows.Forms.ToolStripMenuItem ListContextExtractRPFMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextCopyPathMenu;
         private System.Windows.Forms.ToolStripSeparator ListContextEditSeparator;
         private System.Windows.Forms.ToolStripMenuItem ListContextSelectAllMenu;
@@ -1518,5 +1562,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
         private System.Windows.Forms.ToolStripMenuItem ToolsAssetConverterMenu;
         private System.Windows.Forms.Button CopyToModsFolderButton;
+        private System.Windows.Forms.ToolStripMenuItem ListContextConvertRPF;
+        private System.Windows.Forms.ToolStripSeparator RpfSeparator;
     }
 }
