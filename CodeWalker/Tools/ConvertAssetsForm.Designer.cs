@@ -41,6 +41,7 @@
             this.ProcessButton = new System.Windows.Forms.Button();
             this.LogTextBox = new System.Windows.Forms.TextBox();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.ConvertProgressBar = new System.Windows.Forms.ProgressBar();
             this.SuspendLayout();
             // 
             // label1
@@ -156,11 +157,23 @@
             this.LogTextBox.Size = new System.Drawing.Size(449, 108);
             this.LogTextBox.TabIndex = 10;
             // 
+            // ConvertProgressBar
+            // 
+            this.ConvertProgressBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConvertProgressBar.Location = new System.Drawing.Point(182, 126);
+            this.ConvertProgressBar.Maximum = 1000;
+            this.ConvertProgressBar.Name = "ConvertProgressBar";
+            this.ConvertProgressBar.Size = new System.Drawing.Size(359, 23);
+            this.ConvertProgressBar.TabIndex = 11;
+            this.ConvertProgressBar.Visible = false;
+            // 
             // ConvertAssetsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(634, 293);
+            this.Controls.Add(this.ConvertProgressBar);
             this.Controls.Add(this.LogTextBox);
             this.Controls.Add(this.ProcessButton);
             this.Controls.Add(this.OverwriteCheckbox);
@@ -194,5 +207,6 @@
         private System.Windows.Forms.Button ProcessButton;
         private System.Windows.Forms.TextBox LogTextBox;
         private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
+        private System.Windows.Forms.ProgressBar ConvertProgressBar;
     }
 }

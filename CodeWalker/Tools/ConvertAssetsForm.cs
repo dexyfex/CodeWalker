@@ -65,6 +65,13 @@ namespace CodeWalker.Tools
                     LogTextBox.ScrollToCaret();
                 }));
             });
+            converter.ProgressAction = new Action<float>((prog) =>
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    ConvertProgressBar.Value = Math.Max(0, Math.Min((int)(prog * 1000), 1000));
+                }));
+            });
             converter.StartStopAction = new Action<bool>((start) =>
             {
                 var enable = !start;
@@ -77,6 +84,7 @@ namespace CodeWalker.Tools
                     SubfoldersCheckbox.Enabled = enable;
                     OverwriteCheckbox.Enabled = enable;
                     ProcessButton.Enabled = enable;
+                    ConvertProgressBar.Visible = start;
                 }));
             });
             converter.Convert();

@@ -19,6 +19,7 @@ namespace CodeWalker.Core.Utils
         public Func<string, string, bool> QuestionFunc;//(message, title, result) called from the calling thread only
         public Action<string> ErrorAction;//this will be called from the calling thread only, for prechecks.
         public Action<string> LogAction;//this will be called from the conversion task thread during processing.
+        public Action<float> ProgressAction;//will be called for each file being converted
         public Action<bool> StartStopAction;//(bool start) called when actual conversion process begins/ends
 
 
@@ -98,6 +99,8 @@ namespace CodeWalker.Core.Utils
                 return;
             }
 
+            var singleFileProgress = 1.0f / allpaths.Length;
+            var curFile = 0;
 
             Task.Run(new Action(() =>
             {
@@ -112,6 +115,8 @@ namespace CodeWalker.Core.Utils
                 {
                     try
                     {
+                        curFile++;
+                        Progress(curFile * singleFileProgress);
                         var pathl = path.ToLowerInvariant();
                         var relpath = path.Substring(inputFolder.Length);
                         var outpath = outputFolder + relpath;
@@ -261,6 +266,10 @@ namespace CodeWalker.Core.Utils
         private void Log(string msg)
         {
             if (LogAction != null) LogAction(msg);
+        }
+        private void Progress(float prog)
+        {
+            if (ProgressAction != null) ProgressAction(prog);
         }
         private void StartStop(bool start)
         {
