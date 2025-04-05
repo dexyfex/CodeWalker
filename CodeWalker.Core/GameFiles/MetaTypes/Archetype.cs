@@ -738,7 +738,7 @@ namespace CodeWalker.GameFiles
                                 {
                                     var earch = rooment.Archetype;
                                     var pos = rooment._CEntityDef.position;
-                                    var ori = rooment.Orientation;
+                                    var ori = rooment._CEntityDef.rotation.ToQuaternion();
                                     Vector3 abmin = earch.BBMin * rooment.Scale; //entity box
                                     Vector3 abmax = earch.BBMax * rooment.Scale;
                                     c[0] = abmin;
