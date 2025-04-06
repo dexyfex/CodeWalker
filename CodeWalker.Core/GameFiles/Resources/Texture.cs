@@ -1104,7 +1104,7 @@ namespace CodeWalker.GameFiles
 
                 if (compressed && Height % 4 != 0)
                 {
-                    Height = Math.Max(1, (Height + 3) & ~3);
+                    Height = Math.Max(4, (Height + 3) & ~3);
                 }
 
                 int fullLength = 0;
