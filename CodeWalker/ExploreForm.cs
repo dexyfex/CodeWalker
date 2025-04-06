@@ -2029,6 +2029,7 @@ namespace CodeWalker
             bool canedit = false;
             bool candefrag = false;
             bool canpaste = EditMode && (CopiedFiles.Count > 0);
+            bool isrpf = false; // Added flag for RPF content extraction
 
             if (item != null)
             {
@@ -2041,8 +2042,9 @@ namespace CodeWalker
                 canview = CanViewFile(item);
                 canexportxml = CanExportXml(item);
                 canedit = EditMode && !issearch;
-                canextract = isfile || (isarchive && !isfilesys);
+                canextract = isfile || (isarchive && !isfilesys); // Can extract single file OR an RPF archive itself
                 candefrag = isarchive && canedit;
+                isrpf = isarchive && (MainListView.SelectedIndices.Count == 1); // Only enable for single RPF selection
             }
 
 
@@ -2050,9 +2052,12 @@ namespace CodeWalker
             ListContextViewHexMenu.Enabled = isfile;
 
             ListContextExportXmlMenu.Enabled = canexportxml;
-            ListContextExtractRawMenu.Enabled = canextract;
-            ListContextExtractUncompressedMenu.Enabled = isfile;
+            ListContextExtractRawMenu.Enabled = canextract; // Extract the selected item(s) (file or the .rpf itself)
+            ListContextExtractUncompressedMenu.Enabled = isfile; // Extract selected file uncompressed
 
+            RpfSeparator.Visible = isrpf;
+            ListContextExtractRPFMenu.Visible = isrpf; // Extract the *content* of the selected .rpf
+            ListContextConvertRPF.Visible = isrpf; // Convert the content of the selected .rpf
             ListContextNewMenu.Visible = cancreate;
             ListContextImportRawMenu.Visible = canimport;
             ListContextImportFbxMenu.Visible = canimport;
@@ -3671,7 +3676,7 @@ namespace CodeWalker
             }
         }
 
-
+        
 
         protected override void WndProc(ref Message m)
         {
@@ -4197,6 +4202,308 @@ namespace CodeWalker
             ExtractUncompressed();
         }
 
+
+        private void ListContextExtractRPFMenu_Click(object sender, EventArgs e)
+        {
+            ExtractRPF();
+        }
+
+        private void ExtractRPF()
+        {
+            if (MainListView.SelectedIndices.Count != 1) return;
+
+            var idx = MainListView.SelectedIndices[0];
+            if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
+
+            var selectedItem = CurrentFiles[idx];
+            if (selectedItem.Folder == null || selectedItem.Folder.RpfFile == null)
+            {
+                MessageBox.Show("Please select a single RPF archive file to extract its content.", "Invalid Selection");
+                return;
+            }
+
+            var rpfFolder = selectedItem.Folder; // This is the MainTreeFolder representing the RPF archive
+
+            UpdateStatus("Select a destination folder for extraction...");
+            var folderPath = SelectFolder();
+            if (string.IsNullOrEmpty(folderPath)) return;
+
+            var outputBasePath = Path.Combine(folderPath, Path.GetFileName(rpfFolder.Name));
+            var errors = new StringBuilder();
+            bool nestedRpfsFound = false;
+
+            Cursor = Cursors.WaitCursor;
+            UpdateStatus($"Starting extraction of {rpfFolder.Name}...");
+
+            // Use a temporary drop folder like drag-drop to avoid issues with long paths during extraction
+            string tempDropDir = CreateDropFolder();
+            string tempExtractionBase = Path.Combine(tempDropDir, Path.GetFileNameWithoutExtension(rpfFolder.Name));
+
+            try
+            {
+                UpdateStatus($"Beginning recursive extraction of {rpfFolder.Name}...");
+                // Extract recursively to the temporary folder
+                // Pass the RPF's root folder, its path (as the base for relative paths), the temp output base, and errors
+                ExtractRpfContentRecursive(rpfFolder, rpfFolder.Path, tempExtractionBase, errors);
+                
+                // Check if nested RPF files were processed by looking at the error messages
+                nestedRpfsFound = errors.ToString().Contains("Processing nested RPF:");
+
+                // Move from temp folder to the selected destination
+                if (Directory.Exists(tempExtractionBase))
+                {
+                    try
+                    {
+                        // Ensure the final destination directory exists
+                        if (!Directory.Exists(Path.GetDirectoryName(outputBasePath)))
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(outputBasePath));
+                        }
+                        // If the target directory already exists, delete it first to avoid merging issues
+                        if (Directory.Exists(outputBasePath))
+                        {
+                            Directory.Delete(outputBasePath, true);
+                        }
+                        Directory.Move(tempExtractionBase, outputBasePath);
+                        UpdateStatus($"Successfully moved files to: {outputBasePath}");
+                    }
+                    catch (Exception moveEx)
+                    {
+                        errors.AppendLine($"Error moving extracted files from temp location to {outputBasePath}: {moveEx.Message}");
+                        UpdateStatus($"Error moving files: {moveEx.Message}");
+                    }
+                }
+            }
+            finally
+            {
+                CleanupDropFolder(); // Clean up the main temp drop directory
+                Cursor = Cursors.Default;
+                UpdateStatus("RPF content extraction finished.");
+            }
+
+            string errStr = errors.ToString();
+            // Filter out informational "Processing nested RPF" messages from errors
+            string actualErrors = string.Join(Environment.NewLine, 
+                errStr.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(line => !line.Contains("Processing nested RPF:")));
+            
+            if (!string.IsNullOrEmpty(actualErrors))
+            {
+                UpdateStatus("Extraction completed with errors.");
+                MessageBox.Show("Errors were encountered during extraction:\n" + actualErrors, "Extraction Errors");
+            }
+            else
+            {
+                string successMessage = $"Successfully extracted content of {rpfFolder.Name} to {outputBasePath}";
+                if (nestedRpfsFound)
+                {
+                    successMessage += "\nNested RPF files were recursively extracted to subdirectories.";
+                }
+                UpdateStatus("Extraction completed successfully.");
+                MessageBox.Show(successMessage, "Extraction Complete");
+            }
+        }
+
+
+        // Recursively extracts content from an RPF folder structure to a destination directory.
+        // folder: The current MainTreeFolder (representing an RPF directory) to process.
+        // rpfBasePath: The base path string of the root RPF being extracted (e.g., "update\\update.rpf") used to calculate relative paths.
+        // outputBaseDir: The root directory on the filesystem where content should be extracted (e.g., "C:\\ExtractOutput\\rpf_name").
+        // errors: StringBuilder to accumulate error messages.
+        private void ExtractRpfContentRecursive(MainTreeFolder folder, string rpfBasePath, string outputBaseDir, StringBuilder errors)
+        {
+            // Add status update at the beginning
+            UpdateStatus($"Extracting from folder: {folder.Name}...");
+            
+            var folderItems = folder.GetListItems(); // Get files and subfolders within this RPF directory
+
+            // Calculate the path relative to the RPF root (e.g., "levels\\gta5\\generic")
+            string relPath = "";
+            // Ensure folder.Path is actually longer than rpfBasePath before attempting substring
+            if (!string.IsNullOrEmpty(folder.Path) && !string.IsNullOrEmpty(rpfBasePath) && folder.Path.StartsWith(rpfBasePath) && folder.Path.Length > rpfBasePath.Length)
+            {
+                relPath = folder.Path.Substring(rpfBasePath.Length).TrimStart('\\');
+            }
+            else if (folder.Path == rpfBasePath) // Handle the root folder case explicitly
+            {
+                relPath = "";
+            }
+            // Consider if there's another case needed, e.g. if folder.Path is somehow *not* starting with rpfBasePath (shouldn't happen in normal recursion)
+
+
+            // Determine the corresponding output directory on the filesystem
+            var currentOutDir = string.IsNullOrEmpty(relPath) ? outputBaseDir : Path.Combine(outputBaseDir, relPath);
+
+            UpdateStatus($"Creating directory: {currentOutDir}");
+            if (!Directory.Exists(currentOutDir))
+            {
+                try
+                {
+                    Directory.CreateDirectory(currentOutDir);
+                }
+                catch (Exception ex)
+                {
+                    errors.AppendLine($"Error creating directory {currentOutDir}: {ex.Message}");
+                    UpdateStatus($"Error creating directory: {currentOutDir}");
+                    return; // Stop processing this branch if directory creation fails
+                }
+            }
+
+            // Update status with the number of items to process
+            UpdateStatus($"Processing {folderItems.Count} items from {folder.Name}...");
+
+            int processedCount = 0;
+            foreach (var item in folderItems)
+            {
+                processedCount++;
+                
+                // Update status every few items to avoid too many updates
+                if (processedCount % 5 == 0 || processedCount == folderItems.Count)
+                {
+                    UpdateStatus($"Processing item {processedCount}/{folderItems.Count} in {folder.Name}...");
+                }
+                
+                if ((item.Folder == null) || (item.Folder.RpfFile != null)) // It's a file or an RPF archive itself
+                {
+                    if (item.FileSize > 0x6400000) // 100MB limit like drag-drop
+                    {
+                        errors.AppendLine($"{item.Name} is greater than 100MB, skipping.");
+                        UpdateStatus($"Skipping large file: {item.Name} (>100MB)");
+                        continue;
+                    }
+                    try
+                    {
+                        UpdateStatus($"Extracting file: {item.Name}");
+                        var data = GetFileDataCompressResources(item);
+                        var filePath = Path.Combine(currentOutDir, item.Name);
+                        
+                        // Check if this is a nested RPF file by extension
+                        if (item.Name.ToLowerInvariant().EndsWith(".rpf"))
+                        {
+                            try
+                            {
+                                // Create a nested RPF extraction folder - use the RPF filename as the directory name
+                                string nestedRpfBasePath = Path.Combine(currentOutDir, item.Name);
+                                UpdateStatus($"Processing nested RPF: {item.Name}");
+                                
+                                if (!Directory.Exists(nestedRpfBasePath))
+                                {
+                                    Directory.CreateDirectory(nestedRpfBasePath);
+                                }
+                                else
+                                {
+                                    // Directory already exists - this might happen if a directory and file have the same name in the temp folder
+                                    // Either skip or use a modified name depending on requirements
+                                    errors.AppendLine($"Warning: Directory {nestedRpfBasePath} already exists, content will be merged.");
+                                }
+                                
+                                // Use the data we've already extracted to create a temporary file to work with
+                                string tempFilePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".rpf");
+                                File.WriteAllBytes(tempFilePath, data);
+                                
+                                // Create an RpfFile instance for the nested RPF
+                                var nestedRpfFile = new RpfFile(item.Name, Path.Combine(rpfBasePath, relPath, item.Name), data.Length);
+                                nestedRpfFile.FilePath = tempFilePath;
+                                
+                                // Use the public ScanStructure method to initialize the nested RPF
+                                nestedRpfFile.ScanStructure(
+                                    updateStatus: (s) => UpdateStatus($"Processing nested RPF: {s}"),
+                                    errorLog: (s) => errors.AppendLine(s)
+                                );
+                                
+                                // Create a MainTreeFolder for the nested RPF - using Root from the scanned structure
+                                var nestedRpfTreeFolder = new MainTreeFolder
+                                {
+                                    Name = item.Name,
+                                    Path = Path.Combine(rpfBasePath, relPath, item.Name),
+                                    RpfFile = nestedRpfFile,
+                                    RpfFolder = nestedRpfFile.Root
+                                };
+                                
+                                // Now recursively extract the contents of this nested RPF
+                                ExtractRpfContentRecursive(nestedRpfTreeFolder, nestedRpfTreeFolder.Path, nestedRpfBasePath, errors);
+
+                                // Clean up the temp file after we're done with it
+                                try { File.Delete(tempFilePath); }
+                                catch { } // Ignore errors in cleanup
+                            }
+                            catch (Exception nex)
+                            {
+                                errors.AppendLine($"Error extracting nested RPF file {item.Name}: {nex.Message}");
+                                UpdateStatus($"Error extracting nested RPF: {item.Name}");
+                                // Write the data normally if we couldn't process it as an RPF
+                                File.WriteAllBytes(filePath, data);
+                            }
+                        }
+                        else
+                        {
+                            // Regular file, just write it to disk
+                            File.WriteAllBytes(filePath, data);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        errors.AppendLine($"Error extracting file {item.Path}: {ex.Message}");
+                    }
+                }
+                else // It's a sub-folder within the RPF
+                {
+                    // First check if the folder name ends with .rpf (could be a folder representing an RPF file)
+                    if (item.Folder != null && item.Folder.Name.ToLowerInvariant().EndsWith(".rpf"))
+                    {
+                        // This might be a folder representing an RPF file
+                        // Let's try to treat it as a nested RPF
+                        try
+                        {
+                            // Create a nested RPF extraction folder for this RPF
+                            string nestedRpfBasePath = Path.Combine(currentOutDir, item.Folder.Name);
+                            UpdateStatus($"Processing nested RPF folder: {item.Folder.Name}");
+                            
+                            if (!Directory.Exists(nestedRpfBasePath))
+                            {
+                                Directory.CreateDirectory(nestedRpfBasePath);
+                            }
+                            else
+                            {
+                                // Directory already exists - might happen with conflicting names
+                                errors.AppendLine($"Warning: Directory {nestedRpfBasePath} already exists, content will be merged.");
+                            }
+                            
+                            // Create an RpfFile instance for this folder
+                            var nestedRpfFile = item.Folder.RpfFile;
+                            
+                            if (nestedRpfFile != null)
+                            {
+                                // Now recursively extract the contents of this nested RPF
+                                ExtractRpfContentRecursive(item.Folder, item.Folder.Path, nestedRpfBasePath, errors);
+                            }
+                            else
+                            {
+                                // Fallback to regular folder extraction
+                                UpdateStatus($"Falling back to regular extraction for: {item.Folder.Name}");
+                                ExtractRpfContentRecursive(item.Folder, rpfBasePath, outputBaseDir, errors);
+                            }
+                        }
+                        catch (Exception nex)
+                        {
+                            errors.AppendLine($"Error extracting nested RPF folder {item.Folder.Name}: {nex.Message}");
+                            // Fallback to regular folder extraction
+                            ExtractRpfContentRecursive(item.Folder, rpfBasePath, outputBaseDir, errors);
+                        }
+                    }
+                    else
+                    {
+                        // Recurse into the subfolder, passing the same RPF base path and output base directory
+                        UpdateStatus($"Processing subfolder: {item.Folder.Name}");
+                        ExtractRpfContentRecursive(item.Folder, rpfBasePath, outputBaseDir, errors);
+                    }
+                }
+            }
+            
+            UpdateStatus($"Finished processing folder: {folder.Name}");
+        }
+
+
         private void ListContextExtractAllMenu_Click(object sender, EventArgs e)
         {
             ExtractAll();
@@ -4465,6 +4772,382 @@ namespace CodeWalker
         private void CopyToModsFolderButton_Click(object sender, EventArgs e)
         {
             CopyToModsFolder();
+        }
+
+        private void ListContextConvertRPF_Click(object sender, EventArgs e)
+        {
+            ConvertRPF();
+        }
+
+        private void ConvertRPF()
+        {
+            if (MainListView.SelectedIndices.Count != 1)
+            {
+                MessageBox.Show("Please select a single RPF file to convert.", "Invalid Selection");
+                return;
+            }
+
+            var idx = MainListView.SelectedIndices[0];
+            if ((idx < 0) || (idx >= CurrentFiles.Count)) return;
+
+            var selectedItem = CurrentFiles[idx];
+            if (selectedItem.Folder == null || selectedItem.Folder.RpfFile == null)
+            {
+                MessageBox.Show("Please select a single RPF archive file to convert.", "Invalid Selection");
+                return;
+            }
+
+            // Ask for output RPF location
+            SaveFileDialog.FileName = "converted_" + selectedItem.Name;
+            SaveFileDialog.Filter = "RPF Archive|*.rpf";
+            if (SaveFileDialog.ShowDialog() != DialogResult.OK) return;
+            var outputRpfPath = SaveFileDialog.FileName;
+
+            // Create progress form
+            var progressForm = new Form
+            {
+                Text = "Converting RPF Archive",
+                Width = 400,
+                Height = 150,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            var statusLabel = new Label
+            {
+                Left = 10,
+                Top = 20,
+                Width = 360,
+                Height = 20,
+                Text = "Initializing..."
+            };
+            var progressBar = new ProgressBar
+            {
+                Left = 10,
+                Top = 50,
+                Width = 360,
+                Height = 20,
+                Style = ProgressBarStyle.Continuous,
+                Maximum = 1000
+            };
+            progressForm.Controls.Add(statusLabel);
+            progressForm.Controls.Add(progressBar);
+
+            // Progress callback
+            void updateProgress(string status, float progress)
+            {
+                if (progressForm.IsDisposed) return;
+                progressForm.Invoke(new Action(() =>
+                {
+                    statusLabel.Text = status;
+                    progressBar.Value = Math.Max(0, Math.Min((int)(progress * 1000), 1000));
+                }));
+            }
+
+            // Run the conversion in background
+            var conversionTask = Task.Run(() =>
+            {
+                try
+                {
+                    // Create temp directories
+                    var tempBaseDir = Path.Combine(Path.GetTempPath(), "CodeWalkerRPFConvert");
+                    var extractDir = Path.Combine(tempBaseDir, "extract_" + Guid.NewGuid().ToString());
+                    var convertDir = Path.Combine(tempBaseDir, "convert_" + Guid.NewGuid().ToString());
+
+                    try
+                    {
+                        // Ensure temp directories exist
+                        Directory.CreateDirectory(extractDir);
+                        Directory.CreateDirectory(convertDir);
+
+                        // Extract RPF contents
+                        updateProgress("Extracting RPF contents...", 0.1f);
+                        var extractErrors = new StringBuilder();
+                        ExtractRpfContentRecursive(selectedItem.Folder, selectedItem.Folder.Path, extractDir, extractErrors);
+                        if (extractErrors.Length > 0)
+                        {
+                            throw new Exception("Errors during extraction:\n" + extractErrors.ToString());
+                        }
+
+                        // Convert assets using ConvertAssetsForm logic
+                        updateProgress("Converting assets...", 0.4f);
+                        var exgen9 = RpfManager.IsGen9;
+                        RpfManager.IsGen9 = true;
+
+                        var allFiles = Directory.GetFiles(extractDir, "*.*", SearchOption.AllDirectories);
+                        float fileCount = allFiles.Length;
+                        float currentFile = 0;
+
+                        foreach (var file in allFiles)
+                        {
+                            var relPath = file.Substring(extractDir.Length).TrimStart('\\');
+                            var outPath = Path.Combine(convertDir, relPath);
+                            var outDir = Path.GetDirectoryName(outPath);
+                            
+                            if (!Directory.Exists(outDir))
+                                Directory.CreateDirectory(outDir);
+
+                            try
+                            {
+                                var data = File.ReadAllBytes(file);
+                                byte[] convertedData = null;
+                                var ext = Path.GetExtension(file).ToLowerInvariant();
+
+                                // Convert based on file type using same logic as ConvertAssetsForm
+                                switch (ext)
+                                {
+                                    case ".ytd":
+                                        var ytd = new YtdFile();
+                                        ytd.Load(data);
+                                        convertedData = ytd.Save();
+                                        break;
+                                    case ".ydr":
+                                        var ydr = new YdrFile();
+                                        ydr.Load(data);
+                                        convertedData = ydr.Save();
+                                        break;
+                                    case ".ydd":
+                                        var ydd = new YddFile();
+                                        ydd.Load(data);
+                                        convertedData = ydd.Save();
+                                        break;
+                                    case ".yft":
+                                        var yft = new YftFile();
+                                        yft.Load(data);
+                                        convertedData = yft.Save();
+                                        break;
+                                    case ".ypt":
+                                        var ypt = new YptFile();
+                                        ypt.Load(data);
+                                        convertedData = ypt.Save();
+                                        break;
+                                    default:
+                                        convertedData = data; // Copy unconverted files as-is
+                                        break;
+                                }
+
+                                if (convertedData != null)
+                                {
+                                    File.WriteAllBytes(outPath, convertedData);
+                                }
+
+                                currentFile++;
+                                updateProgress($"Converting: {relPath}", 0.4f + (currentFile / fileCount * 0.4f));
+                            }
+                            catch (Exception ex)
+                            {
+                                updateProgress($"Error converting {relPath}: {ex.Message}", -1);
+                            }
+                        }
+
+                        RpfManager.IsGen9 = exgen9;
+
+                        // Pack converted files into new RPF
+                        updateProgress("Creating new RPF...", 0.8f);
+                        var newRpf = PackFolderRecursive(convertDir, outputRpfPath, RpfEncryption.OPEN, 
+                            (s, p) => updateProgress($"Packing: {s}", 0.8f + p * 0.2f));
+
+                        progressForm.Invoke(new Action(() => progressForm.Close()));
+                        MessageBox.Show("RPF conversion completed successfully!", "Success");
+                    }
+                    finally
+                    {
+                        // Cleanup temp directories
+                        try
+                        {
+                            if (Directory.Exists(extractDir))
+                                Directory.Delete(extractDir, true);
+                            if (Directory.Exists(convertDir))
+                                Directory.Delete(convertDir, true);
+                        }
+                        catch { } // Ignore cleanup errors
+                    }
+                }
+                catch (Exception ex)
+                {
+                    progressForm.Invoke(new Action(() =>
+                    {
+                        progressForm.Close();
+                        MessageBox.Show($"Error converting RPF:\n{ex.Message}", "Error");
+                    }));
+                }
+            });
+
+            progressForm.ShowDialog();
+        }
+
+        private RpfFile PackFolderRecursive(string sourceFolderPath, string outputRpfPath, RpfEncryption encryption, Action<string, float> progressCallback)
+        {
+            // Delete existing file if it exists
+            if (File.Exists(outputRpfPath))
+            {
+                File.Delete(outputRpfPath);
+            }
+
+            // Create new RPF file
+            var rpfFile = RpfFile.CreateNew(Path.GetDirectoryName(outputRpfPath), Path.GetFileName(outputRpfPath), encryption);
+
+            // Calculate total size for progress tracking
+            long totalBytesEstimate = 0;
+            var allFiles = Directory.GetFiles(sourceFolderPath, "*.*", SearchOption.AllDirectories);
+            foreach (var file in allFiles)
+            {
+                totalBytesEstimate += new FileInfo(file).Length;
+            }
+
+            // Start recursive population
+            long totalBytesProcessed = 0;
+            AddFolderContentsToRpfRecursive(sourceFolderPath, rpfFile.Root, rpfFile, progressCallback, 
+                ref totalBytesProcessed, totalBytesEstimate);
+
+            return rpfFile;
+        }
+
+        private void AddFolderContentsToRpfRecursive(string currentSourcePath, RpfDirectoryEntry parentRpfDirectory, 
+            RpfFile targetRpfFile, Action<string, float> progressCallback, ref long totalBytesProcessed, long totalBytesEstimate)
+        {
+            var rootPath = currentSourcePath.TrimEnd('\\', '/');
+            var entries = Directory.GetFileSystemEntries(currentSourcePath);
+            foreach (var entryPath in entries)
+            {
+                // Calculate relative path from root
+                var relativePath = entryPath.Substring(rootPath.Length).TrimStart('\\', '/');
+                
+                if (Directory.Exists(entryPath))
+                {
+                    var directoryInfo = new DirectoryInfo(entryPath);
+                    var folderName = directoryInfo.Name;
+                    progressCallback($"Processing folder: {relativePath}", (float)totalBytesProcessed / totalBytesEstimate);
+
+                    if (folderName.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Handle folder that should become a nested RPF
+                        var tempRpfPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString() + ".rpf");
+                        try
+                        {
+                            // Create nested RPF
+                            var nestedRpf = PackFolderRecursive(entryPath, tempRpfPath, RpfEncryption.OPEN, 
+                                (s, p) => progressCallback($"Nested RPF {relativePath}: {s}", p));
+
+                            // Read the temporary RPF file
+                            var nestedRpfData = File.ReadAllBytes(tempRpfPath);
+                            
+                            // Create parent directories if needed
+                            var parentPath = Path.GetDirectoryName(relativePath);
+                            var currentParent = parentRpfDirectory;
+                            if (!string.IsNullOrEmpty(parentPath))
+                            {
+                                currentParent = EnsureRpfDirectoryPath(parentRpfDirectory, parentPath);
+                            }
+                            
+                            // Add it to the parent RPF
+                            RpfFile.CreateFile(currentParent, folderName, nestedRpfData);
+                            
+                            totalBytesProcessed += nestedRpfData.Length;
+                        }
+                        finally
+                        {
+                            // Clean up temp file
+                            if (File.Exists(tempRpfPath))
+                            {
+                                File.Delete(tempRpfPath);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Regular directory - create in RPF if it contains files
+                        var hasFiles = Directory.GetFiles(entryPath, "*", SearchOption.AllDirectories).Length > 0;
+                        if (hasFiles)
+                        {
+                            var currentParent = EnsureRpfDirectoryPath(parentRpfDirectory, relativePath);
+                            AddFolderContentsToRpfRecursive(entryPath, currentParent, targetRpfFile, progressCallback, 
+                                ref totalBytesProcessed, totalBytesEstimate);
+                        }
+                    }
+                }
+                else if (File.Exists(entryPath))
+                {
+                    var fileInfo = new FileInfo(entryPath);
+                    var fileName = fileInfo.Name;
+                    var fileSize = fileInfo.Length;
+
+                    progressCallback($"Adding file: {relativePath}", (float)totalBytesProcessed / totalBytesEstimate);
+
+                    // Validate filename
+                    if (!IsFilenameOk(fileName))
+                    {
+                        progressCallback($"Skipping file with invalid name: {relativePath}", 
+                            (float)totalBytesProcessed / totalBytesEstimate);
+                        continue;
+                    }
+
+                    // Check file size limit
+                    if (fileSize > 0x3FFFFFFF)
+                    {
+                        progressCallback($"Skipping file that exceeds size limit: {relativePath}", 
+                            (float)totalBytesProcessed / totalBytesEstimate);
+                        continue;
+                    }
+
+                    try
+                    {
+                        // Create parent directories if needed
+                        var parentPath = Path.GetDirectoryName(relativePath);
+                        var currentParent = parentRpfDirectory;
+                        if (!string.IsNullOrEmpty(parentPath))
+                        {
+                            currentParent = EnsureRpfDirectoryPath(parentRpfDirectory, parentPath);
+                        }
+
+                        // Read and add file
+                        var fileData = File.ReadAllBytes(entryPath);
+                        RpfFile.CreateFile(currentParent, fileName, fileData);
+                        totalBytesProcessed += fileSize;
+                    }
+                    catch (Exception ex)
+                    {
+                        progressCallback($"Error adding file {relativePath}: {ex.Message}", 
+                            (float)totalBytesProcessed / totalBytesEstimate);
+                    }
+                }
+            }
+        }
+
+        private RpfDirectoryEntry EnsureRpfDirectoryPath(RpfDirectoryEntry parentDirectory, string relativePath)
+        {
+            var pathParts = relativePath.Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var currentParent = parentDirectory;
+
+            foreach (var part in pathParts)
+            {
+                // Find existing directory by name
+                RpfDirectoryEntry existingDir = null;
+                if (currentParent.Directories != null)
+                {
+                    foreach (var dir in currentParent.Directories)
+                    {
+                        if (dir.Name.Equals(part, StringComparison.OrdinalIgnoreCase))
+                        {
+                            existingDir = dir;
+                            break;
+                        }
+                    }
+                }
+
+                if (existingDir == null)
+                {
+                    currentParent = RpfFile.CreateDirectory(currentParent, part);
+                }
+                else
+                {
+                    currentParent = existingDir;
+                }
+            }
+
+            return currentParent;
         }
     }
 
@@ -4910,13 +5593,4 @@ namespace CodeWalker
         ViewDistantLights = 26,
         ViewYpdb = 27,
     }
-
-
-
-
-
-
-
-
-
 }
