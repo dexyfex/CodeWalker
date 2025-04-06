@@ -115,8 +115,9 @@ namespace CodeWalker.Core.Utils
                 {
                     try
                     {
+                        var baseprogress = curFile * singleFileProgress;
                         curFile++;
-                        Progress(curFile * singleFileProgress);
+                        Progress(baseprogress);
                         var pathl = path.ToLowerInvariant();
                         var relpath = path.Substring(inputFolder.Length);
                         var outpath = outputFolder + relpath;
@@ -174,7 +175,6 @@ namespace CodeWalker.Core.Utils
                                 rpflist.Add(trpf);
                             }
                             rpflist.Reverse();//reverse the list so children always come before parents
-                            var baseprogress = curFile * singleFileProgress;
                             var rpfprogressstep = singleFileProgress / Math.Max(1, rpflist.Count);
                             var curRpf = 0;
                             var changedparents = new HashSet<RpfFile>();
