@@ -174,20 +174,34 @@ namespace CodeWalker.Core.Utils
                                 rpflist.Add(trpf);
                             }
                             rpflist.Reverse();//reverse the list so children always come before parents
+                            var baseprogress = curFile * singleFileProgress;
+                            var rpfprogressstep = singleFileProgress / Math.Max(1, rpflist.Count);
+                            var curRpf = 0;
                             var changedparents = new HashSet<RpfFile>();
                             foreach (var trpf in rpflist)
                             {
+                                var currpfprogress = baseprogress + (curRpf * rpfprogressstep);
+                                curRpf++;
+                                Progress(currpfprogress);
+
                                 if (trpf == null) continue;
                                 if (trpf.AllEntries == null) continue;
 
                                 var changed = changedparents.Contains(trpf);
 
                                 var allentries = trpf.AllEntries.ToArray();//can't iterate this list as it might get changed
+                                var entryprogressstep = rpfprogressstep / Math.Max(1, allentries.Length);
+                                var curEntry = 0;
                                 foreach (var entry in allentries)
                                 {
+                                    var curentryprogress = currpfprogress + (curEntry * entryprogressstep);
+                                    curEntry++;
+
                                     var rfe = entry as RpfResourceFileEntry;
                                     if (rfe == null) continue;
                                     if (RequiresConversion(rfe) == false) continue;
+
+                                    Progress(curentryprogress);
 
                                     var dir = entry.Parent;
                                     var name = rfe.Name;

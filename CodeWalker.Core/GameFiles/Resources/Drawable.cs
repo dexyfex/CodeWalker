@@ -4254,7 +4254,7 @@ namespace CodeWalker.GameFiles
             {
                 var t = g9types[i];
                 if (t == 0) continue;
-                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);
+                var lci = VertexDeclarationG9.GetLegacyComponentIndex(i, vdtypes);
                 if (lci < 0)
                 {
                     //this component type won't work for GTAV1 type...
@@ -4324,7 +4324,7 @@ namespace CodeWalker.GameFiles
             {
                 var t = g9types[i];
                 if (t == 0) continue;
-                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);//TODO: handle other vdtypes
+                var lci = VertexDeclarationG9.GetLegacyComponentIndex(i, vdtypes);
                 if (lci < 0) continue;
                 var cssize = (int)g9sizes[i];
                 var csoff = (int)g9offs[i];
@@ -4378,14 +4378,14 @@ namespace CodeWalker.GameFiles
             for (int i = 0; i < 52; i++)
             {
                 g9offs[i] = offset;
-                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);
+                var lci = VertexDeclarationG9.GetLegacyComponentIndex(i, vdtypes);
                 if (lci < 0) continue;//can't be used, unavailable for GTAV1
                 if ((vdflags & (1u << lci)) == 0) continue;
                 var ctype = (VertexComponentType)(((ulong)vdtypes >> (lci * 4)) & 0xF);
                 var csize = VertexComponentTypes.GetSizeInBytes(ctype);
                 offset += (uint)csize;
                 g9sizes[i] = vstride;
-                g9types[i] = (byte)VertexDeclarationG9.GetGen9ComponentTypeGTAV1(lci);
+                g9types[i] = (byte)VertexDeclarationG9.GetGen9ComponentType(lci, vdtypes);
             }
             var info = new VertexDeclarationG9();
             info.Offsets = g9offs;
@@ -4420,7 +4420,7 @@ namespace CodeWalker.GameFiles
             {
                 var t = g9types[i];
                 if (t == 0) continue;
-                var lci = VertexDeclarationG9.GetLegacyComponentIndexGTAV1(i);//TODO: handle other vdtypes
+                var lci = VertexDeclarationG9.GetLegacyComponentIndex(i, vdtypes);
                 if (lci < 0) continue;
                 var cssize = (int)g9sizes[i];
                 var csoff = (int)g9offs[i];
@@ -5271,8 +5271,10 @@ namespace CodeWalker.GameFiles
                 default: return VertexComponentType.Float4;
             }
         }
-        public static int GetLegacyComponentIndexGTAV1(int i)
+        public static int GetLegacyComponentIndex(int i, VertexDeclarationTypes vdtypes)
         {
+            if (vdtypes != VertexDeclarationTypes.GTAV1)
+            { }//TODO: is this ok? are component indices (semantics?) always the same?
             //GTAV1 = 0x7755555555996996, // GTAV - used by most drawables
             switch (i)
             {
@@ -5373,6 +5375,32 @@ namespace CodeWalker.GameFiles
                 case 15: return VertexDeclarationG9ElementFormat.R32G32B32A32_FLOAT;
                 default: return VertexDeclarationG9ElementFormat.R32G32B32A32_FLOAT;
             }
+        }
+        public static VertexDeclarationG9ElementFormat GetGen9ComponentType(int lci, VertexDeclarationTypes vdtypes)
+        {
+            if (vdtypes == VertexDeclarationTypes.GTAV1) return GetGen9ComponentTypeGTAV1(lci);
+
+            switch (lci)
+            {
+                case 1: return VertexDeclarationG9ElementFormat.R8G8B8A8_UNORM;//boneweights
+                case 2: return VertexDeclarationG9ElementFormat.R8G8B8A8_UINT;//boneinds
+            }
+            var t = (VertexComponentType)((((ulong)vdtypes) >> (lci * 4)) & 0xF);
+            switch (t)
+            {
+                case VertexComponentType.Half2: return VertexDeclarationG9ElementFormat.R16G16_FLOAT;
+                case VertexComponentType.Float: return VertexDeclarationG9ElementFormat.NONE;
+                case VertexComponentType.Half4: return VertexDeclarationG9ElementFormat.R16G16B16A16_FLOAT;
+                case VertexComponentType.FloatUnk: return VertexDeclarationG9ElementFormat.NONE;
+                case VertexComponentType.Float2: return VertexDeclarationG9ElementFormat.R32G32_TYPELESS;
+                case VertexComponentType.Float3: return VertexDeclarationG9ElementFormat.R32G32B32_FLOAT;
+                case VertexComponentType.Float4: return VertexDeclarationG9ElementFormat.R32G32B32A32_FLOAT;
+                case VertexComponentType.UByte4: return VertexDeclarationG9ElementFormat.R8G8B8A8_UINT;
+                case VertexComponentType.Colour: return VertexDeclarationG9ElementFormat.R8G8B8A8_UNORM;
+                case VertexComponentType.RGBA8SNorm: return VertexDeclarationG9ElementFormat.R8G8B8A8_UNORM;//close?!
+                default: return VertexDeclarationG9ElementFormat.NONE;
+            }
+
         }
 
 
