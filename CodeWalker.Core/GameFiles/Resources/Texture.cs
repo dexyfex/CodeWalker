@@ -708,7 +708,6 @@ namespace CodeWalker.GameFiles
                 div *= 2;
             }
             
-            Console.WriteLine(len * Depth);
             return len * Depth;
         }
         public ushort CalculateStride()
