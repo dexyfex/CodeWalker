@@ -2900,22 +2900,37 @@ namespace CodeWalker
                         continue;
                     }
 
-                    var trimlength = 4;
-                    var mformat = XmlMeta.GetXMLFormat(fnamel, out trimlength);
-
-                    fname = fname.Substring(0, fname.Length - trimlength);
-                    fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
-                    fpathin = fpathin.Substring(0, fpathin.Length - trimlength);
-                    fpathin = Path.Combine(Path.GetDirectoryName(fpathin), Path.GetFileNameWithoutExtension(fpathin));
-
-                    var doc = new XmlDocument();
-                    string text = File.ReadAllText(fpath);
-                    if (!string.IsNullOrEmpty(text))
+                    byte[] data = null;
+                    var mformat = MetaFormat.XML;
+                    if (fnamel.IndexOf('.') == fnamel.LastIndexOf('.'))
                     {
-                        doc.LoadXml(text);
+                        //the user has selected import XML option, but this file is just an ordinary XML file.
+                        //import this file directly instead of attempting XML conversion.
+
+                        data = File.ReadAllBytes(fpath);
+
+                    }
+                    else
+                    {
+                        var trimlength = 4;
+                        mformat = XmlMeta.GetXMLFormat(fnamel, out trimlength);
+
+                        fname = fname.Substring(0, fname.Length - trimlength);
+                        fnamel = fnamel.Substring(0, fnamel.Length - trimlength);
+                        fpathin = fpathin.Substring(0, fpathin.Length - trimlength);
+                        fpathin = Path.Combine(Path.GetDirectoryName(fpathin), Path.GetFileNameWithoutExtension(fpathin));
+
+                        var doc = new XmlDocument();
+                        string text = File.ReadAllText(fpath);
+                        if (!string.IsNullOrEmpty(text))
+                        {
+                            doc.LoadXml(text);
+                        }
+
+                        data = XmlMeta.GetData(doc, mformat, fpathin);
+
                     }
 
-                    byte[] data = XmlMeta.GetData(doc, mformat, fpathin);
 
                     if (data != null)
                     {
