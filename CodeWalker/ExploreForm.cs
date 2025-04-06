@@ -824,7 +824,7 @@ namespace CodeWalker
 
                         node = CreateRpfTreeFolder(rpf, relpath, path);
 
-                        RecurseMainTreeViewRPF(node, allRpfs);
+                        RecurseMainTreeViewRPF(node, allRpfs, extra ? f.Path : null);
 
                         if (parentnode != null)
                         {
@@ -868,9 +868,13 @@ namespace CodeWalker
             }
 
         }
-        private void RecurseMainTreeViewRPF(MainTreeFolder f, List<RpfFile> allRpfs)
+        private void RecurseMainTreeViewRPF(MainTreeFolder f, List<RpfFile> allRpfs, string rootpath = null)
         {
-            var rootpath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
+            var gamepath = GTAFolder.GetCurrentGTAFolderWithTrailingSlash();
+            if (rootpath == null)
+            {
+                rootpath = gamepath;
+            }
 
             var fld = f.RpfFolder;
             if (fld != null)
@@ -882,13 +886,13 @@ namespace CodeWalker
                         var relpath = dir.Path.Substring(fld.Path.Length);
                         var fullpath = f.FullPath + relpath;
                         var dirpath = dir.Path;
-                        if (fullpath.StartsWith(rootpath, StringComparison.InvariantCultureIgnoreCase) == false)
+                        if (fullpath.StartsWith(gamepath, StringComparison.InvariantCultureIgnoreCase) == false)
                         {
                             dirpath = fullpath;
                         }
                         var dtnf = CreateRpfDirTreeFolder(dir, dirpath, fullpath);
                         f.AddChild(dtnf);
-                        RecurseMainTreeViewRPF(dtnf, allRpfs);
+                        RecurseMainTreeViewRPF(dtnf, allRpfs, rootpath);
                     }
                 }
             }
@@ -902,9 +906,10 @@ namespace CodeWalker
                 {
                     foreach (var child in rpf.Children)
                     {
-                        var ctnf = CreateRpfTreeFolder(child, child.Path, rootpath + child.Path);
+                        var cpath = rootpath + child.Path;
+                        var ctnf = CreateRpfTreeFolder(child, (rootpath != gamepath) ? cpath : child.Path, cpath);
                         f.AddChildToHierarchy(ctnf);
-                        RecurseMainTreeViewRPF(ctnf, allRpfs);
+                        RecurseMainTreeViewRPF(ctnf, allRpfs, rootpath);
                     }
                 }
 
