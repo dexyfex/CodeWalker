@@ -707,6 +707,8 @@ namespace CodeWalker.GameFiles
                 len += slicePitch;
                 div *= 2;
             }
+            
+            Console.WriteLine(len * Depth);
             return len * Depth;
         }
         public ushort CalculateStride()
@@ -1098,6 +1100,13 @@ namespace CodeWalker.GameFiles
                 int Height = Convert.ToInt32(parameters[2]);
                 int Levels = Convert.ToInt32(parameters[3]);
                 int Stride = Convert.ToInt32(parameters[4]);
+
+                bool compressed = DDSIO.DXTex.IsCompressed(DDSIO.GetDXGIFormat((TextureFormat)format));
+
+                if (compressed && Height % 4 != 0)
+                {
+                    Height = Math.Max(1, (Height + 3) & ~3);
+                }
 
                 int fullLength = 0;
                 int length = Stride * Height;
