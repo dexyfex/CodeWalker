@@ -140,7 +140,87 @@ namespace CodeWalker.Core.Utils
                         var ext = Path.GetExtension(pathl);
                         if (ext == ".rpf")
                         {
-                            Log($"{relpath} - Cannot convert RPF files! Extract the contents of the RPF and convert that instead.");
+                            //Log($"{relpath} - Cannot convert RPF files! Extract the contents of the RPF and convert that instead.");
+                            Log($"{relpath} - Converting contents...");
+
+                            if (File.Exists(outpath))
+                            {
+                                File.Delete(outpath);
+                            }
+                            File.Copy(path, outpath);
+
+                            //var rpflog = new Action<string>((str) => { });
+                            var rpf = new RpfFile(outpath, relpath);
+                            rpf.ScanStructure(Log, Log);//rpflog
+
+                            //check if anything needs converting first?
+                            //make sure to process child rpf's first!
+                            //defragment each rpf after finished converting items in it.
+
+                            var rpflist = new List<RpfFile>();
+                            var rpfstack = new Stack<RpfFile>();
+                            rpfstack.Push(rpf);
+                            while (rpfstack.Count > 0) //recurse the whole rpf hierarchy into the list
+                            {
+                                var trpf = rpfstack.Pop();
+                                if (trpf == null) continue;
+                                if (trpf.Children != null)
+                                {
+                                    foreach (var crpf in trpf.Children)
+                                    {
+                                        rpfstack.Push(crpf);
+                                    }
+                                }
+                                rpflist.Add(trpf);
+                            }
+                            rpflist.Reverse();//reverse the list so children always come before parents
+                            var changedparents = new HashSet<RpfFile>();
+                            foreach (var trpf in rpflist)
+                            {
+                                if (trpf == null) continue;
+                                if (trpf.AllEntries == null) continue;
+
+                                var changed = changedparents.Contains(trpf);
+
+                                var allentries = trpf.AllEntries.ToArray();//can't iterate this list as it might get changed
+                                foreach (var entry in allentries)
+                                {
+                                    var rfe = entry as RpfResourceFileEntry;
+                                    if (rfe == null) continue;
+                                    if (RequiresConversion(rfe) == false) continue;
+
+                                    var dir = entry.Parent;
+                                    var name = rfe.Name;
+                                    var type = Path.GetExtension(rfe.NameLower);
+                                    var datain = trpf.ExtractFile(rfe);//unfortunately the data extracted here is decompressed but we need a compressed resource file to convert.
+                                    datain = ResourceBuilder.Compress(datain); //not completely ideal to recompress it...
+                                    datain = ResourceBuilder.AddResourceHeader(rfe, datain);
+
+                                    var dataout = TryConvert(datain, type, Log, rfe.Path, false, out var converted);
+
+                                    if ((converted == false) || (dataout == null))
+                                    {
+                                        Log($"{rfe.Path} - ERROR - unable to convert!");
+                                        continue;
+                                    }
+
+                                    RpfFile.CreateFile(dir, name, dataout, true);
+
+                                    changed = true;
+                                }
+
+                                if (changed)
+                                {
+                                    Log($"{trpf.Path} - Defragmenting");
+                                    RpfFile.Defragment(trpf, null, false);
+                                    
+                                    if (trpf.Parent != null) //flag the parent as changed to force defragment it also
+                                    {
+                                        changedparents.Add(trpf.Parent);
+                                    }
+                                }
+                            }
+
 
                         }
                         else
@@ -275,6 +355,25 @@ namespace CodeWalker.Core.Utils
                     }
             }
 
+        }
+
+
+        public static bool RequiresConversion(RpfResourceFileEntry rfe)
+        {
+            if (rfe == null) return false;
+            if (string.IsNullOrEmpty(rfe.NameLower)) return false;
+            var didx = rfe.NameLower.LastIndexOf('.');
+            if (didx < 0) return false;
+            var ext = rfe.NameLower.Substring(didx);
+            switch (ext)
+            {
+                case ".ytd": return rfe.Version != 5;
+                case ".ydr": return rfe.Version != 159;
+                case ".ydd": return rfe.Version != 159;
+                case ".yft": return rfe.Version != 171;
+                case ".ypt": return rfe.Version != 71;
+            }
+            return false;
         }
 
 
