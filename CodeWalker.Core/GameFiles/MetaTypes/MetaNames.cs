@@ -2592,7 +2592,7 @@ namespace CodeWalker.GameFiles
         directionalmotionbluriterparams = 2777949533,
         directionalmotionblurlength = 544111294,
         directionalmotionblurparams = 3408424243,
-        DirtBumpSampler = 3157820509,//thanks CP
+        dirtbumpsampler = 3157820509,//thanks CP  //(was DirtBumpSampler but fixed casing -dexy)
         dirtcolor = 1146381126,
         dirtdecalmask = 1050016400,
         dirtlevel = 47191856,
