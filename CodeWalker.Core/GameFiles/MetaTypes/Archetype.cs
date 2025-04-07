@@ -749,9 +749,10 @@ namespace CodeWalker.GameFiles
                                     c[5] = new Vector3(abmax.X, abmin.Y, abmax.Z);
                                     c[6] = new Vector3(abmax.X, abmax.Y, abmin.Z);
                                     c[7] = abmax;
+                                    Vector3 center = (abmin + abmax) * 0.5f;
                                     for (int n = 0; n < 8; n++)
                                     {
-                                        Vector3 corn = ori.Multiply(c[n]) + pos;
+                                        Vector3 corn = ori.Multiply(c[n] - center) + center + pos;
                                         min = Vector3.Min(min, corn);
                                         max = Vector3.Max(max, corn);
                                     }
