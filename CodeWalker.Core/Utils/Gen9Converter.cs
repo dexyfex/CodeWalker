@@ -189,21 +189,25 @@ namespace CodeWalker.Core.Utils
 
                                 var changed = changedparents.Contains(trpf);
 
-                                var allentries = trpf.AllEntries.ToArray();//can't iterate this list as it might get changed
-                                var entryprogressstep = rpfprogressstep / Math.Max(1, allentries.Length);
+                                var allentries = new List<RpfResourceFileEntry>();
+                                foreach (var entry in trpf.AllEntries)
+                                {
+                                    if (entry is RpfResourceFileEntry rfe) allentries.Add(rfe);
+                                }
+                                allentries.Sort((a, b) => a.FileOffset.CompareTo(b.FileOffset));
+
+                                var entryprogressstep = rpfprogressstep / Math.Max(1, allentries.Count);
                                 var curEntry = 0;
-                                foreach (var entry in allentries)
+                                foreach (var rfe in allentries)
                                 {
                                     var curentryprogress = currpfprogress + (curEntry * entryprogressstep);
                                     curEntry++;
 
-                                    var rfe = entry as RpfResourceFileEntry;
-                                    if (rfe == null) continue;
                                     if (RequiresConversion(rfe) == false) continue;
 
                                     Progress(curentryprogress);
 
-                                    var dir = entry.Parent;
+                                    var dir = rfe.Parent;
                                     var name = rfe.Name;
                                     var type = Path.GetExtension(rfe.NameLower);
                                     var datain = trpf.ExtractFile(rfe);//unfortunately the data extracted here is decompressed but we need a compressed resource file to convert.
