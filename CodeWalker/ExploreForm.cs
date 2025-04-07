@@ -537,6 +537,8 @@ namespace CodeWalker
             GoButton.Enabled = true;
             RefreshButton.Enabled = true;
             SearchButton.Enabled = true;
+            SearchButton.Checked = false;
+            SearchFilterButton.Checked = false;
             EditModeButton.Enabled = true;
         }
 
@@ -1340,6 +1342,7 @@ namespace CodeWalker
             SearchTextBox.Text = text;
             SearchButton.Image = SearchGlobalButton.Image;
             SearchButton.Text = SearchGlobalButton.Text;
+            SearchButton.Checked = false;
             SearchGlobalButton.Checked = true;
             SearchFilterButton.Checked = false;
 
@@ -1386,14 +1389,38 @@ namespace CodeWalker
 
         public void Filter(string text)
         {
+            SearchGlobalButton.Checked = false;
+            SearchFilterButton.Checked = !SearchFilterButton.Checked;
             SearchTextBox.Text = text;
             SearchButton.Image = SearchFilterButton.Image;
             SearchButton.Text = SearchFilterButton.Text;
-            SearchGlobalButton.Checked = false;
-            SearchFilterButton.Checked = true;
+            SearchButton.Checked = SearchFilterButton.Checked;
 
-            //TODO!
-            MessageBox.Show("Filter TODO!");
+            FilterUpdate();
+        }
+        private void FilterUpdate()
+        {
+            var term = SearchTextBox.Text;
+            var terms = term.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
+            bool filterenabled = SearchFilterButton.Checked;
+            if (filterenabled && (terms.Length > 0) && (!string.IsNullOrEmpty(term)))
+            {
+                var origfiles = CurrentFolder.GetListItems();
+                var filtered = new List<MainListItem>();
+                foreach (var file in origfiles)
+                {
+                    if (MainTreeFolder.SearchMatch(file.Name.ToLowerInvariant(), terms))
+                    {
+                        filtered.Add(file);
+                    }
+                }
+                CurrentFiles = filtered;
+            }
+            else
+            {
+                CurrentFiles = CurrentFolder.GetListItems();
+            }
+            SortMainListView(SortColumnIndex, SortDirection); //sorts CurrentItems and sets VirtualListSize
         }
 
 
@@ -4090,6 +4117,14 @@ namespace CodeWalker
             }
         }
 
+        private void SearchTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (SearchFilterButton.Checked)
+            {
+                FilterUpdate();
+            }
+        }
+
         private void SearchTextBox_Enter(object sender, EventArgs e)
         {
             BeginInvoke(new Action(() => SearchTextBox.SelectAll()));
@@ -4651,6 +4686,19 @@ namespace CodeWalker
             form.AddSearchResult(null);
 
             return resultcount;
+        }
+        public static bool SearchMatch(string test, string[] terms)
+        {
+            int startidx = 0;
+            for (int i = 0; i < terms.Length; i++)
+            {
+                if (startidx >= test.Length) return false;
+                var term = terms[i];
+                var idx = test.IndexOf(term, startidx);
+                if (idx < 0) return false;
+                startidx = idx + term.Length;
+            }
+            return true;
         }
 
         public void Clear()

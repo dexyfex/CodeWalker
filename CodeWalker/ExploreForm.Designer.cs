@@ -97,7 +97,7 @@
             this.EditModeButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.SearchTextBox = new System.Windows.Forms.ToolStripTextBox();
-            this.SearchButton = new System.Windows.Forms.ToolStripSplitButton();
+            this.SearchButton = new WinForms.ToolStripSplitButtonFix();
             this.SearchGlobalButton = new System.Windows.Forms.ToolStripMenuItem();
             this.SearchFilterButton = new System.Windows.Forms.ToolStripMenuItem();
             this.MainStatusBar = new System.Windows.Forms.StatusStrip();
@@ -112,6 +112,7 @@
             this.MainAttrColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.MainPathColumnHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.EditModeBaseWarningPanel = new System.Windows.Forms.Panel();
+            this.CopyToModsFolderButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.EditModeModsWarningPanel = new System.Windows.Forms.Panel();
@@ -161,7 +162,6 @@
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             this.VSExtender = new WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender(this.components);
-            this.CopyToModsFolderButton = new System.Windows.Forms.Button();
             this.MainMenu.SuspendLayout();
             this.MainToolbar.SuspendLayout();
             this.MainStatusBar.SuspendLayout();
@@ -756,6 +756,7 @@
             this.SearchTextBox.Size = new System.Drawing.Size(140, 25);
             this.SearchTextBox.Enter += new System.EventHandler(this.SearchTextBox_Enter);
             this.SearchTextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.SearchTextBox_KeyPress);
+            this.SearchTextBox.TextChanged += new System.EventHandler(this.SearchTextBox_TextChanged);
             // 
             // SearchButton
             // 
@@ -952,6 +953,17 @@
             this.EditModeBaseWarningPanel.Name = "EditModeBaseWarningPanel";
             this.EditModeBaseWarningPanel.Size = new System.Drawing.Size(559, 24);
             this.EditModeBaseWarningPanel.TabIndex = 1;
+            // 
+            // CopyToModsFolderButton
+            // 
+            this.CopyToModsFolderButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.CopyToModsFolderButton.Location = new System.Drawing.Point(420, 1);
+            this.CopyToModsFolderButton.Name = "CopyToModsFolderButton";
+            this.CopyToModsFolderButton.Size = new System.Drawing.Size(110, 22);
+            this.CopyToModsFolderButton.TabIndex = 2;
+            this.CopyToModsFolderButton.Text = "Copy to mods folder";
+            this.CopyToModsFolderButton.UseVisualStyleBackColor = true;
+            this.CopyToModsFolderButton.Click += new System.EventHandler(this.CopyToModsFolderButton_Click);
             // 
             // pictureBox1
             // 
@@ -1335,17 +1347,6 @@
             // 
             this.VSExtender.DefaultRenderer = null;
             // 
-            // CopyToModsFolderButton
-            // 
-            this.CopyToModsFolderButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.CopyToModsFolderButton.Location = new System.Drawing.Point(420, 1);
-            this.CopyToModsFolderButton.Name = "CopyToModsFolderButton";
-            this.CopyToModsFolderButton.Size = new System.Drawing.Size(110, 22);
-            this.CopyToModsFolderButton.TabIndex = 2;
-            this.CopyToModsFolderButton.Text = "Copy to mods folder";
-            this.CopyToModsFolderButton.UseVisualStyleBackColor = true;
-            this.CopyToModsFolderButton.Click += new System.EventHandler(this.CopyToModsFolderButton_Click);
-            // 
             // ExploreForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1413,7 +1414,7 @@
         private System.Windows.Forms.ToolStripMenuItem ForwardListButton;
         private System.Windows.Forms.ToolStripMenuItem UpListButton;
         private System.Windows.Forms.ToolStripButton GoButton;
-        private System.Windows.Forms.ToolStripSplitButton SearchButton;
+        private WinForms.ToolStripSplitButtonFix SearchButton;
         private System.Windows.Forms.ToolStripMenuItem SearchGlobalButton;
         private System.Windows.Forms.ToolStripMenuItem SearchFilterButton;
         private System.Windows.Forms.ToolStripMenuItem ListContextViewMenu;
