@@ -1171,15 +1171,17 @@ namespace CodeWalker.GameFiles
             //find the smallest available hole from the list.
             uint found = 0;
             uint foundsize = 0xFFFFFFFF;
-            
-            for (int i = 1; i < allfiles.Count(); i++)
-            {
-                RpfFileEntry e1 = allfiles[i - 1];
-                RpfFileEntry e2 = allfiles[i];
 
-                uint e1cnt = GetBlockCount(e1.GetFileSize());
-                uint e1end = e1.FileOffset + e1cnt;
+            uint e1end = GetHeaderBlockCount();//start searching for space after the end of the header
+            uint e1next = e1end;
+
+            for (int i = 0; i < allfiles.Count(); i++)
+            {
+                RpfFileEntry e2 = allfiles[i];
+                uint e2cnt = GetBlockCount(e2.GetFileSize());
                 uint e2beg = e2.FileOffset;
+                e1end = e1next;
+                e1next = e2.FileOffset + e2cnt;
                 if ((e2beg > ignorestart) && (e1end < ignoreend))
                 {
                     continue; //this space is in the ignore area.
