@@ -1573,7 +1573,7 @@ namespace CodeWalker.GameFiles
                 {
                     parent.InsertFileSpace(bw, entry);
 
-                    fstream.Position = parent.StartPos + entry.FileOffset * 512;
+                    fstream.Position = parent.StartPos + ((long)entry.FileOffset * 512);
 
                     file.WriteNewArchive(bw, encryption);
                 }
@@ -1746,8 +1746,8 @@ namespace CodeWalker.GameFiles
                 using (var bw = new BinaryWriter(fstream))
                 {
                     parent.InsertFileSpace(bw, entry);
-                    long bbeg = parent.StartPos + (entry.FileOffset * 512);
-                    long bend = bbeg + (GetBlockCount(entry.GetFileSize()) * 512);
+                    long bbeg = parent.StartPos + ((long)entry.FileOffset * 512);
+                    long bend = bbeg + ((long)GetBlockCount(entry.GetFileSize()) * 512);
                     fstream.Position = bbeg;
                     fstream.Write(data, 0, data.Length);
                     WritePadding(fstream, bend); //write 0's until the end of the block.
@@ -1761,7 +1761,7 @@ namespace CodeWalker.GameFiles
                 RpfFile file = new RpfFile(name, rpath, data.LongLength);
                 file.Parent = parent;
                 file.ParentFileEntry = entry as RpfBinaryFileEntry;
-                file.StartPos = parent.StartPos + (entry.FileOffset * 512);
+                file.StartPos = parent.StartPos + ((long)entry.FileOffset * 512);
                 parent.Children.Add(file);
 
                 using (var fstream = File.OpenRead(fpath))
