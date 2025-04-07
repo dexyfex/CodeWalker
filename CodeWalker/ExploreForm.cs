@@ -1339,6 +1339,10 @@ namespace CodeWalker
             if (Searching) return;
             if (string.IsNullOrEmpty(text)) return;
 
+            var term = text.ToLowerInvariant();
+            var terms = term.Split(new[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
+            if (terms.Length == 0) return;
+
             SearchTextBox.Text = text;
             SearchButton.Image = SearchGlobalButton.Image;
             SearchButton.Text = SearchGlobalButton.Text;
@@ -1362,15 +1366,13 @@ namespace CodeWalker
 
             UpdateStatus("Searching...");
 
-            var term = text.ToLowerInvariant();
-
             //Task.Run(() =>
             //{
                 Searching = true;
 
             Cursor = Cursors.WaitCursor;
 
-                var resultcount = RootFolder.Search(term, this);
+                var resultcount = RootFolder.Search(terms, this);
 
                 if (Searching)
                 {
@@ -4632,14 +4634,14 @@ namespace CodeWalker
             return Path;
         }
 
-        public int Search(string term, ExploreForm form)
+        public int Search(string[] terms, ExploreForm form)
         {
             int resultcount = 0;
             //if (!form.Searching) return resultcount;
 
             form.UpdateStatus("Searching " + Path + "...");
 
-            if (Name.ToLowerInvariant().Contains(term))
+            if (SearchMatch(Name.ToLowerInvariant(), terms))
             {
                 form.AddSearchResult(new MainListItem(this));
                 resultcount++;
@@ -4653,7 +4655,7 @@ namespace CodeWalker
                 {
                     //if (!form.Searching) return resultcount;
                     var fi = new FileInfo(file);
-                    if (fi.Name.ToLowerInvariant().Contains(term))
+                    if (SearchMatch(fi.Name.ToLowerInvariant(), terms))
                     {
                         form.AddSearchResult(new MainListItem(file, rootpath, this));
                         resultcount++;
@@ -4666,7 +4668,7 @@ namespace CodeWalker
                 {
                     //if (!form.Searching) return resultcount;
                     if (file.NameLower.EndsWith(".rpf")) continue; //don't search rpf files..
-                    if (file.NameLower.Contains(term))
+                    if (SearchMatch(file.NameLower, terms))
                     {
                         form.AddSearchResult(new MainListItem(file, rootpath, this));
                         resultcount++;
@@ -4679,7 +4681,7 @@ namespace CodeWalker
                 foreach (var child in Children)
                 {
                     //if (!form.Searching) return resultcount;
-                    resultcount += child.Search(term, form);
+                    resultcount += child.Search(terms, form);
                 }
             }
 
