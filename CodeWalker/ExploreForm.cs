@@ -3784,6 +3784,45 @@ namespace CodeWalker
             e.Item = lvi;
         }
 
+        private void MainListView_SearchForVirtualItem(object sender, SearchForVirtualItemEventArgs e)
+        {
+            if (CurrentFiles == null) return;
+            var term = e.Text;
+            if (string.IsNullOrEmpty(term)) return;
+            var terml = term.ToLowerInvariant();
+            var start = e.StartIndex;
+            var isprefix = true;// e.IsPrefixSearch;
+            var direction = e.Direction;
+            var up = (direction == SearchDirectionHint.Up) || (direction == SearchDirectionHint.Left);
+            var icnt = CurrentFiles.Count;
+            var incr = up ? -1 : 1;
+            var i = start;
+            while ((i >= 0) && (i < icnt))
+            {
+                var name = CurrentFiles[i]?.Name;
+                if (string.IsNullOrEmpty(name) == false)
+                {
+                    if (isprefix)
+                    {
+                        if (name.StartsWith(terml, StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            e.Index = i;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (name.ToLowerInvariant().Contains(terml))//they fixed this in .net8
+                        {
+                            e.Index = i;
+                            return;
+                        }
+                    }
+                }
+                i += incr;
+            }
+        }
+
         private void MainListView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             var newdir = SortDirection;

@@ -97,7 +97,7 @@
             this.EditModeButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.SearchTextBox = new System.Windows.Forms.ToolStripTextBox();
-            this.SearchButton = new WinForms.ToolStripSplitButtonFix();
+            this.SearchButton = new CodeWalker.WinForms.ToolStripSplitButtonFix();
             this.SearchGlobalButton = new System.Windows.Forms.ToolStripMenuItem();
             this.SearchFilterButton = new System.Windows.Forms.ToolStripMenuItem();
             this.MainStatusBar = new System.Windows.Forms.StatusStrip();
@@ -909,6 +909,7 @@
             this.MainListView.ItemActivate += new System.EventHandler(this.MainListView_ItemActivate);
             this.MainListView.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.MainListView_ItemDrag);
             this.MainListView.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.MainListView_RetrieveVirtualItem);
+            this.MainListView.SearchForVirtualItem += new System.Windows.Forms.SearchForVirtualItemEventHandler(this.MainListView_SearchForVirtualItem);
             this.MainListView.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainListView_DragDrop);
             this.MainListView.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainListView_DragEnter);
             this.MainListView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.MainListView_KeyDown);
