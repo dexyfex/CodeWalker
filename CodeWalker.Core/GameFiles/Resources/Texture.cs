@@ -1113,6 +1113,9 @@ namespace CodeWalker.GameFiles
                 {
                     height = Math.Max(1, (height + 3) / 4);
                 }
+
+                int minimumLengthPerMip = DDSIO.DXTex.BitsPerPixel(DDSIO.GetDXGIFormat((TextureFormat)format)) *
+                    (compressed ? 16 : 1) / 8;
                 
                 int fullLength = 0;
                 int length = stride * height;
@@ -1147,9 +1150,8 @@ namespace CodeWalker.GameFiles
                     // Compressed texture mipmaps should never contain less than 1 4x4 block (16 pixels)
                     // so length should be constrained to never be less than bits per pixel multiplied by 16 pixels and 
                     // divided by 8 to get block length in bytes. Uncompressed texture mipmaps should never contain less
-                    // than 1 pixel's worth of data. 
-                    length = Math.Max(DDSIO.DXTex.BitsPerPixel(DDSIO.GetDXGIFormat((TextureFormat)format)) * 
-                        (compressed ? 16 : 1)/8, length);
+                    // than 1 pixel's worth of data.
+                    length = Math.Max(minimumLengthPerMip, length);
                 }
 
                 FullData = reader.ReadBytes(fullLength);
