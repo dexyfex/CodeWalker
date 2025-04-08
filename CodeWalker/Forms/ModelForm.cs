@@ -362,9 +362,16 @@ namespace CodeWalker.Forms
                     {
                         if (!weather.Inited)
                         {
-                            //UpdateStatus("Loading weather...");
-                            weather.Init(gameFileCache, UpdateStatus, timecycle);
-                            //UpdateStatus("Weather loaded.");
+                            try
+                            {
+                                UpdateStatus("Loading weather...");
+                                weather.Init(gameFileCache, UpdateStatus, timecycle);
+                                UpdateStatus("Weather loaded.");
+                            }
+                            catch (Exception)
+                            {
+
+                            }
                         }
                         //if (!clouds.Inited)
                         //{
