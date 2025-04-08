@@ -38,10 +38,10 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Kozuka Gothic Pro R", 9F);
+            this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F);
             this.label1.Location = new System.Drawing.Point(12, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(125, 16);
+            this.label1.Size = new System.Drawing.Size(133, 15);
             this.label1.TabIndex = 0;
             this.label1.Text = "Last CodeWalker Error:";
             // 
@@ -50,17 +50,17 @@
             this.ErrorTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ErrorTextBox.Font = new System.Drawing.Font("Kozuka Gothic Pro R", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.ErrorTextBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.ErrorTextBox.Location = new System.Drawing.Point(15, 33);
             this.ErrorTextBox.Name = "ErrorTextBox";
-            this.ErrorTextBox.Size = new System.Drawing.Size(1047, 528);
+            this.ErrorTextBox.Size = new System.Drawing.Size(757, 516);
             this.ErrorTextBox.TabIndex = 2;
             this.ErrorTextBox.Text = "";
             // 
             // SaveLogButton
             // 
             this.SaveLogButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.SaveLogButton.Location = new System.Drawing.Point(972, 5);
+            this.SaveLogButton.Location = new System.Drawing.Point(682, 5);
             this.SaveLogButton.Name = "SaveLogButton";
             this.SaveLogButton.Size = new System.Drawing.Size(90, 23);
             this.SaveLogButton.TabIndex = 3;
@@ -70,7 +70,8 @@
             // 
             // CopyToClipboardButton
             // 
-            this.CopyToClipboardButton.Location = new System.Drawing.Point(860, 5);
+            this.CopyToClipboardButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.CopyToClipboardButton.Location = new System.Drawing.Point(570, 5);
             this.CopyToClipboardButton.Name = "CopyToClipboardButton";
             this.CopyToClipboardButton.Size = new System.Drawing.Size(106, 23);
             this.CopyToClipboardButton.TabIndex = 4;
@@ -82,7 +83,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1074, 573);
+            this.ClientSize = new System.Drawing.Size(784, 561);
             this.Controls.Add(this.CopyToClipboardButton);
             this.Controls.Add(this.SaveLogButton);
             this.Controls.Add(this.ErrorTextBox);

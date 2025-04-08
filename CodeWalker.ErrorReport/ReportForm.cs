@@ -26,7 +26,7 @@ namespace CodeWalker.ErrorReport
                 if (entry.EntryType == EventLogEntryType.Error && entry.Source == ".NET Runtime")
                 {
                     string message = entry.Message;
-                    string[] lines = message.Split(new[] { '\n' }, StringSplitOptions.None);
+                    string[] lines = message.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
                     if (lines.Length > 0 &&
                         (lines[0].Contains("CodeWalker.exe") ||
