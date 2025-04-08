@@ -99,7 +99,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentRoom._Data.bbMin != bb)
             {
                 CurrentRoom._Data.bbMin = bb;
-                CurrentRoom.BBMin_CW = bb;
+                //CurrentRoom.BBMin_CW = bb;
                 ProjectForm.SetYtypHasChanged(true);
             }
         }
@@ -113,7 +113,7 @@ namespace CodeWalker.Project.Panels
             if (CurrentRoom._Data.bbMax != bb)
             {
                 CurrentRoom._Data.bbMax = bb;
-                CurrentRoom.BBMax_CW = bb;
+                //CurrentRoom.BBMax_CW = bb;
                 ProjectForm.SetYtypHasChanged(true);
             }
         }
