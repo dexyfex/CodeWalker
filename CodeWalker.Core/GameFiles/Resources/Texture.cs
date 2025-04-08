@@ -1095,24 +1095,58 @@ namespace CodeWalker.GameFiles
             else
             {
                 uint format = Convert.ToUInt32(parameters[0]);
-                int Width = Convert.ToInt32(parameters[1]);
-                int Height = Convert.ToInt32(parameters[2]);
-                int Levels = Convert.ToInt32(parameters[3]);
-                int Stride = Convert.ToInt32(parameters[4]);
+                int width = Convert.ToInt32(parameters[1]);
+                int height = Convert.ToInt32(parameters[2]);
+                int levels = Convert.ToInt32(parameters[3]);
+                int stride = Convert.ToInt32(parameters[4]);
 
                 bool compressed = DDSIO.DXTex.IsCompressed(DDSIO.GetDXGIFormat((TextureFormat)format));
-
-                if (compressed && Height % 4 != 0)
+                
+                if (compressed && height % 4 != 0)
                 {
-                    Height = Math.Max(4, (Height + 3) & ~3);
+                    height = Math.Max(4, (height + 3) & ~3);
                 }
-
+                
+                // Manually compute pitch/stride so we don't rely on what's contained in the DDS Header/Texture
+                // parameters as I've encountered a number of files with incorrectly computed strides lately. In
+                // particular a handful of ATI2 textures.
+                DDSIO.DXTex.ComputePitch(DDSIO.GetDXGIFormat((TextureFormat)format), width, height, out int _, out int length, 0);
+                
                 int fullLength = 0;
-                int length = Stride * Height;
-                for (int i = 0; i < Levels; i++)
+                for (int i = 0; i < levels; i++)
                 {
+                    // Length should only be divided by an amount relative to how much the mipmap dimensions actually
+                    // decreased by.
+                    int previousWidth = width;
+                    int previousHeight = height;
+                    width = Math.Max(1, width / 2);
+                    height = Math.Max(1, height / 2);
                     fullLength += length;
-                    length /= 4;
+                    int div = 0;
+
+                    if (previousWidth != width)
+                    {
+                        div += 2;
+                    }
+
+                    if (previousHeight != height)
+                    {
+                        div += 2;
+                    }
+
+                    if (div == 0)
+                    {
+                        div = 1;
+                    }
+                    
+                    length /= div;
+                    
+                    // Compressed texture mipmaps should never contain less than 1 4x4 block (16 pixels)
+                    // so length should be constrained to never be less than bits per pixel multiplied by 16 pixels and 
+                    // divided by 8 to get block length in bytes. Uncompressed texture mipmaps should never contain less
+                    // than 1 pixel's worth of data. 
+                    length = Math.Max(DDSIO.DXTex.BitsPerPixel(DDSIO.GetDXGIFormat((TextureFormat)format)) * 
+                        (compressed ? 16 : 1)/8, length);
                 }
 
                 FullData = reader.ReadBytes(fullLength);
