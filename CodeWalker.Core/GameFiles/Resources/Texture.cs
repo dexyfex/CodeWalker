@@ -938,7 +938,12 @@ namespace CodeWalker.GameFiles
                 this.Unknown_84h = reader.ReadUInt32();
                 this.Unknown_88h = reader.ReadUInt32();
                 this.Unknown_8Ch = reader.ReadUInt32();
-
+                
+                // Ignore stride loaded from file as it may be incorrect, especially if texture is ATI2 and the file was
+                // previously saved in OpenIV
+                DDSIO.DXTex.ComputePitch(DDSIO.GetDXGIFormat(this.Format), this.Width, this.Height, out int stride, out int _, 0);
+                this.Stride = (ushort)stride;
+                
                 // read reference data
                 this.Data = reader.ReadBlockAt<TextureData>(this.DataPointer, this.Format, this.Width, this.Height, this.Levels, this.Stride);
 
@@ -1102,17 +1107,15 @@ namespace CodeWalker.GameFiles
 
                 bool compressed = DDSIO.DXTex.IsCompressed(DDSIO.GetDXGIFormat((TextureFormat)format));
                 
-                if (compressed && height % 4 != 0)
+                // For compressed textures stride should be multiplied by the number of vertical blocks, not the height
+                // of the texture.
+                if (compressed)
                 {
-                    height = Math.Max(4, (height + 3) & ~3);
+                    height = Math.Max(1, (height + 3) / 4);
                 }
                 
-                // Manually compute pitch/stride so we don't rely on what's contained in the DDS Header/Texture
-                // parameters as I've encountered a number of files with incorrectly computed strides lately. In
-                // particular a handful of ATI2 textures.
-                DDSIO.DXTex.ComputePitch(DDSIO.GetDXGIFormat((TextureFormat)format), width, height, out int _, out int length, 0);
-                
                 int fullLength = 0;
+                int length = stride * height;
                 for (int i = 0; i < levels; i++)
                 {
                     // Length should only be divided by an amount relative to how much the mipmap dimensions actually
