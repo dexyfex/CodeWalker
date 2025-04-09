@@ -389,6 +389,7 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
                 var kattr = cnode.Attributes["key"].Value;
                 var tattr = cnode.Attributes["type"].Value;//CW invention for convenience..!
                 var khash = (MetaName)(uint)GetHash(kattr);
@@ -723,6 +724,8 @@ namespace CodeWalker.GameFiles
                             arrEntry.DataOffset = entry.DataOffset;//slight hack for traversing array array
                             foreach (XmlNode cnode in node.ChildNodes)
                             {
+                                if (cnode.NodeType != XmlNodeType.Element) continue;
+
                                 TraverseArray(cnode, pb, arrEntry, subarrEntry, results, data, structInfo);
 
                                 arrEntry.DataOffset += 16;//ptr size... todo: what if not pointer array?
@@ -819,6 +822,8 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
+
                 var struc = Traverse(cnode, pb, type);
 
                 if (struc != null)
@@ -842,6 +847,8 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
+
                 var type = (MetaName)(uint)GetHash(cnode.Attributes["type"]?.Value ?? "");
                 if (type != 0)
                 {
@@ -1067,6 +1074,7 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
                 var val = GetHash(cnode.InnerText);
                 items.Add(MetaTypes.SwapBytes(val));
             }
@@ -1079,6 +1087,7 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
                 items.Add(cnode.InnerText);
             }
 
@@ -1141,6 +1150,7 @@ namespace CodeWalker.GameFiles
         {
             foreach (XmlNode node in nodes)
             {
+                if (node.NodeType != XmlNodeType.Element) continue;
                 if (GetHash(node.Name) == (uint)name)
                 {
                     return node;

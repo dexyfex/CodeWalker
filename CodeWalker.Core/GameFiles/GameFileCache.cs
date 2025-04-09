@@ -350,6 +350,7 @@ namespace CodeWalker.GameFiles
                 {
                     foreach (XmlNode itemnode in pathsnode.ChildNodes)
                     {
+                        if (itemnode.NodeType != XmlNodeType.Element) continue;
                         DlcPaths.Add(itemnode.InnerText.ToLowerInvariant().Replace('\\', '/').Replace("platform:", "x64"));
                     }
                 }

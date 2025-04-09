@@ -69,7 +69,13 @@ namespace CodeWalker.GameFiles
 
                 var n = new RbfStructure();
                 n.Name = element.Name.LocalName;
-                n.Children = element.Nodes().Select(c => Traverse(c)).ToList();
+                n.Children = new List<IRbfType>();
+                foreach (var c in element.Nodes())
+                {
+                    var child = Traverse(c);
+                    if (child == null) continue;
+                    n.Children.Add(child);
+                }
 
                 foreach (var attr in element.Attributes())
                 {

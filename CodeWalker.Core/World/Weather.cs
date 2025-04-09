@@ -344,6 +344,7 @@ namespace CodeWalker.World
 
                 foreach (XmlNode cycle in tcxml.DocumentElement.ChildNodes)
                 {
+                    if (cycle.NodeType != XmlNodeType.Element) continue;
                     TimeCycleData = new WeatherCycleKeyframeData();
                     TimeCycleData.Init(cycle);
                 }
@@ -402,6 +403,7 @@ namespace CodeWalker.World
             Regions = new Dictionary<string, WeatherCycleKeyframeRegion>();
             foreach (XmlNode child in node.ChildNodes)
             {
+                if (child.NodeType != XmlNodeType.Element) continue;
                 WeatherCycleKeyframeRegion r = new WeatherCycleKeyframeRegion();
                 r.Init(child);
                 Regions[r.Name] = r;
@@ -425,6 +427,7 @@ namespace CodeWalker.World
             Data = new Dictionary<string, WeatherCycleKeyframeDataEntry>();
             foreach (XmlNode child in node.ChildNodes)
             {
+                if (child.NodeType != XmlNodeType.Element) continue;
                 if (child != null)
                 {
                     WeatherCycleKeyframeDataEntry d = new WeatherCycleKeyframeDataEntry();

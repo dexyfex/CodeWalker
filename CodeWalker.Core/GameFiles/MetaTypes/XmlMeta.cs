@@ -828,6 +828,8 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
+
                 var struc = Traverse(cnode, mb, type);
 
                 if (struc != null)
@@ -845,6 +847,8 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
+
                 var type = (MetaName)(uint)GetHash(cnode.Attributes["type"].Value);
                 var struc = Traverse(cnode, mb, type);
 
@@ -1018,6 +1022,7 @@ namespace CodeWalker.GameFiles
 
             foreach (XmlNode cnode in node.ChildNodes)
             {
+                if (cnode.NodeType != XmlNodeType.Element) continue;
                 var val = GetHash(cnode.InnerText);
                 items.Add(val);
             }
@@ -1073,6 +1078,7 @@ namespace CodeWalker.GameFiles
         {
             foreach (XmlNode node in nodes)
             {
+                if (node.NodeType != XmlNodeType.Element) continue;
                 if (GetHash(node.Name) == (uint)entry.EntryNameHash)
                 {
                     return node;

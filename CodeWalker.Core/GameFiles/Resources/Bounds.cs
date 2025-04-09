@@ -1235,6 +1235,7 @@ namespace CodeWalker.GameFiles
                     var polylist = new List<BoundPolygon>();
                     foreach (XmlNode inode in inodes)
                     {
+                        if (inode.NodeType != XmlNodeType.Element) continue;
                         var typestr = inode.Name;
                         var type = Xml.GetEnumValue<BoundPolygonType>(typestr);
                         var poly = CreatePolygon(type);
