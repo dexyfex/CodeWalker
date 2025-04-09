@@ -638,6 +638,7 @@ namespace CodeWalker.Project
             if (CurrentMulti != null)
             {
                 ShowEditMultiPanel(promote);
+                return;
             }
             else if (CurrentMloEntity != null)
             {
@@ -5237,10 +5238,22 @@ namespace CodeWalker.Project
 
             if (selectNew)
             {
-                LoadProjectTree();
-                ProjectExplorer?.TrySelectTrainNodeTreeNode(n);
                 CurrentTrainNode = n;
-                ShowEditTrainNodePanel(false);
+
+                var trainTrackNodeTreeNode = ProjectExplorer?.FindTrainTrackTreeNode(n.Track);
+                if (trainTrackNodeTreeNode != null) {
+                    ProjectExplorer?.LoadTrainTrackTreeNodes(n.Track, trainTrackNodeTreeNode).ContinueWith(delegate
+                        {
+                            ProjectExplorer?.TrySelectTrainNodeTreeNode(n);
+                            ShowEditTrainNodePanel(false);
+
+                        }, TaskContinuationOptions.ExecuteSynchronously);
+                } else
+                {
+                    LoadProjectTree();
+                    ProjectExplorer?.TrySelectTrainNodeTreeNode(n);
+                    ShowEditTrainNodePanel(false);
+                }
             }
 
 
