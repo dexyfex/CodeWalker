@@ -1542,6 +1542,8 @@ namespace CodeWalker
             {
                 camrel += ori.Multiply(selectionItem.BBOffset);
                 ori = ori * selectionItem.BBOrientation;
+                bbmin = selectionItem.MloRoomDef._Data.bbMin;
+                bbmax = selectionItem.MloRoomDef._Data.bbMax;   
             }
             if ((selectionItem.ArchetypeExtension != null) || (selectionItem.EntityExtension != null) || (selectionItem.CollisionBounds != null))
             {
