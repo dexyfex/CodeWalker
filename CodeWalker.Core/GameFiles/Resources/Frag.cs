@@ -1174,10 +1174,8 @@ namespace CodeWalker.GameFiles
 
     [TypeConverter(typeof(ExpandableObjectConverter))] public class FragGlassWindow : ResourceSystemBlock, IMetaXmlItem
     {
-        public override long BlockLength
-        {
-            get { return 112; }
-        }
+        public override long BlockLength => 112;
+        public override long BlockLength_Gen9 => 416;
 
         // structure data
         public Vector3 ProjectionRow1 { get; set; }
@@ -1190,7 +1188,8 @@ namespace CodeWalker.GameFiles
         public float UnkFloat14 { get; set; } //offset?
         public float UnkFloat15 { get; set; } //scale? sum of this and above often gives integers eg 1, 6
         public float UnkFloat16 { get; set; } //(as above, Vector2)
-        public VertexDeclaration VertexDeclaration { get; set; } = new VertexDeclaration(); //this all equates to VertexTypePNCTT
+        public VertexDeclaration VertexDeclaration { get; set; } //VertexTypePNCTT
+        public VertexDeclarationG9 VertexDeclarationG9 { get; set; }
         public float Thickness { get; set; } //probably
         public ushort UnkUshort1 = 2; //2
         public ushort Flags { get; set; }//512, 768, 1280 etc ... flags
@@ -1217,7 +1216,17 @@ namespace CodeWalker.GameFiles
             this.UnkFloat14 = reader.ReadSingle();
             this.UnkFloat15 = reader.ReadSingle();
             this.UnkFloat16 = reader.ReadSingle();
-            this.VertexDeclaration.Read(reader);
+            if (reader.IsGen9)
+            {
+                VertexDeclarationG9 = new VertexDeclarationG9();
+                VertexDeclarationG9.Read(reader);
+                VertexDeclaration = VertexDeclarationG9.GetLegacyDeclaration();
+            }
+            else
+            {
+                this.VertexDeclaration = new VertexDeclaration();
+                this.VertexDeclaration.Read(reader);
+            }
             this.Thickness = reader.ReadSingle();
             this.UnkUshort1 = reader.ReadUInt16();
             this.Flags = reader.ReadUInt16();
@@ -1252,7 +1261,19 @@ namespace CodeWalker.GameFiles
             writer.Write(this.UnkFloat14);
             writer.Write(this.UnkFloat15);
             writer.Write(this.UnkFloat16);
-            this.VertexDeclaration.Write(writer);
+            if (VertexDeclaration == null) VertexDeclaration = CreateVertexDeclaration();
+            if (writer.IsGen9)
+            {
+                if (VertexDeclarationG9 == null)
+                {
+                    VertexDeclarationG9 = VertexDeclarationG9.FromLegacyDeclaration(VertexDeclaration);
+                }
+                VertexDeclarationG9.Write(writer);
+            }
+            else
+            {
+                VertexDeclaration.Write(writer);
+            }
             writer.Write(this.Thickness);
             writer.Write(this.UnkUshort1);
             writer.Write(this.Flags);
@@ -1275,7 +1296,7 @@ namespace CodeWalker.GameFiles
             YftXml.ValueTag(sb, indent, "UnkFloat18", FloatUtil.ToString(UnkFloat18));
             YftXml.ValueTag(sb, indent, "UnkFloat19", FloatUtil.ToString(UnkFloat19));
             YftXml.SelfClosingTag(sb, indent, "Tangent " + FloatUtil.GetVector3XmlString(Tangent));
-            VertexDeclaration.WriteXml(sb, indent, "Layout");
+            VertexDeclaration?.WriteXml(sb, indent, "Layout");
         }
         public void ReadXml(XmlNode node)
         {
@@ -1295,7 +1316,19 @@ namespace CodeWalker.GameFiles
             UnkFloat18 = Xml.GetChildFloatAttribute(node, "UnkFloat18", "value");
             UnkFloat19 = Xml.GetChildFloatAttribute(node, "UnkFloat19", "value");
             Tangent = Xml.GetChildVector3Attributes(node, "Tangent");
+            VertexDeclaration = new VertexDeclaration();
             VertexDeclaration.ReadXml(node.SelectSingleNode("Layout"));
+        }
+
+        private VertexDeclaration CreateVertexDeclaration()
+        {
+            var vd = new VertexDeclaration()
+            {
+                Types = VertexDeclarationTypes.GTAV4,
+                Flags = (uint)VertexType.PNCTT,
+            };
+            vd.UpdateCountAndStride();
+            return vd;
         }
     }
 
