@@ -6330,6 +6330,41 @@
   </Parameters>
  </Item>
  <Item>
+  <Name>vehicle_tire_emissive</Name>
+  <FileName>vehicle_tire_emissive.sps</FileName>
+  <BufferSizes>32 128 192</BufferSizes>
+  <Parameters>
+   <Item type="Texture" name="depthbuffertex" index="0" />
+   <Item type="Texture" name="DiffuseTex" old="DiffuseSampler" index="1" />
+   <Item type="Texture" name="DirtTex" old="DirtSampler" index="2" />
+   <Item type="Texture" name="BumpTex" old="BumpSampler" index="3" />
+   <Item type="Texture" name="SpecularTex" old="SpecSampler" index="4" />
+   <Item type="Texture" name="DiffuseRampTexture" old="DiffuseRampTextureSampler" index="5" />
+   <Item type="Sampler" name="trilinearclamp" index="0" sampler="1" />
+   <Item type="Sampler" name="miplinearclamp" index="1" sampler="2" />
+   <Item type="Sampler" name="miplinearwrap" index="2" sampler="3" />
+   <Item type="Sampler" name="trilinearwrap" index="3" sampler="4" />
+   <Item type="Sampler" name="diffusesampler" index="4" sampler="5" />
+   <Item type="Sampler" name="gcsmshadowtexturesamp" index="5" sampler="6" />
+   <Item type="CBuffer" name="tyreDeformParams" old="tyreDeformParams" buffer="0" length="16" offset="0" />
+   <Item type="CBuffer" name="tyreDeformParams2" old="tyreDeformParams2" buffer="0" length="16" offset="16" />
+   <Item type="CBuffer" name="DiffuseColor" old="matDiffuseColor" buffer="1" length="12" offset="0" />
+   <Item type="CBuffer" name="matDiffuseSpecularRampEnabled" old="matDiffuseSpecularRampEnabled" buffer="1" length="4" offset="12" />
+   <Item type="CBuffer" name="diffusecolor2" buffer="1" length="16" offset="16" />
+   <Item type="CBuffer" name="emissivemultiplier" buffer="1" length="4" offset="32" />
+   <Item type="CBuffer" name="DirtLevelMod" old="dirtLevelMod" buffer="1" length="16" offset="48" />
+   <Item type="CBuffer" name="DirtColor" old="dirtColor" buffer="1" length="12" offset="64" />
+   <Item type="CBuffer" name="Specular2Color" old="specular2Color_DirLerp" buffer="1" length="16" offset="80" />
+   <Item type="CBuffer" name="Reflectivity" old="reflectivePower" buffer="1" length="4" offset="96" />
+   <Item type="CBuffer" name="envEffThickness0" old="envEffThickness" buffer="1" length="4" offset="100" />
+   <Item type="CBuffer" name="envEffScale0" old="envEffScale" buffer="1" length="8" offset="104" />
+   <Item type="CBuffer" name="envEffTexTileUV" old="envEffTexTileUV" buffer="1" length="4" offset="112" />
+   <Item type="CBuffer" name="matWheelWorld0" old="matWheelWorld" buffer="2" length="64" offset="0" />
+   <Item type="CBuffer" name="matWorldViewProj0" old="matWheelWorldViewProj" buffer="2" length="64" offset="64" />
+   <Item type="CBuffer" name="matwheelprevworldviewproj0" buffer="2" length="64" offset="128" />
+  </Parameters>
+ </Item>
+ <Item>
   <Name>vehicle_track</Name>
   <FileName>vehicle_track.sps</FileName>
   <BufferSizes>144</BufferSizes>
