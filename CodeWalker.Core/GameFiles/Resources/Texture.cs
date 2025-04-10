@@ -714,7 +714,7 @@ namespace CodeWalker.GameFiles
             if (Format == 0) return 0;
             var dxgifmt = DDSIO.GetDXGIFormat(Format);
             DDSIO.DXTex.ComputePitch(dxgifmt, Width, Height, out var rowPitch, out var slicePitch, 0);
-            return (ushort)rowPitch;
+            return (ushort)(rowPitch / 4);
         }
         public TextureFormat GetLegacyFormat(TextureFormatG9 format)
         {
@@ -938,6 +938,7 @@ namespace CodeWalker.GameFiles
                 this.Unknown_88h = reader.ReadUInt32();
                 this.Unknown_8Ch = reader.ReadUInt32();
 
+                this.Stride = CalculateStride();
                 // read reference data
                 this.Data = reader.ReadBlockAt<TextureData>(this.DataPointer, this.Format, this.Width, this.Height, this.Levels, this.Stride);
 
