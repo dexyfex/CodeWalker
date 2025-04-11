@@ -8,13 +8,8 @@ using System.Threading.Tasks;
 
 namespace CodeWalker.ModManager
 {
-    public class SettingsFile
+    public class SettingsFile : SimpleKvpFile
     {
-        public string FileName = "CodeWalker.ModManager.ini";
-        public string FilePath;
-        public bool FileExists;
-        public Exception FileError;
-
         public string GameFolder;
         public bool IsGen9;
         public string AESKey;
@@ -37,59 +32,33 @@ namespace CodeWalker.ModManager
 
         public SettingsFile()
         {
-            var path = Assembly.GetExecutingAssembly().Location;
-            var dir = Path.GetDirectoryName(path);
-            FilePath = Path.Combine(dir, FileName);
-            FileExists = File.Exists(FilePath);
-            Load();
-        }
-
-        public void Load()
-        {
-            if (FileExists == false) return;
+            FileName = "CodeWalker.ModManager.ini";
+            OnlySaveIfFileExists = true;//only try and overwrite an existing settings file, as it is used to check if the exe is running in the correct directory!
             try
             {
-                var lines = File.ReadAllLines(FilePath);
-                if (lines == null) return;
-                foreach (var line in lines)
-                {
-                    var tline = line?.Trim();
-                    if (string.IsNullOrEmpty(tline)) continue;
-                    var spi = tline.IndexOf(' ');
-                    if (spi < 1) continue;
-                    if (spi >= (tline.Length - 1)) continue;
-                    var key = tline.Substring(0, spi).Trim();
-                    var val = tline.Substring(spi + 1).Trim();
-                    if (string.IsNullOrEmpty(key)) continue;
-                    if (string.IsNullOrEmpty(val)) continue;
-                    switch (key)
-                    {
-                        case "GameFolder": GameFolder = val; break;
-                        case "IsGen9": bool.TryParse(val, out IsGen9); break;
-                        case "AESKey": AESKey = val; break;
-                    }
-                }
+                FilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), FileName);
+                Load();
             }
             catch (Exception ex)
             {
                 FileError = ex;
-                FileExists = false;
             }
         }
 
-        public void Save()
+        public override void Load()
         {
-            if (FileExists == false) return;
-            try
-            {
-                var sb = new StringBuilder();
-                sb.AppendLine($"GameFolder {GameFolder}");
-                sb.AppendLine($"IsGen9 {IsGen9}");
-                sb.AppendLine($"AESKey {AESKey}");
-                var str = sb.ToString();
-                File.WriteAllText(FilePath, str);
-            }
-            catch { }
+            base.Load();
+            GameFolder = GetItem("GameFolder");
+            bool.TryParse(GetItem("IsGen9"), out IsGen9);
+            AESKey = GetItem("AESKey");
+        }
+        public override void Save()
+        {
+            Items.Clear();
+            SetItem("GameFolder", GameFolder);
+            SetItem("IsGen9", IsGen9.ToString());
+            SetItem("AESKey", AESKey);
+            base.Save();
         }
 
         public void Reset()

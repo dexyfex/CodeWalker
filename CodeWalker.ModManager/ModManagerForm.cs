@@ -180,71 +180,20 @@ namespace CodeWalker.ModManager
 
             SelectMod(null);
 
-            InstalledModsListBox.Items.Clear();
+            InstalledModsListView.Items.Clear();
             foreach (var mod in Mods)
             {
-                if ((mod.IconObject == null) && (string.IsNullOrEmpty(mod.IconFile) == false))
+                if (string.IsNullOrEmpty(mod?.Name)) continue;
+                var item = InstalledModsListView.Items.Add(mod.Name);
+                item.SubItems.Add(mod.Status.ToString());
+                item.Tag = mod;
+                var c = Color.Orange;
+                switch (mod.Status)
                 {
-                    try
-                    {
-                        mod.IconObject = Image.FromFile(mod.IconFile);
-                    }
-                    catch
-                    { }
+                    case ModStatus.Ready: c = Color.LightGreen; break;
                 }
-                else
-                {
-                    //mod.IconObject = Icon.ToBitmap();//default icon
-                }
-                InstalledModsListBox.Items.Add(mod);//list box items drawn manually below
+                item.BackColor = c;
             }
-
-        }
-        private void InstalledModsListDrawItem(Mod mod, DrawItemEventArgs e)
-        {
-            if (mod == null) return;
-
-            var textbrush = SystemBrushes.ControlText;
-
-            var name = mod.Name;
-            var imgspace = 8;// 40;
-
-            var statustext = mod.TypeStatusString;
-            var statusbrush = Brushes.White;//(background brush)
-            var status = mod.Status;
-            switch (status)
-            {
-                case ModStatus.Ready:
-                    statusbrush = Brushes.LightGreen;
-                    break;
-                default:
-                    statusbrush = Brushes.Orange;
-                    break;
-            }
-            var bgbounds = e.Bounds;
-            bgbounds.Width -= 4;
-            bgbounds.X += 2;
-            bgbounds.Height -= 4;
-            bgbounds.Y += 2;
-            e.Graphics.FillRectangle(statusbrush, bgbounds);
-
-
-
-            //if (mod.IconObject is Image img)
-            //{
-            //    e.Graphics.DrawImage(img, 4, e.Bounds.Y + 4, 32, 32);
-            //}
-
-            var textbounds = e.Bounds;
-            textbounds.Width -= imgspace;
-            textbounds.X += imgspace;
-            textbounds.Y += 5;
-            textbounds.Height = e.Font.Height;
-            e.Graphics.DrawString(name, e.Font, textbrush, textbounds, StringFormat.GenericDefault);
-
-            var statbounds = textbounds;
-            statbounds.Y += e.Font.Height + 3;
-            e.Graphics.DrawString(statustext, e.Font, textbrush, statbounds, StringFormat.GenericDefault);
 
         }
         
@@ -568,19 +517,16 @@ namespace CodeWalker.ModManager
 
         }
 
-        private void InstalledModsListBox_SelectedIndexChanged(object sender, EventArgs e)
+        private void InstalledModsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SelectMod(InstalledModsListBox.SelectedItem as Mod);
-        }
-
-        private void InstalledModsListBox_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            e.DrawBackground();
-            if (e.Index < 0) return;//why?
-            var mod = InstalledModsListBox.Items[e.Index] as Mod;
-            if (mod == null) return;
-            InstalledModsListDrawItem(mod, e);
-            e.DrawFocusRectangle();
+            if (InstalledModsListView.SelectedItems.Count == 1)
+            {
+                SelectMod(InstalledModsListView.SelectedItems[0].Tag as Mod);
+            }
+            else
+            {
+                SelectMod(null);
+            }
         }
 
         private void UninstallModButton_Click(object sender, EventArgs e)

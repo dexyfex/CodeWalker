@@ -32,11 +32,17 @@
             this.MainStatusStrip = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.TopPanel = new System.Windows.Forms.Panel();
+            this.CleanButton = new System.Windows.Forms.Button();
+            this.BuildButton = new System.Windows.Forms.Button();
             this.GameButton = new System.Windows.Forms.Button();
             this.MainSplitContainer = new System.Windows.Forms.SplitContainer();
             this.InstallModButton = new System.Windows.Forms.Button();
             this.InstalledModsLabel = new System.Windows.Forms.Label();
             this.ModPanel = new System.Windows.Forms.Panel();
+            this.ModFilesLabel = new System.Windows.Forms.Label();
+            this.ModFilesListBox = new System.Windows.Forms.ListBox();
+            this.ModStatusLabel = new System.Windows.Forms.Label();
+            this.ModNameLabel = new System.Windows.Forms.Label();
             this.MoveDownButton = new System.Windows.Forms.Button();
             this.MoveUpButton = new System.Windows.Forms.Button();
             this.UninstallModButton = new System.Windows.Forms.Button();
@@ -45,13 +51,9 @@
             this.SplashLabel1 = new System.Windows.Forms.Label();
             this.OpenFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.SaveFileDialog = new System.Windows.Forms.SaveFileDialog();
-            this.InstalledModsListBox = new System.Windows.Forms.ListBox();
-            this.BuildButton = new System.Windows.Forms.Button();
-            this.CleanButton = new System.Windows.Forms.Button();
-            this.ModNameLabel = new System.Windows.Forms.Label();
-            this.ModStatusLabel = new System.Windows.Forms.Label();
-            this.ModFilesListBox = new System.Windows.Forms.ListBox();
-            this.ModFilesLabel = new System.Windows.Forms.Label();
+            this.InstalledModsListView = new System.Windows.Forms.ListView();
+            this.InstalledModsNameColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.InstalledModsStatusColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.MainStatusStrip.SuspendLayout();
             this.TopPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
@@ -92,6 +94,24 @@
             this.TopPanel.Size = new System.Drawing.Size(800, 40);
             this.TopPanel.TabIndex = 1;
             // 
+            // CleanButton
+            // 
+            this.CleanButton.Location = new System.Drawing.Point(389, 9);
+            this.CleanButton.Name = "CleanButton";
+            this.CleanButton.Size = new System.Drawing.Size(110, 23);
+            this.CleanButton.TabIndex = 2;
+            this.CleanButton.Text = "Clean";
+            this.CleanButton.UseVisualStyleBackColor = true;
+            // 
+            // BuildButton
+            // 
+            this.BuildButton.Location = new System.Drawing.Point(273, 9);
+            this.BuildButton.Name = "BuildButton";
+            this.BuildButton.Size = new System.Drawing.Size(110, 23);
+            this.BuildButton.TabIndex = 1;
+            this.BuildButton.Text = "Build mods folder";
+            this.BuildButton.UseVisualStyleBackColor = true;
+            // 
             // GameButton
             // 
             this.GameButton.Location = new System.Drawing.Point(12, 9);
@@ -110,8 +130,7 @@
             // 
             // MainSplitContainer.Panel1
             // 
-            this.MainSplitContainer.Panel1.BackColor = System.Drawing.SystemColors.Window;
-            this.MainSplitContainer.Panel1.Controls.Add(this.InstalledModsListBox);
+            this.MainSplitContainer.Panel1.Controls.Add(this.InstalledModsListView);
             this.MainSplitContainer.Panel1.Controls.Add(this.InstallModButton);
             this.MainSplitContainer.Panel1.Controls.Add(this.InstalledModsLabel);
             // 
@@ -158,6 +177,43 @@
             this.ModPanel.Size = new System.Drawing.Size(530, 391);
             this.ModPanel.TabIndex = 0;
             this.ModPanel.Visible = false;
+            // 
+            // ModFilesLabel
+            // 
+            this.ModFilesLabel.AutoSize = true;
+            this.ModFilesLabel.Location = new System.Drawing.Point(18, 88);
+            this.ModFilesLabel.Name = "ModFilesLabel";
+            this.ModFilesLabel.Size = new System.Drawing.Size(31, 13);
+            this.ModFilesLabel.TabIndex = 6;
+            this.ModFilesLabel.Text = "Files:";
+            // 
+            // ModFilesListBox
+            // 
+            this.ModFilesListBox.FormattingEnabled = true;
+            this.ModFilesListBox.HorizontalScrollbar = true;
+            this.ModFilesListBox.Location = new System.Drawing.Point(18, 104);
+            this.ModFilesListBox.Name = "ModFilesListBox";
+            this.ModFilesListBox.Size = new System.Drawing.Size(157, 212);
+            this.ModFilesListBox.TabIndex = 7;
+            // 
+            // ModStatusLabel
+            // 
+            this.ModStatusLabel.AutoSize = true;
+            this.ModStatusLabel.Location = new System.Drawing.Point(18, 55);
+            this.ModStatusLabel.Name = "ModStatusLabel";
+            this.ModStatusLabel.Size = new System.Drawing.Size(83, 13);
+            this.ModStatusLabel.TabIndex = 5;
+            this.ModStatusLabel.Text = "Ready, Enabled";
+            // 
+            // ModNameLabel
+            // 
+            this.ModNameLabel.AutoSize = true;
+            this.ModNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ModNameLabel.Location = new System.Drawing.Point(15, 33);
+            this.ModNameLabel.Name = "ModNameLabel";
+            this.ModNameLabel.Size = new System.Drawing.Size(84, 17);
+            this.ModNameLabel.TabIndex = 4;
+            this.ModNameLabel.Text = "Mod Name";
             // 
             // MoveDownButton
             // 
@@ -220,76 +276,32 @@
             // 
             this.OpenFileDialog.Multiselect = true;
             // 
-            // InstalledModsListBox
+            // InstalledModsListView
             // 
-            this.InstalledModsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.InstalledModsListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.InstalledModsListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.InstalledModsListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-            this.InstalledModsListBox.FormattingEnabled = true;
-            this.InstalledModsListBox.ItemHeight = 40;
-            this.InstalledModsListBox.Location = new System.Drawing.Point(3, 29);
-            this.InstalledModsListBox.Name = "InstalledModsListBox";
-            this.InstalledModsListBox.Size = new System.Drawing.Size(260, 360);
-            this.InstalledModsListBox.TabIndex = 1;
-            this.InstalledModsListBox.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.InstalledModsListBox_DrawItem);
-            this.InstalledModsListBox.SelectedIndexChanged += new System.EventHandler(this.InstalledModsListBox_SelectedIndexChanged);
+            this.InstalledModsListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.InstalledModsNameColumn,
+            this.InstalledModsStatusColumn});
+            this.InstalledModsListView.FullRowSelect = true;
+            this.InstalledModsListView.HideSelection = false;
+            this.InstalledModsListView.Location = new System.Drawing.Point(3, 32);
+            this.InstalledModsListView.Name = "InstalledModsListView";
+            this.InstalledModsListView.Size = new System.Drawing.Size(260, 356);
+            this.InstalledModsListView.TabIndex = 2;
+            this.InstalledModsListView.UseCompatibleStateImageBehavior = false;
+            this.InstalledModsListView.View = System.Windows.Forms.View.Details;
+            this.InstalledModsListView.SelectedIndexChanged += new System.EventHandler(this.InstalledModsListView_SelectedIndexChanged);
             // 
-            // BuildButton
+            // InstalledModsNameColumn
             // 
-            this.BuildButton.Location = new System.Drawing.Point(273, 9);
-            this.BuildButton.Name = "BuildButton";
-            this.BuildButton.Size = new System.Drawing.Size(110, 23);
-            this.BuildButton.TabIndex = 1;
-            this.BuildButton.Text = "Build mods folder";
-            this.BuildButton.UseVisualStyleBackColor = true;
+            this.InstalledModsNameColumn.Text = "Name";
+            this.InstalledModsNameColumn.Width = 174;
             // 
-            // CleanButton
+            // InstalledModsStatusColumn
             // 
-            this.CleanButton.Location = new System.Drawing.Point(389, 9);
-            this.CleanButton.Name = "CleanButton";
-            this.CleanButton.Size = new System.Drawing.Size(110, 23);
-            this.CleanButton.TabIndex = 2;
-            this.CleanButton.Text = "Clean";
-            this.CleanButton.UseVisualStyleBackColor = true;
-            // 
-            // ModNameLabel
-            // 
-            this.ModNameLabel.AutoSize = true;
-            this.ModNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.ModNameLabel.Location = new System.Drawing.Point(15, 33);
-            this.ModNameLabel.Name = "ModNameLabel";
-            this.ModNameLabel.Size = new System.Drawing.Size(84, 17);
-            this.ModNameLabel.TabIndex = 4;
-            this.ModNameLabel.Text = "Mod Name";
-            // 
-            // ModStatusLabel
-            // 
-            this.ModStatusLabel.AutoSize = true;
-            this.ModStatusLabel.Location = new System.Drawing.Point(18, 55);
-            this.ModStatusLabel.Name = "ModStatusLabel";
-            this.ModStatusLabel.Size = new System.Drawing.Size(83, 13);
-            this.ModStatusLabel.TabIndex = 5;
-            this.ModStatusLabel.Text = "Ready, Enabled";
-            // 
-            // ModFilesListBox
-            // 
-            this.ModFilesListBox.FormattingEnabled = true;
-            this.ModFilesListBox.HorizontalScrollbar = true;
-            this.ModFilesListBox.Location = new System.Drawing.Point(18, 104);
-            this.ModFilesListBox.Name = "ModFilesListBox";
-            this.ModFilesListBox.Size = new System.Drawing.Size(157, 212);
-            this.ModFilesListBox.TabIndex = 7;
-            // 
-            // ModFilesLabel
-            // 
-            this.ModFilesLabel.AutoSize = true;
-            this.ModFilesLabel.Location = new System.Drawing.Point(18, 88);
-            this.ModFilesLabel.Name = "ModFilesLabel";
-            this.ModFilesLabel.Size = new System.Drawing.Size(31, 13);
-            this.ModFilesLabel.TabIndex = 6;
-            this.ModFilesLabel.Text = "Files:";
+            this.InstalledModsStatusColumn.Text = "Status";
             // 
             // ModManagerForm
             // 
@@ -341,12 +353,14 @@
         private System.Windows.Forms.Label SplashLabel1;
         private System.Windows.Forms.OpenFileDialog OpenFileDialog;
         private System.Windows.Forms.SaveFileDialog SaveFileDialog;
-        private System.Windows.Forms.ListBox InstalledModsListBox;
         private System.Windows.Forms.Button BuildButton;
         private System.Windows.Forms.Button CleanButton;
         private System.Windows.Forms.Label ModFilesLabel;
         private System.Windows.Forms.ListBox ModFilesListBox;
         private System.Windows.Forms.Label ModStatusLabel;
         private System.Windows.Forms.Label ModNameLabel;
+        private System.Windows.Forms.ListView InstalledModsListView;
+        private System.Windows.Forms.ColumnHeader InstalledModsNameColumn;
+        private System.Windows.Forms.ColumnHeader InstalledModsStatusColumn;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,6 +35,16 @@ namespace CodeWalker.ModManager
             foreach (var file in mod.Files)
             {
                 file?.UpdateLocalPath(localDir);
+            }
+
+            if ((mod.IconObject == null) && (string.IsNullOrEmpty(mod.IconFile) == false))
+            {
+                try
+                {
+                    mod.IconObject = Image.FromFile(mod.IconFile);
+                }
+                catch
+                { }
             }
 
             return mod;
@@ -116,6 +127,7 @@ namespace CodeWalker.ModManager
                     var fe = Path.GetExtension(oivfile)?.ToLowerInvariant();
                     if (fe == ".cwmm") continue;
                     var file = new ModFile(oivfile);
+                    file.LocalPath = file.SourcePath;
                     Files.Add(file);
                 }
             }
@@ -154,6 +166,7 @@ namespace CodeWalker.ModManager
 
             Log($"CompleteInstall: {DateTime.Now}");
 
+            SaveLogFile();
         }
 
         public static ModType GetModType(string file)
@@ -213,31 +226,30 @@ namespace CodeWalker.ModManager
 
 
 
+
         private void LoadCWMMFile()
         {
+            Files.Clear();
             var fp = GetCWMMFilePath();
             if (string.IsNullOrEmpty(fp)) return;
             if (File.Exists(fp) == false) return;
             Log($"LoadCWMMFile: {fp}");
-            try
+            var f = new SimpleKvpFile(fp, true);
+            if (f.FileError != null)
             {
-                var lines = File.ReadAllLines(fp);
-                if (lines.Length < 6) return;
-                Name = lines[0];
-                IconFile = lines[1];
-                SourcePath = lines[2];
-                Enum.TryParse(lines[3], out Type);
-                Enum.TryParse(lines[4], out Status);
-                int.TryParse(lines[5], out LoadOrder);
-                Files.Clear();
-                for (int i = 6; i < lines.Length; i++)
-                {
-                    AddModFile(lines[i]);
-                }
+                Log($"Error: {f.FileError}");
             }
-            catch (Exception ex)
+            Name = f.GetItem("Name");
+            IconFile = f.GetItem("Icon");
+            SourcePath = f.GetItem("Source");
+            Enum.TryParse(f.GetItem("Type"), out Type);
+            Enum.TryParse(f.GetItem("Status"), out Status);
+            int.TryParse(f.GetItem("Order"), out LoadOrder);
+            int.TryParse(f.GetItem("Files"), out var count);
+            for (var i = 0; i < count; i++)
             {
-                Log($"Error: {ex}");
+                var mf = f.GetItem($"File{i}");
+                AddModFile(mf);
             }
         }
         private void SaveCWMMFile()
@@ -245,31 +257,41 @@ namespace CodeWalker.ModManager
             var fp = GetCWMMFilePath();
             if (string.IsNullOrEmpty(fp)) return;
             Log($"SaveCWMMFile: {fp}");
+            var f = new SimpleKvpFile(fp);
+            f.SetItem("Name", Name);
+            f.SetItem("Icon", IconFile);
+            f.SetItem("Source", SourcePath);
+            f.SetItem("Type", Type.ToString());
+            f.SetItem("Status", Status.ToString());
+            f.SetItem("Order", LoadOrder.ToString());
+            f.SetItem("Files", Files.Count.ToString());
+            for (var i = 0; i < Files.Count; i++)
+            {
+                f.SetItem($"File{i}", Files[i].SourcePath);
+            }
+            f.Save();
+            if (f.FileError != null)
+            {
+                Log($"Error: {f.FileError}");
+            }
+        }
+        private void SaveLogFile()
+        {
             try
             {
-                var sb = new StringBuilder();
-                sb.AppendLine(Name);
-                sb.AppendLine(IconFile);
-                sb.AppendLine(SourcePath);
-                sb.AppendLine(Type.ToString());
-                sb.AppendLine(Status.ToString());
-                sb.AppendLine(LoadOrder.ToString());
-                foreach (var file in Files)
-                {
-                    sb.AppendLine(file.SourcePath);
-                }
-                var str = sb.ToString();
-                File.WriteAllText(fp, str);
+                var fp = GetLogFilePath();
+                File.AppendAllLines(fp, LogItems);
             }
-            catch (Exception ex)
-            {
-                Log($"Error: {ex}");
-            }
+            catch { }
         }
 
         private string GetCWMMFilePath()
         {
             return $"{LocalPath}\\mod.cwmm";
+        }
+        private string GetLogFilePath()
+        {
+            return $"{LocalPath}\\log.cwmm";
         }
 
 
