@@ -544,8 +544,10 @@ namespace CodeWalker.Utils
             int add = 0;
             for (int i = 0; i < img.MipMapLevels; i++)
             {
-                images[i].width = img.Width / div;
-                images[i].height = img.Height / div;
+                // Prevent width or height from becoming zero. One divided by anything will be < 1 which when cast to an
+                // int will be truncated to 0.
+                images[i].width = Math.Max(1, img.Width / div);
+                images[i].height = Math.Max(1, img.Height / div);
                 images[i].format = format; //(DXGI_FORMAT)img.Format;
                 images[i].pixels = buf + add;
 
@@ -2701,32 +2703,33 @@ namespace CodeWalker.Utils
                         r = (byte)(((6 - rIndex) * r0 + (rIndex - 1) * r1) / 5);
                     }
 
-
+                    // Fixed copy and paste error? Most of these 'g's below were 'r's, which caused BC5 (ATI2) textures
+                    // to not have correct colors.
                     byte g = 255;
                     uint gIndex = (uint)((gMask >> 3 * (4 * blockY + blockX)) & 0x07);
                     if (gIndex == 0)
                     {
-                        r = r0;
+                        g = g0;
                     }
                     else if (gIndex == 1)
                     {
-                        r = r1;
+                        g = g1;
                     }
-                    else if (r0 > r1)
+                    else if (g0 > g1)
                     {
-                        r = (byte)(((8 - gIndex) * r0 + (gIndex - 1) * r1) / 7);
+                        g = (byte)(((8 - gIndex) * g0 + (gIndex - 1) * g1) / 7);
                     }
                     else if (gIndex == 6)
                     {
-                        r = 0;
+                        g = 0;
                     }
                     else if (gIndex == 7)
                     {
-                        r = 0xff;
+                        g = 0xff;
                     }
                     else
                     {
-                        r = (byte)(((6 - gIndex) * r0 + (gIndex - 1) * r1) / 5);
+                        g = (byte)(((6 - gIndex) * g0 + (gIndex - 1) * g1) / 5);
                     }
 
 
