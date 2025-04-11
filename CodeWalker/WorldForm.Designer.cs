@@ -291,6 +291,8 @@ namespace CodeWalker
             this.ToolbarRotationSnapping45Button = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarRotationSnapping90Button = new System.Windows.Forms.ToolStripMenuItem();
             this.ToolbarRotationSnappingCustomButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.multiSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.RelativeGroundForEachItemToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.ToolbarUndoButton = new System.Windows.Forms.ToolStripSplitButton();
             this.ToolbarUndoListButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -2928,7 +2930,7 @@ namespace CodeWalker
             this.ToolbarCameraModeButton});
             this.Toolbar.Location = new System.Drawing.Point(1, 0);
             this.Toolbar.Name = "Toolbar";
-            this.Toolbar.Size = new System.Drawing.Size(554, 25);
+            this.Toolbar.Size = new System.Drawing.Size(585, 25);
             this.Toolbar.TabIndex = 6;
             this.Toolbar.Text = "toolStrip1";
             // 
@@ -3302,7 +3304,8 @@ namespace CodeWalker
             this.ToolbarSnapToGridButton,
             this.ToolbarSnapToGroundGridButton,
             this.ToolbarSnapGridSizeButton,
-            this.ToolbarRotationSnappingButton});
+            this.ToolbarRotationSnappingButton,
+            this.multiSelectionToolStripMenuItem});
             this.ToolbarSnapButton.Image = ((System.Drawing.Image)(resources.GetObject("ToolbarSnapButton.Image")));
             this.ToolbarSnapButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ToolbarSnapButton.Name = "ToolbarSnapButton";
@@ -3414,6 +3417,21 @@ namespace CodeWalker
             this.ToolbarRotationSnappingCustomButton.Size = new System.Drawing.Size(131, 22);
             this.ToolbarRotationSnappingCustomButton.Text = "Custom...";
             this.ToolbarRotationSnappingCustomButton.Click += new System.EventHandler(this.ToolbarRotationSnappingCustomButton_Click);
+            // 
+            // multiSelectionToolStripMenuItem
+            // 
+            this.multiSelectionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.RelativeGroundForEachItemToolStripMenuItem});
+            this.multiSelectionToolStripMenuItem.Name = "multiSelectionToolStripMenuItem";
+            this.multiSelectionToolStripMenuItem.Size = new System.Drawing.Size(205, 22);
+            this.multiSelectionToolStripMenuItem.Text = "Multi Selection";
+            // 
+            // RelativeGroundForEachItemToolStripMenuItem
+            // 
+            this.RelativeGroundForEachItemToolStripMenuItem.Name = "RelativeGroundForEachItemToolStripMenuItem";
+            this.RelativeGroundForEachItemToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.RelativeGroundForEachItemToolStripMenuItem.Text = "Relative Item Snap";
+            this.RelativeGroundForEachItemToolStripMenuItem.Click += new System.EventHandler(this.RelativeSnapForEachItemToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
@@ -3978,5 +3996,7 @@ namespace CodeWalker
         private System.Windows.Forms.ToolStripMenuItem ToolsMenuAudioExplorer;
         private System.Windows.Forms.CheckBox SaveTimeOfDayCheckBox;
         private System.Windows.Forms.CheckBox SavePositionCheckBox;
+        private System.Windows.Forms.ToolStripMenuItem multiSelectionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem RelativeGroundForEachItemToolStripMenuItem;
     }
 }
