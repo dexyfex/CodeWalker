@@ -712,9 +712,12 @@ namespace CodeWalker.GameFiles
         public ushort CalculateStride()
         {
             if (Format == 0) return 0;
-            var dxgifmt = DDSIO.GetDXGIFormat(Format);
+            bool isCompressed;
+            var dxgifmt = DDSIO.GetDXGIFormat(Format, out isCompressed);
             DDSIO.DXTex.ComputePitch(dxgifmt, Width, Height, out var rowPitch, out var slicePitch, 0);
-            return (ushort)rowPitch;
+            // For compressed formats (BC/DXT): convert bytes to DWORD units (divide by 4)
+            // For uncompressed formats: return the original row pitch in bytes
+            return isCompressed ? (ushort)(rowPitch / 4) : (ushort)(rowPitch);
         }
         public TextureFormat GetLegacyFormat(TextureFormatG9 format)
         {
@@ -938,6 +941,8 @@ namespace CodeWalker.GameFiles
                 this.Unknown_88h = reader.ReadUInt32();
                 this.Unknown_8Ch = reader.ReadUInt32();
 
+                // auto-calculate stride value to fix potential incorrect values in data textures
+                this.Stride = CalculateStride();
                 // read reference data
                 this.Data = reader.ReadBlockAt<TextureData>(this.DataPointer, this.Format, this.Width, this.Height, this.Levels, this.Stride);
 
