@@ -500,18 +500,19 @@ namespace CodeWalker.Utils
             return format;
         }
 
-        public static DXGI_FORMAT GetDXGIFormat(TextureFormat f)
+        public static DXGI_FORMAT GetDXGIFormat(TextureFormat f, out bool isCompressed)
         {
             var format = DXGI_FORMAT.DXGI_FORMAT_UNKNOWN;
+            isCompressed = false;
             switch (f)
             {
                 // compressed
-                case TextureFormat.D3DFMT_DXT1: format = DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM; break;
-                case TextureFormat.D3DFMT_DXT3: format = DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM; break;
-                case TextureFormat.D3DFMT_DXT5: format = DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM; break;
-                case TextureFormat.D3DFMT_ATI1: format = DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM; break;
-                case TextureFormat.D3DFMT_ATI2: format = DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM; break;
-                case TextureFormat.D3DFMT_BC7: format = DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM; break;
+                case TextureFormat.D3DFMT_DXT1: format = DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM; isCompressed = true; break;
+                case TextureFormat.D3DFMT_DXT3: format = DXGI_FORMAT.DXGI_FORMAT_BC2_UNORM; isCompressed = true; break;
+                case TextureFormat.D3DFMT_DXT5: format = DXGI_FORMAT.DXGI_FORMAT_BC3_UNORM; isCompressed = true; break;
+                case TextureFormat.D3DFMT_ATI1: format = DXGI_FORMAT.DXGI_FORMAT_BC4_UNORM; isCompressed = true; break;
+                case TextureFormat.D3DFMT_ATI2: format = DXGI_FORMAT.DXGI_FORMAT_BC5_UNORM; isCompressed = true; break;
+                case TextureFormat.D3DFMT_BC7: format = DXGI_FORMAT.DXGI_FORMAT_BC7_UNORM; isCompressed = true; break;
 
                 // uncompressed
                 case TextureFormat.D3DFMT_A1R5G5B5: format = DXGI_FORMAT.DXGI_FORMAT_B5G5R5A1_UNORM; break;
@@ -522,6 +523,12 @@ namespace CodeWalker.Utils
                 case TextureFormat.D3DFMT_X8R8G8B8: format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8X8_UNORM; break;
             }
             return format;
+        }
+
+        public static DXGI_FORMAT GetDXGIFormat(TextureFormat f)
+        {
+            bool isCompressed;
+            return GetDXGIFormat(f, out isCompressed);
         }
 
         private static ImageStruct GetImageStruct(Texture texture, DXGI_FORMAT format)
