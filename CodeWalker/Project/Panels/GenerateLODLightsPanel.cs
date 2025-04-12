@@ -168,7 +168,11 @@ namespace CodeWalker.Project.Panels
                                     light.hash = h;
                                     light.coneInnerAngle = inner;
                                     light.coneOuterAngleOrCapExt = outer;
-                                    if (la.CoronaSize != 0)
+                                    if (la.CoronaSize == 0 || la.CoronaIntensity == 0)
+                                    {
+                                        light.coronaIntensity = 0;
+                                    }
+                                    else
                                     {
                                         light.coronaIntensity = (byte)(la.CoronaIntensity * 6);
                                     }
