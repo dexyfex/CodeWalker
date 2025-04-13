@@ -46,6 +46,7 @@
             this.FlagsCheckedListBox = new System.Windows.Forms.CheckedListBox();
             this.AddEntityButton = new System.Windows.Forms.Button();
             this.DeleteButton = new System.Windows.Forms.Button();
+            this.FlipPortalButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // FlagsTextBox
@@ -152,7 +153,7 @@
             // 
             // CornersTextBox
             // 
-            this.CornersTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.CornersTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.CornersTextBox.Location = new System.Drawing.Point(107, 243);
             this.CornersTextBox.Multiline = true;
@@ -218,6 +219,17 @@
             this.DeleteButton.UseVisualStyleBackColor = true;
             this.DeleteButton.Click += new System.EventHandler(this.DeleteButton_Click);
             // 
+            // FlipPortalButton
+            // 
+            this.FlipPortalButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.FlipPortalButton.Location = new System.Drawing.Point(449, 243);
+            this.FlipPortalButton.Name = "FlipPortalButton";
+            this.FlipPortalButton.Size = new System.Drawing.Size(95, 23);
+            this.FlipPortalButton.TabIndex = 39;
+            this.FlipPortalButton.Text = "Flip Portal";
+            this.FlipPortalButton.UseVisualStyleBackColor = true;
+            this.FlipPortalButton.Click += new System.EventHandler(this.FlipPortalButton_Click);
+            // 
             // EditYtypMloPortalPanel
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -225,6 +237,7 @@
             this.ClientSize = new System.Drawing.Size(565, 505);
             this.Controls.Add(this.AddEntityButton);
             this.Controls.Add(this.DeleteButton);
+            this.Controls.Add(this.FlipPortalButton);
             this.Controls.Add(this.FlagsCheckedListBox);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.CornersTextBox);
@@ -267,5 +280,6 @@
         private System.Windows.Forms.CheckedListBox FlagsCheckedListBox;
         private System.Windows.Forms.Button AddEntityButton;
         private System.Windows.Forms.Button DeleteButton;
+        private System.Windows.Forms.Button FlipPortalButton;
     }
 }
