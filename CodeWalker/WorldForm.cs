@@ -1508,6 +1508,25 @@ namespace CodeWalker
                                 Renderer.SelectionLineVerts.Add(p1);
                                 Renderer.SelectionLineVerts.Add(p2);
                             }
+                            if (pcl >= 3)
+                            {
+                                Vector3 edge1 = portal.Corners[1].XYZ() - portal.Corners[0].XYZ();
+                                Vector3 normal = Vector3.Cross(edge1, portal.Corners[2].XYZ() - portal.Corners[0].XYZ());
+                                float len = normal.Length();
+                                if (len > 1e-6f)
+                                {
+                                    normal /= len;
+                                    edge1.Normalize();
+                                    Renderer.RenderSelectionArrowOutline(
+                                        mlop + mlo.Orientation.Multiply(portal.Center),
+                                        mlo.Orientation.Multiply(normal),
+                                        mlo.Orientation.Multiply(Vector3.Normalize(Vector3.Cross(edge1, normal))),
+                                        Quaternion.Identity,
+                                        0.5f, 0.05f,
+                                        ((portal._Data.flags & 4) > 0) ? cblu : caqu
+                                    );
+                                }
+                            }
                         }
                     }
                     if (mloa.rooms != null)
@@ -1534,6 +1553,51 @@ namespace CodeWalker
                                 wbox.BBMax = room.BBMax_CW; //R* ones are right size, but wrong position??
                                 Renderer.WhiteBoxes.Add(wbox);
                             }
+                        }
+                    }
+                }
+            }
+            if (selectionItem.MloPortalDef != null)
+            {
+                var portal = selectionItem.MloPortalDef;
+                var mlop = selectionItem.BBOffset;
+                var mloOrientation = selectionItem.BBOrientation;
+                if (portal.Corners != null && portal.Corners.Length > 0)
+                {
+                    VertexTypePC p1 = new VertexTypePC();
+                    VertexTypePC p2 = new VertexTypePC();
+                    p2.Colour = caqu;
+                    if ((portal._Data.flags & 4) > 0)
+                    {
+                        p2.Colour = cblu;
+                    }
+                    var pcl = portal.Corners.Length;
+                    for (int ic = 0; ic < pcl; ic++)
+                    {
+                        var icn = ic + 1; if (icn >= pcl) icn = 0;
+                        p1.Colour = (ic == 0) ? cred : p2.Colour; // highlight index 0 and winding direction
+                        p1.Position = mlop + mloOrientation.Multiply(portal.Corners[ic].XYZ());
+                        p2.Position = mlop + mloOrientation.Multiply(portal.Corners[icn].XYZ());
+                        Renderer.SelectionLineVerts.Add(p1);
+                        Renderer.SelectionLineVerts.Add(p2);
+                    }
+                    if (pcl >= 3)
+                    {
+                        Vector3 edge1 = portal.Corners[1].XYZ() - portal.Corners[0].XYZ();
+                        Vector3 normal = Vector3.Cross(edge1, portal.Corners[2].XYZ() - portal.Corners[0].XYZ());
+                        float len = normal.Length();
+                        if (len > 1e-6f)
+                        {
+                            normal /= len;
+                            edge1.Normalize();
+                            Renderer.RenderSelectionArrowOutline(
+                                mlop + mloOrientation.Multiply(portal.Center),
+                                mloOrientation.Multiply(normal),
+                                mloOrientation.Multiply(Vector3.Normalize(Vector3.Cross(edge1, normal))),
+                                Quaternion.Identity,
+                                0.5f, 0.05f,
+                                ((portal._Data.flags & 4) > 0) ? cblu : caqu
+                            );
                         }
                     }
                 }

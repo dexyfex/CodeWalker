@@ -60,6 +60,7 @@ namespace CodeWalker
         public YmapOccludeModelTriangle OccludeModelTri { get; set; }
         public YmapEntityDef MloEntityDef { get; set; }
         public MCMloRoomDef MloRoomDef { get; set; }
+        public MCMloPortalDef MloPortalDef { get; set; }
         public WaterQuad WaterQuad { get; set; }
         public WaterCalmingQuad CalmingQuad { get; set; }
         public WaterWaveQuad WaveQuad { get; set; }
@@ -121,7 +122,8 @@ namespace CodeWalker
                     (MloEntityDef != null) ||
                     (ScenarioNode != null) ||
                     (Audio != null) ||
-                    (MloRoomDef != null);
+                    (MloRoomDef != null) ||
+                    (MloPortalDef != null);
             }
         }
 
@@ -158,7 +160,8 @@ namespace CodeWalker
                 || (TrainTrackNode != mhit.TrainTrackNode)
                 || (ScenarioNode != mhit.ScenarioNode)
                 || (Audio != mhit.Audio)
-                || (MloRoomDef != mhit.MloRoomDef);
+                || (MloRoomDef != mhit.MloRoomDef)
+                || (MloPortalDef != mhit.MloPortalDef);
         }
         public bool CheckForChanges()
         {
@@ -188,7 +191,8 @@ namespace CodeWalker
                 || (TrainTrackNode != null)
                 || (ScenarioNode != null)
                 || (Audio != null)
-                || (MloRoomDef != null);
+                || (MloRoomDef != null)
+                || (MloPortalDef != null);
         }
 
 
@@ -284,7 +288,7 @@ namespace CodeWalker
             }
             else if (OccludeModelTri != null)
             {
-                name = "OccludeModel " + (OccludeModelTri.Ymap?.Name ?? "") + ": " + (OccludeModelTri.Model?.Index??0).ToString() + ":" + OccludeModelTri.Index.ToString();
+                name = "OccludeModel " + (OccludeModelTri.Ymap?.Name ?? "") + ": " + (OccludeModelTri.Model?.Index ?? 0).ToString() + ":" + OccludeModelTri.Index.ToString();
             }
             else if (WaterQuad != null)
             {
@@ -329,6 +333,10 @@ namespace CodeWalker
             if (MloRoomDef != null)
             {
                 name = "MloRoomDef " + MloRoomDef.RoomName;
+            }
+            if (MloPortalDef != null)
+            {
+                name = "MloPortalDef " + MloPortalDef.Name;
             }
             if (EntityExtension != null)
             {
@@ -1557,6 +1565,15 @@ namespace CodeWalker
                     ms.BBOrientation = instance.Owner.Orientation;
                 }
             }
+            else if (o is MCMloPortalDef portal)
+            {
+                if (parent is MloInstanceData instance)
+                {
+                    ms.MloPortalDef = portal;
+                    ms.BBOffset = instance.Owner.Position;
+                    ms.BBOrientation = instance.Owner.Orientation;
+                }
+            }
             else if (o is Bounds b)
             {
                 ms.CollisionBounds = b;
@@ -1588,9 +1605,9 @@ namespace CodeWalker
                 ms.NavPoint = point;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
             }
-            else if (o is YnvPortal portal)
+            else if (o is YnvPortal ynvportal)
             {
-                ms.NavPortal = portal;
+                ms.NavPortal = ynvportal;
                 ms.AABB = new BoundingBox(new Vector3(-nrad), new Vector3(nrad));
             }
             else if (o is YndNode node)

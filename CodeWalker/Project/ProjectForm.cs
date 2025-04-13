@@ -7640,6 +7640,7 @@ namespace CodeWalker.Project
 
                 var mlo = sel.MloEntityDef;
                 var room = sel.MloRoomDef;
+                var portal = sel.MloPortalDef;
                 var ent = sel.EntityDef;
                 var cargen = sel.CarGenerator;
                 var lodlight = sel.LodLight;
@@ -7659,7 +7660,7 @@ namespace CodeWalker.Project
                 var scenarioedge = sel.ScenarioEdge;
                 var audiopl = sel.Audio;
                 Archetype arch = mlo?.Archetype ?? ent?.MloParent?.Archetype ?? ent?.Archetype;
-                YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp;
+                YtypFile ytyp = mlo?.Archetype?.Ytyp ?? ent?.MloParent?.Archetype?.Ytyp ?? ent?.Archetype?.Ytyp ?? room?.OwnerMlo?.Ytyp ?? portal?.OwnerMlo?.Ytyp;
                 YmapFile ymap = ent?.Ymap ?? cargen?.Ymap ?? lodlight?.Ymap ?? boxoccluder?.Ymap ?? occludetri?.Ymap ?? grassbatch?.Ymap ?? mlo?.Ymap;
                 YbnFile ybn = collbound?.GetRootYbn();
                 YndFile ynd = pathnode?.Ynd;
@@ -7715,6 +7716,10 @@ namespace CodeWalker.Project
                     if (wasmult || (room != CurrentMloRoom))
                     {
                         ProjectExplorer?.TrySelectMloRoomTreeNode(room);
+                    }
+                    if (wasmult || (portal != CurrentMloPortal))
+                    {
+                        ProjectExplorer?.TrySelectMloPortalTreeNode(portal);
                     }
                 }
                 else if (YbnExistsInProject(ybn))
@@ -7791,7 +7796,7 @@ namespace CodeWalker.Project
                 }
 
                 CurrentMloRoom = room;
-                CurrentMloPortal = null;
+                CurrentMloPortal = portal;
                 CurrentMloEntitySet = null;
                 CurrentYmapFile = ymap;
                 CurrentYtypFile = ytyp;

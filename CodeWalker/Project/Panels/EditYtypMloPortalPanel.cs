@@ -31,7 +31,7 @@ namespace CodeWalker.Project.Panels
             Tag = portal;
             UpdateFormTitle();
             MloInstanceData instance = ProjectForm.TryGetMloInstance(portal?.OwnerMlo);
-            //ProjectForm.WorldForm?.SelectMloPortal(portal, instance);
+            ProjectForm.WorldForm?.SelectObject(portal, instance);
             UpdateControls();
         }
 
@@ -265,6 +265,36 @@ namespace CodeWalker.Project.Panels
         {
             ProjectForm.SetProjectItem(CurrentPortal);
             ProjectForm.DeleteMloPortal();
+        }
+
+        private void FlipPortalButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentPortal == null || CurrentPortal.Corners == null || CurrentPortal.Corners.Length < 3) return;
+
+            lock (ProjectForm.ProjectSyncRoot)
+            {
+                var corners = CurrentPortal.Corners.ToList();
+                corners.Reverse();
+                CurrentPortal.Corners = corners.ToArray();
+                uint tempRoom = CurrentPortal._Data.roomFrom;
+                CurrentPortal._Data.roomFrom = CurrentPortal._Data.roomTo;
+                CurrentPortal._Data.roomTo = tempRoom;
+                populatingui = true;
+                StringBuilder sb = new StringBuilder();
+                foreach (var corner in CurrentPortal.Corners)
+                {
+                    if (sb.Length > 0) sb.AppendLine();
+                    sb.Append(FloatUtil.GetVector3String(new Vector3(corner.X, corner.Y, corner.Z)));
+                }
+                CornersTextBox.Text = sb.ToString();
+                RoomFromTextBox.Text = CurrentPortal._Data.roomFrom.ToString();
+                RoomToTextBox.Text = CurrentPortal._Data.roomTo.ToString();
+                populatingui = false;
+                CurrentPortal.OwnerMlo?.UpdatePortalCounts(); //Is this necessary if the counter doesn't change?
+                ProjectForm.SetYtypHasChanged(true);
+                UpdateFormTitle();
+                UpdateProjectExplorer();
+            }
         }
     }
 }
