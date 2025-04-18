@@ -4454,6 +4454,10 @@ namespace CodeWalker.GameFiles
         tempo = 2051628467,
         beat = 3902465932,
         dj = 148611320,
+        intro_start = 1150715834,
+        intro_end = 751231070,
+        outro_start = 2110693280,
+        outro_end = 1910037677,
         //01 = 2740850834,//this one added in RpfManager.BuildBaseJenkIndex
         rockout = 4078653290,
         uihit = 3632555010,//is this right?
