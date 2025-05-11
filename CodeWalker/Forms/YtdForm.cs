@@ -153,8 +153,10 @@ namespace CodeWalker.Forms
             {
                 int cmip = Math.Min(Math.Max(mip, 0), tex.Levels - 1);
                 byte[] pixels = DDSIO.GetPixels(tex, cmip);
-                int w = tex.Width >> cmip;
-                int h = tex.Height >> cmip;
+                // Certain mipmap dimension reduction chains may lead this to become zero, so it should be clamped to be
+                // one at minimum.
+                int w = Math.Max(1, tex.Width >> cmip);
+                int h = Math.Max(1, tex.Height >> cmip);
                 Bitmap bmp = new Bitmap(w, h, PixelFormat.Format32bppArgb);
 
                 if (pixels != null)

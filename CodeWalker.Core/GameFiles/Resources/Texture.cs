@@ -699,16 +699,27 @@ namespace CodeWalker.GameFiles
             var dxgifmt = DDSIO.GetDXGIFormat(Format);
             int div = 1;
             int len = 0;
+            bool compressed = DDSIO.DXTex.IsCompressed(dxgifmt);
+            int minimumLengthPerMip = compressed ? (IsBC1Based(dxgifmt) ? 8 : 16) : DDSIO.DXTex.BitsPerPixel(dxgifmt) / 8;
             for (int i = 0; i < Levels; i++)
             {
-                var width = Width / div;
-                var height = Height / div;
+                // Width or Height may reach 1 before the last mip level, half of 1 would be 0.5 truncated to 0.
+                // A texture can't have a dimension of 0, so we need to floor at 1.
+                var width = Math.Max(1, Width / div);
+                var height = Math.Max(1, Height / div);
                 DDSIO.DXTex.ComputePitch(dxgifmt, width, height, out var rowPitch, out var slicePitch, 0);
-                len += slicePitch;
+                len += Math.Max(minimumLengthPerMip, slicePitch);
                 div *= 2;
             }
+            
             return len * Depth;
         }
+
+        private bool IsBC1Based(DDSIO.DXGI_FORMAT format)
+        {
+            return format == DDSIO.DXGI_FORMAT.DXGI_FORMAT_BC1_TYPELESS || format == DDSIO.DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM || format == DDSIO.DXGI_FORMAT.DXGI_FORMAT_BC1_UNORM_SRGB;
+        }
+        
         public ushort CalculateStride()
         {
             if (Format == 0) return 0;
@@ -937,9 +948,15 @@ namespace CodeWalker.GameFiles
                 this.Unknown_84h = reader.ReadUInt32();
                 this.Unknown_88h = reader.ReadUInt32();
                 this.Unknown_8Ch = reader.ReadUInt32();
-
+                
+                // Ignore stride loaded from file as it may be incorrect, especially if texture is ATI2 and the file was
+                // previously saved in OpenIV, DDS documentation recommends recalculating this anyway
+                DDSIO.DXTex.ComputePitch(DDSIO.GetDXGIFormat(Format), this.Width, this.Height, out int rowPitch, out int slicePitch, 0);
+                this.Stride = (ushort)rowPitch;
+                
                 // read reference data
-                this.Data = reader.ReadBlockAt<TextureData>(this.DataPointer, this.Format, this.Width, this.Height, this.Levels, this.Stride);
+                this.Data = reader.ReadBlockAt<TextureData>(this.DataPointer, CalcDataSize()); 
+                //this.Format, this.Width, this.Height, this.Levels, this.Stride);
 
             }
         }
@@ -1086,30 +1103,7 @@ namespace CodeWalker.GameFiles
         /// </summary>
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            if (reader.IsGen9)
-            {
-                int fullLength = Convert.ToInt32(parameters[0]);
-                FullData = reader.ReadBytes(fullLength);
-            }
-            else
-            {
-                uint format = Convert.ToUInt32(parameters[0]);
-                int Width = Convert.ToInt32(parameters[1]);
-                int Height = Convert.ToInt32(parameters[2]);
-                int Levels = Convert.ToInt32(parameters[3]);
-                int Stride = Convert.ToInt32(parameters[4]);
-
-                int fullLength = 0;
-                int length = Stride * Height;
-                for (int i = 0; i < Levels; i++)
-                {
-                    fullLength += length;
-                    length /= 4;
-                }
-
-                FullData = reader.ReadBytes(fullLength);
-            }
-
+            FullData = reader.ReadBytes((int)parameters[0]);
         }
 
         /// <summary>
