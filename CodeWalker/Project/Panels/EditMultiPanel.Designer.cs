@@ -37,24 +37,25 @@
             this.ItemsListBox = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.RotationQuatBox = new CodeWalker.WinForms.QuaternionBox();
+            this.btn_export_tx_all_selected = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // ScaleTextBox
             // 
             this.ScaleTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ScaleTextBox.Location = new System.Drawing.Point(75, 64);
+            this.ScaleTextBox.Location = new System.Drawing.Point(75, 59);
             this.ScaleTextBox.Name = "ScaleTextBox";
-            this.ScaleTextBox.Size = new System.Drawing.Size(478, 20);
+            this.ScaleTextBox.Size = new System.Drawing.Size(478, 19);
             this.ScaleTextBox.TabIndex = 18;
             this.ScaleTextBox.TextChanged += new System.EventHandler(this.ScaleTextBox_TextChanged);
             // 
             // label23
             // 
             this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(32, 67);
+            this.label23.Location = new System.Drawing.Point(32, 62);
             this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(37, 13);
+            this.label23.Size = new System.Drawing.Size(35, 12);
             this.label23.TabIndex = 17;
             this.label23.Text = "Scale:";
             // 
@@ -62,27 +63,27 @@
             // 
             this.PositionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.PositionTextBox.Location = new System.Drawing.Point(75, 12);
+            this.PositionTextBox.Location = new System.Drawing.Point(75, 11);
             this.PositionTextBox.Name = "PositionTextBox";
-            this.PositionTextBox.Size = new System.Drawing.Size(478, 20);
+            this.PositionTextBox.Size = new System.Drawing.Size(478, 19);
             this.PositionTextBox.TabIndex = 14;
             this.PositionTextBox.TextChanged += new System.EventHandler(this.PositionTextBox_TextChanged);
             // 
             // label24
             // 
             this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(19, 41);
+            this.label24.Location = new System.Drawing.Point(19, 38);
             this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(50, 13);
+            this.label24.Size = new System.Drawing.Size(50, 12);
             this.label24.TabIndex = 15;
             this.label24.Text = "Rotation:";
             // 
             // label25
             // 
             this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(22, 15);
+            this.label25.Location = new System.Drawing.Point(22, 14);
             this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(47, 13);
+            this.label25.Size = new System.Drawing.Size(48, 12);
             this.label25.TabIndex = 13;
             this.label25.Text = "Position:";
             // 
@@ -91,18 +92,19 @@
             this.ItemsListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.ItemsListBox.FormattingEnabled = true;
-            this.ItemsListBox.Location = new System.Drawing.Point(75, 108);
+            this.ItemsListBox.ItemHeight = 12;
+            this.ItemsListBox.Location = new System.Drawing.Point(75, 100);
             this.ItemsListBox.Name = "ItemsListBox";
-            this.ItemsListBox.Size = new System.Drawing.Size(202, 355);
+            this.ItemsListBox.Size = new System.Drawing.Size(202, 328);
             this.ItemsListBox.TabIndex = 21;
             this.ItemsListBox.SelectedIndexChanged += new System.EventHandler(this.ItemsListBox_SelectedIndexChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(34, 109);
+            this.label1.Location = new System.Drawing.Point(34, 101);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
+            this.label1.Size = new System.Drawing.Size(35, 12);
             this.label1.TabIndex = 20;
             this.label1.Text = "Items:";
             // 
@@ -110,18 +112,29 @@
             // 
             this.RotationQuatBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.RotationQuatBox.Location = new System.Drawing.Point(75, 36);
+            this.RotationQuatBox.Location = new System.Drawing.Point(75, 33);
             this.RotationQuatBox.Margin = new System.Windows.Forms.Padding(0);
             this.RotationQuatBox.Name = "RotationQuatBox";
-            this.RotationQuatBox.Size = new System.Drawing.Size(478, 24);
+            this.RotationQuatBox.Size = new System.Drawing.Size(478, 22);
             this.RotationQuatBox.TabIndex = 16;
             this.RotationQuatBox.ValueChanged += new System.EventHandler(this.RotationQuatBox_ValueChanged);
             // 
+            // btn_export_tx_all_selected
+            // 
+            this.btn_export_tx_all_selected.Location = new System.Drawing.Point(381, 84);
+            this.btn_export_tx_all_selected.Name = "btn_export_tx_all_selected";
+            this.btn_export_tx_all_selected.Size = new System.Drawing.Size(172, 23);
+            this.btn_export_tx_all_selected.TabIndex = 22;
+            this.btn_export_tx_all_selected.Text = "Export All Texture From Items";
+            this.btn_export_tx_all_selected.UseVisualStyleBackColor = true;
+            this.btn_export_tx_all_selected.Click += new System.EventHandler(this.button1_Click);
+            // 
             // EditMultiPanel
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(565, 505);
+            this.ClientSize = new System.Drawing.Size(565, 466);
+            this.Controls.Add(this.btn_export_tx_all_selected);
             this.Controls.Add(this.RotationQuatBox);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.ItemsListBox);
@@ -148,5 +161,6 @@
         private System.Windows.Forms.ListBox ItemsListBox;
         private System.Windows.Forms.Label label1;
         private WinForms.QuaternionBox RotationQuatBox;
+        private System.Windows.Forms.Button btn_export_tx_all_selected;
     }
 }
