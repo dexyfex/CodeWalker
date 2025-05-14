@@ -2234,14 +2234,7 @@ namespace CodeWalker.GameFiles
             }
             if (lightAttrs == null) return;
 
-            var abmin = Vector3.Min(Archetype.BBMin, db.BoundingBoxMin);
-            var abmax = Vector3.Max(Archetype.BBMax, db.BoundingBoxMax);
-            if (b != null)
-            {
-                abmin = Vector3.Min(abmin, b.BoxMin);
-                abmax = Vector3.Max(abmax, b.BoxMax);
-            }
-            var bb = new BoundingBox(abmin, abmax).Transform(Position, Orientation, Scale);
+            var bb = new BoundingBox(Archetype.BBMin, Archetype.BBMax).Transform(Position, Orientation, Scale);
             var ints = new uint[7];
             ints[0] = (uint)(bb.Minimum.X * 10.0f);
             ints[1] = (uint)(bb.Minimum.Y * 10.0f);
