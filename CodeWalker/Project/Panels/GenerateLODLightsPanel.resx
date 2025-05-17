@@ -122,7 +122,7 @@
 
 Make sure that all archetypes and drawables containing lights info are either in base game files or in a DLC that is currently loaded by CodeWalker.
 
-Generated ymap files will be named in the format name_distantlights.ymap and name_lodlights.ymap, and will be added to the project.</value>
+Generated ymap files will be split into batches of 2500 lights and named in the format name_distantlights.ymap and name_lodlights.ymap, and will be added to the project.</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
