@@ -90,7 +90,7 @@ namespace CodeWalker.Project.Panels
 
             var pname = NameTextBox.Text;
 
-            Task.Run(async () =>
+            Task.Run(() =>
             {
 
                 var lights = new List<Light>();
@@ -103,14 +103,12 @@ namespace CodeWalker.Project.Panels
                         if (ent.Archetype == null) continue;
 
                         bool waiting = false;
-                        DrawableBase dwbl = null;
-
-                        (dwbl, waiting) = await gameFileCache.TryGetDrawableAsync(ent.Archetype);
+                        var dwbl = gameFileCache.TryGetDrawable(ent.Archetype, out waiting);
                         while (waiting)
                         {
-                            (dwbl, waiting) = await gameFileCache.TryGetDrawableAsync(ent.Archetype);
-
+                            dwbl = gameFileCache.TryGetDrawable(ent.Archetype, out waiting);
                             UpdateStatus("Waiting for " + ent.Archetype.AssetName + " to load...");
+                            Thread.Sleep(20);
                         }
                         UpdateStatus("Adding lights from " + ent.Archetype.Name + "...");
                         if (dwbl != null)
