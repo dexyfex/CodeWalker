@@ -82,7 +82,6 @@
             this.MainTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.MainTextBox.DelayedEventsInterval = 10;
             this.MainTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
-            this.MainTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.MainTextBox.IsReplaceMode = false;
             this.MainTextBox.LeftBracket = '<';
             this.MainTextBox.LeftBracket2 = '(';
@@ -258,6 +257,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.MainMenu;
             this.Name = "TextForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Text Editor - CodeWalker by dexyfex";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TextForm_FormClosing);
             ((System.ComponentModel.ISupportInitialize)(this.MainTextBox)).EndInit();

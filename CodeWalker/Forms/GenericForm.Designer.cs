@@ -49,6 +49,7 @@
             this.Controls.Add(this.DetailsPropertyGrid);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "GenericForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "File Inspector - CodeWalker by dexyfex";
             this.ResumeLayout(false);
 

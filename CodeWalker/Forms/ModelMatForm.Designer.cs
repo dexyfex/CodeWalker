@@ -99,6 +99,7 @@
             this.Controls.Add(this.MainSplitContainer);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ModelMatForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Model Material Editor - CodeWalker by dexyfex";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ModelMatForm_FormClosed);
             this.MainSplitContainer.Panel1.ResumeLayout(false);

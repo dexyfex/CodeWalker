@@ -531,6 +531,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "YtdForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Texture Dictionary - CodeWalker by dexyfex";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

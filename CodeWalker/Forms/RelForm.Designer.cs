@@ -155,7 +155,6 @@
             this.XmlTextBox.DelayedEventsInterval = 1;
             this.XmlTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
             this.XmlTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.XmlTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.XmlTextBox.IsReplaceMode = false;
             this.XmlTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.XmlTextBox.LeftBracket = '<';
@@ -439,7 +438,7 @@
             this.SynthTextBox.AutoIndentChars = false;
             this.SynthTextBox.AutoIndentCharsPatterns = "";
             this.SynthTextBox.AutoIndentExistingLines = false;
-            this.SynthTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.SynthTextBox.AutoScrollMinSize = new System.Drawing.Size(2, 14);
             this.SynthTextBox.BackBrush = null;
             this.SynthTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.SynthTextBox.CharHeight = 14;
@@ -448,6 +447,7 @@
             this.SynthTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.SynthTextBox.DelayedEventsInterval = 1;
             this.SynthTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.SynthTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.SynthTextBox.IsReplaceMode = false;
             this.SynthTextBox.Language = FastColoredTextBoxNS.Language.XML;
             this.SynthTextBox.LeftBracket = '<';
@@ -638,6 +638,7 @@
             this.Controls.Add(this.MainMenu);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "RelForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Audio dat.rel Editor - CodeWalker by dexyfex";
             this.MainTabControl.ResumeLayout(false);
             this.XmlTabPage.ResumeLayout(false);

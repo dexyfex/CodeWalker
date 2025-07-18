@@ -130,8 +130,8 @@
   <data name="ToolbarMaterialEditorButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKwSURBVDhPbVNtL5thFO4v2M/xByTeE/EeUW+VEn2aoqqI
-        aVFNWYeu9pCVli6qtlkyTfSFqbdkY+0wZfFhY+m6+GASifBhH1x7zmntzU5yJ3fu+1zXuc517lv2b1xd
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKwSURBVDhPbVPbTlpREOUL+jn+gIn3xHiPEW8YNHIIKiJq
+        rKAiQUtVij2aoqA0Ira1SSWRi1a8Ja0Wqla08aHVhtL4YI0PRh/64OqZAXuzk+xkZ+9Za9as2Vv2b1xd
         XaVdX187Li8vTy4uLn7Qoj2d0V0q7W7c3NzckxI859/PEYlEsLjox5x3DlNT03BPuxEIBHF6egrKodwU
         LBl0IFXYPjo6YuDr5RWsrIQR8AcxP/8STqcLw8Mj6Ovrw+bGJij3LxJiPTz8CN+CDxvrm9jd2cOHvX1s
         bW0jFAzBKykZGxtHf78ZOp0O4XCYldyC087OzlhuMBBCNBLFyfEXJBLfEIsdYG1tnVU4njgwYBmAXq+H
@@ -141,8 +141,8 @@
         MJvNMBgMbJJtxAbxsciSR+2jsFofSuMzob29A4IgoKqqCoWFhaipqUm2QEZQj83Nzejs6ITRYORqtHp7
         etHVdZ9Hp1KpGFRSUoLc3FzY7fakiTQKGglJa2xsRJOmCS0tWmi1WiYVBDWUSiVXJnBeXh6ys7MRj8eT
         Y0y9BU8oFEJFRQUbVFurgEKh4IqV8kqUlZWhoKAAOTk5SE9Ph8/n+/2QKG6fst/vR2lpKYqKinhRr2QW
-        Sc7IyEBWVhaDKfe//4FYSZooilydAJmZmZDL5dxzSvbdz/RnUF9kDjlMY6JFezqju1RaKmSyn77bhBMB
-        OQGrAAAAAElFTkSuQmCC
+        Sc7IyEBWVhaDKfe//4FYSZooilydAJmZmZDL5dxzSvbdz/RnUF9kDjlMY6JFezqju1RaKmSyn44Pg/vc
+        uaUEAAAAAElFTkSuQmCC
 </value>
   </data>
   <data name="ToolbarTextureEditorButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -157,12 +157,12 @@
   <data name="ToolbarLightEditorButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEeSURBVDhPnZJJboQwEEU5Qh8hR8gRcpQcJQv2WbPKUXKE
-        bBgELCKEEIMAL5iWbj9i08ihaSVfKlk1/F/lsh0bQojLNE1v8zyLvu9l27aSU/mSuC47BmRV+NU0jYyi
-        SPq+v1kQBLIsS0Q+dPlv0AHynmibFjmehLHtzrYxCXWacsM4js/c1RR2XSfVlTbDh0yOvSzL8qKpPyCw
-        F4CU57lMkkRmWfZYALBpUxSG4SoSx/F64hMnPwwDsYum3aAE3lnSfgojYGKnL4GqSn4WRbEVI1DX9eoT
-        55kPuxuQVCN+p2m6dcV4HbZ/SjZQC3q1/8Pp+9ugCwu17XDz9wDBdd3N/iVg218FhOd5a3dOLfCk04/B
-        166qSvAT1U7udHecK4/hADrwkPT0AAAAAElFTkSuQmCC
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAEdSURBVDhPnZI7boQwEIY5wh4hR8gRcpQcJQV9aqocJUdI
+        w0NAESGEEAhwwav0+iO2Fzksq+SXRtY8/n/GY3suhBCXeZ7flmURwzDIruskp/IlcV12DMiq8KttW5kk
+        iQzD0FoURbKua0Q+dPlv0AHynuiaFjmehLHdzq4xCXWacsM0Tc/c1RT2fS/VlazhQybHXtZ1fdHUHxDY
+        C0Aqy1JmWSaLongsANi0KYrjeBNJ03Q78YmTH8eR2EXTblAC7yxpP4URMLHTl0BVJT+rqrLFCDRNs/nE
+        eebD7gYk1YjfeZ7brhivw/ZPyQZqQa/ufzh9fxd0YaGuHW7+HiD4vm/tXwKu/VVABEGwdefUAk86/Rh8
+        bbU4wU9UO7nT3fOuj3gANyMKPNMAAAAASUVORK5CYII=
 </value>
   </data>
   <data name="ToolbarMoveButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

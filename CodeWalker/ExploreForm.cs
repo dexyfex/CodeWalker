@@ -4542,9 +4542,18 @@ namespace CodeWalker
         {
             CopyToModsFolder();
         }
+
+        private void WindowsCloseAllMenu_Click(object sender, EventArgs e)
+        {
+            foreach (Form form in Application.OpenForms.Cast<Form>().ToList())
+            {
+                if (!(form is ExploreForm))
+                {
+                    form.Close();
+                }
+            }
+        }
     }
-
-
 
     public class MainTreeFolder
     {

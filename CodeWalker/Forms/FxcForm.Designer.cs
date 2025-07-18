@@ -32,31 +32,29 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FxcForm));
             this.MainTabControl = new System.Windows.Forms.TabControl();
             this.ShadersTabPage = new System.Windows.Forms.TabPage();
-            this.DetailsTabPage = new System.Windows.Forms.TabPage();
-            this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.ShaderPanel = new System.Windows.Forms.Panel();
             this.ShadersListView = new System.Windows.Forms.ListView();
             this.ShadersNameColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ShaderPanel = new System.Windows.Forms.Panel();
             this.ShaderTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.TechniquesTabPage = new System.Windows.Forms.TabPage();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.TechniquesListView = new System.Windows.Forms.ListView();
             this.TechniquesNameColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.TechniquePanel = new System.Windows.Forms.Panel();
             this.TechniqueTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
+            this.DetailsTabPage = new System.Windows.Forms.TabPage();
+            this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.MainTabControl.SuspendLayout();
             this.ShadersTabPage.SuspendLayout();
-            this.DetailsTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.ShaderPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ShaderTextBox)).BeginInit();
-            this.statusStrip1.SuspendLayout();
             this.TechniquesTabPage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
             this.splitContainer2.Panel1.SuspendLayout();
@@ -64,6 +62,8 @@
             this.splitContainer2.SuspendLayout();
             this.TechniquePanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TechniqueTextBox)).BeginInit();
+            this.DetailsTabPage.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // MainTabControl
@@ -91,26 +91,6 @@
             this.ShadersTabPage.Text = "Shaders";
             this.ShadersTabPage.UseVisualStyleBackColor = true;
             // 
-            // DetailsTabPage
-            // 
-            this.DetailsTabPage.Controls.Add(this.DetailsPropertyGrid);
-            this.DetailsTabPage.Location = new System.Drawing.Point(4, 22);
-            this.DetailsTabPage.Name = "DetailsTabPage";
-            this.DetailsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.DetailsTabPage.Size = new System.Drawing.Size(776, 454);
-            this.DetailsTabPage.TabIndex = 1;
-            this.DetailsTabPage.Text = "Details";
-            this.DetailsTabPage.UseVisualStyleBackColor = true;
-            // 
-            // DetailsPropertyGrid
-            // 
-            this.DetailsPropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.DetailsPropertyGrid.HelpVisible = false;
-            this.DetailsPropertyGrid.Location = new System.Drawing.Point(3, 3);
-            this.DetailsPropertyGrid.Name = "DetailsPropertyGrid";
-            this.DetailsPropertyGrid.Size = new System.Drawing.Size(770, 448);
-            this.DetailsPropertyGrid.TabIndex = 1;
-            // 
             // splitContainer1
             // 
             this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -128,16 +108,6 @@
             this.splitContainer1.Size = new System.Drawing.Size(770, 448);
             this.splitContainer1.SplitterDistance = 235;
             this.splitContainer1.TabIndex = 0;
-            // 
-            // ShaderPanel
-            // 
-            this.ShaderPanel.Controls.Add(this.ShaderTextBox);
-            this.ShaderPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.ShaderPanel.Enabled = false;
-            this.ShaderPanel.Location = new System.Drawing.Point(0, 0);
-            this.ShaderPanel.Name = "ShaderPanel";
-            this.ShaderPanel.Size = new System.Drawing.Size(531, 448);
-            this.ShaderPanel.TabIndex = 0;
             // 
             // ShadersListView
             // 
@@ -160,6 +130,16 @@
             this.ShadersNameColumn.Text = "Name";
             this.ShadersNameColumn.Width = 208;
             // 
+            // ShaderPanel
+            // 
+            this.ShaderPanel.Controls.Add(this.ShaderTextBox);
+            this.ShaderPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ShaderPanel.Enabled = false;
+            this.ShaderPanel.Location = new System.Drawing.Point(0, 0);
+            this.ShaderPanel.Name = "ShaderPanel";
+            this.ShaderPanel.Size = new System.Drawing.Size(531, 448);
+            this.ShaderPanel.TabIndex = 0;
+            // 
             // ShaderTextBox
             // 
             this.ShaderTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -177,48 +157,32 @@
         '\'',
         '\''};
             this.ShaderTextBox.AutoIndentChars = false;
-            this.ShaderTextBox.AutoIndentCharsPatterns = "";
+            this.ShaderTextBox.AutoIndentCharsPatterns = "\r\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;]+);\r\n^\\s*(case|default)\\s*[^:]" +
+    "*(?<range>:)\\s*(?<range>[^;]+);\r\n";
             this.ShaderTextBox.AutoIndentExistingLines = false;
             this.ShaderTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
             this.ShaderTextBox.BackBrush = null;
+            this.ShaderTextBox.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
             this.ShaderTextBox.CharHeight = 14;
             this.ShaderTextBox.CharWidth = 8;
-            this.ShaderTextBox.CommentPrefix = null;
             this.ShaderTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.ShaderTextBox.DelayedEventsInterval = 10;
             this.ShaderTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.ShaderTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.ShaderTextBox.IsReplaceMode = false;
             this.ShaderTextBox.Language = FastColoredTextBoxNS.Language.CSharp;
-            this.ShaderTextBox.LeftBracket = '<';
-            this.ShaderTextBox.LeftBracket2 = '(';
+            this.ShaderTextBox.LeftBracket = '(';
+            this.ShaderTextBox.LeftBracket2 = '{';
             this.ShaderTextBox.Location = new System.Drawing.Point(3, 0);
             this.ShaderTextBox.Name = "ShaderTextBox";
             this.ShaderTextBox.Paddings = new System.Windows.Forms.Padding(0);
-            this.ShaderTextBox.RightBracket = '>';
-            this.ShaderTextBox.RightBracket2 = ')';
+            this.ShaderTextBox.RightBracket = ')';
+            this.ShaderTextBox.RightBracket2 = '}';
             this.ShaderTextBox.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
             this.ShaderTextBox.ServiceColors = ((FastColoredTextBoxNS.ServiceColors)(resources.GetObject("ShaderTextBox.ServiceColors")));
             this.ShaderTextBox.Size = new System.Drawing.Size(523, 448);
             this.ShaderTextBox.TabIndex = 1;
             this.ShaderTextBox.Zoom = 100;
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.StatusLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 486);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(788, 22);
-            this.statusStrip1.TabIndex = 1;
-            this.statusStrip1.Text = "statusStrip1";
-            // 
-            // StatusLabel
-            // 
-            this.StatusLabel.Name = "StatusLabel";
-            this.StatusLabel.Size = new System.Drawing.Size(773, 17);
-            this.StatusLabel.Spring = true;
-            this.StatusLabel.Text = "Ready";
-            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // TechniquesTabPage
             // 
@@ -298,16 +262,18 @@
         '\'',
         '\''};
             this.TechniqueTextBox.AutoIndentChars = false;
-            this.TechniqueTextBox.AutoIndentCharsPatterns = "\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;]+);\n^\\s*(case|default)\\s*[^:]*(" +
-    "?<range>:)\\s*(?<range>[^;]+);\n";
+            this.TechniqueTextBox.AutoIndentCharsPatterns = "\r\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;]+);\r\n^\\s*(case|default)\\s*[^:]" +
+    "*(?<range>:)\\s*(?<range>[^;]+);\r\n";
             this.TechniqueTextBox.AutoIndentExistingLines = false;
-            this.TechniqueTextBox.AutoScrollMinSize = new System.Drawing.Size(27, 14);
+            this.TechniqueTextBox.AutoScrollMinSize = new System.Drawing.Size(2, 14);
             this.TechniqueTextBox.BackBrush = null;
+            this.TechniqueTextBox.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
             this.TechniqueTextBox.CharHeight = 14;
             this.TechniqueTextBox.CharWidth = 8;
             this.TechniqueTextBox.Cursor = System.Windows.Forms.Cursors.IBeam;
             this.TechniqueTextBox.DelayedEventsInterval = 10;
             this.TechniqueTextBox.DisabledColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))), ((int)(((byte)(180)))));
+            this.TechniqueTextBox.Font = new System.Drawing.Font("Courier New", 9.75F);
             this.TechniqueTextBox.IsReplaceMode = false;
             this.TechniqueTextBox.Language = FastColoredTextBoxNS.Language.CSharp;
             this.TechniqueTextBox.LeftBracket = '(';
@@ -323,6 +289,44 @@
             this.TechniqueTextBox.TabIndex = 1;
             this.TechniqueTextBox.Zoom = 100;
             // 
+            // DetailsTabPage
+            // 
+            this.DetailsTabPage.Controls.Add(this.DetailsPropertyGrid);
+            this.DetailsTabPage.Location = new System.Drawing.Point(4, 22);
+            this.DetailsTabPage.Name = "DetailsTabPage";
+            this.DetailsTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.DetailsTabPage.Size = new System.Drawing.Size(776, 454);
+            this.DetailsTabPage.TabIndex = 1;
+            this.DetailsTabPage.Text = "Details";
+            this.DetailsTabPage.UseVisualStyleBackColor = true;
+            // 
+            // DetailsPropertyGrid
+            // 
+            this.DetailsPropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.DetailsPropertyGrid.HelpVisible = false;
+            this.DetailsPropertyGrid.Location = new System.Drawing.Point(3, 3);
+            this.DetailsPropertyGrid.Name = "DetailsPropertyGrid";
+            this.DetailsPropertyGrid.Size = new System.Drawing.Size(770, 448);
+            this.DetailsPropertyGrid.TabIndex = 1;
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusLabel});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 486);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(788, 22);
+            this.statusStrip1.TabIndex = 1;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.Size = new System.Drawing.Size(773, 17);
+            this.StatusLabel.Spring = true;
+            this.StatusLabel.Text = "Ready";
+            this.StatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // FxcForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -332,18 +336,16 @@
             this.Controls.Add(this.MainTabControl);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FxcForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FXC Viewer - CodeWalker by dexyfex";
             this.MainTabControl.ResumeLayout(false);
             this.ShadersTabPage.ResumeLayout(false);
-            this.DetailsTabPage.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
             this.ShaderPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.ShaderTextBox)).EndInit();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
             this.TechniquesTabPage.ResumeLayout(false);
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
@@ -351,6 +353,9 @@
             this.splitContainer2.ResumeLayout(false);
             this.TechniquePanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.TechniqueTextBox)).EndInit();
+            this.DetailsTabPage.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 

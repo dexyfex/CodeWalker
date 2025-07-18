@@ -83,6 +83,8 @@
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.OptionsStartInFolderDefaultMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.OptionsStartInFolderCurrentMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.WindowsMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.WindowsCloseAllMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.MainToolbar = new System.Windows.Forms.ToolStrip();
             this.BackButton = new System.Windows.Forms.ToolStripSplitButton();
             this.BackListButton = new System.Windows.Forms.ToolStripMenuItem();
@@ -184,7 +186,8 @@
             this.EditMenu,
             this.ViewMenu,
             this.ToolsMenu,
-            this.OptionsMenu});
+            this.OptionsMenu,
+            this.WindowsMenu});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
             this.MainMenu.Name = "MainMenu";
             this.MainMenu.Size = new System.Drawing.Size(876, 24);
@@ -206,32 +209,32 @@
             // FileConfigureGameMenu
             // 
             this.FileConfigureGameMenu.Name = "FileConfigureGameMenu";
-            this.FileConfigureGameMenu.Size = new System.Drawing.Size(170, 22);
+            this.FileConfigureGameMenu.Size = new System.Drawing.Size(180, 22);
             this.FileConfigureGameMenu.Text = "Configure Game...";
             this.FileConfigureGameMenu.Click += new System.EventHandler(this.FileConfigureGameMenu_Click);
             // 
             // toolStripSeparator7
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(167, 6);
+            this.toolStripSeparator7.Size = new System.Drawing.Size(177, 6);
             // 
             // FileOpenFolderMenu
             // 
             this.FileOpenFolderMenu.Name = "FileOpenFolderMenu";
-            this.FileOpenFolderMenu.Size = new System.Drawing.Size(170, 22);
+            this.FileOpenFolderMenu.Size = new System.Drawing.Size(180, 22);
             this.FileOpenFolderMenu.Text = "Open Folder...";
             this.FileOpenFolderMenu.Click += new System.EventHandler(this.FileOpenFolderMenu_Click);
             // 
             // toolStripSeparator14
             // 
             this.toolStripSeparator14.Name = "toolStripSeparator14";
-            this.toolStripSeparator14.Size = new System.Drawing.Size(167, 6);
+            this.toolStripSeparator14.Size = new System.Drawing.Size(177, 6);
             // 
             // FileExitMenu
             // 
             this.FileExitMenu.Name = "FileExitMenu";
             this.FileExitMenu.ShortcutKeyDisplayString = "Alt+F4";
-            this.FileExitMenu.Size = new System.Drawing.Size(170, 22);
+            this.FileExitMenu.Size = new System.Drawing.Size(180, 22);
             this.FileExitMenu.Text = "Exit";
             this.FileExitMenu.Click += new System.EventHandler(this.FileExitMenu_Click);
             // 
@@ -436,21 +439,21 @@
             // ViewLargeIconsMenu
             // 
             this.ViewLargeIconsMenu.Name = "ViewLargeIconsMenu";
-            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewLargeIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewLargeIconsMenu.Text = "Large Icons";
             this.ViewLargeIconsMenu.Click += new System.EventHandler(this.ViewLargeIconsMenu_Click);
             // 
             // ViewSmallIconsMenu
             // 
             this.ViewSmallIconsMenu.Name = "ViewSmallIconsMenu";
-            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewSmallIconsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewSmallIconsMenu.Text = "Small Icons";
             this.ViewSmallIconsMenu.Click += new System.EventHandler(this.ViewSmallIconsMenu_Click);
             // 
             // ViewListMenu
             // 
             this.ViewListMenu.Name = "ViewListMenu";
-            this.ViewListMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewListMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewListMenu.Text = "List";
             this.ViewListMenu.Click += new System.EventHandler(this.ViewListMenu_Click);
             // 
@@ -459,14 +462,14 @@
             this.ViewDetailsMenu.Checked = true;
             this.ViewDetailsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
             this.ViewDetailsMenu.Name = "ViewDetailsMenu";
-            this.ViewDetailsMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewDetailsMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewDetailsMenu.Text = "Details";
             this.ViewDetailsMenu.Click += new System.EventHandler(this.ViewDetailsMenu_Click);
             // 
             // toolStripSeparator11
             // 
             this.toolStripSeparator11.Name = "toolStripSeparator11";
-            this.toolStripSeparator11.Size = new System.Drawing.Size(131, 6);
+            this.toolStripSeparator11.Size = new System.Drawing.Size(177, 6);
             // 
             // ViewThemeMenu
             // 
@@ -476,7 +479,7 @@
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
-            this.ViewThemeMenu.Size = new System.Drawing.Size(134, 22);
+            this.ViewThemeMenu.Size = new System.Drawing.Size(180, 22);
             this.ViewThemeMenu.Text = "Theme";
             // 
             // ViewThemeWindowsMenu
@@ -525,42 +528,42 @@
             // ToolsBinSearchMenu
             // 
             this.ToolsBinSearchMenu.Name = "ToolsBinSearchMenu";
-            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsBinSearchMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsBinSearchMenu.Text = "Binary Search...";
             this.ToolsBinSearchMenu.Click += new System.EventHandler(this.ToolsBinSearchMenu_Click);
             // 
             // ToolsAudioExplorerMenu
             // 
             this.ToolsAudioExplorerMenu.Name = "ToolsAudioExplorerMenu";
-            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsAudioExplorerMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsAudioExplorerMenu.Text = "Audio Explorer";
             this.ToolsAudioExplorerMenu.Click += new System.EventHandler(this.ToolsAudioExplorerMenu_Click);
             // 
             // ToolsRpfBrowserMenu
             // 
             this.ToolsRpfBrowserMenu.Name = "ToolsRpfBrowserMenu";
-            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsRpfBrowserMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsRpfBrowserMenu.Text = "Old RPF Browser";
             this.ToolsRpfBrowserMenu.Click += new System.EventHandler(this.ToolsRpfBrowserMenu_Click);
             // 
             // ToolsJenkGenMenu
             // 
             this.ToolsJenkGenMenu.Name = "ToolsJenkGenMenu";
-            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsJenkGenMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsJenkGenMenu.Text = "JenkGen";
             this.ToolsJenkGenMenu.Click += new System.EventHandler(this.ToolsJenkGenMenu_Click);
             // 
             // ToolsJenkIndMenu
             // 
             this.ToolsJenkIndMenu.Name = "ToolsJenkIndMenu";
-            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsJenkIndMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsJenkIndMenu.Text = "JenkInd";
             this.ToolsJenkIndMenu.Click += new System.EventHandler(this.ToolsJenkIndMenu_Click);
             // 
             // ToolsAssetConverterMenu
             // 
             this.ToolsAssetConverterMenu.Name = "ToolsAssetConverterMenu";
-            this.ToolsAssetConverterMenu.Size = new System.Drawing.Size(161, 22);
+            this.ToolsAssetConverterMenu.Size = new System.Drawing.Size(180, 22);
             this.ToolsAssetConverterMenu.Text = "Asset Converter";
             this.ToolsAssetConverterMenu.Click += new System.EventHandler(this.ToolsAssetConverterMenu_Click);
             // 
@@ -576,7 +579,7 @@
             // OptionsStartInEditModeMenu
             // 
             this.OptionsStartInEditModeMenu.Name = "OptionsStartInEditModeMenu";
-            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInEditModeMenu.Size = new System.Drawing.Size(180, 22);
             this.OptionsStartInEditModeMenu.Text = "Start in Edit mode";
             this.OptionsStartInEditModeMenu.Click += new System.EventHandler(this.OptionsStartInEditModeMenu_Click);
             // 
@@ -588,7 +591,7 @@
             this.OptionsStartInFolderDefaultMenu,
             this.OptionsStartInFolderCurrentMenu});
             this.OptionsStartInFolderMenu.Name = "OptionsStartInFolderMenu";
-            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(168, 22);
+            this.OptionsStartInFolderMenu.Size = new System.Drawing.Size(180, 22);
             this.OptionsStartInFolderMenu.Text = "Start in Folder";
             // 
             // OptionsStartInFolderValueMenu
@@ -616,6 +619,21 @@
             this.OptionsStartInFolderCurrentMenu.Size = new System.Drawing.Size(183, 22);
             this.OptionsStartInFolderCurrentMenu.Text = "Set to Current Folder";
             this.OptionsStartInFolderCurrentMenu.Click += new System.EventHandler(this.OptionsStartInFolderCurrentMenu_Click);
+            // 
+            // WindowsMenu
+            // 
+            this.WindowsMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.WindowsCloseAllMenu});
+            this.WindowsMenu.Name = "WindowsMenu";
+            this.WindowsMenu.Size = new System.Drawing.Size(68, 20);
+            this.WindowsMenu.Text = "Windows";
+            // 
+            // WindowsCloseAllMenu
+            // 
+            this.WindowsCloseAllMenu.Name = "WindowsCloseAllMenu";
+            this.WindowsCloseAllMenu.Size = new System.Drawing.Size(180, 22);
+            this.WindowsCloseAllMenu.Text = "Close All";
+            this.WindowsCloseAllMenu.Click += new System.EventHandler(this.WindowsCloseAllMenu_Click);
             // 
             // MainToolbar
             // 
@@ -1520,5 +1538,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
         private System.Windows.Forms.ToolStripMenuItem ToolsAssetConverterMenu;
         private System.Windows.Forms.Button CopyToModsFolderButton;
+        private System.Windows.Forms.ToolStripMenuItem WindowsMenu;
+        private System.Windows.Forms.ToolStripMenuItem WindowsCloseAllMenu;
     }
 }

@@ -31,8 +31,6 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(YwrForm));
             this.CloseButton = new System.Windows.Forms.Button();
             this.MainListView = new System.Windows.Forms.ListView();
-            this.ExportButton = new System.Windows.Forms.Button();
-            this.CopyClipboardButton = new System.Windows.Forms.Button();
             this.XPosColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.YPosColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ZPosColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -40,6 +38,8 @@
             this.Unk1Column = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Unk2Column = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.Unk3Column = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ExportButton = new System.Windows.Forms.Button();
+            this.CopyClipboardButton = new System.Windows.Forms.Button();
             this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.SuspendLayout();
             // 
@@ -76,30 +76,6 @@
             this.MainListView.UseCompatibleStateImageBehavior = false;
             this.MainListView.View = System.Windows.Forms.View.Details;
             // 
-            // ExportButton
-            // 
-            this.ExportButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ExportButton.Enabled = false;
-            this.ExportButton.Location = new System.Drawing.Point(336, 389);
-            this.ExportButton.Name = "ExportButton";
-            this.ExportButton.Size = new System.Drawing.Size(75, 23);
-            this.ExportButton.TabIndex = 5;
-            this.ExportButton.Text = "Export";
-            this.ExportButton.UseVisualStyleBackColor = true;
-            this.ExportButton.Click += new System.EventHandler(this.ExportButton_Click);
-            // 
-            // CopyClipboardButton
-            // 
-            this.CopyClipboardButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.CopyClipboardButton.Enabled = false;
-            this.CopyClipboardButton.Location = new System.Drawing.Point(227, 389);
-            this.CopyClipboardButton.Name = "CopyClipboardButton";
-            this.CopyClipboardButton.Size = new System.Drawing.Size(103, 23);
-            this.CopyClipboardButton.TabIndex = 6;
-            this.CopyClipboardButton.Text = "Copy to clipboard";
-            this.CopyClipboardButton.UseVisualStyleBackColor = true;
-            this.CopyClipboardButton.Click += new System.EventHandler(this.CopyClipboardButton_Click);
-            // 
             // XPosColumn
             // 
             this.XPosColumn.Text = "Position X";
@@ -131,6 +107,30 @@
             // 
             this.Unk3Column.Text = "Unk3";
             // 
+            // ExportButton
+            // 
+            this.ExportButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ExportButton.Enabled = false;
+            this.ExportButton.Location = new System.Drawing.Point(336, 389);
+            this.ExportButton.Name = "ExportButton";
+            this.ExportButton.Size = new System.Drawing.Size(75, 23);
+            this.ExportButton.TabIndex = 5;
+            this.ExportButton.Text = "Export";
+            this.ExportButton.UseVisualStyleBackColor = true;
+            this.ExportButton.Click += new System.EventHandler(this.ExportButton_Click);
+            // 
+            // CopyClipboardButton
+            // 
+            this.CopyClipboardButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.CopyClipboardButton.Enabled = false;
+            this.CopyClipboardButton.Location = new System.Drawing.Point(227, 389);
+            this.CopyClipboardButton.Name = "CopyClipboardButton";
+            this.CopyClipboardButton.Size = new System.Drawing.Size(103, 23);
+            this.CopyClipboardButton.TabIndex = 6;
+            this.CopyClipboardButton.Text = "Copy to clipboard";
+            this.CopyClipboardButton.UseVisualStyleBackColor = true;
+            this.CopyClipboardButton.Click += new System.EventHandler(this.CopyClipboardButton_Click);
+            // 
             // YwrForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -143,6 +143,7 @@
             this.Controls.Add(this.CloseButton);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "YwrForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Waypoint Records Viewer - CodeWalker by dexyfex";
             this.ResumeLayout(false);
 
