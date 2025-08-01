@@ -215,12 +215,12 @@ namespace CodeWalker.Project.Panels
             }
         }
 
-        private void OuterPosTextBox_TextChanged(object sender, EventArgs e)
+        private void ActivationZoneCentreTextBoxTextChanged(object sender, EventArgs e)
         {
             if (populatingui) return;
             if (CurrentZone?.AmbientZone == null) return;
 
-            var vec = FloatUtil.ParseVector3String(PositioningCentreTextBox.Text);
+            var vec = FloatUtil.ParseVector3String(ActivationZoneCentreTextBox.Text);
             if (CurrentZone.AmbientZone.ActivationZoneCentre != vec)
             {
                 CurrentZone.AmbientZone.ActivationZoneCentre = vec;

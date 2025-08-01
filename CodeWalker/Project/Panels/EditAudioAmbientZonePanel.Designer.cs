@@ -658,7 +658,7 @@
             this.PositioningCentreTextBox.Name = "PositioningCentreTextBox";
             this.PositioningCentreTextBox.Size = new System.Drawing.Size(200, 20);
             this.PositioningCentreTextBox.TabIndex = 47;
-            this.PositioningCentreTextBox.TextChanged += new System.EventHandler(this.OuterPosTextBox_TextChanged);
+            this.PositioningCentreTextBox.TextChanged += new System.EventHandler(this.PositioningCentreTextBoxTextChanged);
             // 
             // label16
             // 
@@ -675,7 +675,7 @@
             this.ActivationZoneCentreTextBox.Name = "ActivationZoneCentreTextBox";
             this.ActivationZoneCentreTextBox.Size = new System.Drawing.Size(186, 20);
             this.ActivationZoneCentreTextBox.TabIndex = 35;
-            this.ActivationZoneCentreTextBox.TextChanged += new System.EventHandler(this.PositioningCentreTextBoxTextChanged);
+            this.ActivationZoneCentreTextBox.TextChanged += new System.EventHandler(this.ActivationZoneCentreTextBoxTextChanged);
             // 
             // GoToButton
             // 
