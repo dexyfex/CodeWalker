@@ -66,6 +66,7 @@
             this.EntityGoToButton = new System.Windows.Forms.Button();
             this.label17 = new System.Windows.Forms.Label();
             this.EntityLodTabPage = new System.Windows.Forms.TabPage();
+            this.parentEntityTextBox = new System.Windows.Forms.TextBox();
             this.label20 = new System.Windows.Forms.Label();
             this.EntityParentIndexTextBox = new System.Windows.Forms.TextBox();
             this.EntityNumChildrenTextBox = new System.Windows.Forms.TextBox();
@@ -528,6 +529,7 @@
             // 
             // EntityLodTabPage
             // 
+            this.EntityLodTabPage.Controls.Add(this.parentEntityTextBox);
             this.EntityLodTabPage.Controls.Add(this.label20);
             this.EntityLodTabPage.Controls.Add(this.EntityParentIndexTextBox);
             this.EntityLodTabPage.Controls.Add(this.EntityNumChildrenTextBox);
@@ -539,6 +541,16 @@
             this.EntityLodTabPage.TabIndex = 1;
             this.EntityLodTabPage.Text = "LOD Hierarchy";
             this.EntityLodTabPage.UseVisualStyleBackColor = true;
+            // 
+            // parentEntityTextBox
+            // 
+            this.parentEntityTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.parentEntityTextBox.Location = new System.Drawing.Point(183, 13);
+            this.parentEntityTextBox.Name = "parentEntityTextBox";
+            this.parentEntityTextBox.Size = new System.Drawing.Size(155, 20);
+            this.parentEntityTextBox.TabIndex = 36;
+            this.parentEntityTextBox.TextChanged += new System.EventHandler(this.parentEntityTextBox_TextChanged);
             // 
             // label20
             // 
@@ -555,7 +567,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.EntityParentIndexTextBox.Location = new System.Drawing.Point(93, 13);
             this.EntityParentIndexTextBox.Name = "EntityParentIndexTextBox";
-            this.EntityParentIndexTextBox.Size = new System.Drawing.Size(245, 20);
+            this.EntityParentIndexTextBox.Size = new System.Drawing.Size(84, 20);
             this.EntityParentIndexTextBox.TabIndex = 25;
             this.EntityParentIndexTextBox.TextChanged += new System.EventHandler(this.EntityParentIndexTextBox_TextChanged);
             // 
@@ -868,5 +880,6 @@
         private System.Windows.Forms.Button EntityEditArchetypeButton;
         private WinForms.QuaternionBox EntityRotationQuatBox;
         private WinForms.QuaternionBox EntityPivotRotationQuatBox;
+        private System.Windows.Forms.TextBox parentEntityTextBox;
     }
 }

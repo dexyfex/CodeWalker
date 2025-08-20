@@ -72,6 +72,7 @@ namespace CodeWalker.Project.Panels
                 EntityScaleXYTextBox.Text = string.Empty;
                 EntityScaleZTextBox.Text = string.Empty;
                 EntityParentIndexTextBox.Text = string.Empty;
+                parentEntityTextBox.Text = string.Empty;
                 EntityLodDistTextBox.Text = string.Empty;
                 EntityChildLodDistTextBox.Text = string.Empty;
                 EntityLodLevelComboBox.SelectedIndex = 0;// Math.Max(EntityLodLevelComboBox.FindString(), 0);
@@ -107,6 +108,7 @@ namespace CodeWalker.Project.Panels
                 EntityScaleXYTextBox.Text = FloatUtil.ToString(e.scaleXY);
                 EntityScaleZTextBox.Text = FloatUtil.ToString(e.scaleZ);
                 EntityParentIndexTextBox.Text = e.parentIndex.ToString();
+                parentEntityTextBox.Text = CurrentEntity.Parent?.Name ?? string.Empty;
                 EntityLodDistTextBox.Text = FloatUtil.ToString(e.lodDist);
                 EntityChildLodDistTextBox.Text = FloatUtil.ToString(e.childLodDist);
                 EntityLodLevelComboBox.SelectedIndex = Math.Max(EntityLodLevelComboBox.FindString(e.lodLevel.ToString()), 0);
@@ -152,7 +154,7 @@ namespace CodeWalker.Project.Panels
                     MiloFlagsTextBox.Text = string.Empty;
                 }
 
-
+                SetupParentEntityAutoComplete();
                 populatingui = false;
 
 
@@ -474,15 +476,30 @@ namespace CodeWalker.Project.Panels
         {
             if (populatingui) return;
             if (CurrentEntity == null) return;
+
             int pind = 0;
             int.TryParse(EntityParentIndexTextBox.Text, out pind);
+
             lock (ProjectForm.ProjectSyncRoot)
             {
                 if (CurrentEntity._CEntityDef.parentIndex != pind)
                 {
-                    CurrentEntity._CEntityDef.parentIndex = pind; //Needs more work for LOD linking!
+                    CurrentEntity._CEntityDef.parentIndex = pind;
+
                     if (CurrentMCEntity != null)
                         CurrentMCEntity._Data.parentIndex = pind;
+
+                    string parentName = string.Empty;
+                    var parentEntities = CurrentEntity.Ymap.Parent.AllEntities;
+                    if (parentEntities != null && pind >= 0 && pind < parentEntities.Length)
+                    {
+                        parentName = parentEntities[pind]?.Name ?? string.Empty;
+                    }
+
+                    populatingui = true;
+                    parentEntityTextBox.Text = parentName;
+                    populatingui = false;
+
                     ProjectItemChanged();
                 }
             }
@@ -795,5 +812,60 @@ namespace CodeWalker.Project.Panels
             }
         }
 
+        private void parentEntityTextBox_TextChanged(object sender, EventArgs e)
+        {
+            if (populatingui) return;
+            if (CurrentEntity == null) return;
+
+            string parentName = parentEntityTextBox.Text?.Trim();
+            if (string.IsNullOrEmpty(parentName)) return;
+
+            var parentEntities = CurrentEntity.Ymap.Parent.AllEntities;
+            int newIndex = -1;
+
+            for (int i = 0; i < parentEntities.Length; i++)
+            {
+                if (parentEntities[i]?.Name == parentName)
+                {
+                    newIndex = i;
+                    break;
+                }
+            }
+
+            if (newIndex >= 0 && CurrentEntity._CEntityDef.parentIndex != newIndex)
+            {
+                lock (ProjectForm.ProjectSyncRoot)
+                {
+                    CurrentEntity._CEntityDef.parentIndex = newIndex;
+
+                    if (CurrentMCEntity != null)
+                        CurrentMCEntity._Data.parentIndex = newIndex;
+
+                    populatingui = true;
+                    EntityParentIndexTextBox.Text = newIndex.ToString();
+                    populatingui = false;
+
+                    ProjectItemChanged();
+                }
+            }
+        }
+        private void SetupParentEntityAutoComplete()
+        {
+            if (CurrentEntity?.Ymap?.Parent?.AllEntities == null) return;
+
+            var autoComplete = new AutoCompleteStringCollection();
+
+            foreach (var entity in CurrentEntity.Ymap.Parent.AllEntities)
+            {
+                if (!string.IsNullOrEmpty(entity?.Name))
+                {
+                    autoComplete.Add(entity.Name);
+                }
+            }
+
+            parentEntityTextBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            parentEntityTextBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
+            parentEntityTextBox.AutoCompleteCustomSource = autoComplete;
+        }
     }
 }
