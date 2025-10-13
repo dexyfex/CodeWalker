@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,6 +67,20 @@ namespace CodeWalker
             LoadSettings();
 
             GTAFolder.UpdateEnhancedFormTitle(this);
+        }
+        // Fix for sorting incorrectly
+        public sealed class NaturalStringComparer : IComparer<string>
+        {
+            public static readonly NaturalStringComparer Instance = new NaturalStringComparer();
+            private NaturalStringComparer() { }
+            [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
+            private static extern int StrCmpLogicalW(string x, string y);
+            public int Compare(string x, string y)
+            {
+                int cmp = StrCmpLogicalW(x ?? string.Empty, y ?? string.Empty);
+                if (cmp != 0) return cmp;
+                return StringComparer.OrdinalIgnoreCase.Compare(x, y);
+            }
         }
 
         private void SetTheme(string themestr, bool changing = true)
@@ -4879,7 +4894,8 @@ namespace CodeWalker
 
         public int SortCompare(MainListItem i, int col, SortOrder dir)
         {
-            var desc = (dir == SortOrder.Descending);
+            bool desc = (dir == SortOrder.Descending);
+
             if (Folder != null)
             {
                 if (i.Folder == null) return desc ? 1 : -1;
@@ -4891,32 +4907,40 @@ namespace CodeWalker
 
             var i1 = this;
             var i2 = i;
-            if (desc)
-            {
-                i1 = i;
-                i2 = this;
-            }
+            if (desc) { i1 = i; i2 = this; }
+
+            var nat = ExploreForm.NaturalStringComparer.Instance;
 
             switch (col)
             {
                 default:
-                case 0: //Name column
-                    return i1.Name.CompareTo(i2.Name);
-                case 1: //Type column
-                    var ftc = i1.FileTypeText.CompareTo(i2.FileTypeText);
-                    if (ftc == 0) return i1.Name.CompareTo(i2.Name); //same type, sort by name...
-                    return ftc;
-                case 2: //Size column
-                    return i1.FileSize.CompareTo(i2.FileSize);
-                case 3: //Attributes column
-                    var ac = i1.Attributes.CompareTo(i2.Attributes);
-                    if (ac == 0) return i1.Name.CompareTo(i2.Name); //same attributes, sort by name...
-                    return ac;
-                case 4: //path column
-                    return i1.Path.CompareTo(i2.Path);
-            }
+                case 0: // Name
+                    return nat.Compare(i1.Name, i2.Name);
 
-            //return i1.Name.CompareTo(i2.Name);
+                case 1: // Type
+                {
+                    int ftc = nat.Compare(i1.FileTypeText, i2.FileTypeText);
+                    if (ftc == 0) return nat.Compare(i1.Name, i2.Name);
+                    return ftc;
+                }
+
+                case 2: // Size
+                {
+                    int sc = i1.FileSize.CompareTo(i2.FileSize);
+                    if (sc == 0) return nat.Compare(i1.Name, i2.Name);
+                    return sc;
+                }
+
+                case 3: // Attributes
+                {
+                    int ac = i1.Attributes.CompareTo(i2.Attributes);
+                    if (ac == 0) return nat.Compare(i1.Name, i2.Name);
+                    return ac;
+                }
+
+                case 4: // Path
+                    return nat.Compare(i1.Path, i2.Path);
+            }
         }
 
         public RpfEntry GetRpfEntry()
