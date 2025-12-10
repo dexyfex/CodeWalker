@@ -40,6 +40,7 @@ namespace CodeWalker.Tools
             this.XmlTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.NameComboBox = new System.Windows.Forms.ComboBox();
             this.TypeComboBox = new System.Windows.Forms.ComboBox();
+            this.ExportBotton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.MainSplitContainer)).BeginInit();
             this.MainSplitContainer.Panel1.SuspendLayout();
             this.MainSplitContainer.Panel2.SuspendLayout();
@@ -188,11 +189,22 @@ namespace CodeWalker.Tools
             this.TypeComboBox.TabIndex = 2;
             this.TypeComboBox.TextChanged += new System.EventHandler(this.TypeComboBox_TextChanged);
             // 
+            // ExportBotton
+            // 
+            this.ExportBotton.Location = new System.Drawing.Point(670, 8);
+            this.ExportBotton.Name = "ExportBotton";
+            this.ExportBotton.Size = new System.Drawing.Size(93, 21);
+            this.ExportBotton.TabIndex = 3;
+            this.ExportBotton.Text = "Export Select";
+            this.ExportBotton.UseVisualStyleBackColor = true;
+            this.ExportBotton.Click += new System.EventHandler(this.ExportBotton_Click);
+            // 
             // AudioExplorerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(823, 564);
+            this.Controls.Add(this.ExportBotton);
             this.Controls.Add(this.TypeComboBox);
             this.Controls.Add(this.NameComboBox);
             this.Controls.Add(this.MainSplitContainer);
@@ -221,6 +233,7 @@ namespace CodeWalker.Tools
         private WinForms.PropertyGridFix DetailsPropertyGrid;
         private System.Windows.Forms.TabPage XmlTabPage;
         private FastColoredTextBoxNS.FastColoredTextBox XmlTextBox;
+        private System.Windows.Forms.Button ExportBotton;
         private System.Windows.Forms.ComboBox TypeComboBox;
     }
 }

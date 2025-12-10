@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Linq;
 using Range = FastColoredTextBoxNS.Range;
+using System.Xml.Serialization;
 
 namespace CodeWalker.Forms
 {
@@ -111,6 +112,9 @@ namespace CodeWalker.Forms
                     var name = audio.Name;
                     if (stereo) name = "(Stereo Playback)";
                     var item = PlayListView.Items.Add(name);
+                    if (stereo)
+                    item.SubItems.Add(audio.ChannelStreams[0].Type);
+                    else 
                     item.SubItems.Add(audio.Type);
                     item.SubItems.Add(audio.LengthStr);
                     item.SubItems.Add(TextUtil.GetBytesReadable(audio.ByteLength));
@@ -174,7 +178,18 @@ namespace CodeWalker.Forms
                 var item = PlayListView.SelectedItems[0];
                 var audio = item.Tag as AwcStream;
                 var stereo = (audio?.ChannelStreams?.Length == 2);
+                AwcCodecType codec;
+                
                 if (stereo)
+                    codec = audio.ChannelStreams[0].StreamFormat?.Codec ?? audio.ChannelStreams[0].FormatChunk?.Codec ?? AwcCodecType.PCM;
+                else
+                    codec = audio.StreamFormat?.Codec ?? audio.FormatChunk?.Codec ?? AwcCodecType.PCM;
+                
+                if (codec == AwcCodecType.MP3)
+                {
+                    //todo: play MP3
+                }
+                else if (stereo)
                 {
                     var name0 = audio.ChannelStreams[0].Name;
                     var left0 = name0.EndsWith("left") || name0.EndsWith(".l");
@@ -369,7 +384,7 @@ namespace CodeWalker.Forms
             Player.DisposeAudio();
         }
 
-        private void ExportAsWav_Click(object sender, EventArgs e)
+        private void ExportAsFile_Click(object sender, EventArgs e)
         {
             if (PlayListView.SelectedItems.Count == 1)
             {
@@ -383,7 +398,17 @@ namespace CodeWalker.Forms
                     return;
                 }
 
-                var ext = ".wav";
+                var codec = audio.StreamFormat?.Codec ?? audio.FormatChunk?.Codec ?? AwcCodecType.PCM;
+                string ext;
+
+                if (codec == AwcCodecType.MP3)
+                {
+                    ext = ".mp3";
+                    saveFileDialog.Filter = "Mp3 files (*.mp3)|*.mp3";
+                }
+                else
+                    ext = ".wav";
+
                 if (audio?.MidiChunk != null)
                 {
                     ext = ".midi";
@@ -398,11 +423,19 @@ namespace CodeWalker.Forms
                     }
                     else if ((audio?.FormatChunk != null) || (audio?.StreamFormat != null))
                     {
-                        Stream wavStream = audio.GetWavStream();
-                        FileStream stream = File.Create(saveFileDialog.FileName);
-                        wavStream.CopyTo(stream);
-                        stream.Close();
-                        wavStream.Close();
+                        if (codec == AwcCodecType.MP3)
+                        {
+                            byte[] data = audio.GetMp3File();
+                            File.WriteAllBytes(saveFileDialog.FileName, data);
+                        }
+                        else
+                        {
+                            Stream wavStream = audio.GetWavStream();
+                            FileStream stream = File.Create(saveFileDialog.FileName);
+                            wavStream.CopyTo(stream);
+                            stream.Close();
+                            wavStream.Close();
+                        }
                     }
 
                 }
@@ -411,14 +444,19 @@ namespace CodeWalker.Forms
 
         private void PlayListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ExportAsWav.Text = "Export as .wav";
+            ExportAsFile.Text = "Export as .wav";
+
             if (PlayListView.SelectedItems.Count == 1)
             {
                 var item = PlayListView.SelectedItems[0];
                 var audio = item.Tag as AwcStream;
+                var codec = audio.StreamFormat?.Codec ?? audio.FormatChunk?.Codec ?? AwcCodecType.PCM;
+                
+                if (codec == AwcCodecType.MP3)
+                    ExportAsFile.Text = "Export as .mp3";
                 if (audio?.MidiChunk != null)
                 {
-                    ExportAsWav.Text = "Export as .midi";
+                    ExportAsFile.Text = "Export as .midi";
                 }
             }
         }

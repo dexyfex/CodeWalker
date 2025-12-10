@@ -46,7 +46,7 @@
             this.PlaylistLengthHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.PlaylistSizeHeader = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.ExportAsWav = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExportAsFile = new System.Windows.Forms.ToolStripMenuItem();
             this.VolumeTrackBar = new System.Windows.Forms.TrackBar();
             this.PositionTrackBar = new System.Windows.Forms.TrackBar();
             this.DetailsTabPage = new System.Windows.Forms.TabPage();
@@ -231,16 +231,16 @@
             // contextMenuStrip
             // 
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ExportAsWav});
+            this.ExportAsFile});
             this.contextMenuStrip.Name = "contextMenuStrip1";
             this.contextMenuStrip.Size = new System.Drawing.Size(150, 26);
             // 
-            // ExportAsWav
+            // ExportAsFile
             // 
-            this.ExportAsWav.Name = "ExportAsWav";
-            this.ExportAsWav.Size = new System.Drawing.Size(149, 22);
-            this.ExportAsWav.Text = "Export as .wav";
-            this.ExportAsWav.Click += new System.EventHandler(this.ExportAsWav_Click);
+            this.ExportAsFile.Name = "ExportAsFile";
+            this.ExportAsFile.Size = new System.Drawing.Size(149, 22);
+            this.ExportAsFile.Text = "Export as .wav";
+            this.ExportAsFile.Click += new System.EventHandler(this.ExportAsFile_Click);
             // 
             // VolumeTrackBar
             // 
@@ -402,7 +402,7 @@
         private System.Windows.Forms.Label LabelTime;
         private System.Windows.Forms.Label LabelInfo;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
-        private System.Windows.Forms.ToolStripMenuItem ExportAsWav;
+        private System.Windows.Forms.ToolStripMenuItem ExportAsFile;
         private System.Windows.Forms.SaveFileDialog saveFileDialog;
         private System.Windows.Forms.ColumnHeader PlaylistSizeHeader;
         private System.Windows.Forms.TabPage XmlTabPage;

@@ -790,7 +790,8 @@ namespace CodeWalker.GameFiles
     public enum AwcCodecType
     {
         PCM = 0,
-        ADPCM = 4
+        ADPCM = 4,
+        MP3 = 7
     }
 
     [TC(typeof(EXP))] public class AwcStreamInfo
@@ -996,6 +997,7 @@ namespace CodeWalker.GameFiles
                 {
                     case AwcCodecType.PCM:
                     case AwcCodecType.ADPCM:
+                    case AwcCodecType.MP3:
                         break;
                     default:
                         codec = "Unknown";
@@ -1115,8 +1117,17 @@ namespace CodeWalker.GameFiles
                 }
                 else
                 {
-                    fname += ".wav";
-                    fdata = export ? GetWavFile() : null;
+                    var codec = StreamFormat?.Codec ?? FormatChunk?.Codec ?? AwcCodecType.PCM;
+                    if (codec == AwcCodecType.MP3)
+                    {
+                        fname += ".mp3";
+                        fdata = export ? GetMp3File() : null;
+                    }
+                    else
+                    {
+                        fname += ".wav";
+                        fdata = export ? GetWavFile() : null;
+                    }
                 }
                 AwcXml.StringTag(sb, indent, "FileName", AwcXml.XmlEscape(fname));
                 try
@@ -1196,7 +1207,14 @@ namespace CodeWalker.GameFiles
                         }
                         else
                         {
-                            ParseWavFile(fdata);
+                            if (filepath.EndsWith(".wav"))
+                                ParseWavFile(fdata);
+                                
+                            else if (filepath.EndsWith(".mp3"))
+                            {
+                                StreamFormat.Codec = AwcCodecType.MP3;
+                                ParseMp3File(fdata);
+                            }
                         }
                     }
                 }
@@ -1505,14 +1523,18 @@ namespace CodeWalker.GameFiles
             return DataChunk.Data;
         }
 
-        public byte[] GetPcmData()
+        public byte[] GetPcmData(bool adpcm=true)
         {
             var data = GetRawData();
 
             var codec = StreamFormat?.Codec ?? FormatChunk?.Codec ?? AwcCodecType.PCM;
-            if (codec == AwcCodecType.ADPCM)//just convert ADPCM to PCM for compatibility reasons
+            if (codec == AwcCodecType.ADPCM)//no more compatibility
             {
                 data = ADPCMCodec.DecodeADPCM(data, SampleCount);
+                if (adpcm)
+                {
+                    data = ADPCMCodec.EncodeADPCMStandard(data, SampleCount); //SharpDX not work for ADPCM wav
+                }
             }
 
             return data;
@@ -1526,9 +1548,9 @@ namespace CodeWalker.GameFiles
             return data;
         }
 
-        public Stream GetWavStream()
+        public Stream GetWavStream(bool adpcm=true)
         {
-            byte[] dataPCM = GetPcmData();
+            byte[] dataPCM = GetPcmData(adpcm);
             var bitsPerSample = 16;
             var channels = 1;
             short formatcodec = 1; // 1 = WAVE_FORMAT_PCM
@@ -1536,17 +1558,21 @@ namespace CodeWalker.GameFiles
             short blockAlign = (short)(channels * bitsPerSample / 8);
             short samplesPerBlock = 0;
             bool addextrafmt = false;
+            int samples_per_block = (blockAlign - 4 * channels) * 2 / channels + 1;
+            bool fact = false;
 
-            //if (codec == AwcCodecFormat.ADPCM)//can't seem to get ADPCM wav files to work :(
-            //{
-            //    bitsPerSample = 4;
-            //    formatcodec = 17;
-            //    byteRate = (int)(SamplesPerSecond * 0.50685 * channels);
-            //    blockAlign = 2048;// (short)(256 * (4 * channels));// (short)(36 * channels);//256;// 2048;// 
-            //    samplesPerBlock = 4088;// (short)(((blockAlign - (4 * channels)) * 8) / (bitsPerSample * channels) + 1); // 2044;// 
-            //    addextrafmt = true;
-            //}
+            var codec = StreamFormat?.Codec ?? FormatChunk?.Codec ?? AwcCodecType.PCM;
 
+            if (codec == AwcCodecType.ADPCM && adpcm)//yeah I got it work :)
+            {
+                bitsPerSample = 4;
+                formatcodec = 17;
+                blockAlign = 2048; // (short)(blockAlign / 4);//  //2048;// (short)(256 * (4 * channels));// (short)(36 * channels);//256;// 2048;// 
+                byteRate = byteRate / 4 + 41;// SamplesPerSecond * blockAlign / samples_per_block;// (int)(SamplesPerSecond * 0.50685 * channels);
+                samplesPerBlock = 4089; //(short)SampleCount;// (short)samples_per_block;// 4088;// (short)(((blockAlign - (4 * channels)) * 8) / (bitsPerSample * channels) + 1); // 2044;// 
+                addextrafmt = true;
+                fact = true;
+            }
 
             MemoryStream stream = new MemoryStream();
             BinaryWriter w = new BinaryWriter(stream);
@@ -1574,6 +1600,13 @@ namespace CodeWalker.GameFiles
             {
                 w.Write((ushort)0x0002);
                 w.Write((ushort)samplesPerBlock);
+            }
+
+            if (fact)
+            {
+                w.Write("fact".ToCharArray());
+                w.Write((int)4);
+                w.Write((int)samplesPerBlock);
             }
 
             // data sub-chunk
@@ -1609,23 +1642,32 @@ namespace CodeWalker.GameFiles
                 ext2 = r.ReadUInt16();
                 samplesPerBlock = r.ReadUInt16();
             }
-            var datatag = r.ReadUInt32(); // 0x61746164
+            var tag = r.ReadUInt32(); // 0x61746164
+            if (tag == 0x74636166)
+            r.ReadBytes(12);
             var datalen = r.ReadInt32();
             var dataPCM = r.ReadBytes(datalen);
+
+            var sampleCount = datalen * 2; //assume 16bits per sample PCM
 
             if (r.Position != r.Length)
             { }
 
-            if (formatcodec != 1)
+            switch (formatcodec)
             {
-                throw new Exception("Only PCM format .wav files supported!");
+                case 1:
+                    break;
+                case 17:
+                    dataPCM = ADPCMCodec.DecodeADPCMStandard(dataPCM, sampleCount);
+                    break;
+                default:
+                    throw new Exception("Only PCM and ADPCM format .wav files supported!");
             }
+
             if (channels != 1)
             {
                 throw new Exception("Only mono .wav files supported!");
             }
-
-            var sampleCount = datalen * 2; //assume 16bits per sample PCM
 
             var codec = StreamFormat?.Codec ?? FormatChunk?.Codec ?? AwcCodecType.PCM;
             if (codec == AwcCodecType.ADPCM)// convert PCM wav to ADPCM where required
@@ -1662,6 +1704,33 @@ namespace CodeWalker.GameFiles
 
         }
 
+        public byte[] GetMp3File()
+        {
+            var data = GetRawData();
+            return data;
+        }
+
+        public void ParseMp3File(byte[] mp3)
+        {
+            if (Awc.MultiChannelFlag)
+            {
+                if (StreamFormat != null)
+                {
+                    DataChunk = new AwcDataChunk(null);
+                    DataChunk.Data = mp3;
+                }
+            }
+            else
+            {
+                if (FormatChunk != null)
+                {
+                    if (DataChunk == null) DataChunk = new AwcDataChunk(new AwcChunkInfo() { Type = AwcChunkType.data });
+
+                    DataChunk.Data = mp3;
+                }
+
+            }
+        }
 
     }
 
@@ -3026,6 +3095,64 @@ namespace CodeWalker.GameFiles
             return dataPCM;
         }
 
+        public static byte[] DecodeADPCMStandard(byte[] data, int sampleCount)
+        {
+            byte[] dataPCM = new byte[data.Length * 4];
+            int predictor = 0, stepIndex = 0;
+            int readingOffset = 0, writingOffset = 0, bytesInBlock = 0;
+
+            void writePredictorSample()
+            {
+                int samplePCM = clip(predictor, -32768, 32767);
+                dataPCM[writingOffset] = (byte)(samplePCM & 0xFF);
+                dataPCM[writingOffset + 1] = (byte)((samplePCM >> 8) & 0xFF);
+                writingOffset += 2;
+            }
+
+            void parseNibble(byte nibble)
+            {
+                var step = ima_step_table[stepIndex];
+                int diff = ((((nibble & 7) << 1) + 1) * step) >> 3;
+                if ((nibble & 8) != 0) diff = -diff;
+                predictor = predictor + diff;
+                predictor = clip(predictor, -32768, 32767);
+
+                stepIndex = clip(stepIndex + ima_index_table[nibble & 7], 0, 88);
+
+                int samplePCM = predictor;
+                dataPCM[writingOffset] = (byte)(samplePCM & 0xFF);
+                dataPCM[writingOffset + 1] = (byte)((samplePCM >> 8) & 0xFF);
+                writingOffset += 2;
+            }
+
+            while ((readingOffset < data.Length) && (sampleCount > 0))
+            {
+                if (bytesInBlock == 0)
+                {
+                    predictor = BitConverter.ToInt16(data, readingOffset);
+                    stepIndex = clip(data[readingOffset + 2], 0, 88);
+
+                    writePredictorSample();
+                    sampleCount -= 1;
+
+                    bytesInBlock = 2044;
+                    readingOffset += 4;
+                }
+                else
+                {
+                    parseNibble((byte)(data[readingOffset] & 0x0F));
+                    if (sampleCount <= 0) break;
+                    parseNibble((byte)((data[readingOffset] >> 4) & 0x0F));
+
+                    bytesInBlock--;
+                    sampleCount -= 2;
+                    readingOffset++;
+                }
+            }
+
+            return dataPCM;
+        }
+
         public static byte[] EncodeADPCM(byte[] data, int sampleCount)
         {
             byte[] dataPCM = new byte[data.Length / 4];
@@ -3112,11 +3239,121 @@ namespace CodeWalker.GameFiles
             return dataPCM;
         }
 
+        public static byte[] EncodeADPCMStandard(byte[] data, int sampleCount)
+        {
+            byte[] dataPCM = new byte[data.Length / 4];
+
+            int predictor = 0, stepIndex = 0;
+            int readingOffset = 0, writingOffset = 0, bytesInBlock = 0;
+
+            short readSample()
+            {
+                var s = BitConverter.ToInt16(data, readingOffset);
+                readingOffset += 2;
+                return s;
+            }
+
+            void writeInt16(short v)
+            {
+                var ba = BitConverter.GetBytes(v);
+                dataPCM[writingOffset++] = ba[0];
+                dataPCM[writingOffset++] = ba[1];
+            }
+
+            void writeByte(byte b)
+            {
+                dataPCM[writingOffset++] = b;
+            }
+
+            byte encodeNibble(int pcm16)
+            {
+                int delta = pcm16 - predictor;
+                byte nibble = 0;
+                if (delta < 0)
+                {
+                    nibble = 8;
+                    delta = -delta;
+                }
+
+                int step = ima_step_table[stepIndex];
+                int diff = step >> 3;
+
+                if (delta >= step)
+                {
+                    nibble |= 4;
+                    delta -= step;
+                    diff += step;
+                }
+                if (delta >= (step >> 1))
+                {
+                    nibble |= 2;
+                    delta -= (step >> 1);
+                    diff += (step >> 1);
+                }
+                if (delta >= (step >> 2))
+                {
+                    nibble |= 1;
+                    diff += (step >> 2);
+                }
+
+                if ((nibble & 8) != 0)
+                    predictor -= diff;
+                else
+                    predictor += diff;
+
+                if (predictor > short.MaxValue) predictor = short.MaxValue;
+                if (predictor < short.MinValue) predictor = short.MinValue;
+
+                stepIndex += ima_index_table[nibble & 0x07];
+                if (stepIndex < 0) stepIndex = 0;
+                if (stepIndex > 88) stepIndex = 88;
+
+                return nibble;
+            }
+
+            while ((writingOffset < dataPCM.Length) && (sampleCount > 0))
+            {
+                if (bytesInBlock == 0)
+                {
+                    predictor = readSample();
+                    writeInt16((short)predictor);
+                    writeByte((byte)stepIndex);
+                    writeByte(0);
+
+                    sampleCount -= 1;
+
+                    bytesInBlock = 2044;
+                }
+                else
+                {
+                    if (sampleCount <= 1)
+                    {
+                        short s0 = readSample();
+                        short s1 = 0;
+                        var b0 = encodeNibble(s0);
+                        var b1 = encodeNibble(s1);
+                        var b = (byte)((b0 & 0x0F) | ((b1 & 0x0F) << 4));
+                        dataPCM[writingOffset++] = b;
+                        bytesInBlock--;
+                        sampleCount -= 2;
+                    }
+                    else
+                    {
+                        var s0 = readSample();
+                        var s1 = readSample();
+                        var b0 = encodeNibble(s0);
+                        var b1 = encodeNibble(s1);
+                        var b = (byte)((b0 & 0x0F) | ((b1 & 0x0F) << 4));
+                        dataPCM[writingOffset++] = b;
+                        bytesInBlock--;
+                        sampleCount -= 2;
+                    }
+                }
+            }
+            return dataPCM;
+        }
+
     }
-
-
-
-
 
     public class AwcXml : MetaXmlBase
     {

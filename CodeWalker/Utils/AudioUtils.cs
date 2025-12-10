@@ -83,7 +83,7 @@ namespace CodeWalker.Utils
                     voice.audio = audio;
                     voice.trackLength = audio.Length;
                     trackLength = Math.Max(trackLength, voice.trackLength);
-                    var wavStream = audio.GetWavStream();
+                    var wavStream = audio.GetWavStream(false);
                     var soundStream = new SoundStream(wavStream);
                     voice.soundStream = soundStream;
                     voice.audioBuffer = new AudioBuffer
