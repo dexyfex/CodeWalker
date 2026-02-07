@@ -374,6 +374,21 @@ namespace CodeWalker.Forms
                 metaFormat = MetaFormat.Heightmap;
             }
         }
+
+        public void LoadMeta(AudioWorldSectorsFile audioworldsectors)
+        {
+            var fn = ((audioworldsectors?.RpfFileEntry?.Name) ?? "") + ".xml";
+            Xml = AudXml.GetXml(audioworldsectors);
+            FileName = fn;
+            RawPropertyGrid.SelectedObject = audioworldsectors;
+            rpfFileEntry = audioworldsectors?.RpfFileEntry;
+            modified = false;
+            metaFormat = MetaFormat.XML;
+            if (audioworldsectors?.RpfFileEntry != null)
+            {
+                metaFormat = MetaFormat.AudioWorldSectors;
+            }
+        }
         public void LoadMeta(YpdbFile ypdb)
         {
             var fn = ((ypdb?.RpfFileEntry?.Name) ?? "") + ".xml";

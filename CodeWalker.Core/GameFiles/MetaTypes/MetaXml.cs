@@ -152,6 +152,11 @@ namespace CodeWalker.GameFiles
                 HeightmapFile hmf = RpfFile.GetFile<HeightmapFile>(e, data);
                 return GetXml(hmf, out filename, outputfolder);
             }
+            else if (fnl.EndsWith(".dat") && fnl.StartsWith("audioworld"))
+            {
+                AudioWorldSectorsFile aws = RpfFile.GetFile<AudioWorldSectorsFile>(e, data);
+                return GetXml(aws, out filename, outputfolder);
+            }
             else if (fnl.EndsWith(".mrf"))
             {
                 MrfFile mrf = RpfFile.GetFile<MrfFile>(e, data);
@@ -335,6 +340,13 @@ namespace CodeWalker.GameFiles
             var fn = (mrf?.Name) ?? "";
             filename = fn + ".xml";
             return MrfXml.GetXml(mrf);
+        }
+
+        public static string GetXml(AudioWorldSectorsFile aws, out string filename, string outputfolder)
+        {
+            var fn = (aws?.Name) ?? "";
+            filename = fn + ".xml";
+            return AudXml.GetXml(aws);
         }
 
 
@@ -2304,6 +2316,7 @@ namespace CodeWalker.GameFiles
         Ypdb = 22,
         Mrf = 23,
         Yfd = 24,
+        AudioWorldSectors = 25,
     }
 
 }

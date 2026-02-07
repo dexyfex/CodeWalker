@@ -85,6 +85,7 @@ namespace CodeWalker.GameFiles
         Mrf = 29,
         DistantLights = 30,
         Ypdb = 31,
+        AudioWorldSectors = 32,
     }
 
 
