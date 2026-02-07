@@ -381,7 +381,9 @@ namespace CodeWalker
             var result = GTAFolder.UpdateGTAFolder(false, false);
             if (result)
             {
-                MessageBox.Show("Please restart CodeWalker to use the new folder.");
+                MessageBox.Show("CodeWalker will now restart.");
+                Application.Restart();
+                Environment.Exit(0);
             }
         }
 
