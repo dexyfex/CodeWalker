@@ -90,7 +90,9 @@ namespace CodeWalker.Rendering
         private Dictionary<YmapEntityDef, Renderable> RequiredParents = new Dictionary<YmapEntityDef, Renderable>();
         private List<YmapEntityDef> RenderEntities = new List<YmapEntityDef>();
 
-        public Dictionary<uint, YmapEntityDef> HideEntities = new Dictionary<uint, YmapEntityDef>();//dictionary of entities to hide, for cutscenes to use 
+        public Dictionary<uint, YmapEntityDef> HideEntities = new Dictionary<uint, YmapEntityDef>();//dictionary of entities to hide, for cutscenes to use
+
+        private Dictionary<MetaHash, Ped> ScenarioPeds = new Dictionary<MetaHash, Ped>();//cache for scenario ped models
 
         public bool ShowScriptedYmaps = true;
         public List<YmapFile> VisibleYmaps = new List<YmapFile>();
@@ -3448,6 +3450,212 @@ namespace CodeWalker.Rendering
                 SelectedCarGenEntity.SetOrientation(ori);
 
                 RenderFragment(null, SelectedCarGenEntity, caryft.Fragment, carhash);
+            }
+        }
+
+        public void RenderScenarioNode(ScenarioNode node)
+        {
+            if (node == null) return;
+
+            var vpoint = node.MyPoint ?? node.ClusterMyPoint;
+
+            // Skip vehicle scenarios - they're rendered differently when selected
+            if ((vpoint != null) && (vpoint?.Type?.IsVehicle ?? false))
+            {
+                return;
+            }
+
+            // Render as ped model
+            var pedhash = (uint)0;
+            var modelSetHash = vpoint?.ModelSet?.NameHash ?? 0;
+
+            if ((modelSetHash != 0) && (modelSetHash != 493038497)) // "none"
+            {
+                // Get ped model from the model set
+                var stypes = Scenarios.ScenarioTypes;
+                if (stypes != null)
+                {
+                    var modelset = stypes.GetPedModelSet(modelSetHash);
+                    if ((modelset != null) && (modelset.Models != null) && (modelset.Models.Length > 0))
+                    {
+                        pedhash = JenkHash.GenHash(modelset.Models[0].NameLower);
+                    }
+                }
+            }
+
+            // Default to mp_m_freemode_01 if no model found
+            if (pedhash == 0)
+            {
+                pedhash = JenkHash.GenHash("mp_m_freemode_01");
+            }
+
+            RenderScenarioPed(node.Position, node.Orientation, pedhash, vpoint);
+        }
+
+        public void RenderScenarioPed(Vector3 pos, Quaternion ori, MetaHash pedHash, MCScenarioPoint point = null)
+        {
+            if (pedHash == 0)
+            {
+                pedHash = JenkHash.GenHash("mp_m_freemode_01");
+            }
+
+            // Get or create cached ped
+            Ped ped = null;
+            if (!ScenarioPeds.TryGetValue(pedHash, out ped))
+            {
+                ped = new Ped();
+                ped.Init(pedHash, gameFileCache);
+
+                // Load default components for the ped
+                if (ped.Ymt != null)
+                {
+                    ped.LoadDefaultComponents(gameFileCache);
+                }
+
+                ScenarioPeds[pedHash] = ped;
+            }
+
+            if (ped?.Yft != null)
+            {
+                // Load animation based on scenario type
+                ClipMapEntry animClip = null;
+
+                // Try to get animation from ped's default clip dict first (idle animation)
+                if (ped.Ycd?.ClipMapEntries != null)
+                {
+                    var idleHash = JenkHash.GenHash("idle");
+                    animClip = ped.Ycd.ClipMapEntries.FirstOrDefault(c =>
+                        c.Clip != null && c.Hash == idleHash);
+
+                    if (animClip == null)
+                    {
+                        animClip = ped.Ycd.ClipMapEntries.FirstOrDefault(c => c.Clip != null);
+                    }
+                }
+
+                // Try to load scenario-specific animation
+                string scenarioTypeName = null;
+                string clipDictName = null;
+
+                if (point?.Type != null)
+                {
+                    var stypes = Scenarios.ScenarioTypes;
+                    List<string> clipSetNames = null;
+
+                    // Get the scenario type name for sitting detection
+                    scenarioTypeName = JenkIndex.TryGetString(point.Type.NameHash);
+
+                    // Check if this is a ScenarioTypePlayAnims with direct BaseAnimClipSets
+                    if (!point.Type.IsGroup && point.Type.Type is ScenarioTypePlayAnims playAnimsType && playAnimsType.BaseAnimClipSets != null && playAnimsType.BaseAnimClipSets.Count > 0)
+                    {
+                        clipSetNames = playAnimsType.BaseAnimClipSets;
+                    }
+                    // Otherwise try ConditionalAnimsGroup
+                    else
+                    {
+                        var animGroupHash = point.Type.ConditionalAnimsGroupHash;
+                        if (animGroupHash != 0 && stypes != null)
+                        {
+                            var animGroup = stypes.GetAnimGroup(animGroupHash);
+                            if (animGroup?.BaseAnimClipSets != null && animGroup.BaseAnimClipSets.Count > 0)
+                            {
+                                clipSetNames = animGroup.BaseAnimClipSets;
+                            }
+                        }
+                    }
+
+                    if (clipSetNames != null && clipSetNames.Count > 0 && stypes != null)
+                    {
+                        // Use the first base animation clipset
+                        var clipSetName = clipSetNames[0];
+                        var clipSetHash = JenkHash.GenHash(clipSetName.ToLowerInvariant());
+
+                        // Look up the actual clipDictionaryName from clip_sets.ymt
+                        clipDictName = stypes.GetClipSet(clipSetHash);
+
+                        if (!string.IsNullOrEmpty(clipDictName))
+                        {
+                            var ycdHash = JenkHash.GenHash(clipDictName.ToLowerInvariant());
+                            var ycd = gameFileCache.GetYcd(ycdHash);
+
+                            if ((ycd != null) && (ycd.Loaded) && (ycd.ClipMapEntries != null))
+                            {
+                                // Try to find a "base" clip or use the first available clip
+                                var baseHash = JenkHash.GenHash("base");
+                                var scenarioClip = ycd.ClipMapEntries.FirstOrDefault(c =>
+                                    c.Clip != null && c.Hash == baseHash);
+
+                                if (scenarioClip == null)
+                                {
+                                    scenarioClip = ycd.ClipMapEntries.FirstOrDefault(c => c.Clip != null);
+                                }
+
+                                if (scenarioClip != null)
+                                {
+                                    animClip = scenarioClip;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Align ped to ground
+                float minz = ped.Yft.Fragment?.PhysicsLODGroup?.PhysicsLOD1?.Bound?.BoxMin.Z ?? 0.0f;
+                pos.Z -= minz;
+
+                // Offset ped up by 1 meter, unless they're sitting or an animal
+                bool skipOffset = false;
+
+                // Check model set for animal
+                if (point?.ModelSet != null)
+                {
+                    var modelSetName = JenkIndex.TryGetString(point.ModelSet.NameHash);
+                    if (!string.IsNullOrEmpty(modelSetName))
+                    {
+                        var modelSetLower = modelSetName.ToLowerInvariant();
+                        if (modelSetLower.Contains("animal") || modelSetLower.Contains("bird"))
+                        {
+                            skipOffset = true;
+                        }
+                    }
+                }
+
+                // Check scenario type name for sitting
+                if (!skipOffset && !string.IsNullOrEmpty(scenarioTypeName))
+                {
+                    var scenarioLower = scenarioTypeName.ToLowerInvariant();
+                    skipOffset = scenarioLower.Contains("sit") || scenarioLower.Contains("seat");
+                }
+
+                // Check clip dictionary name for sitting
+                if (!skipOffset && !string.IsNullOrEmpty(clipDictName))
+                {
+                    var clipDictLower = clipDictName.ToLowerInvariant();
+                    skipOffset = clipDictLower.Contains("sit") || clipDictLower.Contains("seat");
+                }
+
+                // Check animation clip name for sitting
+                if (!skipOffset && animClip != null)
+                {
+                    var animName = JenkIndex.TryGetString(animClip.Hash)?.ToLowerInvariant() ?? "";
+                    skipOffset = animName.Contains("sit") || animName.Contains("seat");
+                }
+
+                if (!skipOffset)
+                {
+                    pos.Z += 1.0f;
+                }
+
+                ped.Position = pos;
+                ped.Rotation = ori;
+                ped.RenderEntity.SetPosition(pos);
+                ped.RenderEntity.SetOrientation(ori);
+
+                // Update animation clip
+                ped.AnimClip = animClip;
+
+                // Render the ped with all its components and animation
+                RenderPed(ped);
             }
         }
 

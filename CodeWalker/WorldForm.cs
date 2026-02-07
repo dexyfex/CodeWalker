@@ -434,6 +434,9 @@ namespace CodeWalker
 
             Renderer.SelectedDrawable = SelectedItem.Drawable;
 
+            // Set the selected scenario node position to exclude its cube from rendering
+            Renderer.shaders.SelectedScenarioNodePosition = SelectedItem.ScenarioNode?.Position;
+
             if (renderworld)
             {
                 RenderWorld();
@@ -1455,6 +1458,11 @@ namespace CodeWalker
                     }
 
                     Renderer.RenderCar(sn.Position, sn.Orientation, 0, vhash, true);
+                }
+                else
+                {
+                    // Render ped model for non-vehicle scenarios
+                    Renderer.RenderScenarioNode(sn);
                 }
 
             }
