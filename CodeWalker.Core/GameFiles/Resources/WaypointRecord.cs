@@ -13,8 +13,8 @@ namespace CodeWalker.GameFiles
     {
         public override long BlockLength => 0x30;
 
-        public uint Unknown_10h; // 0x00000000
-        public uint Unknown_14h; // 0x00000000
+        public uint Flags1; // 0x00000000
+        public uint Flags2; // 0x00000000
         public ulong EntriesPointer;
         public uint EntriesCount;
         public uint Unknown_24h; // 0x00000000
@@ -27,8 +27,8 @@ namespace CodeWalker.GameFiles
         {
             base.Read(reader, parameters);
 
-            this.Unknown_10h = reader.ReadUInt32();
-            this.Unknown_14h = reader.ReadUInt32();
+            this.Flags1 = reader.ReadUInt32();
+            this.Flags2 = reader.ReadUInt32();
             this.EntriesPointer = reader.ReadUInt64();
             this.EntriesCount = reader.ReadUInt32();
             this.Unknown_24h = reader.ReadUInt32();
@@ -49,8 +49,8 @@ namespace CodeWalker.GameFiles
             this.EntriesCount = (uint)(this.Entries?.Count ?? 0);
 
             // write structure data
-            writer.Write(this.Unknown_10h);
-            writer.Write(this.Unknown_14h);
+            writer.Write(this.Flags1);
+            writer.Write(this.Flags2);
             writer.Write(this.EntriesPointer);
             writer.Write(this.EntriesCount);
             writer.Write(this.Unknown_24h);
@@ -127,47 +127,111 @@ namespace CodeWalker.GameFiles
         public override long BlockLength => 20;
 
         public Vector3 Position;
-        public ushort Unk0;
-        public ushort Unk1;
-        public ushort Unk2;
-        public ushort Unk3;
+        public Struct0 Flags0;
+        public Struct1 Flags1;
 
         public override void Read(ResourceDataReader reader, params object[] parameters)
         {
-            // read structure data
-            this.Position = reader.ReadVector3();
-            this.Unk0 = reader.ReadUInt16();
-            this.Unk1 = reader.ReadUInt16();
-            this.Unk2 = reader.ReadUInt16();
-            this.Unk3 = reader.ReadUInt16();
+            Position = reader.ReadVector3();
+            Flags0 = new Struct0(reader.ReadUInt32());
+            Flags1 = new Struct1(reader.ReadUInt32());
         }
+
         public override void Write(ResourceDataWriter writer, params object[] parameters)
         {
-            // write structure data
-            writer.Write(this.Position);
-            writer.Write(this.Unk0);
-            writer.Write(this.Unk1);
-            writer.Write(this.Unk2);
-            writer.Write(this.Unk3);
+            writer.Write(Position);
+            writer.Write(Flags0.Value);
+            writer.Write(Flags1.Value);
         }
+
         public void WriteXml(StringBuilder sb, int indent)
         {
             YwrXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
-            YwrXml.ValueTag(sb, indent, "Unk0", Unk0.ToString());
-            YwrXml.ValueTag(sb, indent, "Unk1", Unk1.ToString());
-            YwrXml.ValueTag(sb, indent, "Unk2", Unk2.ToString());
-            YwrXml.ValueTag(sb, indent, "Unk3", Unk3.ToString());
+            Flags0.WriteXml(sb, indent, "Flags0");
+            Flags1.WriteXml(sb, indent, "Flags1");
         }
+
         public void ReadXml(XmlNode node)
         {
             Position = Xml.GetChildVector3Attributes(node, "Position");
-            Unk0 = (ushort)Xml.GetChildUIntAttribute(node, "Unk0", "value");
-            Unk1 = (ushort)Xml.GetChildUIntAttribute(node, "Unk1", "value");
-            Unk2 = (ushort)Xml.GetChildUIntAttribute(node, "Unk2", "value");
-            Unk3 = (ushort)Xml.GetChildUIntAttribute(node, "Unk3", "value");
+            Flags0 = Struct0.FromXml(Xml.GetChild((XmlElement)node, "Flags0"));
+            Flags1 = Struct1.FromXml(Xml.GetChild((XmlElement)node, "Flags1"));
         }
 
+        public struct Struct0
+        {
+            public uint Value;
+            public ushort Flags // 1-15
+            {
+                get => (ushort)(Value & 0xFFFF);
+                set => Value = (Value & 0xFFFF0000) | (uint)value;
+            }
+            public byte Heading // 16–23
+            {
+                get => (byte)((Value >> 16) & 0xFF);
+                set => Value = (Value & 0xFF00FFFF) | ((uint)value << 16);
+            }
+            public byte MoveBlendRatio // 24–31
+            {
+                get => (byte)((Value >> 24) & 0xFF);
+                set => Value = (Value & 0x00FFFFFF) | ((uint)value << 24);
+            }
+            public Struct0(uint v) => Value = v;
+            public void WriteXml(StringBuilder sb, int indent, string name)
+            {
+                YwrXml.OpenTag(sb, indent, name);
+                YwrXml.ValueTag(sb, indent + 1, "Flags", Flags.ToString());
+                YwrXml.ValueTag(sb, indent + 1, "Heading", Heading.ToString());
+                YwrXml.ValueTag(sb, indent + 1, "MoveBlendRatio", MoveBlendRatio.ToString());
+                YwrXml.CloseTag(sb, indent, name);
+            }
+            public static Struct0 FromXml(XmlNode node)
+            {
+                var f = new Struct0();
+                if (node == null) return f;
+                f.Flags = (ushort)Xml.GetChildUIntAttribute(node, "Flags", "value");
+                f.Heading = (byte)Xml.GetChildUIntAttribute(node, "Heading", "value");
+                f.MoveBlendRatio = (byte)Xml.GetChildUIntAttribute(node, "MoveBlendRatio", "value");
+                return f;
+            }
+        }
+
+        public struct Struct1
+        {
+            public uint Value;
+            public byte FreeSpaceOnLeft // 0–7
+            {
+                get => (byte)(Value & 0xFF);
+                set => Value = (Value & 0xFFFFFF00) | value;
+            }
+            public byte FreeSpaceOnRight // 8–15
+            {
+                get => (byte)((Value >> 8) & 0xFF);
+                set => Value = (Value & 0xFFFF00FF) | ((uint)value << 8);
+            }
+            public ushort Unused // 16–31
+            {
+                get => (ushort)((Value >> 16) & 0xFFFF);
+                set => Value = (Value & 0x0000FFFF) | ((uint)value << 16);
+            }
+            public Struct1(uint v) => Value = v;
+            public void WriteXml(StringBuilder sb, int indent, string name)
+            {
+                YwrXml.OpenTag(sb, indent, name);
+                YwrXml.ValueTag(sb, indent + 1, "FreeSpaceOnLeft", FreeSpaceOnLeft.ToString());
+                YwrXml.ValueTag(sb, indent + 1, "FreeSpaceOnRight", FreeSpaceOnRight.ToString());
+                YwrXml.ValueTag(sb, indent + 1, "Unused", Unused.ToString());
+                YwrXml.CloseTag(sb, indent, name);
+            }
+            public static Struct1 FromXml(XmlNode node)
+            {
+                var f = new Struct1();
+                if (node == null) return f;
+                f.FreeSpaceOnLeft = (byte)Xml.GetChildUIntAttribute(node, "FreeSpaceOnLeft", "value");
+                f.FreeSpaceOnRight = (byte)Xml.GetChildUIntAttribute(node, "FreeSpaceOnRight", "value");
+                f.Unused = (ushort)Xml.GetChildUIntAttribute(node, "Unused", "value");
+                return f;
+            }
+        }
     }
-
-
 }

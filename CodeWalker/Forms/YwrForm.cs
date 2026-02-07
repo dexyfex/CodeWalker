@@ -78,13 +78,10 @@ namespace CodeWalker.Forms
                 sb.Append(", ");
                 sb.Append(FloatUtil.ToString(entry.Position.Z));
                 sb.Append(", ");
-                sb.Append(entry.Unk0.ToString());
+                sb.Append(entry.Flags0.ToString());
                 sb.Append(", ");
-                sb.Append(entry.Unk1.ToString());
+                sb.Append(entry.Flags1.ToString());
                 sb.Append(", ");
-                sb.Append(entry.Unk2.ToString());
-                sb.Append(", ");
-                sb.Append(entry.Unk3.ToString());
                 sb.AppendLine();
             }
             return sb.ToString();
@@ -100,10 +97,8 @@ namespace CodeWalker.Forms
                     FloatUtil.ToString(entry.Position.X),
                     FloatUtil.ToString(entry.Position.Y),
                     FloatUtil.ToString(entry.Position.Z),
-                    entry.Unk0.ToString(),
-                    entry.Unk1.ToString(),
-                    entry.Unk2.ToString(),
-                    entry.Unk3.ToString()
+                    entry.Flags0.ToString(),
+                    entry.Flags1.ToString(),
                 };
                 MainListView.Items.Add(new ListViewItem(row));
             }
