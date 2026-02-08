@@ -1414,6 +1414,18 @@ namespace CodeWalker
             if (selectionItem.PathNode != null)
             {
                 camrel = selectionItem.PathNode.Position - camera.Position;
+
+                // Render sultan vehicle model at the selected path node, oriented toward the first linked node
+                Quaternion carOri = Quaternion.Identity;
+                var links = selectionItem.PathNode.Links;
+                if (links != null && links.Length > 0 && links[0].Node2 != null)
+                {
+                    var dir = links[0].Node2.Position - selectionItem.PathNode.Position;
+                    float heading = (float)Math.Atan2(-dir.X, dir.Y);
+                    carOri = Quaternion.RotationAxis(Vector3.UnitZ, heading);
+                }
+                var carPos = selectionItem.PathNode.Position + new Vector3(0, 0, 0.5f);
+                Renderer.RenderCar(carPos, carOri, JenkHash.GenHash("sultan"), 0);
             }
             if (selectionItem.TrainTrackNode != null)
             {
