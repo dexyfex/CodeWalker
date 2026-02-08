@@ -248,15 +248,17 @@ namespace CodeWalker.Utils
                                     throw new Exception("Tried to write mip out of range");
                                 if (images[index].rowPitch <= 0)
                                     throw new Exception("Invalid row pitch.");
-                                if (images[index].slicePitch <= 0)
-                                    throw new Exception("Invalid slice pitch.");
                                 //if (images[index].pixels)
                                 //    return E_POINTER;
 
                                 int ddsRowPitch, ddsSlicePitch;
                                 DXTex.ComputePitch(meta.format, images[index].width, images[index].height, out ddsRowPitch, out ddsSlicePitch, 0);// CP_FLAGS.CP_FLAGS_NONE);
 
-                                if (images[index].slicePitch == ddsSlicePitch)
+                                int imageSlicePitch = images[index].slicePitch;
+                                if (imageSlicePitch <= 0)
+                                    imageSlicePitch = ddsSlicePitch; // Use computed pitch if invalid
+
+                                if (imageSlicePitch == ddsSlicePitch)
                                 {
                                     int lengt = ddsSlicePitch;
                                     if (images[index].pixels + ddsSlicePitch > img.Data.Length)
@@ -311,15 +313,17 @@ namespace CodeWalker.Utils
                                     throw new Exception("Tried to write mip out of range");
                                 if (images[index].rowPitch <= 0)
                                     throw new Exception("Invalid row pitch.");
-                                if (images[index].slicePitch <= 0)
-                                    throw new Exception("Invalid slice pitch.");
                                 //if (!images[index].pixels)
                                 //    return E_POINTER;
 
                                 int ddsRowPitch, ddsSlicePitch;
                                 DXTex.ComputePitch(meta.format, images[index].width, images[index].height, out ddsRowPitch, out ddsSlicePitch, 0);// CP_FLAGS_NONE);
 
-                                if (images[index].slicePitch == ddsSlicePitch)
+                                int imageSlicePitch = images[index].slicePitch;
+                                if (imageSlicePitch <= 0)
+                                    imageSlicePitch = ddsSlicePitch; // Use computed pitch if invalid
+
+                                if (imageSlicePitch == ddsSlicePitch)
                                 {
                                     bw.Write(img.Data, images[index].pixels, ddsSlicePitch);
                                 }
