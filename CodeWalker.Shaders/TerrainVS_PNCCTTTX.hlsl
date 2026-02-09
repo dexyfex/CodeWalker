@@ -38,5 +38,7 @@ VS_OUTPUT main(VS_INPUT input)
     output.Tangent = float4(btang, input.Tangent.w);
     output.Bitangent = float4(cross(btang, bnorm) * input.Tangent.w, 0);
     output.Tint = tnt;
+    output.ViewDistance = length(opos);
+    output.EdgeWeight = input.Texcoord2; // Edge weight from vertex data (GTA V style)
     return output;
 }

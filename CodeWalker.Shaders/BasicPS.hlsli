@@ -6,6 +6,7 @@ Texture2D<float4> Specmap : register(t3);
 Texture2D<float4> Detailmap : register(t4);
 Texture2D<float4> Colourmap2 : register(t5);
 Texture2D<float4> TintPalette : register(t6);
+Texture2D<float4> Heightmap : register(t7);
 SamplerState TextureSS : register(s0);
 
 
@@ -39,6 +40,10 @@ cbuffer PSGeomVars : register(b2)
     float wetnessMultiplier;
     uint SpecOnly;
 	float4 TextureAlphaMask;
+    uint EnableHeightMap;
+    float heightScale;
+    float heightBias;
+    float Pad0;
 }
 
 

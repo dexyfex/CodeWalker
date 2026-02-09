@@ -1,6 +1,174 @@
 #include "TerrainPS.hlsli"
 
 
+// Sample and blend terrain height maps based on layer weights
+// Returns inverted height (1.0 - sample) for correct POM ray marching
+float BlendTerrainHeight(float4 layerBlends, float2 texCoord)
+{
+    float result = 0.0f;
+    result += layerBlends.x * Heightmap0.SampleLevel(TextureSS, texCoord, 0).r;
+    result += layerBlends.y * Heightmap1.SampleLevel(TextureSS, texCoord, 0).r;
+    result += layerBlends.z * Heightmap2.SampleLevel(TextureSS, texCoord, 0).r;
+    result += layerBlends.w * Heightmap3.SampleLevel(TextureSS, texCoord, 0).r;
+    // height maps use 1.0=raised, 0.0=base
+    // POM ray march expects 0.0=raised (hit early), 1.0=base (hit late)
+    return 1.0f - result;
+}
+
+// Get blended height scale and bias based on layer weights
+float2 GetBlendedScaleBias(float4 layerBlends)
+{
+    float2 result = float2(0.0f, 0.0f);
+    result += layerBlends.x * float2(heightScale.x, heightBias.x);
+    result += layerBlends.y * float2(heightScale.y, heightBias.y);
+    result += layerBlends.z * float2(heightScale.z, heightBias.z);
+    result += layerBlends.w * float2(heightScale.w, heightBias.w);
+    return result;
+}
+
+// Calculate terrain parallax offset using blended heights
+// Includes distance-based fade and vertex edge weight to reduce noise at steep angles and mesh edges
+float2 CalculateTerrainParallaxOffset(float4 layerBlends, float2 texCoord, float3 viewDir, float3 normal, float3 tangent, float3 bitangent, float viewDistance, float2 edgeWeightData)
+{
+    // Get blended scale and bias
+    float2 scaleBias = GetBlendedScaleBias(layerBlends);
+    float hScale = scaleBias.x * POM_HEIGHT_SCALE;  // Apply global strength multiplier
+    float hBias = scaleBias.y * POM_HEIGHT_SCALE;
+
+    if (hScale == 0.0f)
+        return float2(0.0f, 0.0f);
+
+    // Vertex edge weight from mesh data
+    // edgeWeightData.x: 0 = full POM, 1 = no POM (at mesh edges)
+    // edgeWeightData.y: controls dynamic zLimit adjustment
+    float vertexEdgeWeight = 1.0f - saturate(edgeWeightData.x);
+
+    // Early out if vertex says no POM at this point
+    if (vertexEdgeWeight <= 0.0f)
+        return float2(0.0f, 0.0f);
+
+    // Transform view direction to tangent space
+    float3 tanEyePos;
+    tanEyePos.x = dot(tangent.xyz, viewDir.xyz);
+    tanEyePos.y = dot(bitangent.xyz, viewDir.xyz);
+    tanEyePos.z = dot(normal.xyz, viewDir.xyz);
+    tanEyePos = normalize(tanEyePos);
+
+    // Dynamic zLimit from vertex edge weight (GTA V style)
+    // Higher edgeWeightData.y = lower zLimit = allow steeper angles
+    float zLimit = 1.0f - clamp(edgeWeightData.y, 0.1f, 1.0f);
+    zLimit = max(zLimit, 0.1f); // Ensure minimum zLimit
+    float clampedZ = max(zLimit, tanEyePos.z);
+
+    // Calculate view-dependent step count
+    float VdotN = abs(dot(normalize(viewDir.xyz), normalize(normal.xyz)));
+    float numberOfSteps = lerp(POM_MAX_STEPS, POM_MIN_STEPS, VdotN);
+
+    // Close-range step boost - increase precision when very close to surface (reduces ring artifacts)
+    float closeBoost = saturate(1.0f - viewDistance / POM_CLOSE_DISTANCE);
+    numberOfSteps *= lerp(1.0f, POM_CLOSE_STEP_MULTIPLIER, closeBoost);
+
+    // Distance-based fade (GTA V style) - reduces noise at steep angles/far distances
+    float distanceBlend = saturate((viewDistance - POM_DISTANCE_START) / (POM_DISTANCE_END - POM_DISTANCE_START));
+    float distanceFade = ComputePOMDistanceFade(distanceBlend);
+
+    // Reduce steps over distance - artifacts become less noticeable at distance
+    numberOfSteps *= distanceFade;
+
+    // Early out if steps reduced to nearly zero
+    if (numberOfSteps < 1.0f)
+        return float2(0.0f, 0.0f);
+
+    // Calculate weight distance blend for smooth fade-out near zero steps
+    float scaleOutRange = (POM_DISTANCE_END - POM_DISTANCE_START) * 0.35f;
+    float weightDistanceBlend = saturate(((viewDistance - POM_DISTANCE_START) - (POM_DISTANCE_END - POM_DISTANCE_START) + scaleOutRange) / scaleOutRange);
+
+    // Combined edge weight: vertex edge * view angle fade * step count fade * distance fade
+    float edgeWeight = vertexEdgeWeight * (1.0f - weightDistanceBlend);
+    edgeWeight *= saturate(numberOfSteps - 1.0f) * saturate(VdotN / POM_VDOTN_BLEND_FACTOR);
+
+    // Apply combined scale
+    float globalScale = edgeWeight;
+
+    float2 maxParallaxOffset = (-tanEyePos.xy / clampedZ) * hScale * globalScale;
+    float2 heightBiasOffset = (tanEyePos.xy / clampedZ) * hBias * globalScale;
+
+    float heightStep = 1.0f / max(numberOfSteps, 1.0f);
+    float2 offsetPerStep = maxParallaxOffset * heightStep;
+
+    float currentHeight = 1.0f;
+    float previousHeight = currentHeight;
+
+    float2 texCoordOffset = heightBiasOffset;
+
+    float terrainHeight = BlendTerrainHeight(layerBlends, texCoord) + 1e-6f;
+    float previousTerrainHeight = terrainHeight;
+
+    // Ray march through the height field
+    int maxSteps = (int)numberOfSteps;
+    for (int i = 0; i < maxSteps; ++i)
+    {
+        if (terrainHeight < currentHeight)
+        {
+            previousHeight = currentHeight;
+            previousTerrainHeight = terrainHeight;
+
+            currentHeight -= heightStep;
+            texCoordOffset += offsetPerStep;
+            terrainHeight = BlendTerrainHeight(layerBlends, texCoord + texCoordOffset);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // Binary search refinement for more precise intersection (reduces ring artifacts at close range)
+    float2 prevOffset = texCoordOffset - offsetPerStep;
+    float2 currOffset = texCoordOffset;
+    float prevHeight = previousHeight;
+    float currHeight = currentHeight;
+
+    [unroll(POM_BINARY_SEARCH_STEPS)]
+    for (int j = 0; j < POM_BINARY_SEARCH_STEPS; ++j)
+    {
+        float2 midOffset = (prevOffset + currOffset) * 0.5f;
+        float midHeight = (prevHeight + currHeight) * 0.5f;
+        float midTerrainHeight = BlendTerrainHeight(layerBlends, texCoord + midOffset);
+
+        if (midTerrainHeight < midHeight)
+        {
+            // Intersection is in second half
+            prevOffset = midOffset;
+            prevHeight = midHeight;
+        }
+        else
+        {
+            // Intersection is in first half
+            currOffset = midOffset;
+            currHeight = midHeight;
+        }
+    }
+
+    // Final interpolation between the refined bracket
+    float finalTerrainHeight = BlendTerrainHeight(layerBlends, texCoord + currOffset);
+    float currentDelta = currHeight - finalTerrainHeight;
+    float previousDelta = prevHeight - BlendTerrainHeight(layerBlends, texCoord + prevOffset);
+    float denominator = previousDelta - currentDelta;
+
+    float refinedHeight = 1.0f;
+    if (abs(denominator) > 1e-6f)
+    {
+        refinedHeight = (currHeight * previousDelta - prevHeight * currentDelta) / denominator;
+    }
+    else
+    {
+        refinedHeight = 1.0f - (currOffset.x / maxParallaxOffset.x);
+    }
+
+    return heightBiasOffset + (maxParallaxOffset * (1.0f - saturate(refinedHeight)));
+}
+
 PS_OUTPUT main(VS_OUTPUT input)
 {
     float4 vc0 = input.Colour0;
@@ -16,24 +184,34 @@ PS_OUTPUT main(VS_OUTPUT input)
     float2 sc4 = tc0;
     float2 scm = tc1;
 
-    ////switch (ShaderName)
-    ////{
-    ////    case 3965214311: //terrain_cb_w_4lyr_cm_pxm_tnt  vt: PNCTTTX_3 //vb_35_beache
-    ////    case 4186046662: //terrain_cb_w_4lyr_cm_pxm  vt: PNCTTTX_3 //cs6_08_struct08
-    ////        //vc1 = vc0;
-    ////        //sc1 = tc0*25;
-    ////        //sc2 = sc1;
-    ////        //sc3 = sc1;
-    ////        //sc4 = sc1;
-    ////        //scm = tc0;
-    ////        break;
-    ////}
+    // Calculate layer blend weights from vertex colors (4-layer blending)
+    // Layer weights: x=(1-g)*(1-b), y=(1-g)*b, z=g*(1-b), w=g*b
+    float4 layerBlends;
+    layerBlends.x = (1.0f - vc1.g) * (1.0f - vc1.b);
+    layerBlends.y = (1.0f - vc1.g) * vc1.b;
+    layerBlends.z = vc1.g * (1.0f - vc1.b);
+    layerBlends.w = vc1.g * vc1.b;
+
+    // Calculate single parallax offset using blended heights (GTA V approach)
+    if (EnableHeightMap && RenderMode == 0)
+    {
+        float3 viewDir = -normalize(input.CamRelPos); // Negate to get direction FROM surface TO camera
+        float3 norm = normalize(input.Normal);
+        float3 tang = normalize(input.Tangent.xyz);
+        float3 bitang = normalize(input.Bitangent.xyz);
+
+        // Calculate single offset from blended height values (with distance fade and edge weight)
+        float2 parallaxOffset = CalculateTerrainParallaxOffset(layerBlends, tc0, viewDir, norm, tang, bitang, input.ViewDistance, input.EdgeWeight);
+
+        // Apply same offset to all texture coordinates
+        sc0 += parallaxOffset;
+        sc1 += parallaxOffset;
+        sc2 += parallaxOffset;
+        sc3 += parallaxOffset;
+        sc4 += parallaxOffset;
+    }
 
     float4 bc0 = float4(0.5, 0.5, 0.5, 1);
-    //if (EnableVertexColour)
-    //{
-    //    bc0 = vc0;
-    //}
 
     if (RenderMode == 8) //direct texture - choose texcoords
     {

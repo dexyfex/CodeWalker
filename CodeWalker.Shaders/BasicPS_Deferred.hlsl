@@ -3,17 +3,32 @@
 
 PS_OUTPUT main(VS_OUTPUT input)
 {
+    // Calculate parallax offset if height mapping is enabled
+    float2 parallaxTexOffset = float2(0, 0);
+    if (EnableHeightMap && RenderMode == 0)
+    {
+        float3 viewDir = -normalize(input.CamRelPos); // Negate to get direction FROM surface TO camera
+        parallaxTexOffset = ParallaxOffset(
+            Heightmap, TextureSS, input.Texcoord0,
+            viewDir, normalize(input.Normal),
+            normalize(input.Tangent.xyz), normalize(input.Bitangent.xyz),
+            heightScale, heightBias);
+    }
+
+    // Apply parallax offset to base texture coordinates
+    float2 texc0 = input.Texcoord0 + parallaxTexOffset;
+
     float4 c = float4(0.5, 0.5, 0.5, 1);
     if (RenderMode == 0) c = float4(1, 1, 1, 1);
     if (EnableTexture > 0)
     {
-        float2 texc = input.Texcoord0;
+        float2 texc = texc0;
         if (RenderMode >= 5)
         {
             if (RenderSamplerCoord == 2)
-                texc = input.Texcoord1;
+                texc = input.Texcoord1 + parallaxTexOffset;
             else if (RenderSamplerCoord == 3)
-                texc = input.Texcoord2;
+                texc = input.Texcoord2 + parallaxTexOffset;
         }
 
         c = Colourmap.Sample(TextureSS, texc);
@@ -85,8 +100,8 @@ PS_OUTPUT main(VS_OUTPUT input)
     if (RenderMode == 0)
     {
 
-        float4 nv = Bumpmap.Sample(TextureSS, input.Texcoord0);
-        float4 sv = Specmap.Sample(TextureSS, input.Texcoord0);
+        float4 nv = Bumpmap.Sample(TextureSS, texc0);
+        float4 sv = Specmap.Sample(TextureSS, texc0);
 
 
         float2 nmv = nv.xy;
@@ -97,7 +112,7 @@ PS_OUTPUT main(VS_OUTPUT input)
             if (EnableDetailMap)
             {
                 //detail normalmapp
-                r0.xy = input.Texcoord0 * detailSettings.zw;
+                r0.xy = texc0 * detailSettings.zw;
                 r0.zw = r0.xy * 3.17;
                 r0.xy = Detailmap.Sample(TextureSS, r0.xy).xy - 0.5;
                 r0.zw = Detailmap.Sample(TextureSS, r0.zw).xy - 0.5;

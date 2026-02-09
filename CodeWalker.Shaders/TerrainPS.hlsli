@@ -11,6 +11,10 @@ Texture2D<float4> Normalmap1 : register(t8);
 Texture2D<float4> Normalmap2 : register(t9);
 Texture2D<float4> Normalmap3 : register(t10);
 Texture2D<float4> Normalmap4 : register(t11);
+Texture2D<float4> Heightmap0 : register(t12);
+Texture2D<float4> Heightmap1 : register(t13);
+Texture2D<float4> Heightmap2 : register(t14);
+Texture2D<float4> Heightmap3 : register(t15);
 SamplerState TextureSS : register(s0);
 
 
@@ -35,7 +39,9 @@ cbuffer PSEntityVars : register(b2)
     uint EnableTint;
     uint EnableVertexColour;
     float bumpiness;
-    uint Pad102;
+    uint EnableHeightMap;
+    float4 heightScale; // x=layer0, y=layer1, z=layer2, w=layer3
+    float4 heightBias;  // x=layer0, y=layer1, z=layer2, w=layer3
 }
 
 
@@ -54,6 +60,8 @@ struct VS_OUTPUT
     float4 Tangent : TEXCOORD6;
     float4 Bitangent : TEXCOORD7;
     float3 CamRelPos : TEXCOORD8;
+    float  ViewDistance : TEXCOORD9;  // Distance from camera for POM fade
+    float2 EdgeWeight : TEXCOORD10;   // x=POM edge fade, y=zLimit adjustment (GTA V style)
 };
 
 struct PS_OUTPUT

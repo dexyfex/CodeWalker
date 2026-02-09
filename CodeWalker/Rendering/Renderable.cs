@@ -845,6 +845,16 @@ namespace CodeWalker.Rendering
         public float RippleSpeed { get; set; } = 1.0f;
         public float RippleScale { get; set; } = 1.0f;
         public float RippleBumpiness { get; set; } = 1.0f;
+        public float heightScale { get; set; } = 0.03f;
+        public float heightBias { get; set; } = 0.015f;
+        public float heightScale0 { get; set; } = 0.03f;
+        public float heightScale1 { get; set; } = 0.03f;
+        public float heightScale2 { get; set; } = 0.03f;
+        public float heightScale3 { get; set; } = 0.03f;
+        public float heightBias0 { get; set; } = 0.015f;
+        public float heightBias1 { get; set; } = 0.015f;
+        public float heightBias2 { get; set; } = 0.015f;
+        public float heightBias3 { get; set; } = 0.015f;
         public Vector4 WindGlobalParams { get; set; } = Vector4.Zero;
         public Vector4 WindOverrideParams { get; set; } = Vector4.One;
         public Vector4 globalAnimUV0 { get; set; } = new Vector4(1.0f, 0.0f, 0.0f, 0.0f);
@@ -1040,6 +1050,36 @@ namespace CodeWalker.Rendering
                                 break;
                             case ShaderParamNames.RippleBumpiness:
                                 RippleBumpiness = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightScale:
+                                heightScale = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightBias:
+                                heightBias = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightScale0:
+                                heightScale0 = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightScale1:
+                                heightScale1 = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightScale2:
+                                heightScale2 = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightScale3:
+                                heightScale3 = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightBias0:
+                                heightBias0 = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightBias1:
+                                heightBias1 = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightBias2:
+                                heightBias2 = ((Vector4)param.Data).X;
+                                break;
+                            case ShaderParamNames.heightBias3:
+                                heightBias3 = ((Vector4)param.Data).X;
                                 break;
                             case ShaderParamNames.globalAnimUV0:
                                 globalAnimUV0 = (Vector4)param.Data;

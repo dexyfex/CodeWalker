@@ -225,7 +225,7 @@ float ShadowAmount(float4 shadowcoord, float shadowdepth)//, inout float4 colour
 
 
 
-float3 FullLighting(float3 diff, float3 spec, float3 norm, float4 vc0, uniform ShaderGlobalLightParams globalLights, uint enableShadows, float shadowdepth, float4 shadowcoord)
+float3 FullLighting(float3 diff, float3 spec, float3 norm, float4 vc0, uniform ShaderGlobalLightParams globalLights, uint enableShadows, float shadowdepth, float4 shadowcoord, float selfShadow = 1.0)
 {
     float lf = saturate(dot(norm, globalLights.LightDir.xyz));
 
@@ -240,6 +240,9 @@ float3 FullLighting(float3 diff, float3 spec, float3 norm, float4 vc0, uniform S
             shadowlit = ShadowAmount(shadowcoord, shadowdepth);// , shadowcolour);
         }
     }
+
+    // Apply parallax self-shadow to cascade shadow
+    shadowlit *= selfShadow;
 
     lf *= shadowlit;
 

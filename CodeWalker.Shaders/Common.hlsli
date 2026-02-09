@@ -119,6 +119,163 @@ float3 NormalMap(float2 nmv, float bumpinezz, float3 norm, float3 tang, float3 b
 }
 
 
+// POM constants
+#define POM_MIN_STEPS 3
+#define POM_MAX_STEPS 16
+#define POM_VDOTN_BLEND_FACTOR 0.25f
+#define POM_HEIGHT_SCALE 0.1f          // Global parallax strength multiplier (1.0 = full, 0.5 = half)
+
+// Distance-based POM fade constants (reduces noise at steep angles/distance)
+#define POM_DISTANCE_START 5.0f    // Distance where fade begins
+#define POM_DISTANCE_END 50.0f     // Distance where POM is fully disabled
+
+// Binary search refinement for more precise intersection (reduces ring artifacts at close range)
+#define POM_BINARY_SEARCH_STEPS 5   // Number of binary search iterations after linear search
+#define POM_CLOSE_DISTANCE 2.0f     // Distance threshold for close-range step boost
+#define POM_CLOSE_STEP_MULTIPLIER 2.0f  // Step multiplier when very close to surface
+
+// Distance fade lookup table (5 control points for smooth non-linear falloff)
+// Based on GTA V pomWeights table
+#define NUM_POM_CTRL_POINTS 5
+static const float pomWeights[NUM_POM_CTRL_POINTS] = {
+    1.0f,   // Full quality at close range
+    0.9f,
+    0.5f,   // 50% at mid distance
+    0.1f,
+    0.0f    // Disabled at far distance
+};
+
+// Compute smooth distance-based fade for POM steps
+float ComputePOMDistanceFade(float distanceBlend)
+{
+    if (distanceBlend >= 1.0f)
+        return 0.0f;
+
+    // Find the nearest control points and interpolate
+    int startPoint = clamp(int(distanceBlend * (NUM_POM_CTRL_POINTS - 1)), 0, NUM_POM_CTRL_POINTS - 2);
+    int endPoint = startPoint + 1;
+
+    float t = distanceBlend * (NUM_POM_CTRL_POINTS - 1) - float(startPoint);
+    return lerp(pomWeights[startPoint], pomWeights[endPoint], t);
+}
+
+// Performs relief mapping by tracing through the height field
+float TraceHeight(Texture2D<float4> heightMapSampler, SamplerState samplerState, float2 texCoords, float2 direction, float2 bias, int maxNumberOfSteps)
+{
+    if (maxNumberOfSteps == 0)
+    {
+        return 0.0f;
+    }
+
+    float heightStep = 1.0f / float(maxNumberOfSteps);
+    float2 offsetPerStep = direction * heightStep;
+
+    float currentBound = 1.0f;
+    float previousBound = currentBound;
+
+    float2 texCoordOffset = bias;
+
+    // Use derivatives for proper mip selection to avoid aliasing
+    float2 ddx0 = ddx(texCoords.xy);
+    float2 ddy0 = ddy(texCoords.xy);
+
+    float currentHeight = heightMapSampler.SampleGrad(samplerState, texCoords.xy, ddx0, ddy0).r + 1e-6f;
+    float previousHeight = currentHeight;
+
+    [unroll(POM_MAX_STEPS)]
+    for (int s = 0; s < maxNumberOfSteps; ++s)
+    {
+        if (currentHeight < currentBound)
+        {
+            previousBound = currentBound;
+            previousHeight = currentHeight;
+
+            currentBound -= heightStep;
+            texCoordOffset += offsetPerStep;
+            currentHeight = heightMapSampler.SampleGrad(samplerState, texCoords + texCoordOffset, ddx0, ddy0).r;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    // Interpolate between the two points to find a more precise height
+    float currentDelta = currentBound - currentHeight;
+    float previousDelta = previousBound - previousHeight;
+    float denominator = previousDelta - currentDelta;
+
+    float finalHeight = currentHeight;
+
+    if (denominator > 0)
+    {
+        finalHeight = ((currentBound * previousDelta) - (previousBound * currentDelta)) / denominator;
+    }
+
+    return clamp(finalHeight, 0.0, 1.0f);
+}
+
+// Parallax self-shadow: traces through heightmap in light direction to find occlusion
+// Returns shadow factor (0 = fully lit, 1 = fully in shadow)
+float TraceSelfShadow(Texture2D<float4> heightMapSampler, SamplerState samplerState, float2 texCoords, float3 tanLightDir, float edgeWeight, float hScale)
+{
+    float2 inXY = (tanLightDir.xy * hScale * edgeWeight) / max(tanLightDir.z, 0.01f);
+
+    // Sample base height at current (displaced) position
+    float sh0 = heightMapSampler.SampleLevel(samplerState, texCoords, 0).r;
+
+    // Trace 7 samples along light direction with increasing weight for closer occlusion
+    float shA = (heightMapSampler.SampleLevel(samplerState, texCoords + inXY * 0.88, 0).r - sh0 - 0.88) *  1;
+    float sh9 = (heightMapSampler.SampleLevel(samplerState, texCoords + inXY * 0.77, 0).r - sh0 - 0.77) *  2;
+    float sh8 = (heightMapSampler.SampleLevel(samplerState, texCoords + inXY * 0.66, 0).r - sh0 - 0.66) *  4;
+    float sh7 = (heightMapSampler.SampleLevel(samplerState, texCoords + inXY * 0.55, 0).r - sh0 - 0.55) *  6;
+    float sh6 = (heightMapSampler.SampleLevel(samplerState, texCoords + inXY * 0.44, 0).r - sh0 - 0.44) *  8;
+    float sh5 = (heightMapSampler.SampleLevel(samplerState, texCoords + inXY * 0.33, 0).r - sh0 - 0.33) * 10;
+    float sh4 = (heightMapSampler.SampleLevel(samplerState, texCoords + inXY * 0.22, 0).r - sh0 - 0.22) * 12;
+
+    float finalHeight = max(max(max(max(max(max(shA, sh9), sh8), sh7), sh6), sh5), sh4);
+    return saturate(finalHeight);
+}
+
+#define PARALLAX_SELF_SHADOW_AMOUNT 0.95f
+
+// Calculate parallax texture coordinate offset
+float2 ParallaxOffset(Texture2D<float4> heightMapSampler, SamplerState samplerState, float2 texCoords,
+                       float3 viewDir, float3 normal, float3 tangent, float3 bitangent,
+                       float inHeightScale, float inHeightBias)
+{
+    // Transform view direction to tangent space
+    float3 tanEyePos;
+    tanEyePos.x = dot(tangent.xyz, viewDir.xyz);
+    tanEyePos.y = dot(bitangent.xyz, viewDir.xyz);
+    tanEyePos.z = dot(normal.xyz, viewDir.xyz);
+    tanEyePos = normalize(tanEyePos);
+
+    // Clamp Z to avoid division issues at grazing angles
+    float zLimit = 0.1f;
+    float clampedZ = max(zLimit, tanEyePos.z);
+
+    // Calculate view-dependent step count for quality/performance balance
+    float VdotN = abs(dot(normalize(viewDir.xyz), normalize(normal.xyz)));
+    float numberOfSteps = lerp(POM_MAX_STEPS, POM_MIN_STEPS, VdotN);
+
+    // Apply global scale based on view angle for smooth falloff
+    float globalScale = saturate(numberOfSteps - 1.0f) * saturate(VdotN / POM_VDOTN_BLEND_FACTOR);
+
+    // Calculate max parallax offset and bias offset
+    float2 maxParallaxOffset = (-tanEyePos.xy / clampedZ) * inHeightScale * globalScale;
+    float2 heightBiasOffset = (tanEyePos.xy / clampedZ) * inHeightBias * globalScale;
+
+    // Trace through height field
+    float height = TraceHeight(heightMapSampler, samplerState, texCoords, maxParallaxOffset, heightBiasOffset, (int)numberOfSteps);
+
+    // Calculate final texture coordinate offset
+    float2 texCoordOffset = heightBiasOffset + (maxParallaxOffset * (1.0f - height));
+
+    return texCoordOffset;
+}
+
+
 
 
 float3 BasicLighting(float4 lightcolour, float4 ambcolour, float pclit)

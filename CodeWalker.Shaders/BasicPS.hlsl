@@ -3,15 +3,43 @@
 
 float4 main(VS_OUTPUT input) : SV_TARGET
 {
+    // Calculate parallax offset if height mapping is enabled
+    float2 parallaxTexOffset = float2(0, 0);
+    float parallaxSelfShadow = 1.0;
+    if (EnableHeightMap && RenderMode == 0)
+    {
+        float3 viewDir = -normalize(input.CamRelPos); // Negate to get direction FROM surface TO camera
+        float3 norm0 = normalize(input.Normal);
+        float3 tang0 = normalize(input.Tangent.xyz);
+        float3 bitang0 = normalize(input.Bitangent.xyz);
+        parallaxTexOffset = ParallaxOffset(
+            Heightmap, TextureSS, input.Texcoord0,
+            viewDir, norm0, tang0, bitang0,
+            heightScale, heightBias);
+
+        // Parallax self-shadow, transform light dir to tangent space and trace
+        float3 tanLightDir;
+        tanLightDir.x = dot(tang0, GlobalLights.LightDir.xyz);
+        tanLightDir.y = dot(bitang0, GlobalLights.LightDir.xyz);
+        tanLightDir.z = dot(norm0, GlobalLights.LightDir.xyz);
+        float shadowAmount = TraceSelfShadow(Heightmap, TextureSS,
+            input.Texcoord0 + parallaxTexOffset,
+            tanLightDir, 1.0, heightScale);
+        parallaxSelfShadow = 1.0 - shadowAmount * PARALLAX_SELF_SHADOW_AMOUNT;
+    }
+
+    // Apply parallax offset to base texture coordinates
+    float2 texc0 = input.Texcoord0 + parallaxTexOffset;
+
     float4 c = float4(0.5, 0.5, 0.5, 1);
     if (RenderMode == 0) c = float4(1, 1, 1, 1);
     if (EnableTexture > 0)
     {
-        float2 texc = input.Texcoord0;
+        float2 texc = texc0;
         if (RenderMode >= 5)
         {
-            if (RenderSamplerCoord == 2) texc = input.Texcoord1;
-            else if (RenderSamplerCoord == 3) texc = input.Texcoord2;
+            if (RenderSamplerCoord == 2) texc = input.Texcoord1 + parallaxTexOffset;
+            else if (RenderSamplerCoord == 3) texc = input.Texcoord2 + parallaxTexOffset;
         }
 
         c = Colourmap.Sample(TextureSS, texc);
@@ -80,8 +108,8 @@ float4 main(VS_OUTPUT input) : SV_TARGET
     if (RenderMode == 0)
     {
 
-        float4 nv = Bumpmap.Sample(TextureSS, input.Texcoord0);  //sample r1.xyzw, v2.xyxx, t3.xyzw, s3  (BumpSampler)
-        float4 sv = Specmap.Sample(TextureSS, input.Texcoord0);  //sample r2.xyzw, v2.xyxx, t4.xyzw, s4  (SpecSampler)
+        float4 nv = Bumpmap.Sample(TextureSS, texc0);  //sample r1.xyzw, v2.xyxx, t3.xyzw, s3  (BumpSampler)
+        float4 sv = Specmap.Sample(TextureSS, texc0);  //sample r2.xyzw, v2.xyxx, t4.xyzw, s4  (SpecSampler)
 
 
         float2 nmv = nv.xy;
@@ -92,7 +120,7 @@ float4 main(VS_OUTPUT input) : SV_TARGET
             if (EnableDetailMap)
             {
                 //detail normalmapp
-                r0.xy = input.Texcoord0 * detailSettings.zw;    //mul r0.xy, v2.xyxx, detailSettings.zwzz
+                r0.xy = texc0 * detailSettings.zw;    //mul r0.xy, v2.xyxx, detailSettings.zwzz
                 r0.zw = r0.xy * 3.17;       //mul r0.zw, r0.xxxy, l(0.000000, 0.000000, 3.170000, 3.170000)
                 r0.xy = Detailmap.Sample(TextureSS, r0.xy).xy - 0.5;    //sample r1.xyzw, r0.xyxx, t2.xyzw, s2  (DetailSampler)    //mad r0.xy, r1.xyxx, l(2.000000, 2.000000, 0.000000, 0.000000), l(-1.000000, -1.000000, 0.000000, 0.000000)
                 r0.zw = Detailmap.Sample(TextureSS, r0.zw).xy - 0.5;    //sample r1.xyzw, r0.zwzz, t2.xyzw, s2  (DetailSampler)    //mad r0.zw, r1.xxxy, l(0.000000, 0.000000, 2.000000, 2.000000), l(0.000000, 0.000000, -1.000000, -1.000000) //r0.zw = r0.zw*0.5;          //mul r0.zw, r0.zzzw, l(0.000000, 0.000000, 0.500000, 0.500000)
@@ -161,7 +189,7 @@ float4 main(VS_OUTPUT input) : SV_TARGET
 
     float4 fc = c;
 
-    c.rgb = FullLighting(c.rgb, spec, norm, input.Colour0, GlobalLights, EnableShadows, input.Shadows.x, input.LightShadow);
+    c.rgb = FullLighting(c.rgb, spec, norm, input.Colour0, GlobalLights, EnableShadows, input.Shadows.x, input.LightShadow, parallaxSelfShadow);
 
 
     if (IsEmissive==1)

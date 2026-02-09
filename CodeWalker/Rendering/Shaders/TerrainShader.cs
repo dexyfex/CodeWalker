@@ -63,7 +63,9 @@ namespace CodeWalker.Rendering
         public uint EnableTint;
         public uint EnableVertexColour;
         public float bumpiness;
-        public uint Pad102;
+        public uint EnableHeightMap;
+        public Vector4 heightScale; // x=layer0, y=layer1, z=layer2, w=layer3
+        public Vector4 heightBias;  // x=layer0, y=layer1, z=layer2, w=layer3
     }
 
     public class TerrainShader : Shader, IDisposable
@@ -372,6 +374,10 @@ namespace CodeWalker.Rendering
             RenderableTexture normals2 = null;
             RenderableTexture normals3 = null;
             RenderableTexture normals4 = null;
+            RenderableTexture heightmap0 = null;
+            RenderableTexture heightmap1 = null;
+            RenderableTexture heightmap2 = null;
+            RenderableTexture heightmap3 = null;
             float tntpalind = 0.0f;
             bool usevc = true;
 
@@ -431,6 +437,18 @@ namespace CodeWalker.Rendering
                                 //this is slightly dodgy but vsentvarsdata should have the correct value in it...
                                 tntpalind = (VSEntityVars.Vars.TintPaletteIndex + 0.5f) / tintpal.Key.Height;
                             }
+                            break;
+                        case ShaderParamNames.heightMapSamplerLayer0:
+                            heightmap0 = itex;
+                            break;
+                        case ShaderParamNames.heightMapSamplerLayer1:
+                            heightmap1 = itex;
+                            break;
+                        case ShaderParamNames.heightMapSamplerLayer2:
+                            heightmap2 = itex;
+                            break;
+                        case ShaderParamNames.heightMapSamplerLayer3:
+                            heightmap3 = itex;
                             break;
                     }
                 }
@@ -531,6 +549,11 @@ namespace CodeWalker.Rendering
             bool usemask = ((texturemask != null) && (texturemask.ShaderResourceView != null));
             bool usetint = ((tintpal != null) && (tintpal.ShaderResourceView != null));
             bool usenm = (((normals0 != null) && (normals0.ShaderResourceView != null)) || ((normals1 != null) && (normals1.ShaderResourceView != null)));
+            bool useheight0 = ((heightmap0 != null) && (heightmap0.ShaderResourceView != null));
+            bool useheight1 = ((heightmap1 != null) && (heightmap1.ShaderResourceView != null));
+            bool useheight2 = ((heightmap2 != null) && (heightmap2.ShaderResourceView != null));
+            bool useheight3 = ((heightmap3 != null) && (heightmap3.ShaderResourceView != null));
+            bool useheight = useheight0 || useheight1 || useheight2 || useheight3;
 
 
             float bumpiness = 1.0f;
@@ -550,7 +573,10 @@ namespace CodeWalker.Rendering
             PSGeomVars.Vars.ShaderName = geom.DrawableGeom.Shader.Name.Hash;
             PSGeomVars.Vars.EnableTint = usetint ? 1u : 0u;
             PSGeomVars.Vars.EnableVertexColour = usevc ? 1u : 0u;
-            PSGeomVars.Vars.bumpiness = bumpiness;//
+            PSGeomVars.Vars.bumpiness = bumpiness;
+            PSGeomVars.Vars.EnableHeightMap = useheight ? 1u : 0u;
+            PSGeomVars.Vars.heightScale = new Vector4(geom.heightScale0, geom.heightScale1, geom.heightScale2, geom.heightScale3);
+            PSGeomVars.Vars.heightBias = new Vector4(geom.heightBias0, geom.heightBias1, geom.heightBias2, geom.heightBias3);
             PSGeomVars.Update(context);
             PSGeomVars.SetPSCBuffer(context, 2);
 
@@ -575,6 +601,10 @@ namespace CodeWalker.Rendering
             if (normals2 != null) normals2.SetPSResource(context, 9);
             if (normals3 != null) normals3.SetPSResource(context, 10);
             if (normals4 != null) normals4.SetPSResource(context, 11);
+            if (useheight0) heightmap0.SetPSResource(context, 12);
+            if (useheight1) heightmap1.SetPSResource(context, 13);
+            if (useheight2) heightmap2.SetPSResource(context, 14);
+            if (useheight3) heightmap3.SetPSResource(context, 15);
 
         }
 
@@ -604,6 +634,10 @@ namespace CodeWalker.Rendering
             context.PixelShader.SetShaderResource(9, null);
             context.PixelShader.SetShaderResource(10, null);
             context.PixelShader.SetShaderResource(11, null);
+            context.PixelShader.SetShaderResource(12, null);
+            context.PixelShader.SetShaderResource(13, null);
+            context.PixelShader.SetShaderResource(14, null);
+            context.PixelShader.SetShaderResource(15, null);
             context.VertexShader.Set(null);
             context.PixelShader.Set(null);
         }

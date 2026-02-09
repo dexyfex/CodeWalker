@@ -37,5 +37,7 @@ VS_OUTPUT main(VS_INPUT input)
     output.Tangent = float4(btang, input.Tangent.w);
     output.Bitangent = float4(cross(btang, bnorm) * input.Tangent.w, 0);
     output.Tint = tnt;
+    output.ViewDistance = length(opos);
+    output.EdgeWeight = float2(0, 0.9); // Default: full POM, zLimit=0.1
     return output;
 }
