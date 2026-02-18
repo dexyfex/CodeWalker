@@ -2868,6 +2868,22 @@ namespace CodeWalker
                     mb.Scale = Vector3.One;
                     Renderer.BoundingBoxes.Add(mb);
 
+                    if (ll.LodLights != null)
+                    {
+                        for (int i = 0; i < ll.LodLights.Length; i++)
+                        {
+                            var light = ll.LodLights[i];
+                            if ((light.Position - camera.Position).Length() > dmax) continue;
+                            MapBox lmb = new();
+                            lmb.CamRelPos = light.Position - camera.Position;
+                            lmb.BBMin = new Vector3(-0.5f);
+                            lmb.BBMax = new Vector3(0.5f);
+                            lmb.Orientation = Quaternion.Identity;
+                            lmb.Scale = Vector3.One;
+                            Renderer.BoundingBoxes.Add(lmb);
+                        }
+                    }
+
                     if (ll.BVH != null)
                     {
                         UpdateMouseHits(ll.BVH, ref mray);
