@@ -1791,7 +1791,7 @@ namespace CodeWalker.GameFiles
         public FlagsUint Flags { get; set; }
 
         public FlagsUint Flags2 { get; set; }
-        public ushort MaxHeaderSize { get; set; }
+        public ushort ParentOverrides { get; set; } // bit 0=Volume, 1=Pitch, 2=Pan, 3=PreDelay, 4=StartOffset, 5=AttackTime, 6=ReleaseTime, 7=DopplerFactor, 8=LPFCutoff, 9=HPFCutoff, 10=VolumeCurve, 11=VolumeCurveScale, 12=VolumeCurvePlateau, 13=SpeakerMask
         public short Volume { get; set; }
         public ushort VolumeVariance { get; set; } //0xD-0xF
         public short Pitch { get; set; } //0xF-0x11
@@ -1841,7 +1841,7 @@ namespace CodeWalker.GameFiles
             if ((Flags & 0xFF) != 0xAA)
             {
                 if (Bit(0)) Flags2 = br.ReadUInt32();
-                if (Bit(1)) MaxHeaderSize = br.ReadUInt16();
+                if (Bit(1)) ParentOverrides = br.ReadUInt16();
                 if (Bit(2)) Volume = br.ReadInt16();
                 if (Bit(3)) VolumeVariance = br.ReadUInt16();
                 if (Bit(4)) Pitch = br.ReadInt16();
@@ -1895,7 +1895,7 @@ namespace CodeWalker.GameFiles
             if ((Flags & 0xFF) != 0xAA)
             {
                 if (Bit(0)) bw.Write(Flags2);
-                if (Bit(1)) bw.Write(MaxHeaderSize);
+                if (Bit(1)) bw.Write(ParentOverrides);
                 if (Bit(2)) bw.Write(Volume);
                 if (Bit(3)) bw.Write(VolumeVariance);
                 if (Bit(4)) bw.Write(Pitch);
@@ -1946,7 +1946,18 @@ namespace CodeWalker.GameFiles
             if ((Flags & 0xFF) != 0xAA)
             {
                 if (Bit(0)) RelXml.ValueTag(sb, indent, "Flags2", "0x" + Flags2.Hex);
-                if (Bit(1)) RelXml.ValueTag(sb, indent, "MaxHeaderSize", MaxHeaderSize.ToString());
+                if (Bit(1))
+                {
+                    RelXml.Indent(sb, indent);
+                    sb.AppendLine("<ParentOverrides>");
+                    foreach (ParentOverrideFlags flag in Enum.GetValues(typeof(ParentOverrideFlags)))
+                    {
+                        bool set = (ParentOverrides & (1 << (int)flag)) != 0;
+                        RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{set.ToString().ToLower()}\"");
+                    }
+                    RelXml.Indent(sb, indent);
+                    sb.AppendLine("</ParentOverrides>");
+                }
                 if (Bit(2)) RelXml.ValueTag(sb, indent, "Volume", Volume.ToString());
                 if (Bit(3)) RelXml.ValueTag(sb, indent, "VolumeVariance", VolumeVariance.ToString());
                 if (Bit(4)) RelXml.ValueTag(sb, indent, "Pitch", Pitch.ToString());
@@ -1996,7 +2007,33 @@ namespace CodeWalker.GameFiles
             if ((Flags & 0xFF) != 0xAA)
             {
                 if (Bit(0)) Flags2 = Xml.GetChildUIntAttribute(node, "Flags2", "value");
-                if (Bit(1)) MaxHeaderSize = (ushort)Xml.GetChildUIntAttribute(node, "MaxHeaderSize", "value");
+                if (Bit(1))
+                {
+                    // support old format: <MaxHeaderSize value="1023" /> or <ParentOverrides value="0x03FF" />
+                    uint legacyValue = Xml.GetChildUIntAttribute(node, "MaxHeaderSize", "value") | Xml.GetChildUIntAttribute(node, "ParentOverrides", "value");
+                    // support new format: <ParentOverrides><VolumeOverridesParent value="true" />...</ParentOverrides>
+                    XmlNode poNode = node.SelectSingleNode("ParentOverrides");
+                    if (poNode != null && poNode.HasChildNodes)
+                    {
+                        ushort flags = 0;
+                        foreach (XmlNode flagNode in poNode.ChildNodes)
+                        {
+                            if (Enum.TryParse(flagNode.Name, out ParentOverrideFlags flag))
+                            {
+                                string valueStr = flagNode.Attributes?["value"]?.Value;
+                                if (string.Equals(valueStr, "true", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    flags |= (ushort)(1 << (int)flag);
+                                }
+                            }
+                        }
+                        ParentOverrides = flags;
+                    }
+                    else
+                    {
+                        ParentOverrides = (ushort)legacyValue;
+                    }
+                }
                 if (Bit(2)) Volume = (short)Xml.GetChildIntAttribute(node, "Volume", "value");
                 if (Bit(3)) VolumeVariance = (ushort)Xml.GetChildUIntAttribute(node, "VolumeVariance", "value");
                 if (Bit(4)) Pitch = (short)Xml.GetChildIntAttribute(node, "Pitch", "value");
@@ -2047,7 +2084,7 @@ namespace CodeWalker.GameFiles
             if ((Flags & 0xFF) != 0xAA)
             {
                 if (Bit(0)) length += 4;// Flags2 = br.ReadUInt32();
-                if (Bit(1)) length += 2;// MaxHeaderSize = br.ReadUInt16();
+                if (Bit(1)) length += 2;// ParentOverrides = br.ReadUInt16();
                 if (Bit(2)) length += 2;// Volume = br.ReadUInt16();
                 if (Bit(3)) length += 2;// VolumeVariance = br.ReadUInt16();
                 if (Bit(4)) length += 2;// Pitch = br.ReadUInt16();
@@ -2099,7 +2136,7 @@ namespace CodeWalker.GameFiles
 
         public override string ToString()
         {
-            return string.Format("{0}: {1}, {2}, {3}, {4}, {5}, {6}, {7}", Flags.Hex, Flags2.Hex, Category, StartOffset, StartOffsetVariance, VolumeCurve, PreDelayVariable, StartOffsetVariable);
+            return $"{Flags.Hex}: {Flags2.Hex}, {Category}, {StartOffset}, {StartOffsetVariance}, {VolumeCurve}, {PreDelayVariable}, {StartOffsetVariable}";
         }
     }
 
@@ -2161,11 +2198,15 @@ namespace CodeWalker.GameFiles
         public void WriteChildSoundsXml(StringBuilder sb, int indent, string nodeName = "ChildSounds")
         {
             if (ChildSoundsHashes == null) return;
-            if (ChildSoundsHashes.Length > 0)
+
+            // Filter out empty hashes
+            var nonEmptyHashes = ChildSoundsHashes.Where(h => h != 0).ToArray();
+
+            if (nonEmptyHashes.Length > 0)
             {
                 RelXml.OpenTag(sb, indent, nodeName);
                 var cind = indent + 1;
-                foreach (var hash in ChildSoundsHashes)
+                foreach (var hash in nonEmptyHashes)
                 {
                     RelXml.StringTag(sb, cind, "Item", RelXml.HashString(hash));
                 }
@@ -2228,6 +2269,24 @@ namespace CodeWalker.GameFiles
     }
 
 
+
+    public enum ParentOverrideFlags
+    {
+        VolumeOverridesParent,
+        PitchOverridesParent,
+        PanOverridesParent,
+        PreDelayOverridesParent,
+        StartOffsetOverridesParent,
+        AttackTimeOverridesParent,
+        ReleaseTimeOverridesParent,
+        DopplerFactorOverridesParent,
+        LPFCutoffOverridesParent,
+        HPFCutoffOverridesParent,
+        VolumeCurveOverridesParent,
+        VolumeCurveScaleOverridesParent,
+        VolumeCurvePlateauOverridesParent,
+        SpeakerMaskOverridesParent,
+    }
 
     public enum Dat54SoundType : byte
     {
@@ -2542,6 +2601,16 @@ namespace CodeWalker.GameFiles
             MinCrossfadeTimeVariable = XmlRel.GetHash(Xml.GetChildInnerText(node, "MinCrossfadeTimeVariable"));
             MaxCrossfadeTimeVariable = XmlRel.GetHash(Xml.GetChildInnerText(node, "MaxCrossfadeTimeVariable"));
             ReadChildSoundsXml(node);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+            else
+            {
+                ChildSoundsCount = (byte)ChildSoundsHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -2570,6 +2639,12 @@ namespace CodeWalker.GameFiles
             bw.Write(MinCrossfadeTimeVariable);
             bw.Write(MaxCrossfadeTimeVariable);
 
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+
             WriteChildSoundsHashes(bw);
         }
         public override uint[] GetHashTableOffsets()
@@ -2581,6 +2656,7 @@ namespace CodeWalker.GameFiles
             return new[] { CrossfadeCurve };
         }
     }
+    
     [TC(typeof(EXP))]
     class Dat54SpeechSound : Dat54Sound
     {
@@ -2781,6 +2857,16 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             ReadChildSoundsXml(node);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+            else
+            {
+                ChildSoundsCount = (byte)ChildSoundsHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -2790,6 +2876,13 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+
             WriteChildSoundsHashes(bw);
         }
         public override uint[] GetHashTableOffsets()
@@ -2816,6 +2909,16 @@ namespace CodeWalker.GameFiles
             base.ReadXml(node);
             Duration = Xml.GetChildIntAttribute(node, "Duration", "value");
             ReadChildSoundsXml(node);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+            else
+            {
+                ChildSoundsCount = (byte)ChildSoundsHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -2827,6 +2930,13 @@ namespace CodeWalker.GameFiles
         {
             base.Write(bw);
             bw.Write(Duration);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+
             WriteChildSoundsHashes(bw);
         }
         public override uint[] GetHashTableOffsets()
@@ -3146,6 +3256,16 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             ReadChildSoundsXml(node);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+            else
+            {
+                ChildSoundsCount = (byte)ChildSoundsHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -3155,6 +3275,13 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+
             WriteChildSoundsHashes(bw);
         }
         public override uint[] GetHashTableOffsets()
@@ -3312,7 +3439,16 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             Entities = XmlRel.ReadHashItemArray(node, "Entities");
-            EntitiesCount = (byte)(Entities?.Length ?? 0);
+
+            if (Entities == null)
+            {
+                Entities = new MetaHash[0];
+                EntitiesCount = 0;
+            }
+            else
+            {
+                EntitiesCount = (byte)Entities.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -3322,6 +3458,13 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
+
+            if (Entities == null)
+            {
+                Entities = new MetaHash[0];
+                EntitiesCount = 0;
+            }
+
             bw.Write(EntitiesCount);
             for (int i = 0; i < EntitiesCount; i++)
             {
@@ -3355,6 +3498,16 @@ namespace CodeWalker.GameFiles
             SequenceDirection = XmlRel.GetHash(Xml.GetChildInnerText(node, "SequenceDirection"));
 
             ReadChildSoundsXml(node);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+            else
+            {
+                ChildSoundsCount = (byte)ChildSoundsHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -3371,6 +3524,13 @@ namespace CodeWalker.GameFiles
             bw.Write(DelayTime);
             bw.Write(DelayTimeVariable);
             bw.Write(SequenceDirection);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+
             WriteChildSoundsHashes(bw);
         }
         public override uint[] GetHashTableOffsets()
@@ -3399,16 +3559,25 @@ namespace CodeWalker.GameFiles
             PlaybackTimeLimit = br.ReadSingle(); //0x8-0xC
             VirtualisationMode = br.ReadInt32(); //0xC-0x10
             TrackCount = br.ReadInt32(); //0x10-0x14
-            ChildSoundsHashes = new MetaHash[4];
-            for (int i = 0; i < 4; i++)
+
+            long bytesRemaining = br.BaseStream.Length - br.BaseStream.Position;
+            if (bytesRemaining >= 16) // 4 hashes * 4 bytes each
             {
-                ChildSoundsHashes[i] = br.ReadUInt32();
+                ChildSoundsHashes = new MetaHash[4];
+                for (int i = 0; i < 4; i++)
+                {
+                    ChildSoundsHashes[i] = br.ReadUInt32();
+                }
             }
-            ExposedVariablesCount = br.ReadInt32();
-            ExposedVariables = new Dat54ModularSynthSoundVariable[ExposedVariablesCount];
-            for (int i = 0; i < ExposedVariablesCount; i++)
+
+            if (br.BaseStream.Position < br.BaseStream.Length)
             {
-                ExposedVariables[i] = new Dat54ModularSynthSoundVariable(br);
+                ExposedVariablesCount = br.ReadInt32();
+                ExposedVariables = new Dat54ModularSynthSoundVariable[ExposedVariablesCount];
+                for (int i = 0; i < ExposedVariablesCount; i++)
+                {
+                    ExposedVariables[i] = new Dat54ModularSynthSoundVariable(br);
+                }
             }
         }
         public override void ReadXml(XmlNode node)
@@ -3420,6 +3589,18 @@ namespace CodeWalker.GameFiles
             VirtualisationMode = Xml.GetChildIntAttribute(node, "VirtualisationMode", "value");
             TrackCount = Xml.GetChildIntAttribute(node, "TrackCount", "value");
             ReadChildSoundsXml(node, "EnvironmentSounds");
+
+            if (ChildSoundsHashes != null && ChildSoundsHashes.Length < 4)
+            {
+                var paddedHashes = new MetaHash[4];
+                Array.Copy(ChildSoundsHashes, paddedHashes, ChildSoundsHashes.Length);
+                ChildSoundsHashes = paddedHashes;
+            }
+            else if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[4];
+            }
+
             ExposedVariables = XmlRel.ReadItemArray<Dat54ModularSynthSoundVariable>(node, "ExposedVariables");
             ExposedVariablesCount = (ExposedVariables?.Length ?? 0);
         }
@@ -3442,6 +3623,12 @@ namespace CodeWalker.GameFiles
             bw.Write(PlaybackTimeLimit); //0x8-0xC
             bw.Write(VirtualisationMode); //0xC-0x10
             bw.Write(TrackCount); //0x10-0x14
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[4];
+            }
+
             for (int i = 0; i < 4; i++)
             {
                 bw.Write(ChildSoundsHashes[i]);
@@ -3904,6 +4091,16 @@ namespace CodeWalker.GameFiles
             base.ReadXml(node);
             Variable = XmlRel.GetHash(Xml.GetChildInnerText(node, "Variable"));
             ReadChildSoundsXml(node);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+            else
+            {
+                ChildSoundsCount = (byte)ChildSoundsHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -3915,6 +4112,13 @@ namespace CodeWalker.GameFiles
         {
             base.Write(bw);
             bw.Write(Variable);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+
             WriteChildSoundsHashes(bw);
         }
         public override uint[] GetHashTableOffsets()
@@ -4504,8 +4708,8 @@ namespace CodeWalker.GameFiles
         public float BandTwoMaximum { get; set; } //0x1A-0x1E
         public float IntraBandFlipProbabilty { get; set; } //0x1E-0x22
         public float InterBandFlipProbabilty { get; set; } //0x22-0x26
-        public float MinSwitchTime { get; set; } //0x26-0x2A
-        public float MaxSwitchTime { get; set; } //0x2A-0x2E
+        public uint MinSwitchTime { get; set; } //0x26-0x2A
+        public uint MaxSwitchTime { get; set; } //0x2A-0x2E
         public float InitialValue { get; set; } //0x2E-0x32
 
         public Dat54FluctuatorSoundData()
@@ -4523,8 +4727,8 @@ namespace CodeWalker.GameFiles
             BandTwoMaximum = br.ReadSingle();
             IntraBandFlipProbabilty = br.ReadSingle();
             InterBandFlipProbabilty = br.ReadSingle();
-            MinSwitchTime = br.ReadSingle();
-            MaxSwitchTime = br.ReadSingle();
+            MinSwitchTime = br.ReadUInt32();
+            MaxSwitchTime = br.ReadUInt32();
             InitialValue = br.ReadSingle();
         }
         public void ReadXml(XmlNode node)
@@ -4540,8 +4744,8 @@ namespace CodeWalker.GameFiles
             BandTwoMaximum = Xml.GetChildFloatAttribute(node, "BandTwoMaximum", "value");
             IntraBandFlipProbabilty = Xml.GetChildFloatAttribute(node, "IntraBandFlipProbabilty", "value");
             InterBandFlipProbabilty = Xml.GetChildFloatAttribute(node, "InterBandFlipProbabilty", "value");
-            MinSwitchTime = Xml.GetChildFloatAttribute(node, "MinSwitchTime", "value");
-            MaxSwitchTime = Xml.GetChildFloatAttribute(node, "MaxSwitchTime", "value");
+            MinSwitchTime = Xml.GetChildUIntAttribute(node, "MinSwitchTime", "value");
+            MaxSwitchTime = Xml.GetChildUIntAttribute(node, "MaxSwitchTime", "value");
             InitialValue = Xml.GetChildFloatAttribute(node, "InitialValue", "value");
         }
         public void WriteXml(StringBuilder sb, int indent)
@@ -4557,8 +4761,8 @@ namespace CodeWalker.GameFiles
             RelXml.ValueTag(sb, indent, "BandTwoMaximum", FloatUtil.ToString(BandTwoMaximum));
             RelXml.ValueTag(sb, indent, "IntraBandFlipProbabilty", FloatUtil.ToString(IntraBandFlipProbabilty));
             RelXml.ValueTag(sb, indent, "InterBandFlipProbabilty", FloatUtil.ToString(InterBandFlipProbabilty));
-            RelXml.ValueTag(sb, indent, "MinSwitchTime", FloatUtil.ToString(MinSwitchTime));
-            RelXml.ValueTag(sb, indent, "MaxSwitchTime", FloatUtil.ToString(MaxSwitchTime));
+            RelXml.ValueTag(sb, indent, "MinSwitchTime", MinSwitchTime.ToString());
+            RelXml.ValueTag(sb, indent, "MaxSwitchTime", MaxSwitchTime.ToString());
             RelXml.ValueTag(sb, indent, "InitialValue", FloatUtil.ToString(InitialValue));
         }
         public void Write(BinaryWriter bw)
@@ -4728,6 +4932,16 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             ReadChildSoundsXml(node, "EnvironmentSounds");
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+            else
+            {
+                ChildSoundsCount = (byte)ChildSoundsHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -4737,6 +4951,13 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
+
+            if (ChildSoundsHashes == null)
+            {
+                ChildSoundsHashes = new MetaHash[0];
+                ChildSoundsCount = 0;
+            }
+
             WriteChildSoundsHashes(bw);
 
             bw.Write(EnvironmentSound1);
@@ -4968,7 +5189,16 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             SoundSets = XmlRel.ReadHashItemArray(node, "SoundSets");
-            SoundSetsCount = (uint)(SoundSets?.Length ?? 0);
+
+            if (SoundSets == null)
+            {
+                SoundSets = new MetaHash[0];
+                SoundSetsCount = 0;
+            }
+            else
+            {
+                SoundSetsCount = (uint)SoundSets.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -4978,6 +5208,13 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
+
+            if (SoundSets == null)
+            {
+                SoundSets = new MetaHash[0];
+                SoundSetsCount = 0;
+            }
+
             bw.Write(SoundSetsCount);
             for (int i = 0; i < SoundSetsCount; i++)
             {
@@ -5025,7 +5262,16 @@ namespace CodeWalker.GameFiles
             base.ReadXml(node);
             UnkShort = (ushort)Xml.GetChildUIntAttribute(node, "UnkShort", "value");
             SoundHashes = XmlRel.ReadHashItemArray(node, "SoundHashes");
-            SoundHashesCount = (uint)(SoundHashes?.Length ?? 0);
+
+            if (SoundHashes == null)
+            {
+                SoundHashes = new MetaHash[0];
+                SoundHashesCount = 0;
+            }
+            else
+            {
+                SoundHashesCount = (uint)SoundHashes.Length;
+            }
         }
         public override void WriteXml(StringBuilder sb, int indent)
         {
@@ -5036,6 +5282,13 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
+
+            if (SoundHashes == null)
+            {
+                SoundHashes = new MetaHash[0];
+                SoundHashesCount = 0;
+            }
+
             bw.Write(UnkShort);
             bw.Write(SoundHashesCount);
             for (int i = 0; i < SoundHashesCount; i++)
@@ -5208,6 +5461,367 @@ namespace CodeWalker.GameFiles
         {
             return GetBaseString() + ": " + Type.ToString();
         }
+
+        public static void SetTristateValue(ref uint flags, int flagid, TristateValue value)
+        {
+            flags &= (uint)~(0x3 << (flagid << 1));
+            flags |= (uint)((int)value << (flagid << 1));
+        }
+
+        public static TristateValue GetTristateValue(uint flags, int flagid)
+        {
+            return (TristateValue)((flags >> (flagid << 1)) & 0x3);
+        }
+    }
+    public enum TristateValue
+    {
+        False,
+        True,
+        Unspecified,
+    }
+
+    public enum CarAudioSettingsFlags
+    {
+        SportsCarRevsEnabled,
+        ReverseWarning,
+        BigRigBrakes,
+        DoorOpenWarning,
+        DisableAmbientRadio,
+        HeavyRoadNoise,
+        IamNotACar,
+        TyreChirpsEnabled,
+        IsToyCar,
+        HasCBRadio,
+        DisableSkids,
+        CauseControllerRumble,
+        MobileCausesRadioInterference,
+        IsKickStarted,
+        HasAlarm
+    }
+
+    public enum CollisionMaterialSettingsFlags
+    {
+        IsSoftForLightProps,
+        DryMaterial,
+        ShouldPlayRicochet,
+        IsResonant,
+        TreatAsFixed,
+        LooseSurface,
+        ScrapesForPeds,
+        PedsAreSolid,
+        UseCustomCurves,
+        ShellCasingsIgnoreHardness,
+        SurfaceSettleIsLoop,
+        GeneratePostShootoutDebris,
+        TriggerClatterOnTouch
+    }
+
+    public enum StaticEmitterFlags
+    {
+        Enabled,
+        GenerateBeats,
+        LinkedToProp,
+        ConedFront,
+        FillsInteriorSpace,
+        PlayFullRadio,
+        MuteForScore,
+        DisabledByScript,
+        StartStopImmediatelyAtTimeLimits,
+        MuteForFrontendRadio,
+        ForceMaxPathDepth,
+        IgnoreSnipe
+    }
+
+    public enum EntityEmitterFlags
+    {
+        OnlyWhenRaining,
+        MoreLikelyWhenHot,
+        VolumeCone,
+        WindBasedVolume,
+        GeneratesTreeRain,
+        StopWhenRaining,
+        ComputeOcclusion
+    }
+
+    public enum HeliAudioSettingsFlags
+    {
+        DisableAmbientRadio,
+        HasMissileLockSystem,
+        AircraftWarningVoiceIsMale
+    }
+
+    public enum SpeechContextFlags
+    {
+        AllowRepeat,
+        ForcePlay,
+        IsConversation,
+        IsPain,
+        IsCombat,
+        IsOkayOnMission,
+        IsUrgent,
+        IsMuttedDuringSlowMo,
+        IsPitchedDuringSlowMo
+    }
+
+    public enum SpeechContextVirtualFlags
+    {
+        AllowRepeat,
+        ForcePlay,
+        IsConversation,
+        IsPain,
+        IsCombat,
+        IsOkayOnMission,
+        IsUrgent,
+        IsMuttedDuringSlowMo,
+        IsPitchedDuringSlowMo
+    }
+
+    public enum SpeechParamsFlags
+    {
+        AllowRepeat,
+        ForcePlay,
+        SayOverPain,
+        PreloadOnly,
+        IsConversationInterrupt,
+        AddBlip,
+        IsUrgent,
+        InterruptAmbientSpeech,
+        IsMutedDuringSlowMo,
+        IsPitchedDuringSlowMo
+    }
+
+    public enum BoatAudioSettingsFlags
+    {
+        DisableAmbientRadio,
+        IsSubmarine
+    }
+
+    public enum WeaponSettingsFlags
+    {
+        IsPlayerAutoFire,
+        IsNPCAutoFire,
+        IsNonLethal,
+        RecockWhenSniping,
+        DoesMeleeImpacts
+    }
+
+    public enum RadioStationSettingsFlags
+    {
+        NoBack2BackMusic,
+        Back2BackAds,
+        PlayWeather,
+        PlayNews,
+        SequentialMusic,
+        IdentsInsteadOfAds,
+        Locked,
+        Hidden,
+        PlayUsersMusic,
+        HasReverbChannel,
+        IsMixStation
+    }
+
+    public enum RadioStationTrackListFlags
+    {
+        Locked,
+        Shuffle
+    }
+
+    public enum ScriptedScannerLineFlags
+    {
+        DisableScannerSFX,
+        EnableEcho
+    }
+
+    public enum AmbientZoneFlags
+    {
+        InteriorZone,
+        ZoneEnabledStatePersistent,
+        ZoneEnabledStateNonPersistent,
+        UsePlayerPosition,
+        DisableInMultiplayer,
+        ScaleMaxWorldHeightWithZoneInfluence,
+        HasTunnelReflections,
+        HasReverbLinkedReflections,
+        HasRandomStaticRadioEmitters,
+        HasRandomVehicleRadioEmitters,
+        OccludeRain
+    }
+
+    public enum AmbientRuleFlags
+    {
+        IgnoreInitialMinRepeatTime,
+        StopWhenRaining,
+        StopOnLoudSound,
+        FollowListener,
+        UseOcclusion,
+        StreamingSound,
+        StopOnZoneDeactivation,
+        TriggerOnLoudSound,
+        CanTriggerOverWater,
+        CheckConditionsEachFrame,
+        UsePlayerPosition,
+        DisableInMultiplayer
+    }
+
+    public enum EnvironmentRuleFlags
+    {
+        OverrideReverb,
+        OverrideEchos,
+        RandomEchoPositions,
+        HeightRestrictions
+    }
+
+    public enum InteriorSettingsFlags
+    {
+        HasInteriorWalla,
+        InhibitIdleMusic,
+        BuildAllExtendedPaths,
+        BuildInterInteriorPaths,
+        AllowQuietScene,
+        UseBoundingBoxOcclusion
+    }
+
+    public enum InteriorRoomFlags
+    {
+        HasInteriorWalla
+    }
+
+    public enum DoorTuningParamsFlags
+    {
+        IsRailLevelCrossing
+    }
+
+    public enum ModelAudioCollisionSettingsFlags
+    {
+        IsResonant,
+        TurnOffRainVolOnProps,
+        SwingingProp,
+        RainLoopTracksListener,
+        PlaceRainLoopOntopOfBounds,
+        ResonanceLoopTracksListener
+    }
+
+    public enum PlaneAudioSettingsFlags
+    {
+        EnginesAttachedToWings,
+        HasMissileLockSystem,
+        IsJet,
+        DisableAmbientRadio,
+        AircraftWarningVoiceIsMale
+    }
+
+    public enum StartTrackActionFlags
+    {
+        OverrideRadio,
+        RandomStartOffset,
+        MuteRadioOffSound
+    }
+
+    public enum StopTrackActionFlags
+    {
+        UnfreezeRadio
+    }
+
+    public enum StartOneShotActionFlags
+    {
+        UnfreezeRadio,
+        OverrideRadio
+    }
+
+    public enum DirectionalAmbienceFlags
+    {
+        MonoPannedSource,
+        StopWhenRaining
+    }
+
+    public enum ScannerVehicleParamsFlags
+    {
+        BlockColorReporting
+    }
+
+    public enum MicrophoneSettingsFlags
+    {
+        PlayerFrontend,
+        DistantPlayerWeapons,
+        DisableBulletsBy
+    }
+
+    public enum ClothAudioSettingsFlags
+    {
+        HavePockets,
+        FlapsInWind
+    }
+
+    public enum ExplosionAudioSettingsFlags
+    {
+        DisabledDebris,
+        DisableShockwave,
+        IsCarExplosion
+    }
+
+    public enum GranularEngineAudioSettingsFlags
+    {
+        GearChangeWobblesEnabled,
+        Publish,
+        HasRevLimiter,
+        VisualFxOnLimiter,
+        ExhaustProximityMixerSceneEnabled
+    }
+
+    public enum ShoreLinePoolAudioSettingsFlags
+    {
+        IsInterior,
+        TreatAsLake
+    }
+
+    public enum ShoreLineLakeAudioSettingsFlags
+    {
+        IsInterior
+    }
+
+    public enum ShoreLineRiverAudioSettingsFlags
+    {
+        IsInterior
+    }
+
+    public enum ShoreLineOceanAudioSettingsFlags
+    {
+        IsInterior,
+        WaveDetection
+    }
+
+    public enum ReflectionsSettingsFlags
+    {
+        FilterEnabled,
+        StaticReflections,
+        InvertPhaseChannel0,
+        InvertPhaseChannel1,
+        InvertPhaseChannel2,
+        InvertPhaseChannel3,
+        InvertPhaseChannel4,
+        InvertPhaseChannel5
+    }
+
+    public enum ForceRadioTrackActionFlags
+    {
+        UnfreezeStation
+    }
+
+    public enum PedScenarioAudioSettingsFlags
+    {
+        IsStreaming,
+        AllowSharedOwnership
+    }
+
+    public enum RandomisedRadioEmitterSettingsFlags
+    {
+        USeOcclusionOnStaticEmitters,
+        UseOcclusionOnVehicleEmitters
+    }
+
+    public enum ReplayRadioStationTrackListFlags
+    {
+        Locked
     }
 
     [TC(typeof(EXP))] 
@@ -5306,6 +5920,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (EmitterHashes == null)
+            {
+                EmitterHashes = new MetaHash[0];
+                EmitterCount = 0;
+            }
+
             bw.Write(EmitterCount);
             for (int i = 0; i < EmitterCount; i++)
             {
@@ -5320,7 +5940,16 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             EmitterHashes = XmlRel.ReadHashItemArray(node, "Emitters");
-            EmitterCount = (uint)(EmitterHashes?.Length ?? 0);
+
+            if (EmitterHashes == null)
+            {
+                EmitterHashes = new MetaHash[0];
+                EmitterCount = 0;
+            }
+            else
+            {
+                EmitterCount = (uint)EmitterHashes.Length;
+            }
         }
         public override MetaHash[] GetGameHashes()
         {
@@ -5555,7 +6184,14 @@ namespace CodeWalker.GameFiles
             bw.Write(PedWallaSettings);
             bw.Write(RandomisedRadioSettings);
             bw.Write(NumRulesToPlay);
-            bw.Write(ZoneWaterCalculation); 
+            bw.Write(ZoneWaterCalculation);
+
+            if (Rules == null)
+            {
+                Rules = new MetaHash[0];
+                NumRules = 0;
+            }
+
             bw.Write(NumRules);
             bw.Write(Unused11);
 
@@ -5578,6 +6214,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<AmbientZoneFlags>");
+            foreach (AmbientZoneFlags flag in Enum.GetValues(typeof(AmbientZoneFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</AmbientZoneFlags>");
+
             RelXml.StringTag(sb, indent, "Shape", Shape.ToString());
             RelXml.SelfClosingTag(sb, indent, "ActivationZoneCentre " + FloatUtil.GetVector3XmlString(ActivationZoneCentre));
             RelXml.SelfClosingTag(sb, indent, "ActivationZoneSize " + FloatUtil.GetVector3XmlString(ActivationZoneSize));
@@ -5609,7 +6255,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("AmbientZoneFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out AmbientZoneFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Shape = Xml.GetEnumValue<Dat151ZoneShape>(Xml.GetChildInnerText(node, "Shape"));
             ActivationZoneCentre = Xml.GetChildVector3Attributes(node, "ActivationZoneCentre");
             ActivationZoneSize = Xml.GetChildVector3Attributes(node, "ActivationZoneSize");
@@ -5637,7 +6300,17 @@ namespace CodeWalker.GameFiles
             NumRulesToPlay = (byte)Xml.GetChildUIntAttribute(node, "NumRulesToPlay", "value");
             ZoneWaterCalculation = (byte)Xml.GetChildUIntAttribute(node, "ZoneWaterCalculation", "value");
             Rules = XmlRel.ReadHashItemArray(node, "Rules");
-            NumRules = (byte)(Rules?.Length ?? 0);
+
+            if (Rules == null)
+            {
+                Rules = new MetaHash[0];
+                NumRules = 0;
+            }
+            else
+            {
+                NumRules = (byte)Rules.Length;
+            }
+
             DirAmbiences = XmlRel.ReadItemArray<DirAmbience>(node, "DirAmbiences");
             NumDirAmbiences = (byte)(DirAmbiences?.Length ?? 0);
         }
@@ -5829,6 +6502,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<AmbientRuleFlags>");
+            foreach (AmbientRuleFlags flag in Enum.GetValues(typeof(AmbientRuleFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</AmbientRuleFlags>");
+
             RelXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
             RelXml.StringTag(sb, indent, "ChildSound", RelXml.HashString(ChildSound));
             RelXml.StringTag(sb, indent, "Category", RelXml.HashString(Category));
@@ -5852,7 +6535,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("AmbientRuleFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out AmbientRuleFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Position = Xml.GetChildVector3Attributes(node, "Position");
             ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
             Category = XmlRel.GetHash(Xml.GetChildInnerText(node, "Category"));
@@ -5909,6 +6609,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (ZoneHashes == null)
+            {
+                ZoneHashes = new MetaHash[0];
+                ZoneCount = 0;
+            }
+
             bw.Write(ZoneCount);
             for (int i = 0; i < ZoneCount; i++)
             {
@@ -5923,7 +6629,16 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             ZoneHashes = XmlRel.ReadHashItemArray(node, "Zones");
-            ZoneCount = (uint)(ZoneHashes?.Length ?? 0);
+
+            if (ZoneHashes == null)
+            {
+                ZoneHashes = new MetaHash[0];
+                ZoneCount = 0;
+            }
+            else
+            {
+                ZoneCount = (uint)ZoneHashes.Length;
+            }
         }
         public override MetaHash[] GetGameHashes()
         {
@@ -6033,6 +6748,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<StaticEmitterFlags>");
+            foreach (StaticEmitterFlags flag in Enum.GetValues(typeof(StaticEmitterFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</StaticEmitterFlags>");
+
             RelXml.StringTag(sb, indent, "ChildSound", RelXml.HashString(ChildSound));
             RelXml.StringTag(sb, indent, "RadioStation", RelXml.HashString(RadioStation));
             RelXml.SelfClosingTag(sb, indent, "Position " + FloatUtil.GetVector3XmlString(Position));
@@ -6061,7 +6786,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("StaticEmitterFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out StaticEmitterFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ChildSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ChildSound"));
             RadioStation = XmlRel.GetHash(Xml.GetChildInnerText(node, "RadioStation"));
             Position = Xml.GetChildVector3Attributes(node, "Position");
@@ -6129,6 +6871,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (Rooms == null)
+            {
+                Rooms = new MetaHash[0];
+                RoomsCount = 0;
+            }
+
             bw.Write(Flags);
             bw.Write(InteriorWallaSoundSet);
             bw.Write(InteriorReflections);
@@ -6141,17 +6889,53 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<InteriorSettingsFlags>");
+            foreach (InteriorSettingsFlags flag in Enum.GetValues(typeof(InteriorSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</InteriorSettingsFlags>");
+
             RelXml.StringTag(sb, indent, "InteriorWallaSoundSet", RelXml.HashString(InteriorWallaSoundSet));
             RelXml.StringTag(sb, indent, "InteriorReflections", RelXml.HashString(InteriorReflections));
             RelXml.WriteHashItemArray(sb, Rooms, indent, "Rooms");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("InteriorSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out InteriorSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             InteriorWallaSoundSet = XmlRel.GetHash(Xml.GetChildInnerText(node, "InteriorWallaSoundSet"));
             InteriorReflections = XmlRel.GetHash(Xml.GetChildInnerText(node, "InteriorReflections"));
             Rooms = XmlRel.ReadHashItemArray(node, "Rooms");
-            RoomsCount = (uint)(Rooms?.Length ?? 0);
+
+            if (Rooms == null)
+            {
+                Rooms = new MetaHash[0];
+                RoomsCount = 0;
+            }
+            else
+            {
+                RoomsCount = (uint)Rooms.Length;
+            }
         }
         public override uint[] GetHashTableOffsets()
         {
@@ -6259,6 +7043,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<InteriorRoomFlags>");
+            foreach (InteriorRoomFlags flag in Enum.GetValues(typeof(InteriorRoomFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</InteriorRoomFlags>");
+
             RelXml.StringTag(sb, indent, "RoomName", RelXml.HashString(RoomName));
             RelXml.StringTag(sb, indent, "AmbientZone", RelXml.HashString(AmbientZone));
             RelXml.ValueTag(sb, indent, "InteriorType", InteriorType.ToString());
@@ -6277,7 +7071,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("InteriorRoomFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out InteriorRoomFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             RoomName = XmlRel.GetHash(Xml.GetChildInnerText(node, "RoomName"));
             AmbientZone = XmlRel.GetHash(Xml.GetChildInnerText(node, "AmbientZone"));
             InteriorType = (byte)Xml.GetChildUIntAttribute(node, "InteriorType", "value");
@@ -6333,6 +7144,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (Stations == null)
+            {
+                Stations = new MetaHash[0];
+                StationsCount = 0;
+            }
+
             bw.Write(StationsCount);
             for (int i = 0; i < StationsCount; i++)
             {
@@ -6346,7 +7163,16 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Stations = XmlRel.ReadHashItemArray(node, "Stations");
-            StationsCount = (uint)(Stations?.Length ?? 0);
+
+            if (Stations == null)
+            {
+                Stations = new MetaHash[0];
+                StationsCount = 0;
+            }
+            else
+            {
+                StationsCount = (uint)Stations.Length;
+            }
         }
         public override uint[] GetHashTableOffsets()
         {
@@ -6373,7 +7199,6 @@ namespace CodeWalker.GameFiles
         public byte AmbientRadioVol { get; set; }
         public string RadioName { get; set; }
         public ushort padding00 { get; set; }
-
         public uint NumTrackList { get; set; }
         public MetaHash[] TrackList { get; set; }
 
@@ -6423,6 +7248,12 @@ namespace CodeWalker.GameFiles
 
             bw.Write(padding00);
 
+            if (TrackList == null)
+            {
+                TrackList = new MetaHash[0];
+                NumTrackList = 0;
+            }
+
             bw.Write(NumTrackList);
             for (int i = 0; i < NumTrackList; i++)
             {
@@ -6432,6 +7263,17 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<RadioStationSettingsFlags>");
+            foreach (RadioStationSettingsFlags flag in Enum.GetValues(typeof(RadioStationSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</RadioStationSettingsFlags>");
+
+            RelXml.ValueTag(sb, indent, "NextStationSettingsPtr", NextStationSettingsPtr.ToString());
             RelXml.ValueTag(sb, indent, "WheelPosition", WheelPosition.ToString());
             RelXml.ValueTag(sb, indent, "Genre", Genre.ToString());
             RelXml.ValueTag(sb, indent, "AmbientRadioVol", AmbientRadioVol.ToString());
@@ -6440,13 +7282,40 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("RadioStationSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out RadioStationSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
+            NextStationSettingsPtr = Xml.GetChildUIntAttribute(node, "NextStationSettingsPtr", "value");
             WheelPosition = Xml.GetChildUIntAttribute(node, "WheelPosition", "value");
             Genre = (byte)Xml.GetChildUIntAttribute(node, "Genre", "value");
             AmbientRadioVol = (byte)Xml.GetChildUIntAttribute(node, "AmbientRadioVol", "value");
             RadioName = Xml.GetChildInnerText(node, "RadioName");
             TrackList = XmlRel.ReadHashItemArray(node, "TrackList");
-            NumTrackList = (uint)(TrackList?.Length ?? 0);
+
+            if (TrackList == null)
+            {
+                TrackList = new MetaHash[0];
+                NumTrackList = 0;
+            }
+            else
+            {
+                NumTrackList = (uint)TrackList.Length;
+            }
         }
         public override uint[] GetHashTableOffsets()
         {
@@ -6554,13 +7423,40 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<RadioStationTrackListFlags>");
+            foreach (RadioStationTrackListFlags flag in Enum.GetValues(typeof(RadioStationTrackListFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</RadioStationTrackListFlags>");
+
             RelXml.ValueTag(sb, indent, "Category", Category.ToString());
             RelXml.ValueTag(sb, indent, "NumHistorySpaceElems", NumHistorySpaceElems.ToString());
             RelXml.WriteItemArray(sb, Tracks, indent, "Tracks");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("RadioStationTrackListFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out RadioStationTrackListFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Category = (byte)Xml.GetChildUIntAttribute(node, "Category", "value");
             NumHistorySpaceElems = (byte)Xml.GetChildUIntAttribute(node, "NumHistorySpaceElems", "value");
             Tracks = XmlRel.ReadItemArray<Dat151HashPair>(node, "Tracks");
@@ -6617,11 +7513,38 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ReplayRadioStationTrackListFlags>");
+            foreach (ReplayRadioStationTrackListFlags flag in Enum.GetValues(typeof(ReplayRadioStationTrackListFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ReplayRadioStationTrackListFlags>");
+
             RelXml.WriteItemArray(sb, Tracks, indent, "Tracks");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ReplayRadioStationTrackListFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ReplayRadioStationTrackListFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Tracks = XmlRel.ReadItemArray<Dat151HashPair>(node, "Tracks");
             TrackCount = (uint)(Tracks?.Length ?? 0);
         }
@@ -6839,6 +7762,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<StartTrackActionFlags>");
+            foreach (StartTrackActionFlags flag in Enum.GetValues(typeof(StartTrackActionFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</StartTrackActionFlags>");
+
             RelXml.ValueTag(sb, indent, "Constrain", Constrain.ToString());
             RelXml.ValueTag(sb, indent, "numTimingConstraints", numTimingConstraints.ToString());
             RelXml.StringTag(sb, indent, "TimingConstraint1", RelXml.HashString(TimingConstraint1));
@@ -6855,7 +7788,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("StartTrackActionFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out StartTrackActionFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Constrain = (byte)Xml.GetChildIntAttribute(node, "Constrain", "value");
             numTimingConstraints = Xml.GetChildIntAttribute(node, "numTimingConstraints", "value");
             TimingConstraint1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "TimingConstraint1"));
@@ -6979,6 +7929,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<StopTrackActionFlags>");
+            foreach (StopTrackActionFlags flag in Enum.GetValues(typeof(StopTrackActionFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</StopTrackActionFlags>");
+
             RelXml.ValueTag(sb, indent, "Constrain", Constrain.ToString());
             RelXml.ValueTag(sb, indent, "numTimingConstraints", numTimingConstraints.ToString());
             RelXml.StringTag(sb, indent, "TimingConstraint1", RelXml.HashString(TimingConstraint1));
@@ -6988,7 +7948,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("StopTrackActionFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out StopTrackActionFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Constrain = (byte)Xml.GetChildIntAttribute(node, "Constrain", "value");
             numTimingConstraints = Xml.GetChildIntAttribute(node, "numTimingConstraints", "value");
             TimingConstraint1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "TimingConstraint1"));
@@ -7280,6 +8257,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (Actions == null)
+            {
+                Actions = new MetaHash[0];
+                ActionsCount = 0;
+            }
+
             bw.Write(ActionsCount);
             for (int i = 0; i < ActionsCount; i++)
             {
@@ -7294,7 +8277,16 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Actions = XmlRel.ReadHashItemArray(node, "Actions");
-            ActionsCount = (uint)(Actions?.Length ?? 0);
+
+            if (Actions == null)
+            {
+                Actions = new MetaHash[0];
+                ActionsCount = 0;
+            }
+            else
+            {
+                ActionsCount = (uint)Actions.Length;
+            }
         }
         public override uint[] GetHashTableOffsets()
         {
@@ -7378,6 +8370,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<StartOneShotActionFlags>");
+            foreach (StartOneShotActionFlags flag in Enum.GetValues(typeof(StartOneShotActionFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</StartOneShotActionFlags>");
+
             RelXml.ValueTag(sb, indent, "Constrain", Constrain.ToString());
             RelXml.ValueTag(sb, indent, "numTimingConstraints", numTimingConstraints.ToString());
             RelXml.StringTag(sb, indent, "TimingConstraint1", RelXml.HashString(TimingConstraint1));
@@ -7391,7 +8393,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("StartOneShotActionFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out StartOneShotActionFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Constrain = (byte)Xml.GetChildIntAttribute(node, "Constrain", "value");
             numTimingConstraints = Xml.GetChildIntAttribute(node, "numTimingConstraints", "value");
             TimingConstraint1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "TimingConstraint1"));
@@ -7753,6 +8772,12 @@ namespace CodeWalker.GameFiles
                     Materials[i].Write(bw);
                 }
 
+                if (FragComponentSettings == null)
+                {
+                    FragComponentSettings = new MetaHash[0];
+                    FragComponentSettingsCount = 0;
+                }
+
                 bw.Write(FragComponentSettingsCount);
                 for (int i = 0; i < FragComponentSettingsCount; i++)
                 {
@@ -7764,6 +8789,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ModelAudioCollisionSettingsFlags>");
+            foreach (ModelAudioCollisionSettingsFlags flag in Enum.GetValues(typeof(ModelAudioCollisionSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ModelAudioCollisionSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "LastFragTime", LastFragTime.ToString());
             RelXml.ValueTag(sb, indent, "MediumIntensity", MediumIntensity.ToString());
             RelXml.ValueTag(sb, indent, "HighIntensity", HighIntensity.ToString());
@@ -7791,7 +8826,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ModelAudioCollisionSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ModelAudioCollisionSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             LastFragTime = Xml.GetChildUIntAttribute(node, "LastFragTime", "value");
             MediumIntensity = Xml.GetChildUIntAttribute(node, "MediumIntensity", "value");
             HighIntensity = Xml.GetChildUIntAttribute(node, "HighIntensity", "value");
@@ -7811,7 +8863,16 @@ namespace CodeWalker.GameFiles
             Materials = XmlRel.ReadItemArray<Dat151ModelAudioCollisionSettingsMaterialItem>(node, "Materials");
             MaterialsCount = (byte)(Materials?.Length ?? 0);
             FragComponentSettings = XmlRel.ReadHashItemArray(node, "FragComponentSettings");
-            FragComponentSettingsCount = (uint)(FragComponentSettings?.Length ?? 0);
+
+            if (FragComponentSettings == null)
+            {
+                FragComponentSettings = new MetaHash[0];
+                FragComponentSettingsCount = 0;
+            }
+            else
+            {
+                FragComponentSettingsCount = (uint)FragComponentSettings.Length;
+            }
         }
         public override uint[] GetHashTableOffsets()
         {
@@ -8265,6 +9326,17 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<CollisionMaterialSettingsFlags>");
+            foreach (CollisionMaterialSettingsFlags flag in Enum.GetValues(typeof(CollisionMaterialSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</CollisionMaterialSettingsFlags>");
+
+
             RelXml.StringTag(sb, indent, "HardImpact", RelXml.HashString(HardImpact));
             RelXml.StringTag(sb, indent, "SolidImpact", RelXml.HashString(SolidImpact));
             RelXml.StringTag(sb, indent, "SoftImpact", RelXml.HashString(SoftImpact));
@@ -8364,7 +9436,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("CollisionMaterialSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out CollisionMaterialSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             HardImpact = XmlRel.GetHash(Xml.GetChildInnerText(node, "HardImpact"));
             SolidImpact = XmlRel.GetHash(Xml.GetChildInnerText(node, "SolidImpact"));
             SoftImpact = XmlRel.GetHash(Xml.GetChildInnerText(node, "SoftImpact"));
@@ -9041,6 +10130,13 @@ namespace CodeWalker.GameFiles
             bw.Write(DelayTime);
             bw.Write(Station);
             bw.Write(NextIndex);
+
+            if (TrackList == null)
+            {
+                TrackList = new MetaHash[0];
+                NumTrackLists = 0;
+            }
+
             bw.Write(NumTrackLists);
             bw.Write(padding02);
             bw.Write(padding03);
@@ -9052,6 +10148,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ForceRadioTrackActionFlags>");
+            foreach (ForceRadioTrackActionFlags flag in Enum.GetValues(typeof(ForceRadioTrackActionFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ForceRadioTrackActionFlags>");
+
             RelXml.ValueTag(sb, indent, "Constrain", Constrain.ToString());
             RelXml.ValueTag(sb, indent, "numTimingConstraints", numTimingConstraints.ToString());
             RelXml.StringTag(sb, indent, "TimingConstraint1", RelXml.HashString(TimingConstraint1));
@@ -9063,7 +10169,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ForceRadioTrackActionFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ForceRadioTrackActionFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Constrain = (byte)Xml.GetChildIntAttribute(node, "Constrain", "value");
             numTimingConstraints = Xml.GetChildIntAttribute(node, "numTimingConstraints", "value");
             TimingConstraint1 = XmlRel.GetHash(Xml.GetChildInnerText(node, "TimingConstraint1"));
@@ -9072,7 +10195,16 @@ namespace CodeWalker.GameFiles
             Station = XmlRel.GetHash(Xml.GetChildInnerText(node, "Station"));
             NextIndex = Xml.GetChildIntAttribute(node, "NextIndex", "value");
             TrackList = XmlRel.ReadHashItemArray(node, "TrackList");
-            NumTrackLists = (byte)(TrackList?.Length ?? 0);
+
+            if (TrackList == null)
+            {
+                TrackList = new MetaHash[0];
+                NumTrackLists = 0;
+            }
+            else
+            {
+                NumTrackLists = (byte)TrackList.Length;
+            }
         }
         public override uint[] GetHashTableOffsets()
         {
@@ -9836,6 +10968,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ShoreLinePoolAudioSettingsFlags>");
+            foreach (ShoreLinePoolAudioSettingsFlags flag in Enum.GetValues(typeof(ShoreLinePoolAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ShoreLinePoolAudioSettingsFlags>");
+
             RelXml.SelfClosingTag(sb, indent, "ActivationBox " + FloatUtil.GetVector4XmlString(ActivationBox));
             RelXml.ValueTag(sb, indent, "RotationAngle", FloatUtil.ToString(RotationAngle));
             RelXml.ValueTag(sb, indent, "WaterLappingMinDelay", WaterLappingMinDelay.ToString());
@@ -9851,7 +10993,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ShoreLinePoolAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ShoreLinePoolAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ActivationBox = Xml.GetChildVector4Attributes(node, "ActivationBox");
             RotationAngle = Xml.GetChildFloatAttribute(node, "RotationAngle", "value");
             WaterLappingMinDelay = Xml.GetChildIntAttribute(node, "WaterLappingMinDelay", "value");
@@ -9926,6 +11085,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ShoreLineLakeAudioSettingsFlags>");
+            foreach (ShoreLineLakeAudioSettingsFlags flag in Enum.GetValues(typeof(ShoreLineLakeAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ShoreLineLakeAudioSettingsFlags>");
+
             RelXml.SelfClosingTag(sb, indent, "ActivationBox " + FloatUtil.GetVector4XmlString(ActivationBox));
             RelXml.ValueTag(sb, indent, "RotationAngle", FloatUtil.ToString(RotationAngle));
             RelXml.StringTag(sb, indent, "NextShoreline", RelXml.HashString(NextShoreline));
@@ -9934,7 +11103,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ShoreLineLakeAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ShoreLineLakeAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ActivationBox = Xml.GetChildVector4Attributes(node, "ActivationBox");
             RotationAngle = Xml.GetChildFloatAttribute(node, "RotationAngle", "value");
             NextShoreline = XmlRel.GetHash(Xml.GetChildInnerText(node, "NextShoreline"));
@@ -10009,6 +11195,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ShoreLineRiverAudioSettingsFlags>");
+            foreach (ShoreLineRiverAudioSettingsFlags flag in Enum.GetValues(typeof(ShoreLineRiverAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ShoreLineRiverAudioSettingsFlags>");
+
             RelXml.SelfClosingTag(sb, indent, "ActivationBox " + FloatUtil.GetVector4XmlString(ActivationBox));
             RelXml.ValueTag(sb, indent, "RotationAngle", FloatUtil.ToString(RotationAngle));
             RelXml.StringTag(sb, indent, "NextShoreline", RelXml.HashString(NextShoreline));
@@ -10018,7 +11214,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ShoreLineRiverAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ShoreLineRiverAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ActivationBox = Xml.GetChildVector4Attributes(node, "ActivationBox");
             RotationAngle = Xml.GetChildFloatAttribute(node, "RotationAngle", "value");
             NextShoreline = XmlRel.GetHash(Xml.GetChildInnerText(node, "NextShoreline"));
@@ -10035,7 +11248,9 @@ namespace CodeWalker.GameFiles
         public FlagsUint Flags { get; set; }
         public Vector4 ActivationBox { get; set; }
         public float RotationAngle { get; set; }
-        public uint OceanType { get; set; }
+        public byte OceanType { get; set; }
+        public byte OceanDirection { get; set; }
+        public ushort padding00 { get; set; }
         public MetaHash NextShoreline { get; set; }
         public float WaveStartDPDistance { get; set; }
         public float WaveStartHeight { get; set; }
@@ -10057,7 +11272,9 @@ namespace CodeWalker.GameFiles
             Flags = br.ReadUInt32();
             ActivationBox = new Vector4(br.ReadSingle(), br.ReadSingle(), br.ReadSingle(), br.ReadSingle());
             RotationAngle = br.ReadSingle();
-            OceanType = br.ReadUInt32();
+            OceanType = br.ReadByte();
+            OceanDirection = br.ReadByte();
+            padding00 = br.ReadUInt16();
             NextShoreline = br.ReadUInt32();
             WaveStartDPDistance = br.ReadSingle();
             WaveStartHeight = br.ReadSingle();
@@ -10087,6 +11304,8 @@ namespace CodeWalker.GameFiles
             bw.Write(ActivationBox.W);
             bw.Write(RotationAngle);
             bw.Write(OceanType);
+            bw.Write(OceanDirection);
+            bw.Write(padding00);
             bw.Write(NextShoreline);
             bw.Write(WaveStartDPDistance);
             bw.Write(WaveStartHeight);
@@ -10107,9 +11326,20 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ShoreLineOceanAudioSettingsFlags>");
+            foreach (ShoreLineOceanAudioSettingsFlags flag in Enum.GetValues(typeof(ShoreLineOceanAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ShoreLineOceanAudioSettingsFlags>");
+
             RelXml.SelfClosingTag(sb, indent, "ActivationBox " + FloatUtil.GetVector4XmlString(ActivationBox));
             RelXml.ValueTag(sb, indent, "RotationAngle", FloatUtil.ToString(RotationAngle));
             RelXml.ValueTag(sb, indent, "OceanType", OceanType.ToString());
+            RelXml.ValueTag(sb, indent, "OceanDirection", OceanDirection.ToString());
             RelXml.StringTag(sb, indent, "NextShoreline", RelXml.HashString(NextShoreline));
             RelXml.ValueTag(sb, indent, "WaveStartDPDistance", FloatUtil.ToString(WaveStartDPDistance));
             RelXml.ValueTag(sb, indent, "WaveStartHeight", FloatUtil.ToString(WaveStartHeight));
@@ -10122,10 +11352,28 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ShoreLineOceanAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ShoreLineOceanAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ActivationBox = Xml.GetChildVector4Attributes(node, "ActivationBox");
             RotationAngle = Xml.GetChildFloatAttribute(node, "RotationAngle", "value");
-            OceanType = Xml.GetChildUIntAttribute(node, "OceanType", "value");
+            OceanType = (byte)Xml.GetChildUIntAttribute(node, "OceanType", "value");
+            OceanDirection = (byte)Xml.GetChildUIntAttribute(node, "OceanDirection", "value");
             NextShoreline = XmlRel.GetHash(Xml.GetChildInnerText(node, "NextShoreline"));
             WaveStartDPDistance = Xml.GetChildFloatAttribute(node, "WaveStartDPDistance", "value");
             WaveStartHeight = Xml.GetChildFloatAttribute(node, "WaveStartHeight", "value");
@@ -10164,6 +11412,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (ShoreLines == null)
+            {
+                ShoreLines = new MetaHash[0];
+                ShoreLineCount = 0;
+            }
+
             bw.Write(ShoreLineCount);
             for (int i = 0; i < ShoreLineCount; i++)
             {
@@ -10177,7 +11431,16 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             ShoreLines = XmlRel.ReadHashItemArray(node, "ShoreLines");
-            ShoreLineCount = (uint)(ShoreLines?.Length ?? 0);
+
+            if (ShoreLines == null)
+            {
+                ShoreLines = new MetaHash[0];
+                ShoreLineCount = 0;
+            }
+            else
+            {
+                ShoreLineCount = (uint)ShoreLines.Length;
+            }
         }
         public override MetaHash[] GetGameHashes()
         {
@@ -10472,6 +11735,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<GranularEngineAudioSettingsFlags>");
+            foreach (GranularEngineAudioSettingsFlags flag in Enum.GetValues(typeof(GranularEngineAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</GranularEngineAudioSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "MasterVolume", MasterVolume.ToString());
             RelXml.StringTag(sb, indent, "EngineAccel", RelXml.HashString(EngineAccel));
             RelXml.StringTag(sb, indent, "ExhaustAccel", RelXml.HashString(ExhaustAccel));
@@ -10534,7 +11807,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("GranularEngineAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out GranularEngineAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             MasterVolume = Xml.GetChildIntAttribute(node, "MasterVolume", "value");
             EngineAccel = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineAccel"));
             ExhaustAccel = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustAccel"));
@@ -10887,9 +12177,20 @@ namespace CodeWalker.GameFiles
             }
 
         }
+
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<CarAudioSettingsFlags>");
+            foreach (CarAudioSettingsFlags flag in Enum.GetValues(typeof(CarAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</CarAudioSettingsFlags>");
+
             RelXml.StringTag(sb, indent, "Engine", RelXml.HashString(Engine));
             RelXml.StringTag(sb, indent, "GranularEngine", RelXml.HashString(GranularEngine));
             RelXml.StringTag(sb, indent, "HornSounds", RelXml.HashString(HornSounds));
@@ -10973,7 +12274,25 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("CarAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out CarAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Engine = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine"));
             GranularEngine = XmlRel.GetHash(Xml.GetChildInnerText(node, "GranularEngine"));
             HornSounds = XmlRel.GetHash(Xml.GetChildInnerText(node, "HornSounds"));
@@ -11466,11 +12785,38 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ScannerVehicleParamsFlags>");
+            foreach (ScannerVehicleParamsFlags flag in Enum.GetValues(typeof(ScannerVehicleParamsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ScannerVehicleParamsFlags>");
+
             RelXml.WriteItemArray(sb, Params, indent, "Params");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ScannerVehicleParamsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ScannerVehicleParamsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Params = XmlRel.ReadItemArray<Param>(node, "Params");
             ParamCount = (Params?.Length ?? 0);
         }
@@ -11746,6 +13092,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<WeaponSettingsFlags>");
+            foreach (WeaponSettingsFlags flag in Enum.GetValues(typeof(WeaponSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</WeaponSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "Version", Version.ToString());
             RelXml.StringTag(sb, indent, "FireSound", RelXml.HashString(FireSound));
             RelXml.StringTag(sb, indent, "SuppressedFireSound", RelXml.HashString(SuppressedFireSound));
@@ -11829,7 +13185,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("WeaponSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out WeaponSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Version = Xml.GetChildIntAttribute(node, "Version", "value");
             FireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "FireSound"));
             SuppressedFireSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "SuppressedFireSound"));
@@ -11975,6 +13348,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ExplosionAudioSettingsFlags>");
+            foreach (ExplosionAudioSettingsFlags flag in Enum.GetValues(typeof(ExplosionAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ExplosionAudioSettingsFlags>");
+
             RelXml.StringTag(sb, indent, "ExplosionSound", RelXml.HashString(ExplosionSound));
             RelXml.StringTag(sb, indent, "DebrisSound", RelXml.HashString(DebrisSound));
             RelXml.ValueTag(sb, indent, "DeafeningVolume", FloatUtil.ToString(DeafeningVolume));
@@ -11989,7 +13372,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ExplosionAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ExplosionAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ExplosionSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExplosionSound"));
             DebrisSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "DebrisSound"));
             DeafeningVolume = Xml.GetChildFloatAttribute(node, "DeafeningVolume", "value");
@@ -12149,6 +13549,13 @@ namespace CodeWalker.GameFiles
             {
                 GangVoices[i].Write(bw);
             }
+
+            if (BackupPVGs == null)
+            {
+                BackupPVGs = new MetaHash[0];
+                BackupPVGCount = 0;
+            }
+
             bw.Write(BackupPVGCount);
             if (Version >= 1)
             {
@@ -12182,7 +13589,17 @@ namespace CodeWalker.GameFiles
             GangVoices = XmlRel.ReadItemArray<Dat151PedVoiceGroupsItem>(node, "GangVoices");
             GangVoicesCount = (byte)(GangVoices?.Length ?? 0);
             BackupPVGs = XmlRel.ReadHashItemArray(node, "BackupPVGs");
-            BackupPVGCount = (byte)(BackupPVGs?.Length ?? 0);
+
+            if (BackupPVGs == null)
+            {
+                BackupPVGs = new MetaHash[0];
+                BackupPVGCount = 0;
+            }
+            else
+            {
+                BackupPVGCount = (byte)BackupPVGs.Length;
+            }
+
             Version = (BackupPVGCount == 0) ? 0 : 1;
         }
         public override MetaHash[] GetSpeechHashes()
@@ -12282,6 +13699,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<EntityEmitterFlags>");
+            foreach (EntityEmitterFlags flag in Enum.GetValues(typeof(EntityEmitterFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</EntityEmitterFlags>");
+
             RelXml.StringTag(sb, indent, "Sound", RelXml.HashString(Sound));
             RelXml.ValueTag(sb, indent, "MaxDistance", FloatUtil.ToString(MaxDistance));
             RelXml.ValueTag(sb, indent, "BusinessHoursProb", FloatUtil.ToString(BusinessHoursProb));
@@ -12296,7 +13723,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("EntityEmitterFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out EntityEmitterFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Sound = XmlRel.GetHash(Xml.GetChildInnerText(node, "Sound"));
             MaxDistance = Xml.GetChildFloatAttribute(node, "MaxDistance", "value");
             BusinessHoursProb = Xml.GetChildFloatAttribute(node, "BusinessHoursProb", "value");
@@ -12538,6 +13982,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<BoatAudioSettingsFlags>");
+            foreach (BoatAudioSettingsFlags flag in Enum.GetValues(typeof(BoatAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</BoatAudioSettingsFlags>");
+
             RelXml.StringTag(sb, indent, "Engine1Loop", RelXml.HashString(Engine1Loop));
             RelXml.StringTag(sb, indent, "Engine1Vol", RelXml.HashString(Engine1Vol));
             RelXml.StringTag(sb, indent, "Engine1Pitch", RelXml.HashString(Engine1Pitch));
@@ -12607,7 +14061,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("BoatAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out BoatAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Engine1Loop = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine1Loop"));
             Engine1Vol = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine1Vol"));
             Engine1Pitch = XmlRel.GetHash(Xml.GetChildInnerText(node, "Engine1Pitch"));
@@ -13147,6 +14618,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<PlaneAudioSettingsFlags>");
+            foreach (PlaneAudioSettingsFlags flag in Enum.GetValues(typeof(PlaneAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</PlaneAudioSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "Version", Version.ToString());
             RelXml.StringTag(sb, indent, "EngineLoop", RelXml.HashString(EngineLoop));
             RelXml.StringTag(sb, indent, "ExhaustLoop", RelXml.HashString(ExhaustLoop));
@@ -13251,7 +14732,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("PlaneAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out PlaneAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Version = Xml.GetChildIntAttribute(node, "Version", "value");
             EngineLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "EngineLoop"));
             ExhaustLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "ExhaustLoop"));
@@ -13700,6 +15198,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<HeliAudioSettingsFlags>");
+            foreach (HeliAudioSettingsFlags flag in Enum.GetValues(typeof(HeliAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</HeliAudioSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "Version", Version.ToString());
             RelXml.StringTag(sb, indent, "RotorLoop", RelXml.HashString(RotorLoop));
             RelXml.StringTag(sb, indent, "RearRotorLoop", RelXml.HashString(RearRotorLoop));
@@ -13801,7 +15309,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("HeliAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out HeliAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Version = Xml.GetChildIntAttribute(node, "Version", "value");
             RotorLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "RotorLoop"));
             RearRotorLoop = XmlRel.GetHash(Xml.GetChildInnerText(node, "RearRotorLoop"));
@@ -14524,6 +16049,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<SpeechParamsFlags>");
+            foreach (SpeechParamsFlags flag in Enum.GetValues(typeof(SpeechParamsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</SpeechParamsFlags>");
+
             RelXml.ValueTag(sb, indent, "OverrideContextSettings", OverrideContextSettings.ToString());
             RelXml.ValueTag(sb, indent, "PreloadTimeoutInMs", PreloadTimeoutInMs.ToString());
             RelXml.ValueTag(sb, indent, "RequestedVolume", RequestedVolume.ToString());
@@ -14533,7 +16068,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("SpeechParamsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out SpeechParamsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             OverrideContextSettings = Xml.GetChildIntAttribute(node, "OverrideContextSettings", "value");
             PreloadTimeoutInMs = Xml.GetChildUIntAttribute(node, "PreloadTimeoutInMs", "value");
             RequestedVolume = (byte)Xml.GetChildUIntAttribute(node, "RequestedVolume", "value");
@@ -14888,6 +16440,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<SpeechContextFlags>");
+            foreach (SpeechContextFlags flag in Enum.GetValues(typeof(SpeechContextFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</SpeechContextFlags>");
+
             RelXml.StringTag(sb, indent, "ContextName", RelXml.HashString(ContextName));
             RelXml.ValueTag(sb, indent, "RepeatTime", RepeatTime.ToString());
             RelXml.ValueTag(sb, indent, "RepeatTimeOnSameVoice", RepeatTimeOnSameVoice.ToString());
@@ -14907,7 +16469,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("SpeechContextFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out SpeechContextFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ContextName = XmlRel.GetHash(Xml.GetChildInnerText(node, "ContextName"));
             RepeatTime = Xml.GetChildIntAttribute(node, "RepeatTime", "value");
             RepeatTimeOnSameVoice = Xml.GetChildIntAttribute(node, "RepeatTimeOnSameVoice", "value");
@@ -15011,6 +16590,12 @@ namespace CodeWalker.GameFiles
 
             bw.Write(ResolvingFunction);
 
+            if (Items == null)
+            {
+                Items = new MetaHash[0];
+                ItemCount = 0;
+            }
+
             bw.Write(ItemCount);
             for (int i = 0; i < ItemCount; i++)
             {
@@ -15020,6 +16605,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<SpeechContextVirtualFlags>");
+            foreach (SpeechContextVirtualFlags flag in Enum.GetValues(typeof(SpeechContextVirtualFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</SpeechContextVirtualFlags>");
+
             RelXml.StringTag(sb, indent, "ContextNameHash", RelXml.HashString(ContextNameHash));
             RelXml.ValueTag(sb, indent, "RepeatTime", RepeatTime.ToString());
             RelXml.ValueTag(sb, indent, "RepeatTimeOnSameVoice", RepeatTimeOnSameVoice.ToString());
@@ -15043,7 +16638,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("SpeechContextVirtualFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out SpeechContextVirtualFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ContextNameHash = XmlRel.GetHash(Xml.GetChildInnerText(node, "ContextNameHash"));
             RepeatTime = Xml.GetChildIntAttribute(node, "RepeatTime", "value");
             RepeatTimeOnSameVoice = Xml.GetChildIntAttribute(node, "RepeatTimeOnSameVoice", "value");
@@ -15064,7 +16676,16 @@ namespace CodeWalker.GameFiles
 
             ResolvingFunction = (byte)Xml.GetChildUIntAttribute(node, "ResolvingFunction", "value");
             Items = XmlRel.ReadHashItemArray(node, "Items");
-            ItemCount = (byte)(Items?.Length ?? 0);
+
+            if (Items == null)
+            {
+                Items = new MetaHash[0];
+                ItemCount = 0;
+            }
+            else
+            {
+                ItemCount = (byte)Items.Length;
+            }
         }
 
         public override MetaHash[] GetSoundHashes()
@@ -15102,6 +16723,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (TriggeredSpeechContexts == null)
+            {
+                TriggeredSpeechContexts = new MetaHash[0];
+                TriggeredSpeechContextsCount = 0;
+            }
+
             bw.Write(TriggeredSpeechContextsCount);
             for (int i = 0; i < TriggeredSpeechContextsCount; i++)
             {
@@ -15115,7 +16742,16 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             TriggeredSpeechContexts = XmlRel.ReadHashItemArray(node, "TriggeredSpeechContexts");
-            TriggeredSpeechContextsCount = (TriggeredSpeechContexts?.Length ?? 0);
+
+            if (TriggeredSpeechContexts == null)
+            {
+                TriggeredSpeechContexts = new MetaHash[0];
+                TriggeredSpeechContextsCount = 0;
+            }
+            else
+            {
+                TriggeredSpeechContextsCount = TriggeredSpeechContexts.Length;
+            }
         }
         public override MetaHash[] GetGameHashes()
         {
@@ -15726,6 +17362,12 @@ namespace CodeWalker.GameFiles
             bw.Write(Italian);
             bw.Write(Pakistani);
 
+            if (FriendGroups == null)
+            {
+                FriendGroups = new MetaHash[0];
+                FriendGroupsCount = 0;
+            }
+
             bw.Write(FriendGroupsCount);
             for (int i = 0; i < FriendGroupsCount; i++)
             {
@@ -15763,7 +17405,16 @@ namespace CodeWalker.GameFiles
             Italian = XmlRel.GetHash(Xml.GetChildInnerText(node, "Italian"));
             Pakistani = XmlRel.GetHash(Xml.GetChildInnerText(node, "Pakistani"));
             FriendGroups = XmlRel.ReadHashItemArray(node, "FriendGroups");
-            FriendGroupsCount = (FriendGroups?.Length ?? 0);
+
+            if (FriendGroups == null)
+            {
+                FriendGroups = new MetaHash[0];
+                FriendGroupsCount = 0;
+            }
+            else
+            {
+                FriendGroupsCount = FriendGroups.Length;
+            }
         }
         public override MetaHash[] GetGameHashes()
         {
@@ -15840,11 +17491,38 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ScriptedScannerLineFlags>");
+            foreach (ScriptedScannerLineFlags flag in Enum.GetValues(typeof(ScriptedScannerLineFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ScriptedScannerLineFlags>");
+
             RelXml.WriteItemArray(sb, Phrase, indent, "Phrase");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ScriptedScannerLineFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ScriptedScannerLineFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             Phrase = XmlRel.ReadItemArray<Dat151ScriptedScannerLineItem>(node, "Phrase");
             PhrasesCount = (Phrase?.Length ?? 0);
         }
@@ -15991,6 +17669,12 @@ namespace CodeWalker.GameFiles
             bw.Write(Radius);
             bw.Write(ProbOfPlaying);
 
+            if (Sound == null)
+            {
+                Sound = new MetaHash[0];
+                NumSounds = 0;
+            }
+
             bw.Write(NumSounds);
             for (int i = 0; i < NumSounds; i++)
             {
@@ -16018,7 +17702,16 @@ namespace CodeWalker.GameFiles
             ProbOfPlaying = Xml.GetChildFloatAttribute(node, "ProbOfPlaying", "value");
 
             Sound = XmlRel.ReadHashItemArray(node, "Sound");
-            NumSounds = (Sound?.Length ?? 0);
+
+            if (Sound == null)
+            {
+                Sound = new MetaHash[0];
+                NumSounds = 0;
+            }
+            else
+            {
+                NumSounds = Sound.Length;
+            }
         }
         public override MetaHash[] GetSoundHashes()
         {
@@ -16050,6 +17743,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (Locations == null)
+            {
+                Locations = new MetaHash[0];
+                LocationsCount = 0;
+            }
+
             bw.Write(LocationsCount);
             for (int i = 0; i < LocationsCount; i++)
             {
@@ -16063,7 +17762,16 @@ namespace CodeWalker.GameFiles
         public override void ReadXml(XmlNode node)
         {
             Locations = XmlRel.ReadHashItemArray(node, "Locations");
-            LocationsCount = (Locations?.Length ?? 0);
+
+            if (Locations == null)
+            {
+                Locations = new MetaHash[0];
+                LocationsCount = 0;
+            }
+            else
+            {
+                LocationsCount = Locations.Length;
+            }
         }
         public override MetaHash[] GetGameHashes()
         {
@@ -16277,6 +17985,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<EnvironmentRuleFlags>");
+            foreach (EnvironmentRuleFlags flag in Enum.GetValues(typeof(EnvironmentRuleFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</EnvironmentRuleFlags>");
+
             RelXml.ValueTag(sb, indent, "ReverbSmall", FloatUtil.ToString(ReverbSmall));
             RelXml.ValueTag(sb, indent, "ReverbMedium", FloatUtil.ToString(ReverbMedium));
             RelXml.ValueTag(sb, indent, "ReverbLarge", FloatUtil.ToString(ReverbLarge));
@@ -16290,7 +18008,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("EnvironmentRuleFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out EnvironmentRuleFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ReverbSmall = Xml.GetChildFloatAttribute(node, "ReverbSmall", "value");
             ReverbMedium = Xml.GetChildFloatAttribute(node, "ReverbMedium", "value");
             ReverbLarge = Xml.GetChildFloatAttribute(node, "ReverbLarge", "value");
@@ -16401,6 +18136,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<DoorTuningParamsFlags>");
+            foreach (DoorTuningParamsFlags flag in Enum.GetValues(typeof(DoorTuningParamsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</DoorTuningParamsFlags>");
+
             RelXml.ValueTag(sb, indent, "OpenThresh", FloatUtil.ToString(OpenThresh));
             RelXml.ValueTag(sb, indent, "HeadingThresh", FloatUtil.ToString(HeadingThresh));
             RelXml.ValueTag(sb, indent, "ClosedThresh", FloatUtil.ToString(ClosedThresh));
@@ -16412,7 +18157,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("DoorTuningParamsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out DoorTuningParamsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             OpenThresh = Xml.GetChildFloatAttribute(node, "OpenThresh", "value");
             HeadingThresh = Xml.GetChildFloatAttribute(node, "HeadingThresh", "value");
             ClosedThresh = Xml.GetChildFloatAttribute(node, "ClosedThresh", "value");
@@ -16528,6 +18290,12 @@ namespace CodeWalker.GameFiles
             bw.Write(AudioScene);
             bw.Write(WindGustEnd);
 
+            if (WindSounds == null)
+            {
+                WindSounds = new MetaHash[0];
+                WindSoundsCount = 0;
+            }
+
             bw.Write(WindSoundsCount);
             for (int i = 0; i < WindSoundsCount; i++)
             {
@@ -16557,7 +18325,16 @@ namespace CodeWalker.GameFiles
             AudioScene = XmlRel.GetHash(Xml.GetChildInnerText(node, "AudioScene"));
             WindGustEnd = XmlRel.GetHash(Xml.GetChildInnerText(node, "WindGustEnd"));
             WindSounds = XmlRel.ReadHashItemArray(node, "WindSounds");
-            WindSoundsCount = (WindSounds?.Length ?? 0);
+
+            if (WindSounds == null)
+            {
+                WindSounds = new MetaHash[0];
+                WindSoundsCount = 0;
+            }
+            else
+            {
+                WindSoundsCount = WindSounds.Length;
+            }
         }
         public override MetaHash[] GetMixerHashes()
         {
@@ -16783,6 +18560,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<DirectionalAmbienceFlags>");
+            foreach (DirectionalAmbienceFlags flag in Enum.GetValues(typeof(DirectionalAmbienceFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</DirectionalAmbienceFlags>");
+
             RelXml.StringTag(sb, indent, "SoundNorth", RelXml.HashString(SoundNorth));
             RelXml.StringTag(sb, indent, "SoundEast", RelXml.HashString(SoundEast));
             RelXml.StringTag(sb, indent, "SoundSouth", RelXml.HashString(SoundSouth));
@@ -16804,7 +18591,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("DirectionalAmbienceFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out DirectionalAmbienceFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             SoundNorth = XmlRel.GetHash(Xml.GetChildInnerText(node, "SoundNorth"));
             SoundEast = XmlRel.GetHash(Xml.GetChildInnerText(node, "SoundEast"));
             SoundSouth = XmlRel.GetHash(Xml.GetChildInnerText(node, "SoundSouth"));
@@ -17556,7 +19360,7 @@ namespace CodeWalker.GameFiles
         }
         public override string ToString()
         {
-            return string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}", ListenerContribution, RearAttenuationFrontConeAngle, RearAttenuationRearConeAngle, CloseRearAttenuation, FarRearAttenuation, RollOff, RearAttenuationType, MicLength, MicToPlayerLocalEnvironmentRatio);
+            return $"{ListenerContribution}, {RearAttenuationFrontConeAngle}, {RearAttenuationRearConeAngle}, {CloseRearAttenuation}, {FarRearAttenuation}, {RollOff}, {RearAttenuationType}, {MicLength}, {MicToPlayerLocalEnvironmentRatio}";
         }
     }
 
@@ -17607,12 +19411,39 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<MicrophoneSettingsFlags>");
+            foreach (MicrophoneSettingsFlags flag in Enum.GetValues(typeof(MicrophoneSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</MicrophoneSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "MicType", MicType.ToString());
             RelXml.WriteItemArray(sb, Microphones, indent, "Microphones");
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("MicrophoneSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out MicrophoneSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             MicType = (byte)Xml.GetChildIntAttribute(node, "MicType", "value");
             Microphones = XmlRel.ReadItemArray<Dat151MicrophoneItem>(node, "Microphones");
             MicrophonesCount = (byte)(Microphones?.Length ?? 0);
@@ -17957,6 +19788,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ClothAudioSettingsFlags>");
+            foreach (ClothAudioSettingsFlags flag in Enum.GetValues(typeof(ClothAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ClothAudioSettingsFlags>");
+
             RelXml.StringTag(sb, indent, "ImpactSound", RelXml.HashString(ImpactSound));
             RelXml.StringTag(sb, indent, "WalkSound", RelXml.HashString(WalkSound));
             RelXml.StringTag(sb, indent, "RunSound", RelXml.HashString(RunSound));
@@ -17974,7 +19815,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ClothAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ClothAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             ImpactSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "ImpactSound"));
             WalkSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "WalkSound"));
             RunSound = XmlRel.GetHash(Xml.GetChildInnerText(node, "RunSound"));
@@ -18373,6 +20231,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<ReflectionsSettingsFlags>");
+            foreach (ReflectionsSettingsFlags flag in Enum.GetValues(typeof(ReflectionsSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</ReflectionsSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "MinDelay", FloatUtil.ToString(MinDelay));
             RelXml.ValueTag(sb, indent, "MaxDelay", FloatUtil.ToString(MaxDelay));
             RelXml.ValueTag(sb, indent, "DelayTimeScalar", FloatUtil.ToString(DelayTimeScalar));
@@ -18394,7 +20262,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("ReflectionsSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out ReflectionsSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             MinDelay = Xml.GetChildFloatAttribute(node, "MinDelay", "value");
             MaxDelay = Xml.GetChildFloatAttribute(node, "MaxDelay", "value");
             DelayTimeScalar = Xml.GetChildFloatAttribute(node, "DelayTimeScalar", "value");
@@ -18594,6 +20479,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<PedScenarioAudioSettingsFlags>");
+            foreach (PedScenarioAudioSettingsFlags flag in Enum.GetValues(typeof(PedScenarioAudioSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</PedScenarioAudioSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "MaxInstances", MaxInstances.ToString());
             RelXml.StringTag(sb, indent, "Sound", RelXml.HashString(Sound));
             RelXml.ValueTag(sb, indent, "SharedOwnershipRadius", FloatUtil.ToString(SharedOwnershipRadius));
@@ -18601,7 +20496,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("PedScenarioAudioSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out PedScenarioAudioSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             MaxInstances = Xml.GetChildIntAttribute(node, "MaxInstances", "value");
             Sound = XmlRel.GetHash(Xml.GetChildInnerText(node, "Sound"));
             SharedOwnershipRadius = Xml.GetChildFloatAttribute(node, "SharedOwnershipRadius", "value");
@@ -19771,6 +21683,16 @@ namespace CodeWalker.GameFiles
         public override void WriteXml(StringBuilder sb, int indent)
         {
             RelXml.ValueTag(sb, indent, "Flags", "0x" + Flags.Hex);
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("<RandomisedRadioEmitterSettingsFlags>");
+            foreach (RandomisedRadioEmitterSettingsFlags flag in Enum.GetValues(typeof(RandomisedRadioEmitterSettingsFlags)))
+            {
+                TristateValue value = GetTristateValue(Flags, (int)flag);
+                RelXml.SelfClosingTag(sb, indent + 1, flag.ToString() + $" value=\"{value.ToString().ToLower()}\"");
+            }
+            RelXml.Indent(sb, indent);
+            sb.AppendLine("</RandomisedRadioEmitterSettingsFlags>");
+
             RelXml.ValueTag(sb, indent, "VehicleEmitterBias", FloatUtil.ToString(VehicleEmitterBias));
             RelXml.StringTag(sb, indent, "StaticEmitter", RelXml.HashString(StaticEmitter));
             RelXml.ValueTag(sb, indent, "StaticEmitterMinTime", FloatUtil.ToString(StaticEmitterMinTime));
@@ -19795,7 +21717,24 @@ namespace CodeWalker.GameFiles
         }
         public override void ReadXml(XmlNode node)
         {
-            Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            uint flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
+            XmlNode flagsNode = node.SelectSingleNode("RandomisedRadioEmitterSettingsFlags");
+            if (flagsNode != null)
+            {
+                foreach (XmlNode flagNode in flagsNode.ChildNodes)
+                {
+                    if (Enum.TryParse(flagNode.Name, out RandomisedRadioEmitterSettingsFlags flag))
+                    {
+                        string valueStr = flagNode.Attributes?["value"]?.Value;
+                        if (Enum.TryParse(valueStr, true, out TristateValue value))
+                        {
+                            SetTristateValue(ref flags, (int)flag, value);
+                        }
+                    }
+                }
+            }
+            Flags = flags;
+
             VehicleEmitterBias = Xml.GetChildFloatAttribute(node, "VehicleEmitterBias", "value");
             StaticEmitter = XmlRel.GetHash(Xml.GetChildInnerText(node, "StaticEmitter"));
             StaticEmitterMinTime = Xml.GetChildFloatAttribute(node, "StaticEmitterMinTime", "value");
@@ -20199,6 +22138,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffset(bw);
 
+            if (GameObjectHashes == null)
+            {
+                GameObjectHashes = new MetaHash[0];
+                GameObjectHashesCount = 0;
+            }
+
             bw.Write(Flags);
             bw.Write(GameObjectHashesCount);
             for (int i = 0; i < GameObjectHashesCount; i++)
@@ -20216,7 +22161,16 @@ namespace CodeWalker.GameFiles
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             GameObjectHashes = XmlRel.ReadHashItemArray(node, "GameObjectHashes");
-            GameObjectHashesCount = (uint)(GameObjectHashes?.Length ?? 0);
+
+            if (GameObjectHashes == null)
+            {
+                GameObjectHashes = new MetaHash[0];
+                GameObjectHashesCount = 0;
+            }
+            else
+            {
+                GameObjectHashesCount = (uint)GameObjectHashes.Length;
+            }
         }
         public override MetaHash[] GetGameHashes()
         {
@@ -20622,6 +22576,13 @@ namespace CodeWalker.GameFiles
         public override void Write(BinaryWriter bw)
         {
             base.Write(bw);
+
+            if (WaveSlots == null)
+            {
+                WaveSlots = new MetaHash[0];
+                WaveSlotsCount = 0;
+            }
+
             bw.Write(WaveSlotsCount);
             for (int i = 0; i < WaveSlotsCount; i++)
             {
@@ -20637,7 +22598,16 @@ namespace CodeWalker.GameFiles
         {
             base.ReadXml(node);
             WaveSlots = XmlRel.ReadHashItemArray(node, "WaveSlots");
-            WaveSlotsCount = (WaveSlots?.Length ?? 0);
+
+            if (WaveSlots == null)
+            {
+                WaveSlots = new MetaHash[0];
+                WaveSlotsCount = 0;
+            }
+            else
+            {
+                WaveSlotsCount = WaveSlots.Length;
+            }
         }
         public override uint[] GetHashTableOffsets()
         {
@@ -21709,7 +23679,16 @@ namespace CodeWalker.GameFiles
                 return null;
             }
 
-            var inputs = parts[0].Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            // Consolidated: split, trim, and filter in single pass
+            var inputParts = parts[0].Split(',');
+            var inputList = new List<string>(inputParts.Length);
+            foreach (var s in inputParts)
+            {
+                var trimmed = s.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                    inputList.Add(trimmed);
+            }
+            var inputs = inputList.ToArray();
 
             var stateBlockEnd = parts[1].LastIndexOf(']');
             var stateBlockStart = parts[1].IndexOf('[');
@@ -21730,8 +23709,17 @@ namespace CodeWalker.GameFiles
             var hasStateBlock = stateBlockStart != -1;
             var stateBlockStr = hasStateBlock ? parts[1].Substring(stateBlockStart + 1, stateBlockEnd - stateBlockStart - 1) : null;
 
-            var outputs = parts[1].Substring(0, hasStateBlock ? stateBlockStart : parts[1].Length)
-                                  .Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            // Consolidated: split, trim, and filter in single pass
+            var outputStr = parts[1].Substring(0, hasStateBlock ? stateBlockStart : parts[1].Length);
+            var outputParts = outputStr.Split(',');
+            var outputList = new List<string>(outputParts.Length);
+            foreach (var s in outputParts)
+            {
+                var trimmed = s.Trim();
+                if (!string.IsNullOrWhiteSpace(trimmed))
+                    outputList.Add(trimmed);
+            }
+            var outputs = outputList.ToArray();
 
             var currInputIndex = 0;
             var currOutputIndex = 0;
@@ -23310,6 +25298,12 @@ namespace CodeWalker.GameFiles
         {
             WriteTypeAndOffsetAndFlags(bw);
 
+            if (Groups == null)
+            {
+                Groups = new MetaHash[0];
+                GroupCount = 0;
+            }
+
             bw.Write(GroupCount);
             for (int i = 0; i < GroupCount; i++)
             {
@@ -23325,7 +25319,16 @@ namespace CodeWalker.GameFiles
         {
             Flags = Xml.GetChildUIntAttribute(node, "Flags", "value");
             Groups = XmlRel.ReadHashItemArray(node, "Groups");
-            GroupCount = (byte)(Groups?.Length ?? 0);
+
+            if (Groups == null)
+            {
+                Groups = new MetaHash[0];
+                GroupCount = 0;
+            }
+            else
+            {
+                GroupCount = (byte)Groups.Length;
+            }
         }
         public override MetaHash[] GetMixerHashes()
         {
@@ -24440,6 +26443,13 @@ namespace CodeWalker.GameFiles
             bw.Write(UnderwaterWetLevel);
             bw.Write(StonedWetLevel);
             bw.Write(Timer);
+
+            if (SubCategories == null)
+            {
+                SubCategories = new MetaHash[0];
+                SubCategoryCount = 0;
+            }
+
             bw.Write(SubCategoryCount);
             for (int i = 0; i < SubCategoryCount; i++)
             {
@@ -24492,7 +26502,16 @@ namespace CodeWalker.GameFiles
             StonedWetLevel = (short)Xml.GetChildIntAttribute(node, "StonedWetLevel", "value");
             Timer = (byte)Xml.GetChildUIntAttribute(node, "Timer", "value");
             SubCategories = XmlRel.ReadHashItemArray(node, "SubCategories");
-            SubCategoryCount = (byte)(SubCategories?.Length ?? 0);
+
+            if (SubCategories == null)
+            {
+                SubCategories = new MetaHash[0];
+                SubCategoryCount = 0;
+            }
+            else
+            {
+                SubCategoryCount = (byte)SubCategories.Length;
+            }
         }
         public override MetaHash[] GetCurveHashes()
         {
