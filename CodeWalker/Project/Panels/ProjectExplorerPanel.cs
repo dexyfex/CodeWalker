@@ -2216,12 +2216,62 @@ namespace CodeWalker.Project.Panels
                 tn.Text = ybn.RpfFileEntry?.Name ?? ybn.Name;
             }
         }
+        public void AddYndTreeNode(YndFile ynd)
+        {
+            if (ynd == null) return;
+            if (FindYndTreeNode(ynd) != null) return;
+            if (ProjectTreeView.Nodes.Count <= 0)
+            {
+                LoadProjectTree(CurrentProjectFile);
+                return;
+            }
+
+            var projnode = ProjectTreeView.Nodes[0];
+            var yndsnode = GetChildTreeNode(projnode, "Ynd");
+            if (yndsnode == null)
+            {
+                yndsnode = projnode.Nodes.Add("Ynd Files");
+                yndsnode.Name = "Ynd";
+            }
+
+            var changestr = ynd.HasChanged ? "*" : "";
+            var name = ynd.RpfFileEntry?.Name ?? ynd.Name;
+            var yndnode = yndsnode.Nodes.Add(changestr + name);
+            yndnode.Tag = ynd;
+            LoadYndTreeNodes(ynd, yndnode);
+            yndsnode.Expand();
+        }
         public void UpdateYndTreeNode(YndFile ynd)
         {
             var tn = FindYndTreeNode(ynd);
             if (tn != null)
             {
                 tn.Text = ynd.RpfFileEntry?.Name ?? ynd.Name;
+            }
+        }
+        public void RefreshYndTreeNode(YndFile ynd)
+        {
+            var tn = FindYndTreeNode(ynd);
+            if (tn == null)
+            {
+                return;
+            }
+
+            var wasExpanded = tn.IsExpanded;
+            var nodesExpanded = GetChildTreeNode(tn, "Nodes")?.IsExpanded ?? false;
+            var changestr = ynd.HasChanged ? "*" : "";
+            var name = ynd.RpfFileEntry?.Name ?? ynd.Name;
+
+            tn.Text = changestr + name;
+            LoadYndTreeNodes(ynd, tn);
+
+            if (wasExpanded)
+            {
+                tn.Expand();
+            }
+            if (nodesExpanded)
+            {
+                GetChildTreeNode(tn, "Nodes")?.Expand();
             }
         }
         public void UpdateYnvTreeNode(YnvFile ynv)

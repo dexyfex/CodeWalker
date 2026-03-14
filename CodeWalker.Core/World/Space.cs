@@ -40,6 +40,9 @@ namespace CodeWalker.World
 
         public SpaceNodeGrid NodeGrid;
         private Dictionary<uint, YndFile> AllYnds = new Dictionary<uint, YndFile>();
+        private Dictionary<uint, RpfFileEntry> DefaultYndEntries = new Dictionary<uint, RpfFileEntry>();
+        private Dictionary<int, HashSet<YndFile>> YndDependentsByArea = new Dictionary<int, HashSet<YndFile>>();
+        private Dictionary<YndFile, HashSet<int>> YndDependencyAreas = new Dictionary<YndFile, HashSet<int>>();
 
         public SpaceNavGrid NavGrid;
 
@@ -348,6 +351,9 @@ namespace CodeWalker.World
 
             NodeGrid = new SpaceNodeGrid();
             AllYnds.Clear();
+            DefaultYndEntries.Clear();
+            YndDependentsByArea.Clear();
+            YndDependencyAreas.Clear();
 
             var rpfman = GameFileCache.RpfMan;
             Dictionary<uint, RpfFileEntry> yndentries = new Dictionary<uint, RpfFileEntry>();
@@ -375,6 +381,11 @@ namespace CodeWalker.World
                 }
             }
 
+            foreach (var entry in yndentries)
+            {
+                DefaultYndEntries[entry.Key] = entry.Value;
+            }
+
 
             Vector3 corner = new Vector3(-8192, -8192, -2048);
             Vector3 cellsize = new Vector3(512, 512, 4096);
@@ -390,11 +401,7 @@ namespace CodeWalker.World
                     if (yndentries.TryGetValue(fnhash, out fentry))
                     {
                         cell.Ynd = rpfman.GetFile<YndFile>(fentry);
-                        cell.Ynd.BBMin = corner + (cellsize * new Vector3(x, y, 0));
-                        cell.Ynd.BBMax = cell.Ynd.BBMin + cellsize;
-                        cell.Ynd.CellX = x;
-                        cell.Ynd.CellY = y;
-                        cell.Ynd.Loaded = true;
+                        ConfigureYndForCell(cell.Ynd, x, y);
 
                         AllYnds[fnhash] = cell.Ynd;
 
@@ -494,11 +501,106 @@ namespace CodeWalker.World
             //string str = sb.ToString();
         }
 
+        private void ConfigureYndForCell(YndFile ynd, int x, int y)
+        {
+            if (ynd == null) return;
+
+            Vector3 corner = new Vector3(-8192, -8192, -2048);
+            Vector3 cellsize = new Vector3(512, 512, 4096);
+            ynd.BBMin = corner + (cellsize * new Vector3(x, y, 0));
+            ynd.BBMax = ynd.BBMin + cellsize;
+            ynd.CellX = x;
+            ynd.CellY = y;
+            ynd.Loaded = true;
+        }
+
         public void PatchYndFile(YndFile ynd)
         {
             //ideally we should be able to revert to the vanilla ynd's after closing the project window,
             //but codewalker can always just be restarted, so who cares really
             NodeGrid.UpdateYnd(ynd);
+            UpdateAllYndReference(ynd);
+        }
+
+        private void UpdateAllYndReference(YndFile ynd, int? previousAreaId = null)
+        {
+            if (ynd == null) return;
+
+            if (previousAreaId.HasValue)
+            {
+                uint previousHash = JenkHash.GenHash("nodes" + previousAreaId.Value + ".ynd");
+                if (AllYnds.TryGetValue(previousHash, out var previousYnd) && (previousYnd == ynd))
+                {
+                    AllYnds.Remove(previousHash);
+                }
+            }
+
+            uint currentHash = JenkHash.GenHash("nodes" + ynd.AreaID + ".ynd");
+            if (AllYnds.TryGetValue(currentHash, out var existingYnd) && (existingYnd != ynd))
+            {
+                UnregisterYndDependencies(existingYnd);
+            }
+            AllYnds[currentHash] = ynd;
+        }
+
+        private void UnregisterYndDependencies(YndFile ynd)
+        {
+            if ((ynd == null) || !YndDependencyAreas.TryGetValue(ynd, out var areas))
+            {
+                return;
+            }
+
+            foreach (var area in areas)
+            {
+                if (YndDependentsByArea.TryGetValue(area, out var dependents))
+                {
+                    dependents.Remove(ynd);
+                    if (dependents.Count == 0)
+                    {
+                        YndDependentsByArea.Remove(area);
+                    }
+                }
+            }
+
+            YndDependencyAreas.Remove(ynd);
+        }
+
+        private void RegisterYndDependencies(YndFile ynd)
+        {
+            UnregisterYndDependencies(ynd);
+
+            if (ynd?.Links == null)
+            {
+                return;
+            }
+
+            var dependencyAreas = new HashSet<int>();
+            foreach (var link in ynd.Links)
+            {
+                var node2 = link?.Node2;
+                if (node2 == null)
+                {
+                    continue;
+                }
+
+                dependencyAreas.Add(node2.AreaID);
+            }
+
+            if (dependencyAreas.Count == 0)
+            {
+                return;
+            }
+
+            YndDependencyAreas[ynd] = dependencyAreas;
+            foreach (var area in dependencyAreas)
+            {
+                if (!YndDependentsByArea.TryGetValue(area, out var dependents))
+                {
+                    dependents = new HashSet<YndFile>();
+                    YndDependentsByArea[area] = dependents;
+                }
+                dependents.Add(ynd);
+            }
         }
 
         private void AddRpfYnds(RpfFile rpffile, Dictionary<uint, RpfFileEntry> yndentries)
@@ -524,7 +626,11 @@ namespace CodeWalker.World
             var ynodes = ynd.Nodes;
             var nodes = ynd.NodeDictionary?.Nodes;
             var links = ynd.NodeDictionary?.Links;
-            if ((ynodes == null) || (nodes == null) || (links == null)) return;
+            if ((ynodes == null) || (nodes == null) || (links == null))
+            {
+                UnregisterYndDependencies(ynd);
+                return;
+            }
 
             int nodecount = ynodes.Length;
 
@@ -568,6 +674,7 @@ namespace CodeWalker.World
                 node.Links = nlinks.ToArray();
             }
             ynd.Links = tlinks.ToArray();
+            RegisterYndDependencies(ynd);
 
         }
         public void BuildYndVerts(YndFile ynd, YndNode[] selectedNodes, List<EditorVertex> tverts = null)
@@ -697,24 +804,60 @@ namespace CodeWalker.World
 
         }
 
-        public HashSet<YndFile> GetYndFilesThatDependOnYndFile(YndFile file)
+        public HashSet<YndFile> GetYndFilesThatDependOnArea(int areaId)
         {
-            HashSet<YndFile> result = new HashSet<YndFile>();
-            int targetAreaID = file.AreaID; // Cache to avoid repeated property access
-
-            foreach (var ynd in AllYnds.Values)
+            if (YndDependentsByArea.TryGetValue(areaId, out var dependents))
             {
-                foreach (var link in ynd.Links)
-                {
-                    if (link.Node2.AreaID == targetAreaID)
-                    {
-                        result.Add(ynd);
-                        break; // No need to check more links for this YndFile
-                    }
-                }
+                return new HashSet<YndFile>(dependents);
             }
 
-            return result;
+            return new HashSet<YndFile>();
+        }
+
+        public HashSet<YndFile> GetYndFilesThatDependOnYndFile(YndFile file)
+        {
+            if (file == null)
+            {
+                return new HashSet<YndFile>();
+            }
+
+            return GetYndFilesThatDependOnArea(file.AreaID);
+        }
+
+        public YndFile RestoreYndArea(int areaId)
+        {
+            var cell = NodeGrid?.GetCell(areaId);
+            if (cell == null)
+            {
+                return null;
+            }
+
+            uint areaHash = JenkHash.GenHash("nodes" + areaId + ".ynd");
+            if (AllYnds.TryGetValue(areaHash, out var existingYnd))
+            {
+                UnregisterYndDependencies(existingYnd);
+            }
+
+            if (!DefaultYndEntries.TryGetValue(areaHash, out var defaultEntry))
+            {
+                cell.Ynd = null;
+                AllYnds.Remove(areaHash);
+                return null;
+            }
+
+            var defaultYnd = GameFileCache?.RpfMan?.GetFile<YndFile>(defaultEntry);
+            if (defaultYnd == null)
+            {
+                cell.Ynd = null;
+                AllYnds.Remove(areaHash);
+                return null;
+            }
+
+            ConfigureYndForCell(defaultYnd, cell.X, cell.Y);
+            NodeGrid.UpdateYnd(defaultYnd);
+            AllYnds[areaHash] = defaultYnd;
+            RegisterYndDependencies(defaultYnd);
+            return defaultYnd;
         }
 
         public void MoveYndArea(YndFile ynd, int desiredX, int desiredY)
@@ -799,6 +942,7 @@ namespace CodeWalker.World
                 ynd.BuildStructs();
             }
             NodeGrid.UpdateYnd(ynd);
+            UpdateAllYndReference(ynd, areaIdorig);
         }
 
         public void RecalculateAllYndIndices()

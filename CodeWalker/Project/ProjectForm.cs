@@ -1383,6 +1383,12 @@ namespace CodeWalker.Project
         {
             if (CurrentProjectFile == null) return;
 
+            var yndAreasToRestore = CurrentProjectFile.YndFiles
+                .Where(ynd => ynd != null)
+                .Select(ynd => ynd.AreaID)
+                .Distinct()
+                .ToArray();
+
             foreach (var ymap in CurrentProjectFile.YmapFiles)
             {
                 if ((ymap != null) && (ymap.HasChanged))
@@ -1522,6 +1528,32 @@ namespace CodeWalker.Project
 
             if (WorldForm != null)
             {
+                if (yndAreasToRestore.Length > 0)
+                {
+                    lock (WorldForm.RenderSyncRoot)
+                    {
+                        var yndsToRefresh = new HashSet<YndFile>();
+                        foreach (var areaId in yndAreasToRestore)
+                        {
+                            foreach (var dependent in WorldForm.Space.GetYndFilesThatDependOnArea(areaId))
+                            {
+                                yndsToRefresh.Add(dependent);
+                            }
+
+                            var restoredYnd = WorldForm.Space.RestoreYndArea(areaId);
+                            if (restoredYnd != null)
+                            {
+                                yndsToRefresh.Add(restoredYnd);
+                            }
+                        }
+
+                        foreach (var ynd in yndsToRefresh)
+                        {
+                            WorldForm.UpdatePathYndGraphics(ynd, true);
+                        }
+                    }
+                }
+
                 WorldForm.SelectItem(null);//make sure current selected item isn't still selected...
             }
 
@@ -4718,7 +4750,14 @@ namespace CodeWalker.Project
             {
                 ynd.HasChanged = true;
                 CurrentProjectFile.HasChanged = true;
-                LoadProjectTree();
+                if ((ProjectExplorer != null) && (ProjectExplorer.CurrentProjectFile == CurrentProjectFile))
+                {
+                    ProjectExplorer.AddYndTreeNode(ynd);
+                }
+                else
+                {
+                    LoadProjectTree();
+                }
             }
             CurrentYndFile = ynd;
             RefreshUI();
@@ -4807,7 +4846,7 @@ namespace CodeWalker.Project
 
             if (selectNew)
             {
-                LoadProjectTree();
+                ProjectExplorer?.RefreshYndTreeNode(CurrentYndFile);
                 ProjectExplorer?.TrySelectPathNodeTreeNode(n);
                 CurrentPathNode = n;
                 //ShowEditYndPanel(false);;
@@ -8781,6 +8820,10 @@ namespace CodeWalker.Project
             byte[] data = File.ReadAllBytes(filename);
             ynd.Load(data);
             WorldForm.Space.PatchYndFile(ynd);
+
+            // Rebuild the imported file immediately so live dependency scans and link rendering
+            // operate on resolved Node2 references instead of the raw node dictionary only.
+            WorldForm?.UpdatePathYndGraphics(ynd, true);
 
             if (WorldForm != null)
             {
