@@ -2243,12 +2243,12 @@ namespace CodeWalker.GameFiles
             }
             var bb = new BoundingBox(abmin, abmax).Transform(Position, Orientation, Scale);
             var ints = new uint[7];
-            ints[0] = (uint)(bb.Minimum.X * 10.0f);
-            ints[1] = (uint)(bb.Minimum.Y * 10.0f);
-            ints[2] = (uint)(bb.Minimum.Z * 10.0f);
-            ints[3] = (uint)(bb.Maximum.X * 10.0f);
-            ints[4] = (uint)(bb.Maximum.Y * 10.0f);
-            ints[5] = (uint)(bb.Maximum.Z * 10.0f);
+            ints[0] = (uint)(int)(bb.Minimum.X * 10.0f);
+            ints[1] = (uint)(int)(bb.Minimum.Y * 10.0f);
+            ints[2] = (uint)(int)(bb.Minimum.Z * 10.0f);
+            ints[3] = (uint)(int)(bb.Maximum.X * 10.0f);
+            ints[4] = (uint)(int)(bb.Maximum.Y * 10.0f);
+            ints[5] = (uint)(int)(bb.Maximum.Z * 10.0f);
 
             var bones = skel?.BonesMap;
             var exts = (Archetype.Extensions?.Length ?? 0);// + (Extensions?.Length ?? 0);//seems entity extensions aren't included in this
