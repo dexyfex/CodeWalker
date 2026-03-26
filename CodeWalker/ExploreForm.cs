@@ -3,6 +3,7 @@ using CodeWalker.GameFiles;
 using CodeWalker.Properties;
 using CodeWalker.Tools;
 using CodeWalker.World;
+using SharpDX.DirectWrite;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -2350,6 +2351,42 @@ namespace CodeWalker
                 }
             }
         }
+
+        private void ExportYmapModels(MainListItem ymapItem, string exportPath)
+        {
+            byte[] data = ymapItem.File.File.ExtractFile(ymapItem.File);
+            YmapFile ymap = RpfFile.GetFile<YmapFile>(ymapItem.File, data);
+
+            HashSet<YmapEntityDef> uniqueEntities = new HashSet<YmapEntityDef>();
+
+            foreach (YmapEntityDef entity in ymap.AllEntities)
+            {
+                uniqueEntities.Add(entity);
+            }
+
+            foreach (YmapEntityDef entity in uniqueEntities)
+            {
+                uint hash = JenkHash.GenHash(entity.Name);
+
+                YdrFile ydr = GetFileCache().GetYdr(hash);
+                if (ydr != null)
+                {
+                    GetFileCache().LoadFile(ydr);
+                    File.WriteAllBytes(Path.Combine(exportPath, ydr.Name), ydr.Save());
+                    continue;
+                }
+
+                YftFile yft = GetFileCache().GetYft(hash);
+                if (yft != null)
+                {
+                    GetFileCache().LoadFile(yft);
+                    File.WriteAllBytes(Path.Combine(exportPath, yft.Name), yft.Save());
+                    continue;
+                }
+                // Find a way to retreive YDDs from a ymap entity
+            }
+        }
+
         private void ExportXml()
         {
             var needfolder = false;//need a folder to output ytd XML to, for the texture .dds files
@@ -2365,6 +2402,24 @@ namespace CodeWalker
                 }
             }
 
+
+            bool hasYmap = false;
+            foreach (MainListItem file in CurrentFiles)
+            {
+                if (file.Name.EndsWith(".ymap")) { hasYmap = true; break; }
+            }
+
+            bool exportModels = false;
+            if (hasYmap)
+            {
+                var result = MessageBox.Show(
+                    ".ymap files found, do you want to export the used models?",
+                    "Export Ymap Models",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+                exportModels = (result == DialogResult.Yes);
+            }
+
             if ((MainListView.SelectedIndices.Count == 1) && (!needfolder))
             {
                 var errorAction = new Action<string>((msg) => MessageBox.Show(msg));
@@ -2375,7 +2430,7 @@ namespace CodeWalker
                 if (file.Folder == null)
                 {
                     var xml = GetFileXml(file, out var newfn, null, errorAction);
-                    
+
                     if (string.IsNullOrEmpty(xml) == false)
                     {
                         SaveFileDialog.FileName = newfn;
@@ -2385,6 +2440,12 @@ namespace CodeWalker
                             try
                             {
                                 File.WriteAllText(path, xml);
+                                if (file.Name.EndsWith(".ymap") && exportModels)
+                                {
+                                    var modelsFolder = Path.Combine(Path.GetDirectoryName(path), file.Name + "_models");
+                                    Directory.CreateDirectory(modelsFolder);
+                                    ExportYmapModels(file, modelsFolder);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -2416,6 +2477,12 @@ namespace CodeWalker
                         try
                         {
                             File.WriteAllText(path, xml);
+                            if (file.Name.EndsWith(".ymap") && exportModels)
+                            {
+                                var modelsFolder = Path.Combine(Path.GetDirectoryName(path), file.Name + "_models");
+                                Directory.CreateDirectory(modelsFolder);
+                                ExportYmapModels(file, modelsFolder);
+                            }
                         }
                         catch (Exception ex)
                         {
