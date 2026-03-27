@@ -1225,6 +1225,8 @@ namespace CodeWalker.GameFiles
             MaterialColours = XmlYbn.GetChildRawBoundMaterialColourArray(node, "MaterialColours");
             Vertices = Xml.GetChildRawVector3ArrayNullable(node, "Vertices");
             VertexColours = XmlYbn.GetChildRawBoundMaterialColourArray(node, "VertexColours");
+            VertexObjects = null;
+            Polygons = null;
 
             var pnode = node.SelectSingleNode("Polygons");
             if (pnode != null)
@@ -1249,6 +1251,11 @@ namespace CodeWalker.GameFiles
                 }
             }
 
+            VerticesCount = (uint)(Vertices?.Length ?? 0);
+            VerticesShrunkCount = VerticesCount;
+            PolygonsCount = (uint)(Polygons?.Length ?? 0);
+            MaterialColoursCount = (byte)(MaterialColours?.Length ?? 0);
+
             BuildMaterials();
             CalculateQuantum();
             UpdateEdgeIndices();
@@ -1256,6 +1263,8 @@ namespace CodeWalker.GameFiles
             CalculateVertsShrunk();
             //CalculateVertsShrunkByNormals();
             CalculateOctants();
+
+            VerticesShrunkCount = VerticesCount;
 
             FileVFT = 1080226408;
         }
@@ -1400,7 +1409,7 @@ namespace CodeWalker.GameFiles
         }
         public Vector3 GetVertex(int index)
         {
-            return ((index >= 0) && (index < Vertices.Length)) ? Vertices[index] : Vector3.Zero;
+            return ((Vertices != null) && (index >= 0) && (index < Vertices.Length)) ? Vertices[index] : Vector3.Zero;
         }
         public Vector3 GetVertexPos(int index)
         {
@@ -1409,7 +1418,7 @@ namespace CodeWalker.GameFiles
         }
         public void SetVertexPos(int index, Vector3 v)
         {
-            if ((index >= 0) && (index < Vertices.Length))
+            if ((Vertices != null) && (index >= 0) && (index < Vertices.Length))
             {
                 var t = Vector3.Transform(v, TransformInv).XYZ() - CenterGeom;
                 Vertices[index] = t;
@@ -1471,8 +1480,42 @@ namespace CodeWalker.GameFiles
         }
 
 
+        protected bool TryGetPolygonRange(int startIndex, int endIndex, out int validStartIndex, out int validEndIndex)
+        {
+            validStartIndex = 0;
+            validEndIndex = 0;
+
+            var polygonCount = Polygons?.Length ?? 0;
+            if (polygonCount <= 0)
+            {
+                return false;
+            }
+
+            if (startIndex < 0)
+            {
+                startIndex = 0;
+            }
+            if (endIndex > polygonCount)
+            {
+                endIndex = polygonCount;
+            }
+
+            if (startIndex >= endIndex)
+            {
+                return false;
+            }
+
+            validStartIndex = startIndex;
+            validEndIndex = endIndex;
+            return true;
+        }
         protected void SphereIntersectPolygons(ref BoundingSphere sph, ref SpaceSphereIntersectResult res, int startIndex, int endIndex)
         {
+            if (!TryGetPolygonRange(startIndex, endIndex, out startIndex, out endIndex))
+            {
+                return;
+            }
+
             var box = new BoundingBox();
             var tsph = new BoundingSphere();
             var spht = new BoundingSphere();
@@ -1579,6 +1622,11 @@ namespace CodeWalker.GameFiles
         }
         protected void RayIntersectPolygons(ref Ray ray, ref SpaceRayIntersectResult res, int startIndex, int endIndex)
         {
+            if (!TryGetPolygonRange(startIndex, endIndex, out startIndex, out endIndex))
+            {
+                return;
+            }
+
             var box = new BoundingBox();
             var tsph = new BoundingSphere();
             var rayt = new Ray();
@@ -2669,6 +2717,7 @@ namespace CodeWalker.GameFiles
             }
             Polygons = newpolys;
             PolygonMaterialIndices = newpolymats;
+            PolygonsCount = (uint)newpolys.Length;
 
             BoxMin = bvh.BoundingBoxMin.XYZ();
             BoxMax = bvh.BoundingBoxMax.XYZ();
@@ -2682,6 +2731,37 @@ namespace CodeWalker.GameFiles
             {
                 Parent.BuildBVH();
             }
+        }
+        private bool TryGetNodeRange(BVHTreeInfo_s tree, out int validStartIndex, out int validEndIndex)
+        {
+            validStartIndex = 0;
+            validEndIndex = 0;
+
+            var nodeCount = BVH?.Nodes?.data_items?.Length ?? 0;
+            if (nodeCount <= 0)
+            {
+                return false;
+            }
+
+            var startIndex = (int)tree.NodeIndex1;
+            var endIndex = (int)tree.NodeIndex2;
+            if (startIndex < 0)
+            {
+                startIndex = 0;
+            }
+            if (endIndex > nodeCount)
+            {
+                endIndex = nodeCount;
+            }
+
+            if (startIndex >= endIndex)
+            {
+                return false;
+            }
+
+            validStartIndex = startIndex;
+            validEndIndex = endIndex;
+            return true;
         }
 
 
@@ -2703,6 +2783,7 @@ namespace CodeWalker.GameFiles
 
             var q = BVH.Quantum.XYZ();
             var c = BVH.BoundingBoxCenter.XYZ();
+            var nodeCount = BVH.Nodes.data_items.Length;
             for (int t = 0; t < BVH.Trees.data_items.Length; t++)
             {
                 var tree = BVH.Trees.data_items[t];
@@ -2711,38 +2792,53 @@ namespace CodeWalker.GameFiles
                 if (!sph.Intersects(ref box))
                 { continue; }
 
-                int nodeind = tree.NodeIndex1;
-                int lastind = tree.NodeIndex2;
+                if (!TryGetNodeRange(tree, out int nodeind, out int lastind))
+                {
+                    continue;
+                }
                 while (nodeind < lastind)
                 {
+                    if ((nodeind < 0) || (nodeind >= nodeCount))
+                    {
+                        break;
+                    }
+
                     var node = BVH.Nodes.data_items[nodeind];
                     box.Minimum = node.Min * q + c;
                     box.Maximum = node.Max * q + c;
                     bool nodehit = sph.Intersects(ref box);
                     bool nodeskip = !nodehit;
+                    int nextnodeind = nodeind + 1;
                     if (node.ItemCount <= 0) //intermediate node with child nodes
                     {
                         if (nodeskip)
                         {
-                            nodeind += node.ItemId; //(child node count)
-                        }
-                        else
-                        {
-                            nodeind++;
+                            nextnodeind = nodeind + node.ItemId; //(child node count)
                         }
                     }
                     else //leaf node, with polygons
                     {
                         if (!nodeskip)
                         {
-                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
-
-                            SphereIntersectPolygons(ref sph, ref res, node.ItemId, lastp);
+                            if (TryGetPolygonRange(node.ItemId, node.ItemId + node.ItemCount, out int firstp, out int lastp))
+                            {
+                                SphereIntersectPolygons(ref sph, ref res, firstp, lastp);
+                            }
 
                         }
-                        nodeind++;
                     }
                     res.TestedNodeCount++;
+
+                    if (nextnodeind <= nodeind)
+                    {
+                        break;
+                    }
+                    if (nextnodeind > lastind)
+                    {
+                        nextnodeind = lastind;
+                    }
+
+                    nodeind = nextnodeind;
                 }
             }
 
@@ -2770,6 +2866,7 @@ namespace CodeWalker.GameFiles
 
             var q = BVH.Quantum.XYZ();
             var c = BVH.BoundingBoxCenter.XYZ();
+            var nodeCount = BVH.Nodes.data_items.Length;
             for (int t = 0; t < BVH.Trees.data_items.Length; t++)
             {
                 var tree = BVH.Trees.data_items[t];
@@ -2780,38 +2877,53 @@ namespace CodeWalker.GameFiles
                 if (bvhboxhittest > res.HitDist)
                 { continue; } //already a closer hit.
 
-                int nodeind = tree.NodeIndex1;
-                int lastind = tree.NodeIndex2;
+                if (!TryGetNodeRange(tree, out int nodeind, out int lastind))
+                {
+                    continue;
+                }
                 while (nodeind < lastind)
                 {
+                    if ((nodeind < 0) || (nodeind >= nodeCount))
+                    {
+                        break;
+                    }
+
                     var node = BVH.Nodes.data_items[nodeind];
                     box.Minimum = node.Min * q + c;
                     box.Maximum = node.Max * q + c;
                     bool nodehit = ray.Intersects(ref box, out bvhboxhittest);
                     bool nodeskip = !nodehit || (bvhboxhittest > res.HitDist);
+                    int nextnodeind = nodeind + 1;
                     if (node.ItemCount <= 0) //intermediate node with child nodes
                     {
                         if (nodeskip)
                         {
-                            nodeind += node.ItemId; //(child node count)
-                        }
-                        else
-                        {
-                            nodeind++;
+                            nextnodeind = nodeind + node.ItemId; //(child node count)
                         }
                     }
                     else //leaf node, with polygons
                     {
                         if (!nodeskip)
                         {
-                            var lastp = Math.Min(node.ItemId + node.ItemCount, (int)PolygonsCount);
-
-                            RayIntersectPolygons(ref ray, ref res, node.ItemId, lastp);
+                            if (TryGetPolygonRange(node.ItemId, node.ItemId + node.ItemCount, out int firstp, out int lastp))
+                            {
+                                RayIntersectPolygons(ref ray, ref res, firstp, lastp);
+                            }
 
                         }
-                        nodeind++;
                     }
                     res.TestedNodeCount++;
+
+                    if (nextnodeind <= nodeind)
+                    {
+                        break;
+                    }
+                    if (nextnodeind > lastind)
+                    {
+                        nextnodeind = lastind;
+                    }
+
+                    nodeind = nextnodeind;
                 }
             }
 
