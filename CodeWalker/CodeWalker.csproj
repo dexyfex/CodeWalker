@@ -51,4 +51,13 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\icons\*.png" LinkBase="icons">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="..\Shaders\*.cso" LinkBase="Shaders">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

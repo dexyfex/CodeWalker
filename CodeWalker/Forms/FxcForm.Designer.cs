@@ -35,9 +35,23 @@
             this.DetailsTabPage = new System.Windows.Forms.TabPage();
             this.DetailsPropertyGrid = new CodeWalker.WinForms.PropertyGridFix();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.ShadersListPanel = new System.Windows.Forms.Panel();
+            this.SearchPanel = new System.Windows.Forms.Panel();
+            this.SearchTextBox = new System.Windows.Forms.TextBox();
+            this.TypeFilterComboBox = new System.Windows.Forms.ComboBox();
+            this.SearchLabel = new System.Windows.Forms.Label();
             this.ShaderPanel = new System.Windows.Forms.Panel();
             this.ShadersListView = new System.Windows.Forms.ListView();
             this.ShadersNameColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ShadersTypeColumn = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.MainMenu = new System.Windows.Forms.MenuStrip();
+            this.FileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SaveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SaveAsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ExportAllMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ShaderContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ExportCsoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ImportCsoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ShaderTextBox = new FastColoredTextBoxNS.FastColoredTextBox();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -54,6 +68,10 @@
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.ShadersListPanel.SuspendLayout();
+            this.SearchPanel.SuspendLayout();
+            this.MainMenu.SuspendLayout();
+            this.ShaderContextMenu.SuspendLayout();
             this.ShaderPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ShaderTextBox)).BeginInit();
             this.statusStrip1.SuspendLayout();
@@ -74,10 +92,10 @@
             this.MainTabControl.Controls.Add(this.ShadersTabPage);
             this.MainTabControl.Controls.Add(this.TechniquesTabPage);
             this.MainTabControl.Controls.Add(this.DetailsTabPage);
-            this.MainTabControl.Location = new System.Drawing.Point(2, 3);
+            this.MainTabControl.Location = new System.Drawing.Point(2, 27);
             this.MainTabControl.Name = "MainTabControl";
             this.MainTabControl.SelectedIndex = 0;
-            this.MainTabControl.Size = new System.Drawing.Size(784, 480);
+            this.MainTabControl.Size = new System.Drawing.Size(784, 456);
             this.MainTabControl.TabIndex = 0;
             // 
             // ShadersTabPage
@@ -119,9 +137,69 @@
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.ShadersListView);
-            // 
+            //
+            this.splitContainer1.Panel1.Controls.Add(this.ShadersListPanel);
+            //
+            // ShadersListPanel
+            //
+            this.ShadersListPanel.Controls.Add(this.ShadersListView);
+            this.ShadersListPanel.Controls.Add(this.SearchPanel);
+            this.ShadersListPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ShadersListPanel.Location = new System.Drawing.Point(0, 0);
+            this.ShadersListPanel.Name = "ShadersListPanel";
+            this.ShadersListPanel.Size = new System.Drawing.Size(235, 448);
+            this.ShadersListPanel.TabIndex = 0;
+            //
+            // SearchPanel
+            //
+            this.SearchPanel.Controls.Add(this.SearchTextBox);
+            this.SearchPanel.Controls.Add(this.TypeFilterComboBox);
+            this.SearchPanel.Controls.Add(this.SearchLabel);
+            this.SearchPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.SearchPanel.Location = new System.Drawing.Point(0, 0);
+            this.SearchPanel.Name = "SearchPanel";
+            this.SearchPanel.Size = new System.Drawing.Size(235, 56);
+            this.SearchPanel.TabIndex = 0;
+            //
+            // SearchLabel
+            //
+            this.SearchLabel.AutoSize = true;
+            this.SearchLabel.Location = new System.Drawing.Point(3, 7);
+            this.SearchLabel.Name = "SearchLabel";
+            this.SearchLabel.Size = new System.Drawing.Size(44, 13);
+            this.SearchLabel.TabIndex = 0;
+            this.SearchLabel.Text = "Search:";
+            //
+            // SearchTextBox
+            //
+            this.SearchTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.SearchTextBox.Location = new System.Drawing.Point(53, 4);
+            this.SearchTextBox.Name = "SearchTextBox";
+            this.SearchTextBox.Size = new System.Drawing.Size(178, 20);
+            this.SearchTextBox.TabIndex = 1;
+            this.SearchTextBox.TextChanged += new System.EventHandler(this.SearchTextBox_TextChanged);
+            //
+            // TypeFilterComboBox
+            //
+            this.TypeFilterComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TypeFilterComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TypeFilterComboBox.FormattingEnabled = true;
+            this.TypeFilterComboBox.Items.AddRange(new object[] {
+            "All",
+            "Vertex",
+            "Pixel",
+            "Geometry",
+            "Domain",
+            "Hull",
+            "Compute"});
+            this.TypeFilterComboBox.Location = new System.Drawing.Point(53, 30);
+            this.TypeFilterComboBox.Name = "TypeFilterComboBox";
+            this.TypeFilterComboBox.Size = new System.Drawing.Size(178, 21);
+            this.TypeFilterComboBox.TabIndex = 2;
+            this.TypeFilterComboBox.SelectedIndexChanged += new System.EventHandler(this.TypeFilterComboBox_SelectedIndexChanged);
+            //
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.ShaderPanel);
@@ -140,25 +218,97 @@
             this.ShaderPanel.TabIndex = 0;
             // 
             // ShadersListView
-            // 
+            //
             this.ShadersListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.ShadersTypeColumn,
             this.ShadersNameColumn});
             this.ShadersListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ShadersListView.FullRowSelect = true;
             this.ShadersListView.HideSelection = false;
-            this.ShadersListView.Location = new System.Drawing.Point(0, 0);
+            this.ShadersListView.Location = new System.Drawing.Point(0, 56);
             this.ShadersListView.MultiSelect = false;
             this.ShadersListView.Name = "ShadersListView";
-            this.ShadersListView.Size = new System.Drawing.Size(235, 448);
-            this.ShadersListView.TabIndex = 0;
+            this.ShadersListView.Size = new System.Drawing.Size(235, 392);
+            this.ShadersListView.TabIndex = 1;
             this.ShadersListView.UseCompatibleStateImageBehavior = false;
             this.ShadersListView.View = System.Windows.Forms.View.Details;
+            this.ShadersListView.ContextMenuStrip = this.ShaderContextMenu;
             this.ShadersListView.SelectedIndexChanged += new System.EventHandler(this.ShadersListView_SelectedIndexChanged);
-            // 
+            //
+            // ShadersTypeColumn
+            //
+            this.ShadersTypeColumn.Text = "Type";
+            this.ShadersTypeColumn.Width = 40;
+            //
             // ShadersNameColumn
-            // 
+            //
             this.ShadersNameColumn.Text = "Name";
-            this.ShadersNameColumn.Width = 208;
+            this.ShadersNameColumn.Width = 168;
+            //
+            // MainMenu
+            //
+            this.MainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.FileMenuItem});
+            this.MainMenu.Location = new System.Drawing.Point(0, 0);
+            this.MainMenu.Name = "MainMenu";
+            this.MainMenu.Size = new System.Drawing.Size(788, 24);
+            this.MainMenu.TabIndex = 2;
+            this.MainMenu.Text = "MainMenu";
+            //
+            // FileMenuItem
+            //
+            this.FileMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SaveMenuItem,
+            this.SaveAsMenuItem,
+            this.ExportAllMenuItem});
+            this.FileMenuItem.Name = "FileMenuItem";
+            this.FileMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.FileMenuItem.Text = "File";
+            //
+            // SaveMenuItem
+            //
+            this.SaveMenuItem.Name = "SaveMenuItem";
+            this.SaveMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.SaveMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.SaveMenuItem.Text = "Save";
+            this.SaveMenuItem.Click += new System.EventHandler(this.SaveMenuItem_Click);
+            //
+            // SaveAsMenuItem
+            //
+            this.SaveAsMenuItem.Name = "SaveAsMenuItem";
+            this.SaveAsMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.SaveAsMenuItem.Text = "Save As...";
+            this.SaveAsMenuItem.Click += new System.EventHandler(this.SaveAsMenuItem_Click);
+            //
+            // ExportAllMenuItem
+            //
+            this.ExportAllMenuItem.Name = "ExportAllMenuItem";
+            this.ExportAllMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.ExportAllMenuItem.Text = "Export All Shaders...";
+            this.ExportAllMenuItem.Click += new System.EventHandler(this.ExportAllMenuItem_Click);
+            //
+            // ShaderContextMenu
+            //
+            this.ShaderContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ExportCsoMenuItem,
+            this.ImportCsoMenuItem});
+            this.ShaderContextMenu.Name = "ShaderContextMenu";
+            this.ShaderContextMenu.Size = new System.Drawing.Size(190, 48);
+            this.ShaderContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.ShaderContextMenu_Opening);
+            //
+            // ExportCsoMenuItem
+            //
+            this.ExportCsoMenuItem.Name = "ExportCsoMenuItem";
+            this.ExportCsoMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.ExportCsoMenuItem.Text = "Export CSO...";
+            this.ExportCsoMenuItem.Click += new System.EventHandler(this.ExportCsoMenuItem_Click);
+            //
+            // ImportCsoMenuItem
+            //
+            this.ImportCsoMenuItem.Name = "ImportCsoMenuItem";
+            this.ImportCsoMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.ImportCsoMenuItem.Text = "Import CSO (Replace)...";
+            this.ImportCsoMenuItem.Click += new System.EventHandler(this.ImportCsoMenuItem_Click);
             // 
             // ShaderTextBox
             // 
@@ -330,6 +480,8 @@
             this.ClientSize = new System.Drawing.Size(788, 508);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.MainTabControl);
+            this.Controls.Add(this.MainMenu);
+            this.MainMenuStrip = this.MainMenu;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FxcForm";
             this.Text = "FXC Viewer - CodeWalker by dexyfex";
@@ -340,6 +492,12 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.ShadersListPanel.ResumeLayout(false);
+            this.SearchPanel.ResumeLayout(false);
+            this.SearchPanel.PerformLayout();
+            this.MainMenu.ResumeLayout(false);
+            this.MainMenu.PerformLayout();
+            this.ShaderContextMenu.ResumeLayout(false);
             this.ShaderPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.ShaderTextBox)).EndInit();
             this.statusStrip1.ResumeLayout(false);
@@ -375,5 +533,19 @@
         private System.Windows.Forms.ColumnHeader TechniquesNameColumn;
         private System.Windows.Forms.Panel TechniquePanel;
         private FastColoredTextBoxNS.FastColoredTextBox TechniqueTextBox;
+        private System.Windows.Forms.Panel ShadersListPanel;
+        private System.Windows.Forms.Panel SearchPanel;
+        private System.Windows.Forms.TextBox SearchTextBox;
+        private System.Windows.Forms.ComboBox TypeFilterComboBox;
+        private System.Windows.Forms.Label SearchLabel;
+        private System.Windows.Forms.ColumnHeader ShadersTypeColumn;
+        private System.Windows.Forms.MenuStrip MainMenu;
+        private System.Windows.Forms.ToolStripMenuItem FileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem SaveMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem SaveAsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ExportCsoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ImportCsoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ExportAllMenuItem;
+        private System.Windows.Forms.ContextMenuStrip ShaderContextMenu;
     }
 }

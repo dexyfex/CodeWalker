@@ -1855,6 +1855,17 @@ namespace CodeWalker
         }
         private void ViewAwc(string name, string path, byte[] data, RpfFileEntry e)
         {
+            // .awc is overloaded: audio (ADAT/TADA) vs shader library (SGD2).
+            // Sniff the magic so SGD2 shader libraries open in the FxcForm.
+            if (data != null && data.Length >= 4 && BitConverter.ToUInt32(data, 0) == AwcShaderFile.MagicSGD2)
+            {
+                var awcsh = RpfFile.GetFile<AwcShaderFile>(e, data);
+                FxcForm fx = new FxcForm();
+                fx.Show();
+                fx.LoadAwcShader(awcsh, e, this);
+                return;
+            }
+
             var awc = RpfFile.GetFile<AwcFile>(e, data);
             AwcForm f = new AwcForm();
             f.Show();
