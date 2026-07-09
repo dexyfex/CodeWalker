@@ -864,6 +864,7 @@ namespace CodeWalker.World
             }
 
             res = res && Nodes.Remove(node);
+            RebuildChains();
 
             return res;
         }
@@ -909,6 +910,8 @@ namespace CodeWalker.World
                     RemoveNode(delnode);
                 }
             }
+
+            RebuildChains();
 
             return true;
         }
@@ -1496,11 +1499,137 @@ namespace CodeWalker.World
         {
             if (Region == null) return;
 
-            //update chain nodes array, update from/to indexes
-            //currently not necessary - editor updates indexes and arrays already.
-
+            NormalizeScenarioChainingGraph(Region.Paths);
         }
 
+        private static void NormalizeScenarioChainingGraph(MCScenarioChainingGraph graph)
+        {
+            if (graph == null) return;
+
+            var nodes = graph.Nodes ?? new MCScenarioChainingNode[0];
+            for (var i = 0; i < nodes.Length; i++)
+            {
+                var node = nodes[i];
+                if (node == null) continue;
+
+                node.NodeIndex = i;
+                node.Parent = graph;
+                node.Region = graph.Region;
+                node.HasIncomingEdges = false;
+                node.HasOutgoingEdges = false;
+                node.Chain = null;
+            }
+
+            var oldEdges = graph.Edges ?? new MCScenarioChainingEdge[0];
+            var keptEdges = new List<MCScenarioChainingEdge>();
+            var oldToNewEdgeIndex = new Dictionary<int, int>();
+            var edgeToNewIndex = new Dictionary<MCScenarioChainingEdge, int>();
+
+            for (var oldIndex = 0; oldIndex < oldEdges.Length; oldIndex++)
+            {
+                var edge = oldEdges[oldIndex];
+                if (edge == null)
+                {
+                    continue;
+                }
+
+                var from = ResolveChainingNode(nodes, edge.NodeFrom, edge.NodeIndexFrom);
+                var to = ResolveChainingNode(nodes, edge.NodeTo, edge.NodeIndexTo);
+                if ((from == null) || (to == null) || (from == to))
+                {
+                    continue;
+                }
+
+                edge.Region = graph.Region;
+                edge.NodeFrom = from;
+                edge.NodeTo = to;
+                edge.NodeIndexFrom = (ushort)from.NodeIndex;
+                edge.NodeIndexTo = (ushort)to.NodeIndex;
+                edge.EdgeIndex = keptEdges.Count;
+
+                oldToNewEdgeIndex[oldIndex] = keptEdges.Count;
+                edgeToNewIndex[edge] = keptEdges.Count;
+                keptEdges.Add(edge);
+            }
+
+            graph.Edges = keptEdges.Count == 0 ? null : keptEdges.ToArray();
+
+            if (graph.Chains != null)
+            {
+                var keptChains = new List<MCScenarioChain>();
+                foreach (var chain in graph.Chains)
+                {
+                    if (chain == null)
+                    {
+                        continue;
+                    }
+
+                    var ids = new List<ushort>();
+                    var seenIds = new HashSet<ushort>();
+
+                    if (chain.Edges != null)
+                    {
+                        foreach (var edge in chain.Edges)
+                        {
+                            if ((edge != null) && edgeToNewIndex.TryGetValue(edge, out var newIndex))
+                            {
+                                var id = (ushort)newIndex;
+                                if (seenIds.Add(id))
+                                {
+                                    ids.Add(id);
+                                }
+                            }
+                        }
+                    }
+                    else if (chain.EdgeIds != null)
+                    {
+                        foreach (var oldId in chain.EdgeIds)
+                        {
+                            if (oldToNewEdgeIndex.TryGetValue(oldId, out var newIndex))
+                            {
+                                var id = (ushort)newIndex;
+                                if (seenIds.Add(id))
+                                {
+                                    ids.Add(id);
+                                }
+                            }
+                        }
+                    }
+
+                    if (ids.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    chain.Region = graph.Region;
+                    chain.ChainIndex = keptChains.Count;
+                    chain.EdgeIds = ids.ToArray();
+                    chain.Edges = graph.Edges == null ? null : ids.Select(id => graph.Edges[id]).ToArray();
+
+                    foreach (var edge in chain.Edges)
+                    {
+                        edge.NodeFrom.HasOutgoingEdges = true;
+                        edge.NodeTo.HasIncomingEdges = true;
+                        edge.NodeFrom.Chain = chain;
+                        edge.NodeTo.Chain = chain;
+                    }
+
+                    keptChains.Add(chain);
+                }
+
+                graph.Chains = keptChains.Count == 0 ? null : keptChains.ToArray();
+            }
+        }
+
+        private static MCScenarioChainingNode ResolveChainingNode(MCScenarioChainingNode[] nodes, MCScenarioChainingNode node, ushort nodeIndex)
+        {
+            if ((node != null) && (node.NodeIndex >= 0) && (node.NodeIndex < nodes.Length) && (nodes[node.NodeIndex] == node))
+            {
+                return node;
+            }
+
+            return nodeIndex < nodes.Length ? nodes[nodeIndex] : null;
+        }
 
     }
 
