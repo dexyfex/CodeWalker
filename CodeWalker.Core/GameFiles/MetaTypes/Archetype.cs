@@ -380,6 +380,8 @@ namespace CodeWalker.GameFiles
 
         private void FixPortalIndexes(int deletedIndex)
         {
+            if (portals == null) return;
+
             foreach (var portal in portals)
             {
                 List<uint> newAttachedObjects = new List<uint>();
