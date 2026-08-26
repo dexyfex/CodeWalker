@@ -1,0 +1,21 @@
+<Project>
+
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)EmbeddedAssemblies.cs" Link="EmbeddedAssemblies.cs" />
+  </ItemGroup>
+
+  <Target Name="EmbedReferencedAssemblies" DependsOnTargets="ResolveReferences" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <EmbeddedAssembly Include="@(ReferenceCopyLocalPaths)" Condition="('%(ReferenceCopyLocalPaths.Extension)' == '.dll' or '%(ReferenceCopyLocalPaths.Extension)' == '.exe') and '%(ReferenceCopyLocalPaths.DestinationSubDirectory)' == ''" />
+
+      <EmbeddedResource Include="@(EmbeddedAssembly)">
+        <LogicalName>CodeWalker.Assemblies/%(Filename)</LogicalName>
+      </EmbeddedResource>
+
+      <ReferenceCopyLocalPaths Remove="@(EmbeddedAssembly)" />
+      <ReferenceCopyLocalPaths Remove="@(EmbeddedAssembly->'%(RootDir)%(Directory)%(Filename).pdb')" />
+      <ReferenceCopyLocalPaths Remove="@(EmbeddedAssembly->'%(RootDir)%(Directory)%(Filename).xml')" />
+    </ItemGroup>
+  </Target>
+
+</Project>

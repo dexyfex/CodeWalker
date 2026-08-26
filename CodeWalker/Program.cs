@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Shell;
@@ -17,6 +18,13 @@ namespace CodeWalker
         /// </summary>
         [STAThread]
         static void Main(string[] args)
+        {
+            EmbeddedAssemblies.Install();
+            Run(args);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Run(string[] args)
         {
 
             bool menumode = false;
