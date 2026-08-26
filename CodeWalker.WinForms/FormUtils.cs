@@ -354,6 +354,12 @@ namespace CodeWalker
     {
         public static void SetTheme(Control form, ThemeBase theme)
         {
+            if (theme is VS2015DarkTheme)
+            {
+                DarkTheme.Apply(form);
+                return;
+            }
+
             form.BackColor = SystemColors.Control;
             form.ForeColor = SystemColors.ControlText;
             var txtback = SystemColors.Window;
