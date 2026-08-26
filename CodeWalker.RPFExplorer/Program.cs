@@ -30,6 +30,7 @@ namespace CodeWalker.RPFExplorer
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            DarkTheme.Install();
             Application.Run(new ExploreForm());
 
             GTAFolder.UpdateSettings();

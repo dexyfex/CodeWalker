@@ -25,6 +25,7 @@ namespace CodeWalker.ModManager
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            DarkTheme.Install();
             Application.Run(new ModManagerForm());
         }
     }

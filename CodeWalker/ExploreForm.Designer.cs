@@ -65,7 +65,6 @@
             this.ViewDetailsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.ViewThemeMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.ViewThemeWindowsMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewThemeBlueMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewThemeLightMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.ViewThemeDarkMenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -471,22 +470,12 @@
             // ViewThemeMenu
             // 
             this.ViewThemeMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ViewThemeWindowsMenu,
             this.ViewThemeBlueMenu,
             this.ViewThemeLightMenu,
             this.ViewThemeDarkMenu});
             this.ViewThemeMenu.Name = "ViewThemeMenu";
             this.ViewThemeMenu.Size = new System.Drawing.Size(134, 22);
             this.ViewThemeMenu.Text = "Theme";
-            // 
-            // ViewThemeWindowsMenu
-            // 
-            this.ViewThemeWindowsMenu.Checked = true;
-            this.ViewThemeWindowsMenu.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ViewThemeWindowsMenu.Name = "ViewThemeWindowsMenu";
-            this.ViewThemeWindowsMenu.Size = new System.Drawing.Size(123, 22);
-            this.ViewThemeWindowsMenu.Text = "Windows";
-            this.ViewThemeWindowsMenu.Click += new System.EventHandler(this.ViewThemeWindowsMenu_Click);
             // 
             // ViewThemeBlueMenu
             // 
@@ -1495,7 +1484,6 @@
         private System.Windows.Forms.ToolStripMenuItem ViewThemeLightMenu;
         private System.Windows.Forms.ToolStripMenuItem ViewThemeDarkMenu;
         private WeifenLuo.WinFormsUI.Docking.VisualStudioToolStripExtender VSExtender;
-        private System.Windows.Forms.ToolStripMenuItem ViewThemeWindowsMenu;
         private System.Windows.Forms.ToolStripMenuItem ListContextImportFbxMenu;
         private System.Windows.Forms.ToolStripMenuItem EditImportFbxMenu;
         private System.Windows.Forms.ToolStripMenuItem FileOpenFolderMenu;

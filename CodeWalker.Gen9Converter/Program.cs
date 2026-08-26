@@ -27,6 +27,7 @@ namespace CodeWalker.Gen9Converter
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            DarkTheme.Install();
             Application.Run(new ConvertAssetsForm());
         }
     }

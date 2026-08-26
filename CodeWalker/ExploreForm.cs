@@ -85,14 +85,9 @@ namespace CodeWalker
             switch (themestr)
             {
                 default:
-                case "Windows":
-                    //Theme = new VS2005Theme();
-                    ViewThemeWindowsMenu.Checked = true;
-                    version = VisualStudioToolStripExtender.VsVersion.Unknown;
-                    if (changing)
-                    {
-                        MessageBox.Show("Please reopen RPF Explorer to change back to Windows theme.");
-                    }
+                case "Dark":
+                    Theme = new VS2015DarkTheme();
+                    ViewThemeDarkMenu.Checked = true;
                     break;
                 case "Blue":
                     Theme = new VS2015BlueTheme();
@@ -101,10 +96,6 @@ namespace CodeWalker
                 case "Light":
                     Theme = new VS2015LightTheme();
                     ViewThemeLightMenu.Checked = true;
-                    break;
-                case "Dark":
-                    Theme = new VS2015DarkTheme();
-                    ViewThemeDarkMenu.Checked = true;
                     break;
             }
 
@@ -4461,11 +4452,6 @@ namespace CodeWalker
         private void ViewDetailsMenu_Click(object sender, EventArgs e)
         {
             SetView(System.Windows.Forms.View.Details);
-        }
-
-        private void ViewThemeWindowsMenu_Click(object sender, EventArgs e)
-        {
-            SetTheme("Windows");
         }
 
         private void ViewThemeBlueMenu_Click(object sender, EventArgs e)

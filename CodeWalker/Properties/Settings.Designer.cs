@@ -685,7 +685,7 @@ namespace CodeWalker.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Blue")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Dark")]
         public string ProjectWindowTheme {
             get {
                 return ((string)(this["ProjectWindowTheme"]));
@@ -697,7 +697,7 @@ namespace CodeWalker.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Windows")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Dark")]
         public string ExplorerWindowTheme {
             get {
                 return ((string)(this["ExplorerWindowTheme"]));

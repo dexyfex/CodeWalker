@@ -209,6 +209,10 @@ namespace CodeWalker.Project
             switch (themestr)
             {
                 default:
+                case "Dark":
+                    Theme = new VS2015DarkTheme();
+                    ViewThemeDarkMenu.Checked = true;
+                    break;
                 case "Blue":
                     Theme = new VS2015BlueTheme();
                     ViewThemeBlueMenu.Checked = true;
@@ -216,10 +220,6 @@ namespace CodeWalker.Project
                 case "Light":
                     Theme = new VS2015LightTheme();
                     ViewThemeLightMenu.Checked = true;
-                    break;
-                case "Dark":
-                    Theme = new VS2015DarkTheme();
-                    ViewThemeDarkMenu.Checked = true;
                     break;
             }
 

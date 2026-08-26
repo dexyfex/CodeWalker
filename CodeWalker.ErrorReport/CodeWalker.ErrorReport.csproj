@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -7,5 +7,11 @@
     <ApplicationIcon>CW.ico</ApplicationIcon>
     <AssemblyName>CodeWalker Error Report Tool</AssemblyName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CodeWalker.WinForms\CodeWalker.WinForms.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\Shared\SelfContained.targets" />
 
 </Project>

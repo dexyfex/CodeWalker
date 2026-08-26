@@ -29,6 +29,7 @@ namespace CodeWalker.Peds
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            DarkTheme.Install();
             Application.Run(new PedsForm());
 
             GTAFolder.UpdateSettings();
