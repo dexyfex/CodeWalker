@@ -4,6 +4,7 @@ using CodeWalker.Properties;
 using CodeWalker.Tools;
 using CodeWalker.World;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -52,6 +53,10 @@ namespace CodeWalker
         private volatile bool ShuttingDown = false;
 
         public List<string> StartupPaths { get; } = new List<string>();
+
+        private const int ScanStatusIntervalMs = 100;
+        private readonly ConcurrentDictionary<string, ScannedRpf> RpfScanCache = new ConcurrentDictionary<string, ScannedRpf>(StringComparer.OrdinalIgnoreCase);
+        private int LastScanStatusTick;
 
         public bool EditMode { get; private set; } = false;
 
@@ -770,22 +775,90 @@ namespace CodeWalker
 
             MainTreeViewRefreshComplete();
         }
+        private Dictionary<string, RpfFile> ScanRpfFiles(string[] allpaths, HashSet<string> alldirs, string fullPath)
+        {
+            var rpfpaths = new List<string>();
+            foreach (var path in allpaths)
+            {
+                if (alldirs.Contains(path)) continue;
+                if (!path.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase)) continue;
+                rpfpaths.Add(path);
+            }
+
+            var scanned = new ConcurrentDictionary<string, RpfFile>(StringComparer.OrdinalIgnoreCase);
+            var total = rpfpaths.Count;
+            var done = 0;
+
+            var options = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
+            Parallel.ForEach(rpfpaths, options, path =>
+            {
+                if (ShuttingDown) return;
+
+                var rpf = ScanRpfFile(path, path.Replace(fullPath, ""));
+                if (rpf != null)
+                {
+                    scanned[path] = rpf;
+                }
+
+                UpdateScanStatus("Scanning archives... " + Interlocked.Increment(ref done) + " of " + total);
+            });
+
+            return new Dictionary<string, RpfFile>(scanned, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private RpfFile ScanRpfFile(string path, string relpath)
+        {
+            var info = new FileInfo(path);
+
+            ScannedRpf cached;
+            if (RpfScanCache.TryGetValue(path, out cached))
+            {
+                if ((cached.Size == info.Length) && (cached.LastWriteUtc == info.LastWriteTimeUtc))
+                {
+                    return cached.File;
+                }
+            }
+
+            var rpf = new RpfFile(path, relpath);
+            rpf.ScanStructure(null, UpdateErrorLog);
+
+            if (rpf.LastException == null)
+            {
+                RpfScanCache[path] = new ScannedRpf { File = rpf, Size = info.Length, LastWriteUtc = info.LastWriteTimeUtc };
+            }
+
+            return rpf;
+        }
+
+        private void UpdateScanStatus(string text)
+        {
+            var now = Environment.TickCount;
+            if (unchecked(now - LastScanStatusTick) < ScanStatusIntervalMs) return;
+            LastScanStatusTick = now;
+            UpdateStatus(text);
+        }
+
         private void RefreshMainTreeViewRoot(MainTreeFolder f, bool extra = false)
         {
             var allRpfs = new List<RpfFile>();
             var fullPath = f.FullPath;
             var subPath = f.Path;
             var allpaths = Directory.GetFileSystemEntries(fullPath, "*", SearchOption.AllDirectories);
+            var alldirs = new HashSet<string>(Directory.GetDirectories(fullPath, "*", SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
             var nodes = new Dictionary<string, MainTreeFolder>();
+
+            var scannedRpfs = ScanRpfFiles(allpaths, alldirs, fullPath);
 
             foreach (var path in allpaths)
             {
+                if (ShuttingDown) return;
+
                 var relpath = path.Replace(fullPath, "");
                 var filepathl = path.ToLowerInvariant();
 
-                var isFile = File.Exists(path); //could be a folder
+                var isFile = !alldirs.Contains(path);
 
-                UpdateStatus("Scanning " + relpath + "...");
+                UpdateScanStatus("Scanning " + relpath + "...");
 
                 MainTreeFolder parentnode = null, prevnode = null, node = null;
                 var prevnodepath = "";
@@ -823,9 +896,8 @@ namespace CodeWalker
                 {
                     if (filepathl.EndsWith(".rpf")) //add RPF nodes
                     {
-                        RpfFile rpf = new RpfFile(path, relpath);
-
-                        rpf.ScanStructure(UpdateStatus, UpdateErrorLog);
+                        RpfFile rpf;
+                        if (!scannedRpfs.TryGetValue(path, out rpf)) continue;
 
                         if (rpf.LastException != null) //incase of corrupted rpf (or renamed NG encrypted RPF)
                         {
@@ -4868,6 +4940,13 @@ namespace CodeWalker
         {
             return Name;
         }
+    }
+
+    public class ScannedRpf
+    {
+        public RpfFile File { get; set; }
+        public long Size { get; set; }
+        public DateTime LastWriteUtc { get; set; }
     }
 
     public class MainListItem
