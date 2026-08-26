@@ -967,11 +967,7 @@ namespace CodeWalker
         {
             RunOnUiThread(() =>
             {
-                var root = f.Parent?.TreeNode;
-
-                RecurseAddMainTreeViewNodes(f, root);
-
-                root?.Expand();
+                RecurseAddMainTreeViewNodes(f, f.Parent?.TreeNode);
             });
         }
         private void RecurseAddMainTreeViewNodes(MainTreeFolder f, TreeNode parent)
