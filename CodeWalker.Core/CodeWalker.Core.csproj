@@ -21,6 +21,7 @@
     <EmbeddedResource Include="strings.txt" LogicalName="CodeWalker.Files/strings.txt" />
     <EmbeddedResource Include="ShadersGen9Conversion.xml" LogicalName="CodeWalker.Files/ShadersGen9Conversion.xml" />
     <EmbeddedResource Include="..\Shaders\*.cso" LogicalName="CodeWalker.Files/Shaders/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\icons\*.png" LogicalName="CodeWalker.Files/icons/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

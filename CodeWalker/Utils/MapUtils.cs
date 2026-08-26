@@ -15,6 +15,7 @@ namespace CodeWalker
     {
         public string Name { get; set; }
         public string Filepath { get; set; }
+        public byte[] Data { get; set; }
         public Texture2D Tex { get; set; }
         public ShaderResourceView TexView { get; set; }
         public Vector3 Center { get; set; } //in image pixels
@@ -31,7 +32,8 @@ namespace CodeWalker
             Center = new Vector3(centerx, centery, 0.0f);
             Scale = scale;
 
-            if (!File.Exists(filepath))
+            Data = PathUtil.ReadAllBytes(filepath);
+            if (Data == null)
             {
                 throw new Exception("File not found.");
             }
@@ -43,7 +45,7 @@ namespace CodeWalker
             {
                 if (device != null)
                 {
-                    Tex = TextureLoader.CreateTexture2DFromBitmap(device, TextureLoader.LoadBitmap(new SharpDX.WIC.ImagingFactory2(), Filepath));
+                    Tex = TextureLoader.CreateTexture2DFromBitmap(device, TextureLoader.LoadBitmap(new SharpDX.WIC.ImagingFactory2(), Data));
                     TexView = new ShaderResourceView(device, Tex);
                 }
             }

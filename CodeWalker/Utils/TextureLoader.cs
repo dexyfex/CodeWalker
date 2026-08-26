@@ -41,6 +41,36 @@ namespace CodeWalker.Utils
         }
 
         /// <summary>
+        /// Loads a bitmap using WIC.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static BitmapSource LoadBitmap(ImagingFactory2 factory, byte[] data)
+        {
+            using (var stream = new MemoryStream(data))
+            {
+                var bitmapDecoder = new BitmapDecoder(
+                    factory,
+                    stream,
+                    DecodeOptions.CacheOnLoad
+                    );
+
+                var formatConverter = new FormatConverter(factory);
+
+                formatConverter.Initialize(
+                    bitmapDecoder.GetFrame(0),
+                    PixelFormat.Format32bppPRGBA,
+                    BitmapDitherType.None,
+                    null,
+                    0.0,
+                    BitmapPaletteType.Custom);
+
+                return formatConverter;
+            }
+        }
+
+        /// <summary>
         /// Creates a <see cref="SharpDX.Direct3D11.Texture2D"/> from a WIC <see cref="SharpDX.WIC.BitmapSource"/>
         /// </summary>
         /// <param name="device">The Direct3D11 device</param>
