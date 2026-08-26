@@ -16,22 +16,33 @@ namespace CodeWalker.RPFExplorer
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             EmbeddedAssemblies.Install();
             UserConfig.Repair();
-            Run();
+            Run(args);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Run()
+        static void Run(string[] args)
         {
             //Process.Start("CodeWalker.exe", "explorer");
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             DarkTheme.Install();
-            Application.Run(new ExploreForm());
+
+            var form = new ExploreForm();
+            if (args != null)
+            {
+                foreach (var arg in args)
+                {
+                    if (string.IsNullOrEmpty(arg)) continue;
+                    form.StartupPaths.Add(arg);
+                }
+            }
+
+            Application.Run(form);
 
             GTAFolder.UpdateSettings();
         }

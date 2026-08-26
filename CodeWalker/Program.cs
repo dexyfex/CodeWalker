@@ -33,6 +33,7 @@ namespace CodeWalker
             bool projectmode = false;
             bool vehiclesmode = false;
             bool pedsmode = false;
+            var openpaths = new List<string>();
             if ((args != null) && (args.Length > 0))
             {
                 foreach (string arg in args)
@@ -57,6 +58,11 @@ namespace CodeWalker
                     if (argl == "peds")
                     {
                         pedsmode = true;
+                    }
+                    if (File.Exists(arg) || Directory.Exists(arg))
+                    {
+                        openpaths.Add(arg);
+                        explorermode = true;
                     }
                 }
             }
@@ -85,7 +91,9 @@ namespace CodeWalker
                 }
                 else if (explorermode)
                 {
-                    Application.Run(new ExploreForm());
+                    var exploreform = new ExploreForm();
+                    exploreform.StartupPaths.AddRange(openpaths);
+                    Application.Run(exploreform);
                 }
                 else if (projectmode)
                 {

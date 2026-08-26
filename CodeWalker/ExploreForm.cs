@@ -51,6 +51,8 @@ namespace CodeWalker
         private object FileCacheSyncRoot = new object();
         private volatile bool ShuttingDown = false;
 
+        public List<string> StartupPaths { get; } = new List<string>();
+
         public bool EditMode { get; private set; } = false;
 
         public ThemeBase Theme { get; private set; }
@@ -1026,6 +1028,8 @@ namespace CodeWalker
                     EnableEditMode(true, false);
                 }
                 FirstRefreshed = true;
+
+                OpenStartupPaths();
             });
         }
         private void AddNewFolderTreeNode(MainTreeFolder f)
@@ -3521,13 +3525,22 @@ namespace CodeWalker
         }
         private void OpenFolder()
         {
-            var folderPath = SelectFolder();
+            OpenFolder(SelectFolder());
+        }
+        private void OpenFolder(string folderPath, string selectPath = null)
+        {
             if (string.IsNullOrEmpty(folderPath)) return;
             if (!Directory.Exists(folderPath)) return;
 
+            folderPath = EnsureTrailingSeparator(folderPath);
+
             foreach (var folder in ExtraRootFolders)
             {
-                if (folder.FullPath == folderPath) return;
+                if (folder.FullPath == folderPath)
+                {
+                    SelectFolderNode(folder, selectPath);
+                    return;
+                }
             }
 
             var root = new MainTreeFolder();
@@ -3541,11 +3554,71 @@ namespace CodeWalker
             {
                 RefreshMainTreeViewRoot(root);
 
-                Invoke(new Action(() => 
-                {
-                    MainTreeView.SelectedNode = root.TreeNode;
-                }));
+                RunOnUiThread(() => { SelectFolderNode(root, selectPath); });
             });
+        }
+        private void SelectFolderNode(MainTreeFolder root, string selectPath)
+        {
+            var target = root;
+            if (!string.IsNullOrEmpty(selectPath))
+            {
+                target = FindFolderByFullPath(root, selectPath) ?? root;
+            }
+            if (target.TreeNode == null) return;
+            MainTreeView.SelectedNode = target.TreeNode;
+        }
+        private MainTreeFolder FindFolderByFullPath(MainTreeFolder folder, string fullPath)
+        {
+            if (folder == null) return null;
+            if (string.Equals(folder.FullPath, fullPath, StringComparison.OrdinalIgnoreCase)) return folder;
+            if (folder.Children == null) return null;
+            foreach (var child in folder.Children)
+            {
+                var match = FindFolderByFullPath(child, fullPath);
+                if (match != null) return match;
+            }
+            return null;
+        }
+        private static string EnsureTrailingSeparator(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return path;
+            if (path.EndsWith(Path.DirectorySeparatorChar.ToString())) return path;
+            return path + Path.DirectorySeparatorChar;
+        }
+
+        public void OpenPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return;
+
+            if (Directory.Exists(path))
+            {
+                OpenFolder(path);
+                return;
+            }
+
+            if (!File.Exists(path)) return;
+
+            if (path.EndsWith(".rpf", StringComparison.OrdinalIgnoreCase))
+            {
+                OpenFolder(Path.GetDirectoryName(path), path);
+                return;
+            }
+
+            var item = new MainListItem(path, EnsureTrailingSeparator(Path.GetDirectoryName(path)), null);
+            item.FileType = GetFileType(item.Name);
+            View(item);
+        }
+        private void OpenStartupPaths()
+        {
+            if (StartupPaths.Count == 0) return;
+
+            var paths = StartupPaths.ToArray();
+            StartupPaths.Clear();
+
+            foreach (var path in paths)
+            {
+                OpenPath(path);
+            }
         }
         private void CloseFolder(MainTreeFolder folder)
         {
