@@ -21,6 +21,9 @@ namespace CodeWalker
 
         private const int DwmUseImmersiveDarkMode = 20;
         private const int DwmUseImmersiveDarkModeLegacy = 19;
+        private const int PreferredAppModeForceDark = 2;
+        private const string ExplorerTheme = "DarkMode_Explorer";
+        private const string FieldTheme = "DarkMode_CFD";
 
         private static readonly HashSet<Control> ThemedControls = new HashSet<Control>();
         private static ThemeBase dockTheme;
@@ -38,6 +41,7 @@ namespace CodeWalker
             if (installed) return;
             installed = true;
 
+            EnableSystemDarkMode();
             ToolStripManager.Renderer = new DarkToolStripRenderer();
             Application.Idle += ApplicationIdle;
         }
@@ -90,6 +94,7 @@ namespace CodeWalker
                 form.BackColor = Window;
                 form.ForeColor = Text;
                 StyleTitleBar(form);
+                StyleNativeWindow(control, ExplorerTheme);
             }
 
             StyleMenu(control.ContextMenuStrip);
@@ -100,6 +105,7 @@ namespace CodeWalker
                 textBox.BackColor = textBox.ReadOnly ? Surface : Field;
                 textBox.ForeColor = textBox.ReadOnly ? DimText : Text;
                 textBox.BorderStyle = BorderStyle.FixedSingle;
+                StyleNativeWindow(control, ExplorerTheme);
                 return;
             }
 
@@ -109,6 +115,7 @@ namespace CodeWalker
                 comboBox.FlatStyle = FlatStyle.Flat;
                 comboBox.BackColor = Field;
                 comboBox.ForeColor = Text;
+                StyleNativeWindow(control, FieldTheme);
                 return;
             }
 
@@ -118,6 +125,7 @@ namespace CodeWalker
                 listBox.BackColor = Field;
                 listBox.ForeColor = Text;
                 listBox.BorderStyle = BorderStyle.FixedSingle;
+                StyleNativeWindow(control, ExplorerTheme);
                 return;
             }
 
@@ -135,6 +143,7 @@ namespace CodeWalker
                 treeView.ForeColor = Text;
                 treeView.LineColor = DimText;
                 treeView.BorderStyle = BorderStyle.FixedSingle;
+                StyleNativeWindow(control, ExplorerTheme);
                 return;
             }
 
@@ -142,6 +151,7 @@ namespace CodeWalker
             if (grid != null)
             {
                 StyleDataGrid(grid);
+                StyleNativeWindow(control, ExplorerTheme);
                 return;
             }
 
@@ -217,8 +227,7 @@ namespace CodeWalker
             var strip = control as ToolStrip;
             if (strip != null)
             {
-                strip.BackColor = Surface;
-                strip.ForeColor = Text;
+                StyleStrip(strip);
                 return;
             }
 
@@ -226,8 +235,28 @@ namespace CodeWalker
             if (editor != null)
             {
                 StyleTextEditor(editor);
+                StyleNativeWindow(control, ExplorerTheme);
                 return;
             }
+
+            var scrollable = control as ScrollableControl;
+            if (scrollable != null)
+            {
+                StyleNativeWindow(control, ExplorerTheme);
+            }
+        }
+
+        private static void EnableSystemDarkMode()
+        {
+            try
+            {
+                SetPreferredAppMode(PreferredAppModeForceDark);
+                FlushMenuThemes();
+            }
+            catch (EntryPointNotFoundException)
+            { }
+            catch (DllNotFoundException)
+            { }
         }
 
         private static void StyleTitleBar(Form form)
@@ -243,13 +272,90 @@ namespace CodeWalker
             {
                 DwmSetWindowAttribute(form.Handle, DwmUseImmersiveDarkModeLegacy, ref enabled, sizeof(int));
             }
+
+            SetWindowPos(form.Handle, IntPtr.Zero, 0, 0, 0, 0, SwpNoMove | SwpNoSize | SwpNoZOrder | SwpFrameChanged);
+        }
+
+        private static void StyleNativeWindow(Control control, string theme)
+        {
+            if (control.IsHandleCreated == false)
+            {
+                control.HandleCreated += (s, e) => StyleNativeWindow(control, theme);
+                return;
+            }
+
+            try
+            {
+                SetWindowTheme(control.Handle, theme, null);
+            }
+            catch (DllNotFoundException)
+            { }
         }
 
         private static void StyleMenu(ToolStrip menu)
         {
             if (menu == null) return;
-            menu.BackColor = Surface;
-            menu.ForeColor = Text;
+            StyleStrip(menu);
+        }
+
+        private static void StyleStrip(ToolStrip strip)
+        {
+            strip.BackColor = Surface;
+            strip.ForeColor = Text;
+
+            foreach (ToolStripItem item in strip.Items)
+            {
+                StyleStripItem(item);
+            }
+
+            strip.ItemAdded -= StripItemAdded;
+            strip.ItemAdded += StripItemAdded;
+        }
+
+        private static void StripItemAdded(object sender, ToolStripItemEventArgs e)
+        {
+            StyleStripItem(e.Item);
+        }
+
+        private static void StyleStripItem(ToolStripItem item)
+        {
+            if (item == null) return;
+
+            item.BackColor = Surface;
+            item.ForeColor = Text;
+
+            var textBox = item as ToolStripTextBox;
+            if (textBox != null)
+            {
+                textBox.BackColor = Field;
+                textBox.ForeColor = Text;
+                textBox.BorderStyle = BorderStyle.FixedSingle;
+                Apply(textBox.TextBox);
+                return;
+            }
+
+            var comboBox = item as ToolStripComboBox;
+            if (comboBox != null)
+            {
+                comboBox.BackColor = Field;
+                comboBox.ForeColor = Text;
+                comboBox.FlatStyle = FlatStyle.Flat;
+                Apply(comboBox.ComboBox);
+                return;
+            }
+
+            var host = item as ToolStripControlHost;
+            if (host != null)
+            {
+                Apply(host.Control);
+                return;
+            }
+
+            var dropDown = item as ToolStripDropDownItem;
+            if (dropDown != null)
+            {
+                StyleStrip(dropDown.DropDown);
+            }
         }
 
         private static void StyleListView(ListView listView)
@@ -257,39 +363,7 @@ namespace CodeWalker
             listView.BackColor = Field;
             listView.ForeColor = Text;
             listView.BorderStyle = BorderStyle.FixedSingle;
-
-            if (listView.OwnerDraw) return;
-            listView.OwnerDraw = true;
-            listView.DrawColumnHeader += DrawListViewColumnHeader;
-            listView.DrawItem += DrawListViewItem;
-            listView.DrawSubItem += DrawListViewSubItem;
-        }
-
-        private static void DrawListViewColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
-        {
-            using (var back = new SolidBrush(Surface))
-            using (var fore = new SolidBrush(Text))
-            using (var pen = new Pen(Border))
-            using (var format = new StringFormat())
-            {
-                format.LineAlignment = StringAlignment.Center;
-                format.Trimming = StringTrimming.EllipsisCharacter;
-                format.FormatFlags = StringFormatFlags.NoWrap;
-
-                e.Graphics.FillRectangle(back, e.Bounds);
-                e.Graphics.DrawLine(pen, e.Bounds.Right - 1, e.Bounds.Top, e.Bounds.Right - 1, e.Bounds.Bottom);
-                e.Graphics.DrawString(e.Header.Text, e.Font, fore, Rectangle.Inflate(e.Bounds, -4, 0), format);
-            }
-        }
-
-        private static void DrawListViewItem(object sender, DrawListViewItemEventArgs e)
-        {
-            e.DrawDefault = true;
-        }
-
-        private static void DrawListViewSubItem(object sender, DrawListViewSubItemEventArgs e)
-        {
-            e.DrawDefault = true;
+            StyleNativeWindow(listView, ExplorerTheme);
         }
 
         private static void StyleTabControl(TabControl tabControl)
@@ -419,8 +493,25 @@ namespace CodeWalker
             textStyle.FontStyle = fontStyle;
         }
 
+        private const uint SwpNoSize = 0x0001;
+        private const uint SwpNoMove = 0x0002;
+        private const uint SwpNoZOrder = 0x0004;
+        private const uint SwpFrameChanged = 0x0020;
+
         [DllImport("dwmapi.dll")]
         private static extern int DwmSetWindowAttribute(IntPtr window, int attribute, ref int value, int size);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowPos(IntPtr window, IntPtr insertAfter, int x, int y, int width, int height, uint flags);
+
+        [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
+        private static extern int SetWindowTheme(IntPtr window, string application, string idList);
+
+        [DllImport("uxtheme.dll", EntryPoint = "#135")]
+        private static extern int SetPreferredAppMode(int mode);
+
+        [DllImport("uxtheme.dll", EntryPoint = "#136")]
+        private static extern void FlushMenuThemes();
 
 
         private class DarkToolStripRenderer : ToolStripProfessionalRenderer
