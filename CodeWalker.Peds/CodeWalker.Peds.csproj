@@ -19,4 +19,6 @@
     <ProjectReference Include="..\CodeWalker\CodeWalker.csproj" />
   </ItemGroup>
 
+  <Import Project="..\Shared\EmbedAssemblies.targets" />
+
 </Project>

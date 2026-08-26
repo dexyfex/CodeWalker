@@ -3,6 +3,7 @@ using CodeWalker.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -15,6 +16,13 @@ namespace CodeWalker.Peds
         /// </summary>
         [STAThread]
         static void Main()
+        {
+            EmbeddedAssemblies.Install();
+            Run();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void Run()
         {
             //Process.Start("CodeWalker.exe", "peds");
 
