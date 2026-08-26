@@ -5765,11 +5765,8 @@ namespace CodeWalker.GameFiles
         {
             if (ShadersGen9ConversionData != null) return;
 
-            var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            var dir = Path.GetDirectoryName(path);
-            var fpath = Path.Combine(dir, "ShadersGen9Conversion.xml");
-            if (File.Exists(fpath) == false) throw new Exception("Unable to load ShadersGen9Conversion.xml");//where's the XML file huh?
-            var gen9xml = File.ReadAllText(fpath);
+            var gen9xml = PathUtil.ReadAllText("ShadersGen9Conversion.xml");
+            if (string.IsNullOrEmpty(gen9xml)) throw new Exception("Unable to load ShadersGen9Conversion.xml");
             var xdoc = new XmlDocument();
             xdoc.LoadXml(gen9xml);
             var shaders = xdoc.SelectNodes("ShadersGen9Conversion/Item");

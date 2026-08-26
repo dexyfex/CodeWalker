@@ -31,8 +31,25 @@ namespace CodeWalker
 
         public static byte[] ReadAllBytes(string appRelativePath)
         {
+            var data = EmbeddedFiles.ReadAllBytes(appRelativePath);
+            if (data != null) return data;
+            return File.ReadAllBytes(GetFilePath(appRelativePath));
+        }
+
+        public static string ReadAllText(string appRelativePath)
+        {
+            var text = EmbeddedFiles.ReadAllText(appRelativePath);
+            if (text != null) return text;
             var path = GetFilePath(appRelativePath);
-            return File.ReadAllBytes(path);
+            if (File.Exists(path) == false) return null;
+            return File.ReadAllText(path);
+        }
+
+        public static string[] ReadAllLines(string appRelativePath)
+        {
+            var text = ReadAllText(appRelativePath);
+            if (text == null) return null;
+            return text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         }
 
     }

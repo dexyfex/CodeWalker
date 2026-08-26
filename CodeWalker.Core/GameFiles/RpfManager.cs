@@ -501,21 +501,15 @@ namespace CodeWalker.GameFiles
             }
 
 
-            var path = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            var dir = Path.GetDirectoryName(path);
-            var fpath = Path.Combine(dir, "strings.txt");
-            if (File.Exists(fpath))
+            var lines = PathUtil.ReadAllLines("strings.txt");
+            if (lines != null)
             {
-                var lines = File.ReadAllLines(fpath);
-                if (lines != null)
+                foreach (var line in lines)
                 {
-                    foreach (var line in lines)
-                    {
-                        var str = line?.Trim();
-                        if (string.IsNullOrEmpty(str)) continue;
-                        if (str.StartsWith("//")) continue;
-                        JenkIndex.Ensure(str);
-                    }
+                    var str = line?.Trim();
+                    if (string.IsNullOrEmpty(str)) continue;
+                    if (str.StartsWith("//")) continue;
+                    JenkIndex.Ensure(str);
                 }
             }
 

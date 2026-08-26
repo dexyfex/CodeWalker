@@ -18,12 +18,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="ShadersGen9Conversion.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="strings.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="strings.txt" LogicalName="CodeWalker.Files/strings.txt" />
+    <EmbeddedResource Include="ShadersGen9Conversion.xml" LogicalName="CodeWalker.Files/ShadersGen9Conversion.xml" />
+    <EmbeddedResource Include="..\Shaders\*.cso" LogicalName="CodeWalker.Files/Shaders/%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>
