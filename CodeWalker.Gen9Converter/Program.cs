@@ -18,6 +18,7 @@ namespace CodeWalker.Gen9Converter
         static void Main()
         {
             EmbeddedAssemblies.Install();
+            UserConfig.Repair();
             Run();
         }
 

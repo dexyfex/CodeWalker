@@ -16,6 +16,7 @@ namespace CodeWalker.ModManager
         static void Main()
         {
             EmbeddedAssemblies.Install();
+            UserConfig.Repair();
             Run();
         }
 

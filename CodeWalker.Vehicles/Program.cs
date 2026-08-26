@@ -16,6 +16,7 @@ namespace CodeWalker.Vehicles
         static void Main()
         {
             EmbeddedAssemblies.Install();
+            UserConfig.Repair();
             Run();
         }
 

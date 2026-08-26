@@ -19,6 +19,7 @@ namespace CodeWalker.RPFExplorer
         static void Main()
         {
             EmbeddedAssemblies.Install();
+            UserConfig.Repair();
             Run();
         }
 

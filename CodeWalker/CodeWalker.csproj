@@ -51,6 +51,6 @@
     </None>
   </ItemGroup>
 
-  <Import Project="..\Shared\EmbedAssemblies.targets" />
+  <Import Project="..\Shared\SelfContained.targets" />
 
 </Project>

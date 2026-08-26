@@ -20,6 +20,7 @@ namespace CodeWalker
         static void Main(string[] args)
         {
             EmbeddedAssemblies.Install();
+            UserConfig.Repair();
             Run(args);
         }
 
