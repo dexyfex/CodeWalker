@@ -24,6 +24,8 @@ namespace CodeWalker
         private const int PreferredAppModeForceDark = 2;
         private const string ExplorerTheme = "DarkMode_Explorer";
         private const string FieldTheme = "DarkMode_CFD";
+        private const string ItemsViewTheme = "DarkMode_ItemsView";
+        private const int LvmGetHeader = 0x101F;
 
         private static readonly HashSet<Control> ThemedControls = new HashSet<Control>();
         private static ThemeBase dockTheme;
@@ -284,9 +286,25 @@ namespace CodeWalker
                 return;
             }
 
+            StyleNativeWindow(control.Handle, theme);
+        }
+
+        private static void StyleNativeWindow(IntPtr window, string theme)
+        {
+            if (window == IntPtr.Zero) return;
+
             try
             {
-                SetWindowTheme(control.Handle, theme, null);
+                AllowDarkModeForWindow(window, true);
+            }
+            catch (EntryPointNotFoundException)
+            { }
+            catch (DllNotFoundException)
+            { }
+
+            try
+            {
+                SetWindowTheme(window, theme, null);
             }
             catch (DllNotFoundException)
             { }
@@ -364,6 +382,65 @@ namespace CodeWalker
             listView.ForeColor = Text;
             listView.BorderStyle = BorderStyle.FixedSingle;
             StyleNativeWindow(listView, ExplorerTheme);
+
+            listView.HandleCreated -= ListViewHandleCreated;
+            listView.HandleCreated += ListViewHandleCreated;
+            StyleListViewHeader(listView);
+
+            if (listView.OwnerDraw) return;
+            listView.OwnerDraw = true;
+            listView.DrawColumnHeader += DrawListViewColumnHeader;
+            listView.DrawItem += DrawListViewItem;
+            listView.DrawSubItem += DrawListViewSubItem;
+        }
+
+        private static void DrawListViewColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            using (var back = new SolidBrush(Surface))
+            using (var fore = new SolidBrush(Text))
+            using (var pen = new Pen(Border))
+            using (var format = new StringFormat())
+            {
+                format.LineAlignment = StringAlignment.Center;
+                format.Trimming = StringTrimming.EllipsisCharacter;
+                format.FormatFlags = StringFormatFlags.NoWrap;
+                format.Alignment = GetAlignment(e.Header.TextAlign);
+
+                e.Graphics.FillRectangle(back, e.Bounds);
+                e.Graphics.DrawLine(pen, e.Bounds.Right - 1, e.Bounds.Top + 4, e.Bounds.Right - 1, e.Bounds.Bottom - 4);
+                e.Graphics.DrawString(e.Header.Text, e.Font, fore, Rectangle.Inflate(e.Bounds, -4, 0), format);
+            }
+        }
+
+        private static StringAlignment GetAlignment(HorizontalAlignment alignment)
+        {
+            if (alignment == HorizontalAlignment.Center) return StringAlignment.Center;
+            if (alignment == HorizontalAlignment.Right) return StringAlignment.Far;
+            return StringAlignment.Near;
+        }
+
+        private static void DrawListViewItem(object sender, DrawListViewItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private static void DrawListViewSubItem(object sender, DrawListViewSubItemEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private static void ListViewHandleCreated(object sender, EventArgs e)
+        {
+            StyleListViewHeader(sender as ListView);
+        }
+
+        private static void StyleListViewHeader(ListView listView)
+        {
+            if (listView == null) return;
+            if (listView.IsHandleCreated == false) return;
+
+            var header = SendMessage(listView.Handle, LvmGetHeader, IntPtr.Zero, IntPtr.Zero);
+            StyleNativeWindow(header, ItemsViewTheme);
         }
 
         private static void StyleTabControl(TabControl tabControl)
@@ -506,6 +583,12 @@ namespace CodeWalker
 
         [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
         private static extern int SetWindowTheme(IntPtr window, string application, string idList);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr window, int message, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("uxtheme.dll", EntryPoint = "#133")]
+        private static extern bool AllowDarkModeForWindow(IntPtr window, bool allow);
 
         [DllImport("uxtheme.dll", EntryPoint = "#135")]
         private static extern int SetPreferredAppMode(int mode);
