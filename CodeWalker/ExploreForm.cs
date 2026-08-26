@@ -49,6 +49,7 @@ namespace CodeWalker
         private List<RpfFile> AllRpfs { get; set; }
         private GameFileCache FileCache { get; set; } = GameFileCacheFactory.Create();
         private object FileCacheSyncRoot = new object();
+        private volatile bool ShuttingDown = false;
 
         public bool EditMode { get; private set; } = false;
 
@@ -196,7 +197,7 @@ namespace CodeWalker
 
                 InitFileCache();
 
-                while (!IsDisposed) //run the file cache content thread until the form exits.
+                while (!ShuttingDown && !IsDisposed) //run the file cache content thread until the form exits.
                 {
                     if (FileCache.IsInited)
                     {
@@ -379,35 +380,50 @@ namespace CodeWalker
 
 
 
-        public void UpdateStatus(string text)
+        private bool RunOnUiThread(Action action)
         {
+            if (action == null) return false;
+            if (ShuttingDown || Disposing || IsDisposed) return false;
+
             try
             {
                 if (InvokeRequired)
                 {
-                    BeginInvoke(new Action(() => { UpdateStatus(text); }));
+                    if (!IsHandleCreated) return false;
+                    BeginInvoke(new Action(() => { RunGuarded(action); }));
                 }
                 else
                 {
-                    StatusLabel.Text = text;
+                    RunGuarded(action);
                 }
+                return true;
+            }
+            catch (ObjectDisposedException)
+            {
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+
+        private void RunGuarded(Action action)
+        {
+            if (ShuttingDown || Disposing || IsDisposed) return;
+            try
+            {
+                action();
             }
             catch { }
         }
+
+        public void UpdateStatus(string text)
+        {
+            RunOnUiThread(() => { StatusLabel.Text = text; });
+        }
         public void UpdateErrorLog(string text)
         {
-            try
-            {
-                if (InvokeRequired)
-                {
-                    BeginInvoke(new Action(() => { UpdateErrorLog(text); }));
-                }
-                else
-                {
-                    //StatusLabel.Text = text;
-                }
-            }
-            catch { }
         }
 
 
@@ -922,66 +938,41 @@ namespace CodeWalker
         }
         private void ClearMainTreeView()
         {
-            try
+            RunOnUiThread(() =>
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { ClearMainTreeView(); }));
-                }
-                else
-                {
-                    GoButton.Enabled = false;
-                    UpButton.Enabled = false;
-                    BackButton.Enabled = false;
-                    ForwardButton.Enabled = false;
-                    RefreshButton.Enabled = false;
-                    SearchButton.Enabled = false;
-                    EditModeButton.Enabled = false;
-                    MainTreeView.Nodes.Clear();
-                    MainListView.VirtualListSize = 0; //also clear the list view...
-                }
-            }
-            catch { }
+                GoButton.Enabled = false;
+                UpButton.Enabled = false;
+                BackButton.Enabled = false;
+                ForwardButton.Enabled = false;
+                RefreshButton.Enabled = false;
+                SearchButton.Enabled = false;
+                EditModeButton.Enabled = false;
+                MainTreeView.Nodes.Clear();
+                MainListView.VirtualListSize = 0; //also clear the list view...
+            });
         }
         private void AddMainTreeViewRoot(MainTreeFolder f)
         {
-            try
+            RunOnUiThread(() =>
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { AddMainTreeViewRoot(f); }));
-                }
-                else
-                {
-                    int imgIndex = 1; //FOLDER imageIndex
-                    if (string.IsNullOrEmpty(f.Path)) imgIndex = 0; //ROOT imageIndex
-                    var rn = MainTreeView.Nodes.Add(f.Path, f.Name, imgIndex, imgIndex);
-                    rn.ToolTipText = f.FullPath;
-                    rn.Tag = f;
-                    f.TreeNode = rn;
-                }
-            }
-            catch { }
+                int imgIndex = 1; //FOLDER imageIndex
+                if (string.IsNullOrEmpty(f.Path)) imgIndex = 0; //ROOT imageIndex
+                var rn = MainTreeView.Nodes.Add(f.Path, f.Name, imgIndex, imgIndex);
+                rn.ToolTipText = f.FullPath;
+                rn.Tag = f;
+                f.TreeNode = rn;
+            });
         }
         private void AddMainTreeViewNode(MainTreeFolder f)
         {
-            try
+            RunOnUiThread(() =>
             {
-                if (InvokeRequired)
-                {
-                    Invoke(new Action(() => { AddMainTreeViewNode(f); }));
-                }
-                else
-                {
-                    string n = f.Name;
-                    var root = f.Parent?.TreeNode;
+                var root = f.Parent?.TreeNode;
 
-                    RecurseAddMainTreeViewNodes(f, root);
+                RecurseAddMainTreeViewNodes(f, root);
 
-                    root.Expand();
-                }
-            }
-            catch { }
+                root?.Expand();
+            });
         }
         private void RecurseAddMainTreeViewNodes(MainTreeFolder f, TreeNode parent)
         {
@@ -1009,45 +1000,37 @@ namespace CodeWalker
         }
         private void MainTreeViewRefreshComplete()
         {
-            try
+            RunOnUiThread(() =>
             {
-                if (InvokeRequired)
+                if (!FirstRefreshed && !string.IsNullOrEmpty(Settings.Default.RPFExplorerStartFolder))
                 {
-                    Invoke(new Action(() => { MainTreeViewRefreshComplete(); }));
+                    Navigate(Settings.Default.RPFExplorerStartFolder);
                 }
-                else
+                else if (CurrentFolder != null)
                 {
-                    if (!FirstRefreshed && !string.IsNullOrEmpty(Settings.Default.RPFExplorerStartFolder))
+                    if (CurrentFolder.IsSearchResults)
                     {
-                        Navigate(Settings.Default.RPFExplorerStartFolder);
-                    }
-                    else if (CurrentFolder != null)
-                    {
-                        if (CurrentFolder.IsSearchResults)
-                        {
-                            Search(CurrentFolder.SearchTerm);
-                        }
-                        else
-                        {
-                            var path = CurrentFolder.Path;
-                            CurrentFolder = null;
-                            Navigate(path);
-                        }
+                        Search(CurrentFolder.SearchTerm);
                     }
                     else
                     {
-                        Navigate(RootFolder);
+                        var path = CurrentFolder.Path;
+                        CurrentFolder = null;
+                        Navigate(path);
                     }
-
-
-                    if (!FirstRefreshed && Settings.Default.RPFExplorerStartInEditMode)
-                    {
-                        EnableEditMode(true, false);
-                    }
-                    FirstRefreshed = true;
                 }
-            }
-            catch { }
+                else
+                {
+                    Navigate(RootFolder);
+                }
+
+
+                if (!FirstRefreshed && Settings.Default.RPFExplorerStartInEditMode)
+                {
+                    EnableEditMode(true, false);
+                }
+                FirstRefreshed = true;
+            });
         }
         private void AddNewFolderTreeNode(MainTreeFolder f)
         {
@@ -3709,6 +3692,12 @@ namespace CodeWalker
         private void ExploreForm_Load(object sender, EventArgs e)
         {
             Init();
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            ShuttingDown = true;
+            base.OnFormClosing(e);
         }
 
         private void ExploreForm_FormClosed(object sender, FormClosedEventArgs e)
