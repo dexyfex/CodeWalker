@@ -171,6 +171,10 @@ namespace CodeWalker
 
             InitFileTypes();
 
+            MainTreeView.AllowDrop = true;
+            MainTreeView.DragEnter += MainTreeView_DragEnter;
+            MainTreeView.DragDrop += MainTreeView_DragDrop;
+
             // This is probably not necessary now that the GTA folder is checked 
             // in the Program.cs when the game is initiated, but we will leave it 
             // here for now to make sure 
@@ -4081,8 +4085,11 @@ namespace CodeWalker
 
         private void MainListView_DragEnter(object sender, DragEventArgs e)
         {
-            if (!EditMode) return;
-            if (CurrentFolder?.IsSearchResults ?? false) return;
+            if (!EditMode || (CurrentFolder?.IsSearchResults ?? false))
+            {
+                SetLoadDropEffect(e);
+                return;
+            }
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = e.Data.GetData(DataFormats.FileDrop) as string[];
@@ -4096,10 +4103,50 @@ namespace CodeWalker
             }
         }
 
+        private void MainTreeView_DragEnter(object sender, DragEventArgs e)
+        {
+            SetLoadDropEffect(e);
+        }
+
+        private void MainTreeView_DragDrop(object sender, DragEventArgs e)
+        {
+            LoadDroppedPaths(e);
+        }
+
+        private string[] GetDroppedPaths(DragEventArgs e)
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return null;
+
+            var paths = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if ((paths == null) || (paths.Length == 0)) return null;
+            if (paths[0].StartsWith(GetDropFolder(), StringComparison.InvariantCultureIgnoreCase)) return null; //don't try to drop on ourselves...
+            return paths;
+        }
+
+        private void SetLoadDropEffect(DragEventArgs e)
+        {
+            if (GetDroppedPaths(e) == null) return;
+            e.Effect = DragDropEffects.Copy;
+        }
+
+        private void LoadDroppedPaths(DragEventArgs e)
+        {
+            var paths = GetDroppedPaths(e);
+            if (paths == null) return;
+
+            foreach (var path in paths)
+            {
+                OpenPath(path);
+            }
+        }
+
         private void MainListView_DragDrop(object sender, DragEventArgs e)
         {
-            if (!EditMode) return;
-            if (CurrentFolder?.IsSearchResults ?? false) return;
+            if (!EditMode || (CurrentFolder?.IsSearchResults ?? false))
+            {
+                LoadDroppedPaths(e);
+                return;
+            }
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = e.Data.GetData(DataFormats.FileDrop) as string[];
