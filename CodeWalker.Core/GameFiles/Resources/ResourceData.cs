@@ -105,6 +105,16 @@ namespace CodeWalker.GameFiles
             //    }
             //}
 
+            if ((data == null) || (((long)systemSize + graphicsSize) > data.Length))
+            {
+                //the entry's page flags describe more data than was extracted, which happens when
+                //the resource couldn't be decompressed. the MemoryStream below would throw anyway,
+                //but without saying which file it was or what was wrong with it.
+                throw new InvalidDataException(string.Format(
+                    "Resource data for {0} is {1} bytes, but its page flags require {2} (system {3} + graphics {4}).",
+                    resentry?.Name ?? "(unknown)", data?.Length ?? 0, (long)systemSize + graphicsSize, systemSize, graphicsSize));
+            }
+
             this.systemStream = new MemoryStream(data, 0, systemSize);
             this.graphicsStream = new MemoryStream(data, systemSize, graphicsSize);
             Position = 0x50000000;

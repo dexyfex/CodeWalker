@@ -250,8 +250,8 @@ namespace CodeWalker.GameFiles
 
             if (string.IsNullOrEmpty(key))
             {
-                var exefile = gen9 ? "\\gta5_enhanced.exe" : "\\gta5.exe";
-                byte[] exedata = File.ReadAllBytes(path + exefile);
+                var exefile = gen9 ? "GTA5_Enhanced.exe" : "GTA5.exe";
+                byte[] exedata = File.ReadAllBytes(Path.Combine(path, exefile));
                 GenerateV2(exedata, null);
             }
             else

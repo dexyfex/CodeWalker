@@ -1,0 +1,152 @@
+name: CLI
+
+on:
+  push:
+    branches: [main, master, cli]
+    paths:
+      - CodeWalker.Cli/**
+      - CodeWalker.Core/**
+      - CodeWalker.ModManager/**
+      - CodeWalker.WinForms/**
+      - CodeWalker/**
+      - CodeWalker.sln
+      - .github/workflows/cli.yml
+  pull_request:
+    paths:
+      - CodeWalker.Cli/**
+      - CodeWalker.Core/**
+      - CodeWalker.ModManager/**
+      - CodeWalker.WinForms/**
+      - CodeWalker/**
+      - CodeWalker.sln
+      - .github/workflows/cli.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Windows covers net48 natively. Linux is not redundant: two of the
+          # path bugs this project has hit only reproduce off Windows.
+          - os: windows-latest
+            frameworks: net48 net8.0 net10.0
+          - os: ubuntu-latest
+            frameworks: net8.0 net10.0
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Build
+        run: dotnet build CodeWalker.Cli/CodeWalker.Cli.csproj -warnaserror
+
+      - name: Test
+        shell: bash
+        run: |
+          status=0
+          for framework in ${{ matrix.frameworks }}; do
+            echo "::group::$framework"
+            dotnet test CodeWalker.Cli/CodeWalker.Cli.Tests.csproj -f "$framework" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      # The runner reports failures to a file rather than to stdout, so without
+      # this a failed run names no test.
+      - name: Show test logs
+        if: failure()
+        shell: bash
+        run: |
+          find CodeWalker.Cli/bin -path '*TestResults*' -name '*.log' -print -exec cat {} +
+
+  solution:
+    name: solution
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - uses: microsoft/setup-msbuild@v3
+
+      # The CLI jobs build one project. This is what notices when a change to
+      # CodeWalker.Core breaks the WinForms projects that also consume it.
+      # msbuild rather than dotnet build: the solution carries a C++ project.
+      # CodeWalker.csproj sets PlatformTarget to x64 under Release|AnyCPU and the
+      # SDK then infers a win-x64 RuntimeIdentifier that restore has not produced,
+      # which fails as NETSDK1047; clearing it keeps the AnyCPU assets.
+      - name: Build
+        run: msbuild CodeWalker.sln -restore -p:Configuration=Release -p:RuntimeIdentifier= -m
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: codewalker-solution
+          path: '*/bin/Release/net48/'
+
+  publish:
+    name: publish ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: win-x64
+            args: -f net10.0 -r win-x64 --self-contained true -p:PublishSingleFile=true
+          - os: ubuntu-latest
+            name: linux-x64
+            args: -f net10.0 -r linux-x64 --self-contained true -p:PublishSingleFile=true
+          - os: windows-latest
+            name: net48
+            args: -f net48
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Publish
+        run: dotnet publish CodeWalker.Cli/CodeWalker.Cli.csproj -c Release ${{ matrix.args }} -o publish
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: codewalker-cli-${{ matrix.name }}
+          path: publish
+
+  format:
+    name: format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Verify formatting
+        run: |
+          dotnet format CodeWalker.Cli/CodeWalker.Cli.csproj --verify-no-changes
+          dotnet format CodeWalker.Cli/CodeWalker.Cli.Tests.csproj --verify-no-changes

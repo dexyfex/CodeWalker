@@ -1,0 +1,50 @@
+<Project>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net48;net8.0;net10.0</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <!-- Isolate build outputs per project (two csprojs share this directory) -->
+    <BaseIntermediateOutputPath>obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/$(MSBuildProjectName)/</BaseOutputPath>
+    <!-- Exclude all obj/bin from default glob so projects don't pick up each other's generated files -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);obj/**;bin/**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference
+      Include="Microsoft.NETFramework.ReferenceAssemblies"
+      Version="1.0.3"
+      Condition="'$(TargetFramework)' == 'net48'"
+      PrivateAssets="all"
+    />
+    <PackageReference Include="System.CommandLine" Version="2.0.2" />
+    <PackageReference
+      Include="System.Text.Json"
+      Version="10.0.2"
+      Condition="'$(TargetFramework)' != 'net10.0'"
+    />
+    <PackageReference
+      Include="IndexRange"
+      Version="1.1.0"
+      Condition="'$(TargetFramework)' == 'net48'"
+    />
+    <!-- IndexRange 1.1.0 pulls Microsoft.Bcl.Memory 9.0.0, which carries GHSA-73j8-2gch-69rq. -->
+    <PackageReference
+      Include="Microsoft.Bcl.Memory"
+      Version="10.0.4"
+      Condition="'$(TargetFramework)' == 'net48'"
+    />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CodeWalker.Core\CodeWalker.Core.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <WarningsAsErrors>$(WarningsAsErrors);CS8509</WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

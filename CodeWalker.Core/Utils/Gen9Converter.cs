@@ -40,13 +40,14 @@ namespace CodeWalker.Core.Utils
                 Error("Please select an output folder.");
                 return;
             }
-            if (inputFolder.EndsWith("\\") == false)
+            var sep = Path.DirectorySeparatorChar.ToString();
+            if (inputFolder.EndsWith(sep) == false)
             {
-                inputFolder = inputFolder + "\\";
+                inputFolder = inputFolder + sep;
             }
-            if (outputFolder.EndsWith("\\") == false)
+            if (outputFolder.EndsWith(sep) == false)
             {
-                outputFolder = outputFolder + "\\";
+                outputFolder = outputFolder + sep;
             }
             if (inputFolder.Equals(outputFolder, StringComparison.InvariantCultureIgnoreCase))
             {

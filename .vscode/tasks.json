@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-cli",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "CodeWalker.Cli/CodeWalker.Cli.csproj"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "silent",
+        "revealProblems": "onProblem"
+      }
+    },
+    {
+      "label": "rebuild-cli",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "CodeWalker.Cli/CodeWalker.Cli.csproj",
+        "--no-incremental"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "clean-cli",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["clean", "CodeWalker.Cli/CodeWalker.Cli.csproj"],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "format-cli",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["format", "CodeWalker.Cli/CodeWalker.Cli.csproj"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "format-cli-tests",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["format", "CodeWalker.Cli/CodeWalker.Cli.Tests.csproj"],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "test-cli",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["test", "CodeWalker.Cli/CodeWalker.Cli.Tests.csproj"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

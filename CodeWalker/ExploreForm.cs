@@ -195,7 +195,7 @@ namespace CodeWalker
                 }
                 catch
                 {
-                    UpdateStatus("Unable to load gta5.exe!");
+                    UpdateStatus("Unable to load GTA5.exe!");
                     return;
                 }
 

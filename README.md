@@ -4,11 +4,17 @@
 </div>
 
 ## Requirements:
-- PC version of GTA:V;
+For the app:
+- PC version of GTA:V, Legacy or Enhanced;
 - 4GB RAM (8+ recommended);
 - Windows 7 and above, x64 processor;
-- .NET framework 4.5 or newer from [Microsoft](https://www.microsoft.com/net/download/thank-you/net471);
+- .NET Framework 4.8 or newer from [Microsoft](https://dotnet.microsoft.com/download/dotnet-framework/net48);
 - DirectX 11 and Shader Model 4.0 capable graphics.
+
+For the command line program:
+- PC version of GTA:V, Legacy or Enhanced;
+- Windows or Linux;
+- .NET Framework 4.8, .NET 8 or .NET 10.
 
 # App Usage:
 On first startup, the app will prompt to browse for the GTA:V game folder. If you have the Steam version installed
@@ -32,6 +38,9 @@ view is not needed, and the world loading can be avoided. To activate the menu m
 
 # Explorer Mode:
 The app can be started with the `'explorer'` command line argument. This displays an interface much like OpenIV, with a Windows-Explorer style interface for browsing the game's .rpf archives. Double-click on files to open them. Viewers for most file types are available, but hex view will be shown as a fallback. To activate the explorer mode, run the command: CodeWalker.exe explorer. Alternatively, run the CodeWalker Explorer batch file in the program's directory.
+
+# Command Line:
+CodeWalker.Cli is a separate console program for working with archives without the graphical interface. It can list, extract, search, pack, compare and validate `RPF` archives, export files to XML, DDS, WAV and text, convert files to enhanced (Gen9) format, and generate Jenkins hashes. Every command takes a `--json` option and writes a single object to standard output, for use from a script. Run `CodeWalker.Cli --help` for the list of commands, and `CodeWalker.Cli <command> --help` for a command's options, its JSON fields and its exit codes.
 
 # Main Toolbar:
 The main toolbar is used to access most of the editing features in CodeWalker. Shortcuts for new, open and create files are provided. The selection mode can be changed with the "pointer" button. Move, rotate and scale buttons provide access to the different editing widget modes. Other shortcuts on the toolbar include buttons to open the Selection Info window, and the Project window. See the tooltips on the toolbar items for hints.

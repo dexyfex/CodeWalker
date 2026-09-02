@@ -1,0 +1,6 @@
+# This project's .editorconfig sets end_of_line = crlf, and EnforceCodeStyleInBuild
+# means dotnet format checks the file on disk. The repository root normalizes to LF
+# with `* text=auto`, so on a non-Windows checkout the two disagree and every file
+# reports ENDOFLINE. Forcing crlf on checkout keeps them in step on every platform;
+# blobs are still stored normalized.
+* text=auto eol=crlf

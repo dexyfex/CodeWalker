@@ -19,7 +19,7 @@ namespace CodeWalker
 
         public static bool IsGen9Folder(string folder)
         {
-            return File.Exists(folder + @"\gta5_enhanced.exe");
+            return File.Exists(Path.Combine(folder, "GTA5_Enhanced.exe"));
         }
 
         public static bool ValidateGTAFolder(string folder, bool gen9, out string failReason)
@@ -40,7 +40,7 @@ namespace CodeWalker
 
             if (gen9)
             {
-                if (!File.Exists(folder + @"\gta5_enhanced.exe"))
+                if (!File.Exists(Path.Combine(folder, "GTA5_Enhanced.exe")))
                 {
                     failReason = $"GTA5_Enhanced.exe not found in folder \"{folder}\"";
                     return false;
@@ -48,7 +48,7 @@ namespace CodeWalker
             }
             else
             {
-                if(!File.Exists(folder + @"\gta5.exe"))
+                if (!File.Exists(Path.Combine(folder, "GTA5.exe")))
                 {
                     failReason = $"GTA5.exe not found in folder \"{folder}\"";
                     return false;

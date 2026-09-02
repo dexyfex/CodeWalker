@@ -45,7 +45,7 @@ namespace CodeWalker.Tools
         {
             GTAFolder.UpdateGTAFolder(false);
             FolderTextBox.Text = GTAFolder.CurrentGTAFolder;
-            ExeTextBox.Text = GTAFolder.CurrentGTAFolder + @"\GTA5.exe";
+            ExeTextBox.Text = Path.Combine(GTAFolder.CurrentGTAFolder, "GTA5.exe");
         }
 
         private void ExeBrowseButton_Click(object sender, EventArgs e)

@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "CLI (net48)",
+      "type": "clr",
+      "request": "launch",
+      "preLaunchTask": "build-cli",
+      "program": "${workspaceFolder}/CodeWalker.Cli/bin/CodeWalker.Cli/Debug/net48/CodeWalker.Cli.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "CLI (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-cli",
+      "program": "${workspaceFolder}/CodeWalker.Cli/bin/CodeWalker.Cli/Debug/net8.0/CodeWalker.Cli.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "CLI (net10.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-cli",
+      "program": "${workspaceFolder}/CodeWalker.Cli/bin/CodeWalker.Cli/Debug/net10.0/CodeWalker.Cli.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ]
+}

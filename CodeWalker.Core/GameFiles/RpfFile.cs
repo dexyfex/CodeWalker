@@ -421,7 +421,7 @@ namespace CodeWalker.GameFiles
                         updateStatus?.Invoke("Extracting " + resentry.Name + "...");
 
                         //found a YSC file. extract it!
-                        string ofpath = outputfolder + "\\" + resentry.Name;
+                        string ofpath = System.IO.Path.Combine(outputfolder, resentry.Name);
 
                         br.BaseStream.Position = StartPos + ((long)resentry.FileOffset * 512);
 
@@ -442,7 +442,7 @@ namespace CodeWalker.GameFiles
                                 decr = GTACrypto.DecryptAES(tbytes);
 
                                 //special case! probable duplicate pilot_school.ysc
-                                ofpath = outputfolder + "\\" + Name + "___" + resentry.Name;
+                                ofpath = System.IO.Path.Combine(outputfolder, Name + "___" + resentry.Name);
                             }
                             else
                             {
@@ -464,7 +464,7 @@ namespace CodeWalker.GameFiles
                                 bool pathok = true;
                                 if (File.Exists(ofpath))
                                 {
-                                    ofpath = outputfolder + "\\" + Name + "_" + resentry.Name;
+                                    ofpath = System.IO.Path.Combine(outputfolder, Name + "_" + resentry.Name);
                                     if (File.Exists(ofpath))
                                     {
                                         LastError = "Output file " + ofpath + " already exists!";
@@ -621,7 +621,9 @@ namespace CodeWalker.GameFiles
                 }
                 else
                 {
-                    entry.FileSize -= offset;
+                    //couldn't decompress it, so give back what's there. it is shorter than
+                    //the entry's flags describe, and the entry is shared, so FileSize keeps
+                    //describing what is on disk and the caller has to notice the shortfall.
                     data = decr;
                 }
 
@@ -1508,9 +1510,7 @@ namespace CodeWalker.GameFiles
             //create a new, empty RPF file in the filesystem
             //this will assume that the folder the file is going into already exists!
 
-            string fpath = gtafolder;
-            fpath = fpath.EndsWith("\\") ? fpath : fpath + "\\";
-            fpath = relpath.Contains(":") ? relpath : fpath + relpath;
+            string fpath = System.IO.Path.IsPathRooted(relpath) ? relpath : System.IO.Path.Combine(gtafolder, relpath);
 
             if (File.Exists(fpath))
             {
