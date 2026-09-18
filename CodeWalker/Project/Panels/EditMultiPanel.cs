@@ -1,4 +1,4 @@
-﻿using SharpDX;
+using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -23,6 +23,7 @@ namespace CodeWalker.Project.Panels
         {
             ProjectForm = owner;
             InitializeComponent();
+            InitializeEntityBatchControls();
         }
 
         public void SetItems(MapSelection[] items)
@@ -52,6 +53,7 @@ namespace CodeWalker.Project.Panels
                 RotationQuatBox.Value = Quaternion.Identity;
                 ScaleTextBox.Text = string.Empty;
                 ItemsListBox.Items.Clear();
+                ClearEntityBatchItems();
             }
             else
             {
@@ -66,6 +68,7 @@ namespace CodeWalker.Project.Panels
                 {
                     ItemsListBox.Items.Add(item);
                 }
+                SetEntityBatchItems(Items);
 
                 populatingui = false;
 
