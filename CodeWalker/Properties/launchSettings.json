@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "CodeWalker": {
-      "commandName": "Project",
-      "workingDirectory": ".."
-    }
-  }
-}

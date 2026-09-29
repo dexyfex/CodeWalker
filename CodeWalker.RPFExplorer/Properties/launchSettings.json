@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "CodeWalker.RPFExplorer": {
-      "commandName": "Project",
-      "workingDirectory": ".."
-    }
-  }
-}

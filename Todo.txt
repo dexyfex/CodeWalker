@@ -1,5 +1,5 @@
 ﻿
-CodeWalker todo list
+GigneCoder todo list
 
 
 update readme!!!
@@ -112,7 +112,7 @@ Nav mesh editing (YNV) - polys, points, portals
 New Project Window
 Show vehicle wheels
 Snap to ground, snap to grid
-CodeWalker.Core library
+GigneCoder.Core library
 Improved GTA folder management
 Improved selected MLO instance display - portals, limbo room
 Improved interiors rendering - decal_dirt

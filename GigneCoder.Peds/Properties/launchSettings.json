@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GigneCoder.Peds": {
+      "commandName": "Project",
+      "workingDirectory": ".."
+    }
+  }
+}

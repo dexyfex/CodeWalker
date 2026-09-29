@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GigneCoder.Vehicles": {
+      "commandName": "Project",
+      "workingDirectory": ".."
+    }
+  }
+}

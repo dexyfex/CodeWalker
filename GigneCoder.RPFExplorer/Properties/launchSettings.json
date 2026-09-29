@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GigneCoder.RPFExplorer": {
+      "commandName": "Project",
+      "workingDirectory": ".."
+    }
+  }
+}
