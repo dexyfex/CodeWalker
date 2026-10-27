@@ -11,6 +11,8 @@ pub mod keys;
 pub mod resource;
 pub mod rpf;
 pub mod text;
+pub mod texture;
+pub mod ytd;
 
 pub use blob::Blob;
 pub use error::{Error, Result};
