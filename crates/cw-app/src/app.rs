@@ -33,26 +33,7 @@ use crate::{
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Mode {
     Explorer,
-    Mods,
     World,
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ModRow {
-    pub path: String,
-    pub size: u64,
-    pub enabled: bool,
-    pub archive: bool,
-    pub overrides_game: bool,
-}
-
-#[derive(Default)]
-pub struct ModsState {
-    pub loaded: bool,
-    pub dir: Option<PathBuf>,
-    pub dir_exists: bool,
-    pub rows: Vec<ModRow>,
-    pub confirm_remove: Option<String>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -88,8 +69,6 @@ pub enum Pick {
     GameFolder,
     Files,
     ExtractTo,
-    InstallFiles,
-    InstallFolder,
     SaveScene,
     LoadScene,
     ExportTexturePng,
@@ -114,7 +93,6 @@ pub struct App {
 
     pub mode: Mode,
     pub world: crate::ui::world::WorldUi,
-    pub mods: ModsState,
     pub ex: Explorer,
     pub loose: Vec<PathBuf>,
     pub preview: PreviewSlot,
@@ -164,7 +142,6 @@ struct Script {
     palette: bool,
     search: Option<String>,
     everywhere: bool,
-    mods: bool,
     world: bool,
     scene: Option<PathBuf>,
     select_entity: Option<u32>,
@@ -183,17 +160,11 @@ impl Script {
             palette: var("CODEWALKER_PALETTE").is_some(),
             search: var("CODEWALKER_SEARCH"),
             everywhere: var("CODEWALKER_SEARCH_ALL").is_some(),
-            mods: var("CODEWALKER_MODE").as_deref() == Some("mods"),
             world: var("CODEWALKER_MODE").as_deref() == Some("world"),
             scene: var("CODEWALKER_SCENE").map(PathBuf::from),
             select_entity: var("CODEWALKER_SELECT_ENTITY").and_then(|v| v.parse().ok()),
         };
-        (s.select.is_some()
-            || s.palette
-            || s.search.is_some()
-            || s.mods
-            || s.world
-            || s.view != ViewMode::Auto)
+        (s.select.is_some() || s.palette || s.search.is_some() || s.world || s.view != ViewMode::Auto)
             .then_some(s)
     }
 }
@@ -271,7 +242,6 @@ impl App {
             ctx: cc.egui_ctx.clone(),
             mode: Mode::Explorer,
             world: crate::ui::world::WorldUi::new(cc.wgpu_render_state.as_ref()),
-            mods: ModsState::default(),
             ex: Explorer::default(),
             loose: Vec::new(),
             preview: PreviewSlot {
@@ -376,12 +346,10 @@ impl App {
                 return Msg::Picked(what, path.into_iter().collect());
             }
             let paths = match what {
-                Pick::GameFolder
-                | Pick::ExtractTo
-                | Pick::InstallFolder
-                | Pick::ExportTexturePng
-                | Pick::ExportTextureDds => dlg.pick_folder().into_iter().collect(),
-                Pick::Files | Pick::InstallFiles => dlg.pick_files().unwrap_or_default(),
+                Pick::GameFolder | Pick::ExtractTo | Pick::ExportTexturePng | Pick::ExportTextureDds => {
+                    dlg.pick_folder().into_iter().collect()
+                }
+                Pick::Files => dlg.pick_files().unwrap_or_default(),
                 Pick::LoadScene => {
                     dlg.add_filter("CodeWalker scene", &["json"]).pick_file().into_iter().collect()
                 }
@@ -511,11 +479,6 @@ impl App {
                 }
                 Err(e) => self.toast(e.message, ToastKind::Error),
             },
-            Pick::InstallFiles | Pick::InstallFolder => {
-                for source in paths {
-                    self.run("Installing…", "mods.install", json!({ "source": source }));
-                }
-            }
             Pick::ImportMap => {
                 self.run("Placing map…", "world.import", json!({ "file": paths[0] }));
             }
@@ -576,9 +539,6 @@ impl App {
                 }
                 self.keys_loaded = self.engine.session().keys.is_some();
                 self.config_game_folder = self.engine.session().config.game_folder.clone();
-                if self.mode == Mode::Mods {
-                    self.refresh_mods();
-                }
             }
             "game.detect" => {
                 self.candidates = serde_json::from_value::<Vec<Value>>(v)
@@ -598,43 +558,12 @@ impl App {
                     })
                     .collect();
             }
-            "mods.list" => {
-                self.mods.loaded = true;
-                self.mods.dir = v["mods_dir"].as_str().map(PathBuf::from);
-                self.mods.dir_exists = v["exists"].as_bool().unwrap_or(false);
-                self.mods.rows = v["files"]
-                    .as_array()
-                    .map(|a| {
-                        a.iter()
-                            .map(|f| ModRow {
-                                path: f["path"].as_str().unwrap_or_default().to_string(),
-                                size: f["size"].as_u64().unwrap_or(0),
-                                enabled: f["enabled"].as_bool().unwrap_or(true),
-                                archive: f["archive"].as_bool().unwrap_or(false),
-                                overrides_game: f["overrides_game"].as_bool().unwrap_or(false),
-                            })
-                            .collect()
-                    })
-                    .unwrap_or_default();
-            }
             "mods.copy" => {
                 self.toast(
                     format!("Copied {} to the mods folder", v["copied"].as_str().unwrap_or("archive")),
                     ToastKind::Success,
                 );
-                self.refresh_mods();
             }
-            "mods.install" => {
-                self.toast(
-                    format!(
-                        "Installed {}",
-                        format::plural(v["installed"].as_u64().unwrap_or(0), "file", "files")
-                    ),
-                    ToastKind::Success,
-                );
-                self.refresh_mods();
-            }
-            "mods.enable" | "mods.disable" | "mods.remove" => self.refresh_mods(),
             "world.import" => {
                 let imported = v["imported"].as_u64().unwrap_or(0);
                 let left = v["left_out"]["by_lod"].as_u64().unwrap_or(0);
@@ -730,9 +659,6 @@ impl App {
             self.ex.reveal(r);
         }
         self.preview.view = s.view;
-        if s.mods {
-            self.mode = Mode::Mods;
-        }
         if s.palette {
             self.palette = Some(Palette::default());
         }
@@ -838,7 +764,6 @@ impl App {
             Action::CopyPath => has_sel || matches!(self.preview.target, Some(Target::Disk(_))),
             Action::CopyToMods => self.mods_copy_source().is_some(),
             Action::ShowExplorer => self.mode != Mode::Explorer,
-            Action::ShowMods => self.mode != Mode::Mods,
             Action::ShowWorld => self.mode != Mode::World,
             Action::AddEntity | Action::SaveScene | Action::LoadScene | Action::ImportMap => true,
             Action::PlaceMap => matches!(&self.preview.state, PState::Ready(l) if l.map.is_some()),
@@ -900,10 +825,6 @@ impl App {
                 }
             }
             Action::ShowExplorer => self.mode = Mode::Explorer,
-            Action::ShowMods => {
-                self.mode = Mode::Mods;
-                self.refresh_mods();
-            }
             Action::ShowWorld => self.mode = Mode::World,
             Action::ImportMap => self.pick(Pick::ImportMap),
             Action::PlaceMap => {
@@ -946,27 +867,6 @@ impl App {
         }
     }
 
-    pub fn refresh_mods(&mut self) {
-        if self.config_game_folder.is_some() {
-            self.run("Reading mods folder…", "mods.list", json!({}));
-        } else {
-            self.mods.loaded = true;
-        }
-    }
-
-    pub fn open_folder(&mut self, path: &std::path::Path) {
-        let cmd = if cfg!(windows) {
-            "explorer"
-        } else if cfg!(target_os = "macos") {
-            "open"
-        } else {
-            "xdg-open"
-        };
-        if std::process::Command::new(cmd).arg(path).spawn().is_err() {
-            self.toast(format!("Could not open {}", path.display()), ToastKind::Error);
-        }
-    }
-
     fn shortcuts(&mut self, ctx: &egui::Context) {
         let typing = ctx.egui_wants_keyboard_input();
         let in_world = self.mode == Mode::World;
@@ -992,8 +892,6 @@ impl App {
             } else if i.consume_key(Modifiers::ALT, Key::Num1) {
                 act = Some(Some(Action::ShowExplorer));
             } else if i.consume_key(Modifiers::ALT, Key::Num2) {
-                act = Some(Some(Action::ShowMods));
-            } else if i.consume_key(Modifiers::ALT, Key::Num3) {
                 act = Some(Some(Action::ShowWorld));
             } else if in_world && i.consume_key(Modifiers::COMMAND, Key::S) {
                 act = Some(Some(Action::SaveScene));

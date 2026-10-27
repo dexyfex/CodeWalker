@@ -88,7 +88,8 @@ Design rules and tokens are in [`DESIGN.md`](DESIGN.md).
 `<game>/mods/` mirrors the game folder; a file there replaces the original. Disabling renames to
 `*.disabled` and keeps the file. Copies are written to a temporary file and renamed into place;
 every destination is checked against the nearest existing ancestor so a symlink cannot move a write
-out of `mods/`.
+out of `mods/`. The window has no page for them: it copies the selected archive there ("Copy to mods
+folder") and leaves listing, installing, enabling and removing to the `mods.*` commands.
 
 ## Maps (`cw-core::{meta, ymap}`, `cw-world`)
 

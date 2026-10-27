@@ -15,7 +15,7 @@ generated. Treat a format as unverified until `codewalker game.check` passes on 
 | Archives | RPF7 open / nested / search / extract; `OPEN`, `AES` and `NG` reading; resources; parallel scan on memory-mapped files; hostile-file budgets |
 | Explorer | tree, list, sorting, filter and search-everywhere, command palette, text / hex / info previews, loose files, drag and drop |
 | Textures | `.ytd` and `.dds`: thumbnails, mips, channel isolation, invert, zoom and pan, pixel readout, save as DDS or filtered PNG |
-| Mods | the `mods/` overlay: copy, install, enable / disable, remove, atomic and contained writes |
+| Mods | the `mods/` overlay: copy, install, enable / disable, remove, atomic and contained writes (commands; the window only copies an archive there) |
 | Maps | `.ymap` summary and `world.import` of the detailed entities as boxes, named after model files when possible |
 | Map editor | scene of boxes, move / rotate / scale with a gizmo, picking, undo / redo, save / load JSON |
 | Control | CLI, JSON channel (stdio, authenticated loopback TCP), MCP server, `commands.list` |

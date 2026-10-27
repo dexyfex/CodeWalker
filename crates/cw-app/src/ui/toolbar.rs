@@ -45,11 +45,10 @@ impl App {
                 ui.add_space(8.0);
                 let mode = match self.mode {
                     Mode::Explorer => 0,
-                    Mode::Mods => 1,
-                    Mode::World => 2,
+                    Mode::World => 1,
                 };
-                if let Some(i) = segmented(ui, "mode", &["Explorer", "Mods", "World"], mode) {
-                    self.perform([Action::ShowExplorer, Action::ShowMods, Action::ShowWorld][i]);
+                if let Some(i) = segmented(ui, "mode", &["Explorer", "World"], mode) {
+                    self.perform([Action::ShowExplorer, Action::ShowWorld][i]);
                 }
                 ui.add_space(8.0);
                 if self.mode != Mode::Explorer {

@@ -14,7 +14,6 @@ use crate::{
 pub mod detail;
 pub mod empty;
 pub mod list;
-pub mod mods;
 pub mod palette;
 pub mod status;
 pub mod texview;
@@ -264,8 +263,6 @@ impl App {
 
         if self.mode == Mode::World {
             self.show_world(ui);
-        } else if self.mode == Mode::Mods {
-            CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_mods(ui));
         } else if self.ex.is_empty() && self.loose.is_empty() {
             CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_empty(ui));
         } else {
