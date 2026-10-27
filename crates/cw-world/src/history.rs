@@ -34,6 +34,7 @@ pub struct World {
     /// A drag in progress: the entity and its transform when the drag began.
     gesture: Option<(EntityId, Transform)>,
     dirty: bool,
+    rev: u64,
 }
 
 impl World {
@@ -43,6 +44,12 @@ impl World {
 
     pub fn is_dirty(&self) -> bool {
         self.dirty
+    }
+
+    /// Changes whenever anything a view might draw changes (entities, their
+    /// transforms, the selection). Views compare it to skip rebuilding.
+    pub fn revision(&self) -> u64 {
+        self.rev
     }
 
     pub fn can_undo(&self) -> bool {
@@ -61,6 +68,7 @@ impl World {
         self.undo.push(e);
         self.redo.clear();
         self.dirty = true;
+        self.rev += 1;
     }
 
     // ------------------------------------------------------------- editing
@@ -111,6 +119,7 @@ impl World {
             return Err(WorldError::BadTransform);
         }
         self.scene.get_mut(id).ok_or(WorldError::NoEntity(id))?.transform = t;
+        self.rev += 1;
         Ok(())
     }
 
@@ -130,6 +139,7 @@ impl World {
             && let Some(e) = self.scene.get_mut(id)
         {
             e.transform = before;
+            self.rev += 1;
         }
     }
 
@@ -152,6 +162,7 @@ impl World {
         self.apply(&e, true);
         self.redo.push(e);
         self.dirty = true;
+        self.rev += 1;
         true
     }
 
@@ -161,6 +172,7 @@ impl World {
         self.apply(&e, false);
         self.undo.push(e);
         self.dirty = true;
+        self.rev += 1;
         true
     }
 
@@ -196,10 +208,12 @@ impl World {
         }
         let existing: Vec<EntityId> = ids.into_iter().filter(|i| self.scene.get(*i).is_some()).collect();
         self.scene.selection.extend(existing);
+        self.rev += 1;
     }
 
     pub fn clear_selection(&mut self) {
         self.scene.selection.clear();
+        self.rev += 1;
     }
 
     // --------------------------------------------------------- persistence
@@ -212,7 +226,8 @@ impl World {
     pub fn load_json(&mut self, text: &str) -> Result<(), WorldError> {
         let mut scene: Scene = serde_json::from_str(text).map_err(|e| WorldError::Io(e.to_string()))?;
         scene.sanitize();
-        *self = World { scene, ..Default::default() };
+        let rev = self.rev + 1;
+        *self = World { scene, rev, ..Default::default() };
         Ok(())
     }
 

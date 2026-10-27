@@ -176,3 +176,33 @@ fn ids_cannot_overflow_or_collide_even_with_hostile_files() {
     );
     assert_eq!(w.scene.entities.len(), 1);
 }
+
+#[test]
+fn revision_moves_on_every_visible_change_and_never_goes_back() {
+    let mut w = World::new("t");
+    let mut last = w.revision();
+    let mut bump = |w: &World, what: &str| {
+        assert!(w.revision() > last, "{what} must change the revision");
+        last = w.revision();
+    };
+    let a = w.add("x", Transform::default()).unwrap();
+    bump(&w, "add");
+    w.select([a], false);
+    bump(&w, "select");
+    w.set_transform(a, at(1.0, 0.0, 0.0)).unwrap();
+    bump(&w, "set");
+    w.undo();
+    bump(&w, "undo");
+    w.redo();
+    bump(&w, "redo");
+    w.clear_selection();
+    bump(&w, "deselect");
+    w.begin_gesture(a).unwrap();
+    w.update_gesture(at(3.0, 0.0, 0.0)).unwrap();
+    bump(&w, "live drag update");
+    w.cancel_gesture();
+    bump(&w, "cancel");
+    let before = w.revision();
+    w.load_json(&w.to_json()).unwrap();
+    assert!(w.revision() > before, "loading must not reset the counter or views would miss it");
+}

@@ -852,6 +852,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "cw-gpu"
+version = "0.1.0"
+dependencies = [
+ "bytemuck",
+ "glam",
+ "pollster 0.4.0",
+ "wgpu",
+]
+
+[[package]]
 name = "cw-world"
 version = "0.1.0"
 dependencies = [
