@@ -45,7 +45,7 @@ pub fn register(e: &mut Engine) {
         .param(ParamSpec::new(
             "replace",
             K::Boolean,
-            "start from an empty scene instead of adding to this one",
+            "swap the scene for this map instead of adding to it (undo brings the old scene back)",
         ))
         .mutating(),
         import,
@@ -176,10 +176,11 @@ fn import(ctx: &Ctx, args: Value) -> CmdResult {
         .collect();
 
     let mut session = ctx.session_mut();
-    if a.replace.unwrap_or(false) {
-        session.world.reset(&origin);
-    }
-    let (ids, unplaceable) = session.world.add_many(items)?;
+    let (ids, unplaceable) = if a.replace.unwrap_or(false) {
+        session.world.replace_all(&origin, items)?
+    } else {
+        session.world.add_many(items)?
+    };
     let scene_total = session.world.scene.entities.len();
     drop(session);
     ctx.emit(Event::WorldChanged);
