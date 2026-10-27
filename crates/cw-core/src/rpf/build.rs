@@ -134,7 +134,7 @@ impl RpfBuilder {
             names.extend_from_slice(n.name.as_bytes());
             names.push(0);
         }
-        while names.len() % 16 != 0 {
+        while !names.len().is_multiple_of(16) {
             names.push(0);
         }
         if names.len() > 0xFFFF + 256 || name_off.iter().any(|&o| o > 0xFFFF) {

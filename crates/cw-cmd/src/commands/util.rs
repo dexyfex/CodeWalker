@@ -17,6 +17,10 @@ pub fn register(e: &mut Engine) {
         joaat,
     );
     e.register(
+        CommandSpec::new("game.detect", "game", "Find GTA V installations (Steam, Epic, Rockstar, OpenIV)"),
+        detect,
+    );
+    e.register(
         CommandSpec::new("commands.list", "app", "Every available command with its parameters"),
         commands_list,
     );
@@ -41,6 +45,10 @@ fn joaat(_: &Ctx, args: Value) -> CmdResult {
     let a: HashArgs = parse(args)?;
     let h = if a.lower.unwrap_or(false) { hash::joaat_lower(&a.text) } else { hash::joaat(&a.text) };
     Ok(json!({ "hash": h, "hex": format!("0x{h:08X}"), "signed": h as i32 }))
+}
+
+fn detect(_: &Ctx, _: Value) -> CmdResult {
+    Ok(serde_json::to_value(crate::gamefolder::detect())?)
 }
 
 fn commands_list(ctx: &Ctx, _: Value) -> CmdResult {

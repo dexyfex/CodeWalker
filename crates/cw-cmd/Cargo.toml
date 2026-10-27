@@ -14,3 +14,6 @@ base64.workspace = true
 rayon.workspace = true
 dirs = "7"
 getrandom = "0.3"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
