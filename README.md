@@ -40,6 +40,9 @@ cargo run --release                     # the app; pass folders, .rpf files or l
 cargo test --workspace
 ```
 
+No game files? `cargo run -p cw-core --example fixture -- /tmp/fake-gta` writes a small GTA-shaped folder of real
+(unencrypted) archives, and `cargo run --release -- /tmp/fake-gta` opens it.
+
 On first start the app looks for your GTA V install (Steam, Epic, Rockstar, OpenIV) or asks for the folder.
 The Legacy / Enhanced edition is taken from the executable found in that folder.
 
