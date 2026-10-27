@@ -8,7 +8,7 @@ use cw_core::{
     resource,
     rpf::{ResourceData, page_flags_size},
     texture::{self, Texture},
-    ytd,
+    ymap, ytd,
 };
 use eframe::egui::{
     self, Align2, Color32, FontId, Rect, ScrollArea, Sense, Stroke, TextureHandle, TextureOptions, Ui, pos2,
@@ -84,26 +84,56 @@ fn tex_entry(name: String, texture: Texture) -> TexEntry {
     TexEntry { name, texture: Arc::new(texture), thumb }
 }
 
-/// Reads a dictionary (resource) or a DDS file. Not being able to is reported, not fatal: the
-/// hex and info views still work.
-fn read_textures(
-    kind: FileKind,
-    name: &str,
-    resource: Option<&ResourceData>,
-    bytes: &[u8],
-) -> Result<Option<TexSet>, String> {
-    match (kind, resource) {
-        (FileKind::TextureDict, Some(rd)) => {
-            let list = ytd::parse_ytd(rd).map_err(|e| e.to_string())?;
-            Ok(Some(TexSet { entries: list.into_iter().map(|t| tex_entry(t.name, t.texture)).collect() }))
-        }
-        (FileKind::Dds, _) => {
-            let t = texture::parse_dds(bytes).map_err(|e| e.to_string())?;
+/// What a `.ymap` holds, for the preview. The entities themselves are read again by `world.import`.
+pub struct MapSummary {
+    pub name: u32,
+    pub parent: u32,
+    pub scripted: bool,
+    pub entities: usize,
+    pub interiors: usize,
+    /// Entities per level of detail, finest first.
+    pub lods: Vec<(&'static str, usize)>,
+    pub extents: ([f32; 3], [f32; 3]),
+}
+
+/// What reading a file's contents produced: textures, a map, nothing, or a reason it failed.
+/// Failing is reported, not fatal: the hex and info views still work.
+#[derive(Default)]
+struct Contents {
+    textures: Option<TexSet>,
+    map: Option<MapSummary>,
+    problem: Option<String>,
+}
+
+fn read_contents(kind: FileKind, name: &str, resource: Option<&ResourceData>, bytes: &[u8]) -> Contents {
+    let mut out = Contents::default();
+    let result: Result<(), String> = match (kind, resource) {
+        (FileKind::TextureDict, Some(rd)) => ytd::parse_ytd(rd).map_err(|e| e.to_string()).map(|list| {
+            out.textures =
+                Some(TexSet { entries: list.into_iter().map(|t| tex_entry(t.name, t.texture)).collect() });
+        }),
+        (FileKind::Dds, _) => texture::parse_dds(bytes).map_err(|e| e.to_string()).map(|t| {
             let stem = name.rsplit_once('.').map_or(name, |(s, _)| s).to_string();
-            Ok(Some(TexSet { entries: vec![tex_entry(stem, t)] }))
+            out.textures = Some(TexSet { entries: vec![tex_entry(stem, t)] });
+        }),
+        (FileKind::MapData, Some(rd)) => ymap::parse_ymap(rd).map_err(|e| e.to_string()).map(|m| {
+            out.map = Some(MapSummary {
+                name: m.name,
+                parent: m.parent,
+                scripted: m.flags & 1 != 0,
+                entities: m.entities.len(),
+                interiors: m.entities.iter().filter(|e| e.mlo).count(),
+                lods: m.lod_counts().into_iter().map(|(l, n)| (l.label(), n)).collect(),
+                extents: m.entity_extents,
+            });
+        }),
+        (FileKind::MapData, None) if bytes.starts_with(b"PSIN") => {
+            Err("an Enhanced Edition map (PSO format); only legacy resource maps are read so far".into())
         }
-        _ => Ok(None),
-    }
+        _ => Ok(()),
+    };
+    out.problem = result.err();
+    out
 }
 
 /// Everything the preview needs; built on a worker thread.
@@ -119,8 +149,9 @@ pub struct Loaded {
     pub text: Option<TextDoc>,
     pub image: Option<Decoded>,
     pub textures: Option<TexSet>,
-    /// Why a texture file could not be read as textures, when it could not.
-    pub texture_error: Option<String>,
+    pub map: Option<MapSummary>,
+    /// Why the contents could not be read (textures or a map), when they could not.
+    pub problem: Option<String>,
 }
 
 pub enum Source {
@@ -226,11 +257,8 @@ struct Parts {
 fn build(p: Parts) -> Loaded {
     let Parts { name, path, kind, bytes, stored_size, encrypted, container, resource, resource_data } = p;
     let image = (kind == FileKind::Image).then(|| decode_image(&bytes)).flatten();
-    let (textures, texture_error) = match read_textures(kind, &name, resource_data.as_ref(), &bytes) {
-        Ok(t) => (t, None),
-        Err(e) => (None, Some(e)),
-    };
-    let text = if image.is_none() && resource.is_none() && textures.is_none() {
+    let Contents { textures, map, problem } = read_contents(kind, &name, resource_data.as_ref(), &bytes);
+    let text = if image.is_none() && resource.is_none() && textures.is_none() && map.is_none() {
         decode_text(&bytes, kind)
     } else {
         None
@@ -247,7 +275,8 @@ fn build(p: Parts) -> Loaded {
         text,
         image,
         textures,
-        texture_error,
+        map,
+        problem,
     }
 }
 
@@ -475,8 +504,11 @@ pub fn info_rows(l: &Loaded) -> Vec<(&'static str, String)> {
     if let Some(set) = &l.textures {
         rows.push(("Textures", format::plural(set.entries.len() as u64, "texture", "textures")));
     }
-    if let Some(e) = &l.texture_error {
-        rows.push(("Textures", format!("Could not be read: {e}")));
+    if let Some(m) = &l.map {
+        rows.push(("Entities", format::thousands(m.entities as u64)));
+    }
+    if let Some(e) = &l.problem {
+        rows.push(("Contents", format!("Could not be read: {e}")));
     }
     if let Some(r) = &l.resource {
         rows.push(("Resource version", r.version.to_string()));
@@ -633,7 +665,7 @@ mod tests {
 
         let l = load(Some(&tree), &Source::Entry(tree.find("t.rpf/t.ytd").unwrap())).unwrap();
         let set = l.textures.as_ref().expect("a .ytd is a set of textures");
-        assert!(l.texture_error.is_none() && l.text.is_none());
+        assert!(l.problem.is_none() && l.text.is_none());
         assert_eq!(set.entries.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(), ["big", "small"]);
         let t0 = &set.entries[0];
         assert_eq!((t0.texture.width, t0.texture.height, t0.texture.levels), (512, 256, 5));
@@ -670,7 +702,7 @@ mod tests {
         std::fs::write(&file, b"DDS but not really").unwrap();
         let l = load(None, &Source::Disk(file)).unwrap();
         assert!(l.textures.is_none());
-        assert!(l.texture_error.as_deref().is_some_and(|e| !e.is_empty()));
+        assert!(l.problem.as_deref().is_some_and(|e| !e.is_empty()));
         assert_eq!(&**l.bytes, b"DDS but not really", "hex and info views still have the bytes");
         let _ = std::fs::remove_dir_all(dir);
     }

@@ -189,7 +189,8 @@ impl App {
                         action = Some(Action::CopyPath);
                     }
                 });
-                let has_preview = l.image.is_some() || l.text.is_some() || l.textures.is_some();
+                let has_preview =
+                    l.image.is_some() || l.text.is_some() || l.textures.is_some() || l.map.is_some();
                 let labels: &[&str] =
                     if has_preview { &["Preview", "Hex", "Info"] } else { &["Info", "Hex"] };
                 let selected = match (self.preview.view, has_preview) {
@@ -234,6 +235,10 @@ impl App {
                                 set,
                                 self.gpu.as_ref(),
                             ));
+                        } else if let Some(map) = &l.map {
+                            if map_card(ui, map) {
+                                action = Some(Action::PlaceMap);
+                            }
                         } else if let Some(doc) = &l.text {
                             preview::text_view(ui, doc, &format!("text-{id}"));
                         }
@@ -266,6 +271,46 @@ impl App {
             _ => String::new(),
         }
     }
+}
+
+/// What a `.ymap` holds, with the one thing to do with it. True when "place" was clicked.
+fn map_card(ui: &mut Ui, m: &preview::MapSummary) -> bool {
+    let mut place = false;
+    let mut rows =
+        vec![("Name", format!("0x{:08X}", m.name)), ("Entities", format::thousands(m.entities as u64))];
+    if m.parent != 0 {
+        rows.push(("Parent", format!("0x{:08X}", m.parent)));
+    }
+    if m.interiors > 0 {
+        rows.push(("Interiors", format::thousands(m.interiors as u64)));
+    }
+    for (label, n) in &m.lods {
+        rows.push((label, format::thousands(*n as u64)));
+    }
+    let (lo, hi) = m.extents;
+    rows.push(("Extent", format!("{:.0} × {:.0} × {:.0} m", hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2])));
+    if m.scripted {
+        rows.push(("Scripted", "Yes".into()));
+    }
+    kv(ui, &rows);
+    ui.add_space(4.0);
+    if Btn::new("Place in map editor")
+        .icon(Icon::Map)
+        .tone(Tone::Primary)
+        .tip("Add its detailed entities to the scene as boxes at their positions")
+        .show(ui)
+        .clicked()
+    {
+        place = true;
+    }
+    ui.label(
+        egui::RichText::new(
+            "Models are not drawn yet: each entity is a box at its position, scaled like the model.",
+        )
+        .color(theme::FAINT)
+        .size(12.0),
+    );
+    place
 }
 
 /// Honest note for formats that only have a raw view so far.

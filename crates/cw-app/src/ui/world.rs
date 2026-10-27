@@ -246,6 +246,14 @@ impl App {
                     if Btn::new("Load").tone(Tone::Ghost).tip("Open a saved scene").show(ui).clicked() {
                         self.perform(Action::LoadScene);
                     }
+                    if Btn::new("Import map")
+                        .tone(Tone::Ghost)
+                        .tip("Place the entities of a .ymap file in the scene")
+                        .show(ui)
+                        .clicked()
+                    {
+                        self.perform(Action::ImportMap);
+                    }
                     if Btn::new("Save").tone(Tone::Ghost).tip("Save the scene as a file").show(ui).clicked() {
                         self.perform(Action::SaveScene);
                     }
@@ -303,7 +311,9 @@ impl App {
                     ui.label(egui::RichText::new("No entities yet").color(theme::TEXT).size(14.0));
                     ui.add_space(2.0);
                     ui.label(
-                        egui::RichText::new("Add one, or load a saved scene.").color(theme::FAINT).size(12.0),
+                        egui::RichText::new("Add one, import a .ymap, or load a saved scene.")
+                            .color(theme::FAINT)
+                            .size(12.0),
                     );
                     ui.add_space(10.0);
                     if Btn::new("Add entity").icon(Icon::Plus).tone(Tone::Secondary).show(ui).clicked() {
@@ -391,7 +401,7 @@ impl App {
     fn scratch_note(&self, ui: &mut Ui) {
         Frame::new().inner_margin(Margin::symmetric(12, 8)).show(ui, |ui| {
             ui.label(
-                egui::RichText::new("Scratch scene: entities here are not linked to game data yet. Importing a .ymap is the next step.")
+                egui::RichText::new("Entities are drawn as boxes: their models are not loaded yet. A .ymap's detailed entities can be placed from the Explorer (select the file) or with Import map.")
                     .size(11.5)
                     .color(theme::FAINT),
             );

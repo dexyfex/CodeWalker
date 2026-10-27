@@ -27,6 +27,8 @@ pub enum Action {
     Redo,
     SaveScene,
     LoadScene,
+    ImportMap,
+    PlaceMap,
     Quit,
 }
 
@@ -56,6 +58,8 @@ impl Action {
         Action::Redo,
         Action::SaveScene,
         Action::LoadScene,
+        Action::ImportMap,
+        Action::PlaceMap,
         Action::Quit,
     ];
 
@@ -85,6 +89,8 @@ impl Action {
             Action::Redo => "Redo map edit",
             Action::SaveScene => "Save map scene…",
             Action::LoadScene => "Open map scene…",
+            Action::ImportMap => "Import a .ymap file into the map…",
+            Action::PlaceMap => "Place the open map in the map editor",
             Action::Quit => "Quit",
         }
     }
@@ -115,6 +121,7 @@ impl Action {
             Action::Redo => "Ctrl+Y",
             Action::SaveScene => "Ctrl+S",
             Action::LoadScene => "Ctrl+Shift+L",
+            Action::ImportMap | Action::PlaceMap => "",
             Action::Quit => "Ctrl+Q",
         }
     }

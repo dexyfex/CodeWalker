@@ -94,6 +94,7 @@ pub enum Pick {
     LoadScene,
     ExportTexturePng,
     ExportTextureDds,
+    ImportMap,
 }
 
 pub enum Msg {
@@ -384,6 +385,7 @@ impl App {
                 Pick::LoadScene => {
                     dlg.add_filter("CodeWalker scene", &["json"]).pick_file().into_iter().collect()
                 }
+                Pick::ImportMap => dlg.add_filter("Map data", &["ymap"]).pick_file().into_iter().collect(),
                 Pick::SaveScene => unreachable!("handled above"),
             };
             Msg::Picked(what, paths)
@@ -514,6 +516,9 @@ impl App {
                     self.run("Installing…", "mods.install", json!({ "source": source }));
                 }
             }
+            Pick::ImportMap => {
+                self.run("Placing map…", "world.import", json!({ "file": paths[0] }));
+            }
             Pick::ExportTexturePng | Pick::ExportTextureDds => {
                 self.export_texture(paths[0].clone(), what == Pick::ExportTexturePng)
             }
@@ -630,6 +635,17 @@ impl App {
                 self.refresh_mods();
             }
             "mods.enable" | "mods.disable" | "mods.remove" => self.refresh_mods(),
+            "world.import" => {
+                let imported = v["imported"].as_u64().unwrap_or(0);
+                let left = v["left_out"]["by_lod"].as_u64().unwrap_or(0);
+                let mut msg = format!("Placed {}", format::plural(imported, "entity", "entities"));
+                if left > 0 {
+                    msg.push_str(&format!(" · {left} LOD stand-ins left out"));
+                }
+                self.toast(msg, ToastKind::Success);
+                self.mode = Mode::World;
+                self.world.framed = false; // look at what just arrived
+            }
             "texture.export" => {
                 let written = v["written"].as_u64().unwrap_or(0);
                 let skipped = v["skipped"].as_array().map_or(0, Vec::len);
@@ -822,7 +838,8 @@ impl App {
             Action::ShowExplorer => self.mode != Mode::Explorer,
             Action::ShowMods => self.mode != Mode::Mods,
             Action::ShowWorld => self.mode != Mode::World,
-            Action::AddEntity | Action::SaveScene | Action::LoadScene => true,
+            Action::AddEntity | Action::SaveScene | Action::LoadScene | Action::ImportMap => true,
+            Action::PlaceMap => matches!(&self.preview.state, PState::Ready(l) if l.map.is_some()),
             Action::DeleteSelection => !self.engine.session().world.scene.selection.is_empty(),
             Action::FrameSelection => !self.engine.session().world.scene.entities.is_empty(),
             Action::Undo => self.engine.session().world.can_undo(),
@@ -886,6 +903,15 @@ impl App {
                 self.refresh_mods();
             }
             Action::ShowWorld => self.mode = Mode::World,
+            Action::ImportMap => self.pick(Pick::ImportMap),
+            Action::PlaceMap => {
+                let args = match (&self.preview.target, &self.ex.tree) {
+                    (Some(Target::Entry(r)), Some(t)) => json!({ "path": t.entry(*r).path }),
+                    (Some(Target::Disk(p)), _) => json!({ "file": p }),
+                    _ => return,
+                };
+                self.run("Placing map…", "world.import", args);
+            }
             Action::AddEntity => {
                 self.mode = Mode::World;
                 self.world_add_entity();

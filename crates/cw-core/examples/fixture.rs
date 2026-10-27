@@ -7,8 +7,10 @@ use std::{fs, path::PathBuf};
 
 use cw_core::{
     dotnet_random::DotNetRandom,
+    hash::joaat_lower,
     rpf::build::{Item, RpfBuilder},
     texture::{Format, Texture, write_dds},
+    ymap::{LodLevel, Ymap, YmapEntity, build_ymap},
     ytd::build_ytd,
 };
 
@@ -114,6 +116,60 @@ fn textures() -> Vec<(&'static str, Texture)> {
     ]
 }
 
+/// A map of a village: a ring of buildings, rows of props, and the LOD stand-in above them.
+fn village() -> Item {
+    let mut entities = Vec::new();
+    let tau = std::f32::consts::TAU;
+    // 24 buildings on a ring, each facing the middle
+    for i in 0..24u32 {
+        let a = i as f32 / 24.0 * tau;
+        entities.push(YmapEntity {
+            archetype: joaat_lower(&format!("bldg_{:02}", i % 6)),
+            guid: i,
+            position: [120.0 * a.cos(), 120.0 * a.sin(), 0.0],
+            rotation: [0.0, 0.0, (a / 2.0).sin(), (a / 2.0).cos()],
+            scale_xy: 12.0 + (i % 3) as f32 * 3.0,
+            scale_z: 9.0 + (i % 4) as f32 * 4.0,
+            ..Default::default()
+        });
+    }
+    // three rows of props along the road through the middle
+    for row in 0..3u32 {
+        for i in 0..40u32 {
+            entities.push(YmapEntity {
+                archetype: joaat_lower(["prop_bench_01", "prop_bin_01", "prop_lamp_01"][row as usize]),
+                guid: 100 + row * 40 + i,
+                position: [-95.0 + i as f32 * 4.9, -8.0 + row as f32 * 8.0, 0.0],
+                scale_xy: 1.0,
+                scale_z: [1.0, 1.2, 5.0][row as usize],
+                ..Default::default()
+            });
+        }
+    }
+    // the stand-in the game shows from far away: left out of the scene by default
+    let lod_index = entities.len() as i32;
+    for e in entities.iter_mut().take(24) {
+        e.parent_index = lod_index;
+    }
+    entities.push(YmapEntity {
+        archetype: joaat_lower("village_lod"),
+        scale_xy: 260.0,
+        scale_z: 12.0,
+        lod: LodLevel::Slod1,
+        num_children: 24,
+        ..Default::default()
+    });
+    let map = Ymap {
+        name: joaat_lower("vb_village_strm_0"),
+        entity_extents: ([-130.0, -130.0, 0.0], [130.0, 130.0, 40.0]),
+        streaming_extents: ([-400.0, -400.0, -20.0], [400.0, 400.0, 120.0]),
+        entities,
+        ..Default::default()
+    };
+    let res = build_ymap(&map);
+    Item::resource("vb_village_strm_0.ymap", res.data, res.sys_flags, res.gfx_flags)
+}
+
 fn props(count: usize, ext: &str, seed: i32, sys: u32, gfx: u32) -> Vec<Item> {
     (0..count)
         .map(|i| {
@@ -163,7 +219,13 @@ fn main() {
                     Item::file("gta.dat", &b"IMG platform:/models/cdimages/props.img\nIDE platform:/levels/gta5/_citye/vb_34/vb_34.ide\n"[..]),
                     xml("vehicles.meta", 120),
                     Item::file("handling.meta", &b"<?xml version=\"1.0\"?>\n<CHandlingDataMgr/>\n"[..]),
-                    Item::dir("levels", vec![Item::file("readme.txt", "Los Santos\nBlaine County\nCayo Perico\n".as_bytes())]),
+                    Item::dir(
+                        "levels",
+                        vec![
+                            Item::file("readme.txt", "Los Santos\nBlaine County\nCayo Perico\n".as_bytes()),
+                            village(),
+                        ],
+                    ),
                 ],
             ),
             Item::dir("models", vec![Item::dir("cdimages", props(40, "ydr", 500, ydr.0, ydr.1))]),
