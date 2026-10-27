@@ -155,15 +155,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn every_action_has_a_unique_title_and_shortcut() {
+    fn every_action_has_a_unique_title_and_no_two_share_a_shortcut() {
         let mut titles: Vec<_> = Action::ALL.iter().map(|a| a.title()).collect();
-        let mut keys: Vec<_> = Action::ALL.iter().map(|a| a.shortcut()).collect();
         titles.sort();
-        keys.sort();
         titles.dedup();
-        keys.dedup();
         assert_eq!(titles.len(), Action::ALL.len());
-        assert_eq!(keys.len(), Action::ALL.len());
+
+        // an action may have no shortcut (it is in the palette and has a button), but two
+        // actions must never claim the same keys
+        let mut keys: Vec<_> = Action::ALL.iter().map(|a| a.shortcut()).filter(|k| !k.is_empty()).collect();
+        let with_keys = keys.len();
+        keys.sort();
+        keys.dedup();
+        assert_eq!(keys.len(), with_keys);
     }
 
     #[test]
