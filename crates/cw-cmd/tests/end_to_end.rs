@@ -581,6 +581,11 @@ fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
     let replaced = ok(&e, "world.import", json!({ "path": "m.rpf/hills.ymap", "replace": true }));
     assert_eq!(replaced["scene_entities"], 3);
     assert_eq!(ok(&e, "world.stats", json!({}))["name"], "m.rpf/hills.ymap");
+    // a replacement is a step like any other: undo brings the 7 back, redo swaps again
+    ok(&e, "world.undo", json!({}));
+    assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 7);
+    ok(&e, "world.redo", json!({}));
+    assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 3);
 
     // a loose file works the same way
     let raw = ok(&e, "rpf.extract", json!({ "path": "m.rpf", "dest": fx.dir.join("raw") }));
@@ -631,6 +636,7 @@ fn game_check_samples_every_reader_and_names_what_fails() {
     let rpf = RpfBuilder::new(vec![
         Item::resource("good.ytd", ytd.data.clone(), ytd.sys_flags, ytd.gfx_flags),
         Item::resource("junk.ytd", vec![0xAB; 300], 1 << 17, 0xD000_0000),
+        Item::resource("future.ytd", vec![0; 300], 1 << 17, 0x2000_0000),
         Item::resource("good.ymap", full.data.clone(), full.sys_flags, full.gfx_flags),
         Item::resource("nothing.ymap", empty.data.clone(), empty.sys_flags, empty.gfx_flags),
         Item::file("readme.txt", &b"plain"[..]),
@@ -652,19 +658,26 @@ fn game_check_samples_every_reader_and_names_what_fails() {
     assert_eq!(c["archives"]["errors"], 1, "the AES archive cannot be opened without keys");
     assert!(c["archives"]["first_errors"][0]["path"].as_str().unwrap().contains("locked.rpf"));
     assert_eq!(c["archives"]["encryption"]["open"], 3, "a.rpf, its nested archive and t.rpf");
-    assert_eq!((c["ytd"]["tried"].as_u64(), c["ytd"]["parsed"].as_u64()), (Some(2), Some(1)));
+    // a dictionary the reader does not support is a failure, with its reason ...
+    assert_eq!((c["ytd"]["tried"].as_u64(), c["ytd"]["parsed"].as_u64()), (Some(3), Some(2)));
     assert_eq!((c["ytd"]["textures"].as_u64(), c["ytd"]["decodable"].as_u64()), (Some(1), Some(1)));
-    assert_eq!(c["ytd"]["failures"].as_array().unwrap().len(), 1, "the junk dictionary, with its reason");
-    assert!(c["ytd"]["failures"][0]["examples"][0].as_str().unwrap().ends_with("junk.ytd"));
+    assert_eq!(c["ytd"]["failures"].as_array().unwrap().len(), 1);
+    assert!(c["ytd"]["failures"][0]["reason"].as_str().unwrap().contains("version 2"));
+    assert!(c["ytd"]["failures"][0]["examples"][0].as_str().unwrap().ends_with("future.ytd"));
+    // ... while one that parses but holds nothing is counted on its own, not as a failure
+    assert_eq!(c["ytd"]["empty"], 1);
+    assert!(c["ytd"]["empty_examples"][0]["examples"][0].as_str().unwrap().ends_with("junk.ytd"));
     assert_eq!(
         (c["ymap"]["tried"].as_u64(), c["ymap"]["parsed"].as_u64(), c["ymap"]["entities"].as_u64()),
         (Some(2), Some(2), Some(3))
     );
-    assert_eq!(c["ymap"]["failures"][0]["reason"], "parsed, but holds no entities");
+    assert_eq!((c["ymap"]["empty"].as_u64(), c["ymap"]["failures"].as_array().unwrap().len()), (Some(1), 0));
     assert_eq!(c["extract"]["failed"], 0, "everything that was sampled could be read");
+    assert_eq!(c["extract"]["too_big"], 0);
     let report: Vec<&str> = c["report"].as_array().unwrap().iter().map(|v| v.as_str().unwrap()).collect();
     assert!(report.iter().any(|l| l.starts_with("keys: NOT derived")), "{report:?}");
-    assert!(report.iter().any(|l| l.starts_with("ytd: 1 of 2 parsed")), "{report:?}");
+    assert!(report.iter().any(|l| l.starts_with("ytd: 2 of 3 parsed (1 empty)")), "{report:?}");
+    assert!(report.iter().all(|l| !l.contains("layout")), "only some were empty: no alarm");
 
     // a sample smaller than the file count still spreads over all of them
     let small = ok(&e, "game.check", json!({ "sample": 1 }));
