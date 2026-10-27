@@ -1,74 +1,91 @@
-<div align="center">
-    <h1>CodeWalker by dexyfex</h1>
-    This program is for viewing the contents of GTAV RPF archives.
-</div>
+# CodeWalker (Rust)
 
-## Requirements:
-- PC version of GTA:V;
-- 4GB RAM (8+ recommended);
-- Windows 7 and above, x64 processor;
-- .NET framework 4.5 or newer from [Microsoft](https://www.microsoft.com/net/download/thank-you/net471);
-- DirectX 11 and Shader Model 4.0 capable graphics.
+A Rust port of [CodeWalker](https://github.com/dexyfex/CodeWalker) by dexyfex: one native executable to explore
+GTA V `.rpf` archives, preview files, manage mods and place things on the map. No Electron, no webview, no .NET.
 
-# App Usage:
-On first startup, the app will prompt to browse for the GTA:V game folder. If you have the Steam version installed
-in the default location `(C:\Program Files (x86)\Steam\SteamApps\common\Grand Theft Auto V)`, then this step will be skipped automatically.
+The window is [egui](https://github.com/emilk/egui) on top of [wgpu](https://wgpu.rs) (Vulkan, Metal, DX12,
+OpenGL). Every action is a *command*, so everything the UI does can also be driven from the command line, a
+JSON control channel or an MCP server.
 
-The World View will load by default. It will take a while to load. Use the WASD keys to move the camera. Hold shift to move faster. Drag the left mouse button to rotate the view. Use the mouse wheel to zoom in/out, and change the base movement speed. (Zoom in = slower motion) Xbox controller input is also supported. The Toolbox can be shown by clicking the `<<` button in the top right-hand corner of the screen. `T` opens the main toolbar.
+> **Status: early.** It has been tested against archives built by the test suite, **not against real GTA V
+> files** (none were available while writing it). Byte layouts come from the original C# source. Treat each
+> format as unverified until you have opened real game data with it, and please report what breaks.
 
-First-person mode can be activated with the P key, or by pressing the Start button on the XBox controller. While in first-person mode, the left mouse button (or right trigger) will fire an egg.
+## What works
 
-Entities can be selected (with the right mouse button) by enabling the option on the Selection tab in the toolbox. The details of the selected entity, its archetype, and its drawable can be explored in the relevant sub-tabs. (This option can also be activated with the arrow button on the toolbar).
+| Area | State |
+|---|---|
+| RPF7 archives | Open, nested archives, `OPEN` / `AES` / `NG` encryption, resources (`RSC7`), search, extract. Keys are derived from your own `GTA5.exe`. Scans run in parallel on memory-mapped files and are bounded against hostile input. |
+| Explorer | Folder/archive tree, sortable list, text / hex / info previews, filter or search-everywhere, command palette (`Ctrl+K`, `Cmd+K` on macOS), open loose files, drag and drop. |
+| Mods | `<game>/mods/` overlay: copy an archive from the game, install files or folders, enable / disable (a `.disabled` suffix, the file is kept), remove. Writes are atomic and cannot leave the `mods` folder. |
+| Textures | `.ytd` and `.dds` parsing, BCn decoding, `texture.list` / `texture.export` to `.dds`. The copy-on-write tile image and parallel filters exist in `cw-gpu`; they are **not wired into the explorer preview yet**. |
+| World | A scratch scene: add, move, rotate, scale and remove entities with a gizmo, undo / redo, save / load as JSON, picking in a wgpu viewport. |
+| Control | CLI, newline-delimited JSON channel (stdio or authenticated loopback TCP), MCP server on stdio. |
 
-When an entity is selected, `E` will switch to edit mode (or alternatively, edit mode can be activated by switching the Widget mode to anything other than Default). When in edit mode, `Q` will exit edit mode, `W` toggles the position widget, E toggles rotation, and R toggles scale. Also when in edit mode, movement is still WSAD, but only while you're holding the left mouse button down, and not interacting with the widget. `Ctrl-Z` and `Ctrl-Y` will Undo and Redo entity transformation (position/rotation/scale) actions.
+## What does not exist yet
 
-The Project Window allows a CodeWalker project to be created (`.cwproj`), and files added to it. Editing entities while the Project Window is open will add the entity's `.ymap` to the current project. `Ymap` files can then be saved to disk, for use in a map mod. New `ymap` files can also be created, and entities can be added and removed. Also supported for editing are `.ynd` files (traffic paths), trains `.dat files` (train tracks), and scenarios (`.ymt`). (A full tutorial on making map mods is out of the scope of this readme.)
+- Importing `.ymap` / `.ytyp` into the world, and any model (`.ydr`, `.ydd`, `.yft`) or collision (`.ybn`) viewing.
+- Texture preview inside the explorer, gen9 (Enhanced Edition) texture formats.
+- Writing to archives (`NG` encryption, edit-mode RPF), project files, `.ynd` / `.ymt` editing, audio, vehicle and ped viewers.
 
-A full explanation of all the tools in this application is still on the to-do list! The user is currently left to explore the options at their own peril. Note some options may cause CodeWalker to crash, or otherwise stop working properly. Restart the program if this happens! Also note that this program is a constant work in progress, so bugs and crashes are to be expected. Some parts of the world do not yet render correctly, but expect updates in the future to fix these issues.
+`docs/porting/` lists what remains, with the C# file and line to read for each item.
 
-# Menu Mode:
-The app can also be started with a main menu instead of loading the world view. This can be useful for situations where the world
-view is not needed, and the world loading can be avoided. To activate the menu mode, run CodeWalker with the 'menu' command line argument, e.g: CodeWalker.exe menu.
+## Build and run
 
-# Explorer Mode:
-The app can be started with the `'explorer'` command line argument. This displays an interface much like OpenIV, with a Windows-Explorer style interface for browsing the game's .rpf archives. Double-click on files to open them. Viewers for most file types are available, but hex view will be shown as a fallback. To activate the explorer mode, run the command: CodeWalker.exe explorer. Alternatively, run the CodeWalker Explorer batch file in the program's directory.
+Needs Rust 1.95 or newer (edition 2024; egui sets the floor). On Linux, eframe needs the usual windowing and GL
+libraries (X11 or Wayland, `libxkbcommon`, `libGL` / `libEGL`).
 
-# Main Toolbar:
-The main toolbar is used to access most of the editing features in CodeWalker. Shortcuts for new, open and create files are provided. The selection mode can be changed with the "pointer" button. Move, rotate and scale buttons provide access to the different editing widget modes. Other shortcuts on the toolbar include buttons to open the Selection Info window, and the Project window. See the tooltips on the toolbar items for hints.
+```sh
+cargo run --release                     # the app; pass folders, .rpf files or loose files to open them
+cargo test --workspace
+```
 
-# Project Window:
-The project window is the starting point for editing files in CodeWalker. Project files can be created, and files can be added to them. It is recommended to create and save a project file before adding files to be edited and saved. The tree view displays the files in the current project, and their contents.
+On first start the app looks for your GTA V install (Steam, Epic, Rockstar, OpenIV) or asks for the folder.
+The Legacy / Enhanced edition is taken from the executable found in that folder.
 
-# YMAP Editing:
-New `YMAP` files can be created via the project window, and existing `YMAP` files can be edited. To edit an existing single player `YMAP`, first change codewalker DLC level to `patchday2ng`, and enable DLC. Open the toolbar, and enable Entity selection mode. Enable the Move widget with the toolbar Move button. Open the project window with the toolbar button. Changes made while the project window is open are automatically added to the project. Select an entity to edit by right clicking when the entity is moused over, and its bounding box shown in white. Move, rotate and/or scale the selected entity with the widget. When the first change is made, the entity's `YMAP` will be added to the current project. If no project is open, a new one will be created. The edited `YMAP` file can be saved to the drive using the File menu in the project window. After saving the file, it needs to be added into the mods folder. Using OpenIV, find the existing `YMAP` file using the search function (note: the correct path for the edited `YMAP` can be found in the selection info window in CodeWalker, when an entity is selected, look for `YMap`>`RpfFileEntry` in the selection info property grid). Replace the edited `YMAP` into a copy of the correct archive in the /mods folder. Newly created YMAPs can be added to DLC archives in the same manner.
+## Commands
 
-# Train Tracks Editing:
-[TODO - write this!]
+Everything is `codewalker COMMAND --option value`; `codewalker help` lists them and `codewalker help COMMAND`
+describes one. Options are generated from each command's parameters.
 
-# (YND) Traffic Paths Editing:
-[TODO - write this!]
+```sh
+codewalker --game "D:\Games\GTAV" rpf.search --query adder
+codewalker rpf.list --path x64a.rpf              # opens the saved game folder first
+codewalker mods.copy --path x64/audio/sfx/resident.rpf
+codewalker hash.joaat --text adder
+```
 
-# (YMT) Scenario Regions Editing:
-[TODO: write this!] <br>
-See https://youtu.be/U0nrVL44Fb4 - Scenario Editing Tutorial
+A control channel, one JSON request per line:
 
-# Regarding game files: (FYI)
+```sh
+codewalker serve --stdio
+# -> {"id":1,"cmd":"rpf.list","args":{"path":"x64a.rpf"}}
+# <- {"id":1,"ok":true,"result":{...}}
+codewalker serve --listen 127.0.0.1:7777   # prints a token; the first line must be {"auth":"<token>"}
+```
 
-The PC GTAV world is stored in the `RPF` archives in many different file formats. As expected, some formats are used for storing rendering-related content, for example the textures and 3d models, while other formats are used for storing game and engine related data.
+And an MCP server for AI tools: `codewalker mcp` (tools are the commands with dots turned into underscores,
+with read-only / destructive hints).
 
-The main formats when it comes to rendering GTAV content are:
-`.ytd` - Texture Dictionary - Stores texture data in a DirectX format convenient for loading to the GPU. 
-`.ydr` - Drawable - Contains a single asset's 3d model. Can contain a Texture Dictionary, and up to 4 LODs of a model.
-`.ydd` - Drawable Dictionary - A collection of Drawables packed into a single file.
-`.yft` - Fragment - Contains a Drawable, along with other metadata for example physics data.
+## Layout
 
-The content Assets are pieced together to create the GTAV world via MapTypes (Archetypes) and MapData (Entity placements). At a high level, Archetypes define objects that are placeable, and Entities define where those objects are placed to make up the world. The collision mesh data for the world is stored in Bounds files.
+| Crate | Role |
+|---|---|
+| `cw-core` | RPF7, keys and crypto, resources, textures, hashes. No UI, no I/O beyond files. |
+| `cw-cmd` | The command engine and its CLI / JSON / MCP front-ends, game folder detection, mods. |
+| `cw-world` | The editable scene and its undo history. |
+| `cw-gpu` | wgpu renderer, camera, picking, copy-on-write tiled images with multithreaded filters. |
+| `cw-app` | The `codewalker` executable: egui UI over the engine. |
 
-### The formats for these are:
-`.ytyp` - MapTypes - Contains a group of MapTypes (Archetypes), each defining an object that could be placed.
-`.ymap` - MapData - Contains placements of Archetypes, each defining an Entity in the world.
-`.ybn` - Bounds - Contains collision mesh / bounding data for pieces of the world.
+Design rules for the interface are in [`docs/DESIGN.md`](docs/DESIGN.md).
 
-The EntityData contained within the MapData (`.ymap`) files forms the LOD hierarchy. This hierarchy is arranged such that the lowest detail version of the world, at the root of the hierarchy, is represented by a small number of large models that can all be rendered simultaneously to draw the world at a great distance. The next branch in the hierarchy splits each of these large models into a group of smaller objects, each represented in a higher detail than the previous level. This pattern is continued for up to 6 levels of detail. When rendering the world, the correct level of detail for each branch in the hierarchy needs to be determined, as obviously the highest detail objects cannot all be rendered at once due to limited computing resources.
+## Credits and licence
 
-In CodeWalker, This is done by recursing the LOD tree from the roots, checking how far away from the camera the node's Entity is. If it is below a certain value, then the current level is used, otherwise it moves to the next higher level, depending on the LOD distance setting. (In the Ymap view, the highest LOD, ORPHANHD, is not rendered by default. The ORPHANHD entities can often be manually rendered by specifying the correct `strm ymap` file for the area in question in the `ymap` text box. The `strm ymap` name can often be found by mouse-selecting a high detail object in the area and noting what `ymap` the entity is contained in, in the selection details panel.)
+This is a port of CodeWalker, written by dexyfex and contributors; their work is the reference for every file
+format here. [`Notice.txt`](Notice.txt) carries the copyright notices that came with it. The original C# source
+is in git history at commit `c45ea83`.
+
+The upstream tree contains no licence file, so **this repository has none either, and the terms are not
+settled.** Confirm them with the original author before distributing binaries.
+
+`.claude/skills/` holds the design skills used while building the interface, each with its own licence.

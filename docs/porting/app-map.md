@@ -1,5 +1,10 @@
 # CodeWalker app map (C# to Rust port)
 
+> **The C# sources are no longer in the working tree.** They are in git history at
+> commit `c45ea83` (the upstream tip this port started from). Read a file with
+> `git show c45ea83:CodeWalker.Core/GameFiles/RpfFile.cs`, or browse the whole tree with
+> `git worktree add ../codewalker-csharp c45ea83`. Paths below refer to that commit.
+
 Read-only map of the C# sources under `/home/user/CodeWalkerFork`. Line counts are `wc -l` of `.cs` files; "+D" means the matching `*.Designer.cs` is counted separately. Items marked (unverified) were not read in full.
 
 ## 0. Solution layout

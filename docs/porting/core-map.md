@@ -1,5 +1,10 @@
 # CodeWalker.Core porting map (what remains)
 
+> **The C# sources are no longer in the working tree.** They are in git history at
+> commit `c45ea83` (the upstream tip this port started from). Read a file with
+> `git show c45ea83:CodeWalker.Core/GameFiles/RpfFile.cs`, or browse the whole tree with
+> `git worktree add ../codewalker-csharp c45ea83`. Paths below refer to that commit.
+
 Read-only map of `CodeWalker.Core/GameFiles/` (C#) against the Rust port in `crates/cw-core`. Paths are relative to `CodeWalker.Core/GameFiles/` unless shown otherwise. Line numbers come from `grep -n` / `sed -n`. **Verification status:** all binary offsets come from the C# source. The repo has no sample `.ytd`, `.ydr`, `.ymap`, `.ytyp` or `.rpf` files, so nothing was checked against game data. Items marked *unverified* need a test file first.
 
 ## 0. Already in Rust (skip)
