@@ -5,6 +5,9 @@ use crate::{
     rpf::build::{Item, RpfBuilder},
 };
 
+/// (type hash, bytes) of each META block.
+type Blocks = Vec<(u32, Vec<u8>)>;
+
 fn entity(i: u32) -> YmapEntity {
     YmapEntity {
         archetype: 0xC0DE_0000 + i,
@@ -144,9 +147,8 @@ fn the_lod_tree_has_the_roots_the_original_rule_gives() {
 fn damaged_maps_give_what_is_readable_or_an_error() {
     let good = build_ymap(&sample());
     let meta = Meta::parse(&good).unwrap();
-    let rebuilt = |edit: &dyn Fn(&mut Vec<(u32, Vec<u8>)>)| {
-        let mut blocks: Vec<(u32, Vec<u8>)> =
-            meta.blocks.iter().map(|b| (b.type_hash, b.data.clone())).collect();
+    let rebuilt = |edit: &dyn Fn(&mut Blocks)| {
+        let mut blocks: Blocks = meta.blocks.iter().map(|b| (b.type_hash, b.data.clone())).collect();
         edit(&mut blocks);
         parse_ymap(&build_meta(1, &blocks))
     };
