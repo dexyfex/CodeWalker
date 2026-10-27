@@ -617,6 +617,9 @@ fn parse_archive(
 
     // Build the directory hierarchy and paths. Ranges are validated and
     // every entry is claimed at most once, so a hostile TOC cannot loop us.
+    // The root directory has no name in the table; it is the archive itself.
+    entries[0].name = name.clone();
+    entries[0].name_lower = name.to_lowercase();
     entries[0].path = path.clone();
     let mut stack = vec![0u32];
     let mut claimed = vec![false; entries.len()];
@@ -748,6 +751,8 @@ fn collect_rpfs(dir: &Path, out: &mut Vec<PathBuf>) {
 pub fn normalize_path(p: &str) -> String {
     p.replace('\\', "/").trim_matches('/').to_lowercase()
 }
+
+pub mod build;
 
 #[cfg(test)]
 mod tests;
