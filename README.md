@@ -18,14 +18,14 @@ JSON control channel or an MCP server.
 | RPF7 archives | Open, nested archives, `OPEN` / `AES` / `NG` encryption, resources (`RSC7`), search, extract. Keys are derived from your own `GTA5.exe`. Scans run in parallel on memory-mapped files and are bounded against hostile input. |
 | Explorer | Folder/archive tree, sortable list, text / hex / info previews, filter or search-everywhere, command palette (`Ctrl+K`, `Cmd+K` on macOS), open loose files, drag and drop. |
 | Mods | `<game>/mods/` overlay: copy an archive from the game, install files or folders, enable / disable (a `.disabled` suffix, the file is kept), remove. Writes are atomic and cannot leave the `mods` folder. |
-| Textures | `.ytd` and `.dds` parsing, BCn decoding, `texture.list` / `texture.export` to `.dds`. The copy-on-write tile image and parallel filters exist in `cw-gpu`; they are **not wired into the explorer preview yet**. |
+| Textures | `.ytd` and `.dds` preview: every texture of a dictionary with thumbnails, mips, channel isolation (R, G, B, A, RGB), invert, zoom, pan and a pixel readout. Pictures are copy-on-write tiles, filtered on all cores, uploaded tile by tile and composed on the GPU. `texture.list` and `texture.export` (DDS as stored, or a filtered PNG) expose the same pipeline to the command line. Tested on generated textures only. |
 | World | A scratch scene: add, move, rotate, scale and remove entities with a gizmo, undo / redo, save / load as JSON, picking in a wgpu viewport. |
 | Control | CLI, newline-delimited JSON channel (stdio or authenticated loopback TCP), MCP server on stdio. |
 
 ## What does not exist yet
 
 - Importing `.ymap` / `.ytyp` into the world, and any model (`.ydr`, `.ydd`, `.yft`) or collision (`.ybn`) viewing.
-- Texture preview inside the explorer, gen9 (Enhanced Edition) texture formats.
+- Gen9 (Enhanced Edition) texture formats.
 - Writing to archives (`NG` encryption, edit-mode RPF), project files, `.ynd` / `.ymt` editing, audio, vehicle and ped viewers.
 
 `docs/porting/` lists what remains, with the C# file and line to read for each item.
@@ -56,6 +56,7 @@ codewalker --game "D:\Games\GTAV" rpf.search --query adder
 codewalker rpf.list --path x64a.rpf              # opens the saved game folder first
 codewalker mods.copy --path x64/audio/sfx/resident.rpf
 codewalker hash.joaat --text adder
+codewalker texture.export --path x64a.rpf/textures/vehshare.ytd --index 0 --dest out --format png --channels a --invert
 ```
 
 A control channel, one JSON request per line:
@@ -74,10 +75,10 @@ with read-only / destructive hints).
 
 | Crate | Role |
 |---|---|
-| `cw-core` | RPF7, keys and crypto, resources, textures, hashes. No UI, no I/O beyond files. |
+| `cw-core` | RPF7, keys and crypto, resources, textures, tiled images and their filters, hashes. No UI, no I/O beyond files. |
 | `cw-cmd` | The command engine and its CLI / JSON / MCP front-ends, game folder detection, mods. |
 | `cw-world` | The editable scene and its undo history. |
-| `cw-gpu` | wgpu renderer, camera, picking, copy-on-write tiled images with multithreaded filters. |
+| `cw-gpu` | wgpu renderer, camera, picking, tile-wise texture upload and the image compositor. |
 | `cw-app` | The `codewalker` executable: egui UI over the engine. |
 
 Design rules for the interface are in [`docs/DESIGN.md`](docs/DESIGN.md).
