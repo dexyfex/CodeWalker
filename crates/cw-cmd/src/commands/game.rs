@@ -34,6 +34,7 @@ pub fn register(e: &mut Engine) {
     e.register(
         CommandSpec::new("rpf.open", "game", "Open a single .rpf file, or a folder of them")
             .param(ParamSpec::new("path", K::Path, "file or folder").required())
+            .param(ParamSpec::new("add", K::Boolean, "keep what is already open and add this to it"))
             .mutating(),
         rpf_open,
     );
@@ -136,12 +137,13 @@ fn game_open(ctx: &Ctx, args: Value) -> CmdResult {
 }
 
 #[derive(Deserialize)]
-struct PathArgs {
+struct OpenPathArgs {
     path: PathBuf,
+    add: Option<bool>,
 }
 
 fn rpf_open(ctx: &Ctx, args: Value) -> CmdResult {
-    let a: PathArgs = parse(args)?;
+    let a: OpenPathArgs = parse(args)?;
     let keys = ctx.session().keys.clone();
     let tree = if a.path.is_dir() {
         scan(ctx, &a.path, keys)?
@@ -154,8 +156,13 @@ fn rpf_open(ctx: &Ctx, args: Value) -> CmdResult {
     let summary = summarize(&tree, None);
     {
         let mut s = ctx.session_mut();
-        s.tree = Some(Arc::new(tree));
-        s.root = a.path.is_dir().then(|| a.path.clone());
+        s.tree = Some(Arc::new(match (a.add.unwrap_or(false), s.tree.take()) {
+            (true, Some(existing)) => existing.merged(tree),
+            _ => tree,
+        }));
+        if !a.add.unwrap_or(false) {
+            s.root = a.path.is_dir().then(|| a.path.clone());
+        }
         push_recent(&mut s.config.recent, a.path);
     }
     let _ = ctx.save_config();

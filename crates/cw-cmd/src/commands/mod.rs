@@ -2,11 +2,13 @@
 
 use crate::engine::Engine;
 
+mod files;
 mod game;
 mod rpf;
 mod util;
 
 pub fn register_all(e: &mut Engine) {
+    files::register(e);
     game::register(e);
     rpf::register(e);
     util::register(e);

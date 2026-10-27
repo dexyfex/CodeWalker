@@ -140,3 +140,35 @@ fn ephemeral_engine_never_touches_the_config_file() {
     assert_eq!(before, after);
     assert_eq!(e.session().config.game_folder.as_deref(), Some(fx.dir.join("game").as_path()));
 }
+
+#[test]
+fn adding_archives_keeps_the_open_ones_and_loose_files_are_tracked() {
+    let fx = Fixture::new("add");
+    let e = Engine::ephemeral();
+    ok(&e, "rpf.open", json!({ "path": fx.dir.join("game/x64/a.rpf") }));
+    let second = RpfBuilder::new(vec![Item::file("extra.txt", &b"more"[..])]).build().unwrap();
+    std::fs::write(fx.dir.join("b.rpf"), second).unwrap();
+
+    ok(&e, "rpf.open", json!({ "path": fx.dir.join("b.rpf"), "add": true }));
+    let roots = ok(&e, "rpf.list", json!({}));
+    assert_eq!(roots["total"], 2);
+    ok(&e, "rpf.info", json!({ "path": "a.rpf/readme.txt" }));
+    ok(&e, "rpf.info", json!({ "path": "b.rpf/extra.txt" }));
+
+    // without `add` the previous archives are replaced
+    ok(&e, "rpf.open", json!({ "path": fx.dir.join("b.rpf") }));
+    assert_eq!(ok(&e, "rpf.list", json!({}))["total"], 1);
+
+    let note = fx.dir.join("note.txt");
+    std::fs::write(&note, "loose text").unwrap();
+    let info = ok(&e, "file.open", json!({ "path": note }));
+    assert_eq!(info["type"], "Text");
+    assert_eq!(e.session().files, [note.clone()]);
+    ok(&e, "file.open", json!({ "path": note })); // idempotent
+    assert_eq!(e.session().files.len(), 1);
+    assert_eq!(ok(&e, "file.read", json!({ "path": note, "length": 5 }))["text"], "loose");
+    ok(&e, "file.close", json!({ "path": note }));
+    assert!(e.session().files.is_empty());
+    assert_eq!(e.execute("file.open", json!({ "path": fx.dir.join("nope") })).unwrap_err().code, "not_found");
+    assert_eq!(e.execute("file.open", json!({ "path": fx.dir })).unwrap_err().code, "invalid_args");
+}

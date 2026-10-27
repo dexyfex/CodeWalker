@@ -56,6 +56,8 @@ pub struct Session {
     pub tree: Option<Arc<RpfTree>>,
     /// Folder that `tree` was scanned from, when it came from a game folder.
     pub root: Option<PathBuf>,
+    /// Loose files opened next to the archives (previewed, not part of the tree).
+    pub files: Vec<PathBuf>,
 }
 
 /// Something the UI (or any subscriber) may want to react to.
@@ -64,6 +66,7 @@ pub struct Session {
 pub enum Event {
     Progress { task: String, message: String },
     TreeChanged,
+    FilesChanged,
     KeysChanged,
     ConfigChanged,
     Log { message: String },
