@@ -12,16 +12,18 @@ use std::{
 };
 
 use cw_cmd::{Engine, Event};
-use cw_core::{EntryRef, RpfTree};
+use cw_core::{EntryRef, RpfTree, image::TiledImage};
 use eframe::egui::{self, Key, Modifiers, TextureHandle};
 use serde_json::{Value, json};
 
 use crate::{
     actions::Action,
     format,
+    gpu::Gpu,
     latest::LatestWins,
     model::{Explorer, Item},
     preview::{self, Loaded, Source},
+    texview::{DecodeJob, TexView},
     ui::{
         palette::Palette,
         toasts::{Toast, ToastKind},
@@ -90,11 +92,14 @@ pub enum Pick {
     InstallFolder,
     SaveScene,
     LoadScene,
+    ExportTexturePng,
+    ExportTextureDds,
 }
 
 pub enum Msg {
     Cmd { cmd: &'static str, result: Result<Value, cw_cmd::CmdError> },
     Preview { generation: u64, result: Result<Box<Loaded>, String> },
+    TexDecoded { key: u64, result: Result<TiledImage, String> },
     Search { generation: u64, query: String, total: usize, items: Vec<EntryRef> },
     Picked(Pick, Vec<PathBuf>),
 }
@@ -116,6 +121,12 @@ pub struct App {
     preview_worker: LatestWins<PreviewJob>,
     /// Runs engine commands one at a time, in the order they were asked for.
     commands: Sender<(&'static str, Value)>,
+    /// The texture viewer for `.ytd` and `.dds` previews, its decoder and the shared GPU handles.
+    pub texview: TexView,
+    /// `CODEWALKER_TEX`, applied to the first texture file that opens.
+    tex_script: Option<String>,
+    tex_worker: LatestWins<DecodeJob>,
+    pub gpu: Option<Gpu>,
     pub keys_loaded: bool,
     pub candidates: Vec<cw_cmd::gamefolder::Candidate>,
 
@@ -219,6 +230,15 @@ impl App {
                 ctx.request_repaint();
             })
         };
+        let tex_worker = {
+            let (tx, ctx) = (tx.clone(), cc.egui_ctx.clone());
+            LatestWins::start(move |job: DecodeJob| {
+                let result = catch_unwind(AssertUnwindSafe(|| job.run()))
+                    .unwrap_or_else(|_| Err("Decoding this texture failed unexpectedly.".to_string()));
+                let _ = tx.send(Msg::TexDecoded { key: job.key, result });
+                ctx.request_repaint();
+            })
+        };
         let commands = {
             let (jobs, queue) = mpsc::channel::<(&'static str, Value)>();
             let (engine, tx, ctx) = (engine.clone(), tx.clone(), cc.egui_ctx.clone());
@@ -241,6 +261,10 @@ impl App {
             events,
             preview_worker,
             commands,
+            texview: TexView::default(),
+            tex_script: std::env::var("CODEWALKER_TEX").ok(),
+            tex_worker,
+            gpu: cc.wgpu_render_state.as_ref().map(Gpu::new),
             tx,
             rx,
             ctx: cc.egui_ctx.clone(),
@@ -351,9 +375,11 @@ impl App {
                 return Msg::Picked(what, path.into_iter().collect());
             }
             let paths = match what {
-                Pick::GameFolder | Pick::ExtractTo | Pick::InstallFolder => {
-                    dlg.pick_folder().into_iter().collect()
-                }
+                Pick::GameFolder
+                | Pick::ExtractTo
+                | Pick::InstallFolder
+                | Pick::ExportTexturePng
+                | Pick::ExportTextureDds => dlg.pick_folder().into_iter().collect(),
                 Pick::Files | Pick::InstallFiles => dlg.pick_files().unwrap_or_default(),
                 Pick::LoadScene => {
                     dlg.add_filter("CodeWalker scene", &["json"]).pick_file().into_iter().collect()
@@ -426,11 +452,13 @@ impl App {
                                     .as_ref()
                                     .map(|d| (preview::upload(&self.ctx, "preview", d), d.original));
                                 self.preview.state = PState::Ready(l);
+                                self.start_texture_view();
                             }
                             Err(e) => self.preview.state = PState::Failed(e),
                         }
                     }
                 }
+                Msg::TexDecoded { key, result } => self.texview.decoded(key, result),
                 Msg::Search { generation, query, total, items } => {
                     if generation == self.search_generation {
                         self.ex.show_search(query, total, items);
@@ -485,6 +513,9 @@ impl App {
                 for source in paths {
                     self.run("Installing…", "mods.install", json!({ "source": source }));
                 }
+            }
+            Pick::ExportTexturePng | Pick::ExportTextureDds => {
+                self.export_texture(paths[0].clone(), what == Pick::ExportTexturePng)
             }
             Pick::ExtractTo => {
                 let Some(item) = self.ex.selected.clone() else { return };
@@ -599,6 +630,21 @@ impl App {
                 self.refresh_mods();
             }
             "mods.enable" | "mods.disable" | "mods.remove" => self.refresh_mods(),
+            "texture.export" => {
+                let written = v["written"].as_u64().unwrap_or(0);
+                let skipped = v["skipped"].as_array().map_or(0, Vec::len);
+                let msg = if skipped > 0 {
+                    format!(
+                        "Saved {} · {} skipped ({})",
+                        format::plural(written, "texture", "textures"),
+                        skipped,
+                        v["skipped"][0]["reason"].as_str().unwrap_or("not supported")
+                    )
+                } else {
+                    format!("Saved {}", format::plural(written, "texture", "textures"))
+                };
+                self.toast(msg, if skipped > 0 { ToastKind::Warning } else { ToastKind::Success });
+            }
             "rpf.extract" => {
                 let files = v["files"].as_u64().unwrap_or(0);
                 let failed = v["failed"].as_u64().unwrap_or(0);
@@ -614,6 +660,49 @@ impl App {
             }
             _ => {}
         }
+    }
+
+    /// A preview with textures just arrived: show the first one.
+    fn start_texture_view(&mut self) {
+        let PState::Ready(l) = &self.preview.state else { return };
+        let Some(set) = &l.textures else { return };
+        self.texview.reset(set.entries.len());
+        if let Some(spec) = self.tex_script.take() {
+            self.texview.apply_settings(&spec);
+        }
+        if let Some(job) = self.texview.next_job(set) {
+            self.tex_worker.submit(job);
+        }
+    }
+
+    /// What the texture viewer asked for in the last frame.
+    pub(crate) fn handle_texture_request(&mut self, req: crate::ui::texview::TexRequest) {
+        if let Some(job) = req.decode {
+            self.tex_worker.submit(job);
+        }
+        match req.export {
+            Some(true) => self.pick(Pick::ExportTexturePng),
+            Some(false) => self.pick(Pick::ExportTextureDds),
+            None => {}
+        }
+    }
+
+    /// Saves the texture on show through `texture.export`, as the viewer currently has it
+    /// (PNG: this mip, these channels, inverted or not; DDS: the whole texture, as stored).
+    fn export_texture(&mut self, dest: PathBuf, png: bool) {
+        let mut args = json!({ "dest": dest, "index": self.texview.index });
+        match (&self.preview.target, &self.ex.tree) {
+            (Some(Target::Entry(r)), Some(t)) => args["path"] = t.entry(*r).path.clone().into(),
+            (Some(Target::Disk(p)), _) => args["file"] = p.display().to_string().into(),
+            _ => return,
+        }
+        if png {
+            args["format"] = "png".into();
+            args["mip"] = self.texview.level.into();
+            args["channels"] = self.texview.channels.label().into();
+            args["invert"] = self.texview.invert.into();
+        }
+        self.run("Saving texture…", "texture.export", args);
     }
 
     fn apply_script(&mut self) {

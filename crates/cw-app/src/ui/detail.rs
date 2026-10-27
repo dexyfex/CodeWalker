@@ -152,6 +152,7 @@ impl App {
         let mut action = None;
         let mut retry = false;
         let mut new_view = None;
+        let mut tex_request = None;
 
         match &self.preview.state {
             PState::Idle => {}
@@ -188,7 +189,7 @@ impl App {
                         action = Some(Action::CopyPath);
                     }
                 });
-                let has_preview = l.image.is_some() || l.text.is_some();
+                let has_preview = l.image.is_some() || l.text.is_some() || l.textures.is_some();
                 let labels: &[&str] =
                     if has_preview { &["Preview", "Hex", "Info"] } else { &["Info", "Hex"] };
                 let selected = match (self.preview.view, has_preview) {
@@ -226,6 +227,13 @@ impl App {
                     ViewMode::Auto => {
                         if let (Some((tex, orig)), true) = (&self.preview.tex, l.image.is_some()) {
                             preview::image_view(ui, tex, *orig);
+                        } else if let Some(set) = &l.textures {
+                            tex_request = Some(super::texview::texture_viewer(
+                                ui,
+                                &mut self.texview,
+                                set,
+                                self.gpu.as_ref(),
+                            ));
                         } else if let Some(doc) = &l.text {
                             preview::text_view(ui, doc, &format!("text-{id}"));
                         }
@@ -236,6 +244,9 @@ impl App {
 
         if let Some(v) = new_view {
             self.preview.view = v;
+        }
+        if let Some(req) = tex_request {
+            self.handle_texture_request(req);
         }
         if let Some(a) = action {
             self.perform(a);

@@ -10,6 +10,9 @@ pub const PANEL: Color32 = Color32::from_rgb(0x14, 0x14, 0x16);
 pub const RAISED: Color32 = Color32::from_rgb(0x1C, 0x1C, 0x1F);
 pub const ACTIVE: Color32 = Color32::from_rgb(0x26, 0x26, 0x2B);
 pub const BORDER: Color32 = Color32::from_rgb(0x26, 0x26, 0x2A);
+/// The two greys of the checkerboard that shows through transparent pixels.
+pub const CHECKER_A: Color32 = Color32::from_rgb(0x1A, 0x1A, 0x1D);
+pub const CHECKER_B: Color32 = Color32::from_rgb(0x24, 0x24, 0x28);
 pub const CONTROL: Color32 = Color32::from_rgb(0x66, 0x66, 0x6E);
 pub const TEXT: Color32 = Color32::from_rgb(0xF2, 0xF2, 0xF3);
 pub const MUTED: Color32 = Color32::from_rgb(0xB8, 0xB8, 0xBE);

@@ -8,6 +8,8 @@ use std::{fs, path::PathBuf};
 use cw_core::{
     dotnet_random::DotNetRandom,
     rpf::build::{Item, RpfBuilder},
+    texture::{Format, Texture, write_dds},
+    ytd::build_ytd,
 };
 
 fn noise(seed: i32, len: usize) -> Vec<u8> {
@@ -31,6 +33,85 @@ fn png(w: u32, h: u32) -> Vec<u8> {
     let mut out = Vec::new();
     img.write_to(&mut std::io::Cursor::new(&mut out), image::ImageFormat::Png).unwrap();
     out
+}
+
+/// A texture drawn by `f` (RGBA per pixel) with every mip made by averaging 2x2 blocks.
+fn drawn(w: u32, h: u32, levels: u32, f: impl Fn(u32, u32) -> [u8; 4]) -> Texture {
+    let mut level: Vec<[u8; 4]> = (0..w * h).map(|i| f(i % w, i / w)).collect();
+    let mut data = Vec::new();
+    let (mut lw, mut lh) = (w, h);
+    for l in 0..levels {
+        data.extend(level.iter().flatten());
+        if l + 1 == levels {
+            break;
+        }
+        let (nw, nh) = ((lw / 2).max(1), (lh / 2).max(1));
+        let at = |x: u32, y: u32| level[(y.min(lh - 1) * lw + x.min(lw - 1)) as usize];
+        level = (0..nw * nh)
+            .map(|i| {
+                let (x, y) = ((i % nw) * 2, (i / nw) * 2);
+                let px = [at(x, y), at(x + 1, y), at(x, y + 1), at(x + 1, y + 1)];
+                std::array::from_fn(|c| (px.iter().map(|p| p[c] as u32).sum::<u32>() / 4) as u8)
+            })
+            .collect();
+        (lw, lh) = (nw, nh);
+    }
+    // A8B8G8R8 stores the bytes in R, G, B, A order
+    Texture { width: w, height: h, levels, format: Format::A8B8G8R8, data }
+}
+
+/// A DXT1 texture of coloured blocks, each blending from its own colour to a darker one.
+fn blocks(w: u32, h: u32) -> Texture {
+    let rgb565 = |r: u32, g: u32, b: u32| ((r >> 3) << 11 | (g >> 2) << 5 | (b >> 3)) as u16;
+    let mut data = Vec::new();
+    for by in 0..h / 4 {
+        for bx in 0..w / 4 {
+            let hue = ((bx * 7 + by * 13) % 24) as f32 / 24.0;
+            let (r, g, b) = (
+                (127.5 + 127.5 * (hue * std::f32::consts::TAU).cos()) as u32,
+                (127.5 + 127.5 * ((hue + 0.33) * std::f32::consts::TAU).cos()) as u32,
+                (127.5 + 127.5 * ((hue + 0.66) * std::f32::consts::TAU).cos()) as u32,
+            );
+            data.extend(rgb565(r, g, b).max(rgb565(r / 4, g / 4, b / 4) + 1).to_le_bytes());
+            data.extend(rgb565(r / 4, g / 4, b / 4).to_le_bytes());
+            data.extend([0xE4; 4]); // every row: colour 0, colour 1, then the two blends
+        }
+    }
+    Texture { width: w, height: h, levels: 1, format: Format::Dxt1, data }
+}
+
+fn textures() -> Vec<(&'static str, Texture)> {
+    let disc = drawn(256, 256, 5, |x, y| {
+        let (dx, dy) = (x as f32 - 127.5, y as f32 - 127.5);
+        let d = (dx * dx + dy * dy).sqrt();
+        let a = if d < 110.0 { 255 } else { (255.0 - (d - 110.0) * 12.0).clamp(0.0, 255.0) as u8 };
+        [
+            (255.0 * (x as f32 / 255.0)) as u8,
+            (90.0 + 120.0 * (1.0 - d / 180.0).max(0.0)) as u8,
+            (255.0 * (y as f32 / 255.0)) as u8,
+            a,
+        ]
+    });
+    let checker = drawn(128, 128, 4, |x, y| {
+        if ((x / 16) + (y / 16)) % 2 == 0 { [235, 235, 238, 255] } else { [60, 64, 90, 255] }
+    });
+    let sign = drawn(128, 64, 3, |x, y| {
+        let bar = (y / 8) % 2 == 0 && x > 8 && x < 120 - (y / 8) * 6;
+        let a = if bar { 255 } else { 70 };
+        [250, (180 - y * 2) as u8, 40, a]
+    });
+    let normal = drawn(64, 64, 4, |x, y| {
+        let (u, v) = ((x as f32 / 63.0 - 0.5) * 2.0, (y as f32 / 63.0 - 0.5) * 2.0);
+        let z = (1.0 - (u * u + v * v).min(1.0)).sqrt();
+        [(127.5 + 127.5 * u) as u8, (127.5 + 127.5 * v) as u8, (127.5 + 127.5 * z) as u8, 255]
+    });
+    vec![
+        ("bench_diff", disc),
+        ("wall_checker", checker),
+        ("sign_alpha", sign),
+        ("road_normal", normal),
+        ("tile_blocks", blocks(128, 128)),
+    ]
 }
 
 fn props(count: usize, ext: &str, seed: i32, sys: u32, gfx: u32) -> Vec<Item> {
@@ -65,8 +146,14 @@ fn main() {
     let ytd = (1 << 17, 0x9000_0000 | (1 << 11));
     let ydr = (1 << 17 | 1 << 11, 0x9000_0000 | (1 << 17));
 
-    let x64a =
-        RpfBuilder::new(vec![Item::dir("textures", props(14, "ytd", 100, ytd.0, ytd.1))]).build().unwrap();
+    // one dictionary of real, drawable textures among the noise
+    let drawn_set = textures();
+    let refs: Vec<(&str, &Texture)> = drawn_set.iter().map(|(n, t)| (*n, t)).collect();
+    let dict = build_ytd(&refs);
+    let mut texture_items = props(14, "ytd", 100, ytd.0, ytd.1);
+    texture_items.push(Item::resource("vehshare.ytd", dict.data, dict.sys_flags, dict.gfx_flags));
+    texture_items.push(Item::file("sign_alpha.dds", write_dds(&drawn_set[2].1).unwrap()));
+    let x64a = RpfBuilder::new(vec![Item::dir("textures", texture_items)]).build().unwrap();
     write(
         "common.rpf",
         vec![

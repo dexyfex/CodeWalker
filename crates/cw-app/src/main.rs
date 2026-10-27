@@ -9,6 +9,7 @@ mod icons;
 mod latest;
 mod model;
 mod preview;
+mod texview;
 mod theme;
 mod ui;
 mod world_view;

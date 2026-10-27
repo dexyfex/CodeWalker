@@ -17,6 +17,7 @@ pub mod list;
 pub mod mods;
 pub mod palette;
 pub mod status;
+pub mod texview;
 pub mod toasts;
 pub mod toolbar;
 pub mod tree;

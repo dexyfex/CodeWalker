@@ -2,7 +2,14 @@
 
 use std::{ops::Range, sync::Arc};
 
-use cw_core::{EntryKind, EntryRef, RpfTree, filekind::FileKind, resource, rpf::page_flags_size};
+use cw_core::{
+    EntryKind, EntryRef, RpfTree,
+    filekind::FileKind,
+    resource,
+    rpf::{ResourceData, page_flags_size},
+    texture::{self, Texture},
+    ytd,
+};
 use eframe::egui::{
     self, Align2, Color32, FontId, Rect, ScrollArea, Sense, Stroke, TextureHandle, TextureOptions, Ui, pos2,
     vec2,
@@ -40,6 +47,65 @@ pub struct Decoded {
     pub original: (u32, u32),
 }
 
+/// One texture of a dictionary (or the only one of a DDS file), with a small picture for lists.
+pub struct TexEntry {
+    pub name: String,
+    pub texture: Arc<Texture>,
+    pub thumb: Option<Decoded>,
+}
+
+/// The textures of a `.ytd` or `.dds`, parsed. The full pictures are decoded on demand.
+pub struct TexSet {
+    pub entries: Vec<TexEntry>,
+}
+
+/// Longest side of the list pictures, in pixels.
+const THUMB_SIDE: u32 = 96;
+
+/// The smallest mip that is still at least [`THUMB_SIDE`] wide or tall (or the last one).
+fn thumbnail(t: &Texture) -> Option<Decoded> {
+    let level = (0..t.levels.max(1))
+        .find(|&l| {
+            let (w, h) = texture::mip_dims(t.width, t.height, l);
+            w.max(h) <= THUMB_SIDE * 2
+        })
+        .unwrap_or(t.levels.max(1) - 1);
+    let px = t.decode(level).ok()?;
+    Some(Decoded {
+        width: px.width as usize,
+        height: px.height as usize,
+        rgba: px.pixels,
+        original: (t.width, t.height),
+    })
+}
+
+fn tex_entry(name: String, texture: Texture) -> TexEntry {
+    let thumb = thumbnail(&texture);
+    TexEntry { name, texture: Arc::new(texture), thumb }
+}
+
+/// Reads a dictionary (resource) or a DDS file. Not being able to is reported, not fatal: the
+/// hex and info views still work.
+fn read_textures(
+    kind: FileKind,
+    name: &str,
+    resource: Option<&ResourceData>,
+    bytes: &[u8],
+) -> Result<Option<TexSet>, String> {
+    match (kind, resource) {
+        (FileKind::TextureDict, Some(rd)) => {
+            let list = ytd::parse_ytd(rd).map_err(|e| e.to_string())?;
+            Ok(Some(TexSet { entries: list.into_iter().map(|t| tex_entry(t.name, t.texture)).collect() }))
+        }
+        (FileKind::Dds, _) => {
+            let t = texture::parse_dds(bytes).map_err(|e| e.to_string())?;
+            let stem = name.rsplit_once('.').map_or(name, |(s, _)| s).to_string();
+            Ok(Some(TexSet { entries: vec![tex_entry(stem, t)] }))
+        }
+        _ => Ok(None),
+    }
+}
+
 /// Everything the preview needs; built on a worker thread.
 pub struct Loaded {
     pub name: String,
@@ -52,6 +118,9 @@ pub struct Loaded {
     pub resource: Option<ResInfo>,
     pub text: Option<TextDoc>,
     pub image: Option<Decoded>,
+    pub textures: Option<TexSet>,
+    /// Why a texture file could not be read as textures, when it could not.
+    pub texture_error: Option<String>,
 }
 
 pub enum Source {
@@ -68,29 +137,30 @@ pub fn load(tree: Option<&RpfTree>, src: &Source) -> Result<Loaded, String> {
                 return Err("this is a folder".into());
             }
             too_large(e.display_size())?;
-            let (bytes, resource) = match e.kind {
+            let (bytes, resource, rd) = match e.kind {
                 EntryKind::Resource { .. } => {
                     let rd = t.extract_resource(*r).map_err(|e| e.to_string())?;
                     let info = res_info(rd.sys_flags, rd.gfx_flags);
-                    (rd.data, Some(info))
+                    (rd.data.clone(), Some(info), Some(rd))
                 }
-                _ => (t.extract(*r).map_err(|e| e.to_string())?, None),
+                _ => (t.extract(*r).map_err(|e| e.to_string())?, None, None),
             };
             let encrypted = matches!(
                 e.kind,
                 EntryKind::Binary { encrypted: true, .. } | EntryKind::Resource { encrypted: true, .. }
             );
             let kind = FileKind::from_name(&e.name_lower);
-            Ok(build(
-                e.name.clone(),
-                e.path.clone(),
+            Ok(build(Parts {
+                name: e.name.clone(),
+                path: e.path.clone(),
                 kind,
                 bytes,
-                Some(e.stored_size()),
+                stored_size: Some(e.stored_size()),
                 encrypted,
-                Some(t.archive(r.archive).name.clone()),
+                container: Some(t.archive(r.archive).name.clone()),
                 resource,
-            ))
+                resource_data: rd,
+            }))
         }
         Source::Disk(p) => {
             too_large(std::fs::metadata(p).map_err(|e| e.to_string())?.len())?;
@@ -98,14 +168,24 @@ pub fn load(tree: Option<&RpfTree>, src: &Source) -> Result<Loaded, String> {
             let name = p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
             let kind = FileKind::from_name(&name.to_lowercase());
             let stored = raw.len() as u64;
-            let (bytes, resource) = if kind.is_resource() && resource::has_rsc7_header(&raw) {
+            let (bytes, resource, rd) = if kind.is_resource() && resource::has_rsc7_header(&raw) {
                 let rd = resource::parse_loose(&raw).map_err(|e| e.to_string())?;
                 let info = res_info(rd.sys_flags, rd.gfx_flags);
-                (rd.data, Some(info))
+                (rd.data.clone(), Some(info), Some(rd))
             } else {
-                (raw, None)
+                (raw, None, None)
             };
-            Ok(build(name, p.display().to_string(), kind, bytes, Some(stored), false, None, resource))
+            Ok(build(Parts {
+                name,
+                path: p.display().to_string(),
+                kind,
+                bytes,
+                stored_size: Some(stored),
+                encrypted: false,
+                container: None,
+                resource,
+                resource_data: rd,
+            }))
         }
     }
 }
@@ -129,8 +209,8 @@ fn res_info(sys_flags: u32, gfx_flags: u32) -> ResInfo {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn build(
+/// What `build` turns into a [`Loaded`].
+struct Parts {
     name: String,
     path: String,
     kind: FileKind,
@@ -139,9 +219,22 @@ fn build(
     encrypted: bool,
     container: Option<String>,
     resource: Option<ResInfo>,
-) -> Loaded {
+    /// The resource as read (flags and payload), for formats that parse it.
+    resource_data: Option<ResourceData>,
+}
+
+fn build(p: Parts) -> Loaded {
+    let Parts { name, path, kind, bytes, stored_size, encrypted, container, resource, resource_data } = p;
     let image = (kind == FileKind::Image).then(|| decode_image(&bytes)).flatten();
-    let text = if image.is_none() && resource.is_none() { decode_text(&bytes, kind) } else { None };
+    let (textures, texture_error) = match read_textures(kind, &name, resource_data.as_ref(), &bytes) {
+        Ok(t) => (t, None),
+        Err(e) => (None, Some(e)),
+    };
+    let text = if image.is_none() && resource.is_none() && textures.is_none() {
+        decode_text(&bytes, kind)
+    } else {
+        None
+    };
     Loaded {
         name,
         path,
@@ -153,6 +246,8 @@ fn build(
         resource,
         text,
         image,
+        textures,
+        texture_error,
     }
 }
 
@@ -377,6 +472,12 @@ pub fn info_rows(l: &Loaded) -> Vec<(&'static str, String)> {
     if l.encrypted {
         rows.push(("Encrypted", "Yes".into()));
     }
+    if let Some(set) = &l.textures {
+        rows.push(("Textures", format::plural(set.entries.len() as u64, "texture", "textures")));
+    }
+    if let Some(e) = &l.texture_error {
+        rows.push(("Textures", format!("Could not be read: {e}")));
+    }
     if let Some(r) = &l.resource {
         rows.push(("Resource version", r.version.to_string()));
         rows.push(("System pages", format::size(r.sys_size as u64)));
@@ -503,18 +604,90 @@ mod tests {
         let _ = std::fs::remove_dir_all(dir);
     }
 
+    fn gradient_texture(w: u32, h: u32, levels: u32) -> Texture {
+        let n = texture::chain_size(texture::Format::A8R8G8B8, w, h, levels);
+        Texture {
+            width: w,
+            height: h,
+            levels,
+            format: texture::Format::A8R8G8B8,
+            data: (0..n).map(|i| (i % 251) as u8).collect(),
+        }
+    }
+
+    #[test]
+    fn texture_dictionaries_and_dds_files_become_texture_sets() {
+        use cw_core::rpf::build::{Item, RpfBuilder};
+        let dir = std::env::temp_dir().join(format!("cw-prev-tex-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let (big, small) = (gradient_texture(512, 256, 5), gradient_texture(16, 16, 1));
+        let res = ytd::build_ytd(&[("big", &big), ("small", &small)]);
+        let rpf =
+            RpfBuilder::new(vec![Item::resource("t.ytd", res.data.clone(), res.sys_flags, res.gfx_flags)])
+                .build()
+                .unwrap();
+        let tree =
+            RpfTree::scan_blob(cw_core::Blob::from_vec(rpf), "t.rpf".into(), "t.rpf".into(), "t.rpf", None)
+                .unwrap();
+
+        let l = load(Some(&tree), &Source::Entry(tree.find("t.rpf/t.ytd").unwrap())).unwrap();
+        let set = l.textures.as_ref().expect("a .ytd is a set of textures");
+        assert!(l.texture_error.is_none() && l.text.is_none());
+        assert_eq!(set.entries.iter().map(|e| e.name.as_str()).collect::<Vec<_>>(), ["big", "small"]);
+        let t0 = &set.entries[0];
+        assert_eq!((t0.texture.width, t0.texture.height, t0.texture.levels), (512, 256, 5));
+        let thumb = t0.thumb.as_ref().expect("a picture for the list");
+        assert!(
+            (thumb.width, thumb.height) == (128, 64) && thumb.original == (512, 256),
+            "the smallest mip still 2x the thumbnail size: {}x{}",
+            thumb.width,
+            thumb.height
+        );
+        assert_eq!(thumb.rgba.len(), 128 * 64 * 4);
+        assert_eq!(set.entries[1].thumb.as_ref().unwrap().width, 16, "small textures are not scaled");
+
+        // the same file taken from disk (OpenIV style), and a DDS
+        let ytd_file = dir.join("t.ytd");
+        std::fs::write(&ytd_file, tree.export(tree.find("t.rpf/t.ytd").unwrap()).unwrap()).unwrap();
+        let from_disk = load(None, &Source::Disk(ytd_file)).unwrap();
+        assert_eq!(from_disk.textures.as_ref().unwrap().entries.len(), 2);
+
+        let dds_file = dir.join("wall.dds");
+        std::fs::write(&dds_file, texture::write_dds(&big).unwrap()).unwrap();
+        let dds = load(None, &Source::Disk(dds_file)).unwrap();
+        let one = &dds.textures.as_ref().unwrap().entries;
+        assert_eq!((one.len(), one[0].name.as_str()), (1, "wall"), "named after the file");
+        assert_eq!(*one[0].texture, big);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn a_texture_file_that_cannot_be_read_still_opens_with_the_reason() {
+        let dir = std::env::temp_dir().join(format!("cw-prev-badtex-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let file = dir.join("broken.dds");
+        std::fs::write(&file, b"DDS but not really").unwrap();
+        let l = load(None, &Source::Disk(file)).unwrap();
+        assert!(l.textures.is_none());
+        assert!(l.texture_error.as_deref().is_some_and(|e| !e.is_empty()));
+        assert_eq!(&**l.bytes, b"DDS but not really", "hex and info views still have the bytes");
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
     #[test]
     fn info_rows_describe_resources() {
-        let l = build(
-            "a.ydr".into(),
-            "x/a.ydr".into(),
-            FileKind::Drawable,
-            vec![0; 100],
-            Some(40),
-            false,
-            Some("x.rpf".into()),
-            Some(res_info(1 << 17, 0x9000_0000)),
-        );
+        let l = build(Parts {
+            name: "a.ydr".into(),
+            path: "x/a.ydr".into(),
+            kind: FileKind::Drawable,
+            bytes: vec![0; 100],
+            stored_size: Some(40),
+            encrypted: false,
+            container: Some("x.rpf".into()),
+            resource: Some(res_info(1 << 17, 0x9000_0000)),
+            resource_data: None,
+        });
         let rows = info_rows(&l);
         assert!(rows.contains(&("Type", "Drawable".into())));
         assert!(rows.contains(&("Stored", "40 B (40%)".into())));
