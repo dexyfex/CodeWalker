@@ -3,7 +3,6 @@ name = "cw-cmd"
 description = "Command layer: every CodeWalker action is a command driven by the UI, CLI, JSON channel or MCP"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
 
 [dependencies]
 cw-core = { path = "../cw-core" }

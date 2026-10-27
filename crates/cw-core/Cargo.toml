@@ -3,7 +3,6 @@ name = "cw-core"
 description = "GTA V archive (RPF7) reader, crypto and hashing for CodeWalker"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
 
 [dependencies]
 aes.workspace = true

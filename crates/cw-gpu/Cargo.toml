@@ -3,7 +3,6 @@ name = "cw-gpu"
 description = "wgpu renderer for the map viewport: offscreen scene target, camera and picking"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
 
 [dependencies]
 wgpu = "30"

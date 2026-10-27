@@ -3,7 +3,6 @@ name = "cw-app"
 description = "CodeWalker: RPF Explorer, previews, mod manager and map editor in one native executable"
 version.workspace = true
 edition.workspace = true
-license.workspace = true
 
 [[bin]]
 name = "codewalker"
