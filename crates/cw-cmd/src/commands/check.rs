@@ -77,6 +77,19 @@ fn entries_with(tree: &RpfTree, exts: &[&str]) -> Vec<EntryRef> {
     out
 }
 
+/// Placeholders are normal, but when everything that parsed came out empty the layout is the
+/// likely culprit, and the report should say so.
+fn all_empty_hint(parsed: usize, empty: usize) -> &'static str {
+    if parsed > 0 && empty == parsed {
+        " — all of them empty, so the layout probably does not match"
+    } else {
+        ""
+    }
+}
+
+/// Entries declaring more than this are not extracted by the check.
+const MAX_EXTRACT: u64 = 128 << 20;
+
 fn check(ctx: &Ctx, args: Value) -> CmdResult {
     #[derive(Deserialize)]
     struct A {
@@ -133,8 +146,12 @@ fn check(ctx: &Ctx, args: Value) -> CmdResult {
         })
         .collect();
     let mut extract_failures = Failures::default();
-    let tried: Vec<EntryRef> =
-        spread(&all_files, sample).into_iter().chain(spread(&encrypted, sample)).collect();
+    // extracting inflates into memory, so one huge entry (several are sampled at once) is left
+    // out and counted instead of risking the machine
+    let (tried, too_big): (Vec<EntryRef>, Vec<EntryRef>) = spread(&all_files, sample)
+        .into_iter()
+        .chain(spread(&encrypted, sample))
+        .partition(|r| tree.entry(*r).display_size() <= MAX_EXTRACT);
     let results: Vec<(String, Result<usize, String>)> = tried
         .par_iter()
         .map(|r| (tree.entry(*r).path.clone(), tree.extract(*r).map(|d| d.len()).map_err(|e| e.to_string())))
@@ -146,16 +163,22 @@ fn check(ctx: &Ctx, args: Value) -> CmdResult {
     }
     let encrypted_set: std::collections::HashSet<EntryRef> = encrypted.iter().copied().collect();
     report.push(format!(
-        "extract: {} of {} sampled entries ({} of them encrypted) read fine",
+        "extract: {} of {} sampled entries ({} of them encrypted) read fine{}",
         results.len() - extract_failures.total(),
         results.len(),
-        tried.iter().filter(|r| encrypted_set.contains(r)).count()
+        tried.iter().filter(|r| encrypted_set.contains(r)).count(),
+        if too_big.is_empty() {
+            String::new()
+        } else {
+            format!(", {} over {} MiB not tried", too_big.len(), MAX_EXTRACT >> 20)
+        }
     ));
 
     // ---- texture dictionaries
     let ytds = spread(&entries_with(&tree, &["ytd"]), sample);
     let mut ytd_failures = Failures::default();
     let (mut textures, mut decodable, mut parsed) = (0usize, 0usize, 0usize);
+    let mut ytd_empty = Failures::default();
     let mut formats: BTreeMap<&'static str, usize> = BTreeMap::new();
     for r in &ytds {
         let path = &tree.entry(*r).path;
@@ -164,8 +187,12 @@ fn check(ctx: &Ctx, args: Value) -> CmdResult {
             .map_err(|e| e.to_string())
             .and_then(|rd| parse_ytd(&rd).map_err(|e| e.to_string()))
         {
-            // a dictionary that parses but holds nothing is as suspicious as one that fails
-            Ok(list) if list.is_empty() => ytd_failures.add("parsed, but holds no textures".into(), path),
+            // parsed, but with nothing in it: not a failure (the game ships placeholders), but
+            // worth a look if it is most of them
+            Ok(list) if list.is_empty() => {
+                parsed += 1;
+                ytd_empty.add("holds no textures".into(), path);
+            }
             Ok(list) => {
                 parsed += 1;
                 for t in &list {
@@ -181,12 +208,18 @@ fn check(ctx: &Ctx, args: Value) -> CmdResult {
             Err(e) => ytd_failures.add(e, path),
         }
     }
-    report.push(format!("ytd: {parsed} of {} parsed, {decodable} of {textures} textures decode", ytds.len()));
+    report.push(format!(
+        "ytd: {parsed} of {} parsed ({} empty), {decodable} of {textures} textures decode{}",
+        ytds.len(),
+        ytd_empty.total(),
+        all_empty_hint(parsed, ytd_empty.total())
+    ));
 
     // ---- map data
     let ymaps = spread(&entries_with(&tree, &["ymap"]), sample);
     let mut ymap_failures = Failures::default();
     let (mut ymap_ok, mut entities) = (0usize, 0usize);
+    let mut ymap_empty = Failures::default();
     for r in &ymaps {
         let path = &tree.entry(*r).path;
         match tree
@@ -197,15 +230,19 @@ fn check(ctx: &Ctx, args: Value) -> CmdResult {
             Ok(m) => {
                 ymap_ok += 1;
                 entities += m.entities.len();
-                // a map that parses but holds nothing is as suspicious as one that fails
                 if m.entities.is_empty() {
-                    ymap_failures.add("parsed, but holds no entities".into(), path);
+                    ymap_empty.add("holds no entities".into(), path);
                 }
             }
             Err(e) => ymap_failures.add(e, path),
         }
     }
-    report.push(format!("ymap: {ymap_ok} of {} parsed, {entities} entities read", ymaps.len()));
+    report.push(format!(
+        "ymap: {ymap_ok} of {} parsed ({} empty), {entities} entities read{}",
+        ymaps.len(),
+        ymap_empty.total(),
+        all_empty_hint(ymap_ok, ymap_empty.total())
+    ));
 
     Ok(json!({
         "report": report,
@@ -216,13 +253,18 @@ fn check(ctx: &Ctx, args: Value) -> CmdResult {
             "encryption": { "open": open, "aes": aes, "ng": ng, "other": other },
             "files": all_files.len(), "encrypted_files": encrypted.len(),
         },
-        "extract": { "tried": results.len(), "failed": extract_failures.total(), "failures": extract_failures.json() },
+        "extract": {
+            "tried": results.len(), "failed": extract_failures.total(), "failures": extract_failures.json(),
+            "too_big": too_big.len(),
+        },
         "ytd": {
             "tried": ytds.len(), "parsed": parsed, "textures": textures, "decodable": decodable,
-            "formats": formats, "failures": ytd_failures.json(),
+            "formats": formats, "empty": ytd_empty.total(), "empty_examples": ytd_empty.json(),
+            "failures": ytd_failures.json(),
         },
         "ymap": {
-            "tried": ymaps.len(), "parsed": ymap_ok, "entities": entities, "failures": ymap_failures.json(),
+            "tried": ymaps.len(), "parsed": ymap_ok, "entities": entities, "empty": ymap_empty.total(),
+            "empty_examples": ymap_empty.json(), "failures": ymap_failures.json(),
         },
     }))
 }
