@@ -272,12 +272,26 @@ impl RpfTree {
         rel_path: &str,
         keys: Option<Arc<GtaKeys>>,
     ) -> Result<RpfTree> {
+        Self::scan_blob_with(blob, physical, name, rel_path, keys, ScanLimits::default())
+    }
+
+    /// Like [`scan_blob`](Self::scan_blob) with explicit caps on archives and entries.
+    pub fn scan_blob_with(
+        blob: Blob,
+        physical: PathBuf,
+        name: String,
+        rel_path: &str,
+        keys: Option<Arc<GtaKeys>>,
+        limits: ScanLimits,
+    ) -> Result<RpfTree> {
         let size = blob.len() as u64;
         let mut tree = RpfTree::default();
         let path = normalize_path(rel_path);
         let ctx = ScanCtx { blob: &blob, physical: &physical, keys: &keys };
         let mut archives = Vec::new();
-        let id = parse_archive(&ctx, 0, name, path, size, None, 0, &mut archives, &mut tree.errors)?;
+        let mut st = ScanState { errors: Vec::new(), limits, archives: 0, entries: 0, ancestors: Vec::new() };
+        let id = parse_archive(&ctx, 0, name, path, size, None, 0, &mut archives, &mut st)?;
+        tree.errors = st.errors;
         tree.archives = archives.into_iter().map(Arc::new).collect();
         tree.roots.push(id);
         Ok(tree)
@@ -505,6 +519,30 @@ struct ScanCtx<'a> {
     keys: &'a Option<Arc<GtaKeys>>,
 }
 
+/// Caps on what one scan of a single file may produce. A real game archive
+/// stays far below these; a crafted file whose nested archives overlap or
+/// point back at each other would otherwise multiply into billions of entries.
+#[derive(Debug, Clone, Copy)]
+pub struct ScanLimits {
+    pub max_archives: usize,
+    pub max_entries: usize,
+}
+
+impl Default for ScanLimits {
+    fn default() -> Self {
+        Self { max_archives: 20_000, max_entries: 5_000_000 }
+    }
+}
+
+struct ScanState {
+    errors: Vec<ScanError>,
+    limits: ScanLimits,
+    archives: usize,
+    entries: usize,
+    /// Start offsets of the archives being parsed, outermost first.
+    ancestors: Vec<u64>,
+}
+
 fn u32_at(b: &[u8], o: usize) -> u32 {
     u32::from_le_bytes([b[o], b[o + 1], b[o + 2], b[o + 3]])
 }
@@ -523,10 +561,20 @@ fn parse_archive(
     parent: Option<(ArchiveId, u32)>,
     depth: u32,
     out: &mut Vec<RpfArchive>,
-    errors: &mut Vec<ScanError>,
+    st: &mut ScanState,
 ) -> Result<ArchiveId> {
     let blob = ctx.blob.as_slice();
     let start = start_pos as usize;
+    if st.ancestors.contains(&start_pos) {
+        return Err(Error::InvalidRpf(format!("{path}: archive contains itself")));
+    }
+    st.archives += 1;
+    if st.archives > st.limits.max_archives {
+        return Err(Error::InvalidRpf(format!(
+            "{path}: more than {} nested archives",
+            st.limits.max_archives
+        )));
+    }
     if start.checked_add(16).is_none_or(|e| e > blob.len()) {
         return Err(Error::InvalidRpf(format!("{path}: truncated header")));
     }
@@ -535,6 +583,13 @@ fn parse_archive(
     }
     let entry_count = u32_at(blob, start + 4) as usize;
     let names_len = u32_at(blob, start + 8) as usize;
+    st.entries = st.entries.saturating_add(entry_count);
+    if st.entries > st.limits.max_entries {
+        return Err(Error::InvalidRpf(format!(
+            "{path}: more than {} entries in one file",
+            st.limits.max_entries
+        )));
+    }
     let encryption = RpfEncryption::from(u32_at(blob, start + 12));
 
     let toc_start = start + 16;
@@ -690,7 +745,10 @@ fn parse_archive(
         return Ok(id);
     }
 
-    // Nested archives.
+    // Nested archives. Each child must lie inside this archive's data area
+    // (after its header) so that nesting strictly shrinks and cannot loop.
+    let data_start = names_end as u64;
+    let area_end = start_pos.saturating_add(size);
     let nested: Vec<(u32, String, String, u32, u64)> = out[id as usize]
         .entries
         .iter()
@@ -706,8 +764,16 @@ fn parse_archive(
         })
         .collect();
 
+    st.ancestors.push(start_pos);
     for (index, child_name, child_path, offset, len) in nested {
         let child_start = start_pos + offset as u64 * BLOCK;
+        if child_start < data_start || len == 0 || child_start.saturating_add(len) > area_end {
+            st.errors.push(ScanError {
+                path: child_path,
+                message: "nested archive does not lie inside its parent's data area".into(),
+            });
+            continue;
+        }
         match parse_archive(
             ctx,
             child_start,
@@ -717,15 +783,19 @@ fn parse_archive(
             Some((id, index)),
             depth + 1,
             out,
-            errors,
+            st,
         ) {
             Ok(cid) => {
                 out[id as usize].entries[index as usize].child_archive = Some(cid);
                 out[id as usize].children.push(cid);
             }
-            Err(e) => errors.push(ScanError { path: child_path, message: e.to_string() }),
+            Err(e) => st.errors.push(ScanError { path: child_path, message: e.to_string() }),
+        }
+        if st.archives > st.limits.max_archives || st.entries > st.limits.max_entries {
+            break; // budget spent: keep what was read, stop descending
         }
     }
+    st.ancestors.pop();
     Ok(id)
 }
 

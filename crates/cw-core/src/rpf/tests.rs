@@ -175,3 +175,89 @@ fn merged_trees_share_archives_and_rebase_ids() {
     // the original tree is unchanged
     assert_eq!(a.archives.len(), 2);
 }
+
+/// Builds an archive holding one nested archive, then rewrites the nested
+/// entry's block offset / size inside the TOC. Entry 1 is the nested file.
+fn with_nested_entry(offset_blocks: u64, size: u64) -> Vec<u8> {
+    let inner = archive(&[Item::file("x.txt", &b"x"[..])], None);
+    let mut bytes = archive(&[Item::archive("c.rpf", inner)], None);
+    let at = 16 + 16; // header, then root entry, then entry 1
+    let old = u64::from_le_bytes(bytes[at..at + 8].try_into().unwrap());
+    let name_off = old & 0xFFFF;
+    let packed = name_off | (size << 16) | (offset_blocks << 40);
+    bytes[at..at + 8].copy_from_slice(&packed.to_le_bytes());
+    bytes[at + 8..at + 12].copy_from_slice(&(size as u32).to_le_bytes());
+    bytes
+}
+
+#[test]
+fn an_archive_that_contains_itself_is_rejected_not_expanded() {
+    let len = archive(&[Item::archive("c.rpf", archive(&[Item::file("x.txt", &b"x"[..])], None))], None).len()
+        as u64;
+    let bytes = with_nested_entry(0, len); // the "child" starts at block 0: the file itself
+    let tree = scan(bytes, None).unwrap();
+    assert_eq!(tree.archives.len(), 1, "no recursion happened");
+    assert!(tree.errors.iter().any(|e| e.message.contains("inside its parent")), "{:?}", tree.errors);
+}
+
+#[test]
+fn children_must_lie_inside_the_parents_data_area() {
+    let inner_len = archive(&[Item::file("x.txt", &b"x"[..])], None).len() as u64;
+    // starts inside the parent's own header/TOC
+    assert!(scan(with_nested_entry(0, inner_len), None).unwrap().errors.len() == 1);
+    // runs past the end of the parent
+    let tree = scan(with_nested_entry(1, inner_len * 100), None).unwrap();
+    assert_eq!(tree.archives.len(), 1);
+    assert_eq!(tree.errors.len(), 1);
+    // a well-formed child is still accepted
+    let ok = scan(
+        archive(&[Item::archive("c.rpf", archive(&[Item::file("x.txt", &b"x"[..])], None))], None),
+        None,
+    )
+    .unwrap();
+    assert!(ok.errors.is_empty() && ok.archives.len() == 2);
+}
+
+#[test]
+fn scan_budgets_stop_pathological_fan_out() {
+    // a chain of ten archives nested in each other: legal, but over a budget of 4
+    let mut inner = archive(&[Item::file("leaf.txt", &b"x"[..])], None);
+    for _ in 0..9 {
+        inner = archive(&[Item::archive("n.rpf", inner)], None);
+    }
+    let limits = ScanLimits { max_archives: 4, max_entries: 1_000_000 };
+    let tree = RpfTree::scan_blob_with(
+        Blob::from_vec(inner.clone()),
+        "t.rpf".into(),
+        "t.rpf".into(),
+        "t.rpf",
+        None,
+        limits,
+    )
+    .unwrap();
+    assert!(tree.archives.len() <= 4, "stopped at the budget, got {}", tree.archives.len());
+    assert!(!tree.errors.is_empty());
+    // the same file is fine with the default budget
+    let all = scan(inner.clone(), None).unwrap();
+    assert!(all.archives.len() >= 8, "nesting depth is capped separately: {}", all.archives.len());
+
+    // an entry budget spent in a nested archive keeps what was read and reports the rest
+    let few = ScanLimits { max_archives: 100, max_entries: 3 };
+    let kept = RpfTree::scan_blob_with(
+        Blob::from_vec(inner.clone()),
+        "t.rpf".into(),
+        "t.rpf".into(),
+        "t.rpf",
+        None,
+        few,
+    )
+    .unwrap();
+    assert!(kept.archives.len() < 10, "stopped descending, got {}", kept.archives.len());
+    assert!(!kept.errors.is_empty());
+
+    // one that the top-level table itself exceeds is rejected outright
+    let tiny = ScanLimits { max_archives: 100, max_entries: 1 };
+    let r =
+        RpfTree::scan_blob_with(Blob::from_vec(inner), "t.rpf".into(), "t.rpf".into(), "t.rpf", None, tiny);
+    assert!(r.is_err(), "the top-level table alone has two entries");
+}
