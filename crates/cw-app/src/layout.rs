@@ -105,6 +105,90 @@ pub fn squeeze(over: f32, steps: &[Give]) -> Vec<f32> {
         .collect()
 }
 
+/// The room a tab strip has and what it asks of its tabs.
+#[derive(Clone, Copy, Debug)]
+pub struct TabRoom {
+    pub avail: f32,
+    pub gap: f32,
+    /// The narrowest a document tab is squeezed to before tabs wait in the overflow menu.
+    pub min_doc: f32,
+    /// The overflow menu button, with the gap before it.
+    pub menu: f32,
+}
+
+/// A fitted tab strip.
+#[derive(Clone, Debug, PartialEq)]
+pub struct TabFit {
+    /// Tab index and drawn width, left to right.
+    pub shown: Vec<(usize, f32)>,
+    /// Tabs left for the overflow menu, in order. The menu button is drawn when this is not empty.
+    pub hidden: Vec<usize>,
+    /// Index of the first document tab shown. Pass it back as `first` next time so the strip does
+    /// not jump while the active tab stays in view.
+    pub first: usize,
+}
+
+/// Fits tabs of `natural` widths into `room`. The first `fixed` tabs never shrink and never hide.
+/// The document tabs after them keep their width while everything fits, then the long ones shrink
+/// to a common width (short titles stay whole), and past `min_doc` a window of them shows with the
+/// rest in the overflow menu. The `active` tab is always in the window, which moves as little as
+/// possible from where `first` had it.
+pub fn fit_tabs(natural: &[f32], fixed: usize, active: usize, first: usize, room: TabRoom) -> TabFit {
+    let TabRoom { avail, gap, min_doc, menu } = room;
+    let n = natural.len();
+    let fixed = fixed.min(n);
+    let all =
+        |first| TabFit { shown: natural.iter().copied().enumerate().collect(), hidden: Vec::new(), first };
+    let total = natural.iter().sum::<f32>() + gap * n.saturating_sub(1) as f32;
+    if total <= avail || fixed == n {
+        return all(fixed);
+    }
+
+    let head: f32 = natural[..fixed].iter().map(|w| w + gap).sum();
+    let docs = &natural[fixed..];
+    let nd = docs.len();
+    let budget = avail - head - gap * (nd - 1) as f32;
+    let level = common_width(docs, budget);
+    if level >= min_doc {
+        let shown = natural.iter().enumerate().map(|(i, &w)| (i, if i < fixed { w } else { w.min(level) }));
+        return TabFit { shown: shown.collect(), hidden: Vec::new(), first: fixed };
+    }
+
+    // a window of `k` documents at the narrowest width, and a menu for the others
+    let room_docs = avail - head - menu;
+    let k = (((room_docs + gap) / (min_doc + gap)).floor().max(1.0) as usize).min(nd);
+    let mut start = first.saturating_sub(fixed);
+    if let Some(a) = active.checked_sub(fixed) {
+        if a < start {
+            start = a;
+        } else if a >= start + k {
+            start = a + 1 - k;
+        }
+    }
+    let start = start.min(nd - k);
+    let cap = min_doc.min(room_docs.max(0.0));
+    let mut shown: Vec<(usize, f32)> = natural[..fixed].iter().copied().enumerate().collect();
+    shown.extend((start..start + k).map(|d| (fixed + d, docs[d].min(cap))));
+    let hidden = (0..nd).filter(|d| !(start..start + k).contains(d)).map(|d| fixed + d).collect();
+    TabFit { shown, hidden, first: fixed + start }
+}
+
+/// The width `w` such that `sum(min(width, w))` over `widths` is `budget`: the room is shared
+/// equally, and what a short item does not use goes to the longer ones. Infinite when all fit.
+fn common_width(widths: &[f32], budget: f32) -> f32 {
+    let mut sorted = widths.to_vec();
+    sorted.sort_by(f32::total_cmp);
+    let mut left = budget;
+    for (i, &w) in sorted.iter().enumerate() {
+        let share = left / (sorted.len() - i) as f32;
+        if w > share {
+            return share;
+        }
+        left -= w;
+    }
+    f32::INFINITY
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -263,5 +347,94 @@ mod tests {
         assert_eq!(squeeze(181.0, &steps), [80.0, 100.0, 150.0]);
         assert_eq!(squeeze(1000.0, &steps), [80.0, 100.0, 150.0], "not enough: everything is taken");
         assert_eq!(squeeze(10.0, &[Give::UpTo(-5.0), Give::All(-1.0)]), [0.0, 0.0]);
+    }
+
+    // Explorer and World, then documents
+    const ROOM: TabRoom = TabRoom { avail: 0.0, gap: 4.0, min_doc: 120.0, menu: 32.0 };
+
+    fn room(avail: f32) -> TabRoom {
+        TabRoom { avail, ..ROOM }
+    }
+
+    fn widths(fit: &TabFit) -> Vec<f32> {
+        fit.shown.iter().map(|&(_, w)| w).collect()
+    }
+
+    /// Width of a fitted strip as drawn.
+    fn strip(fit: &TabFit) -> f32 {
+        let tabs: f32 = widths(fit).iter().sum::<f32>() + 4.0 * fit.shown.len().saturating_sub(1) as f32;
+        tabs + if fit.hidden.is_empty() { 0.0 } else { ROOM.menu }
+    }
+
+    #[test]
+    fn tabs_that_fit_keep_their_width() {
+        let natural = [94.0, 80.0, 160.0, 200.0];
+        let fit = fit_tabs(&natural, 2, 2, 2, room(600.0));
+        assert_eq!(fit.shown, vec![(0, 94.0), (1, 80.0), (2, 160.0), (3, 200.0)]);
+        assert!(fit.hidden.is_empty());
+        let exact = natural.iter().sum::<f32>() + 12.0;
+        assert_eq!(fit_tabs(&natural, 2, 0, 2, room(exact)).shown.len(), 4);
+        assert!(fit_tabs(&[94.0, 80.0], 2, 0, 2, room(10.0)).hidden.is_empty(), "fixed tabs never hide");
+    }
+
+    #[test]
+    fn long_documents_shrink_together_and_short_ones_stay_whole() {
+        // 94 + 80 + 3 documents of 200, 200 and 130: the two long ones share what 130 leaves
+        let natural = [94.0, 80.0, 200.0, 200.0, 130.0];
+        let fit = fit_tabs(&natural, 2, 2, 2, room(94.0 + 80.0 + 16.0 + 130.0 + 2.0 * 150.0));
+        assert_eq!(widths(&fit), [94.0, 80.0, 150.0, 150.0, 130.0]);
+        assert!(fit.hidden.is_empty());
+        // fixed tabs keep their width however tight it gets, down to the narrowest document width
+        let tight = fit_tabs(&natural, 2, 2, 2, room(94.0 + 80.0 + 16.0 + 3.0 * 120.0));
+        assert_eq!(widths(&tight), [94.0, 80.0, 120.0, 120.0, 120.0]);
+        assert!(tight.hidden.is_empty());
+    }
+
+    #[test]
+    fn past_the_narrowest_width_the_rest_waits_in_the_menu_and_the_active_tab_stays_in_view() {
+        let natural = [94.0, 80.0, 180.0, 180.0, 180.0, 180.0, 180.0, 180.0];
+        // 94 + 80 + 3 gaps leave 400 - 32 for documents: two at 120 fit
+        let avail = 94.0 + 80.0 + 8.0 + 32.0 + 2.0 * 120.0 + 4.0;
+        let fit = fit_tabs(&natural, 2, 2, 2, room(avail));
+        assert_eq!(fit.shown.iter().map(|s| s.0).collect::<Vec<_>>(), [0, 1, 2, 3]);
+        assert_eq!(fit.hidden, [4, 5, 6, 7]);
+        assert!(strip(&fit) <= avail);
+
+        // switching to a tab out of view moves the window just far enough
+        let fit = fit_tabs(&natural, 2, 5, fit.first, room(avail));
+        assert_eq!(fit.shown.iter().map(|s| s.0).collect::<Vec<_>>(), [0, 1, 4, 5]);
+        assert_eq!(fit.hidden, [2, 3, 6, 7]);
+        // and while the active tab is in view the window stays put
+        let again = fit_tabs(&natural, 2, 4, fit.first, room(avail));
+        assert_eq!(again.shown, fit.shown);
+        // an active tab to the left pulls the window back
+        let back = fit_tabs(&natural, 2, 3, fit.first, room(avail));
+        assert_eq!(back.shown.iter().map(|s| s.0).collect::<Vec<_>>(), [0, 1, 3, 4]);
+        // a fixed tab active leaves the window alone, and the window never runs past the end
+        let fixed = fit_tabs(&natural, 2, 0, 7, room(avail));
+        assert_eq!(fixed.shown.iter().map(|s| s.0).collect::<Vec<_>>(), [0, 1, 6, 7]);
+    }
+
+    #[test]
+    fn any_width_gives_a_strip_that_fits_and_shows_the_active_tab() {
+        let natural = [94.0, 80.0, 210.0, 90.0, 180.0, 220.0, 100.0, 160.0];
+        for active in 0..natural.len() {
+            let mut first = 2;
+            for avail in (150..1500).step_by(11).map(|w| w as f32) {
+                let fit = fit_tabs(&natural, 2, active, first, room(avail));
+                first = fit.first;
+                let min_fixed = 94.0 + 80.0 + 4.0;
+                if avail >= min_fixed + 4.0 + ROOM.menu + ROOM.min_doc {
+                    assert!(strip(&fit) <= avail + 1e-3, "{avail}: {fit:?}");
+                }
+                assert!(fit.shown.iter().any(|s| s.0 == active), "{avail}: {fit:?}");
+                // every tab is shown or hidden once, in order, and the fixed ones always show
+                let mut seen: Vec<usize> = fit.shown.iter().map(|s| s.0).chain(fit.hidden.clone()).collect();
+                seen.sort();
+                assert_eq!(seen, (0..natural.len()).collect::<Vec<_>>());
+                assert!(fit.shown[0].0 == 0 && fit.shown[1].0 == 1);
+                assert!(fit.shown.iter().all(|&(i, w)| w >= 0.0 && w <= natural[i]));
+            }
+        }
     }
 }

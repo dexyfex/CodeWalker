@@ -294,7 +294,7 @@ fn cluster<R>(ui: &mut Ui, rect: Rect, layout: Layout, add: impl FnOnce(&mut Ui)
 
 use eframe::egui::{CentralPanel, Frame, Margin, Panel};
 
-use crate::app::{App, Mode};
+use crate::{app::App, tabs::Tab};
 
 fn flat(fill: Color32) -> Frame {
     Frame::new().fill(fill).inner_margin(Margin::ZERO)
@@ -323,7 +323,8 @@ pub enum Side {
 impl App {
     pub fn show(&mut self, ui: &mut Ui) {
         let ctx = ui.ctx().clone();
-        let explorer = self.mode == Mode::Explorer;
+        let active = self.tabs.active();
+        let explorer = active == Tab::Explorer;
         // the Explorer's bar sits right under the tabs, so only the lower one gets the hairline
         Panel::top("tabs").exact_size(theme::TABS_H).frame(flat(theme::PANEL)).show(ui, |ui| {
             self.show_tabs(ui);
@@ -342,33 +343,42 @@ impl App {
             edge(ui, Side::Top);
         });
 
-        if self.mode == Mode::World {
-            self.show_world(ui);
-        } else if self.ex.is_empty() && self.loose.is_empty() {
-            CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_empty(ui));
-        } else {
-            Panel::left("tree")
-                .resizable(true)
-                .default_size(280.0)
-                .size_range(220.0..=440.0)
-                .frame(flat(theme::PANEL))
-                .show(ui, |ui| {
-                    self.show_tree(ui);
-                    edge(ui, Side::Right);
-                });
-            Panel::right("detail")
-                .resizable(true)
-                .default_size(400.0)
-                .size_range(300.0..=700.0)
-                .frame(flat(theme::PANEL))
-                .show(ui, |ui| {
-                    self.show_detail(ui);
-                    edge(ui, Side::Left);
-                });
-            CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_list(ui));
+        match active {
+            Tab::World => self.show_world(ui),
+            // the model viewer (docs/PLAN.md stage 4) draws a document tab's page here
+            Tab::Document(_) => {
+                CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |_| {});
+            }
+            Tab::Explorer => self.show_explorer(ui),
         }
 
         self.show_palette(&ctx);
         self.show_toasts(&ctx);
+    }
+
+    fn show_explorer(&mut self, ui: &mut Ui) {
+        if self.ex.is_empty() && self.loose.is_empty() {
+            CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_empty(ui));
+            return;
+        }
+        Panel::left("tree")
+            .resizable(true)
+            .default_size(280.0)
+            .size_range(220.0..=440.0)
+            .frame(flat(theme::PANEL))
+            .show(ui, |ui| {
+                self.show_tree(ui);
+                edge(ui, Side::Right);
+            });
+        Panel::right("detail")
+            .resizable(true)
+            .default_size(400.0)
+            .size_range(300.0..=700.0)
+            .frame(flat(theme::PANEL))
+            .show(ui, |ui| {
+                self.show_detail(ui);
+                edge(ui, Side::Left);
+            });
+        CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_list(ui));
     }
 }

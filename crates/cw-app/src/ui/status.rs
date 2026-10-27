@@ -9,7 +9,7 @@ impl App {
         let y = rect.center().y;
         let p = ui.painter().clone();
 
-        let left = if self.mode == crate::app::Mode::World && self.busy.is_none() {
+        let left = if self.tabs.active() == crate::tabs::Tab::World && self.busy.is_none() {
             let w = self.engine.session();
             let n = w.world.scene.entities.len() as u64;
             let sel = w.world.scene.selection.len() as u64;

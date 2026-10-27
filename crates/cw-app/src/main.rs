@@ -14,6 +14,7 @@ mod latest;
 mod layout;
 mod model;
 mod preview;
+mod tabs;
 mod texview;
 mod theme;
 mod ui;

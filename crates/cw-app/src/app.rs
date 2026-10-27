@@ -23,18 +23,13 @@ use crate::{
     latest::LatestWins,
     model::{Explorer, Item},
     preview::{self, Loaded, Source},
+    tabs::{Tab, Tabs},
     texview::{DecodeJob, Picture, TexView},
     ui::{
         palette::Palette,
         toasts::{Toast, ToastKind},
     },
 };
-
-#[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub enum Mode {
-    Explorer,
-    World,
-}
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum ViewMode {
@@ -91,7 +86,7 @@ pub struct App {
     rx: Receiver<Msg>,
     pub ctx: egui::Context,
 
-    pub mode: Mode,
+    pub tabs: Tabs,
     pub world: crate::ui::world::WorldUi,
     pub ex: Explorer,
     pub loose: Vec<PathBuf>,
@@ -240,7 +235,7 @@ impl App {
             tx,
             rx,
             ctx: cc.egui_ctx.clone(),
-            mode: Mode::Explorer,
+            tabs: Tabs::default(),
             world: crate::ui::world::WorldUi::new(cc.wgpu_render_state.as_ref()),
             ex: Explorer::default(),
             loose: Vec::new(),
@@ -287,7 +282,7 @@ impl App {
 
         if let Some(s) = &app.script {
             if s.world {
-                app.mode = Mode::World;
+                app.tabs.activate(Tab::World);
             }
             if let Some(path) = &s.scene {
                 let _ = app.engine.execute("world.load", json!({ "path": path }));
@@ -572,7 +567,7 @@ impl App {
                     msg.push_str(&format!(" · {left} LOD stand-ins left out"));
                 }
                 self.toast(msg, ToastKind::Success);
-                self.mode = Mode::World;
+                self.tabs.activate(Tab::World);
                 self.world.framed = false; // look at what just arrived
             }
             "texture.export" => {
@@ -763,8 +758,9 @@ impl App {
             Action::ExtractSelected => has_sel,
             Action::CopyPath => has_sel || matches!(self.preview.target, Some(Target::Disk(_))),
             Action::CopyToMods => self.mods_copy_source().is_some(),
-            Action::ShowExplorer => self.mode != Mode::Explorer,
-            Action::ShowWorld => self.mode != Mode::World,
+            Action::ShowExplorer => self.tabs.active() != Tab::Explorer,
+            Action::ShowWorld => self.tabs.active() != Tab::World,
+            Action::CloseTab => matches!(self.tabs.active(), Tab::Document(_)),
             Action::AddEntity | Action::SaveScene | Action::LoadScene | Action::ImportMap => true,
             Action::PlaceMap => matches!(&self.preview.state, PState::Ready(l) if l.map.is_some()),
             Action::DeleteSelection => !self.engine.session().world.scene.selection.is_empty(),
@@ -824,8 +820,15 @@ impl App {
                     self.run("Copying to mods…", "mods.copy", json!({ "path": path }));
                 }
             }
-            Action::ShowExplorer => self.mode = Mode::Explorer,
-            Action::ShowWorld => self.mode = Mode::World,
+            Action::ShowExplorer => {
+                self.tabs.activate(Tab::Explorer);
+            }
+            Action::ShowWorld => {
+                self.tabs.activate(Tab::World);
+            }
+            Action::CloseTab => {
+                self.tabs.close(self.tabs.active());
+            }
             Action::ImportMap => self.pick(Pick::ImportMap),
             Action::PlaceMap => {
                 let args = match (&self.preview.target, &self.ex.tree) {
@@ -836,7 +839,7 @@ impl App {
                 self.run("Placing map…", "world.import", args);
             }
             Action::AddEntity => {
-                self.mode = Mode::World;
+                self.tabs.activate(Tab::World);
                 self.world_add_entity();
             }
             Action::DeleteSelection => self.world_delete_selection(),
@@ -869,7 +872,7 @@ impl App {
 
     fn shortcuts(&mut self, ctx: &egui::Context) {
         let typing = ctx.egui_wants_keyboard_input();
-        let in_world = self.mode == Mode::World;
+        let in_world = self.tabs.active() == Tab::World;
         let mut act = None;
         ctx.input_mut(|i| {
             let cmd_shift = Modifiers::COMMAND | Modifiers::SHIFT;
@@ -893,6 +896,8 @@ impl App {
                 act = Some(Some(Action::ShowExplorer));
             } else if i.consume_key(Modifiers::ALT, Key::Num2) {
                 act = Some(Some(Action::ShowWorld));
+            } else if i.consume_key(Modifiers::COMMAND, Key::W) {
+                act = Some(Some(Action::CloseTab));
             } else if in_world && i.consume_key(Modifiers::COMMAND, Key::S) {
                 act = Some(Some(Action::SaveScene));
             } else if i.consume_key(cmd_shift, Key::L) {
