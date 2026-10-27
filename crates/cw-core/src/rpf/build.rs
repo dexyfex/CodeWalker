@@ -214,7 +214,7 @@ impl RpfBuilder {
                 // stored size (resource); resources keep their 16-byte header in the clear
                 let skip = if matches!(item, Item::Resource { .. }) { 16 } else { 0 };
                 let ng_length = if skip == 0 { raw_len } else { size_field } as u32;
-                let body = self.encrypt_entry(&stored[skip..], &n.name, ng_length)?;
+                let body = self.encrypt_entry(&stored[skip..], n.name, ng_length)?;
                 stored.truncate(skip);
                 stored.extend(body);
             }
