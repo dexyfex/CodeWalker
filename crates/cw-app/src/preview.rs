@@ -10,7 +10,10 @@ use eframe::egui::{
 
 use crate::{format, theme};
 
-/// Larger files are still extracted, but previews stop here to stay responsive.
+/// Files larger than this are not previewed (Extract still works): loading one means holding
+/// the whole decompressed file in memory, for the hex view as much as for anything else.
+const MAX_PREVIEW_BYTES: u64 = 256 * 1024 * 1024;
+/// Text shown beyond this many bytes is cut off, to stay responsive.
 const MAX_TEXT_BYTES: usize = 32 * 1024 * 1024;
 /// Textures wider than this are downscaled before upload.
 const MAX_IMAGE_SIDE: u32 = 4096;
@@ -64,6 +67,7 @@ pub fn load(tree: Option<&RpfTree>, src: &Source) -> Result<Loaded, String> {
             if e.is_dir() {
                 return Err("this is a folder".into());
             }
+            too_large(e.display_size())?;
             let (bytes, resource) = match e.kind {
                 EntryKind::Resource { .. } => {
                     let rd = t.extract_resource(*r).map_err(|e| e.to_string())?;
@@ -89,6 +93,7 @@ pub fn load(tree: Option<&RpfTree>, src: &Source) -> Result<Loaded, String> {
             ))
         }
         Source::Disk(p) => {
+            too_large(std::fs::metadata(p).map_err(|e| e.to_string())?.len())?;
             let raw = std::fs::read(p).map_err(|e| e.to_string())?;
             let name = p.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
             let kind = FileKind::from_name(&name.to_lowercase());
@@ -103,6 +108,17 @@ pub fn load(tree: Option<&RpfTree>, src: &Source) -> Result<Loaded, String> {
             Ok(build(name, p.display().to_string(), kind, bytes, Some(stored), false, None, resource))
         }
     }
+}
+
+fn too_large(size: u64) -> Result<(), String> {
+    if size > MAX_PREVIEW_BYTES {
+        return Err(format!(
+            "This file is {}, too large to preview ({} at most). Extract it to open it elsewhere.",
+            format::size(size),
+            format::size(MAX_PREVIEW_BYTES)
+        ));
+    }
+    Ok(())
 }
 
 fn res_info(sys_flags: u32, gfx_flags: u32) -> ResInfo {
@@ -166,9 +182,9 @@ pub fn decode_text(bytes: &[u8], kind: FileKind) -> Option<TextDoc> {
     }
     let head = &bytes[..bytes.len().min(8192)];
     let (text, truncated) = if let Some(rest) = bytes.strip_prefix(&[0xFF, 0xFE]) {
-        (decode_utf16(rest, false), false)
+        decode_utf16(rest, false)
     } else if let Some(rest) = bytes.strip_prefix(&[0xFE, 0xFF]) {
-        (decode_utf16(rest, true), false)
+        decode_utf16(rest, true)
     } else {
         let body = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]).unwrap_or(bytes);
         let suspicious = head.iter().filter(|&&b| b < 0x09 || (b > 0x0D && b < 0x20)).count();
@@ -202,12 +218,19 @@ pub fn decode_text(bytes: &[u8], kind: FileKind) -> Option<TextDoc> {
     Some(TextDoc { text: text.into(), lines, widest: widest.min(MAX_LINE_CHARS), truncated })
 }
 
-fn decode_utf16(bytes: &[u8], big_endian: bool) -> Option<String> {
-    let units: Vec<u16> = bytes
-        .chunks_exact(2)
-        .map(|c| if big_endian { u16::from_be_bytes([c[0], c[1]]) } else { u16::from_le_bytes([c[0], c[1]]) })
-        .collect();
-    String::from_utf16(&units).ok()
+/// Decodes at most [`MAX_TEXT_BYTES`] of UTF-16; the flag says whether the rest was left out.
+fn decode_utf16(bytes: &[u8], big_endian: bool) -> (Option<String>, bool) {
+    // two bytes per unit, and a cut must not fall between the halves of a surrogate pair
+    let mut cut = bytes.len().min(MAX_TEXT_BYTES) & !1;
+    let unit = |i: usize| {
+        let c = [bytes[i], bytes[i + 1]];
+        if big_endian { u16::from_be_bytes(c) } else { u16::from_le_bytes(c) }
+    };
+    if cut < bytes.len() && cut >= 2 && (0xD800..0xDC00).contains(&unit(cut - 2)) {
+        cut -= 2;
+    }
+    let units: Vec<u16> = (0..cut).step_by(2).map(unit).collect();
+    (String::from_utf16(&units).ok(), cut < (bytes.len() & !1))
 }
 
 // ------------------------------------------------------------------- hex
@@ -395,6 +418,39 @@ mod tests {
             u16le.extend_from_slice(&u.to_le_bytes());
         }
         assert_eq!(decode_text(&u16le, FileKind::Text).unwrap().lines.len(), 2);
+    }
+
+    #[test]
+    fn utf16_is_capped_and_never_cut_inside_a_surrogate_pair() {
+        // 'a' everywhere, except a pair that straddles the cap
+        let units = MAX_TEXT_BYTES / 2 + 4;
+        let mut bytes = vec![0xFF, 0xFE];
+        for i in 0..units {
+            let u: u16 = match i {
+                i if i == MAX_TEXT_BYTES / 2 - 1 => 0xD83D,
+                i if i == MAX_TEXT_BYTES / 2 => 0xDE00, // together: U+1F600
+                _ => b'a' as u16,
+            };
+            bytes.extend_from_slice(&u.to_le_bytes());
+        }
+        let d = decode_text(&bytes, FileKind::Text).expect("valid up to the cut");
+        assert!(d.truncated);
+        assert!(d.text.len() <= MAX_TEXT_BYTES, "{} bytes of text", d.text.len());
+        assert!(d.text.chars().all(|c| c == 'a'), "the split pair was left out, not mangled");
+
+        let small = decode_text(&[0xFF, 0xFE, b'h', 0, b'i', 0], FileKind::Text).unwrap();
+        assert!(!small.truncated);
+        assert_eq!(&*small.text, "hi");
+    }
+
+    #[test]
+    fn huge_files_are_refused_before_anything_is_read() {
+        let file = std::env::temp_dir().join(format!("cw-huge-{}.bin", std::process::id()));
+        std::fs::File::create(&file).unwrap().set_len(MAX_PREVIEW_BYTES + 1).unwrap(); // sparse
+        let err = load(None, &Source::Disk(file.clone())).err().expect("too large");
+        assert!(err.contains("too large to preview"), "{err}");
+        let _ = std::fs::remove_file(file);
+        assert!(too_large(MAX_PREVIEW_BYTES).is_ok());
     }
 
     #[test]

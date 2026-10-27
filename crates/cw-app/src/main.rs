@@ -5,6 +5,7 @@ mod actions;
 mod app;
 mod format;
 mod icons;
+mod latest;
 mod model;
 mod preview;
 mod theme;

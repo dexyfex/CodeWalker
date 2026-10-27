@@ -2,6 +2,7 @@
 //! the views in `ui/`.
 
 use std::{
+    panic::{AssertUnwindSafe, catch_unwind},
     path::PathBuf,
     sync::{
         Arc,
@@ -11,13 +12,14 @@ use std::{
 };
 
 use cw_cmd::{Engine, Event};
-use cw_core::EntryRef;
+use cw_core::{EntryRef, RpfTree};
 use eframe::egui::{self, Key, Modifiers, TextureHandle};
 use serde_json::{Value, json};
 
 use crate::{
     actions::Action,
     format,
+    latest::LatestWins,
     model::{Explorer, Item},
     preview::{self, Loaded, Source},
     ui::{
@@ -110,6 +112,8 @@ pub struct App {
     pub ex: Explorer,
     pub loose: Vec<PathBuf>,
     pub preview: PreviewSlot,
+    /// Loads previews one at a time, newest request first; see [`crate::latest`].
+    preview_worker: LatestWins<PreviewJob>,
     pub keys_loaded: bool,
     pub candidates: Vec<cw_cmd::gamefolder::Candidate>,
 
@@ -180,6 +184,13 @@ impl Script {
     }
 }
 
+/// One request to the preview worker.
+struct PreviewJob {
+    generation: u64,
+    tree: Option<Arc<RpfTree>>,
+    src: Source,
+}
+
 /// Developer aid: `CODEWALKER_SCREENSHOT=out.png` saves a frame and exits.
 struct Shot {
     path: PathBuf,
@@ -196,8 +207,19 @@ impl App {
         let (tx, rx) = mpsc::channel();
         let events = engine.subscribe();
         let config_game_folder = engine.session().config.game_folder.clone();
+        let preview_worker = {
+            let (tx, ctx) = (tx.clone(), cc.egui_ctx.clone());
+            LatestWins::start(move |job: PreviewJob| {
+                // a parser bug on a hostile file must end that preview, not the worker
+                let result = catch_unwind(AssertUnwindSafe(|| preview::load(job.tree.as_deref(), &job.src)))
+                    .unwrap_or_else(|_| Err("Previewing this file failed unexpectedly.".to_string()));
+                let _ = tx.send(Msg::Preview { generation: job.generation, result: result.map(Box::new) });
+                ctx.request_repaint();
+            })
+        };
         let mut app = Self {
             events,
+            preview_worker,
             tx,
             rx,
             ctx: cc.egui_ctx.clone(),
@@ -627,10 +649,7 @@ impl App {
             Target::Entry(r) => Source::Entry(r),
             Target::Disk(p) => Source::Disk(p),
         };
-        self.spawn(move || Msg::Preview {
-            generation,
-            result: preview::load(tree.as_deref(), &src).map(Box::new),
-        });
+        self.preview_worker.submit(PreviewJob { generation, tree, src });
     }
 
     fn sync_preview(&mut self) {
