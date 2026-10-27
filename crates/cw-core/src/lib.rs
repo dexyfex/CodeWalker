@@ -8,6 +8,7 @@ pub mod error;
 pub mod filekind;
 pub mod hash;
 pub mod keys;
+pub mod resource;
 pub mod rpf;
 
 pub use blob::Blob;

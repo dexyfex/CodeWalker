@@ -122,7 +122,7 @@ fn hostile_directory_ranges_cannot_loop_or_overflow() {
 #[test]
 fn entry_data_outside_the_archive_is_an_error() {
     let mut t = scan(archive(&[Item::file("a.bin", vec![1u8; 10])], None), None).unwrap();
-    if let EntryKind::Binary { offset, .. } = &mut t.archives[0].entries[1].kind {
+    if let EntryKind::Binary { offset, .. } = &mut Arc::get_mut(&mut t.archives[0]).unwrap().entries[1].kind {
         *offset = 0xFF_FFFF;
     }
     let r = t.find("test.rpf/a.bin").unwrap();
@@ -154,4 +154,24 @@ fn builder_rejects_bad_names() {
     assert!(matches!(bad, Err(Error::InvalidRpf(_))));
     assert!(RpfBuilder::new(vec![Item::file("", &b"x"[..])]).build().is_err());
     assert!(RpfBuilder::new(vec![Item::dir("ok", vec![Item::file("nul\0", &b"x"[..])])]).build().is_err());
+}
+
+#[test]
+fn merged_trees_share_archives_and_rebase_ids() {
+    let a = scan(archive(&sample_items(), None), None).unwrap();
+    let b = scan(
+        archive(&[Item::archive("x.rpf", archive(&[Item::file("y.txt", &b"yy"[..])], None))], None),
+        None,
+    )
+    .unwrap();
+    let m = a.merged(b);
+    assert_eq!(m.archives.len(), 4);
+    assert_eq!(m.roots, [0, 2]);
+    assert!(Arc::ptr_eq(&a.archives[0], &m.archives[0]), "existing archives are shared, not copied");
+    let y = m.find("test.rpf/x.rpf/y.txt").expect("found in the second tree");
+    assert_eq!(y.archive, 3);
+    assert_eq!(m.extract(y).unwrap(), b"yy");
+    assert_eq!(m.archive(3).parent, Some(2));
+    // the original tree is unchanged
+    assert_eq!(a.archives.len(), 2);
 }

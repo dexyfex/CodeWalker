@@ -250,7 +250,7 @@ pub struct ScanError {
 
 #[derive(Default)]
 pub struct RpfTree {
-    pub archives: Vec<RpfArchive>,
+    pub archives: Vec<Arc<RpfArchive>>,
     pub roots: Vec<ArchiveId>,
     pub errors: Vec<ScanError>,
     index: OnceLock<HashMap<String, EntryRef>>,
@@ -276,7 +276,9 @@ impl RpfTree {
         let mut tree = RpfTree::default();
         let path = normalize_path(rel_path);
         let ctx = ScanCtx { blob: &blob, physical: &physical, keys: &keys };
-        let id = parse_archive(&ctx, 0, name, path, size, None, 0, &mut tree.archives, &mut tree.errors)?;
+        let mut archives = Vec::new();
+        let id = parse_archive(&ctx, 0, name, path, size, None, 0, &mut archives, &mut tree.errors)?;
+        tree.archives = archives.into_iter().map(Arc::new).collect();
         tree.roots.push(id);
         Ok(tree)
     }
@@ -316,9 +318,11 @@ impl RpfTree {
         tree
     }
 
-    fn merge(&mut self, mut other: RpfTree) {
+    /// Appends `other` (ids are rebased; existing archives are untouched).
+    pub fn merge(&mut self, mut other: RpfTree) {
         let off = self.archives.len() as u32;
         for a in other.archives.iter_mut() {
+            let a = Arc::get_mut(a).expect("a freshly scanned tree owns its archives");
             a.id += off;
             a.parent = a.parent.map(|p| p + off);
             for c in a.children.iter_mut() {
@@ -332,6 +336,19 @@ impl RpfTree {
         self.archives.append(&mut other.archives);
         self.errors.append(&mut other.errors);
         self.index = OnceLock::new();
+    }
+
+    /// A new tree holding this tree's archives plus `other`'s. Cheap: archives
+    /// are shared, not copied. Entry references into `self` stay valid.
+    pub fn merged(&self, other: RpfTree) -> RpfTree {
+        let mut t = RpfTree {
+            archives: self.archives.clone(),
+            roots: self.roots.clone(),
+            errors: self.errors.clone(),
+            index: OnceLock::new(),
+        };
+        t.merge(other);
+        t
     }
 
     pub fn archive(&self, id: ArchiveId) -> &RpfArchive {
