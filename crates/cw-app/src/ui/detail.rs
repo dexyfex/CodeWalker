@@ -199,7 +199,7 @@ impl App {
                     (ViewMode::Info, true) => 2,
                     (ViewMode::Info, false) => 0,
                 };
-                if let Some(i) = segmented(ui, labels, selected) {
+                if let Some(i) = segmented(ui, "preview-view", labels, selected) {
                     new_view = Some(match (labels[i], has_preview) {
                         ("Preview", _) => ViewMode::Auto,
                         ("Hex", _) => ViewMode::Hex,
@@ -240,8 +240,9 @@ impl App {
         if let Some(a) = action {
             self.perform(a);
         }
-        if retry {
-            self.preview.target = None;
+        if retry && let Some(t) = self.preview.target.take() {
+            // asked for again on purpose: a loose file has no selection to bring it back
+            self.request_preview(Some(t));
         }
     }
 

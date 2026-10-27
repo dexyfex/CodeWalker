@@ -166,8 +166,10 @@ pub fn fit_text(p: &Painter, text: &str, font: &FontId, max_w: f32) -> String {
     best
 }
 
-/// A row of mutually exclusive options. Returns the index clicked, if any.
-pub fn segmented(ui: &mut Ui, items: &[&str], selected: usize) -> Option<usize> {
+/// A row of mutually exclusive options. Returns the index clicked, if any. `salt` names the
+/// control: two of them in one window must not share widget ids, and a ui's own id is not a
+/// reliable way to tell them apart.
+pub fn segmented(ui: &mut Ui, salt: &str, items: &[&str], selected: usize) -> Option<usize> {
     let font = FontId::proportional(12.0);
     let mut clicked = None;
     let widths: Vec<f32> = items
@@ -182,7 +184,7 @@ pub fn segmented(ui: &mut Ui, items: &[&str], selected: usize) -> Option<usize> 
     let mut x = rect.left() + 2.0;
     for (i, label) in items.iter().enumerate() {
         let r = egui::Rect::from_min_size(pos2(x, rect.top() + 2.0), vec2(widths[i], 24.0));
-        let resp = ui.interact(r, ui.scope_id().with(("seg", i)), Sense::click());
+        let resp = ui.interact(r, egui::Id::unique(("segmented", salt, i)), Sense::click());
         let p = ui.painter();
         let on = i == selected;
         if on {

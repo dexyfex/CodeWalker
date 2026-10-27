@@ -48,7 +48,7 @@ impl App {
                     Mode::Mods => 1,
                     Mode::World => 2,
                 };
-                if let Some(i) = segmented(ui, &["Explorer", "Mods", "World"], mode) {
+                if let Some(i) = segmented(ui, "mode", &["Explorer", "Mods", "World"], mode) {
                     self.perform([Action::ShowExplorer, Action::ShowMods, Action::ShowWorld][i]);
                 }
                 ui.add_space(8.0);
@@ -76,7 +76,8 @@ impl App {
         // right-to-left: scope control first, then the field to its left
         let scope = if self.search_everywhere { 1 } else { 0 };
         let before = scope;
-        let clicked = ui.scope(|ui| segmented(ui, &["This folder", "All archives"], scope)).inner;
+        let clicked =
+            ui.scope(|ui| segmented(ui, "search-scope", &["This folder", "All archives"], scope)).inner;
         if let Some(i) = clicked {
             self.search_everywhere = i == 1;
         }
