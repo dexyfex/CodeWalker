@@ -263,7 +263,11 @@ pub struct RpfTree {
     pub roots: Vec<ArchiveId>,
     pub errors: Vec<ScanError>,
     index: OnceLock<HashMap<String, EntryRef>>,
+    names: OnceLock<HashMap<u32, String>>,
 }
+
+/// File types that are named after the model they hold.
+const MODEL_EXTENSIONS: [&str; 4] = ["ydr", "yft", "ydd", "ytd"];
 
 impl RpfTree {
     /// Parses one RPF on disk (and everything nested inside it).
@@ -359,6 +363,7 @@ impl RpfTree {
         self.archives.append(&mut other.archives);
         self.errors.append(&mut other.errors);
         self.index = OnceLock::new();
+        self.names = OnceLock::new();
     }
 
     /// A new tree holding this tree's archives plus `other`'s. Cheap: archives
@@ -369,9 +374,34 @@ impl RpfTree {
             roots: self.roots.clone(),
             errors: self.errors.clone(),
             index: OnceLock::new(),
+            names: OnceLock::new(),
         };
         t.merge(other);
         t
+    }
+
+    /// Model names by hash. A map entity names its model only by the hash of the lower-case name,
+    /// and the archives hold a file for most models (`prop_bench_01.ydr`), so their names are a
+    /// dictionary for those hashes. Built on first use, on all cores.
+    pub fn model_names(&self) -> &HashMap<u32, String> {
+        self.names.get_or_init(|| {
+            let pairs: Vec<(u32, &str)> = self
+                .archives
+                .par_iter()
+                .flat_map_iter(|a| {
+                    a.entries.iter().filter_map(|e| {
+                        let (stem, ext) = e.name_lower.rsplit_once('.')?;
+                        (!e.is_dir() && MODEL_EXTENSIONS.contains(&ext) && !stem.is_empty())
+                            .then(|| (crate::hash::joaat_lower(stem), stem))
+                    })
+                })
+                .collect();
+            let mut names = HashMap::with_capacity(pairs.len());
+            for (hash, stem) in pairs {
+                names.entry(hash).or_insert_with(|| stem.to_string());
+            }
+            names
+        })
     }
 
     pub fn archive(&self, id: ArchiveId) -> &RpfArchive {

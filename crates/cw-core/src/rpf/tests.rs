@@ -481,3 +481,36 @@ fn sizes_of_16_mib_and_more_are_read_from_the_resource_header() {
     let e = tree.entry(tree.find("test.rpf/huge.ydr").unwrap());
     assert!(matches!(e.kind, EntryKind::Resource { size, .. } if size == want), "{:?}", e.kind);
 }
+
+#[test]
+fn model_files_name_the_hashes_map_entities_use() {
+    use crate::hash::joaat_lower;
+    let inner = archive(&[Item::resource("lamp_post.YFT", &b"f"[..], 1 << 17, 0x9000_0000)], None);
+    let tree = scan(
+        archive(
+            &[
+                Item::resource("Prop_Bench_01.ydr", &b"a"[..], 1 << 17, 0x9000_0000),
+                Item::dir("textures", vec![Item::resource("wall.ytd", &b"b"[..], 1 << 17, 0x9000_0000)]),
+                Item::file("notes.txt", &b"not a model"[..]),
+                Item::dir("fake.ydr", vec![]), // a folder that happens to be named like a model
+                Item::archive("props.rpf", inner),
+            ],
+            None,
+        ),
+        None,
+    )
+    .unwrap();
+    let names = tree.model_names();
+    let of = |n: &str| names.get(&joaat_lower(n)).map(String::as_str);
+    assert_eq!(of("prop_bench_01"), Some("prop_bench_01"));
+    assert_eq!(of("wall"), Some("wall"));
+    assert_eq!(of("lamp_post"), Some("lamp_post"), "inside nested archives too");
+    assert!(of("notes").is_none() && of("fake").is_none());
+    assert_eq!(names.len(), 3);
+
+    // a tree with more archives gets a fresh dictionary
+    let more = archive(&[Item::resource("bin.ydd", &b"c"[..], 1 << 17, 0x9000_0000)], None);
+    let merged = tree.merged(scan(more, None).unwrap());
+    assert_eq!(merged.model_names().len(), 4);
+    assert_eq!(tree.model_names().len(), 3, "the original is untouched");
+}

@@ -501,7 +501,7 @@ fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
         flags: 1,
         entity_extents: ([-5.0, 0.0, 0.0], [50.0, 60.0, 9.0]),
         entities: vec![
-            hd(1, 10.0),
+            YmapEntity { archetype: cw_core::hash::joaat_lower("prop_bench_01"), ..hd(1, 10.0) },
             hd(2, 11.0),
             YmapEntity { lod: LodLevel::OrphanHd, ..hd(3, 12.0) },
             lod(4, -1),
@@ -512,9 +512,13 @@ fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
     let res = build_ymap(&map);
     std::fs::write(
         fx.dir.join("game/m.rpf"),
-        RpfBuilder::new(vec![Item::resource("hills.ymap", res.data.clone(), res.sys_flags, res.gfx_flags)])
-            .build()
-            .unwrap(),
+        RpfBuilder::new(vec![
+            Item::resource("hills.ymap", res.data.clone(), res.sys_flags, res.gfx_flags),
+            // a model file: its name is how entity 1 gets its name back from the hash
+            Item::resource("Prop_Bench_01.ydr", &b"model"[..], 1 << 17, 0x9000_0000),
+        ])
+        .build()
+        .unwrap(),
     )
     .unwrap();
     let e = Engine::ephemeral();
@@ -532,6 +536,9 @@ fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
     assert_eq!(info["entity_extents"]["max"], json!([50.0, 60.0, 9.0]));
     assert_eq!(info["page"]["items"].as_array().unwrap().len(), 2);
     assert_eq!(info["page"]["items"][0]["archetype"], "0xAA000002");
+    assert!(info["page"]["items"][0]["model"].is_null());
+    let first_page = ok(&e, "ymap.info", json!({ "path": "m.rpf/hills.ymap", "limit": 1 }));
+    assert_eq!(first_page["page"]["items"][0]["model"], "prop_bench_01");
     assert_eq!(info["lod_roots"], 5, "none of them has a coarser parent in this file");
 
     // the default import takes the detailed ones and says what it left out
@@ -540,10 +547,14 @@ fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
     assert_eq!((r["left_out"]["by_lod"].as_u64(), r["left_out"]["unplaceable"].as_u64()), (Some(1), Some(1)));
     let listed = ok(&e, "world.list", json!({}));
     let first = &listed["entities"][0];
+    let bench = format!("0x{:08X}", cw_core::hash::joaat_lower("prop_bench_01"));
     assert_eq!(
         (first["archetype"].as_str(), first["hash"].as_str()),
-        (Some("0xAA000001"), Some("0xAA000001"))
+        (Some("prop_bench_01"), Some(bench.as_str())),
+        "named after the model file, and still the same hash"
     );
+    assert_eq!(listed["entities"][1]["archetype"], "0xAA000002", "no file for this one: the hash stands in");
+    assert_eq!(r["named"], 1);
     assert_eq!(first["source"], "m.rpf/hills.ymap");
     assert_eq!(
         (first["x"].as_f64(), first["y"].as_f64(), first["z"].as_f64()),
@@ -573,7 +584,7 @@ fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
 
     // a loose file works the same way
     let raw = ok(&e, "rpf.extract", json!({ "path": "m.rpf", "dest": fx.dir.join("raw") }));
-    assert_eq!(raw["files"], 1);
+    assert_eq!(raw["files"], 2, "the map and the model file");
     let loose = fx.dir.join("raw/m.rpf/hills.ymap");
     assert_eq!(ok(&e, "ymap.info", json!({ "file": &loose }))["entities"], 5);
     assert_eq!(ok(&e, "world.import", json!({ "file": loose, "replace": true }))["imported"], 3);

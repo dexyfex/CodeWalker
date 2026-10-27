@@ -74,6 +74,23 @@ fn hex(v: u32) -> String {
     format!("0x{v:08X}")
 }
 
+/// How to show a model: its name when an open archive has a file called that, else its hash.
+struct Models(Option<std::sync::Arc<cw_core::RpfTree>>);
+
+impl Models {
+    fn of(ctx: &Ctx) -> Self {
+        Models(ctx.session().tree.clone())
+    }
+
+    fn name(&self, hash: u32) -> Option<&str> {
+        self.0.as_ref()?.model_names().get(&hash).map(String::as_str)
+    }
+
+    fn label(&self, hash: u32) -> String {
+        self.name(hash).map_or_else(|| hex(hash), str::to_string)
+    }
+}
+
 fn lods_json(map: &Ymap) -> Value {
     map.lod_counts().into_iter().map(|(l, n)| json!({ "level": l.label(), "count": n })).collect()
 }
@@ -89,6 +106,7 @@ fn info(ctx: &Ctx, args: Value) -> CmdResult {
     let a: A = parse(args)?;
     let (map, origin) = load_map(ctx, &a.src)?;
     let (offset, limit) = (a.offset.unwrap_or(0), a.limit.unwrap_or(20).min(1000));
+    let models = Models::of(ctx);
     let page: Vec<Value> = map
         .entities
         .iter()
@@ -97,7 +115,7 @@ fn info(ctx: &Ctx, args: Value) -> CmdResult {
         .take(limit)
         .map(|(i, e)| {
             json!({
-                "index": i, "archetype": hex(e.archetype), "guid": e.guid,
+                "index": i, "archetype": hex(e.archetype), "model": models.name(e.archetype), "guid": e.guid,
                 "x": e.position[0], "y": e.position[1], "z": e.position[2],
                 "scale_xy": e.scale_xy, "scale_z": e.scale_z,
                 "lod": e.lod.label(), "parent": e.parent_index, "interior": e.mlo,
@@ -142,13 +160,15 @@ fn import(ctx: &Ctx, args: Value) -> CmdResult {
         Some(other) => return Err(CmdError::invalid(format!("unknown lod `{other}`; use detailed or all"))),
     };
     let (map, origin) = load_map(ctx, &a.src)?;
+    let models = Models::of(ctx);
 
     let wanted: Vec<&YmapEntity> = map.entities.iter().filter(|e| all || e.lod.is_detailed()).collect();
     let left_out_by_lod = map.entities.len() - wanted.len();
+    let items_named = wanted.iter().filter(|e| models.name(e.archetype).is_some()).count();
     let items: Vec<NewEntity> = wanted
         .into_iter()
         .map(|e| NewEntity {
-            archetype: hex(e.archetype),
+            archetype: models.label(e.archetype),
             archetype_hash: e.archetype,
             transform: transform_of(e),
             source: origin.clone(),
@@ -170,6 +190,7 @@ fn import(ctx: &Ctx, args: Value) -> CmdResult {
         "imported": ids.len(),
         "left_out": { "by_lod": left_out_by_lod, "unplaceable": unplaceable },
         "lod": lods_json(&map),
+        "named": items_named,
         "scene_entities": scene_total,
         "first_id": ids.first(),
     }))
