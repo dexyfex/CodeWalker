@@ -395,6 +395,13 @@ impl RpfTree {
         })
     }
 
+    /// All matches of [`search`](Self::search), in a stable (archive, index) order.
+    pub fn search_all(&self, needle: &str) -> Vec<EntryRef> {
+        let mut hits: Vec<EntryRef> = self.search(needle).collect();
+        hits.sort_unstable();
+        hits
+    }
+
     // ---------------------------------------------------------------- data
 
     fn stored(&self, r: EntryRef) -> Result<(&RpfArchive, &RpfEntry, &[u8])> {

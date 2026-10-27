@@ -169,8 +169,7 @@ fn search(ctx: &Ctx, args: Value) -> CmdResult {
     }
     let tree = ctx.tree()?;
     let limit = a.limit.unwrap_or(200).min(10_000);
-    let mut hits: Vec<EntryRef> = tree.search(&a.query).collect();
-    hits.sort();
+    let hits = tree.search_all(&a.query);
     let total = hits.len();
     let rows: Vec<Value> = hits.into_iter().take(limit).map(|r| entry_json(&tree, r)).collect();
     Ok(json!({ "total": total, "entries": rows }))
