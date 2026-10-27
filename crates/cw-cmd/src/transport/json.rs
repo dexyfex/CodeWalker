@@ -14,8 +14,12 @@
 use std::{
     io::{self, BufRead, BufReader, Read, Write},
     net::{IpAddr, SocketAddr, TcpListener},
-    sync::{Arc, Mutex},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicUsize, Ordering},
+    },
     thread,
+    time::Duration,
 };
 
 use serde_json::{Value, json};
@@ -94,6 +98,21 @@ pub fn random_token() -> String {
     b.iter().map(|x| format!("{x:02x}")).collect()
 }
 
+/// How long a new connection may stay silent before it has to authenticate, and
+/// how many may be open at once. Without these, anything on the machine (or any
+/// web page that can reach loopback) could pile up idle threads.
+#[derive(Debug, Clone, Copy)]
+pub struct TcpLimits {
+    pub auth_timeout: Duration,
+    pub max_connections: usize,
+}
+
+impl Default for TcpLimits {
+    fn default() -> Self {
+        Self { auth_timeout: Duration::from_secs(5), max_connections: 16 }
+    }
+}
+
 /// Listens on a loopback address; every connection must authenticate with `token`.
 pub fn serve_tcp(engine: Arc<Engine>, addr: SocketAddr, token: String) -> io::Result<()> {
     if !is_loopback(addr.ip()) {
@@ -102,16 +121,46 @@ pub fn serve_tcp(engine: Arc<Engine>, addr: SocketAddr, token: String) -> io::Re
             "the control channel only binds to loopback addresses",
         ));
     }
-    let listener = TcpListener::bind(addr)?;
+    serve_listener(engine, TcpListener::bind(addr)?, token, TcpLimits::default())
+}
+
+/// Frees a connection slot when the connection ends, however it ends.
+struct Slot(Arc<AtomicUsize>);
+
+impl Drop for Slot {
+    fn drop(&mut self) {
+        self.0.fetch_sub(1, Ordering::SeqCst);
+    }
+}
+
+pub fn serve_listener(
+    engine: Arc<Engine>,
+    listener: TcpListener,
+    token: String,
+    limits: TcpLimits,
+) -> io::Result<()> {
+    let active = Arc::new(AtomicUsize::new(0));
     for stream in listener.incoming() {
         let Ok(stream) = stream else { continue };
-        let engine = engine.clone();
-        let token = token.clone();
+        if active.fetch_add(1, Ordering::SeqCst) >= limits.max_connections {
+            active.fetch_sub(1, Ordering::SeqCst);
+            continue; // dropped: the client sees the connection close
+        }
+        let slot = Slot(active.clone());
+        let (engine, token) = (engine.clone(), token.clone());
         thread::spawn(move || {
+            let _slot = slot;
             let Ok(write_half) = stream.try_clone() else { return };
+            // the clock only runs until the client has proved it knows the token
+            if stream.set_read_timeout(Some(limits.auth_timeout)).is_err() {
+                return;
+            }
             let mut reader = BufReader::new(stream);
             let mut first = String::new();
             if reader.by_ref().take(512).read_line(&mut first).is_err() || !authorized(&first, &token) {
+                return;
+            }
+            if reader.get_ref().set_read_timeout(None).is_err() {
                 return;
             }
             let _ = serve(&engine, reader, write_half);
@@ -196,5 +245,55 @@ mod tests {
         assert!(!authorized("POST / HTTP/1.1\r\n", "abc"));
         assert!(!authorized("{\"cmd\":\"rpf.extract\"}", "abc"));
         assert_eq!(random_token().len(), 32);
+    }
+
+    fn listen(limits: TcpLimits) -> SocketAddr {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        thread::spawn(move || serve_listener(engine(), listener, "secret".into(), limits));
+        addr
+    }
+
+    /// True when the server has closed the connection (EOF or reset) within `wait`.
+    fn closed_within(stream: &mut std::net::TcpStream, wait: Duration) -> bool {
+        stream.set_read_timeout(Some(wait)).unwrap();
+        match stream.read(&mut [0u8; 1]) {
+            Ok(n) => n == 0,
+            Err(e) => !matches!(e.kind(), io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut),
+        }
+    }
+
+    #[test]
+    fn a_silent_connection_is_dropped_and_an_authenticated_one_is_served() {
+        let addr = listen(TcpLimits { auth_timeout: Duration::from_millis(150), max_connections: 4 });
+
+        let mut idle = std::net::TcpStream::connect(addr).unwrap();
+        assert!(closed_within(&mut idle, Duration::from_secs(3)), "no auth line: the server hangs up");
+
+        let mut good = std::net::TcpStream::connect(addr).unwrap();
+        writeln!(good, "{{\"auth\":\"secret\"}}").unwrap();
+        // authenticated clients may think for longer than the auth window
+        thread::sleep(Duration::from_millis(400));
+        writeln!(good, "{{\"id\":1,\"cmd\":\"hash.joaat\",\"args\":{{\"text\":\"a\"}}}}").unwrap();
+        let mut line = String::new();
+        BufReader::new(good.try_clone().unwrap()).read_line(&mut line).unwrap();
+        assert!(line.contains("0xCA2E9442"), "{line}");
+    }
+
+    #[test]
+    fn connections_beyond_the_cap_are_refused_until_a_slot_frees_up() {
+        let addr = listen(TcpLimits { auth_timeout: Duration::from_millis(800), max_connections: 1 });
+        let first = std::net::TcpStream::connect(addr).unwrap(); // holds the only slot
+        thread::sleep(Duration::from_millis(100));
+        let mut second = std::net::TcpStream::connect(addr).unwrap();
+        assert!(closed_within(&mut second, Duration::from_millis(500)), "over the cap: closed at once");
+        drop(first);
+        thread::sleep(Duration::from_millis(1000)); // the first one's slot is released when its thread ends
+        let mut third = std::net::TcpStream::connect(addr).unwrap();
+        writeln!(third, "{{\"auth\":\"secret\"}}").unwrap();
+        writeln!(third, "{{\"id\":2,\"cmd\":\"commands.list\"}}").unwrap();
+        let mut line = String::new();
+        BufReader::new(third).read_line(&mut line).unwrap();
+        assert!(line.contains("\"ok\":true"), "a freed slot is reusable: {line}");
     }
 }
