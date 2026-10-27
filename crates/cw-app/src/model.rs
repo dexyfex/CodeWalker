@@ -107,6 +107,37 @@ impl Default for Explorer {
     }
 }
 
+/// A node named by path, so it can be found again after the archives are rescanned.
+enum Stable {
+    Folder(String),
+    Path(String),
+}
+
+/// What [`Explorer::set_tree`] carries over from the previous tree.
+struct Remembered {
+    current: Option<Stable>,
+    history: Vec<Option<Stable>>,
+    pos: usize,
+    expanded: Vec<Stable>,
+    selected: Option<Stable>,
+}
+
+impl Remembered {
+    fn capture(e: &Explorer) -> Self {
+        Self {
+            current: e.stable(&e.current),
+            history: e.history.iter().map(|n| e.stable(n)).collect(),
+            pos: e.pos,
+            expanded: e.expanded.iter().filter_map(|n| e.stable(n)).collect(),
+            selected: match &e.selected {
+                Some(Item::Folder(p)) => Some(Stable::Folder(p.clone())),
+                Some(Item::Entry(r)) => e.entry_path(*r).map(Stable::Path),
+                None => None,
+            },
+        }
+    }
+}
+
 fn dirname(path: &str) -> &str {
     path.rsplit_once('/').map_or("", |(d, _)| d)
 }
@@ -118,8 +149,11 @@ fn basename(path: &str) -> &str {
 impl Explorer {
     // ------------------------------------------------------------ tree data
 
-    /// Replaces the open archives. Keeps the current location when it still exists.
+    /// Replaces the open archives. Where the user was, the open branches, the
+    /// back/forward trail and the selection are carried over by *path*: entry
+    /// indices belong to one scan and mean something else in the next.
     pub fn set_tree(&mut self, tree: Option<Arc<RpfTree>>) {
+        let before = Remembered::capture(self);
         self.tree = tree;
         self.fs.clear();
         if let Some(t) = &self.tree {
@@ -138,23 +172,68 @@ impl Explorer {
         }
         self.fs.entry(String::new()).or_default();
         self.search = None;
-        self.selected = None;
-        let keep = match &self.current {
-            NodeId::Folder(p) => self.fs.contains_key(p),
-            NodeId::Cont(r) => self.tree.as_ref().is_some_and(|t| (r.archive as usize) < t.archives.len()),
-        };
-        if !keep {
-            self.current = NodeId::Folder(String::new());
-            self.history = vec![self.current.clone()];
-            self.pos = 0;
+
+        let root = NodeId::Folder(String::new());
+        match before.current.as_ref().and_then(|s| self.resolve(s)) {
+            Some(current) => {
+                let mut trail: Vec<NodeId> = Vec::new();
+                let mut pos = 0;
+                for (i, s) in before.history.iter().enumerate() {
+                    if let Some(n) = s.as_ref().and_then(|s| self.resolve(s)) {
+                        trail.push(n);
+                        if i <= before.pos {
+                            pos = trail.len() - 1;
+                        }
+                    }
+                }
+                if trail.get(pos) != Some(&current) {
+                    trail = vec![current.clone()];
+                    pos = 0;
+                }
+                self.current = current;
+                self.history = trail;
+                self.pos = pos;
+            }
+            None => {
+                self.current = root.clone();
+                self.history = vec![root.clone()];
+                self.pos = 0;
+            }
         }
-        // a single top-level folder with a single archive is not worth a click
-        self.expanded.retain(|n| match n {
-            NodeId::Folder(p) => self.fs.contains_key(p),
-            NodeId::Cont(r) => self.tree.as_ref().is_some_and(|t| (r.archive as usize) < t.archives.len()),
-        });
-        self.expanded.insert(NodeId::Folder(String::new()));
+        self.expanded = before.expanded.iter().filter_map(|s| self.resolve(s)).collect();
+        self.expanded.insert(root);
+        self.selected = match &before.selected {
+            Some(Stable::Folder(p)) if self.fs.contains_key(p) => Some(Item::Folder(p.clone())),
+            Some(Stable::Path(p)) => self.tree.as_ref().and_then(|t| t.find(p)).map(Item::Entry),
+            _ => None,
+        };
         self.refresh();
+        // a selection that is not in the listing (search results, another folder) goes
+        if let Some(sel) = &self.selected
+            && !self.listing.contains(sel)
+        {
+            self.selected = None;
+        }
+    }
+
+    fn stable(&self, n: &NodeId) -> Option<Stable> {
+        match n {
+            NodeId::Folder(p) => Some(Stable::Folder(p.clone())),
+            NodeId::Cont(r) => self.entry_path(*r).map(Stable::Path),
+        }
+    }
+
+    fn entry_path(&self, r: EntryRef) -> Option<String> {
+        let a = self.tree.as_ref()?.archives.get(r.archive as usize)?;
+        Some(a.entries.get(r.index as usize)?.path.clone())
+    }
+
+    /// The node `s` names in the current tree, if it is still there.
+    fn resolve(&self, s: &Stable) -> Option<NodeId> {
+        match s {
+            Stable::Folder(p) => self.fs.contains_key(p).then(|| NodeId::Folder(p.clone())),
+            Stable::Path(p) => self.container_of(self.tree.as_ref()?.find(p)?),
+        }
     }
 
     pub fn is_empty(&self) -> bool {

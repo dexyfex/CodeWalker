@@ -349,6 +349,14 @@ impl App {
                     let tree = self.engine.session().tree.clone();
                     self.ex.set_tree(tree);
                     self.tree_scroll_to = None;
+                    // entry refs from the previous scan mean nothing now: drop the preview of an
+                    // entry (the selection, remapped by path, brings it back) and redo the search
+                    if matches!(self.preview.target, Some(Target::Entry(_))) {
+                        self.request_preview(None);
+                    }
+                    if self.search_everywhere && !self.search_text.trim().is_empty() {
+                        self.search_changed();
+                    }
                     self.apply_script();
                 }
                 Event::FilesChanged => self.loose = self.engine.session().files.clone(),
@@ -632,13 +640,14 @@ impl App {
     /// Called when the search box text or scope changes.
     pub fn search_changed(&mut self) {
         let q = self.search_text.trim().to_string();
+        // whatever is still running answers an older question
+        self.search_generation += 1;
         if !self.search_everywhere {
             self.ex.clear_search();
             self.ex.set_filter(q);
             return;
         }
         self.ex.set_filter(String::new());
-        self.search_generation += 1;
         if q.chars().count() < 2 {
             self.ex.clear_search();
             return;

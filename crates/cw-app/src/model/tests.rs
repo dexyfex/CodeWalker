@@ -266,3 +266,67 @@ fn child_counts_cover_folders_archives_and_directories() {
     let file = e.tree.as_ref().unwrap().find("common.rpf/zeta.txt").unwrap();
     assert_eq!(e.child_count(&Item::Entry(file)), None);
 }
+
+fn two_archives(first: &str, second: &str) -> Arc<RpfTree> {
+    let make = |tag: &str| {
+        archive(vec![
+            B::dir("levels", vec![B::file("a.xml", format!("<{tag}/>").into_bytes())]),
+            B::file("top.txt", &b"t"[..]),
+        ])
+    };
+    tree_from(&[(first, make(first)), (second, make(second))])
+}
+
+#[test]
+fn a_rescan_with_different_indices_keeps_the_place_by_path() {
+    let mut e = Explorer::default();
+    e.set_tree(Some(two_archives("a.rpf", "b.rpf")));
+    let levels = e.tree.as_ref().unwrap().find("b.rpf/levels").unwrap();
+    e.reveal(levels);
+    let b_root = e.container_of(e.tree.as_ref().unwrap().find("b.rpf").unwrap()).unwrap();
+    e.navigate(b_root);
+    e.navigate(e.container_of(levels).unwrap());
+    let a = e.tree.as_ref().unwrap().find("b.rpf/levels/a.xml").unwrap();
+    e.selected = Some(Item::Entry(a));
+    e.expanded.insert(e.container_of(levels).unwrap());
+    let old_indices = a.archive;
+
+    // same files, other order: every archive id changes
+    e.set_tree(Some(two_archives("b.rpf", "a.rpf")));
+    let t = e.tree.clone().unwrap();
+    let now = t.find("b.rpf/levels/a.xml").unwrap();
+    assert_ne!(now.archive, old_indices, "the test is only meaningful when the ids moved");
+    assert_eq!(e.current, e.container_of(t.find("b.rpf/levels").unwrap()).unwrap());
+    assert_eq!(e.selected, Some(Item::Entry(now)), "selection follows the path");
+    assert!(e.expanded.contains(&e.current), "open branches follow the path");
+    assert_eq!(names(&e), ["a.xml"]);
+
+    // the trail still leads back through the same places
+    assert!(e.can_back());
+    e.back();
+    assert_eq!(e.current, e.container_of(t.find("b.rpf").unwrap()).unwrap());
+    e.forward();
+    assert_eq!(e.current, e.container_of(t.find("b.rpf/levels").unwrap()).unwrap());
+}
+
+#[test]
+fn what_no_longer_exists_is_dropped_not_misdirected() {
+    let mut e = Explorer::default();
+    e.set_tree(Some(two_archives("a.rpf", "b.rpf")));
+    let t = e.tree.clone().unwrap();
+    let lv = t.find("b.rpf/levels").unwrap();
+    e.reveal(lv);
+    e.selected = Some(Item::Entry(t.find("b.rpf/levels/a.xml").unwrap()));
+
+    // b.rpf is gone; a.rpf now occupies the old ids
+    e.set_tree(Some(two_archives("a.rpf", "c.rpf")));
+    assert_eq!(e.current, NodeId::Folder(String::new()));
+    assert_eq!(e.selected, None);
+    assert!(!e.can_back(), "history restarts at the root");
+    assert!(e.expanded.iter().all(|n| match n {
+        NodeId::Folder(_) => true,
+        NodeId::Cont(r) =>
+            e.tree.as_ref().unwrap().entry(*r).path.starts_with("a.rpf")
+                || e.tree.as_ref().unwrap().entry(*r).path.starts_with("c.rpf"),
+    }));
+}
