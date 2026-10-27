@@ -133,7 +133,9 @@ fn game_open(ctx: &Ctx, args: Value) -> CmdResult {
         }
     };
 
-    let tree = scan(ctx, &folder, keys)?;
+    // `mods/` holds the user's overrides, which the Mods view manages; scanned here they
+    // would sit beside the originals they replace
+    let tree = scan(ctx, &folder, keys, &[format!("{}/", crate::mods::MODS_DIR)])?;
     let mut summary = summarize(&tree, key_warning);
     summary["edition"] = json!(if enhanced { "enhanced" } else { "legacy" });
     {
@@ -159,7 +161,7 @@ fn rpf_open(ctx: &Ctx, args: Value) -> CmdResult {
     let a: OpenPathArgs = parse(args)?;
     let keys = ctx.session().keys.clone();
     let tree = if a.path.is_dir() {
-        scan(ctx, &a.path, keys)?
+        scan(ctx, &a.path, keys, &[])?
     } else if a.path.is_file() {
         let name = a.path.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
         RpfTree::scan_file(&a.path, &name, keys)?
@@ -183,10 +185,15 @@ fn rpf_open(ctx: &Ctx, args: Value) -> CmdResult {
     Ok(summary)
 }
 
-fn scan(ctx: &Ctx, folder: &std::path::Path, keys: Option<Arc<GtaKeys>>) -> Result<RpfTree, CmdError> {
+fn scan(
+    ctx: &Ctx,
+    folder: &std::path::Path,
+    keys: Option<Arc<GtaKeys>>,
+    exclude: &[String],
+) -> Result<RpfTree, CmdError> {
     let progress =
         |rel: &str| ctx.emit(Event::Progress { task: "scan".into(), message: format!("Scanning {rel}") });
-    let tree = RpfTree::scan_folder(folder, keys, &[], &progress);
+    let tree = RpfTree::scan_folder(folder, keys, exclude, &progress);
     if tree.archives.is_empty() && !tree.errors.is_empty() {
         return Err(CmdError::new(
             "archive",

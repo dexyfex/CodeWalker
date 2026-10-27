@@ -92,6 +92,9 @@ fn walk(root: &Path, dir: &Path, game: &Path, out: &mut Vec<ModFile>) -> Result<
             let rel =
                 path.strip_prefix(root).map_err(|_| ModError::Invalid("path left the mods folder".into()))?;
             let rel = rel_string(rel);
+            if rel.ends_with(PARTIAL) {
+                continue; // left by an interrupted copy; not a mod
+            }
             let (name, enabled) = match rel.strip_suffix(DISABLED) {
                 Some(n) => (n.to_string(), false),
                 None => (rel.clone(), true),
@@ -136,11 +139,27 @@ pub fn copy_to_mods(game: &Path, rel: &str, overwrite: bool) -> Result<String, M
     if let Some(dir) = dst.parent() {
         fs::create_dir_all(dir)?;
     }
-    fs::copy(&src, &dst)?;
+    copy_atomic(&src, &dst)?;
     if disabled.exists() {
         fs::remove_file(disabled)?;
     }
     Ok(rel_string(&rel_path))
+}
+
+/// Suffix of the sibling a copy is written to before it is renamed into place.
+const PARTIAL: &str = ".cwtmp";
+
+/// Copies through a temporary sibling, so a failed or interrupted copy never
+/// leaves a truncated archive where the game would load it.
+fn copy_atomic(src: &Path, dst: &Path) -> std::io::Result<()> {
+    let mut tmp = dst.as_os_str().to_owned();
+    tmp.push(PARTIAL);
+    let tmp = PathBuf::from(tmp);
+    let done = fs::copy(src, &tmp).and_then(|_| fs::rename(&tmp, dst));
+    if done.is_err() {
+        let _ = fs::remove_file(&tmp);
+    }
+    done
 }
 
 fn with_suffix(p: &Path) -> PathBuf {
@@ -232,7 +251,7 @@ pub fn install(
         if let Some(dir) = dst.parent() {
             fs::create_dir_all(dir)?;
         }
-        fs::copy(&src, &dst)?;
+        copy_atomic(&src, &dst)?;
         let off = with_suffix(&dst);
         if off.exists() {
             fs::remove_file(off)?;

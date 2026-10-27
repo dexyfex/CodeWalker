@@ -52,6 +52,24 @@ fn copy_creates_an_override_and_refuses_to_clobber_it() {
 }
 
 #[test]
+fn a_failed_copy_leaves_no_partial_file_and_no_listing() {
+    let g = Dir::new("atomic");
+    g.write("a.rpf", b"original");
+    // something that is not a file is in the way: the rename must fail cleanly
+    fs::create_dir_all(g.0.join("mods/a.rpf")).unwrap();
+    assert!(copy_to_mods(&g.0, "a.rpf", true).is_err());
+    assert!(g.0.join("mods/a.rpf").is_dir(), "what was there is untouched");
+    assert!(!g.0.join("mods/a.rpf.cwtmp").exists(), "the temporary copy is cleaned up");
+
+    fs::remove_dir(g.0.join("mods/a.rpf")).unwrap();
+    copy_to_mods(&g.0, "a.rpf", false).unwrap();
+    assert!(!g.0.join("mods/a.rpf.cwtmp").exists());
+    g.write("mods/crashed.rpf.cwtmp", b"half");
+    let listed: Vec<String> = list(&g.0).unwrap().into_iter().map(|m| m.path).collect();
+    assert_eq!(listed, ["a.rpf"], "a leftover from a crash is not presented as a mod");
+}
+
+#[test]
 fn listing_reports_state_and_overrides() {
     let g = Dir::new("list");
     g.write("common.rpf", b"orig");

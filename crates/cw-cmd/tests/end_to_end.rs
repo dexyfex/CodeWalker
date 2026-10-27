@@ -364,3 +364,24 @@ fn the_edition_comes_from_the_folder_unless_the_caller_says_otherwise() {
     let s = ok(&e, "game.open", json!({ "folder": &game }));
     assert_eq!(s["edition"], "enhanced", "no executable at all: fall back to the saved setting");
 }
+
+#[test]
+fn game_open_leaves_the_mods_folder_to_the_mods_view() {
+    let fx = Fixture::new("mods-scan");
+    let game = fx.dir.join("game");
+    std::fs::create_dir_all(game.join("mods/x64")).unwrap();
+    std::fs::copy(game.join("x64/a.rpf"), game.join("mods/x64/a.rpf")).unwrap();
+    // a top-level archive whose name merely starts with "mods" is still a game archive
+    std::fs::copy(game.join("x64/a.rpf"), game.join("modsets.rpf")).unwrap();
+    let e = Engine::ephemeral();
+
+    let s = ok(&e, "game.open", json!({ "folder": &game }));
+    assert_eq!(s["top_level"], 2, "x64/a.rpf and modsets.rpf, not mods/x64/a.rpf");
+    let top = ok(&e, "rpf.list", json!({}));
+    let paths: Vec<&str> =
+        top["entries"].as_array().unwrap().iter().map(|v| v["path"].as_str().unwrap()).collect();
+    assert!(!paths.iter().any(|p| p.starts_with("mods/")), "{paths:?}");
+
+    let listed = ok(&e, "mods.list", json!({}));
+    assert!(listed.to_string().contains("x64/a.rpf"), "the override is still managed: {listed}");
+}
