@@ -56,7 +56,7 @@ clippy; the build directory is large, so use `CARGO_INCREMENTAL=0` and no extra 
 | # | Stage | Status |
 |---|---|---|
 | 0 | Foundation: explorer, textures, maps as boxes, command surface, CI | done |
-| 1 | Window shell: long paths, no Mods tab, document tabs | in progress |
+| 1 | Window shell: long paths, no Mods tab, document tabs | done (re-run `scripts/check.sh` once stages 2 and 3 are clippy-clean) |
 | 2 | Data layer: models, archetypes, environment | in progress |
 | 3 | GPU renderer: meshes, sky, clouds, water, post-processing, shadows | in progress |
 | 4 | Model viewer tab | not started |
@@ -96,9 +96,9 @@ tab strip that can host one tab per opened model.
 - Tab strip with fixed tabs (Explorer, World) and dynamic closable document tabs (used by stage 4).
 
 **Accept**
-- [ ] Screenshots at 900, 1100, 1600 and 2200 px with a deeply nested path show no overlap or clipping.
-- [ ] Unit tests for the breadcrumb fit function and the tab model (open, close, activate, fixed tabs cannot close).
-- [ ] Shortcut-uniqueness test green (Alt+1 Explorer, Alt+2 World).
+- [x] Screenshots at 900, 1100, 1600 and 2200 px with a deeply nested path show no overlap or clipping.
+- [x] Unit tests for the breadcrumb fit function and the tab model (open, close, activate, fixed tabs cannot close).
+- [x] Shortcut-uniqueness test green (Alt+1 Explorer, Alt+2 World).
 
 **Files:** `cw-app/src/ui/*`, `app.rs`, `actions.rs`, README/ARCHITECTURE/DESIGN text about tabs.
 
@@ -262,3 +262,9 @@ installer).
 - 2026-10: stage 0 complete; second review applied (hostile texture sizes, ymap rotation and LOD counts,
   undoable replace, `game.check` empties, GPU-limit guard for big textures). Stage 1, 2a, 2b (with 2c) and 3
   started in parallel by separate sessions; see the commit history for what each landed.
+- 2026-10 (stage 1): Mods tab removed; the window now has a tab strip (`tabs.rs`, `ui/tabs.rs`) over the Explorer's
+  bar, whose row is planned from measured widths (`layout.rs`: breadcrumb fold, filter and scope squeeze, tab
+  shrink and overflow) and checked by screenshots at 900-2200 px under Xvfb. No document tab is opened by anything
+  yet (stage 4 calls `Tabs::open`; the `expect(dead_code)` on it and on `DocKind::Model` marks the spot). `cw-app`
+  passes fmt, clippy (1.95 and 1.99.1, `--no-deps`) and tests; workspace clippy was red only in `cw-core` / `cw-gpu`
+  files other stages were still writing, so run `scripts/check.sh` again before calling the stage closed.
