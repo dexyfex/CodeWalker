@@ -1,0 +1,15 @@
+[package]
+name = "cw-core"
+description = "GTA V archive (RPF7) reader, crypto and hashing for CodeWalker"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+aes.workspace = true
+flate2.workspace = true
+rayon.workspace = true
+sha1.workspace = true
+memmap2.workspace = true
+thiserror.workspace = true
+base64.workspace = true
