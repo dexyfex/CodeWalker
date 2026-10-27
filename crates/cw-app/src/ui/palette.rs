@@ -28,10 +28,14 @@ impl Palette {
     }
 }
 
+/// Rows listed under the search box.
+const VISIBLE_ROWS: usize = 9;
+
 impl App {
     pub(super) fn show_palette(&mut self, ctx: &egui::Context) {
         let Some(mut pal) = self.palette.take() else { return };
-        let results = pal.matches(self);
+        // only the rows that are drawn can be reached with the arrow keys or Enter
+        let results: Vec<Action> = pal.matches(self).into_iter().take(VISIBLE_ROWS).collect();
         pal.selected = pal.selected.min(results.len().saturating_sub(1));
 
         let (esc, down, up, enter) = ctx.input(|i| {
@@ -101,7 +105,7 @@ impl App {
                             );
                             ui.add_space(8.0);
                         }
-                        for (i, a) in results.iter().take(9).enumerate() {
+                        for (i, a) in results.iter().enumerate() {
                             let (rect, resp) = ui.allocate_exact_size(vec2(w - 16.0, 32.0), Sense::click());
                             let p = ui.painter();
                             if i == pal.selected {

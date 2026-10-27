@@ -114,6 +114,8 @@ pub struct App {
     pub preview: PreviewSlot,
     /// Loads previews one at a time, newest request first; see [`crate::latest`].
     preview_worker: LatestWins<PreviewJob>,
+    /// Runs engine commands one at a time, in the order they were asked for.
+    commands: Sender<(&'static str, Value)>,
     pub keys_loaded: bool,
     pub candidates: Vec<cw_cmd::gamefolder::Candidate>,
 
@@ -217,9 +219,28 @@ impl App {
                 ctx.request_repaint();
             })
         };
+        let commands = {
+            let (jobs, queue) = mpsc::channel::<(&'static str, Value)>();
+            let (engine, tx, ctx) = (engine.clone(), tx.clone(), cc.egui_ctx.clone());
+            thread::Builder::new()
+                .name("commands".into())
+                .spawn(move || {
+                    for (cmd, args) in queue {
+                        let result = catch_unwind(AssertUnwindSafe(|| engine.execute(cmd, args)))
+                            .unwrap_or_else(|_| {
+                                Err(cw_cmd::CmdError::new("internal", format!("`{cmd}` failed unexpectedly")))
+                            });
+                        let _ = tx.send(Msg::Cmd { cmd, result });
+                        ctx.request_repaint();
+                    }
+                })
+                .expect("could not start the command thread");
+            jobs
+        };
         let mut app = Self {
             events,
             preview_worker,
+            commands,
             tx,
             rx,
             ctx: cc.egui_ctx.clone(),
@@ -304,12 +325,13 @@ impl App {
         });
     }
 
-    /// Runs an engine command on a worker thread; the result arrives as `Msg::Cmd`.
+    /// Queues an engine command for the command thread; the result arrives as `Msg::Cmd`.
+    /// Commands run one at a time in the order given, so opening several files at once
+    /// lists them in that order and a scan never races the commands that follow it.
     pub fn run(&mut self, what: &str, cmd: &'static str, args: Value) {
         self.busy = Some(what.to_string());
         self.in_flight += 1;
-        let engine = self.engine.clone();
-        self.spawn(move || Msg::Cmd { cmd, result: engine.execute(cmd, args) });
+        let _ = self.commands.send((cmd, args));
     }
 
     fn detect(&mut self) {
@@ -623,7 +645,7 @@ impl App {
         self.request_preview(Some(Target::Disk(p)));
     }
 
-    fn request_preview(&mut self, target: Option<Target>) {
+    pub(crate) fn request_preview(&mut self, target: Option<Target>) {
         if target == self.preview.target {
             return;
         }
