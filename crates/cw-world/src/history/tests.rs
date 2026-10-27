@@ -293,6 +293,83 @@ fn a_very_large_import_undoes_and_redoes_at_once() {
 }
 
 #[test]
+fn importing_into_a_scene_that_is_already_big_does_not_rescan_it_per_entity() {
+    let mut w = World::new("t");
+    w.add_many((0..60_000).map(|i| new_entity(i, 0.0)).collect()).unwrap();
+    // 60k x 60k id checks would take minutes; a single pass is a few milliseconds
+    let started = std::time::Instant::now();
+    let (ids, _) = w.add_many((0..60_000).map(|i| new_entity(i, 1.0)).collect()).unwrap();
+    assert_eq!(ids.len(), 60_000);
+    assert_eq!(w.scene.entities.len(), 120_000);
+    assert!(started.elapsed().as_secs() < 5, "took {:?}", started.elapsed());
+    let mut sorted = ids.clone();
+    sorted.dedup();
+    assert_eq!(sorted.len(), ids.len(), "ids are distinct");
+}
+
+#[test]
+fn ids_come_in_runs_and_refuse_to_collide_with_what_is_there() {
+    let mut s = Scene::new("t");
+    assert_eq!(s.alloc_ids(0), Some(1..1));
+    assert_eq!(s.alloc_ids(3), Some(1..4));
+    assert_eq!(s.alloc_id(), Some(4));
+
+    // a scene loaded without cleaning could hold an id the counter has not reached
+    s.entities.push(Entity::new(7, "x", Transform::default()));
+    assert_eq!(s.alloc_ids(10), None, "5..15 would collide with 7");
+    assert_eq!(s.next_id, 5, "and a refusal uses nothing");
+    assert_eq!(s.alloc_ids(2), Some(5..7));
+
+    s.next_id = EntityId::MAX - 2;
+    assert_eq!(s.alloc_ids(2), Some(EntityId::MAX - 2..EntityId::MAX), "the last id is never handed out");
+    s.next_id = EntityId::MAX - 2;
+    assert_eq!(s.alloc_ids(3), None);
+    assert_eq!(s.alloc_ids(usize::MAX), None);
+}
+
+#[test]
+fn replacing_the_scene_is_one_step_and_undo_brings_the_old_one_back() {
+    let mut w = World::new("old");
+    let a = w.add("a", at(1.0, 0.0, 0.0)).unwrap();
+    let b = w.add("b", at(2.0, 0.0, 0.0)).unwrap();
+    w.select([a], false);
+    let depth = w.undo_depth();
+    let seen = w.revision();
+
+    let (ids, skipped) =
+        w.replace_all("hills.ymap", (0..3).map(|i| new_entity(i, i as f32)).collect()).unwrap();
+    assert_eq!((ids.len(), skipped), (3, 0));
+    assert_eq!(w.undo_depth(), depth + 1);
+    assert!(w.revision() > seen);
+    assert_eq!(w.scene.name, "hills.ymap");
+    assert_eq!(w.scene.entities.iter().map(|e| e.id).collect::<Vec<_>>(), ids);
+    assert!(ids.iter().all(|i| *i != a && *i != b), "old ids are not handed out again");
+    assert!(w.scene.selection.is_empty());
+
+    assert!(w.undo());
+    assert_eq!(w.scene.name, "old");
+    assert_eq!(w.scene.entities.iter().map(|e| e.id).collect::<Vec<_>>(), [a, b]);
+    assert_eq!(w.scene.get(b).unwrap().transform, at(2.0, 0.0, 0.0));
+    assert!(w.redo());
+    assert_eq!((w.scene.name.as_str(), w.scene.entities.len()), ("hills.ymap", 3));
+
+    // earlier steps are still there under it
+    assert!(w.undo() && w.undo());
+    assert_eq!(w.scene.entities.iter().map(|e| e.id).collect::<Vec<_>>(), [a]);
+}
+
+#[test]
+fn a_replace_that_cannot_fit_leaves_the_scene_and_history_alone() {
+    let mut w = World::new("old");
+    w.add("a", Transform::default()).unwrap();
+    let depth = w.undo_depth();
+    w.scene.next_id = EntityId::MAX - 1;
+    let err = w.replace_all("new", (0..5).map(|i| new_entity(i, 0.0)).collect()).unwrap_err();
+    assert!(matches!(err, WorldError::Full));
+    assert_eq!((w.scene.name.as_str(), w.scene.entities.len(), w.undo_depth()), ("old", 1, depth));
+}
+
+#[test]
 fn a_reset_scene_never_repeats_a_revision_a_view_may_have_seen() {
     let mut w = World::new("a");
     for i in 0..3 {

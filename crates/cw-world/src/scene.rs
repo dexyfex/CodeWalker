@@ -97,12 +97,20 @@ impl Scene {
     /// A fresh id, or `None` when the id space is exhausted (only reachable
     /// with a hostile file that already uses `u32::MAX`).
     pub fn alloc_id(&mut self) -> Option<EntityId> {
-        let id = self.next_id.max(1);
-        if id == EntityId::MAX || self.get(id).is_some() {
+        self.alloc_ids(1).map(|r| r.start)
+    }
+
+    /// `count` consecutive fresh ids with one pass over the scene, or `None` (and nothing used)
+    /// when they do not fit. Allocating them one by one would scan the scene for each.
+    pub fn alloc_ids(&mut self, count: usize) -> Option<std::ops::Range<EntityId>> {
+        let start = self.next_id.max(1);
+        // the range is exclusive, so a run may end at `EntityId::MAX` but never contain it
+        let end = start.checked_add(EntityId::try_from(count).ok()?)?;
+        if self.entities.iter().any(|e| (start..end).contains(&e.id)) {
             return None;
         }
-        self.next_id = id + 1;
-        Some(id)
+        self.next_id = end;
+        Some(start..end)
     }
 
     /// Axis-aligned bounds of the entity origins, `None` when empty.

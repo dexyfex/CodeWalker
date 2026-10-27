@@ -27,6 +27,11 @@ pub enum Edit {
     },
     /// Several edits that undo and redo together (an import).
     Batch(Vec<Edit>),
+    /// The whole scene swapped for another: its name and entities before and after.
+    Replace {
+        before: Box<(String, Vec<Entity>)>,
+        after: Box<(String, Vec<Entity>)>,
+    },
 }
 
 /// An entity to add as part of a batch.
@@ -120,28 +125,30 @@ impl World {
         Ok(id)
     }
 
-    /// Adds many entities as one undoable step. Entities with an invalid transform are left out;
-    /// returns the new ids and how many were left out. Nothing changes if ids run out.
-    pub fn add_many(&mut self, items: Vec<NewEntity>) -> Result<(Vec<EntityId>, usize), WorldError> {
+    /// Turns the placeable items into entities with fresh ids. Returns them and how many items were
+    /// left out (an invalid transform). Nothing is used up if the ids do not fit.
+    fn make_entities(&mut self, items: Vec<NewEntity>) -> Result<(Vec<Entity>, usize), WorldError> {
         let total = items.len();
         let items: Vec<NewEntity> = items.into_iter().filter(|i| i.transform.is_valid()).collect();
         let skipped = total - items.len();
-
-        let first_free = self.scene.next_id;
-        let mut entities = Vec::with_capacity(items.len());
-        for item in items {
-            let Some(id) = self.scene.alloc_id() else {
-                self.scene.next_id = first_free;
-                return Err(WorldError::Full);
-            };
-            entities.push(Entity {
+        let ids = self.scene.alloc_ids(items.len()).ok_or(WorldError::Full)?;
+        let entities = ids
+            .zip(items)
+            .map(|(id, item)| Entity {
                 id,
                 archetype: item.archetype,
                 archetype_hash: item.archetype_hash,
                 transform: item.transform,
                 source: item.source,
-            });
-        }
+            })
+            .collect();
+        Ok((entities, skipped))
+    }
+
+    /// Adds many entities as one undoable step. Entities with an invalid transform are left out;
+    /// returns the new ids and how many were left out. Nothing changes if ids run out.
+    pub fn add_many(&mut self, items: Vec<NewEntity>) -> Result<(Vec<EntityId>, usize), WorldError> {
+        let (entities, skipped) = self.make_entities(items)?;
         let ids: Vec<EntityId> = entities.iter().map(|e| e.id).collect();
         if entities.is_empty() {
             return Ok((ids, skipped));
@@ -154,6 +161,27 @@ impl World {
             .collect();
         self.scene.entities.extend(entities);
         self.commit(Edit::Batch(edits));
+        Ok((ids, skipped))
+    }
+
+    /// Swaps the whole scene for a new one called `name` holding `items`, as one undoable step:
+    /// undo brings the old name and entities back. Ids keep counting up, so nothing old is reused.
+    pub fn replace_all(
+        &mut self,
+        name: &str,
+        items: Vec<NewEntity>,
+    ) -> Result<(Vec<EntityId>, usize), WorldError> {
+        self.end_gesture();
+        let (entities, skipped) = self.make_entities(items)?;
+        let ids: Vec<EntityId> = entities.iter().map(|e| e.id).collect();
+        let before = (
+            std::mem::replace(&mut self.scene.name, name.to_string()),
+            std::mem::take(&mut self.scene.entities),
+        );
+        let after = (self.scene.name.clone(), entities.clone());
+        self.scene.entities = entities;
+        self.scene.selection.clear();
+        self.commit(Edit::Replace { before: Box::new(before), after: Box::new(after) });
         Ok((ids, skipped))
     }
 
@@ -282,6 +310,12 @@ impl World {
                         self.apply(e, true);
                     }
                 }
+            }
+            (Edit::Replace { before, after }, rev) => {
+                let (name, entities) = if rev { &**before } else { &**after };
+                self.scene.name = name.clone();
+                self.scene.entities = entities.clone();
+                self.scene.selection.clear();
             }
             (Edit::Rename { id, before, after }, rev) => {
                 if let Some(e) = self.scene.get_mut(*id) {
