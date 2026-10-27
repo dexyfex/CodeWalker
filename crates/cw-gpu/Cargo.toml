@@ -5,6 +5,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+cw-core = { path = "../cw-core" }
 wgpu = "30"
 glam = "0.30"
 bytemuck = { version = "1", features = ["derive"] }

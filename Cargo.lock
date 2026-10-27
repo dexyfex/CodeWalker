@@ -866,6 +866,7 @@ name = "cw-gpu"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
+ "cw-core",
  "glam",
  "pollster 0.4.0",
  "rayon",
