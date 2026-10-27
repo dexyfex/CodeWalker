@@ -69,11 +69,11 @@ pub fn texture_viewer(ui: &mut Ui, view: &mut TexView, set: &TexSet, gpu: Option
         {
             view.fit = true;
         }
-        if Btn::new("1:1").tone(Tone::Ghost).tip("One image pixel per screen pixel").show(ui).clicked() {
-            if let Some(size) = view.size() {
-                view.view = ImageView::actual(size);
-                view.fit = false;
-            }
+        if Btn::new("1:1").tone(Tone::Ghost).tip("One image pixel per screen pixel").show(ui).clicked()
+            && let Some(size) = view.size()
+        {
+            view.view = ImageView::actual(size);
+            view.fit = false;
         }
         ui.label(
             egui::RichText::new(format!("{:.0}%", view.view.zoom * 100.0)).color(theme::FAINT).size(12.0),
