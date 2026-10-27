@@ -1,0 +1,142 @@
+//! Drives the whole engine through the same JSON entry point the CLI, the
+//! control channel and MCP use, against a real archive written to disk.
+
+use std::path::PathBuf;
+
+use cw_cmd::Engine;
+use cw_core::rpf::build::{Item, RpfBuilder};
+use serde_json::{Value, json};
+
+struct Fixture {
+    dir: PathBuf,
+}
+
+impl Fixture {
+    fn new(tag: &str) -> Self {
+        let dir = std::env::temp_dir().join(format!("cw-e2e-{tag}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("game/x64")).unwrap();
+        let inner =
+            RpfBuilder::new(vec![Item::file("note.txt", &b"inside a nested archive"[..])]).build().unwrap();
+        let rpf = RpfBuilder::new(vec![
+            Item::file("readme.txt", &b"hello"[..]),
+            Item::dir(
+                "levels",
+                vec![
+                    Item::packed("map10.xml", "<a/>".repeat(100).into_bytes()),
+                    Item::packed("map2.xml", &b"<b/>"[..]),
+                    Item::resource("prop.ydr", &b"drawable-payload"[..], 1 << 17, 0x9000_0000),
+                    Item::file("../escape.txt", &b"x"[..]),
+                ],
+            ),
+            Item::archive("child.rpf", inner),
+        ]);
+        // the traversal-named entry is rejected by the builder; drop it and keep the rest
+        let mut rpf = rpf;
+        if let Item::Dir { items, .. } = &mut rpf.items[1] {
+            items.pop();
+        }
+        std::fs::write(dir.join("game/x64/a.rpf"), rpf.build().unwrap()).unwrap();
+        Self { dir }
+    }
+}
+
+impl Drop for Fixture {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.dir);
+    }
+}
+
+fn ok(e: &Engine, cmd: &str, args: Value) -> Value {
+    e.execute(cmd, args).unwrap_or_else(|err| panic!("{cmd} failed: {err}"))
+}
+
+#[test]
+fn open_browse_search_read_and_extract() {
+    let fx = Fixture::new("flow");
+    let e = Engine::ephemeral();
+
+    // browsing before opening is a clear, recoverable error
+    assert_eq!(e.execute("rpf.list", json!({})).unwrap_err().code, "bad_state");
+
+    let summary = ok(&e, "game.open", json!({ "folder": fx.dir.join("game") }));
+    assert_eq!(summary["top_level"], 1);
+    assert_eq!(summary["archives"], 2);
+    assert!(summary["key_warning"].is_string(), "no exe in the fixture, so keys are absent");
+
+    let top = ok(&e, "rpf.list", json!({}));
+    assert_eq!(top["entries"][0]["path"], "x64/a.rpf");
+
+    let inside = ok(&e, "rpf.list", json!({ "path": "x64/a.rpf" }));
+    let names: Vec<&str> =
+        inside["entries"].as_array().unwrap().iter().map(|v| v["name"].as_str().unwrap()).collect();
+    assert_eq!(names, ["child.rpf", "levels", "readme.txt"], "folders and archives first, then files");
+    assert_eq!(inside["entries"][0]["kind"], "archive");
+
+    // natural ordering: map2 before map10
+    let levels = ok(&e, "rpf.list", json!({ "path": "x64/a.rpf/levels" }));
+    let names: Vec<&str> =
+        levels["entries"].as_array().unwrap().iter().map(|v| v["name"].as_str().unwrap()).collect();
+    assert_eq!(names, ["map2.xml", "map10.xml", "prop.ydr"]);
+    assert_eq!(levels["entries"][2]["type"], "Drawable");
+    assert_eq!(levels["entries"][2]["resource_version"], 9);
+
+    // pagination
+    let page = ok(&e, "rpf.list", json!({ "path": "x64/a.rpf/levels", "offset": 1, "limit": 1 }));
+    assert_eq!(page["total"], 3);
+    assert_eq!(page["entries"][0]["name"], "map10.xml");
+
+    let hits = ok(&e, "rpf.search", json!({ "query": "NOTE" }));
+    assert_eq!(hits["entries"][0]["path"], "x64/a.rpf/child.rpf/note.txt");
+
+    let read =
+        ok(&e, "rpf.read", json!({ "path": "x64/a.rpf/child.rpf/note.txt", "offset": 3, "length": 6 }));
+    assert_eq!(read["text"], "ide a ");
+    assert_eq!(read["total"], 23);
+
+    let out = fx.dir.join("out");
+    ok(&e, "rpf.extract", json!({ "path": "x64/a.rpf", "dest": out }));
+    assert_eq!(std::fs::read(out.join("a.rpf/readme.txt")).unwrap(), b"hello");
+    assert_eq!(std::fs::read(out.join("a.rpf/child.rpf/note.txt")).unwrap(), b"inside a nested archive");
+    assert_eq!(std::fs::read(out.join("a.rpf/levels/map10.xml")).unwrap().len(), 400);
+    let ydr = std::fs::read(out.join("a.rpf/levels/prop.ydr")).unwrap();
+    assert_eq!(&ydr[..4], b"RSC7", "resources are exported with an RSC7 header");
+
+    let stats = ok(&e, "rpf.stats", json!({}));
+    assert_eq!(stats["resources"], 1);
+    assert_eq!(stats["archives"], 2);
+}
+
+#[test]
+fn single_file_extract_and_missing_paths() {
+    let fx = Fixture::new("single");
+    let e = Engine::ephemeral();
+    ok(&e, "rpf.open", json!({ "path": fx.dir.join("game/x64/a.rpf") }));
+
+    let dest = fx.dir.join("copy.txt");
+    ok(&e, "rpf.extract", json!({ "path": "a.rpf/readme.txt", "dest": dest }));
+    assert_eq!(std::fs::read(&dest).unwrap(), b"hello");
+
+    assert_eq!(e.execute("rpf.info", json!({ "path": "a.rpf/nope.txt" })).unwrap_err().code, "not_found");
+    assert_eq!(
+        e.execute("rpf.list", json!({ "path": "a.rpf/readme.txt" })).unwrap_err().code,
+        "invalid_args"
+    );
+    assert_eq!(
+        e.execute("game.open", json!({ "folder": fx.dir.join("missing") })).unwrap_err().code,
+        "not_found"
+    );
+}
+
+#[test]
+fn ephemeral_engine_never_touches_the_config_file() {
+    let fx = Fixture::new("cfg");
+    let before =
+        cw_cmd::Config::path().and_then(|p| std::fs::metadata(p).ok()).and_then(|m| m.modified().ok());
+    let e = Engine::ephemeral();
+    ok(&e, "game.open", json!({ "folder": fx.dir.join("game") }));
+    let after =
+        cw_cmd::Config::path().and_then(|p| std::fs::metadata(p).ok()).and_then(|m| m.modified().ok());
+    assert_eq!(before, after);
+    assert_eq!(e.session().config.game_folder.as_deref(), Some(fx.dir.join("game").as_path()));
+}

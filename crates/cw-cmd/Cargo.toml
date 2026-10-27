@@ -1,0 +1,16 @@
+[package]
+name = "cw-cmd"
+description = "Command layer: every CodeWalker action is a command driven by the UI, CLI, JSON channel or MCP"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+cw-core = { path = "../cw-core" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+base64.workspace = true
+rayon.workspace = true
+dirs = "7"
+getrandom = "0.3"
