@@ -1,11 +1,13 @@
 name: release
 
-# Builds the executable for each platform when a version tag is pushed (`git tag v0.1.0 && git push --tags`)
-# and attaches the archives to a GitHub release.
+# Builds the executable for each platform and attaches the archives to a GitHub release when a version
+# tag is pushed (`git tag v0.1.0 && git push --tags`). Run by hand from the Actions tab
+# ("Run workflow"), it builds the same archives and keeps them as downloadable artifacts, with no release.
 
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -34,7 +36,8 @@ jobs:
       - name: Package
         shell: bash
         run: |
-          name="codewalker-${{ github.ref_name }}-${{ matrix.target }}"
+          version="${GITHUB_REF_NAME//\//-}" # a branch name may contain slashes
+          name="codewalker-$version-${{ matrix.target }}"
           mkdir "$name"
           cp "target/${{ matrix.target }}/release/${{ matrix.exe }}" README.md Notice.txt "$name/"
           if [ "${{ runner.os }}" = "Windows" ]; then
@@ -50,6 +53,7 @@ jobs:
           path: ${{ env.ASSET }}
 
   publish:
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     permissions:

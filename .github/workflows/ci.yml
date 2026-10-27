@@ -3,6 +3,7 @@ name: ci
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -19,16 +20,33 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
 
+  # GTA V is a Windows game: tests run on Windows only.
   test:
-    name: test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       # GPU tests use whatever adapter the runner has, and skip themselves when there is none.
       - run: cargo test --workspace
+
+  # A release build of every push, to download from the run's page and try.
+  build:
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release -p cw-app
+      - name: Package
+        shell: bash
+        run: |
+          mkdir codewalker
+          cp target/release/codewalker.exe README.md Notice.txt codewalker/
+          7z a codewalker-windows-x64.zip codewalker
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codewalker-windows-x64
+          path: codewalker-windows-x64.zip
+          retention-days: 14
