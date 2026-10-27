@@ -10,6 +10,7 @@ pub mod hash;
 pub mod keys;
 pub mod resource;
 pub mod rpf;
+pub mod text;
 
 pub use blob::Blob;
 pub use error::{Error, Result};

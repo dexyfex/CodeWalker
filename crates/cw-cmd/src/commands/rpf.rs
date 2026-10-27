@@ -137,48 +137,11 @@ fn list(ctx: &Ctx, args: Value) -> CmdResult {
         let (ex, ey) = (tree.entry(x), tree.entry(y));
         let dx = ex.is_dir() || ex.child_archive.is_some();
         let dy = ey.is_dir() || ey.child_archive.is_some();
-        dy.cmp(&dx).then_with(|| natural_cmp(&ex.name_lower, &ey.name_lower))
+        dy.cmp(&dx).then_with(|| cw_core::text::natural_cmp(&ex.name_lower, &ey.name_lower))
     });
     let total = refs.len();
     let rows: Vec<Value> = refs.into_iter().skip(offset).take(limit).map(|r| entry_json(&tree, r)).collect();
     Ok(json!({ "total": total, "offset": offset, "entries": rows }))
-}
-
-/// Case-insensitive compare where digit runs compare numerically ("a2" < "a10").
-pub fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
-    let (mut x, mut y) = (a.chars().peekable(), b.chars().peekable());
-    loop {
-        match (x.peek().copied(), y.peek().copied()) {
-            (None, None) => return std::cmp::Ordering::Equal,
-            (None, _) => return std::cmp::Ordering::Less,
-            (_, None) => return std::cmp::Ordering::Greater,
-            (Some(c), Some(d)) if c.is_ascii_digit() && d.is_ascii_digit() => {
-                let mut nx = String::new();
-                while let Some(&c) = x.peek().filter(|c| c.is_ascii_digit()) {
-                    nx.push(c);
-                    x.next();
-                }
-                let mut ny = String::new();
-                while let Some(&c) = y.peek().filter(|c| c.is_ascii_digit()) {
-                    ny.push(c);
-                    y.next();
-                }
-                let (tx, ty) = (nx.trim_start_matches('0'), ny.trim_start_matches('0'));
-                let ord = tx.len().cmp(&ty.len()).then_with(|| tx.cmp(ty));
-                if ord != std::cmp::Ordering::Equal {
-                    return ord;
-                }
-            }
-            (Some(c), Some(d)) => {
-                let ord = c.cmp(&d);
-                if ord != std::cmp::Ordering::Equal {
-                    return ord;
-                }
-                x.next();
-                y.next();
-            }
-        }
-    }
 }
 
 #[derive(Deserialize)]
@@ -360,13 +323,6 @@ fn stats(ctx: &Ctx, _args: Value) -> CmdResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn natural_order_compares_numbers_by_value() {
-        let mut v = vec!["prop_10.ydr", "prop_2.ydr", "prop_1.ydr", "Alpha.ydr"];
-        v.sort_by(|a, b| natural_cmp(&a.to_lowercase(), &b.to_lowercase()));
-        assert_eq!(v, ["Alpha.ydr", "prop_1.ydr", "prop_2.ydr", "prop_10.ydr"]);
-    }
 
     #[test]
     fn safe_component_blocks_traversal() {
