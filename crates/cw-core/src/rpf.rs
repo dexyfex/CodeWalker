@@ -403,7 +403,7 @@ impl RpfTree {
         self.archives.par_iter().flat_map_iter(move |a| {
             let needle = needle.clone();
             a.entries.iter().enumerate().filter_map(move |(i, e)| {
-                (!e.is_dir() && e.path.contains(&needle))
+                (!e.is_dir() && !e.path.is_empty() && e.path.contains(&needle))
                     .then_some(EntryRef { archive: a.id, index: i as u32 })
             })
         })
@@ -699,8 +699,10 @@ fn parse_archive(
         return Err(Error::InvalidRpf(format!("{path}: first entry is not the root directory")));
     }
 
-    // Build the directory hierarchy and paths. Ranges are validated and
-    // every entry is claimed at most once, so a hostile TOC cannot loop us.
+    // Build the directory hierarchy and paths. An entry belongs to one directory, and a
+    // directory's children are the run of entries from `first` that nobody has claimed yet;
+    // the range is rewritten to that run. So a hostile table cannot make a directory contain
+    // itself or an ancestor (which would send anything walking the tree round in circles).
     // The root directory has no name in the table; it is the archive itself.
     entries[0].name = name.clone();
     entries[0].name_lower = name.to_lowercase();
@@ -714,18 +716,29 @@ fn parse_archive(
             _ => continue,
         };
         let end = first.saturating_add(count).min(entries.len());
+        let first = first.min(end);
         let dir_path = entries[dir as usize].path.clone();
-        for i in first.min(end)..end {
+        let mut run = 0u32;
+        for i in first..end {
             if claimed[i] {
-                continue;
+                break;
             }
             claimed[i] = true;
+            run += 1;
             entries[i].parent = Some(dir);
             entries[i].path = format!("{}/{}", dir_path, entries[i].name_lower);
             if entries[i].is_dir() {
                 stack.push(i as u32);
             }
         }
+        entries[dir as usize].kind = EntryKind::Directory { first: first as u32, count: run };
+    }
+    let orphans = claimed.iter().filter(|c| !**c).count();
+    if orphans > 0 {
+        st.errors.push(ScanError {
+            path: path.clone(),
+            message: format!("{orphans} entries are not part of the directory tree and were ignored"),
+        });
     }
 
     let id = out.len() as ArchiveId;

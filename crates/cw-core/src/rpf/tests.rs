@@ -109,14 +109,75 @@ fn rejects_garbage_without_panicking() {
     assert!(scan(bad, None).is_err());
 }
 
+/// Every entry is reachable from the root exactly once, and a directory's children are exactly
+/// the entries that name it as their parent: walking the tree always ends.
+fn assert_is_a_tree(a: &RpfArchive) {
+    let mut seen = vec![false; a.entries.len()];
+    let mut stack = vec![0u32];
+    seen[0] = true;
+    let mut steps = 0;
+    while let Some(d) = stack.pop() {
+        steps += 1;
+        assert!(steps <= a.entries.len(), "walked more directories than there are entries");
+        let EntryKind::Directory { first, count } = a.entries[d as usize].kind else { continue };
+        for i in first..first + count {
+            let i = i as usize;
+            assert!(i < a.entries.len(), "child {i} is outside the table");
+            assert!(!seen[i], "entry {i} is reachable twice");
+            seen[i] = true;
+            assert_eq!(a.entries[i].parent, Some(d), "entry {i} is listed under {d} but does not say so");
+            stack.push(i as u32);
+        }
+    }
+    for (i, e) in a.entries.iter().enumerate() {
+        assert_eq!(seen[i], !e.path.is_empty(), "entry {i} {:?}: reachable iff it has a path", e.name);
+    }
+}
+
+fn set_dir_range(bytes: &mut [u8], entry: usize, first: u32, count: u32) {
+    let rec = 16 + entry * 16;
+    bytes[rec + 8..rec + 12].copy_from_slice(&first.to_le_bytes());
+    bytes[rec + 12..rec + 16].copy_from_slice(&count.to_le_bytes());
+}
+
 #[test]
 fn hostile_directory_ranges_cannot_loop_or_overflow() {
+    // entries: 0 root, 1 readme.txt, 2 Levels, 3 child.rpf, 4 Big.xml, 5 prop.ydr
+    let good = scan(archive(&sample_items(), None), None).unwrap();
+    assert_is_a_tree(good.archive(0));
+    assert!(good.errors.is_empty());
+
+    // the root claims everything from itself on: it cannot contain itself, so it contains nothing,
+    // and what it pointed at is reported as unreachable instead of being invented into the tree
     let mut bytes = archive(&sample_items(), None);
-    // root now claims entries [0 ..= u32::MAX): itself and everything else
-    bytes[16 + 8..16 + 12].copy_from_slice(&0u32.to_le_bytes());
-    bytes[16 + 12..16 + 16].copy_from_slice(&u32::MAX.to_le_bytes());
+    set_dir_range(&mut bytes, 0, 0, u32::MAX);
     let tree = scan(bytes, None).unwrap();
-    assert!(tree.archive(0).entries.len() > 1);
+    assert_is_a_tree(tree.archive(0));
+    assert!(tree.archive(0).dir_children(0).is_empty());
+    assert!(tree.errors.iter().any(|e| e.message.contains("5 entries are not part of the directory tree")));
+
+    // a directory whose range includes its own parent
+    let mut bytes = archive(&sample_items(), None);
+    set_dir_range(&mut bytes, 2, 0, 6);
+    let tree = scan(bytes, None).unwrap();
+    assert_is_a_tree(tree.archive(0));
+    assert!(tree.archive(0).dir_children(2).is_empty());
+
+    // two directories claiming the same children: the first one (the root) keeps them
+    let mut bytes = archive(&sample_items(), None);
+    set_dir_range(&mut bytes, 0, 1, 5); // the root now also covers Big.xml and prop.ydr
+    let tree = scan(bytes, None).unwrap();
+    assert_is_a_tree(tree.archive(0));
+    assert_eq!(tree.archive(0).dir_children(0).len(), 5);
+    assert!(tree.archive(0).dir_children(2).is_empty(), "Levels lost what the root already had");
+
+    // an out-of-range start, and a count that would overflow
+    for (first, count) in [(u32::MAX, 1), (7, 3), (3, u32::MAX), (u32::MAX, u32::MAX)] {
+        let mut bytes = archive(&sample_items(), None);
+        set_dir_range(&mut bytes, 2, first, count);
+        let tree = scan(bytes, None).unwrap();
+        assert_is_a_tree(tree.archive(0));
+    }
 }
 
 #[test]
@@ -304,4 +365,119 @@ fn the_absolute_cap_stops_a_stream_with_no_declared_size() {
     };
     assert_eq!(inflate_capped(&z, 1 << 20).unwrap().len(), 1 << 20);
     assert!(matches!(inflate_capped(&z, (1 << 20) - 1), Err(Error::TooLarge(..))));
+}
+
+fn plain_and_big() -> (Vec<u8>, Vec<u8>) {
+    // 53 bytes: three blocks and a partial one, which encryption must leave alone
+    let short: Vec<u8> = (0..53u8).collect();
+    let big = "<xml>compressible</xml>".repeat(120).into_bytes();
+    (short, big)
+}
+
+#[test]
+fn aes_encrypted_entries_are_decrypted_then_inflated() {
+    let keys = Arc::new(GtaKeys::synthetic());
+    let (short, big) = plain_and_big();
+    let bytes = archive(
+        &[
+            Item::encrypted("short.bin", short.clone(), false),
+            Item::encrypted("big.xml", big.clone(), true),
+            Item::file("open.txt", &b"not encrypted"[..]),
+            Item::resource("script.ysc", &b"script-bytes-needing-decryption"[..], 1 << 17, 0x9000_0000),
+        ],
+        Some(&keys.aes_key),
+    );
+    let tree = scan(bytes.clone(), Some(keys)).unwrap();
+    let get = |n: &str| tree.extract(tree.find(&format!("test.rpf/{n}")).unwrap()).unwrap();
+    assert_eq!(get("short.bin"), short);
+    assert_eq!(get("big.xml"), big);
+    assert_eq!(get("open.txt"), b"not encrypted");
+    assert_eq!(get("script.ysc"), b"script-bytes-needing-decryption");
+
+    let flags: Vec<bool> = ["short.bin", "big.xml", "open.txt", "script.ysc"]
+        .iter()
+        .map(|n| match tree.entry(tree.find(&format!("test.rpf/{n}")).unwrap()).kind {
+            EntryKind::Binary { encrypted, .. } | EntryKind::Resource { encrypted, .. } => encrypted,
+            EntryKind::Directory { .. } => unreachable!(),
+        })
+        .collect();
+    assert_eq!(flags, [true, true, false, true]);
+    // the bytes on disk really are not the plaintext
+    assert!(!bytes.windows(big.len().min(32)).any(|w| w == &big[..big.len().min(32)]));
+}
+
+#[test]
+fn ng_entries_are_keyed_by_name_and_uncompressed_size() {
+    let keys = Arc::new(GtaKeys::synthetic_invertible());
+    let (short, big) = plain_and_big();
+    let build = |names: [&str; 2]| {
+        RpfBuilder::new(vec![
+            Item::encrypted(names[0], short.clone(), false),
+            Item::encrypted(names[1], big.clone(), true),
+            Item::resource("main.ysc", &b"ng-encrypted-script"[..], 1 << 17, 0x9000_0000),
+        ])
+        .with_ng_entries(keys.clone())
+        .build()
+        .unwrap()
+    };
+    let bytes = build(["short.bin", "big.xml"]);
+    assert!(
+        matches!(
+            scan(bytes.clone(), None).and_then(|t| {
+                let r = t.find("test.rpf/short.bin").unwrap();
+                t.extract(r)
+            }),
+            Err(Error::MissingKeys)
+        ),
+        "NG entries need the keys too"
+    );
+
+    let tree = scan(bytes.clone(), Some(keys.clone())).unwrap();
+    let get = |n: &str| tree.extract(tree.find(&format!("test.rpf/{n}")).unwrap()).unwrap();
+    assert_eq!(get("short.bin"), short);
+    assert_eq!(get("big.xml"), big);
+    assert_eq!(get("main.ysc"), b"ng-encrypted-script");
+
+    // a different uncompressed size selects a different key: no silent wrong answer
+    let mut lying = bytes.clone();
+    // entries: 0 root, 1 short.bin, 2 big.xml, 3 main.ysc; uncompressed size is 8 bytes into a record
+    let at = 16 + 2 * 16 + 8;
+    lying[at..at + 4].copy_from_slice(&(big.len() as u32 + 1).to_le_bytes());
+    let tree = scan(lying, Some(keys.clone())).unwrap();
+    let r = tree.find("test.rpf/big.xml").unwrap();
+    assert!(tree.extract(r).map_or(true, |d| d != big), "wrong key must not yield the original");
+
+    // and so does a different name: renamed in the (open) names table, the same bytes no longer decrypt
+    let mut renamed = bytes;
+    let at = renamed.windows(8).position(|w| w == b"big.xml\0").expect("the name is stored in clear");
+    renamed[at..at + 7].copy_from_slice(b"bag.xml");
+    let tree = scan(renamed, Some(keys)).unwrap();
+    let r = tree.find("test.rpf/bag.xml").unwrap();
+    assert!(tree.extract(r).map_or(true, |d| d != big), "the key follows the name");
+}
+
+#[test]
+fn encrypted_entries_without_any_keys_in_the_builder_are_refused() {
+    let r = RpfBuilder::new(vec![Item::encrypted("a.bin", vec![1u8; 20], false)]).build();
+    assert!(matches!(r, Err(Error::InvalidRpf(m)) if m.contains("no keys")));
+}
+
+#[test]
+fn sizes_of_16_mib_and_more_are_read_from_the_resource_header() {
+    let mut bytes = archive(&[Item::resource("huge.ydr", &b"x"[..], 1 << 17, 0x9000_0000)], None);
+    // the TOC size field of entry 1 (record bytes 2..5) says "see the header" ...
+    let rec = 16 + 16;
+    bytes[rec + 2..rec + 5].copy_from_slice(&[0xFF, 0xFF, 0xFF]);
+    // ... and the header (at the entry's block) keeps the real size in bytes 7, 14, 5 and 2
+    let block =
+        (u32::from_le_bytes([bytes[rec + 5], bytes[rec + 6], bytes[rec + 7], 0]) & 0x7F_FFFF) as usize;
+    let at = block * 512;
+    let want: u32 = 0x0123_4567;
+    bytes[at + 7] = want as u8;
+    bytes[at + 14] = (want >> 8) as u8;
+    bytes[at + 5] = (want >> 16) as u8;
+    bytes[at + 2] = (want >> 24) as u8;
+    let tree = scan(bytes, None).unwrap();
+    let e = tree.entry(tree.find("test.rpf/huge.ydr").unwrap());
+    assert!(matches!(e.kind, EntryKind::Resource { size, .. } if size == want), "{:?}", e.kind);
 }
