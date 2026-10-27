@@ -7,10 +7,38 @@ use crate::scene::{Entity, EntityId, Scene, Transform};
 /// One undoable step. Each carries what is needed to run it in both directions.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Edit {
-    Add { entity: Entity, index: usize },
-    Remove { entity: Entity, index: usize },
-    Transform { id: EntityId, before: Transform, after: Transform },
-    Rename { id: EntityId, before: String, after: String },
+    Add {
+        entity: Entity,
+        index: usize,
+    },
+    Remove {
+        entity: Entity,
+        index: usize,
+    },
+    Transform {
+        id: EntityId,
+        before: Transform,
+        after: Transform,
+    },
+    Rename {
+        id: EntityId,
+        before: String,
+        after: String,
+    },
+    /// Several edits that undo and redo together (an import).
+    Batch(Vec<Edit>),
+}
+
+/// An entity to add as part of a batch.
+#[derive(Debug, Clone, PartialEq)]
+pub struct NewEntity {
+    /// The model's name, or a stand-in such as its hash in hex when only the hash is known.
+    pub archetype: String,
+    /// What the game calls the model; set here because it cannot always be derived from `archetype`.
+    pub archetype_hash: u32,
+    pub transform: Transform,
+    /// Where it came from, e.g. the `.ymap` path.
+    pub source: String,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -83,6 +111,43 @@ impl World {
         self.scene.entities.push(entity.clone());
         self.commit(Edit::Add { entity, index });
         Ok(id)
+    }
+
+    /// Adds many entities as one undoable step. Entities with an invalid transform are left out;
+    /// returns the new ids and how many were left out. Nothing changes if ids run out.
+    pub fn add_many(&mut self, items: Vec<NewEntity>) -> Result<(Vec<EntityId>, usize), WorldError> {
+        let total = items.len();
+        let items: Vec<NewEntity> = items.into_iter().filter(|i| i.transform.is_valid()).collect();
+        let skipped = total - items.len();
+
+        let first_free = self.scene.next_id;
+        let mut entities = Vec::with_capacity(items.len());
+        for item in items {
+            let Some(id) = self.scene.alloc_id() else {
+                self.scene.next_id = first_free;
+                return Err(WorldError::Full);
+            };
+            entities.push(Entity {
+                id,
+                archetype: item.archetype,
+                archetype_hash: item.archetype_hash,
+                transform: item.transform,
+                source: item.source,
+            });
+        }
+        let ids: Vec<EntityId> = entities.iter().map(|e| e.id).collect();
+        if entities.is_empty() {
+            return Ok((ids, skipped));
+        }
+        let start = self.scene.entities.len();
+        let edits: Vec<Edit> = entities
+            .iter()
+            .enumerate()
+            .map(|(i, e)| Edit::Add { entity: e.clone(), index: start + i })
+            .collect();
+        self.scene.entities.extend(entities);
+        self.commit(Edit::Batch(edits));
+        Ok((ids, skipped))
     }
 
     pub fn remove(&mut self, id: EntityId) -> Result<(), WorldError> {
@@ -189,6 +254,26 @@ impl World {
             (Edit::Transform { id, before, after }, rev) => {
                 if let Some(e) = self.scene.get_mut(*id) {
                     e.transform = if rev { *before } else { *after };
+                }
+            }
+            (Edit::Batch(edits), false) => {
+                for e in edits {
+                    self.apply(e, false);
+                }
+            }
+            (Edit::Batch(edits), true) => {
+                // undoing a long run of additions one by one would rescan the scene each time
+                let added: std::collections::HashSet<EntityId> = edits
+                    .iter()
+                    .filter_map(|e| if let Edit::Add { entity, .. } = e { Some(entity.id) } else { None })
+                    .collect();
+                if added.len() == edits.len() {
+                    self.scene.entities.retain(|e| !added.contains(&e.id));
+                    self.scene.selection.retain(|id| !added.contains(id));
+                } else {
+                    for e in edits.iter().rev() {
+                        self.apply(e, true);
+                    }
                 }
             }
             (Edit::Rename { id, before, after }, rev) => {

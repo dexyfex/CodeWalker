@@ -214,3 +214,80 @@ fn euler_display_has_no_negative_zero_or_noise() {
     assert_eq!(e.y.to_bits(), 0.0f32.to_bits(), "tiny negatives display as +0, got {:?}", e.y);
     assert_eq!(Transform::default().euler_degrees().to_array().map(f32::to_bits), [0u32; 3]);
 }
+
+fn new_entity(n: u32, x: f32) -> NewEntity {
+    NewEntity {
+        archetype: format!("0x{n:08X}"),
+        archetype_hash: n,
+        transform: at(x, 0.0, 0.0),
+        source: "x64a.rpf/hills.ymap".into(),
+    }
+}
+
+#[test]
+fn an_import_is_one_undo_step_that_keeps_order_and_what_the_file_said() {
+    let mut w = World::new("t");
+    let first = w.add("existing", at(0.0, 0.0, 0.0)).unwrap();
+    let depth = w.undo_depth();
+
+    let (ids, skipped) = w.add_many((0..4).map(|i| new_entity(0xAB00 + i, i as f32)).collect()).unwrap();
+    assert_eq!((ids.len(), skipped), (4, 0));
+    assert_eq!(w.undo_depth(), depth + 1, "one step for the whole batch");
+    let e = w.scene.get(ids[2]).unwrap();
+    assert_eq!(
+        (e.archetype.as_str(), e.archetype_hash, e.source.as_str()),
+        ("0x0000AB02", 0xAB02, "x64a.rpf/hills.ymap")
+    );
+    assert_eq!(w.scene.entities.len(), 5);
+    assert!(ids.iter().all(|i| *i != first), "fresh ids");
+
+    w.select(ids.clone(), false);
+    assert!(w.undo());
+    assert_eq!(w.scene.entities.iter().map(|e| e.id).collect::<Vec<_>>(), [first], "all of it is gone");
+    assert!(w.scene.selection.is_empty(), "and nothing stays selected that no longer exists");
+    assert!(w.redo());
+    assert_eq!(
+        w.scene.entities.iter().skip(1).map(|e| e.id).collect::<Vec<_>>(),
+        ids,
+        "back in the same order"
+    );
+    assert!(w.can_undo() && !w.can_redo());
+
+    // later edits still work on imported entities, and undo them one at a time
+    w.set_transform(ids[0], at(9.0, 9.0, 9.0)).unwrap();
+    assert!(w.undo());
+    assert_eq!(w.scene.get(ids[0]).unwrap().transform, at(0.0, 0.0, 0.0));
+}
+
+#[test]
+fn an_import_leaves_out_what_cannot_be_placed_and_changes_nothing_if_it_cannot_all_fit() {
+    let mut w = World::new("t");
+    let mut bad = new_entity(2, f32::NAN);
+    bad.transform.position.x = f32::NAN;
+    let (ids, skipped) = w.add_many(vec![new_entity(1, 1.0), bad, new_entity(3, 3.0)]).unwrap();
+    assert_eq!((ids.len(), skipped), (2, 1));
+
+    let depth = w.undo_depth();
+    assert_eq!(w.add_many(Vec::new()).unwrap(), (Vec::new(), 0));
+    assert_eq!(w.add_many(vec![new_entity(9, f32::INFINITY)]).unwrap().1, 1);
+    assert_eq!(w.undo_depth(), depth, "nothing to add is not an edit");
+
+    // ids almost used up: the whole batch is refused and the counter is not advanced
+    w.scene.next_id = EntityId::MAX - 2;
+    let count = w.scene.entities.len();
+    let err = w.add_many((0..5).map(|i| new_entity(i, 0.0)).collect()).unwrap_err();
+    assert!(matches!(err, WorldError::Full));
+    assert_eq!((w.scene.entities.len(), w.undo_depth(), w.scene.next_id), (count, depth, EntityId::MAX - 2));
+}
+
+#[test]
+fn a_very_large_import_undoes_and_redoes_at_once() {
+    let mut w = World::new("t");
+    let (ids, _) = w.add_many((0..60_000).map(|i| new_entity(i, i as f32)).collect()).unwrap();
+    assert_eq!(ids.len(), 60_000);
+    assert!(w.undo());
+    assert!(w.scene.entities.is_empty());
+    assert!(w.redo());
+    assert_eq!(w.scene.entities.len(), 60_000);
+    assert_eq!(w.scene.entities[59_999].id, ids[59_999]);
+}

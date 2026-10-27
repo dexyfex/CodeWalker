@@ -5,5 +5,5 @@ mod history;
 mod scene;
 
 pub use glam::{Quat, Vec3};
-pub use history::{Edit, Error, World};
+pub use history::{Edit, Error, NewEntity, World};
 pub use scene::{Entity, EntityId, Scene, Transform};
