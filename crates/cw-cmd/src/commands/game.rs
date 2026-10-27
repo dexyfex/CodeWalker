@@ -171,11 +171,13 @@ fn rpf_open(ctx: &Ctx, args: Value) -> CmdResult {
     let summary = summarize(&tree, None);
     {
         let mut s = ctx.session_mut();
-        s.tree = Some(Arc::new(match (a.add.unwrap_or(false), s.tree.take()) {
+        // adding to nothing is just opening, and then this is the folder that was opened
+        let adding = a.add.unwrap_or(false) && s.tree.is_some();
+        s.tree = Some(Arc::new(match (adding, s.tree.take()) {
             (true, Some(existing)) => existing.merged(tree),
             _ => tree,
         }));
-        if !a.add.unwrap_or(false) {
+        if !adding {
             s.root = a.path.is_dir().then(|| a.path.clone());
         }
         push_recent(&mut s.config.recent, a.path);

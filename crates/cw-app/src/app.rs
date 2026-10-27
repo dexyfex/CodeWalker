@@ -114,6 +114,8 @@ pub struct App {
     pub candidates: Vec<cw_cmd::gamefolder::Candidate>,
 
     pub busy: Option<String>,
+    /// Commands started by [`run`](Self::run) that have not reported back yet.
+    in_flight: usize,
     pub progress: Option<String>,
     pub toasts: Vec<Toast>,
     pub palette: Option<Palette>,
@@ -214,6 +216,7 @@ impl App {
             keys_loaded: false,
             candidates: Vec::new(),
             busy: None,
+            in_flight: 0,
             progress: None,
             toasts: Vec::new(),
             palette: None,
@@ -282,6 +285,7 @@ impl App {
     /// Runs an engine command on a worker thread; the result arrives as `Msg::Cmd`.
     pub fn run(&mut self, what: &str, cmd: &'static str, args: Value) {
         self.busy = Some(what.to_string());
+        self.in_flight += 1;
         let engine = self.engine.clone();
         self.spawn(move || Msg::Cmd { cmd, result: engine.execute(cmd, args) });
     }
@@ -324,12 +328,12 @@ impl App {
             if cw_cmd::gamefolder::validate(&p).is_some() {
                 self.run("Scanning game files…", "game.open", json!({ "folder": p }));
             } else {
-                let add = !self.ex.is_empty();
-                self.run("Scanning archives…", "rpf.open", json!({ "path": p, "add": add }));
+                self.run("Scanning archives…", "rpf.open", json!({ "path": p, "add": true }));
             }
         } else if is_archive {
-            let add = !self.ex.is_empty();
-            self.run("Opening archive…", "rpf.open", json!({ "path": p, "add": add }));
+            // `add` is decided by the engine when each open lands: several files dropped
+            // together all start before any of them has finished
+            self.run("Opening archive…", "rpf.open", json!({ "path": p, "add": true }));
         } else {
             self.run("Opening file…", "file.open", json!({ "path": p }));
         }
@@ -447,8 +451,14 @@ impl App {
     }
 
     fn finish_command(&mut self, cmd: &'static str, result: Result<Value, cw_cmd::CmdError>) {
-        self.busy = None;
-        self.progress = None;
+        // `game.detect` is started quietly, without `run`
+        if cmd != "game.detect" {
+            self.in_flight = self.in_flight.saturating_sub(1);
+            if self.in_flight == 0 {
+                self.busy = None;
+                self.progress = None;
+            }
+        }
         let v = match result {
             Ok(v) => v,
             Err(e) => {

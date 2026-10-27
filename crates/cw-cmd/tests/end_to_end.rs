@@ -385,3 +385,22 @@ fn game_open_leaves_the_mods_folder_to_the_mods_view() {
     let listed = ok(&e, "mods.list", json!({}));
     assert!(listed.to_string().contains("x64/a.rpf"), "the override is still managed: {listed}");
 }
+
+#[test]
+fn adding_to_nothing_is_the_same_as_opening() {
+    let fx = Fixture::new("add-empty");
+    let folder = fx.dir.join("game");
+    let e = Engine::ephemeral();
+
+    // a front-end that does not know whether anything is open yet can always say "add"
+    let s = ok(&e, "rpf.open", json!({ "path": &folder, "add": true }));
+    assert_eq!(s["top_level"], 1);
+    assert_eq!(e.session().root.as_deref(), Some(folder.as_path()), "the folder that was opened is the root");
+
+    // and a second one lands next to it instead of replacing it
+    let extra = fx.dir.join("extra.rpf");
+    std::fs::write(&extra, RpfBuilder::new(vec![Item::file("x.txt", &b"x"[..])]).build().unwrap()).unwrap();
+    ok(&e, "rpf.open", json!({ "path": &extra, "add": true }));
+    assert_eq!(ok(&e, "rpf.stats", json!({}))["top_level"], 2);
+    assert_eq!(e.session().root.as_deref(), Some(folder.as_path()), "adding keeps the root");
+}
