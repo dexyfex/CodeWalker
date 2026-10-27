@@ -27,7 +27,11 @@ pub fn register(e: &mut Engine) {
         CommandSpec::new("game.open", "game", "Scan a GTA V folder and open every archive in it")
             .param(ParamSpec::new("folder", K::Path, "game folder (default: the saved one)"))
             .param(ParamSpec::new("key", K::String, "base64 AES key instead of reading the executable"))
-            .param(ParamSpec::new("enhanced", K::Boolean, "use gta5_enhanced.exe (Enhanced Edition)"))
+            .param(ParamSpec::new(
+                "enhanced",
+                K::Boolean,
+                "Enhanced Edition (default: whichever executable the folder holds)",
+            ))
             .mutating(),
         game_open,
     );
@@ -57,6 +61,12 @@ fn exe_in(folder: &std::path::Path, enhanced: bool) -> PathBuf {
     folder.join(if enhanced { "GTA5_Enhanced.exe" } else { "GTA5.exe" })
 }
 
+/// Which executable the folder belongs to: what the caller said, else what
+/// is actually in the folder, else what was used last time.
+fn edition(folder: &std::path::Path, explicit: Option<bool>, saved: bool) -> bool {
+    explicit.or_else(|| crate::gamefolder::validate(folder)).unwrap_or(saved)
+}
+
 fn find_exe(folder: &std::path::Path, enhanced: bool) -> Option<PathBuf> {
     let want = exe_in(folder, enhanced);
     let name = want.file_name()?.to_string_lossy().to_lowercase();
@@ -77,7 +87,8 @@ fn keys_load(ctx: &Ctx, args: Value) -> CmdResult {
     let a: KeysArgs = parse(args)?;
     let exe = a.exe.or_else(|| {
         let s = ctx.session();
-        s.config.game_folder.as_deref().and_then(|f| find_exe(f, s.config.enhanced_edition))
+        let f = s.config.game_folder.as_deref()?;
+        find_exe(f, edition(f, None, s.config.enhanced_edition))
     });
     load_keys(ctx, exe, a.key)?;
     Ok(json!({ "loaded": true }))
@@ -92,14 +103,15 @@ struct OpenArgs {
 
 fn game_open(ctx: &Ctx, args: Value) -> CmdResult {
     let a: OpenArgs = parse(args)?;
-    let (folder, enhanced) = {
+    let (folder, saved_edition) = {
         let s = ctx.session();
-        (a.folder.or_else(|| s.config.game_folder.clone()), a.enhanced.unwrap_or(s.config.enhanced_edition))
+        (a.folder.or_else(|| s.config.game_folder.clone()), s.config.enhanced_edition)
     };
     let folder = folder.ok_or_else(|| CmdError::invalid("no game folder given and none saved"))?;
     if !folder.is_dir() {
         return Err(CmdError::not_found(format!("{} is not a folder", folder.display())));
     }
+    let enhanced = edition(&folder, a.enhanced, saved_edition);
 
     // Keys are optional: unencrypted ("OPEN") archives still work without them.
     let mut key_warning = None;
@@ -122,7 +134,8 @@ fn game_open(ctx: &Ctx, args: Value) -> CmdResult {
     };
 
     let tree = scan(ctx, &folder, keys)?;
-    let summary = summarize(&tree, key_warning);
+    let mut summary = summarize(&tree, key_warning);
+    summary["edition"] = json!(if enhanced { "enhanced" } else { "legacy" });
     {
         let mut s = ctx.session_mut();
         s.tree = Some(Arc::new(tree));

@@ -329,3 +329,29 @@ fn texture_commands_list_and_export_dds_from_archives_and_disk() {
     std::fs::write(&bad, b"not a dds").unwrap();
     assert_eq!(e.execute("texture.list", json!({ "file": bad })).unwrap_err().code, "archive");
 }
+
+#[test]
+fn the_edition_comes_from_the_folder_unless_the_caller_says_otherwise() {
+    let fx = Fixture::new("edition");
+    let game = fx.dir.join("game");
+    std::fs::write(game.join("GTA5_Enhanced.exe"), b"not a real executable").unwrap();
+    let e = Engine::ephemeral();
+
+    let s = ok(&e, "game.open", json!({ "folder": &game }));
+    assert_eq!(s["edition"], "enhanced", "nobody said which; the folder has the Enhanced executable");
+    assert!(e.session().config.enhanced_edition, "and that is what gets remembered");
+
+    let s = ok(&e, "game.open", json!({ "folder": &game, "enhanced": false }));
+    assert_eq!(s["edition"], "legacy", "an explicit choice wins");
+
+    std::fs::remove_file(game.join("GTA5_Enhanced.exe")).unwrap();
+    std::fs::write(game.join("GTA5.exe"), b"nor this").unwrap();
+    let s = ok(&e, "game.open", json!({ "folder": &game }));
+    assert_eq!(s["edition"], "legacy", "a saved Enhanced setting does not override a legacy folder");
+    assert!(!e.session().config.enhanced_edition);
+
+    std::fs::remove_file(game.join("GTA5.exe")).unwrap();
+    ok(&e, "config.set", json!({ "enhanced_edition": true }));
+    let s = ok(&e, "game.open", json!({ "folder": &game }));
+    assert_eq!(s["edition"], "enhanced", "no executable at all: fall back to the saved setting");
+}
