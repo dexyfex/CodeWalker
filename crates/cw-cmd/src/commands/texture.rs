@@ -42,7 +42,7 @@ struct Source {
 }
 
 /// Loads the textures of a dictionary or DDS from an archive entry or a disk file.
-pub fn load(ctx: &Ctx, src: &Source) -> Result<Vec<YtdTexture>, CmdError> {
+fn load(ctx: &Ctx, src: &Source) -> Result<Vec<YtdTexture>, CmdError> {
     let (bytes, name_hint): (Loaded, String) = match (&src.path, &src.file) {
         (Some(p), None) => {
             let tree = ctx.tree()?;

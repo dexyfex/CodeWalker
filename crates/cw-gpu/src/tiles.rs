@@ -54,6 +54,10 @@ impl TiledImage {
         self.tiles.len()
     }
 
+    pub fn tiles_y(&self) -> usize {
+        self.tiles_y
+    }
+
     pub fn tiles_x(&self) -> usize {
         self.tiles_x
     }
