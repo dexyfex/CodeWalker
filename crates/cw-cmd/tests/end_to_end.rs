@@ -404,3 +404,79 @@ fn adding_to_nothing_is_the_same_as_opening() {
     assert_eq!(ok(&e, "rpf.stats", json!({}))["top_level"], 2);
     assert_eq!(e.session().root.as_deref(), Some(folder.as_path()), "adding keeps the root");
 }
+
+#[test]
+fn texture_export_renders_filtered_pngs_with_the_viewers_pipeline() {
+    use cw_core::{
+        texture::{Format, Texture, chain_size},
+        ytd::build_ytd,
+    };
+    let fx = Fixture::new("tex-png");
+    let (w, h, levels) = (8u32, 4u32, 2u32);
+    let n = chain_size(Format::A8R8G8B8, w, h, levels);
+    let tex = Texture {
+        width: w,
+        height: h,
+        levels,
+        format: Format::A8R8G8B8,
+        data: (0..n).map(|i| (i as u8).wrapping_mul(7).wrapping_add(3)).collect(),
+    };
+    let res = build_ytd(&[("wall", &tex)]);
+    std::fs::write(
+        fx.dir.join("game/t.rpf"),
+        RpfBuilder::new(vec![Item::resource("wall.ytd", res.data.clone(), res.sys_flags, res.gfx_flags)])
+            .build()
+            .unwrap(),
+    )
+    .unwrap();
+    let e = Engine::ephemeral();
+    ok(&e, "game.open", json!({ "folder": fx.dir.join("game") }));
+
+    let decode = |path: &std::path::Path| {
+        image::load_from_memory_with_format(&std::fs::read(path).unwrap(), image::ImageFormat::Png)
+            .unwrap()
+            .to_rgba8()
+    };
+    let truth = tex.decode(0).unwrap(); // what the file says, before any filter
+    let out = fx.dir.join("png");
+
+    let r = ok(&e, "texture.export", json!({ "path": "t.rpf/wall.ytd", "dest": &out, "format": "png" }));
+    assert_eq!(r["files"], json!(["wall.png"]));
+    let plain = decode(&out.join("wall.png"));
+    assert_eq!((plain.width(), plain.height()), (w, h));
+    assert_eq!(plain.as_raw(), &truth.pixels, "unfiltered PNG is the decoded texture");
+
+    ok(
+        &e,
+        "texture.export",
+        json!({ "path": "t.rpf/wall.ytd", "dest": &out, "format": "PNG", "channels": "g", "invert": true }),
+    );
+    let filtered = decode(&out.join("wall_2.png"));
+    let want: Vec<u8> =
+        truth.pixels.chunks(4).flat_map(|p| [255 - p[1], 255 - p[1], 255 - p[1], 255]).collect();
+    assert_eq!(filtered.as_raw(), &want, "green channel as grey, then inverted");
+
+    ok(
+        &e,
+        "texture.export",
+        json!({ "path": "t.rpf/wall.ytd", "dest": &out, "format": "png", "mip": 1, "channels": "alpha" }),
+    );
+    let small = decode(&out.join("wall_3.png"));
+    assert_eq!((small.width(), small.height()), (4, 2), "mip 1 is half the size");
+
+    // misuse is explained, not guessed at
+    let bad = |args: serde_json::Value| e.execute("texture.export", args).unwrap_err();
+    assert_eq!(bad(json!({ "path": "t.rpf/wall.ytd", "dest": &out, "channels": "g" })).code, "invalid_args");
+    assert_eq!(
+        bad(json!({ "path": "t.rpf/wall.ytd", "dest": &out, "format": "png", "channels": "x" })).code,
+        "invalid_args"
+    );
+    assert_eq!(bad(json!({ "path": "t.rpf/wall.ytd", "dest": &out, "format": "jpg" })).code, "invalid_args");
+    let skipped = ok(
+        &e,
+        "texture.export",
+        json!({ "path": "t.rpf/wall.ytd", "dest": &out, "format": "png", "mip": 9 }),
+    );
+    assert_eq!(skipped["written"], 0, "a mip that does not exist is reported, not written");
+    assert_eq!(skipped["skipped"].as_array().unwrap().len(), 1);
+}

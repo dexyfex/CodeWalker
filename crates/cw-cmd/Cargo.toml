@@ -17,3 +17,6 @@ getrandom = "0.3"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
+
+[dev-dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }

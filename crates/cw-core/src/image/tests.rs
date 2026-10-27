@@ -136,3 +136,13 @@ fn png_output_decodes_back_to_the_same_pixels() {
         assert_eq!(back.into_raw(), src, "{w}x{h}");
     }
 }
+
+#[test]
+fn channel_names_round_trip_and_accept_long_forms() {
+    for c in Channels::ALL {
+        assert_eq!(Channels::parse(c.label()), Some(c));
+    }
+    assert_eq!(Channels::parse(" Green "), Some(Channels::Green));
+    assert_eq!(Channels::parse("ALPHA"), Some(Channels::Alpha));
+    assert_eq!(Channels::parse("purple"), None);
+}

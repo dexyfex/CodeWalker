@@ -839,6 +839,7 @@ dependencies = [
  "cw-world",
  "dirs",
  "getrandom 0.3.4",
+ "image",
  "rayon",
  "serde",
  "serde_json",

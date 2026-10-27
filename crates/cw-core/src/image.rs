@@ -190,6 +190,37 @@ pub enum Channels {
     Alpha,
 }
 
+impl Channels {
+    pub const ALL: [Channels; 6] =
+        [Channels::Rgba, Channels::Rgb, Channels::Red, Channels::Green, Channels::Blue, Channels::Alpha];
+
+    /// Short name, as used on the command line (`rgba`, `rgb`, `r`, `g`, `b`, `a`).
+    pub fn label(self) -> &'static str {
+        match self {
+            Channels::Rgba => "rgba",
+            Channels::Rgb => "rgb",
+            Channels::Red => "r",
+            Channels::Green => "g",
+            Channels::Blue => "b",
+            Channels::Alpha => "a",
+        }
+    }
+
+    pub fn parse(name: &str) -> Option<Channels> {
+        let n = name.trim().to_ascii_lowercase();
+        Self::ALL.into_iter().find(|c| {
+            c.label() == n
+                || matches!(
+                    (c, n.as_str()),
+                    (Channels::Red, "red")
+                        | (Channels::Green, "green")
+                        | (Channels::Blue, "blue")
+                        | (Channels::Alpha, "alpha")
+                )
+        })
+    }
+}
+
 /// Rewrites RGBA8 pixels so that only `channels` shows. Single channels become grey.
 pub fn channel_filter(channels: Channels) -> impl Fn(&mut [u8]) + Sync {
     move |px: &mut [u8]| {
