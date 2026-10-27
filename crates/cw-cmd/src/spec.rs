@@ -55,6 +55,12 @@ impl CommandSpec {
         self
     }
 
+    /// Whether the command reads the open archives, so the command line opens the saved game
+    /// folder first (unless `--file` names a file on disk instead).
+    pub fn reads_archives(&self) -> bool {
+        matches!(self.category, "archive" | "textures" | "map")
+    }
+
     pub fn mutating(mut self) -> Self {
         self.mutates = true;
         self

@@ -291,3 +291,20 @@ fn a_very_large_import_undoes_and_redoes_at_once() {
     assert_eq!(w.scene.entities.len(), 60_000);
     assert_eq!(w.scene.entities[59_999].id, ids[59_999]);
 }
+
+#[test]
+fn a_reset_scene_never_repeats_a_revision_a_view_may_have_seen() {
+    let mut w = World::new("a");
+    for i in 0..3 {
+        w.add("m", at(i as f32, 0.0, 0.0)).unwrap();
+    }
+    let seen = w.revision();
+    w.reset("b");
+    assert!(w.revision() > seen, "reset moves forward");
+    assert!(w.scene.entities.is_empty() && !w.can_undo() && !w.is_dirty());
+    assert_eq!(w.scene.name, "b");
+    for i in 0..5 {
+        w.add("m", at(i as f32, 0.0, 0.0)).unwrap();
+    }
+    assert!(w.revision() > seen + 1, "and keeps going, so 3 + new edits never lands on a stale value");
+}

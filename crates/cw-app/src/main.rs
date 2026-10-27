@@ -134,7 +134,7 @@ fn run_command(engine: &Engine, args: &[String]) -> ExitCode {
     };
     let call = |name: &str, args: serde_json::Value| engine.execute(name, args);
 
-    let needs_archives = spec.category == "archive";
+    let needs_archives = spec.reads_archives() && !rest.iter().any(|a| a == "--file");
     let prepared = if let Some(g) = game {
         call("game.open", serde_json::json!({ "folder": g })).map(|_| ())
     } else if let Some(o) = open {

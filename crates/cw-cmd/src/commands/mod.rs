@@ -4,8 +4,10 @@ use crate::engine::Engine;
 
 mod files;
 mod game;
+mod map;
 mod mods;
 mod rpf;
+mod source;
 mod texture;
 mod util;
 mod world;
@@ -13,6 +15,7 @@ mod world;
 pub fn register_all(e: &mut Engine) {
     files::register(e);
     game::register(e);
+    map::register(e);
     mods::register(e);
     texture::register(e);
     rpf::register(e);

@@ -480,3 +480,120 @@ fn texture_export_renders_filtered_pngs_with_the_viewers_pipeline() {
     assert_eq!(skipped["written"], 0, "a mip that does not exist is reported, not written");
     assert_eq!(skipped["skipped"].as_array().unwrap().len(), 1);
 }
+
+#[test]
+fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
+    use cw_core::ymap::{LodLevel, Ymap, YmapEntity, build_ymap};
+    let fx = Fixture::new("ymap");
+    let s = std::f32::consts::FRAC_1_SQRT_2;
+    let hd = |i: u32, x: f32| YmapEntity {
+        archetype: 0xAA00_0000 + i,
+        guid: i,
+        position: [x, 20.0, 5.0],
+        scale_xy: 2.0,
+        scale_z: 3.0,
+        rotation: [0.0, 0.0, s, s],
+        ..Default::default()
+    };
+    let lod = |i: u32, parent: i32| YmapEntity { lod: LodLevel::Lod, parent_index: parent, ..hd(i, 0.0) };
+    let map = Ymap {
+        name: 0x1234_ABCD,
+        flags: 1,
+        entity_extents: ([-5.0, 0.0, 0.0], [50.0, 60.0, 9.0]),
+        entities: vec![
+            hd(1, 10.0),
+            hd(2, 11.0),
+            YmapEntity { lod: LodLevel::OrphanHd, ..hd(3, 12.0) },
+            lod(4, -1),
+            YmapEntity { scale_xy: 0.0, ..hd(5, 13.0) }, // cannot be placed
+        ],
+        ..Default::default()
+    };
+    let res = build_ymap(&map);
+    std::fs::write(
+        fx.dir.join("game/m.rpf"),
+        RpfBuilder::new(vec![Item::resource("hills.ymap", res.data.clone(), res.sys_flags, res.gfx_flags)])
+            .build()
+            .unwrap(),
+    )
+    .unwrap();
+    let e = Engine::ephemeral();
+    ok(&e, "game.open", json!({ "folder": fx.dir.join("game") }));
+
+    let info = ok(&e, "ymap.info", json!({ "path": "m.rpf/hills.ymap", "limit": 2, "offset": 1 }));
+    assert_eq!(
+        (info["name"].as_str(), info["entities"].as_u64(), info["scripted"].as_bool()),
+        (Some("0x1234ABCD"), Some(5), Some(true))
+    );
+    assert_eq!(
+        info["lod"],
+        json!([{ "level": "HD", "count": 3 }, { "level": "LOD", "count": 1 }, { "level": "Orphan HD", "count": 1 }])
+    );
+    assert_eq!(info["entity_extents"]["max"], json!([50.0, 60.0, 9.0]));
+    assert_eq!(info["page"]["items"].as_array().unwrap().len(), 2);
+    assert_eq!(info["page"]["items"][0]["archetype"], "0xAA000002");
+    assert_eq!(info["lod_roots"], 5, "none of them has a coarser parent in this file");
+
+    // the default import takes the detailed ones and says what it left out
+    let r = ok(&e, "world.import", json!({ "path": "m.rpf/hills.ymap" }));
+    assert_eq!((r["imported"].as_u64(), r["entities_in_file"].as_u64()), (Some(3), Some(5)));
+    assert_eq!((r["left_out"]["by_lod"].as_u64(), r["left_out"]["unplaceable"].as_u64()), (Some(1), Some(1)));
+    let listed = ok(&e, "world.list", json!({}));
+    let first = &listed["entities"][0];
+    assert_eq!(
+        (first["archetype"].as_str(), first["hash"].as_str()),
+        (Some("0xAA000001"), Some("0xAA000001"))
+    );
+    assert_eq!(first["source"], "m.rpf/hills.ymap");
+    assert_eq!(
+        (first["x"].as_f64(), first["y"].as_f64(), first["z"].as_f64()),
+        (Some(10.0), Some(20.0), Some(5.0))
+    );
+    assert_eq!(
+        (first["sx"].as_f64(), first["sy"].as_f64(), first["sz"].as_f64()),
+        (Some(2.0), Some(2.0), Some(3.0))
+    );
+    assert!(
+        (first["rz"].as_f64().unwrap() + 90.0).abs() < 1e-3,
+        "stored +90 about Z, placed at -90: {first}"
+    );
+
+    // one undo takes the whole import away; redo brings it back
+    assert_eq!(ok(&e, "world.undo", json!({}))["undone"], true);
+    assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 0);
+    ok(&e, "world.redo", json!({}));
+    assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 3);
+
+    // every level, added to what is there; then a replacement
+    let all = ok(&e, "world.import", json!({ "path": "m.rpf/hills.ymap", "lod": "ALL" }));
+    assert_eq!((all["imported"].as_u64(), all["scene_entities"].as_u64()), (Some(4), Some(7)));
+    let replaced = ok(&e, "world.import", json!({ "path": "m.rpf/hills.ymap", "replace": true }));
+    assert_eq!(replaced["scene_entities"], 3);
+    assert_eq!(ok(&e, "world.stats", json!({}))["name"], "m.rpf/hills.ymap");
+
+    // a loose file works the same way
+    let raw = ok(&e, "rpf.extract", json!({ "path": "m.rpf", "dest": fx.dir.join("raw") }));
+    assert_eq!(raw["files"], 1);
+    let loose = fx.dir.join("raw/m.rpf/hills.ymap");
+    assert_eq!(ok(&e, "ymap.info", json!({ "file": &loose }))["entities"], 5);
+    assert_eq!(ok(&e, "world.import", json!({ "file": loose, "replace": true }))["imported"], 3);
+
+    // misuse and bad files are explained
+    let code = |cmd: &str, args: serde_json::Value| e.execute(cmd, args).unwrap_err().code;
+    assert_eq!(code("world.import", json!({ "path": "m.rpf/hills.ymap", "lod": "some" })), "invalid_args");
+    assert_eq!(code("world.import", json!({})), "invalid_args");
+    assert_eq!(code("ymap.info", json!({ "path": "m.rpf/nope.ymap" })), "not_found");
+    assert_eq!(code("ymap.info", json!({ "path": "m.rpf" })), "invalid_args", "an archive is not a map");
+    std::fs::write(fx.dir.join("pso.ymap"), b"PSIN....").unwrap();
+    let pso = e.execute("ymap.info", json!({ "file": fx.dir.join("pso.ymap") })).unwrap_err();
+    assert!(pso.message.contains("Enhanced"), "{}", pso.message);
+    std::fs::write(fx.dir.join("junk.ymap"), b"not a map at all").unwrap();
+    assert_eq!(code("world.import", json!({ "file": fx.dir.join("junk.ymap") })), "invalid_args");
+    assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 3, "failures leave the scene alone");
+
+    // the command line opens the game folder first for these
+    for name in ["ymap.info", "world.import", "texture.list", "rpf.list"] {
+        assert!(e.spec(name).unwrap().reads_archives(), "{name}");
+    }
+    assert!(!e.spec("world.add").unwrap().reads_archives());
+}

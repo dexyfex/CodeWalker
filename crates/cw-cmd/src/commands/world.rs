@@ -171,7 +171,7 @@ fn new_scene(ctx: &Ctx, args: Value) -> CmdResult {
     }
     let a: A = parse(args)?;
     with_world(ctx, |w| {
-        *w = World::new(a.name.as_deref().unwrap_or("Scratch scene"));
+        w.reset(a.name.as_deref().unwrap_or("Scratch scene"));
         Ok(json!({ "name": w.scene.name }))
     })
 }

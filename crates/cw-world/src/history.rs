@@ -70,6 +70,13 @@ impl World {
         Self { scene: Scene::new(name), ..Default::default() }
     }
 
+    /// Starts over with an empty scene called `name`; history is dropped. The revision still moves
+    /// forward, so a view that remembers the old one rebuilds.
+    pub fn reset(&mut self, name: &str) {
+        let rev = self.rev + 1;
+        *self = World { scene: Scene::new(name), rev, ..Default::default() };
+    }
+
     pub fn is_dirty(&self) -> bool {
         self.dirty
     }
