@@ -13,3 +13,6 @@ sha1.workspace = true
 memmap2.workspace = true
 thiserror.workspace = true
 base64.workspace = true
+
+[dev-dependencies]
+image = { version = "0.25", default-features = false, features = ["png"] }
