@@ -219,7 +219,7 @@ pub fn decode_rgba(format: Format, w: u32, h: u32, data: &[u8]) -> Result<Rgba> 
         }
     } else {
         let bpp = format.pixel_bytes().expect("known uncompressed format");
-        for (i, dst) in out.chunks_exact_mut(4).enumerate() {
+        for (i, dst) in out.as_chunks_mut::<4>().0.iter_mut().enumerate() {
             let at = i * bpp;
             let src = |k: usize| data.get(at + k).copied().unwrap_or(0);
             let rgba = match format {

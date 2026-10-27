@@ -108,11 +108,10 @@ impl GtaKeys {
         let (tables_b, rest) = rest.split_at(NG_TABLES_BYTES);
         let (lut_b, rest) = rest.split_at(256);
 
-        let ng_keys =
-            keys_b.chunks_exact(NG_KEY_LEN).map(|c| <[u8; NG_KEY_LEN]>::try_from(c).unwrap()).collect();
+        let ng_keys: Vec<[u8; NG_KEY_LEN]> = keys_b.as_chunks::<NG_KEY_LEN>().0.to_vec();
         let mut ng_tables: Box<NgTables> =
             vec![[[0u32; 256]; 16]; NG_ROUNDS].into_boxed_slice().try_into().unwrap();
-        let mut words = tables_b.chunks_exact(4).map(|c| u32::from_le_bytes(c.try_into().unwrap()));
+        let mut words = tables_b.as_chunks::<4>().0.iter().map(|c| u32::from_le_bytes(*c));
         for round in ng_tables.iter_mut() {
             for table in round.iter_mut() {
                 for v in table.iter_mut() {

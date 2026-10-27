@@ -224,14 +224,14 @@ impl Channels {
 /// Rewrites RGBA8 pixels so that only `channels` shows. Single channels become grey.
 pub fn channel_filter(channels: Channels) -> impl Fn(&mut [u8]) + Sync {
     move |px: &mut [u8]| {
-        for p in px.chunks_exact_mut(4) {
+        for p in px.as_chunks_mut::<4>().0 {
             match channels {
                 Channels::Rgba => {}
                 Channels::Rgb => p[3] = 255,
-                Channels::Red => p.copy_from_slice(&[p[0], p[0], p[0], 255]),
-                Channels::Green => p.copy_from_slice(&[p[1], p[1], p[1], 255]),
-                Channels::Blue => p.copy_from_slice(&[p[2], p[2], p[2], 255]),
-                Channels::Alpha => p.copy_from_slice(&[p[3], p[3], p[3], 255]),
+                Channels::Red => *p = [p[0], p[0], p[0], 255],
+                Channels::Green => *p = [p[1], p[1], p[1], 255],
+                Channels::Blue => *p = [p[2], p[2], p[2], 255],
+                Channels::Alpha => *p = [p[3], p[3], p[3], 255],
             }
         }
     }
@@ -239,7 +239,7 @@ pub fn channel_filter(channels: Channels) -> impl Fn(&mut [u8]) + Sync {
 
 /// Inverts colour, keeping alpha.
 pub fn invert_filter(px: &mut [u8]) {
-    for p in px.chunks_exact_mut(4) {
+    for p in px.as_chunks_mut::<4>().0 {
         p[0] = 255 - p[0];
         p[1] = 255 - p[1];
         p[2] = 255 - p[2];

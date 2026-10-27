@@ -14,8 +14,7 @@ use crate::keys::GtaKeys;
 pub fn decrypt_aes(data: &[u8], key: &[u8; 32]) -> Vec<u8> {
     let cipher = Aes256::new(key.into());
     let mut out = data.to_vec();
-    for chunk in out.chunks_exact_mut(16) {
-        let block: &mut [u8; 16] = chunk.try_into().unwrap();
+    for block in out.as_chunks_mut::<16>().0 {
         cipher.decrypt_block(block.into());
     }
     out
@@ -25,8 +24,7 @@ pub fn decrypt_aes(data: &[u8], key: &[u8; 32]) -> Vec<u8> {
 pub fn encrypt_aes(data: &[u8], key: &[u8; 32]) -> Vec<u8> {
     let cipher = Aes256::new(key.into());
     let mut out = data.to_vec();
-    for chunk in out.chunks_exact_mut(16) {
-        let block: &mut [u8; 16] = chunk.try_into().unwrap();
+    for block in out.as_chunks_mut::<16>().0 {
         cipher.encrypt_block(block.into());
     }
     out
@@ -54,9 +52,8 @@ pub fn decrypt_ng_with_key(data: &[u8], key: &[u8; 272], keys: &GtaKeys) -> Vec<
     }
 
     let mut out = data.to_vec();
-    for chunk in out.chunks_exact_mut(16) {
-        let block: [u8; 16] = (&*chunk).try_into().unwrap();
-        chunk.copy_from_slice(&decrypt_ng_block(block, &subkeys, keys));
+    for chunk in out.as_chunks_mut::<16>().0 {
+        *chunk = decrypt_ng_block(*chunk, &subkeys, keys);
     }
     out
 }
@@ -77,8 +74,8 @@ pub fn encrypt_ng_synthetic(data: &[u8], name: &str, length: u32, keys: &GtaKeys
         s.copy_from_slice(&key[i * 16..i * 16 + 16]);
     }
     let mut out = data.to_vec();
-    for chunk in out.chunks_exact_mut(16) {
-        let mut b: [u8; 16] = (&*chunk).try_into().unwrap();
+    for chunk in out.as_chunks_mut::<16>().0 {
+        let mut b: [u8; 16] = *chunk;
         // decryption is round 0, 1, 2..=15, 16: undo them from the last to the first
         for round in (0..17).rev() {
             for (x, k) in b.iter_mut().zip(&sk[round]) {
@@ -92,7 +89,7 @@ pub fn encrypt_ng_synthetic(data: &[u8], name: &str, length: u32, keys: &GtaKeys
                 b = un;
             }
         }
-        chunk.copy_from_slice(&b);
+        *chunk = b;
     }
     out
 }
@@ -217,8 +214,8 @@ mod tests {
         }
         let data: Vec<u8> = (0..40u8).map(|i| i.wrapping_mul(13)).collect();
         let out = decrypt_ng_with_key(&data, key, &keys);
-        for (blk, chunk) in data.chunks_exact(16).enumerate() {
-            let want = reference_block(chunk.try_into().unwrap(), &sk, &keys);
+        for (blk, chunk) in data.as_chunks::<16>().0.iter().enumerate() {
+            let want = reference_block(*chunk, &sk, &keys);
             assert_eq!(&out[blk * 16..blk * 16 + 16], &want);
         }
         // trailing partial block passes through untouched
