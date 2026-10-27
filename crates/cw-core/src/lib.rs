@@ -9,10 +9,12 @@ pub mod filekind;
 pub mod hash;
 pub mod image;
 pub mod keys;
+pub mod meta;
 pub mod resource;
 pub mod rpf;
 pub mod text;
 pub mod texture;
+pub mod ymap;
 pub mod ytd;
 
 pub use blob::Blob;

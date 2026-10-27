@@ -88,7 +88,7 @@ pub fn parse_ytd(res: &ResourceData) -> Result<Vec<YtdTexture>> {
 /// Builds a legacy `.ytd` payload (system + graphics segments, uncompressed)
 /// together with the flags describing it. For tests and mod-making tools.
 pub fn build_ytd(textures: &[(&str, &Texture)]) -> ResourceData {
-    use crate::rpf::{page_flags_size, resource_version};
+    use crate::rpf::{flags_for_size, page_flags_size, resource_version};
 
     let n = textures.len();
     // --- system segment layout
@@ -143,10 +143,8 @@ pub fn build_ytd(textures: &[(&str, &Texture)]) -> ResourceData {
     put(&mut sys, 0x38, &(n as u16).to_le_bytes());
     put(&mut sys, 0x3A, &(n as u16).to_le_bytes());
 
-    // smallest flags (base page 8 KiB, up to 127 pages) that hold a segment
-    let flags_for = |len: usize, ver: u32| ((len.div_ceil(8192).max(1) as u32).min(127) << 17) | (ver << 28);
     // legacy ytd is version 13 = (system nibble 0) << 4 | (graphics nibble 0xD)
-    let (sys_flags, gfx_flags) = (flags_for(sys.len(), 0), flags_for(gfx.len(), 0xD));
+    let (sys_flags, gfx_flags) = (flags_for_size(sys.len(), 0), flags_for_size(gfx.len(), 0xD));
     sys.resize(page_flags_size(sys_flags) as usize, 0);
     gfx.resize(page_flags_size(gfx_flags) as usize, 0);
     sys.extend_from_slice(&gfx);

@@ -185,6 +185,15 @@ pub fn page_flags_size(flags: u32) -> u32 {
     base.wrapping_mul(s0 + s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8)
 }
 
+/// The smallest flag word that describes a segment of `len` bytes (`page_flags_size(..) >= len`),
+/// with `version` (0..=15) in the top nibble. For code that writes resources.
+pub fn flags_for_size(len: usize, version: u32) -> u32 {
+    // 127 pages of (8 KiB << shift) is the most one word can say; grow the page until it fits
+    let page = |shift: u32| 8192usize << shift;
+    let shift = (0..16u32).find(|s| 127 * page(*s) >= len).unwrap_or(15);
+    ((len.div_ceil(page(shift)).clamp(1, 127) as u32) << 17) | shift | ((version & 0xF) << 28)
+}
+
 /// `(system << 4) + graphics` resource version from the two flag words.
 pub fn resource_version(sys_flags: u32, gfx_flags: u32) -> u32 {
     (((sys_flags >> 28) & 0xF) << 4) + ((gfx_flags >> 28) & 0xF)
