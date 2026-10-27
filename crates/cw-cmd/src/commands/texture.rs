@@ -30,7 +30,7 @@ pub fn register(e: &mut Engine) {
             .param(ParamSpec::new("file", K::Path, "a .ytd or .dds file on disk (instead of `path`)"))
             .param(ParamSpec::new("index", K::Integer, "only this texture (default: all)"))
             .param(ParamSpec::new("dest", K::Path, "destination folder").required())
-            .mutating(),
+            .destructive(),
         export,
     );
 }

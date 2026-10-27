@@ -101,7 +101,7 @@ pub fn register(e: &mut Engine) {
     e.register(
         CommandSpec::new("world.save", "world", "Save the scene as JSON")
             .param(ParamSpec::new("path", K::Path, "file to write").required())
-            .mutating(),
+            .destructive(),
         save,
     );
     e.register(

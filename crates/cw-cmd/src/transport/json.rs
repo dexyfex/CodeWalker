@@ -142,7 +142,7 @@ mod tests {
     use super::*;
 
     fn engine() -> Arc<Engine> {
-        Arc::new(Engine::new())
+        Arc::new(Engine::ephemeral())
     }
 
     #[test]

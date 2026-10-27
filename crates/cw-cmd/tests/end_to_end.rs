@@ -167,8 +167,17 @@ fn adding_archives_keeps_the_open_ones_and_loose_files_are_tracked() {
     ok(&e, "file.open", json!({ "path": note })); // idempotent
     assert_eq!(e.session().files.len(), 1);
     assert_eq!(ok(&e, "file.read", json!({ "path": note, "length": 5 }))["text"], "loose");
+    let tail = ok(&e, "file.read", json!({ "path": note, "offset": 6, "length": 100 }));
+    assert_eq!(
+        (tail["text"].as_str(), tail["total"].as_u64(), tail["offset"].as_u64()),
+        (Some("text"), Some(10), Some(6))
+    );
     ok(&e, "file.close", json!({ "path": note }));
     assert!(e.session().files.is_empty());
+    // reading is limited to files that were opened on purpose
+    let refused = e.execute("file.read", json!({ "path": note })).unwrap_err();
+    assert_eq!(refused.code, "invalid_args");
+    assert!(refused.message.contains("file.open"), "{}", refused.message);
     assert_eq!(e.execute("file.open", json!({ "path": fx.dir.join("nope") })).unwrap_err().code, "not_found");
     assert_eq!(e.execute("file.open", json!({ "path": fx.dir })).unwrap_err().code, "invalid_args");
 }

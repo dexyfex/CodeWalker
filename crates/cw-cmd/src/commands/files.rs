@@ -1,6 +1,9 @@
 //! Loose files on disk (not inside an archive): `.ytd`, `.ydr`, `.xml`, `.dds`…
 
-use std::path::PathBuf;
+use std::{
+    io::{Read, Seek, SeekFrom},
+    path::PathBuf,
+};
 
 use base64::Engine as _;
 use cw_core::{filekind::FileKind, resource};
@@ -15,6 +18,8 @@ use crate::{
 };
 
 const MAX_READ: usize = 16 * 1024 * 1024;
+/// Largest resource file that is decompressed to answer a read.
+const MAX_RESOURCE_FILE: u64 = 256 * 1024 * 1024;
 
 pub fn register(e: &mut Engine) {
     e.register(
@@ -76,18 +81,46 @@ struct ReadArgs {
     length: Option<usize>,
 }
 
-fn read(_: &Ctx, args: Value) -> CmdResult {
+fn read(ctx: &Ctx, args: Value) -> CmdResult {
     let a: ReadArgs = parse(args)?;
-    let raw = std::fs::read(&a.path)?;
-    let data = if resource::has_rsc7_header(&raw) { resource::parse_loose(&raw)?.data } else { raw };
-    let offset = a.offset.unwrap_or(0).min(data.len());
-    let len = a.length.unwrap_or(4096).min(MAX_READ).min(data.len() - offset);
-    let slice = &data[offset..offset + len];
+    // only what was opened on purpose: this command is also reachable by remote callers
+    if !ctx.session().files.contains(&a.path) {
+        return Err(CmdError::invalid(format!(
+            "{} is not open; open it with `file.open` first",
+            a.path.display()
+        )));
+    }
+    let mut f = std::fs::File::open(&a.path)?;
+    let size = f.metadata()?.len();
+    let mut head = [0u8; 4];
+    let head_len = f.read(&mut head)?;
+    f.seek(SeekFrom::Start(0))?;
+
+    let (total, offset, bytes) = if resource::has_rsc7_header(&head[..head_len]) {
+        // resources are deflated: the whole file is needed, up to a sane size
+        if size > MAX_RESOURCE_FILE {
+            return Err(CmdError::invalid(format!("{} is too large to decompress here", a.path.display())));
+        }
+        let mut raw = Vec::with_capacity(size as usize);
+        f.read_to_end(&mut raw)?;
+        let data = resource::parse_loose(&raw)?.data;
+        let offset = a.offset.unwrap_or(0).min(data.len());
+        let len = a.length.unwrap_or(4096).min(MAX_READ).min(data.len() - offset);
+        (data.len() as u64, offset, data[offset..offset + len].to_vec())
+    } else {
+        // anything else is read where it lies, never the whole file
+        let offset = (a.offset.unwrap_or(0) as u64).min(size);
+        let len = (a.length.unwrap_or(4096).min(MAX_READ) as u64).min(size - offset);
+        f.seek(SeekFrom::Start(offset))?;
+        let mut buf = Vec::with_capacity(len as usize);
+        f.take(len).read_to_end(&mut buf)?;
+        (size, offset as usize, buf)
+    };
     Ok(json!({
-        "total": data.len(),
+        "total": total,
         "offset": offset,
-        "length": len,
-        "base64": base64::engine::general_purpose::STANDARD.encode(slice),
-        "text": std::str::from_utf8(slice).ok(),
+        "length": bytes.len(),
+        "base64": base64::engine::general_purpose::STANDARD.encode(&bytes),
+        "text": std::str::from_utf8(&bytes).ok(),
     }))
 }

@@ -63,7 +63,7 @@ pub fn handle(engine: &Engine, line: &str) -> Option<Value> {
                         "name": tool_name(s.name),
                         "description": s.summary,
                         "inputSchema": s.input_schema(),
-                        "annotations": { "readOnlyHint": !s.mutates, "destructiveHint": false, "openWorldHint": false },
+                        "annotations": { "readOnlyHint": !s.mutates, "destructiveHint": s.destructive, "openWorldHint": false },
                     })
                 })
                 .collect();
@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn handshake_list_and_call() {
-        let e = Engine::new();
+        let e = Engine::ephemeral();
         let init = handle(
             &e,
             r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
@@ -114,6 +114,14 @@ mod tests {
         let search = tools.iter().find(|t| t["name"] == "rpf_search").unwrap();
         assert_eq!(search["inputSchema"]["required"][0], "query");
         assert_eq!(search["annotations"]["readOnlyHint"], true);
+        assert_eq!(search["annotations"]["destructiveHint"], false);
+        let hints = |name: &str| {
+            let t = tools.iter().find(|t| t["name"] == name).unwrap();
+            (t["annotations"]["readOnlyHint"].clone(), t["annotations"]["destructiveHint"].clone())
+        };
+        assert_eq!(hints("rpf_extract"), (json!(false), json!(true)), "writes files");
+        assert_eq!(hints("mods_remove"), (json!(false), json!(true)), "deletes files");
+        assert_eq!(hints("world_add"), (json!(false), json!(false)), "changes the scene only");
 
         let call = handle(&e, r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"hash_joaat","arguments":{"text":"a"}}}"#).unwrap();
         assert_eq!(call["result"]["isError"], false);

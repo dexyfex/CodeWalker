@@ -56,7 +56,7 @@ pub fn register(e: &mut Engine) {
                 ParamSpec::new("dest", K::Path, "destination folder (or file name for a single file)")
                     .required(),
             )
-            .mutating(),
+            .destructive(),
         extract,
     );
     e.register(CommandSpec::new("rpf.stats", "archive", "Counts for the open archives"), stats);

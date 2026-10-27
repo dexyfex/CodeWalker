@@ -43,7 +43,7 @@ pub fn register(e: &mut Engine) {
                 .required(),
             )
             .param(ParamSpec::new("overwrite", K::Boolean, "replace an existing copy"))
-            .mutating(),
+            .destructive(),
         copy,
     );
     for (name, summary, enable) in [
@@ -53,14 +53,14 @@ pub fn register(e: &mut Engine) {
         e.register(
             CommandSpec::new(name, "mods", summary)
                 .param(ParamSpec::new("path", K::String, "path inside the mods folder").required())
-                .mutating(),
+                .destructive(),
             move |ctx, args| set_enabled(ctx, args, enable),
         );
     }
     e.register(
         CommandSpec::new("mods.remove", "mods", "Delete a mod override from the mods folder")
             .param(ParamSpec::new("path", K::String, "path inside the mods folder").required())
-            .mutating(),
+            .destructive(),
         remove,
     );
     e.register(
@@ -76,7 +76,7 @@ pub fn register(e: &mut Engine) {
             "path inside mods/ (a folder source: sub-folder; a file: its full path)",
         ))
         .param(ParamSpec::new("overwrite", K::Boolean, "replace files that already exist"))
-        .mutating(),
+        .destructive(),
         install,
     );
 }

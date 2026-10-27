@@ -41,11 +41,13 @@ pub struct CommandSpec {
     pub params: Vec<ParamSpec>,
     /// Changes files on disk or application state (as opposed to read-only).
     pub mutates: bool,
+    /// Writes, renames or deletes files outside the application's own state.
+    pub destructive: bool,
 }
 
 impl CommandSpec {
     pub fn new(name: &'static str, category: &'static str, summary: &'static str) -> Self {
-        Self { name, category, summary, params: Vec::new(), mutates: false }
+        Self { name, category, summary, params: Vec::new(), mutates: false, destructive: false }
     }
 
     pub fn param(mut self, p: ParamSpec) -> Self {
@@ -55,6 +57,13 @@ impl CommandSpec {
 
     pub fn mutating(mut self) -> Self {
         self.mutates = true;
+        self
+    }
+
+    /// Like [`mutating`](Self::mutating), and the files it touches are the user's.
+    pub fn destructive(mut self) -> Self {
+        self.mutates = true;
+        self.destructive = true;
         self
     }
 

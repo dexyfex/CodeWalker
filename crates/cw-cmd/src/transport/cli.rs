@@ -112,7 +112,7 @@ mod tests {
 
     #[test]
     fn flags_are_typed_by_the_spec() {
-        let e = Engine::new();
+        let e = Engine::ephemeral();
         let s = spec(&e, "rpf.list");
         let v = parse_args(&s, &["--path".into(), "x64a.rpf".into(), "--limit=5".into()]).unwrap();
         assert_eq!(v, json!({ "path": "x64a.rpf", "limit": 5 }));
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn boolean_flags_default_to_true() {
-        let e = Engine::new();
+        let e = Engine::ephemeral();
         let s = spec(&e, "hash.joaat");
         assert_eq!(
             parse_args(&s, &["--text".into(), "A".into(), "--lower".into()]).unwrap(),
@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn help_lists_every_command() {
-        let e = Engine::new();
+        let e = Engine::ephemeral();
         let h = help(&e, None);
         for s in e.specs() {
             assert!(h.contains(s.name), "{} missing", s.name);
