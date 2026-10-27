@@ -77,13 +77,19 @@ impl GtaKeys {
     /// Unpacks the embedded `magic.dat` with a known AES key
     /// (`GTA5Keys.UseMagicData`).
     pub fn from_aes_key(aes_key: [u8; 32]) -> Result<Self> {
+        Self::unpack_magic(MAGIC, aes_key)
+    }
+
+    /// The unpacking itself, on any blob: undo the four pseudo-random streams (seeded from the
+    /// key), AES-decrypt, inflate, then split into keys, tables, lookup table and AWC key.
+    fn unpack_magic(magic: &[u8], aes_key: [u8; 32]) -> Result<Self> {
         let mut rnd = DotNetRandom::new(joaat_bytes(&aes_key) as i32);
-        let n = MAGIC.len();
+        let n = magic.len();
         let mut rb = [vec![0u8; n], vec![0u8; n], vec![0u8; n], vec![0u8; n]];
         for r in rb.iter_mut() {
             rnd.next_bytes(r);
         }
-        let mut db = MAGIC.to_vec();
+        let mut db = magic.to_vec();
         for (i, b) in db.iter_mut().enumerate() {
             *b =
                 b.wrapping_sub(rb[0][i]).wrapping_sub(rb[1][i]).wrapping_sub(rb[2][i]).wrapping_sub(rb[3][i]);
@@ -191,6 +197,55 @@ mod tests {
         assert!(MAGIC.len() > 1024);
         assert_eq!(NG_KEYS_BYTES, 27472);
         assert_eq!(NG_TABLES_BYTES, 278528);
+    }
+
+    /// The writer's side of `unpack_magic` (CodeWalker's `GenerateMagicData`): deflate, AES-encrypt,
+    /// then add the four pseudo-random streams.
+    fn pack_magic(plain: &[u8], aes_key: [u8; 32]) -> Vec<u8> {
+        use std::io::Write;
+        let mut z = flate2::write::DeflateEncoder::new(Vec::new(), flate2::Compression::default());
+        z.write_all(plain).unwrap();
+        let mut blob = crate::crypto::encrypt_aes(&z.finish().unwrap(), &aes_key);
+        let mut rnd = DotNetRandom::new(joaat_bytes(&aes_key) as i32);
+        let mut stream = vec![0u8; blob.len()];
+        for _ in 0..4 {
+            rnd.next_bytes(&mut stream);
+            for (b, s) in blob.iter_mut().zip(&stream) {
+                *b = b.wrapping_add(*s);
+            }
+        }
+        blob
+    }
+
+    #[test]
+    fn a_packed_blob_unpacks_into_the_right_pieces() {
+        let aes_key: [u8; 32] = core::array::from_fn(|i| (i * 7 + 3) as u8);
+        let mut plain = vec![0u8; NG_KEYS_BYTES + NG_TABLES_BYTES + 256 + 16];
+        DotNetRandom::new(99).next_bytes(&mut plain);
+
+        let keys = GtaKeys::unpack_magic(&pack_magic(&plain, aes_key), aes_key).unwrap();
+        assert_eq!(keys.aes_key, aes_key);
+        assert_eq!(keys.ng_keys.len(), NG_KEY_COUNT);
+        assert_eq!(&keys.ng_keys[0][..], &plain[..NG_KEY_LEN]);
+        assert_eq!(&keys.ng_keys[100][..], &plain[100 * NG_KEY_LEN..NG_KEYS_BYTES]);
+        let word = |at: usize| u32::from_le_bytes(plain[at..at + 4].try_into().unwrap());
+        let t = NG_KEYS_BYTES;
+        assert_eq!(keys.ng_tables[0][0][0], word(t));
+        assert_eq!(keys.ng_tables[0][0][1], word(t + 4));
+        assert_eq!(keys.ng_tables[0][1][0], word(t + 256 * 4), "tables are stored one after another");
+        assert_eq!(keys.ng_tables[1][0][0], word(t + 16 * 256 * 4), "round after round");
+        assert_eq!(keys.ng_tables[16][15][255], word(t + NG_TABLES_BYTES - 4));
+        let l = NG_KEYS_BYTES + NG_TABLES_BYTES;
+        assert_eq!(&keys.lut[..], &plain[l..l + 256]);
+        assert_eq!(keys.awc_key, [word(l + 256), word(l + 260), word(l + 264), word(l + 268)]);
+
+        // anything but the right key, and anything too short, is an error and not garbage
+        let packed = pack_magic(&plain, aes_key);
+        assert!(matches!(GtaKeys::unpack_magic(&packed, [1u8; 32]), Err(Error::InvalidKeyData(_))));
+        let short = pack_magic(&plain[..1000], aes_key);
+        assert!(
+            matches!(GtaKeys::unpack_magic(&short, aes_key), Err(Error::InvalidKeyData(m)) if m.contains("too short"))
+        );
     }
 
     #[test]

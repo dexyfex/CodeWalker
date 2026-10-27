@@ -80,6 +80,9 @@ mod tests {
     fn matches_dotnet_for_known_seeds() {
         assert_eq!(DotNetRandom::new(42).next_i32(), 1_434_747_710);
         assert_eq!(DotNetRandom::new(0).next_i32(), 1_559_595_546);
+        // the first three values of `new Random(1)`, the sequence usually quoted for .NET
+        let mut r = DotNetRandom::new(1);
+        assert_eq!([r.next_i32(), r.next_i32(), r.next_i32()], [534_011_718, 237_820_880, 1_002_897_798]);
     }
 
     #[test]
