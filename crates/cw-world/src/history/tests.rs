@@ -206,3 +206,11 @@ fn revision_moves_on_every_visible_change_and_never_goes_back() {
     w.load_json(&w.to_json()).unwrap();
     assert!(w.revision() > before, "loading must not reset the counter or views would miss it");
 }
+
+#[test]
+fn euler_display_has_no_negative_zero_or_noise() {
+    let t = Transform::default().with_euler_degrees(Vec3::new(0.0, -0.000_01, 30.0));
+    let e = t.euler_degrees();
+    assert_eq!(e.y.to_bits(), 0.0f32.to_bits(), "tiny negatives display as +0, got {:?}", e.y);
+    assert_eq!(Transform::default().euler_degrees().to_array().map(f32::to_bits), [0u32; 3]);
+}

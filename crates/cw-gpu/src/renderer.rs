@@ -42,7 +42,10 @@ struct MeshVertex {
 
 pub struct GpuScene<'a> {
     pub boxes: &'a [BoxInstance],
+    /// Depth-tested lines (hidden behind nearer geometry).
     pub lines: &'a [LineVertex],
+    /// Lines drawn on top of everything: selection outlines and gizmos.
+    pub overlay: &'a [LineVertex],
 }
 
 /// Grid cell size that suits a camera at height `h`: powers of ten, so the
@@ -134,11 +137,13 @@ pub struct Renderer {
     bind_group: wgpu::BindGroup,
     boxes: wgpu::RenderPipeline,
     lines: wgpu::RenderPipeline,
+    overlay: wgpu::RenderPipeline,
     grid: wgpu::RenderPipeline,
     cube_vertices: wgpu::Buffer,
     cube_indices: wgpu::Buffer,
     instances: Growable,
     line_buffer: Growable,
+    overlay_buffer: Growable,
 }
 
 impl Renderer {
@@ -185,11 +190,11 @@ impl Renderer {
         })];
         let multisample =
             wgpu::MultisampleState { count: SAMPLES, mask: !0, alpha_to_coverage_enabled: false };
-        let depth = |write: bool| {
+        let depth = |write: bool, cmp: wgpu::CompareFunction| {
             Some(wgpu::DepthStencilState {
                 format: DEPTH_FORMAT,
                 depth_write_enabled: Some(write),
-                depth_compare: Some(wgpu::CompareFunction::LessEqual),
+                depth_compare: Some(cmp),
                 stencil: wgpu::StencilState::default(),
                 bias: wgpu::DepthBiasState::default(),
             })
@@ -221,7 +226,7 @@ impl Renderer {
                         fs: &str,
                         buffers: &[Option<wgpu::VertexBufferLayout>],
                         topology,
-                        write_depth: bool| {
+                        depth_mode: (bool, wgpu::CompareFunction)| {
             device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
                 label: Some(label),
                 layout: Some(&layout),
@@ -232,7 +237,7 @@ impl Renderer {
                     buffers,
                 },
                 primitive: wgpu::PrimitiveState { topology, cull_mode: None, ..Default::default() },
-                depth_stencil: depth(write_depth),
+                depth_stencil: depth(depth_mode.0, depth_mode.1),
                 multisample,
                 fragment: Some(wgpu::FragmentState {
                     module: &shader,
@@ -244,11 +249,11 @@ impl Renderer {
                 cache: None,
             })
         };
-        let boxes =
-            pipeline("boxes", "vs_box", "fs_box", &box_buffers, wgpu::PrimitiveTopology::TriangleList, true);
-        let lines =
-            pipeline("lines", "vs_line", "fs_line", &line_buffers, wgpu::PrimitiveTopology::LineList, true);
-        let grid = pipeline("grid", "vs_grid", "fs_grid", &[], wgpu::PrimitiveTopology::TriangleList, false);
+        use wgpu::{CompareFunction::*, PrimitiveTopology::*};
+        let boxes = pipeline("boxes", "vs_box", "fs_box", &box_buffers, TriangleList, (true, LessEqual));
+        let lines = pipeline("lines", "vs_line", "fs_line", &line_buffers, LineList, (true, LessEqual));
+        let overlay = pipeline("overlay", "vs_line", "fs_line", &line_buffers, LineList, (false, Always));
+        let grid = pipeline("grid", "vs_grid", "fs_grid", &[], TriangleList, (false, LessEqual));
 
         let (verts, idx) = cube();
         let cube_vertices = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -272,6 +277,8 @@ impl Renderer {
             cube_indices,
             instances: Growable::new(device, "box instances", wgpu::BufferUsages::VERTEX),
             line_buffer: Growable::new(device, "lines", wgpu::BufferUsages::VERTEX),
+            overlay_buffer: Growable::new(device, "overlay lines", wgpu::BufferUsages::VERTEX),
+            overlay,
         }
     }
 
@@ -288,6 +295,7 @@ impl Renderer {
         queue.write_buffer(&self.globals, 0, bytemuck::bytes_of(globals));
         self.instances.upload(device, queue, bytemuck::cast_slice(scene.boxes));
         self.line_buffer.upload(device, queue, bytemuck::cast_slice(scene.lines));
+        self.overlay_buffer.upload(device, queue, bytemuck::cast_slice(scene.overlay));
 
         let mut enc =
             device.create_command_encoder(&wgpu::CommandEncoderDescriptor { label: Some("viewport") });
@@ -328,6 +336,11 @@ impl Renderer {
                 pass.set_pipeline(&self.lines);
                 pass.set_vertex_buffer(0, self.line_buffer.buffer.slice(..));
                 pass.draw(0..scene.lines.len() as u32, 0..1);
+            }
+            if !scene.overlay.is_empty() {
+                pass.set_pipeline(&self.overlay);
+                pass.set_vertex_buffer(0, self.overlay_buffer.buffer.slice(..));
+                pass.draw(0..scene.overlay.len() as u32, 0..1);
             }
         }
         queue.submit([enc.finish()]);
@@ -451,7 +464,7 @@ mod tests {
             model: glam::Mat4::from_scale(glam::Vec3::splat(2.0)).to_cols_array_2d(),
             color: [1.0, 0.2, 0.2, 1.0],
         };
-        r.render(&device, &queue, &target, &globals, &GpuScene { boxes: &[b], lines: &[] });
+        r.render(&device, &queue, &target, &globals, &GpuScene { boxes: &[b], lines: &[], overlay: &[] });
         let px = Renderer::read_pixels(&device, &queue, &target);
         let at = |x: usize, y: usize| &px[(y * 64 + x) * 4..(y * 64 + x) * 4 + 4];
         let centre = at(32, 32);

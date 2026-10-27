@@ -80,6 +80,15 @@ impl App {
             {
                 self.perform(Action::ExtractSelected);
             }
+            if Btn::new("Copy to mods")
+                .icon(Icon::Layers)
+                .tip("Make an editable copy of this archive in the mods folder (Ctrl+M)")
+                .enabled(self.enabled(Action::CopyToMods))
+                .show(ui)
+                .clicked()
+            {
+                self.perform(Action::CopyToMods);
+            }
         });
         if act.is_some() {
             self.ex.open_item(item);

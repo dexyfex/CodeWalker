@@ -27,7 +27,9 @@ impl Transform {
     /// Rotation as Z-Y-X Euler angles in degrees (yaw about Z, as GTA does).
     pub fn euler_degrees(&self) -> Vec3 {
         let (z, y, x) = self.rotation.to_euler(EulerRot::ZYX);
-        Vec3::new(x.to_degrees(), y.to_degrees(), z.to_degrees())
+        // rounded for display: no "-0.0°" or 1e-7 noise from the quaternion round trip
+        let clean = |r: f32| (r.to_degrees() * 1e4).round() / 1e4 + 0.0;
+        Vec3::new(clean(x), clean(y), clean(z))
     }
 
     pub fn with_euler_degrees(mut self, e: Vec3) -> Self {

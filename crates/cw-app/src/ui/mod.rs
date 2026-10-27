@@ -20,6 +20,7 @@ pub mod status;
 pub mod toasts;
 pub mod toolbar;
 pub mod tree;
+pub mod world;
 
 pub const CONTROL_H: f32 = 28.0;
 const R: u8 = 5;
@@ -39,13 +40,12 @@ pub struct Btn<'a> {
     pub label: &'a str,
     pub tip: &'a str,
     pub enabled: bool,
-    pub active: bool,
     pub tone: Tone,
 }
 
 impl<'a> Btn<'a> {
     pub fn new(label: &'a str) -> Self {
-        Self { icon: None, label, tip: "", enabled: true, active: false, tone: Tone::Secondary }
+        Self { icon: None, label, tip: "", enabled: true, tone: Tone::Secondary }
     }
 
     pub fn icon(mut self, i: Icon) -> Self {
@@ -63,11 +63,6 @@ impl<'a> Btn<'a> {
         self
     }
 
-    pub fn active(mut self, a: bool) -> Self {
-        self.active = a;
-        self
-    }
-
     pub fn tone(mut self, t: Tone) -> Self {
         self.tone = t;
         self
@@ -82,7 +77,7 @@ impl<'a> Btn<'a> {
                 (Color32::from_rgb(0x0D, 0x0D, 0x0E), theme::TEXT, Color32::WHITE, theme::MUTED, None)
             }
         };
-        let fg = if self.enabled { if self.active { theme::TEXT } else { fg } } else { theme::FAINT };
+        let fg = if self.enabled { fg } else { theme::FAINT };
         let galley = ui.painter().layout_no_wrap(self.label.to_string(), font, fg);
         let icon_w = if self.icon.is_some() { 16.0 } else { 0.0 };
         let gap = if self.icon.is_some() && !self.label.is_empty() { 6.0 } else { 0.0 };
@@ -97,7 +92,7 @@ impl<'a> Btn<'a> {
                 fill
             } else if resp.is_pointer_button_down_on() {
                 press
-            } else if resp.hovered() || self.active {
+            } else if resp.hovered() {
                 hover
             } else {
                 fill
@@ -264,7 +259,9 @@ impl App {
             edge(ui, Side::Top);
         });
 
-        if self.mode == Mode::Mods {
+        if self.mode == Mode::World {
+            self.show_world(ui);
+        } else if self.mode == Mode::Mods {
             CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_mods(ui));
         } else if self.ex.is_empty() && self.loose.is_empty() {
             CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_empty(ui));

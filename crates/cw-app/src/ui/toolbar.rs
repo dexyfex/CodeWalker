@@ -43,9 +43,13 @@ impl App {
 
             ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                 ui.add_space(8.0);
-                let mode = if self.mode == Mode::Explorer { 0 } else { 1 };
-                if let Some(i) = segmented(ui, &["Explorer", "Mods"], mode) {
-                    self.perform(if i == 0 { Action::ShowExplorer } else { Action::ShowMods });
+                let mode = match self.mode {
+                    Mode::Explorer => 0,
+                    Mode::Mods => 1,
+                    Mode::World => 2,
+                };
+                if let Some(i) = segmented(ui, &["Explorer", "Mods", "World"], mode) {
+                    self.perform([Action::ShowExplorer, Action::ShowMods, Action::ShowWorld][i]);
                 }
                 ui.add_space(8.0);
                 if self.mode != Mode::Explorer {

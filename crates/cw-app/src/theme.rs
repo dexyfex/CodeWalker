@@ -25,8 +25,6 @@ pub const HEX_ROW_H: f32 = 20.0;
 pub const TOOLBAR_H: f32 = 40.0;
 pub const STATUS_H: f32 = 26.0;
 
-pub const MONO_FAMILY: &str = "mono";
-
 pub fn install(ctx: &egui::Context) {
     ctx.set_fonts(fonts());
     ctx.set_visuals(visuals());
@@ -121,6 +119,7 @@ fn visuals() -> egui::Visuals {
 }
 
 /// WCAG relative luminance of an sRGB colour.
+#[cfg(test)]
 pub fn luminance(c: Color32) -> f64 {
     fn ch(v: u8) -> f64 {
         let s = v as f64 / 255.0;
@@ -130,6 +129,7 @@ pub fn luminance(c: Color32) -> f64 {
 }
 
 /// WCAG contrast ratio between two colours (1.0 – 21.0).
+#[cfg(test)]
 pub fn contrast(a: Color32, b: Color32) -> f64 {
     let (la, lb) = (luminance(a), luminance(b));
     let (hi, lo) = if la > lb { (la, lb) } else { (lb, la) };

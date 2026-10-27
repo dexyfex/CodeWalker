@@ -27,7 +27,7 @@ fn columns(rect: Rect, searching: bool) -> Cols {
     let packed_right = wide.then_some(rect.right() - PAD);
     let size_right = rect.right() - PAD - if wide { 96.0 } else { 0.0 };
     let type_w = if searching { 220.0 } else { 150.0 };
-    let type_x = mid.then(|| size_right - 96.0 - type_w);
+    let type_x = mid.then_some(size_right - 96.0 - type_w);
     let name_right = type_x.unwrap_or(size_right - 80.0) - 12.0;
     Cols { name_right, type_x, size_right, packed_right }
 }

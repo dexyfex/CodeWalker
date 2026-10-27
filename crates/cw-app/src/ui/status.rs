@@ -9,7 +9,19 @@ impl App {
         let y = rect.center().y;
         let p = ui.painter().clone();
 
-        let left = if let Some(b) = &self.busy {
+        let left = if self.mode == crate::app::Mode::World && self.busy.is_none() {
+            let w = self.engine.session();
+            let n = w.world.scene.entities.len() as u64;
+            let sel = w.world.scene.selection.len() as u64;
+            let mut t = format::plural(n, "entity", "entities");
+            if sel > 0 {
+                t.push_str(&format!(" · {sel} selected"));
+            }
+            if w.world.is_dirty() {
+                t.push_str(" · unsaved changes");
+            }
+            t
+        } else if let Some(b) = &self.busy {
             let detail = self.progress.as_deref().map(|s| format!(" — {s}")).unwrap_or_default();
             format!("{b}{detail}")
         } else if let Some(t) = &self.ex.tree {

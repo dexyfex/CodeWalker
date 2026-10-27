@@ -30,6 +30,7 @@ use crate::{
 pub enum Mode {
     Explorer,
     Mods,
+    World,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -85,6 +86,8 @@ pub enum Pick {
     ExtractTo,
     InstallFiles,
     InstallFolder,
+    SaveScene,
+    LoadScene,
 }
 
 pub enum Msg {
@@ -102,6 +105,7 @@ pub struct App {
     pub ctx: egui::Context,
 
     pub mode: Mode,
+    pub world: crate::ui::world::WorldUi,
     pub mods: ModsState,
     pub ex: Explorer,
     pub loose: Vec<PathBuf>,
@@ -141,6 +145,9 @@ struct Script {
     search: Option<String>,
     everywhere: bool,
     mods: bool,
+    world: bool,
+    scene: Option<PathBuf>,
+    select_entity: Option<u32>,
 }
 
 impl Script {
@@ -157,8 +164,16 @@ impl Script {
             search: var("CODEWALKER_SEARCH"),
             everywhere: var("CODEWALKER_SEARCH_ALL").is_some(),
             mods: var("CODEWALKER_MODE").as_deref() == Some("mods"),
+            world: var("CODEWALKER_MODE").as_deref() == Some("world"),
+            scene: var("CODEWALKER_SCENE").map(PathBuf::from),
+            select_entity: var("CODEWALKER_SELECT_ENTITY").and_then(|v| v.parse().ok()),
         };
-        (s.select.is_some() || s.palette || s.search.is_some() || s.mods || s.view != ViewMode::Auto)
+        (s.select.is_some()
+            || s.palette
+            || s.search.is_some()
+            || s.mods
+            || s.world
+            || s.view != ViewMode::Auto)
             .then_some(s)
     }
 }
@@ -167,6 +182,7 @@ impl Script {
 struct Shot {
     path: PathBuf,
     after_frames: u32,
+    after_secs: Option<f64>,
     frame: u32,
     requested: bool,
     done: Arc<std::sync::atomic::AtomicBool>,
@@ -184,6 +200,7 @@ impl App {
             rx,
             ctx: cc.egui_ctx.clone(),
             mode: Mode::Explorer,
+            world: crate::ui::world::WorldUi::new(cc.wgpu_render_state.as_ref()),
             mods: ModsState::default(),
             ex: Explorer::default(),
             loose: Vec::new(),
@@ -215,6 +232,7 @@ impl App {
             script: Script::from_env(),
             shot: std::env::var_os("CODEWALKER_SCREENSHOT").map(|p| Shot {
                 path: PathBuf::from(p),
+                after_secs: std::env::var("CODEWALKER_SCREENSHOT_AFTER").ok().and_then(|v| v.parse().ok()),
                 after_frames: std::env::var("CODEWALKER_SCREENSHOT_FRAMES")
                     .ok()
                     .and_then(|v| v.parse().ok())
@@ -226,6 +244,18 @@ impl App {
             engine,
         };
 
+        if let Some(s) = &app.script {
+            if s.world {
+                app.mode = Mode::World;
+            }
+            if let Some(path) = &s.scene {
+                let _ = app.engine.execute("world.load", json!({ "path": path }));
+            }
+            if let Some(id) = s.select_entity {
+                let _ = app.engine.execute("world.select", json!({ "id": id }));
+                app.world_frame();
+            }
+        }
         if startup.is_empty() {
             match app.config_game_folder.clone().filter(|p| p.is_dir()) {
                 Some(folder) => app.run("Scanning game files…", "game.open", json!({ "folder": folder })),
@@ -267,11 +297,20 @@ impl App {
     pub fn pick(&self, what: Pick) {
         self.spawn(move || {
             let dlg = rfd::FileDialog::new();
+            if what == Pick::SaveScene {
+                let path =
+                    dlg.add_filter("CodeWalker scene", &["json"]).set_file_name("scene.json").save_file();
+                return Msg::Picked(what, path.into_iter().collect());
+            }
             let paths = match what {
                 Pick::GameFolder | Pick::ExtractTo | Pick::InstallFolder => {
                     dlg.pick_folder().into_iter().collect()
                 }
                 Pick::Files | Pick::InstallFiles => dlg.pick_files().unwrap_or_default(),
+                Pick::LoadScene => {
+                    dlg.add_filter("CodeWalker scene", &["json"]).pick_file().into_iter().collect()
+                }
+                Pick::SaveScene => unreachable!("handled above"),
             };
             Msg::Picked(what, paths)
         });
@@ -313,6 +352,7 @@ impl App {
                     self.apply_script();
                 }
                 Event::FilesChanged => self.loose = self.engine.session().files.clone(),
+                Event::WorldChanged => {}
                 Event::KeysChanged => self.keys_loaded = self.engine.session().keys.is_some(),
                 Event::Progress { message, .. } => self.progress = Some(message),
                 Event::ConfigChanged | Event::Log { .. } => {}
@@ -365,6 +405,26 @@ impl App {
                     self.open_path(p);
                 }
             }
+            Pick::SaveScene => {
+                let r = self.engine.execute("world.save", json!({ "path": paths[0] }));
+                match r {
+                    Ok(_) => self.toast("Scene saved", ToastKind::Success),
+                    Err(e) => self.toast(e.message, ToastKind::Error),
+                }
+            }
+            Pick::LoadScene => match self.engine.execute("world.load", json!({ "path": paths[0] })) {
+                Ok(v) => {
+                    self.toast(
+                        format!(
+                            "Loaded {}",
+                            format::plural(v["entities"].as_u64().unwrap_or(0), "entity", "entities")
+                        ),
+                        ToastKind::Success,
+                    );
+                    self.world.framed = false;
+                }
+                Err(e) => self.toast(e.message, ToastKind::Error),
+            },
             Pick::InstallFiles | Pick::InstallFolder => {
                 for source in paths {
                     self.run("Installing…", "mods.install", json!({ "source": source }));
@@ -612,6 +672,12 @@ impl App {
             Action::CopyToMods => self.mods_copy_source().is_some(),
             Action::ShowExplorer => self.mode != Mode::Explorer,
             Action::ShowMods => self.mode != Mode::Mods,
+            Action::ShowWorld => self.mode != Mode::World,
+            Action::AddEntity | Action::SaveScene | Action::LoadScene => true,
+            Action::DeleteSelection => !self.engine.session().world.scene.selection.is_empty(),
+            Action::FrameSelection => !self.engine.session().world.scene.entities.is_empty(),
+            Action::Undo => self.engine.session().world.can_undo(),
+            Action::Redo => self.engine.session().world.can_redo(),
             Action::SearchEverywhere | Action::FocusSearch => !self.ex.is_empty(),
             Action::ShowPreview | Action::ShowHex | Action::ShowInfo => self.preview.target.is_some(),
             _ => true,
@@ -670,6 +736,17 @@ impl App {
                 self.mode = Mode::Mods;
                 self.refresh_mods();
             }
+            Action::ShowWorld => self.mode = Mode::World,
+            Action::AddEntity => {
+                self.mode = Mode::World;
+                self.world_add_entity();
+            }
+            Action::DeleteSelection => self.world_delete_selection(),
+            Action::FrameSelection => self.world_frame(),
+            Action::Undo => self.world_undo(),
+            Action::Redo => self.world_redo(),
+            Action::SaveScene => self.pick(Pick::SaveScene),
+            Action::LoadScene => self.pick(Pick::LoadScene),
             Action::Quit => self.quit = true,
         }
     }
@@ -715,6 +792,7 @@ impl App {
 
     fn shortcuts(&mut self, ctx: &egui::Context) {
         let typing = ctx.egui_wants_keyboard_input();
+        let in_world = self.mode == Mode::World;
         let mut act = None;
         ctx.input_mut(|i| {
             let cmd_shift = Modifiers::COMMAND | Modifiers::SHIFT;
@@ -738,6 +816,12 @@ impl App {
                 act = Some(Some(Action::ShowExplorer));
             } else if i.consume_key(Modifiers::ALT, Key::Num2) {
                 act = Some(Some(Action::ShowMods));
+            } else if i.consume_key(Modifiers::ALT, Key::Num3) {
+                act = Some(Some(Action::ShowWorld));
+            } else if in_world && i.consume_key(Modifiers::COMMAND, Key::S) {
+                act = Some(Some(Action::SaveScene));
+            } else if i.consume_key(cmd_shift, Key::L) {
+                act = Some(Some(Action::LoadScene));
             } else if i.consume_key(Modifiers::COMMAND, Key::Q) {
                 act = Some(Some(Action::Quit));
             } else if i.consume_key(Modifiers::COMMAND, Key::Num1) {
@@ -786,10 +870,15 @@ impl App {
         use std::sync::atomic::Ordering;
         let Some(s) = self.shot.as_mut() else { return };
         s.frame += 1;
+        let now = ctx.input(|i| i.time);
+        let ready = match s.after_secs {
+            Some(secs) => now >= secs,
+            None => s.frame >= s.after_frames,
+        };
         ctx.request_repaint();
         if s.done.load(Ordering::SeqCst) {
             self.quit = true;
-        } else if s.frame >= s.after_frames && self.busy.is_none() && !s.requested {
+        } else if ready && self.busy.is_none() && !s.requested {
             s.requested = true;
             let (path, done) = (s.path.clone(), s.done.clone());
             ctx.request_screenshot(move |img| {

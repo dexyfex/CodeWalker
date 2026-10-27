@@ -19,6 +19,14 @@ pub enum Action {
     CopyToMods,
     ShowExplorer,
     ShowMods,
+    ShowWorld,
+    AddEntity,
+    DeleteSelection,
+    FrameSelection,
+    Undo,
+    Redo,
+    SaveScene,
+    LoadScene,
     Quit,
 }
 
@@ -40,6 +48,14 @@ impl Action {
         Action::CopyToMods,
         Action::ShowExplorer,
         Action::ShowMods,
+        Action::ShowWorld,
+        Action::AddEntity,
+        Action::DeleteSelection,
+        Action::FrameSelection,
+        Action::Undo,
+        Action::Redo,
+        Action::SaveScene,
+        Action::LoadScene,
         Action::Quit,
     ];
 
@@ -61,6 +77,14 @@ impl Action {
             Action::CopyToMods => "Copy archive to mods folder",
             Action::ShowExplorer => "Go to Explorer",
             Action::ShowMods => "Go to Mods",
+            Action::ShowWorld => "Open the map editor",
+            Action::AddEntity => "Add entity to the map",
+            Action::DeleteSelection => "Delete selected entities",
+            Action::FrameSelection => "Frame selection in the map view",
+            Action::Undo => "Undo map edit",
+            Action::Redo => "Redo map edit",
+            Action::SaveScene => "Save map scene…",
+            Action::LoadScene => "Open map scene…",
             Action::Quit => "Quit",
         }
     }
@@ -83,6 +107,14 @@ impl Action {
             Action::CopyToMods => "Ctrl+M",
             Action::ShowExplorer => "Alt+1",
             Action::ShowMods => "Alt+2",
+            Action::ShowWorld => "Alt+3",
+            Action::AddEntity => "N",
+            Action::DeleteSelection => "Delete",
+            Action::FrameSelection => "F",
+            Action::Undo => "Ctrl+Z",
+            Action::Redo => "Ctrl+Y",
+            Action::SaveScene => "Ctrl+S",
+            Action::LoadScene => "Ctrl+Shift+L",
             Action::Quit => "Ctrl+Q",
         }
     }

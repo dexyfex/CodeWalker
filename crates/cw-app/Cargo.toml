@@ -12,6 +12,9 @@ path = "src/main.rs"
 [dependencies]
 cw-core = { path = "../cw-core" }
 cw-cmd = { path = "../cw-cmd" }
+cw-world = { path = "../cw-world" }
+cw-gpu = { path = "../cw-gpu" }
+glam = "0.30"
 eframe = { version = "0.37", default-features = false, features = ["wgpu", "x11", "wayland", "accesskit", "default_fonts"] }
 serde_json.workspace = true
 rfd = "0.15"

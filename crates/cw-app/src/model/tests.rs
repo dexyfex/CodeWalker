@@ -189,7 +189,10 @@ fn search_results_replace_the_listing_until_navigation() {
     // revealing a result goes to its folder and selects it
     e.reveal(hits[0]);
     assert!(e.search.is_none());
-    assert_eq!(e.selected_entry(), Some(hits[0]));
+    assert_eq!(
+        e.selected.as_ref().and_then(|i| if let Item::Entry(r) = i { Some(*r) } else { None }),
+        Some(hits[0])
+    );
     assert_eq!(e.breadcrumbs(&e.current).last().unwrap().0, "levels");
     assert!(names(&e).contains(&"map10.xml".to_string()) || names(&e).contains(&"map2.xml".to_string()));
 }
@@ -217,7 +220,12 @@ fn files_are_selected_not_entered() {
     let file = e.listing[0].clone();
     assert!(!e.open_item(&file));
     assert_eq!(e.selected, Some(file));
-    assert!(e.container_of(e.selected_entry().unwrap()).is_none());
+    assert!(
+        e.container_of(
+            e.selected.as_ref().and_then(|i| if let Item::Entry(r) = i { Some(*r) } else { None }).unwrap()
+        )
+        .is_none()
+    );
 }
 
 #[test]
@@ -246,7 +254,7 @@ fn item_paths_are_what_the_commands_expect() {
 
 #[test]
 fn child_counts_cover_folders_archives_and_directories() {
-    let mut e = sample();
+    let e = sample();
     assert_eq!(e.child_count(&Item::Folder(String::new())), Some(2), "update + common.rpf");
     assert_eq!(e.child_count(&Item::Folder("update".into())), Some(2));
     let common = Item::Entry(EntryRef { archive: 0, index: 0 });
@@ -257,11 +265,4 @@ fn child_counts_cover_folders_archives_and_directories() {
     assert_eq!(e.child_count(&Item::Entry(levels)), Some(3));
     let file = e.tree.as_ref().unwrap().find("common.rpf/zeta.txt").unwrap();
     assert_eq!(e.child_count(&Item::Entry(file)), None);
-
-    // expanding is idempotent, unlike toggling
-    let n = NodeId::Folder("update".into());
-    e.expand(&n);
-    let rows = e.rows.len();
-    e.expand(&n);
-    assert_eq!(e.rows.len(), rows);
 }

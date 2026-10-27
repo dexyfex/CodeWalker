@@ -9,6 +9,7 @@ mod model;
 mod preview;
 mod theme;
 mod ui;
+mod world_view;
 
 use std::{net::SocketAddr, path::PathBuf, process::ExitCode, sync::Arc};
 

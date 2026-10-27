@@ -19,8 +19,6 @@ const MAX_LINE_CHARS: usize = 4000;
 #[derive(Debug, Clone)]
 pub struct ResInfo {
     pub version: u32,
-    pub sys_flags: u32,
-    pub gfx_flags: u32,
     pub sys_size: u32,
     pub gfx_size: u32,
 }
@@ -110,8 +108,6 @@ pub fn load(tree: Option<&RpfTree>, src: &Source) -> Result<Loaded, String> {
 fn res_info(sys_flags: u32, gfx_flags: u32) -> ResInfo {
     ResInfo {
         version: cw_core::rpf::resource_version(sys_flags, gfx_flags),
-        sys_flags,
-        gfx_flags,
         sys_size: page_flags_size(sys_flags),
         gfx_size: page_flags_size(gfx_flags),
     }
@@ -323,7 +319,7 @@ pub fn upload(ctx: &egui::Context, name: &str, d: &Decoded) -> TextureHandle {
 pub fn image_view(ui: &mut Ui, tex: &TextureHandle, original: (u32, u32)) {
     let avail = ui.available_size();
     let (w, h) = (tex.size()[0] as f32, tex.size()[1] as f32);
-    let scale = (avail.x / w).min((avail.y - 24.0) / h).min(1.0).max(0.01);
+    let scale = (avail.x / w).min((avail.y - 24.0) / h).clamp(0.01, 1.0);
     let size = vec2(w * scale, h * scale);
     let (rect, _) = ui.allocate_exact_size(vec2(avail.x, size.y), Sense::hover());
     let img_rect = Rect::from_center_size(rect.center(), size);

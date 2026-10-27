@@ -26,19 +26,6 @@ impl Toast {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn problems_outlive_confirmations() {
-        let ok = Toast::new("done".into(), ToastKind::Success, 0.0);
-        let bad = Toast::new("failed".into(), ToastKind::Error, 0.0);
-        assert!(ok.expired(5.0) && !bad.expired(5.0));
-        assert!(bad.expired(9.5));
-    }
-}
-
 impl App {
     pub(super) fn show_toasts(&mut self, ctx: &egui::Context) {
         if self.toasts.is_empty() {
@@ -82,5 +69,18 @@ impl App {
         if let Some(i) = dismiss {
             self.toasts.remove(i);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn problems_outlive_confirmations() {
+        let ok = Toast::new("done".into(), ToastKind::Success, 0.0);
+        let bad = Toast::new("failed".into(), ToastKind::Error, 0.0);
+        assert!(ok.expired(5.0) && !bad.expired(5.0));
+        assert!(bad.expired(9.5));
     }
 }

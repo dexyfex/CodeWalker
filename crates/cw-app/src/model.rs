@@ -191,10 +191,6 @@ impl Explorer {
         }
     }
 
-    pub fn label_of(&self, n: &NodeId) -> String {
-        self.label(n)
-    }
-
     /// Child nodes shown under `n` in the tree.
     fn child_nodes(&self, n: &NodeId) -> Vec<NodeId> {
         if self.tree.is_none() {
@@ -396,14 +392,6 @@ impl Explorer {
         self.refresh();
     }
 
-    /// Expands `n` if it is not already (clicking a row should not collapse it).
-    pub fn expand(&mut self, n: &NodeId) {
-        if !self.expanded.contains(n) {
-            self.expanded.insert(n.clone());
-            self.refresh();
-        }
-    }
-
     /// Number of direct children of a folder, archive or directory item.
     pub fn child_count(&self, item: &Item) -> Option<usize> {
         match item {
@@ -530,13 +518,6 @@ impl Explorer {
     }
 
     // ------------------------------------------------------------ selection
-
-    pub fn selected_entry(&self) -> Option<EntryRef> {
-        match &self.selected {
-            Some(Item::Entry(r)) => Some(*r),
-            _ => None,
-        }
-    }
 
     pub fn selected_index(&self) -> Option<usize> {
         let s = self.selected.as_ref()?;
