@@ -104,7 +104,8 @@ pub struct YmapEntity {
     pub flags: u32,
     pub guid: u32,
     pub position: [f32; 3],
-    /// As stored: x, y, z, w. The orientation in the world is its inverse, see [`Self::orientation`].
+    /// As stored: x, y, z, w. The orientation in the world is its inverse (an interior instance's
+    /// is the stored one), see [`Self::orientation`].
     pub rotation: [f32; 4],
     pub scale_xy: f32,
     pub scale_z: f32,
@@ -141,16 +142,20 @@ impl Default for YmapEntity {
 }
 
 impl YmapEntity {
-    /// The orientation to place the model with: the stored quaternion inverted, unless it is the
-    /// identity (`YmapEntityDef` does the same). A unit quaternion's inverse is its conjugate.
+    /// The orientation to place the model with. A plain entity's is the stored quaternion
+    /// inverted, unless it is the identity; an interior instance's is the stored one as it is
+    /// (`YmapEntityDef` does both, and has the interior's inversion commented out). A unit
+    /// quaternion's inverse is its conjugate. Never NaN: garbage becomes the identity.
     pub fn orientation(&self) -> [f32; 4] {
+        const IDENTITY: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
         let [x, y, z, w] = self.rotation;
-        if [x, y, z, w] == [0.0, 0.0, 0.0, 1.0] {
-            return self.rotation;
-        }
         let len2 = x * x + y * y + z * z + w * w;
-        if !(len2.is_finite() && len2 > 1e-12) {
-            return [0.0, 0.0, 0.0, 1.0];
+        if self.rotation == IDENTITY || !(len2.is_finite() && len2 > 1e-12) {
+            return IDENTITY;
+        }
+        if self.mlo {
+            let len = len2.sqrt();
+            return [x / len, y / len, z / len, w / len];
         }
         [-x / len2, -y / len2, -z / len2, w / len2]
     }
@@ -191,16 +196,29 @@ impl Ymap {
         }
     }
 
-    /// How many entities sit at each LOD level, in level order.
+    /// How many entities sit at each LOD level, in level order. Values the game does not use
+    /// share one row (`Other`, labelled with the first such value met), however many there are.
     pub fn lod_counts(&self) -> Vec<(LodLevel, usize)> {
-        let mut counts: Vec<(LodLevel, usize)> = Vec::new();
+        let mut known = [0usize; 7];
+        let (mut other, mut other_count) = (None, 0usize);
         for e in &self.entities {
-            match counts.iter_mut().find(|(l, _)| *l == e.lod) {
-                Some((_, n)) => *n += 1,
-                None => counts.push((e.lod, 1)),
+            match e.lod {
+                LodLevel::Other(v) => {
+                    other.get_or_insert(v);
+                    other_count += 1;
+                }
+                l => known[l.to_raw() as usize] += 1,
             }
         }
-        counts.sort_by_key(|(l, _)| l.to_raw());
+        let mut counts: Vec<(LodLevel, usize)> = known
+            .iter()
+            .enumerate()
+            .filter(|(_, n)| **n > 0)
+            .map(|(i, n)| (LodLevel::from_raw(i as u32), *n))
+            .collect();
+        if let Some(v) = other {
+            counts.push((LodLevel::Other(v), other_count));
+        }
         counts
     }
 }
@@ -291,7 +309,15 @@ fn write_entity(b: &mut [u8], e: &YmapEntity) {
 
 /// Writes a `.ymap` resource: the inverse of [`parse_ymap`]. Plain entities must come before
 /// interior instances in `map.entities`, as they do after parsing. For tests and map tools.
+///
+/// # Panics
+/// With more than 65,535 entities: the file format counts them in 16 bits.
 pub fn build_ymap(map: &Ymap) -> ResourceData {
+    assert!(
+        map.entities.len() <= u16::MAX as usize,
+        "a .ymap holds at most 65,535 entities, got {}",
+        map.entities.len()
+    );
     // blocks: 1 = CMapData, 2 = pointer list, 3.. = entity structures, PER_BLOCK to a block
     let mut blocks: Vec<(u32, Vec<u8>)> =
         vec![(joaat(CMAP_DATA), vec![0; MAP_SIZE]), (TYPE_POINTER, Vec::new())];
@@ -321,7 +347,7 @@ pub fn build_ymap(map: &Ymap) -> ResourceData {
     put_vec3(d, 64, map.entity_extents.0);
     put_vec3(d, 80, map.entity_extents.1);
     d[96..104].copy_from_slice(&MetaPointer { block: 2, offset: 0 }.to_raw().to_le_bytes());
-    let count = (pointers.len().min(u16::MAX as usize)) as u16;
+    let count = pointers.len() as u16;
     d[104..106].copy_from_slice(&count.to_le_bytes());
     d[106..108].copy_from_slice(&count.to_le_bytes());
     build_meta(1, &blocks)

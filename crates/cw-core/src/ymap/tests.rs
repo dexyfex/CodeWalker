@@ -198,3 +198,121 @@ fn random_damage_never_panics_or_runs_away() {
         }
     }
 }
+
+#[test]
+fn interior_instances_keep_their_stored_rotation_and_plain_entities_invert_it() {
+    // the original tool inverts for CEntityDef and has the inversion commented out for CMloInstanceDef
+    let s = std::f32::consts::FRAC_1_SQRT_2;
+    let stored = [0.0, 0.0, s, s]; // 90 degrees about Z
+    let plain = YmapEntity { rotation: stored, ..Default::default() };
+    let interior = YmapEntity { rotation: stored, mlo: true, ..Default::default() };
+    let close = |a: [f32; 4], b: [f32; 4]| a.iter().zip(b).all(|(x, y)| (x - y).abs() < 1e-6);
+    assert!(close(plain.orientation(), [0.0, 0.0, -s, s]));
+    assert!(close(interior.orientation(), stored));
+    // an unnormalised interior rotation is normalised; garbage is the identity
+    let big = YmapEntity { rotation: [0.0, 0.0, 2.0 * s, 2.0 * s], mlo: true, ..Default::default() };
+    assert!(close(big.orientation(), stored));
+    let nan = YmapEntity { rotation: [f32::NAN; 4], mlo: true, ..Default::default() };
+    assert_eq!(nan.orientation(), [0.0, 0.0, 0.0, 1.0]);
+    assert_eq!(YmapEntity { mlo: true, ..Default::default() }.orientation(), [0.0, 0.0, 0.0, 1.0]);
+}
+
+#[test]
+fn a_map_full_of_odd_lod_values_still_gets_a_short_summary_quickly() {
+    let entities: Vec<YmapEntity> = (0..65_000u32)
+        .map(|i| YmapEntity { lod: LodLevel::from_raw(100 + i), ..Default::default() })
+        .chain([YmapEntity::default(), YmapEntity { lod: LodLevel::Lod, ..Default::default() }])
+        .collect();
+    let counts = Ymap { entities, ..Default::default() }.lod_counts();
+    assert_eq!(counts.len(), 3, "HD, LOD and one row for everything else: {counts:?}");
+    assert_eq!(counts[0], (LodLevel::Hd, 1));
+    assert_eq!(counts[2], (LodLevel::Other(100), 65_000));
+}
+
+#[test]
+#[should_panic(expected = "at most 65,535 entities")]
+fn a_map_that_cannot_be_counted_in_16_bits_is_refused_not_truncated() {
+    build_ymap(&Ymap { entities: vec![YmapEntity::default(); 65_536], ..Default::default() });
+}
+
+/// A file assembled byte by byte from the offsets in `MetaTypes.cs` and `Meta.cs`, without going
+/// through `build_meta` / `build_ymap`: the writer and reader cannot agree on a mistake here.
+#[test]
+fn a_hand_assembled_map_reads_the_way_the_c_structs_say() {
+    use crate::rpf::{flags_for_size, page_flags_size, resource_version};
+    let mut sys = vec![0u8; 0x800];
+    let put = |sys: &mut Vec<u8>, at: usize, bytes: &[u8]| sys[at..at + bytes.len()].copy_from_slice(bytes);
+    let f = |v: f32| v.to_le_bytes();
+
+    // Meta: root block id at 0x1C, data block table address at 0x30, block count at 0x4C
+    put(&mut sys, 0x1C, &1i32.to_le_bytes());
+    put(&mut sys, 0x30, &0x5000_0100u64.to_le_bytes());
+    put(&mut sys, 0x4C, &3u16.to_le_bytes());
+    // data block table: (type hash, length, address); CMapData = 3545841574, POINTER = 7,
+    // CEntityDef = 3461354627, the values of `MetaName` in MetaNames.cs
+    for (i, (hash, len, addr)) in
+        [(3_545_841_574u32, 512i32, 0x5000_0200u64), (7, 16, 0x5000_0500), (3_461_354_627, 256, 0x5000_0600)]
+            .into_iter()
+            .enumerate()
+    {
+        let rec = 0x100 + i * 16;
+        put(&mut sys, rec, &hash.to_le_bytes());
+        put(&mut sys, rec + 4, &len.to_le_bytes());
+        put(&mut sys, rec + 8, &addr.to_le_bytes());
+    }
+    // block 1, CMapData: name @8, flags @16, extents @32/48/64/80, entities Array_StructurePointer @96
+    put(&mut sys, 0x200 + 8, &0x1122_3344u32.to_le_bytes());
+    put(&mut sys, 0x200 + 16, &1u32.to_le_bytes());
+    for (off, v) in
+        [(32, [-10.0, -20.0, -1.0]), (48, [10.0, 20.0, 30.0]), (64, [-5.0, -6.0, 0.0]), (80, [5.0, 6.0, 7.0])]
+    {
+        for (i, x) in v.iter().enumerate() {
+            put(&mut sys, 0x200 + off + i * 4, &f(*x));
+        }
+    }
+    put(&mut sys, 0x200 + 96, &2u64.to_le_bytes()); // pointer: block 2, offset 0
+    put(&mut sys, 0x200 + 104, &2u16.to_le_bytes()); // count
+    put(&mut sys, 0x200 + 106, &2u16.to_le_bytes());
+    // block 2, POINTER: (block 3, offset 0) and (block 3, offset 128), offset in bits 12.. of the pointer
+    put(&mut sys, 0x500, &3u64.to_le_bytes());
+    put(&mut sys, 0x508, &((128u64 << 12) | 3).to_le_bytes());
+    // block 3: two CEntityDefs of 128 bytes
+    let entity = |sys: &mut Vec<u8>, at: usize, archetype: u32, pos: [f32; 3], rot: [f32; 4], lod: u32| {
+        put(sys, at + 8, &archetype.to_le_bytes());
+        put(sys, at + 12, &8u32.to_le_bytes()); // flags: bit 3, the LOD parent is in another ymap
+        for (i, x) in pos.iter().enumerate() {
+            put(sys, at + 32 + i * 4, &f(*x));
+        }
+        for (i, x) in rot.iter().enumerate() {
+            put(sys, at + 48 + i * 4, &f(*x));
+        }
+        put(sys, at + 64, &f(2.0)); // scaleXY
+        put(sys, at + 68, &f(3.0)); // scaleZ
+        put(sys, at + 72, &(-1i32).to_le_bytes()); // parentIndex
+        put(sys, at + 76, &f(100.0)); // lodDist
+        put(sys, at + 84, &lod.to_le_bytes());
+    };
+    entity(&mut sys, 0x600, 0xAABB_CCDD, [1.5, 2.5, 3.5], [0.0, 0.0, 0.6, 0.8], 1);
+    entity(&mut sys, 0x600 + 128, 0x0102_0304, [-1.0, -2.0, -3.0], [0.0, 0.0, 0.0, 1.0], 0);
+
+    let (sys_flags, gfx_flags) = (flags_for_size(sys.len(), 0), flags_for_size(0, 2));
+    sys.resize(page_flags_size(sys_flags) as usize, 0);
+    sys.resize(sys.len() + page_flags_size(gfx_flags) as usize, 0);
+    let res =
+        ResourceData { sys_flags, gfx_flags, version: resource_version(sys_flags, gfx_flags), data: sys };
+
+    let map = parse_ymap(&res).unwrap();
+    assert_eq!((map.name, map.flags), (0x1122_3344, 1));
+    assert_eq!(map.streaming_extents, ([-10.0, -20.0, -1.0], [10.0, 20.0, 30.0]));
+    assert_eq!(map.entity_extents, ([-5.0, -6.0, 0.0], [5.0, 6.0, 7.0]));
+    assert_eq!(map.entities.len(), 2);
+    let e = &map.entities[0];
+    assert_eq!((e.archetype, e.position, e.rotation), (0xAABB_CCDD, [1.5, 2.5, 3.5], [0.0, 0.0, 0.6, 0.8]));
+    assert_eq!(
+        (e.scale_xy, e.scale_z, e.parent_index, e.lod_dist, e.lod),
+        (2.0, 3.0, -1, 100.0, LodLevel::Lod)
+    );
+    assert!(e.lod_in_parent_ymap() && !e.mlo);
+    assert_eq!(map.entities[1].archetype, 0x0102_0304);
+    assert_eq!(map.entities[1].position, [-1.0, -2.0, -3.0]);
+}
