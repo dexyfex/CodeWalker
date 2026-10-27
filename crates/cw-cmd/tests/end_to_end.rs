@@ -260,3 +260,72 @@ fn world_editing_commands_with_undo_redo_and_persistence() {
     assert_eq!(e.execute("world.load", json!({ "path": file })).unwrap_err().code, "io");
     assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 2, "a failed load keeps the scene");
 }
+
+#[test]
+fn texture_commands_list_and_export_dds_from_archives_and_disk() {
+    use cw_core::{
+        texture::{Format, Texture, chain_size, parse_dds},
+        ytd::build_ytd,
+    };
+    let fx = Fixture::new("tex");
+    let t = |fmt, w, h, lv, seed: u8| {
+        let n = chain_size(fmt, w, h, lv);
+        Texture {
+            width: w,
+            height: h,
+            levels: lv,
+            format: fmt,
+            data: (0..n).map(|i| (i as u8).wrapping_add(seed)).collect(),
+        }
+    };
+    let (a, b) = (t(Format::Dxt1, 16, 16, 3, 1), t(Format::A8R8G8B8, 8, 8, 1, 2));
+    let res = build_ytd(&[("wall_diff", &a), ("wall_diff", &b)]); // two textures, same name
+    let rpf =
+        RpfBuilder::new(vec![Item::resource("wall.ytd", res.data.clone(), res.sys_flags, res.gfx_flags)])
+            .build()
+            .unwrap();
+    std::fs::write(fx.dir.join("game/t.rpf"), rpf).unwrap();
+
+    let e = Engine::ephemeral();
+    ok(&e, "game.open", json!({ "folder": fx.dir.join("game") }));
+    let l = ok(&e, "texture.list", json!({ "path": "t.rpf/wall.ytd" }));
+    assert_eq!(l["count"], 2);
+    assert_eq!(l["textures"][0]["format"], "DXT1 (BC1)");
+    assert_eq!(l["textures"][1]["width"], 8);
+
+    let out = fx.dir.join("dds");
+    let r = ok(&e, "texture.export", json!({ "path": "t.rpf/wall.ytd", "dest": out }));
+    assert_eq!(r["written"], 2);
+    assert_eq!(
+        r["files"],
+        json!(["wall_diff.dds", "wall_diff_2.dds"]),
+        "same-named textures do not overwrite each other"
+    );
+    assert_eq!(parse_dds(&std::fs::read(out.join("wall_diff.dds")).unwrap()).unwrap(), a);
+    assert_eq!(parse_dds(&std::fs::read(out.join("wall_diff_2.dds")).unwrap()).unwrap(), b);
+
+    // a single texture, from a loose OpenIV-style file on disk
+    let exported = ok(&e, "rpf.extract", json!({ "path": "t.rpf", "dest": fx.dir.join("raw") }));
+    assert_eq!(exported["files"], 1);
+    let loose = fx.dir.join("raw/t.rpf/wall.ytd");
+    assert_eq!(ok(&e, "texture.list", json!({ "file": loose }))["count"], 2);
+    let one = ok(&e, "texture.export", json!({ "file": loose, "index": 1, "dest": fx.dir.join("one") }));
+    assert_eq!(one["files"], json!(["wall_diff.dds"]));
+
+    // a dds file is a one-texture "dictionary"
+    let dds = fx.dir.join("one/wall_diff.dds");
+    assert_eq!(ok(&e, "texture.list", json!({ "file": dds }))["textures"][0]["name"], "wall_diff");
+
+    // errors
+    assert_eq!(e.execute("texture.list", json!({})).unwrap_err().code, "invalid_args");
+    assert_eq!(e.execute("texture.list", json!({ "path": "t.rpf/nope.ytd" })).unwrap_err().code, "not_found");
+    assert_eq!(
+        e.execute("texture.export", json!({ "path": "t.rpf/wall.ytd", "index": 9, "dest": out }))
+            .unwrap_err()
+            .code,
+        "not_found"
+    );
+    let bad = fx.dir.join("junk.dds");
+    std::fs::write(&bad, b"not a dds").unwrap();
+    assert_eq!(e.execute("texture.list", json!({ "file": bad })).unwrap_err().code, "archive");
+}
