@@ -1,8 +1,12 @@
 //! One executable: the GUI by default, plus the same engine from the command
 //! line, a JSON control channel and an MCP server.
 
+// The window opens without a console. The command-line modes get one back, see `console`.
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
+
 mod actions;
 mod app;
+mod console;
 mod format;
 mod gpu;
 mod icons;
@@ -41,6 +45,9 @@ or --open PATH is given.
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let engine = Arc::new(Engine::new());
+    if is_headless(&engine, &args) {
+        console::attach();
+    }
 
     match args.first().map(String::as_str) {
         Some("-h" | "--help") => {
@@ -57,8 +64,17 @@ fn main() -> ExitCode {
         }
         Some("mcp") => report(mcp::serve_stdio(&engine)),
         Some("serve") => serve(engine, &args[1..]),
-        Some(first) if first.starts_with("--") || engine.spec(first).is_some() => run_command(&engine, &args),
+        Some(_) if is_headless(&engine, &args) => run_command(&engine, &args),
         _ => gui(engine, args.into_iter().map(PathBuf::from).collect()),
+    }
+}
+
+/// Whether these arguments run a command instead of opening the window.
+fn is_headless(engine: &Engine, args: &[String]) -> bool {
+    match args.first().map(String::as_str) {
+        None => false,
+        Some("-h" | "--help" | "help" | "mcp" | "serve") => true,
+        Some(first) => first.starts_with("--") || engine.spec(first).is_some(),
     }
 }
 
@@ -146,13 +162,25 @@ fn run_command(engine: &Engine, args: &[String]) -> ExitCode {
     }
 }
 
+fn window_icon() -> egui::IconData {
+    let png = include_bytes!("../assets/icon.png");
+    match image::load_from_memory(png) {
+        Ok(img) => {
+            let rgba = img.to_rgba8();
+            egui::IconData { width: rgba.width(), height: rgba.height(), rgba: rgba.into_raw() }
+        }
+        Err(_) => egui::IconData::default(),
+    }
+}
+
 fn gui(engine: Arc<Engine>, startup: Vec<PathBuf>) -> ExitCode {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title("CodeWalker")
             .with_inner_size([1360.0, 860.0])
             .with_min_inner_size([960.0, 600.0])
-            .with_drag_and_drop(true),
+            .with_drag_and_drop(true)
+            .with_icon(window_icon()),
         ..Default::default()
     };
     let result = eframe::run_native(
@@ -166,5 +194,41 @@ fn gui(engine: Arc<Engine>, startup: Vec<PathBuf>) -> ExitCode {
             eprintln!("error: could not start the window: {e}");
             ExitCode::FAILURE
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(a: &[&str]) -> Vec<String> {
+        a.iter().map(|s| s.to_string()).collect()
+    }
+
+    #[test]
+    fn paths_open_the_window_and_commands_do_not() {
+        let e = Engine::ephemeral();
+        assert!(!is_headless(&e, &args(&[])));
+        assert!(!is_headless(&e, &args(&["/games/GTAV", "x64a.rpf"])), "paths to open");
+        assert!(!is_headless(&e, &args(&["rpf"])), "a folder that merely starts like a command");
+        for headless in [
+            &["--help"][..],
+            &["help"],
+            &["mcp"],
+            &["serve", "--stdio"],
+            &["rpf.list"],
+            &["--game", "D:/GTAV", "rpf.stats"],
+            &["hash.joaat", "--text", "a"],
+        ] {
+            assert!(is_headless(&e, &args(headless)), "{headless:?}");
+        }
+    }
+
+    #[test]
+    fn the_embedded_icon_decodes() {
+        let icon = window_icon();
+        assert_eq!((icon.width, icon.height), (256, 256));
+        assert_eq!(icon.rgba.len(), 256 * 256 * 4);
+        assert!(icon.rgba.chunks(4).any(|p| p[3] == 255), "not blank");
     }
 }

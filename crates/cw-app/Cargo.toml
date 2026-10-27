@@ -8,6 +8,9 @@ edition.workspace = true
 name = "codewalker"
 path = "src/main.rs"
 
+[build-dependencies]
+embed-resource = "3"
+
 [dependencies]
 cw-core = { path = "../cw-core" }
 cw-cmd = { path = "../cw-cmd" }
