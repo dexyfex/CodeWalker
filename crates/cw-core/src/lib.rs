@@ -4,6 +4,7 @@
 pub mod blob;
 pub mod crypto;
 pub mod dotnet_random;
+pub mod env;
 pub mod error;
 pub mod filekind;
 pub mod hash;

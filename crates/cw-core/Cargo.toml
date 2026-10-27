@@ -12,6 +12,7 @@ sha1.workspace = true
 memmap2.workspace = true
 thiserror.workspace = true
 base64.workspace = true
+roxmltree.workspace = true
 bcdec_rs = "0.2"
 
 [dev-dependencies]
