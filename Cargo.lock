@@ -815,7 +815,10 @@ version = "0.1.0"
 dependencies = [
  "cw-cmd",
  "cw-core",
+ "cw-gpu",
+ "cw-world",
  "eframe",
+ "glam",
  "image",
  "rfd",
  "serde_json",
