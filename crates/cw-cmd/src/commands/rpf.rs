@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
+};
 
 use base64::Engine as _;
 use cw_core::{EntryKind, EntryRef, RpfTree, filekind::FileKind};
@@ -253,9 +256,12 @@ fn collect_files(tree: &RpfTree, archive: u32, dir: u32, rel: PathBuf, out: &mut
         EntryKind::Directory { first, .. } => first,
         _ => return,
     };
+    // two names can end up the same on disk (`a:b` and `a_b`, or `Foo` and `foo` on a
+    // case-insensitive file system); written in parallel they would overwrite each other
+    let mut used = HashSet::new();
     for (i, e) in a.dir_children(dir).iter().enumerate() {
         let r = EntryRef { archive, index: first + i as u32 };
-        let sub = rel.join(safe_component(&e.name));
+        let sub = rel.join(unique_name(&mut used, safe_component(&e.name)));
         match (&e.kind, e.child_archive) {
             (EntryKind::Directory { .. }, _) => collect_files(tree, archive, r.index, sub, out),
             (_, Some(child)) => collect_files(tree, child, 0, sub, out),
@@ -278,7 +284,31 @@ pub fn safe_component(name: &str) -> String {
         })
         .collect();
     let s = s.trim().trim_end_matches('.').to_string();
-    if s.is_empty() || s == ".." { "_".to_string() } else { s }
+    if s.is_empty() || s == ".." {
+        return "_".to_string();
+    }
+    // Windows refuses these device names, with any extension (`con.txt`)
+    let stem = s.split('.').next().unwrap_or("").to_ascii_uppercase();
+    let reserved = matches!(stem.as_str(), "CON" | "PRN" | "AUX" | "NUL")
+        || (stem.len() == 4
+            && (stem.starts_with("COM") || stem.starts_with("LPT"))
+            && stem.as_bytes()[3].is_ascii_digit()
+            && stem.as_bytes()[3] != b'0');
+    if reserved { format!("_{s}") } else { s }
+}
+
+/// `name`, or `name (2)`, `name (3)`… when a name that differs only in case was already used.
+fn unique_name(used: &mut HashSet<String>, name: String) -> String {
+    let mut candidate = name.clone();
+    let mut n = 2;
+    while !used.insert(candidate.to_lowercase()) {
+        candidate = match name.rsplit_once('.') {
+            Some((stem, ext)) if !stem.is_empty() => format!("{stem} ({n}).{ext}"),
+            _ => format!("{name} ({n})"),
+        };
+        n += 1;
+    }
+    candidate
 }
 
 fn write_file(path: &Path, bytes: &[u8]) -> Result<(), CmdError> {
@@ -330,5 +360,28 @@ mod tests {
         assert_eq!(safe_component("C:\\evil"), "C__evil");
         assert_eq!(safe_component(""), "_");
         assert_eq!(safe_component("adder.yft"), "adder.yft");
+    }
+
+    #[test]
+    fn device_names_are_not_used_as_file_names() {
+        for bad in ["CON", "con.txt", "Nul.xml", "aux", "COM1", "lpt9.dat"] {
+            assert_eq!(safe_component(bad), format!("_{bad}"));
+        }
+        for fine in ["COM0", "COM10", "console.txt", "com.txt", "LPT"] {
+            assert_eq!(safe_component(fine), fine);
+        }
+    }
+
+    #[test]
+    fn names_that_collide_on_disk_are_told_apart() {
+        let mut used = HashSet::new();
+        let names: Vec<String> = ["a_b.txt", "A_B.txt", "a_b.txt", "other", "OTHER", ".hidden", ".Hidden"]
+            .into_iter()
+            .map(|n| unique_name(&mut used, n.to_string()))
+            .collect();
+        assert_eq!(
+            names,
+            ["a_b.txt", "A_B (2).txt", "a_b (3).txt", "other", "OTHER (2)", ".hidden", ".Hidden (2)"]
+        );
     }
 }
