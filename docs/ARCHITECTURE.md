@@ -83,6 +83,12 @@ Navigation state (`model.rs`) is plain data with no egui in it, so it is unit-te
 location, history and selection across a rescan by path, since entry indices belong to one scan.
 Design rules and tokens are in [`DESIGN.md`](DESIGN.md).
 
+The tabs (`tabs.rs`, also plain data) are Explorer and World, which stay, and closable document tabs
+(one per opened model, `docs/PLAN.md` stage 4); closing the tab on show shows its neighbour. The
+widths of the tab strip and of the Explorer's bar are worked out in `layout.rs`, which has no egui
+either: the window measures its text, the functions there decide what fits, and every group of
+controls is drawn in its own rect, so nothing can overlap at any window width.
+
 ## Mods (`cw-cmd::mods`)
 
 `<game>/mods/` mirrors the game folder; a file there replaces the original. Disabling renames to

@@ -54,6 +54,9 @@ breaks accessibility fails CI.
   units (`KiB`, `MiB`).
 - Long names **truncate in the middle** (siblings often differ at the end); the full value is
   in a tooltip and the details panel. Never truncate numbers.
+- A path that does not fit keeps its first crumb and as many of its last as fit, and folds the
+  rest into one `…` crumb that opens a menu of them; the current location is always shown, cut
+  with an ellipsis (and a tooltip) only when it is alone too long.
 
 ## Layout & density
 
@@ -61,6 +64,13 @@ breaks accessibility fails CI.
 - Row pitch: **28 px** lists and tree, **24 px** hex rows, controls 28 px, toolbar 40 px.
   Density moves row height, padding and type together.
 - Hit targets ≥ 24 × 24 px; whole rows are clickable.
+- The top of the window is a 36 px tab strip (Explorer, World, then one closable tab per open
+  document; `Game folder` and `Open files` at the right) over the Explorer's 40 px bar (back,
+  forward, up, path, filter). Nothing overlaps or clips at any width, because each row is planned
+  from measured widths: tabs shrink to 150 px and then wait in an overflow menu before the buttons
+  lose their words; in the bar the path takes what the other controls leave, and when that is
+  under 320 px the filter shrinks (to 150 px) and then the scope control keeps its icons only.
+  Close a document tab with its ×, a middle click or `Ctrl+W`.
 - Three resizable regions: tree (240–320 px), list (flexible), preview/details (320–480 px).
   Panels share the `panel` fill separated by a 1 px `border`; no nested cards.
 - Lists over ~50 rows are virtualised (they are: egui `show_rows`). Headers stay visible.
