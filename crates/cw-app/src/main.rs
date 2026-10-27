@@ -4,6 +4,7 @@
 mod actions;
 mod app;
 mod format;
+mod gpu;
 mod icons;
 mod latest;
 mod model;

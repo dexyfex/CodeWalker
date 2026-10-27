@@ -2,8 +2,6 @@
 //! through the `world.*` commands; the only local state is a live drag
 //! preview, which becomes one `world.set` (one undo step) when released.
 
-use std::sync::Arc;
-
 use cw_gpu::{Camera, Globals, GpuScene, Renderer, Target, grid_spacing};
 use cw_world::{Entity, EntityId, Transform, Vec3};
 use eframe::{
@@ -20,30 +18,22 @@ use crate::{
     actions::Action,
     app::App,
     format,
+    gpu::Gpu,
     icons::{self, Icon},
     theme,
     world_view::{self, Axis},
 };
 
-struct Gpu {
-    device: eframe::wgpu::Device,
-    queue: eframe::wgpu::Queue,
-    egui_renderer: Arc<egui::mutex::RwLock<egui_wgpu::Renderer>>,
+struct WorldGpu {
+    shared: Gpu,
     renderer: Renderer,
     target: Option<Target>,
     texture: Option<TextureId>,
 }
 
-impl Gpu {
+impl WorldGpu {
     fn new(rs: &egui_wgpu::RenderState) -> Self {
-        Self {
-            device: rs.device.clone(),
-            queue: rs.queue.clone(),
-            egui_renderer: rs.renderer.clone(),
-            renderer: Renderer::new(&rs.device),
-            target: None,
-            texture: None,
-        }
+        Self { shared: Gpu::new(rs), renderer: Renderer::new(&rs.device), target: None, texture: None }
     }
 
     /// Makes sure the offscreen target matches the viewport size (in pixels).
@@ -52,23 +42,8 @@ impl Gpu {
         if self.target.as_ref().is_some_and(|t| t.size == (w, h)) {
             return;
         }
-        let target = Target::new(&self.device, w, h);
-        let mut er = self.egui_renderer.write();
-        match self.texture {
-            Some(id) => er.update_egui_texture_from_wgpu_texture(
-                &self.device,
-                &target.view,
-                eframe::wgpu::FilterMode::Linear,
-                id,
-            ),
-            None => {
-                self.texture = Some(er.register_native_texture(
-                    &self.device,
-                    &target.view,
-                    eframe::wgpu::FilterMode::Linear,
-                ))
-            }
-        }
+        let target = Target::new(&self.shared.device, w, h);
+        self.shared.show(&mut self.texture, &target.view);
         self.target = Some(target);
     }
 }
@@ -81,7 +56,7 @@ struct GizmoDrag {
 }
 
 pub struct WorldUi {
-    gpu: Option<Gpu>,
+    gpu: Option<WorldGpu>,
     pub camera: Camera,
     hover_axis: Option<Axis>,
     drag: Option<GizmoDrag>,
@@ -101,7 +76,7 @@ pub struct WorldUi {
 impl WorldUi {
     pub fn new(rs: Option<&egui_wgpu::RenderState>) -> Self {
         Self {
-            gpu: rs.map(Gpu::new),
+            gpu: rs.map(WorldGpu::new),
             camera: Camera::default(),
             hover_axis: None,
             drag: None,
@@ -616,8 +591,8 @@ impl App {
         gpu.ensure_target((rect.width() * ppp) as u32, (rect.height() * ppp) as u32);
         let target = gpu.target.as_ref().expect("just ensured");
         gpu.renderer.render(
-            &gpu.device,
-            &gpu.queue,
+            &gpu.shared.device,
+            &gpu.shared.queue,
             target,
             &globals,
             &GpuScene { boxes: &self.world.instances, lines: &[], overlay: &overlay },
