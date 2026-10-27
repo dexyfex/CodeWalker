@@ -11,11 +11,18 @@ Read-only map of `CodeWalker.Core/GameFiles/` (C#) against the Rust port in `cra
 
 | Need | Where in `crates/cw-core/src` |
 |---|---|
-| RPF7 index, names, AES, keys | `rpf.rs`, `keys.rs`, `crypto.rs` |
-| Resource flags to segment size | `rpf.rs` `page_flags_size` (174), `resource_version` (189) |
-| RSC7 header strip and inflate | `rpf.rs` `extract_resource` (433): returns `sys_flags`, `gfx_flags`, `version`, decompressed `data` |
+| RPF7 index, names, AES, NG, keys | `rpf.rs`, `keys.rs`, `crypto.rs` (NG decryption only; no NG encryption) |
+| Resource flags to segment size | `rpf.rs` `page_flags_size`, `flags_for_size` (the inverse), `resource_version` |
+| RSC7 header strip and inflate | `rpf.rs` `extract_resource`: returns `sys_flags`, `gfx_flags`, `version`, decompressed `data`; inflate is capped by the declared size |
+| Typed reads from a resource payload | `resource.rs` `ResourceReader` (system / graphics segments by virtual address) |
 | JenkHash | `hash.rs` `joaat`, `joaat_lower` |
-| Extension to kind | `filekind.rs` (names only, no parsers) |
+| Extension to kind | `filekind.rs` |
+| Texture dictionaries (legacy, version 13) and DDS | `ytd.rs`, `texture.rs` (BCn, A8R8G8B8 family decoders) |
+| META container | `meta.rs` (section 3.2 to 3.3 below) |
+| Map data (`.ymap`) | `ymap.rs` (section 3.5 and 3.6 below): entities, LOD tree; no extensions, instanced data, car generators or LOD lights |
+| Tiled images, filters, PNG | `image.rs` |
+
+Not read yet: gen9 textures, `.ytyp` archetypes (section 3.7), PSO and RBF containers, every model format (section 4), everything in section 5 and 6.
 
 `extract_resource` returns the system segment followed by the graphics segment. Section 1 covers the rest: splitting that buffer and the typed block reader.
 

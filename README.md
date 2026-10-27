@@ -19,16 +19,29 @@ JSON control channel or an MCP server.
 | Explorer | Folder/archive tree, sortable list, text / hex / info previews, filter or search-everywhere, command palette (`Ctrl+K`, `Cmd+K` on macOS), open loose files, drag and drop. |
 | Mods | `<game>/mods/` overlay: copy an archive from the game, install files or folders, enable / disable (a `.disabled` suffix, the file is kept), remove. Writes are atomic and cannot leave the `mods` folder. |
 | Textures | `.ytd` and `.dds` preview: every texture of a dictionary with thumbnails, mips, channel isolation (R, G, B, A, RGB), invert, zoom, pan and a pixel readout. Pictures are copy-on-write tiles, filtered on all cores, uploaded tile by tile and composed on the GPU. `texture.list` and `texture.export` (DDS as stored, or a filtered PNG) expose the same pipeline to the command line. Tested on generated textures only. |
-| World | A scratch scene: add, move, rotate, scale and remove entities with a gizmo, undo / redo, save / load as JSON, picking in a wgpu viewport. |
+| Maps | `.ymap` files: a summary in the preview, and "Place in map editor" / `world.import` puts their detailed entities in the scene (one undo step). Entities are named after model files in the archives when one matches their hash. Legacy resource maps only. |
+| Map editor | A scene drawn in a wgpu viewport: add, move, rotate, scale and remove entities with a gizmo, picking, undo / redo, save / load as JSON. Entities are **boxes**; models are not loaded yet. |
 | Control | CLI, newline-delimited JSON channel (stdio or authenticated loopback TCP), MCP server on stdio. |
 
 ## What does not exist yet
 
-- Importing `.ymap` / `.ytyp` into the world, and any model (`.ydr`, `.ydd`, `.yft`) or collision (`.ybn`) viewing.
+- `.ytyp` archetypes, and any model (`.ydr`, `.ydd`, `.yft`) or collision (`.ybn`) viewing: the map editor shows boxes.
 - Gen9 (Enhanced Edition) texture formats.
 - Writing to archives (`NG` encryption, edit-mode RPF), project files, `.ynd` / `.ymt` editing, audio, vehicle and ped viewers.
 
-`docs/porting/` lists what remains, with the C# file and line to read for each item.
+[`docs/ROADMAP.md`](docs/ROADMAP.md) has the order of work, [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) how it fits together,
+and `docs/porting/` what remains of the C# tool, with the file and line to read for each item.
+
+## Check it against your game
+
+Nothing here has been run on a real installation yet. This reads a sample of your archives with every
+reader and says what worked and what did not, with the reason and example paths:
+
+```sh
+codewalker --game "D:\Games\GTAV" game.check
+```
+
+If it reports failures, that output is exactly what is needed to fix them.
 
 ## Build and run
 
@@ -76,7 +89,7 @@ with read-only / destructive hints).
 | Crate | Role |
 |---|---|
 | `cw-core` | RPF7, keys and crypto, resources, textures, tiled images and their filters, hashes. No UI, no I/O beyond files. |
-| `cw-cmd` | The command engine and its CLI / JSON / MCP front-ends, game folder detection, mods. |
+| `cw-cmd` | The command engine and its CLI / JSON / MCP front-ends, game folder detection, mods, map import. |
 | `cw-world` | The editable scene and its undo history. |
 | `cw-gpu` | wgpu renderer, camera, picking, tile-wise texture upload and the image compositor. |
 | `cw-app` | The `codewalker` executable: egui UI over the engine. |
