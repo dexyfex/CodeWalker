@@ -1,0 +1,18 @@
+[package]
+name = "cw-app"
+description = "CodeWalker: RPF Explorer, previews, mod manager and map editor in one native executable"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "codewalker"
+path = "src/main.rs"
+
+[dependencies]
+cw-core = { path = "../cw-core" }
+cw-cmd = { path = "../cw-cmd" }
+eframe = { version = "0.37", default-features = false, features = ["wgpu", "x11", "wayland", "accesskit", "default_fonts"] }
+serde_json.workspace = true
+rfd = "0.15"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "bmp", "gif", "tga"] }
