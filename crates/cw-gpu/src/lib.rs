@@ -5,6 +5,7 @@
 pub mod camera;
 pub mod compose;
 pub mod pick;
+pub mod render;
 mod renderer;
 pub mod tiles;
 
