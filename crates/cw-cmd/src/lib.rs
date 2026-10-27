@@ -5,6 +5,7 @@ pub mod commands;
 pub mod engine;
 pub mod error;
 pub mod gamefolder;
+pub mod mods;
 pub mod spec;
 pub mod transport;
 

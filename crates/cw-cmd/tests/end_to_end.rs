@@ -163,7 +163,7 @@ fn adding_archives_keeps_the_open_ones_and_loose_files_are_tracked() {
     std::fs::write(&note, "loose text").unwrap();
     let info = ok(&e, "file.open", json!({ "path": note }));
     assert_eq!(info["type"], "Text");
-    assert_eq!(e.session().files, [note.clone()]);
+    assert_eq!(e.session().files, std::slice::from_ref(&note));
     ok(&e, "file.open", json!({ "path": note })); // idempotent
     assert_eq!(e.session().files.len(), 1);
     assert_eq!(ok(&e, "file.read", json!({ "path": note, "length": 5 }))["text"], "loose");
@@ -171,4 +171,44 @@ fn adding_archives_keeps_the_open_ones_and_loose_files_are_tracked() {
     assert!(e.session().files.is_empty());
     assert_eq!(e.execute("file.open", json!({ "path": fx.dir.join("nope") })).unwrap_err().code, "not_found");
     assert_eq!(e.execute("file.open", json!({ "path": fx.dir })).unwrap_err().code, "invalid_args");
+}
+
+#[test]
+fn mods_workflow_copy_toggle_remove_through_commands() {
+    let fx = Fixture::new("mods");
+    let e = Engine::ephemeral();
+    // no game folder yet: a clear, recoverable error
+    assert_eq!(e.execute("mods.list", json!({})).unwrap_err().code, "bad_state");
+
+    ok(&e, "game.open", json!({ "folder": fx.dir.join("game") }));
+    let l = ok(&e, "mods.list", json!({}));
+    assert_eq!(l["exists"], false);
+    assert_eq!(l["files"].as_array().unwrap().len(), 0);
+
+    // any entry inside the archive resolves to its top-level .rpf
+    let copied = ok(&e, "mods.copy", json!({ "path": "x64/a.rpf/child.rpf/note.txt" }));
+    assert_eq!(copied["copied"], "x64/a.rpf");
+    assert!(fx.dir.join("game/mods/x64/a.rpf").is_file());
+    assert_eq!(e.execute("mods.copy", json!({ "path": "x64/a.rpf" })).unwrap_err().code, "already_exists");
+    ok(&e, "mods.copy", json!({ "path": "x64/a.rpf", "overwrite": true }));
+
+    let l = ok(&e, "mods.list", json!({}));
+    assert_eq!(l["files"][0]["path"], "x64/a.rpf");
+    assert_eq!(l["files"][0]["overrides_game"], true);
+    assert_eq!(l["files"][0]["enabled"], true);
+
+    ok(&e, "mods.disable", json!({ "path": "x64/a.rpf" }));
+    assert_eq!(ok(&e, "mods.list", json!({}))["files"][0]["enabled"], false);
+    ok(&e, "mods.enable", json!({ "path": "x64/a.rpf" }));
+    assert_eq!(ok(&e, "mods.list", json!({}))["files"][0]["enabled"], true);
+
+    assert_eq!(e.execute("mods.remove", json!({ "path": "../a.rpf" })).unwrap_err().code, "invalid_args");
+    ok(&e, "mods.remove", json!({ "path": "x64/a.rpf" }));
+    assert_eq!(ok(&e, "mods.list", json!({}))["files"].as_array().unwrap().len(), 0);
+
+    let src = fx.dir.join("pkg");
+    std::fs::create_dir_all(src.join("data")).unwrap();
+    std::fs::write(src.join("data/x.meta"), "m").unwrap();
+    assert_eq!(ok(&e, "mods.install", json!({ "source": src }))["installed"], 1);
+    assert_eq!(e.execute("mods.install", json!({ "source": src })).unwrap_err().code, "already_exists");
 }
