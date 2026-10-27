@@ -1,0 +1,65 @@
+name: release
+
+# Builds the executable for each platform when a version tag is pushed (`git tag v0.1.0 && git push --tags`)
+# and attaches the archives to a GitHub release.
+
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04, target: x86_64-unknown-linux-gnu, exe: codewalker }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc, exe: codewalker.exe }
+          - { os: macos-latest, target: aarch64-apple-darwin, exe: codewalker }
+          - { os: macos-latest, target: x86_64-apple-darwin, exe: codewalker }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+      - run: cargo build --release -p cw-app --target ${{ matrix.target }}
+      - name: Package
+        shell: bash
+        run: |
+          name="codewalker-${{ github.ref_name }}-${{ matrix.target }}"
+          mkdir "$name"
+          cp "target/${{ matrix.target }}/release/${{ matrix.exe }}" README.md Notice.txt "$name/"
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a "$name.zip" "$name"
+            echo "ASSET=$name.zip" >> "$GITHUB_ENV"
+          else
+            tar czf "$name.tar.gz" "$name"
+            echo "ASSET=$name.tar.gz" >> "$GITHUB_ENV"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ env.ASSET }}
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
