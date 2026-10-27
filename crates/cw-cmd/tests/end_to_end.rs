@@ -608,3 +608,65 @@ fn ymap_info_and_import_place_a_maps_entities_in_the_scene() {
     }
     assert!(!e.spec("world.add").unwrap().reads_archives());
 }
+
+#[test]
+fn game_check_samples_every_reader_and_names_what_fails() {
+    use cw_core::{
+        GtaKeys,
+        texture::{Format, Texture, chain_size},
+        ymap::{Ymap, YmapEntity, build_ymap},
+        ytd::build_ytd,
+    };
+    let fx = Fixture::new("check");
+    let tex = Texture {
+        width: 8,
+        height: 8,
+        levels: 1,
+        format: Format::A8R8G8B8,
+        data: vec![7; chain_size(Format::A8R8G8B8, 8, 8, 1)],
+    };
+    let ytd = build_ytd(&[("wall", &tex)]);
+    let full = build_ymap(&Ymap { entities: vec![YmapEntity::default(); 3], ..Default::default() });
+    let empty = build_ymap(&Ymap::default());
+    let rpf = RpfBuilder::new(vec![
+        Item::resource("good.ytd", ytd.data.clone(), ytd.sys_flags, ytd.gfx_flags),
+        Item::resource("junk.ytd", vec![0xAB; 300], 1 << 17, 0xD000_0000),
+        Item::resource("good.ymap", full.data.clone(), full.sys_flags, full.gfx_flags),
+        Item::resource("nothing.ymap", empty.data.clone(), empty.sys_flags, empty.gfx_flags),
+        Item::file("readme.txt", &b"plain"[..]),
+        Item::packed("big.xml", "<a/>".repeat(100).into_bytes()),
+    ]);
+    std::fs::write(fx.dir.join("game/t.rpf"), rpf.build().unwrap()).unwrap();
+    // an archive that needs keys nobody has loaded
+    let keys = GtaKeys::synthetic();
+    let mut locked = RpfBuilder::new(vec![Item::file("x.txt", &b"x"[..])]);
+    locked.aes_key = Some(keys.aes_key);
+    std::fs::write(fx.dir.join("game/locked.rpf"), locked.build().unwrap()).unwrap();
+
+    let e = Engine::ephemeral();
+    assert_eq!(e.execute("game.check", json!({})).unwrap_err().code, "bad_state", "nothing is open yet");
+    ok(&e, "game.open", json!({ "folder": fx.dir.join("game") }));
+    let c = ok(&e, "game.check", json!({ "sample": 50 }));
+
+    assert_eq!(c["keys"], false);
+    assert_eq!(c["archives"]["errors"], 1, "the AES archive cannot be opened without keys");
+    assert!(c["archives"]["first_errors"][0]["path"].as_str().unwrap().contains("locked.rpf"));
+    assert_eq!(c["archives"]["encryption"]["open"], 3, "a.rpf, its nested archive and t.rpf");
+    assert_eq!((c["ytd"]["tried"].as_u64(), c["ytd"]["parsed"].as_u64()), (Some(2), Some(1)));
+    assert_eq!((c["ytd"]["textures"].as_u64(), c["ytd"]["decodable"].as_u64()), (Some(1), Some(1)));
+    assert_eq!(c["ytd"]["failures"].as_array().unwrap().len(), 1, "the junk dictionary, with its reason");
+    assert!(c["ytd"]["failures"][0]["examples"][0].as_str().unwrap().ends_with("junk.ytd"));
+    assert_eq!(
+        (c["ymap"]["tried"].as_u64(), c["ymap"]["parsed"].as_u64(), c["ymap"]["entities"].as_u64()),
+        (Some(2), Some(2), Some(3))
+    );
+    assert_eq!(c["ymap"]["failures"][0]["reason"], "parsed, but holds no entities");
+    assert_eq!(c["extract"]["failed"], 0, "everything that was sampled could be read");
+    let report: Vec<&str> = c["report"].as_array().unwrap().iter().map(|v| v.as_str().unwrap()).collect();
+    assert!(report.iter().any(|l| l.starts_with("keys: NOT derived")), "{report:?}");
+    assert!(report.iter().any(|l| l.starts_with("ytd: 1 of 2 parsed")), "{report:?}");
+
+    // a sample smaller than the file count still spreads over all of them
+    let small = ok(&e, "game.check", json!({ "sample": 1 }));
+    assert_eq!(small["ytd"]["tried"], 1);
+}

@@ -2,6 +2,7 @@
 
 use crate::engine::Engine;
 
+mod check;
 mod files;
 mod game;
 mod map;
@@ -13,6 +14,7 @@ mod util;
 mod world;
 
 pub fn register_all(e: &mut Engine) {
+    check::register(e);
     files::register(e);
     game::register(e);
     map::register(e);
