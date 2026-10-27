@@ -108,17 +108,24 @@ fn walk(root: &Path, dir: &Path, game: &Path, out: &mut Vec<ModFile>) -> Result<
 }
 
 /// Resolves `rel` inside `mods/` and checks the result really is inside it
-/// (a symlinked directory must not smuggle writes out of the folder).
+/// (a symlinked directory must not smuggle writes out of the folder). Folders
+/// that do not exist yet are about to be created *through* whatever exists, so
+/// the check is made on the nearest ancestor that does.
 fn inside_mods(game: &Path, rel: &Path) -> Result<PathBuf, ModError> {
     let root = mods_dir(game);
     let full = root.join(rel);
-    if let (Ok(r), Some(parent)) = (root.canonicalize(), full.parent())
-        && let Ok(p) = parent.canonicalize()
-        && !p.starts_with(&r)
-    {
-        return Err(ModError::Invalid(format!("`{}` resolves outside the mods folder", rel.display())));
+    let outside = || ModError::Invalid(format!("`{}` resolves outside the mods folder", rel.display()));
+    let root_real = match root.canonicalize() {
+        Ok(r) => r,
+        // no mods folder yet: fine, unless the name is taken by a link that leads nowhere
+        Err(_) if fs::symlink_metadata(&root).is_err() => return Ok(full),
+        Err(_) => return Err(outside()),
+    };
+    let existing = full.ancestors().skip(1).find(|a| fs::symlink_metadata(a).is_ok()).ok_or_else(outside)?;
+    match existing.canonicalize() {
+        Ok(p) if p.starts_with(&root_real) => Ok(full),
+        _ => Err(outside()),
     }
-    Ok(full)
 }
 
 /// Copies an original game file into `mods/` at the same relative path.

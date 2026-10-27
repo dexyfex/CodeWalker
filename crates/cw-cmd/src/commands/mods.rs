@@ -117,7 +117,10 @@ fn copy(ctx: &Ctx, args: Value) -> CmdResult {
     let top = tree.archive(id);
     // the archive path is relative to the scanned folder: it must be the game folder
     let on_disk = game.join(&top.path);
-    let same = std::fs::canonicalize(&on_disk).ok() == std::fs::canonicalize(&top.physical).ok();
+    let same = match (std::fs::canonicalize(&on_disk), std::fs::canonicalize(&top.physical)) {
+        (Ok(a), Ok(b)) => a == b,
+        _ => false, // two paths that cannot be resolved are not "the same file"
+    };
     if !same {
         return Err(CmdError::invalid(format!(
             "{} is not inside the game folder, so it has no mods/ counterpart",

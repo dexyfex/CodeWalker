@@ -147,6 +147,7 @@ fn installing_a_single_file_uses_dest_as_its_path() {
 }
 
 #[cfg(unix)]
+#[cfg(unix)]
 #[test]
 fn symlinked_folders_cannot_redirect_writes_out_of_mods() {
     let g = Dir::new("symlink");
@@ -157,4 +158,28 @@ fn symlinked_folders_cannot_redirect_writes_out_of_mods() {
     let src = g.write("pkg/f.txt", b"f");
     assert!(install(&g.0, &src, Some("link/f.txt"), false).is_err());
     assert!(!outside.0.join("f.txt").exists(), "nothing was written through the link");
+}
+
+#[cfg(unix)]
+#[test]
+fn a_link_cannot_be_used_through_folders_that_do_not_exist_yet() {
+    let g = Dir::new("deep-link");
+    let outside = Dir::new("deep-outside");
+    fs::create_dir_all(g.0.join("mods")).unwrap();
+    std::os::unix::fs::symlink(&outside.0, g.0.join("mods/link")).unwrap();
+    let src = g.write("pkg/f.txt", b"f");
+    // `link/new/` does not exist, so only an ancestor can reveal where it would be created
+    assert!(install(&g.0, &src, Some("link/new/deeper/f.txt"), false).is_err());
+    assert!(!outside.0.join("new").exists(), "no folder was created behind the link");
+
+    // a dangling link in place of the mods folder is refused rather than followed
+    let h = Dir::new("dangling");
+    std::os::unix::fs::symlink(h.0.join("nowhere"), h.0.join("mods")).unwrap();
+    let src = h.write("pkg/f.txt", b"f");
+    assert!(install(&h.0, &src, None, false).is_err());
+
+    // ordinary nested destinations in a fresh game folder still work
+    let ok = Dir::new("fresh");
+    let src = ok.write("pkg/f.txt", b"f");
+    assert_eq!(install(&ok.0, &src, Some("a/b/f.txt"), false).unwrap(), ["a/b/f.txt"]);
 }
