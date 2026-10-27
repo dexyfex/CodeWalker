@@ -1,0 +1,13 @@
+[package]
+name = "cw-world"
+description = "Map editing model: scene, entities, selection and undo/redo (no GPU, no UI)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+glam = { version = "0.30", features = ["serde"] }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+cw-core = { path = "../cw-core" }

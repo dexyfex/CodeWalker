@@ -827,6 +827,7 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "cw-core",
+ "cw-world",
  "dirs",
  "getrandom 0.3.4",
  "rayon",
@@ -847,6 +848,17 @@ dependencies = [
  "memmap2",
  "rayon",
  "sha1",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "cw-world"
+version = "0.1.0"
+dependencies = [
+ "cw-core",
+ "glam",
+ "serde",
+ "serde_json",
  "thiserror 2.0.21",
 ]
 
@@ -1423,6 +1435,15 @@ dependencies = [
  "khronos_api",
  "log",
  "xml-rs",
+]
+
+[[package]]
+name = "glam"
+version = "0.30.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "19fc433e8437a212d1b6f1e68c7824af3aed907da60afa994e7f542d18d12aa9"
+dependencies = [
+ "serde_core",
 ]
 
 [[package]]
