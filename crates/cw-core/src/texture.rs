@@ -355,6 +355,14 @@ pub fn parse_dds(bytes: &[u8]) -> Result<Texture> {
 
 /// Writes a [`Texture`] as a DDS file other tools can open.
 pub fn write_dds(t: &Texture) -> Result<Vec<u8>> {
+    // a file with a header and no (or half the) pixels would open as garbage elsewhere
+    let need = chain_size(t.format, t.width, t.height, t.levels.max(1));
+    if t.data.len() < need {
+        return Err(Error::InvalidRpf(format!(
+            "the texture has {} of its {need} bytes of pixel data",
+            t.data.len()
+        )));
+    }
     let mut h = vec![0u8; 128];
     let put = |h: &mut Vec<u8>, o: usize, v: u32| h[o..o + 4].copy_from_slice(&v.to_le_bytes());
     put(&mut h, 0, DDS_MAGIC);

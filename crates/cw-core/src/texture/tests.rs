@@ -192,3 +192,14 @@ fn writing_unknown_formats_is_an_error() {
     let t = Texture { width: 4, height: 4, levels: 1, format: Format::Unknown(9), data: vec![] };
     assert!(write_dds(&t).is_err());
 }
+
+#[test]
+fn a_texture_without_its_pixels_is_not_written_as_a_dds() {
+    let full = Texture { width: 8, height: 8, levels: 1, format: Format::A8R8G8B8, data: vec![1; 8 * 8 * 4] };
+    assert!(write_dds(&full).is_ok());
+    for len in [0, 1, 8 * 8 * 4 - 1] {
+        let cut = Texture { data: vec![1; len], ..full.clone() };
+        let e = write_dds(&cut).unwrap_err().to_string();
+        assert!(e.contains("bytes of pixel data"), "{len}: {e}");
+    }
+}

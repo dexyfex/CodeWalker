@@ -58,6 +58,9 @@ pub fn parse_ytd(res: &ResourceData) -> Result<Vec<YtdTexture>> {
     let count = count.min(capacity).min(MAX_TEXTURES);
     let hash_count = r.u16_at(root + 0x28) as usize;
 
+    // All pixel data together cannot be larger than the resource it came from. Without this, a
+    // few thousand headers aimed at one block would ask for terabytes between them.
+    let mut budget = res.data.len();
     let mut out = Vec::with_capacity(count);
     for i in 0..count {
         let t_addr = r.u64_at(tex_ptr + i as u64 * 8);
@@ -73,8 +76,14 @@ pub fn parse_ytd(res: &ResourceData) -> Result<Vec<YtdTexture>> {
         let name = r.cstr_at(r.u64_at(t_addr + 0x28), MAX_NAME);
 
         let size = chain_size(format, width, height, levels);
-        // an unknown format or a zero size has no pixels to read; keep the entry for listing
-        let data = if size == 0 { Vec::new() } else { r.bytes_at(data_ptr, size).unwrap_or_default() };
+        // an unknown format, a zero size, pixels that are not inside the resource or that would
+        // overspend the budget: keep the entry for listing, without pixels
+        let data = if size == 0 || size > budget || !r.contains(data_ptr, size) {
+            Vec::new()
+        } else {
+            budget -= size;
+            r.bytes_at(data_ptr, size).unwrap_or_default()
+        };
         let name_hash = if i < hash_count && hashes_ptr != 0 {
             r.u32_at(hashes_ptr + i as u64 * 4)
         } else {

@@ -126,3 +126,53 @@ fn unknown_formats_and_odd_level_counts_are_survivable() {
     res.data[tex_addr + 0x5D] = 0;
     assert_eq!(parse_ytd(&res).unwrap()[0].texture.levels, 1);
 }
+
+/// Address (inside the resource) of texture header `i`.
+fn header_at(res: &ResourceData, i: usize) -> usize {
+    let ptrs = u64::from_le_bytes(res.data[0x30..0x38].try_into().unwrap()) as usize & 0x0FFF_FFFF;
+    u64::from_le_bytes(res.data[ptrs + i * 8..ptrs + i * 8 + 8].try_into().unwrap()) as usize & 0x0FFF_FFFF
+}
+
+#[test]
+fn pixel_data_cannot_add_up_to_more_than_the_file_holds() {
+    let a = tex(Format::Dxt1, 16, 16, 1, 1);
+    let names: Vec<String> = (0..12).map(|i| format!("t{i}")).collect();
+    let refs: Vec<(&str, &Texture)> = names.iter().map(|n| (n.as_str(), &a)).collect();
+    let mut res = build_ytd(&refs);
+    let first_data = {
+        let h = header_at(&res, 0);
+        res.data[h + 0x70..h + 0x78].to_vec()
+    };
+    // every header now claims 128x128 DXT1 (8 KiB) read from the same place: 96 KiB in all,
+    // from a resource of 16 KiB
+    for i in 0..12 {
+        let h = header_at(&res, i);
+        res.data[h + 0x50..h + 0x52].copy_from_slice(&128u16.to_le_bytes());
+        res.data[h + 0x52..h + 0x54].copy_from_slice(&128u16.to_le_bytes());
+        res.data[h + 0x70..h + 0x78].copy_from_slice(&first_data);
+    }
+    let parsed = parse_ytd(&res).unwrap();
+    assert_eq!(parsed.len(), 12, "all are listed");
+    let held: usize = parsed.iter().map(|t| t.texture.data.len()).sum();
+    assert!(held <= res.data.len(), "{held} bytes of pixels from a {} byte file", res.data.len());
+    assert!(
+        held > 0 && parsed.iter().any(|t| t.texture.data.is_empty()),
+        "the first ones fit, the rest do not"
+    );
+}
+
+#[test]
+fn a_header_claiming_a_giant_picture_costs_nothing() {
+    let a = tex(Format::A8R8G8B8, 8, 8, 1, 1);
+    let mut res = build_ytd(&[("a", &a)]);
+    let h = header_at(&res, 0);
+    // 16383 x 16383 with a full mip chain would be gigabytes
+    res.data[h + 0x50..h + 0x52].copy_from_slice(&16383u16.to_le_bytes());
+    res.data[h + 0x52..h + 0x54].copy_from_slice(&16383u16.to_le_bytes());
+    res.data[h + 0x5D] = 14;
+    let parsed = parse_ytd(&res).unwrap();
+    assert_eq!((parsed[0].texture.width, parsed[0].texture.levels), (16383, 14));
+    assert!(parsed[0].texture.data.is_empty(), "no pixels were allocated for it");
+    // and decoding what has no pixels is refused rather than attempted at that size
+    assert!(parsed[0].texture.decode(0).is_err());
+}
