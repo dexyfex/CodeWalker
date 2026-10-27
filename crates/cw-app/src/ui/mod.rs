@@ -2,7 +2,8 @@
 //! and states; drawing ours keeps every control on the same tokens (docs/DESIGN.md).
 
 use eframe::egui::{
-    self, Align2, Color32, CornerRadius, FontId, Painter, Response, Sense, Stroke, StrokeKind, Ui, pos2, vec2,
+    self, Align2, Color32, CornerRadius, FontId, Layout, Painter, Rect, Response, Sense, Stroke, StrokeKind,
+    Ui, UiBuilder, pos2, vec2,
 };
 
 use crate::{
@@ -16,6 +17,7 @@ pub mod empty;
 pub mod list;
 pub mod palette;
 pub mod status;
+pub mod tabs;
 pub mod texview;
 pub mod toasts;
 pub mod toolbar;
@@ -68,6 +70,24 @@ impl<'a> Btn<'a> {
         self
     }
 
+    /// Width of the button as [`show`](Self::show) will draw it, so rows can be planned before they
+    /// are drawn.
+    pub fn width(&self, ui: &Ui) -> f32 {
+        self.width_for(text_width(ui, self.label, 13.0))
+    }
+
+    /// The icon's width and the gap between it and the label.
+    fn icon_space(&self) -> (f32, f32) {
+        let icon_w = if self.icon.is_some() { 16.0 } else { 0.0 };
+        (icon_w, if self.icon.is_some() && !self.label.is_empty() { 6.0 } else { 0.0 })
+    }
+
+    fn width_for(&self, text_w: f32) -> f32 {
+        let (icon_w, gap) = self.icon_space();
+        let pad = if self.label.is_empty() { 6.0 } else { 10.0 };
+        (pad * 2.0 + icon_w + gap + text_w).max(CONTROL_H)
+    }
+
     pub fn show(self, ui: &mut Ui) -> Response {
         let font = FontId::proportional(13.0);
         let (fg, fill, hover, press, stroke) = match self.tone {
@@ -79,10 +99,8 @@ impl<'a> Btn<'a> {
         };
         let fg = if self.enabled { fg } else { theme::FAINT };
         let galley = ui.painter().layout_no_wrap(self.label.to_string(), font, fg);
-        let icon_w = if self.icon.is_some() { 16.0 } else { 0.0 };
-        let gap = if self.icon.is_some() && !self.label.is_empty() { 6.0 } else { 0.0 };
-        let pad = if self.label.is_empty() { 6.0 } else { 10.0 };
-        let w = (pad * 2.0 + icon_w + gap + galley.size().x).max(CONTROL_H);
+        let (icon_w, gap) = self.icon_space();
+        let w = self.width_for(galley.size().x);
         let sense = if self.enabled { Sense::click() } else { Sense::hover() };
         let (rect, resp) = ui.allocate_exact_size(vec2(w, CONTROL_H), sense);
 
@@ -137,6 +155,11 @@ pub fn icon_button(ui: &mut Ui, icon: Icon, tip: &str, enabled: bool) -> Respons
     Btn::new("").icon(icon).tip(tip).enabled(enabled).tone(Tone::Ghost).show(ui)
 }
 
+/// Width of `text` in the UI font at `size`.
+pub fn text_width(ui: &Ui, text: &str, size: f32) -> f32 {
+    ui.painter().layout_no_wrap(text.to_string(), FontId::proportional(size), theme::TEXT).size().x
+}
+
 /// `text` shortened in the middle so it fits `max_w` pixels. Measures real
 /// glyph widths, so it works for any script.
 pub fn fit_text(p: &Painter, text: &str, font: &FontId, max_w: f32) -> String {
@@ -166,25 +189,50 @@ pub fn fit_text(p: &Painter, text: &str, font: &FontId, max_w: f32) -> String {
     best
 }
 
+/// What one option of a [`segmented`] control shows.
+#[derive(Clone, Copy)]
+pub enum Face<'a> {
+    Text(&'a str),
+    /// An icon alone, for when there is no room for words; the label is its tooltip.
+    Icon(Icon, &'a str),
+}
+
+fn face_width(ui: &Ui, face: Face) -> f32 {
+    match face {
+        Face::Text(t) => text_width(ui, t, 12.0) + 20.0,
+        Face::Icon(..) => CONTROL_H,
+    }
+}
+
+/// Width of the control [`segmented_faces`] draws, for planning a row before drawing it.
+pub fn segmented_width(ui: &Ui, faces: &[Face]) -> f32 {
+    faces.iter().map(|f| face_width(ui, *f)).sum::<f32>() + 4.0
+}
+
 /// A row of mutually exclusive options. Returns the index clicked, if any. `salt` names the
 /// control: two of them in one window must not share widget ids, and a ui's own id is not a
 /// reliable way to tell them apart.
 pub fn segmented(ui: &mut Ui, salt: &str, items: &[&str], selected: usize) -> Option<usize> {
+    let faces: Vec<Face> = items.iter().map(|t| Face::Text(t)).collect();
+    segmented_faces(ui, salt, &faces, selected)
+}
+
+/// [`segmented`] with options that may be icons.
+pub fn segmented_faces(ui: &mut Ui, salt: &str, faces: &[Face], selected: usize) -> Option<usize> {
     let font = FontId::proportional(12.0);
     let mut clicked = None;
-    let widths: Vec<f32> = items
-        .iter()
-        .map(|t| ui.painter().layout_no_wrap((*t).to_string(), font.clone(), theme::TEXT).size().x + 20.0)
-        .collect();
-    let total: f32 = widths.iter().sum::<f32>() + 4.0;
-    let (rect, _) = ui.allocate_exact_size(vec2(total, 28.0), Sense::hover());
+    let widths: Vec<f32> = faces.iter().map(|f| face_width(ui, *f)).collect();
+    let (rect, _) = ui.allocate_exact_size(vec2(segmented_width(ui, faces), 28.0), Sense::hover());
     let p = ui.painter();
     p.rect_filled(rect, CornerRadius::same(R + 1), theme::GROUND);
     p.rect_stroke(rect, CornerRadius::same(R + 1), Stroke::new(1.0, theme::BORDER), StrokeKind::Inside);
     let mut x = rect.left() + 2.0;
-    for (i, label) in items.iter().enumerate() {
-        let r = egui::Rect::from_min_size(pos2(x, rect.top() + 2.0), vec2(widths[i], 24.0));
-        let resp = ui.interact(r, egui::Id::unique(("segmented", salt, i)), Sense::click());
+    for (i, face) in faces.iter().enumerate() {
+        let r = Rect::from_min_size(pos2(x, rect.top() + 2.0), vec2(widths[i], 24.0));
+        let mut resp = ui.interact(r, egui::Id::unique(("segmented", salt, i)), Sense::click());
+        if let Face::Icon(_, tip) = face {
+            resp = resp.on_hover_text(*tip);
+        }
         let p = ui.painter();
         let on = i == selected;
         if on {
@@ -192,13 +240,15 @@ pub fn segmented(ui: &mut Ui, salt: &str, items: &[&str], selected: usize) -> Op
         } else if resp.hovered() {
             p.rect_filled(r, CornerRadius::same(R), theme::RAISED);
         }
-        p.text(
-            r.center(),
-            Align2::CENTER_CENTER,
-            label,
-            font.clone(),
-            if on { theme::TEXT } else { theme::MUTED },
-        );
+        let color = if on { theme::TEXT } else { theme::MUTED };
+        match face {
+            Face::Text(label) => {
+                p.text(r.center(), Align2::CENTER_CENTER, label, font.clone(), color);
+            }
+            Face::Icon(icon, _) => {
+                icons::draw(p, Rect::from_center_size(r.center(), vec2(16.0, 16.0)), *icon, color)
+            }
+        }
         focus_ring(p, r, &resp);
         if resp.clicked() {
             clicked = Some(i);
@@ -220,6 +270,27 @@ pub fn faint(ui: &mut Ui, text: impl Into<String>) {
 }
 
 // ------------------------------------------------------------------ layout
+
+/// Window edge to the first and last control of a bar.
+const EDGE: f32 = 8.0;
+/// Space between groups of controls.
+const GAP: f32 = 8.0;
+
+/// The row of controls inside a bar: the bar's width less the edge margins, one control high.
+fn bar_row(ui: &Ui) -> Rect {
+    let full = ui.max_rect();
+    Rect::from_center_size(full.center(), vec2(full.width() - 2.0 * EDGE, CONTROL_H))
+}
+
+/// A child ui that fills exactly `rect`. Rows are planned from measured widths (see `layout.rs`)
+/// and each group of controls gets its own rect, so one that turns out wider than planned is
+/// clipped at its edge instead of being drawn over its neighbour.
+fn cluster<R>(ui: &mut Ui, rect: Rect, layout: Layout, add: impl FnOnce(&mut Ui) -> R) -> R {
+    let mut child = ui.new_child(UiBuilder::new().max_rect(rect).layout(layout));
+    // room for the focus ring, which is drawn just outside a control
+    child.shrink_clip_rect(rect.expand2(vec2(3.0, 4.0)));
+    add(&mut child)
+}
 
 use eframe::egui::{CentralPanel, Frame, Margin, Panel};
 
@@ -252,10 +323,20 @@ pub enum Side {
 impl App {
     pub fn show(&mut self, ui: &mut Ui) {
         let ctx = ui.ctx().clone();
-        Panel::top("toolbar").exact_size(theme::TOOLBAR_H).frame(flat(theme::PANEL)).show(ui, |ui| {
-            self.show_toolbar(ui);
-            edge(ui, Side::Bottom);
+        let explorer = self.mode == Mode::Explorer;
+        // the Explorer's bar sits right under the tabs, so only the lower one gets the hairline
+        Panel::top("tabs").exact_size(theme::TABS_H).frame(flat(theme::PANEL)).show(ui, |ui| {
+            self.show_tabs(ui);
+            if !explorer {
+                edge(ui, Side::Bottom);
+            }
         });
+        if explorer {
+            Panel::top("toolbar").exact_size(theme::TOOLBAR_H).frame(flat(theme::PANEL)).show(ui, |ui| {
+                self.show_toolbar(ui);
+                edge(ui, Side::Bottom);
+            });
+        }
         Panel::bottom("status").exact_size(theme::STATUS_H).frame(flat(theme::PANEL)).show(ui, |ui| {
             self.show_status(ui);
             edge(ui, Side::Top);

@@ -11,6 +11,7 @@ mod format;
 mod gpu;
 mod icons;
 mod latest;
+mod layout;
 mod model;
 mod preview;
 mod texview;

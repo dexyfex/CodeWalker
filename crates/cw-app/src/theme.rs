@@ -26,6 +26,8 @@ pub const WARNING: Color32 = Color32::from_rgb(0xE0, 0xA4, 0x3A);
 pub const ROW_H: f32 = 28.0;
 pub const HEX_ROW_H: f32 = 20.0;
 pub const TOOLBAR_H: f32 = 40.0;
+/// The strip of tabs above the toolbar.
+pub const TABS_H: f32 = 36.0;
 pub const STATUS_H: f32 = 26.0;
 
 pub fn install(ctx: &egui::Context) {
