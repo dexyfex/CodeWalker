@@ -3,6 +3,7 @@
 //! the renderer never depends on how the host's render pass is set up.
 
 pub mod camera;
+pub mod compose;
 pub mod pick;
 mod renderer;
 pub mod tiles;
