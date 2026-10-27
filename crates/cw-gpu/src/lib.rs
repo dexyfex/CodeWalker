@@ -5,6 +5,7 @@
 pub mod camera;
 pub mod pick;
 mod renderer;
+pub mod tiles;
 
 pub use camera::Camera;
 pub use renderer::{BoxInstance, Globals, GpuScene, LineVertex, Renderer, Target, grid_spacing};
