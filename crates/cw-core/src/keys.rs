@@ -122,6 +122,23 @@ impl GtaKeys {
         Ok(Self { aes_key, ng_keys, ng_tables, lut: lut_b.try_into().unwrap(), awc_key })
     }
 
+    /// Like [`synthetic`](Self::synthetic), but the NG tables make every round an invertible
+    /// byte permutation plus a key XOR, so [`crate::crypto::encrypt_ng_synthetic`] can build
+    /// data that the real decryption code turns back into the original. The real tables have no
+    /// inverse here. Tests only.
+    #[doc(hidden)]
+    pub fn synthetic_invertible() -> Self {
+        let mut k = Self::synthetic();
+        for round in k.ng_tables.iter_mut() {
+            for (j, table) in round.iter_mut().enumerate() {
+                for (b, v) in table.iter_mut().enumerate() {
+                    *v = (b as u32) << (8 * (j % 4));
+                }
+            }
+        }
+        k
+    }
+
     /// Deterministic fake material for tests. Decrypts nothing real.
     #[doc(hidden)]
     pub fn synthetic() -> Self {

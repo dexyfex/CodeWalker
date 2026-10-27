@@ -1,14 +1,15 @@
 //! Writes new RPF7 archives (unencrypted "OPEN" or AES), e.g. for mod
 //! packages. Reading back what we write is covered by the tests in `tests.rs`.
 
-use std::io::Write;
+use std::{io::Write, sync::Arc};
 
 use flate2::{Compression, write::DeflateEncoder};
 
 use super::{DIR_IDENT, RPF7_MAGIC, RSC7_MAGIC, resource_version};
 use crate::{
-    crypto::encrypt_aes,
+    crypto::{encrypt_aes, encrypt_ng_synthetic},
     error::{Error, Result},
+    keys::GtaKeys,
 };
 
 #[derive(Debug, Clone)]
@@ -17,13 +18,16 @@ pub enum Item {
         name: String,
         items: Vec<Item>,
     },
-    /// Plain file; `compress` stores it deflated.
+    /// Plain file; `compress` stores it deflated and `encrypt` encrypts what is stored
+    /// (needs `aes_key` or `ng_keys` on the builder).
     File {
         name: String,
         data: Vec<u8>,
         compress: bool,
+        encrypt: bool,
     },
     /// Resource: `data` is the uncompressed payload; the RSC7 header is written for you.
+    /// `.ysc` resources are encrypted, as the reader expects (needs `aes_key` or `ng_keys`).
     Resource {
         name: String,
         data: Vec<u8>,
@@ -52,11 +56,16 @@ impl Item {
     }
 
     pub fn file(name: &str, data: impl Into<Vec<u8>>) -> Item {
-        Item::File { name: name.into(), data: data.into(), compress: false }
+        Item::File { name: name.into(), data: data.into(), compress: false, encrypt: false }
     }
 
     pub fn packed(name: &str, data: impl Into<Vec<u8>>) -> Item {
-        Item::File { name: name.into(), data: data.into(), compress: true }
+        Item::File { name: name.into(), data: data.into(), compress: true, encrypt: false }
+    }
+
+    /// Like [`file`](Self::file) or [`packed`](Self::packed), stored encrypted.
+    pub fn encrypted(name: &str, data: impl Into<Vec<u8>>, compress: bool) -> Item {
+        Item::File { name: name.into(), data: data.into(), compress, encrypt: true }
     }
 
     pub fn resource(name: &str, data: impl Into<Vec<u8>>, sys_flags: u32, gfx_flags: u32) -> Item {
@@ -71,8 +80,11 @@ impl Item {
 #[derive(Debug, Clone, Default)]
 pub struct RpfBuilder {
     pub items: Vec<Item>,
-    /// `Some(key)` encrypts the table of contents with AES.
+    /// `Some(key)` encrypts the table of contents with AES (and encrypted entries, too).
     pub aes_key: Option<[u8; 32]>,
+    /// Encrypts encrypted entries with NG, in an archive whose table of contents stays open. Only
+    /// [`GtaKeys::synthetic_invertible`] keys work: the real NG encryption is not ported.
+    pub ng_keys: Option<Arc<GtaKeys>>,
 }
 
 struct Node<'a> {
@@ -96,7 +108,20 @@ fn le24(v: u32) -> [u8; 3] {
 
 impl RpfBuilder {
     pub fn new(items: Vec<Item>) -> Self {
-        Self { items, aes_key: None }
+        Self { items, aes_key: None, ng_keys: None }
+    }
+
+    pub fn with_ng_entries(mut self, keys: Arc<GtaKeys>) -> Self {
+        self.ng_keys = Some(keys);
+        self
+    }
+
+    fn encrypt_entry(&self, bytes: &[u8], name: &str, ng_length: u32) -> Result<Vec<u8>> {
+        match (&self.aes_key, &self.ng_keys) {
+            (Some(key), _) => Ok(encrypt_aes(bytes, key)),
+            (None, Some(keys)) => Ok(encrypt_ng_synthetic(bytes, name, ng_length, keys)),
+            _ => Err(Error::InvalidRpf(format!("{name} is encrypted but the builder has no keys"))),
+        }
     }
 
     pub fn with_aes(mut self, key: [u8; 32]) -> Self {
@@ -158,7 +183,7 @@ impl RpfBuilder {
             };
 
             // (stored bytes, size field, uncompressed size field)
-            let (stored, size_field, raw_len) = match item {
+            let (mut stored, size_field, raw_len) = match item {
                 Item::File { data, compress: false, .. } | Item::Archive { bytes: data, .. } => {
                     (data.clone(), 0usize, data.len())
                 }
@@ -179,6 +204,20 @@ impl RpfBuilder {
                 }
                 Item::Dir { .. } => unreachable!(),
             };
+            let encrypted = match item {
+                Item::File { encrypt, .. } => *encrypt,
+                Item::Resource { name, .. } => name.to_lowercase().ends_with(".ysc"),
+                _ => false,
+            };
+            if encrypted {
+                // the reader keys NG by the entry's name and its uncompressed size (binary) or
+                // stored size (resource); resources keep their 16-byte header in the clear
+                let skip = if matches!(item, Item::Resource { .. }) { 16 } else { 0 };
+                let ng_length = if skip == 0 { raw_len } else { size_field } as u32;
+                let body = self.encrypt_entry(&stored[skip..], &n.name, ng_length)?;
+                stored.truncate(skip);
+                stored.extend(body);
+            }
             if size_field > MAX_BINARY || raw_len > u32::MAX as usize {
                 return Err(Error::InvalidRpf(format!("{} is too large for an RPF entry", n.name)));
             }
@@ -201,7 +240,7 @@ impl RpfBuilder {
                 let packed = (off as u64 & 0xFFFF) | ((size_field as u64) << 16) | ((block as u64) << 40);
                 toc.extend_from_slice(&packed.to_le_bytes());
                 toc.extend_from_slice(&(raw_len as u32).to_le_bytes());
-                toc.extend_from_slice(&0u32.to_le_bytes());
+                toc.extend_from_slice(&(encrypted as u32).to_le_bytes());
             }
         }
 

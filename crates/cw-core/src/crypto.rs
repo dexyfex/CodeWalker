@@ -61,6 +61,42 @@ pub fn decrypt_ng_with_key(data: &[u8], key: &[u8; 272], keys: &GtaKeys) -> Vec<
     out
 }
 
+/// Where each output byte of an NG round comes from, for the tables of
+/// [`GtaKeys::synthetic_invertible`] (`out[i] = in[SYNTHETIC_ROUND_B[i]] ^ key[i]`).
+const SYNTHETIC_ROUND_B: [usize; 16] = [0, 13, 10, 7, 4, 1, 14, 11, 8, 5, 2, 15, 12, 9, 6, 3];
+
+/// Inverse of [`decrypt_ng`], valid **only** for [`GtaKeys::synthetic_invertible`] keys. It lets
+/// tests put NG-encrypted entries into archives and check that the reader picks the right key
+/// (entry name, size) and then decrypts and inflates correctly. The real NG encryption needs the
+/// game's inverse tables, which are not ported.
+#[doc(hidden)]
+pub fn encrypt_ng_synthetic(data: &[u8], name: &str, length: u32, keys: &GtaKeys) -> Vec<u8> {
+    let key = ng_key(keys, name, length);
+    let mut sk = [[0u8; 16]; 17];
+    for (i, s) in sk.iter_mut().enumerate() {
+        s.copy_from_slice(&key[i * 16..i * 16 + 16]);
+    }
+    let mut out = data.to_vec();
+    for chunk in out.chunks_exact_mut(16) {
+        let mut b: [u8; 16] = (&*chunk).try_into().unwrap();
+        // decryption is round 0, 1, 2..=15, 16: undo them from the last to the first
+        for round in (0..17).rev() {
+            for (x, k) in b.iter_mut().zip(&sk[round]) {
+                *x ^= k;
+            }
+            if (2..=15).contains(&round) {
+                let mut un = [0u8; 16];
+                for (i, &src) in SYNTHETIC_ROUND_B.iter().enumerate() {
+                    un[src] = b[i];
+                }
+                b = un;
+            }
+        }
+        chunk.copy_from_slice(&b);
+    }
+    out
+}
+
 fn decrypt_ng_block(mut b: [u8; 16], sk: &[[u32; 4]; 17], keys: &GtaKeys) -> [u8; 16] {
     let t = &keys.ng_tables;
     b = round_a(b, &sk[0], &t[0]);
@@ -110,6 +146,19 @@ fn round_b(d: [u8; 16], k: &[u32; 4], t: &[[u32; 256]; 16]) -> [u8; 16] {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_synthetic_inverse_undoes_the_real_decryption_code() {
+        let keys = GtaKeys::synthetic_invertible();
+        let plain: Vec<u8> = (0..100u8).collect(); // six blocks and a partial one
+        let enc = encrypt_ng_synthetic(&plain, "adder.ytd", 100, &keys);
+        assert_ne!(&enc[..96], &plain[..96]);
+        assert_eq!(&enc[96..], &plain[96..], "a trailing partial block is left alone, as in decryption");
+        assert_eq!(decrypt_ng(&enc, "adder.ytd", 100, &keys), plain);
+        // another name or length selects another key, which must not decrypt it
+        assert_ne!(decrypt_ng(&enc, "adder.ytd", 101, &keys)[..96], plain[..96]);
+        assert_ne!(decrypt_ng(&enc, "other.ytd", 100, &keys)[..96], plain[..96]);
+    }
 
     #[test]
     fn aes_roundtrip_and_partial_block_untouched() {
