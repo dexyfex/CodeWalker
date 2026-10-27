@@ -161,3 +161,18 @@ fn euler_conversion_round_trips() {
         assert!((back - e).abs().max_element() < 1e-3, "{e:?} -> {back:?}");
     }
 }
+
+#[test]
+fn ids_cannot_overflow_or_collide_even_with_hostile_files() {
+    let mut w = World::new("t");
+    let max = r#"{"name":"x","entities":[
+        {"id":4294967295,"archetype":"a","archetype_hash":0,"transform":{"position":[0,0,0],"rotation":[0,0,0,1],"scale":[1,1,1]}}
+    ],"next_id":4294967295}"#;
+    w.load_json(max).unwrap();
+    assert_eq!(w.scene.entities.len(), 1);
+    assert!(
+        matches!(w.add("b", Transform::default()), Err(Error::Full)),
+        "no id left: refuse instead of wrapping"
+    );
+    assert_eq!(w.scene.entities.len(), 1);
+}

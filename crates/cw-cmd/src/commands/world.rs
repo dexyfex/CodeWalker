@@ -19,6 +19,7 @@ impl From<WorldError> for CmdError {
             WorldError::NoEntity(_) => "not_found",
             WorldError::BadTransform => "invalid_args",
             WorldError::Io(_) => "io",
+            WorldError::Full => "bad_state",
         };
         CmdError::new(code, e.to_string())
     }

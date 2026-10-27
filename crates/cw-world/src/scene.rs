@@ -92,10 +92,15 @@ impl Scene {
         self.entities.iter_mut().find(|e| e.id == id)
     }
 
-    pub fn alloc_id(&mut self) -> EntityId {
+    /// A fresh id, or `None` when the id space is exhausted (only reachable
+    /// with a hostile file that already uses `u32::MAX`).
+    pub fn alloc_id(&mut self) -> Option<EntityId> {
         let id = self.next_id.max(1);
+        if id == EntityId::MAX || self.get(id).is_some() {
+            return None;
+        }
         self.next_id = id + 1;
-        id
+        Some(id)
     }
 
     /// Axis-aligned bounds of the entity origins, `None` when empty.
@@ -110,7 +115,8 @@ impl Scene {
         self.entities.retain(|e| e.transform.is_valid());
         let mut seen = BTreeSet::new();
         self.entities.retain(|e| seen.insert(e.id));
-        self.next_id = self.entities.iter().map(|e| e.id).max().unwrap_or(0).max(self.next_id).max(0) + 1;
+        let highest = self.entities.iter().map(|e| e.id).max().unwrap_or(0);
+        self.next_id = highest.max(self.next_id).saturating_add(1);
         self.selection.clear();
     }
 }

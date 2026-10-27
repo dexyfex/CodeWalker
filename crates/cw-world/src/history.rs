@@ -19,6 +19,8 @@ pub enum WorldError {
     NoEntity(EntityId),
     #[error("the transform is not finite or has a zero scale")]
     BadTransform,
+    #[error("the scene has no free entity ids left")]
+    Full,
     #[error("{0}")]
     Io(String),
 }
@@ -67,7 +69,7 @@ impl World {
         if !transform.is_valid() {
             return Err(WorldError::BadTransform);
         }
-        let id = self.scene.alloc_id();
+        let id = self.scene.alloc_id().ok_or(WorldError::Full)?;
         let entity = Entity::new(id, archetype, transform);
         let index = self.scene.entities.len();
         self.scene.entities.push(entity.clone());
