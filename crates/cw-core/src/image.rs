@@ -144,6 +144,44 @@ impl TiledImage {
     }
 }
 
+/// Shrinks tightly packed RGBA8 by whole-number factors, averaging each block of pixels, until
+/// neither side is larger than `max_side`. Returns the new size, the pixels and the factor (1 when
+/// the picture already fit and is returned untouched). Rows are done in parallel.
+pub fn downscale_box(
+    width: usize,
+    height: usize,
+    rgba: Vec<u8>,
+    max_side: usize,
+) -> (usize, usize, Vec<u8>, usize) {
+    assert_eq!(rgba.len(), width * height * 4, "pixel buffer does not match the size");
+    let factor = width.max(height).div_ceil(max_side.max(1)).max(1);
+    if factor == 1 {
+        return (width, height, rgba, 1);
+    }
+    let (w, h) = (width.div_ceil(factor), height.div_ceil(factor));
+    let mut out = vec![0u8; w * h * 4];
+    out.par_chunks_mut(w * 4).enumerate().for_each(|(oy, row)| {
+        let (y0, y1) = (oy * factor, ((oy + 1) * factor).min(height));
+        for (ox, px) in row.as_chunks_mut::<4>().0.iter_mut().enumerate() {
+            let (x0, x1) = (ox * factor, ((ox + 1) * factor).min(width));
+            let mut sum = [0u32; 4];
+            for y in y0..y1 {
+                for x in x0..x1 {
+                    let at = (y * width + x) * 4;
+                    for c in 0..4 {
+                        sum[c] += rgba[at + c] as u32;
+                    }
+                }
+            }
+            let n = ((y1 - y0) * (x1 - x0)) as u32;
+            for c in 0..4 {
+                px[c] = ((sum[c] + n / 2) / n) as u8;
+            }
+        }
+    });
+    (w, h, out, factor)
+}
+
 /// Writes tightly packed RGBA8 as a PNG file.
 pub fn encode_png(width: usize, height: usize, rgba: &[u8]) -> Vec<u8> {
     use std::io::Write;

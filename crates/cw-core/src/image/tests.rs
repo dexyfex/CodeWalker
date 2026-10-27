@@ -146,3 +146,42 @@ fn channel_names_round_trip_and_accept_long_forms() {
     assert_eq!(Channels::parse("ALPHA"), Some(Channels::Alpha));
     assert_eq!(Channels::parse("purple"), None);
 }
+
+#[test]
+fn a_picture_that_fits_is_returned_untouched() {
+    let px = gradient(30, 20);
+    let (w, h, out, factor) = downscale_box(30, 20, px.clone(), 30);
+    assert_eq!((w, h, factor), (30, 20, 1));
+    assert_eq!(out, px);
+}
+
+#[test]
+fn shrinking_averages_blocks_and_handles_ragged_edges() {
+    // 4x2 -> factor 2 -> 2x1: each output pixel is the mean of a 2x2 block
+    let src = [
+        10, 20, 30, 40, 30, 40, 50, 60, 100, 100, 100, 100, 200, 200, 200, 200, //
+        20, 30, 40, 50, 40, 50, 60, 70, 100, 100, 100, 100, 100, 100, 100, 100,
+    ];
+    let (w, h, out, f) = downscale_box(4, 2, src.to_vec(), 2);
+    assert_eq!((w, h, f), (2, 1, 2));
+    assert_eq!(out, [25, 35, 45, 55, 125, 125, 125, 125]);
+
+    // 5x3 with max 2 -> factor 3 -> 2x1; the right block is only 2 wide and 3 tall
+    let src: Vec<u8> = (0..5 * 3).flat_map(|i| [i as u8 * 10, 0, 0, 255]).collect();
+    let (w, h, out, f) = downscale_box(5, 3, src, 2);
+    assert_eq!((w, h, f), (2, 1, 3));
+    // first block: pixels 0,1,2,5,6,7,10,11,12 -> mean 60; second: 3,4,8,9,13,14 -> mean 85
+    assert_eq!((out[0], out[4]), (60, 85));
+    assert_eq!((out[3], out[7]), (255, 255), "alpha is averaged too");
+}
+
+#[test]
+fn shrinking_a_huge_picture_to_one_pixel_and_a_thin_one_both_work() {
+    let (w, h, out, f) = downscale_box(64, 64, vec![200; 64 * 64 * 4], 1);
+    assert_eq!((w, h, f, out.len()), (1, 1, 64, 4));
+    assert_eq!(out, [200; 4]);
+    let (w, h, _, f) = downscale_box(8, 1, vec![7; 8 * 4], 4);
+    assert_eq!((w, h, f), (4, 1, 2));
+    let (w, h, _, _) = downscale_box(1, 9, vec![7; 9 * 4], 4);
+    assert_eq!((w, h), (1, 3), "a thin picture shrinks by the same factor on both sides");
+}
