@@ -61,22 +61,32 @@ pub struct TexSet {
 
 /// Longest side of the list pictures, in pixels.
 const THUMB_SIDE: u32 = 96;
+/// A list picture is made from a mip no larger than this. A texture with nothing smaller is left
+/// without one: decoding a big picture for a 64-pixel cell, for every texture of a dictionary, would
+/// make opening the file wait on it.
+const THUMB_SOURCE_SIDE: u32 = 1024;
 
-/// The smallest mip that is still at least [`THUMB_SIDE`] wide or tall (or the last one).
+/// A small picture for lists: the smallest mip that is still at least [`THUMB_SIDE`] wide or tall
+/// (or the last one), shrunk to [`THUMB_SIDE`], so only the little picture is kept.
 fn thumbnail(t: &Texture) -> Option<Decoded> {
-    let level = (0..t.levels.max(1))
+    if t.data.is_empty() {
+        return None;
+    }
+    let last = t.levels.max(1) - 1;
+    let level = (0..=last)
         .find(|&l| {
             let (w, h) = texture::mip_dims(t.width, t.height, l);
             w.max(h) <= THUMB_SIDE * 2
         })
-        .unwrap_or(t.levels.max(1) - 1);
+        .unwrap_or(last);
+    let (w, h) = texture::mip_dims(t.width, t.height, level);
+    if w.max(h) > THUMB_SOURCE_SIDE {
+        return None;
+    }
     let px = t.decode(level).ok()?;
-    Some(Decoded {
-        width: px.width as usize,
-        height: px.height as usize,
-        rgba: px.pixels,
-        original: (t.width, t.height),
-    })
+    let (width, height, rgba, _) =
+        cw_core::image::downscale_box(px.width as usize, px.height as usize, px.pixels, THUMB_SIDE as usize);
+    Some(Decoded { width, height, rgba, original: (t.width, t.height) })
 }
 
 fn tex_entry(name: String, texture: Texture) -> TexEntry {
@@ -671,12 +681,12 @@ mod tests {
         assert_eq!((t0.texture.width, t0.texture.height, t0.texture.levels), (512, 256, 5));
         let thumb = t0.thumb.as_ref().expect("a picture for the list");
         assert!(
-            (thumb.width, thumb.height) == (128, 64) && thumb.original == (512, 256),
-            "the smallest mip still 2x the thumbnail size: {}x{}",
+            (thumb.width, thumb.height) == (64, 32) && thumb.original == (512, 256),
+            "the 128x64 mip, halved to fit the thumbnail size: {}x{}",
             thumb.width,
             thumb.height
         );
-        assert_eq!(thumb.rgba.len(), 128 * 64 * 4);
+        assert_eq!(thumb.rgba.len(), 64 * 32 * 4, "only the small picture is kept");
         assert_eq!(set.entries[1].thumb.as_ref().unwrap().width, 16, "small textures are not scaled");
 
         // the same file taken from disk (OpenIV style), and a DDS
@@ -692,6 +702,21 @@ mod tests {
         assert_eq!((one.len(), one[0].name.as_str()), (1, "wall"), "named after the file");
         assert_eq!(*one[0].texture, big);
         let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn a_list_picture_is_never_made_from_a_big_mip_or_from_nothing() {
+        // nothing smaller than 1024 to take it from: no picture rather than a long decode
+        assert!(thumbnail(&gradient_texture(2048, 2048, 1)).is_none());
+        // with a small mip in the chain it comes from that one
+        let t = thumbnail(&gradient_texture(2048, 2048, 4)).expect("the 256x256 mip is small enough");
+        assert_eq!((t.width, t.height, t.original), (86, 86, (2048, 2048)));
+        // no pixel data, no picture
+        let empty = Texture { data: Vec::new(), ..gradient_texture(8, 8, 1) };
+        assert!(thumbnail(&empty).is_none());
+        // the picture kept is never larger than the list asks for
+        let t = thumbnail(&gradient_texture(190, 40, 1)).unwrap();
+        assert!(t.width.max(t.height) <= THUMB_SIDE as usize);
     }
 
     #[test]

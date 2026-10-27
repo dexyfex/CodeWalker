@@ -70,14 +70,14 @@ pub fn texture_viewer(ui: &mut Ui, view: &mut TexView, set: &TexSet, gpu: Option
             view.fit = true;
         }
         if Btn::new("1:1").tone(Tone::Ghost).tip("One image pixel per screen pixel").show(ui).clicked()
-            && let Some(size) = view.size()
+            && let Some(actual) = view.actual_view()
         {
-            view.view = ImageView::actual(size);
+            view.view = actual;
             view.fit = false;
         }
-        ui.label(
-            egui::RichText::new(format!("{:.0}%", view.view.zoom * 100.0)).color(theme::FAINT).size(12.0),
-        );
+        // percent of the real mip, which is not what the zoom counts when the picture was shrunk
+        let percent = view.view.zoom / view.scale() as f32 * 100.0;
+        ui.label(egui::RichText::new(format!("{percent:.0}%")).color(theme::FAINT).size(12.0));
     });
 
     // ----------------------------------------------------------- picture
@@ -88,8 +88,13 @@ pub fn texture_viewer(ui: &mut Ui, view: &mut TexView, set: &TexSet, gpu: Option
     picture(ui, view, gpu, rect, &resp);
 
     // ------------------------------------------------------------ footer
+    let shrunk = if view.scale() > 1 && view.size().is_some() {
+        format!(" · shown at 1/{} size", view.scale())
+    } else {
+        String::new()
+    };
     let note = format!(
-        "{} × {} · {} · {}",
+        "{} × {} · {} · {}{shrunk}",
         tex.width,
         tex.height,
         tex.format.label(),
@@ -115,7 +120,7 @@ pub fn texture_viewer(ui: &mut Ui, view: &mut TexView, set: &TexSet, gpu: Option
         }
     });
 
-    req.decode = view.next_job(set);
+    req.decode = view.next_job(set, gpu.map(|g| g.device.limits().max_texture_dimension_2d));
     req
 }
 
@@ -159,8 +164,10 @@ fn picture(ui: &mut Ui, view: &mut TexView, gpu: Option<&Gpu>, rect: Rect, resp:
         }
     }
     if resp.double_clicked() {
-        if view.fit {
-            view.view = ImageView::actual(size);
+        if view.fit
+            && let Some(actual) = view.actual_view()
+        {
+            view.view = actual;
         }
         view.fit = !view.fit;
     }
@@ -175,32 +182,66 @@ fn picture(ui: &mut Ui, view: &mut TexView, gpu: Option<&Gpu>, rect: Rect, resp:
     {
         painter.image(id, rect, Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE);
     } else {
-        painter.text(
-            rect.center(),
-            Align2::CENTER_CENTER,
-            "No GPU available for this view",
-            FontId::proportional(13.0),
-            theme::FAINT,
-        );
+        let msg = view.problem().unwrap_or("No GPU available for this view");
+        painter.text(rect.center(), Align2::CENTER_CENTER, msg, FontId::proportional(13.0), theme::FAINT);
     }
     painter.rect_stroke(rect, 4, Stroke::new(1.0, theme::BORDER), StrokeKind::Inside);
+    if view.is_decoding() {
+        // the picture under it belongs to the previous choice
+        chip(
+            &painter,
+            rect.right_top() + vec2(-8.0, 8.0),
+            Align2::RIGHT_TOP,
+            "Decoding…",
+            FontId::proportional(11.5),
+        );
+    }
 
     // what is under the pointer: position and the colour as decoded (before any filter)
     if let Some(p) = resp.hover_pos()
         && let Some((x, y)) = view.view.pixel_at(local(p), viewport, size)
         && let Some(px) = view.pixel(x, y)
     {
+        // a shrunk picture says where its pixel starts in the real mip
+        let scale = view.scale();
         let text = format!(
-            "{x}, {y}   {} {} {} {}   #{:02X}{:02X}{:02X}{:02X}",
-            px[0], px[1], px[2], px[3], px[0], px[1], px[2], px[3]
+            "{}, {}   {} {} {} {}   #{:02X}{:02X}{:02X}{:02X}",
+            x * scale,
+            y * scale,
+            px[0],
+            px[1],
+            px[2],
+            px[3],
+            px[0],
+            px[1],
+            px[2],
+            px[3]
         );
-        let font = FontId::monospace(11.5);
-        let galley = painter.layout_no_wrap(text, font, theme::TEXT);
-        let at = pos2(rect.left() + 8.0, rect.bottom() - 8.0 - galley.size().y);
-        let chip = Rect::from_min_size(at, galley.size()).expand2(vec2(6.0, 3.0));
-        painter.rect_filled(chip, 4, Color32::from_black_alpha(190));
-        painter.galley(at, galley, theme::TEXT);
+        chip(
+            &painter,
+            pos2(rect.left() + 8.0, rect.bottom() - 8.0),
+            Align2::LEFT_BOTTOM,
+            &text,
+            FontId::monospace(11.5),
+        );
     }
+}
+
+/// A small label on a dark plate, anchored at `at` by `anchor`.
+fn chip(painter: &egui::Painter, at: egui::Pos2, anchor: Align2, text: &str, font: FontId) {
+    let galley = painter.layout_no_wrap(text.to_string(), font, theme::TEXT);
+    let size = galley.size();
+    let min = match anchor {
+        Align2::RIGHT_TOP => at - vec2(size.x, 0.0),
+        Align2::LEFT_BOTTOM => at - vec2(0.0, size.y),
+        _ => at,
+    };
+    painter.rect_filled(
+        Rect::from_min_size(min, size).expand2(vec2(6.0, 3.0)),
+        4,
+        Color32::from_black_alpha(190),
+    );
+    painter.galley(min, galley, theme::TEXT);
 }
 
 fn thumbnails(ui: &mut Ui, view: &mut TexView, set: &TexSet) {

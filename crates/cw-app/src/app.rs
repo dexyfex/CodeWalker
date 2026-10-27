@@ -12,7 +12,7 @@ use std::{
 };
 
 use cw_cmd::{Engine, Event};
-use cw_core::{EntryRef, RpfTree, image::TiledImage};
+use cw_core::{EntryRef, RpfTree};
 use eframe::egui::{self, Key, Modifiers, TextureHandle};
 use serde_json::{Value, json};
 
@@ -23,7 +23,7 @@ use crate::{
     latest::LatestWins,
     model::{Explorer, Item},
     preview::{self, Loaded, Source},
-    texview::{DecodeJob, TexView},
+    texview::{DecodeJob, Picture, TexView},
     ui::{
         palette::Palette,
         toasts::{Toast, ToastKind},
@@ -100,7 +100,7 @@ pub enum Pick {
 pub enum Msg {
     Cmd { cmd: &'static str, result: Result<Value, cw_cmd::CmdError> },
     Preview { generation: u64, result: Result<Box<Loaded>, String> },
-    TexDecoded { key: u64, result: Result<TiledImage, String> },
+    TexDecoded { key: u64, result: Result<Picture, String> },
     Search { generation: u64, query: String, total: usize, items: Vec<EntryRef> },
     Picked(Pick, Vec<PathBuf>),
 }
@@ -686,7 +686,8 @@ impl App {
         if let Some(spec) = self.tex_script.take() {
             self.texview.apply_settings(&spec);
         }
-        if let Some(job) = self.texview.next_job(set) {
+        let side = self.gpu.as_ref().map(|g| g.device.limits().max_texture_dimension_2d);
+        if let Some(job) = self.texview.next_job(set, side) {
             self.tex_worker.submit(job);
         }
     }
@@ -757,6 +758,7 @@ impl App {
         self.preview.target = target.clone();
         self.preview.generation += 1;
         self.preview.tex = None;
+        self.texview.release();
         let generation = self.preview.generation;
         let Some(target) = target else {
             self.preview.state = PState::Idle;

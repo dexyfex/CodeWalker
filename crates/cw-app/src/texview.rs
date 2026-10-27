@@ -9,28 +9,49 @@
 use std::sync::Arc;
 
 use cw_core::{
-    image::{Channels, TiledImage, channel_filter, invert_filter},
-    texture::Texture,
+    image::{Channels, TiledImage, channel_filter, downscale_box, invert_filter},
+    texture::{Texture, mip_dims},
 };
 use cw_gpu::{
-    compose::{ComposeTarget, Compositor, ImageView, ViewParams},
+    compose::{ComposeTarget, Compositor, ImageView, MAX_ZOOM, MIN_ZOOM, ViewParams},
     tiles::TileTexture,
 };
 use eframe::egui::{TextureHandle, TextureId};
 
 use crate::{gpu::Gpu, preview::TexSet};
 
+/// The longest side of a picture the viewer holds. A bigger mip is shrunk by a whole factor, which
+/// keeps it inside what a GPU can sample and what memory can hold.
+pub const MAX_VIEW_SIDE: usize = 4096;
+/// A mip with more pixels than this is not decoded at all: its RGBA alone would pass 1 GiB.
+const MAX_DECODE_PIXELS: usize = 1 << 28;
+
 /// Decodes one mip of one texture on the worker thread.
 pub struct DecodeJob {
     pub key: u64,
     pub texture: Arc<Texture>,
     pub level: u32,
+    /// Longest side to keep (the smaller of [`MAX_VIEW_SIDE`] and what the GPU can sample).
+    pub max_side: usize,
+}
+
+/// A decoded mip, possibly shrunk to fit.
+pub struct Picture {
+    pub image: TiledImage,
+    /// Pixels of the real mip behind one pixel of `image`; 1 when it is shown whole.
+    pub scale: usize,
 }
 
 impl DecodeJob {
-    pub fn run(&self) -> Result<TiledImage, String> {
+    pub fn run(&self) -> Result<Picture, String> {
+        let (w, h) = mip_dims(self.texture.width, self.texture.height, self.level);
+        if (w as usize).saturating_mul(h as usize) > MAX_DECODE_PIXELS {
+            return Err(format!("this mip is {w} × {h}, too large to open here; pick a smaller one"));
+        }
         let px = self.texture.decode(self.level).map_err(|e| e.to_string())?;
-        Ok(TiledImage::from_rgba(px.width as usize, px.height as usize, &px.pixels))
+        let (w, h, pixels, scale) =
+            downscale_box(px.width as usize, px.height as usize, px.pixels, self.max_side);
+        Ok(Picture { image: TiledImage::from_rgba(w, h, &pixels), scale })
     }
 }
 
@@ -63,7 +84,14 @@ pub struct TexView {
     /// Open at 1:1 instead of fitted (set by `apply_settings`, used once).
     start_at_actual: bool,
     requested: Option<(usize, u32)>,
+    /// Generation of the latest request; an answer with another key is stale.
     key: u64,
+    /// The latest request has not been answered yet.
+    pending: bool,
+    /// Why the picture cannot be drawn (as opposed to decoded), when it cannot.
+    problem: Option<String>,
+    /// Pixels of the real mip behind one pixel of `base`.
+    scale: usize,
     base: Option<TiledImage>,
     shown: Option<TiledImage>,
     shown_with: (Channels, bool),
@@ -84,6 +112,9 @@ impl Default for TexView {
             start_at_actual: false,
             requested: None,
             key: 0,
+            pending: false,
+            problem: None,
+            scale: 1,
             base: None,
             shown: None,
             shown_with: (Channels::Rgba, false),
@@ -96,7 +127,19 @@ impl TexView {
     /// A new file was opened: start from its first texture with no filters.
     pub fn reset(&mut self, textures: usize) {
         let gpu = self.gpu.take(); // the GPU objects outlive any one file
-        *self = Self { thumbs: vec![None; textures], gpu, ..Self::default() };
+        // the key keeps counting: an answer still on its way for the old file must not match the
+        // first request of the new one
+        *self = Self { thumbs: vec![None; textures], gpu, key: self.key, ..Self::default() };
+    }
+
+    /// The preview moved on to something that is not a texture: let go of the pictures and the
+    /// GPU texture (a 4096² picture is 64 MiB twice over), and forget any answer still on its way.
+    pub fn release(&mut self) {
+        if self.base.is_none() && self.gpu.as_ref().is_none_or(|g| g.texture.is_none()) && !self.pending {
+            return;
+        }
+        let gpu = self.gpu.take().map(|g| TexGpu { texture: None, target: None, ..g });
+        *self = Self { gpu, key: self.key + 1, ..Self::default() };
     }
 
     /// Shows another texture of the file, whole and unfiltered by mip.
@@ -131,7 +174,9 @@ impl TexView {
     }
 
     /// The decode to start, if what is wanted differs from what was last asked for.
-    pub fn next_job(&mut self, set: &TexSet) -> Option<DecodeJob> {
+    ///
+    /// `gpu_side` is the largest picture the GPU can sample, when there is a GPU.
+    pub fn next_job(&mut self, set: &TexSet, gpu_side: Option<u32>) -> Option<DecodeJob> {
         let entry = set.entries.get(self.index)?;
         let level = self.level.min(entry.texture.levels.max(1) - 1);
         let wanted = (self.index, level);
@@ -140,19 +185,24 @@ impl TexView {
         }
         self.requested = Some(wanted);
         self.key += 1;
+        self.pending = true;
         self.error = None;
-        Some(DecodeJob { key: self.key, texture: entry.texture.clone(), level })
+        let max_side = gpu_side.map_or(MAX_VIEW_SIDE, |s| (s as usize).min(MAX_VIEW_SIDE));
+        Some(DecodeJob { key: self.key, texture: entry.texture.clone(), level, max_side })
     }
 
     /// A decode finished. Answers to anything but the latest request are dropped.
-    pub fn decoded(&mut self, key: u64, result: Result<TiledImage, String>) {
+    pub fn decoded(&mut self, key: u64, result: Result<Picture, String>) {
         if key != self.key {
             return;
         }
+        self.pending = false;
+        self.problem = None;
         match result {
-            Ok(image) => {
+            Ok(Picture { image, scale }) => {
                 self.view = ImageView::actual((image.width, image.height));
                 self.fit = !std::mem::take(&mut self.start_at_actual);
+                self.scale = scale;
                 self.base = Some(image);
                 self.shown_with = (Channels::Rgba, false);
                 self.shown = self.base.clone(); // shares every tile
@@ -165,12 +215,32 @@ impl TexView {
         }
     }
 
+    /// A decode is on its way: the picture shown, if any, is for something else.
     pub fn is_decoding(&self) -> bool {
-        self.requested.is_some() && self.base.is_none() && self.error.is_none()
+        self.pending
     }
 
+    /// Size of the picture held (which is the real mip unless [`Self::scale`] says otherwise).
     pub fn size(&self) -> Option<(usize, usize)> {
         self.base.as_ref().map(|i| (i.width, i.height))
+    }
+
+    /// Pixels of the real mip behind each pixel of the picture held.
+    pub fn scale(&self) -> usize {
+        self.scale
+    }
+
+    /// The view that shows the real mip at one screen pixel per pixel (the picture held may be a
+    /// shrunk copy, in which case that is a magnified view of it).
+    pub fn actual_view(&self) -> Option<ImageView> {
+        let mut view = ImageView::actual(self.size()?);
+        view.zoom = (self.scale as f32).clamp(MIN_ZOOM, MAX_ZOOM);
+        Some(view)
+    }
+
+    /// Why the picture cannot be drawn, when decoding worked but drawing cannot.
+    pub fn problem(&self) -> Option<&str> {
+        self.problem.as_deref()
     }
 
     /// The unfiltered pixel at an image position.
@@ -206,6 +276,17 @@ impl TexView {
     pub fn render(&mut self, gpu: &Gpu, viewport: (u32, u32), palette: Palette) -> Option<TextureId> {
         self.ensure_filtered();
         let image = self.shown.as_ref()?;
+        // decoding already shrank the picture to what the GPU takes; this only catches a device
+        // that changed its mind, so that creating the texture can never abort the program
+        let limit = gpu.device.limits().max_texture_dimension_2d as usize;
+        if image.width.max(image.height) > limit {
+            self.problem = Some(format!(
+                "{} × {} is larger than this GPU can sample ({limit} px)",
+                image.width, image.height
+            ));
+            return None;
+        }
+        self.problem = None;
         let g = self.gpu.get_or_insert_with(|| TexGpu {
             gpu: gpu.clone(),
             compositor: Compositor::new(&gpu.device),
@@ -220,7 +301,8 @@ impl TexView {
         let texture = g.texture.as_mut().expect("just made");
         texture.sync(&g.gpu.queue, image); // only tiles that changed
 
-        let (w, h) = (viewport.0.max(1), viewport.1.max(1));
+        let side = limit as u32;
+        let (w, h) = (viewport.0.clamp(1, side), viewport.1.clamp(1, side));
         if g.target.as_ref().is_none_or(|t| t.size != (w, h)) {
             let target = ComposeTarget::new(&g.gpu.device, w, h);
             g.gpu.show(&mut g.id, &target.view);
