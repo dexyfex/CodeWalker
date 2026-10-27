@@ -1,13 +1,9 @@
 //! Loose resource files (the OpenIV-compatible form of `.ytd`, `.ydr`, `.ymap`…):
 //! a 16-byte `RSC7` header followed by a raw-deflate payload.
 
-use std::io::Read;
-
-use flate2::read::DeflateDecoder;
-
 use crate::{
     error::{Error, Result},
-    rpf::{RSC7_MAGIC, ResourceData, page_flags_size, resource_version},
+    rpf::{RSC7_MAGIC, ResourceData, inflate, page_flags_size, resource_version},
 };
 
 /// `Some` when `data` starts with an RSC7 header.
@@ -24,9 +20,10 @@ pub fn parse_loose(data: &[u8]) -> Result<ResourceData> {
     let word = |o: usize| u32::from_le_bytes([data[o], data[o + 1], data[o + 2], data[o + 3]]);
     let (sys_flags, gfx_flags) = (word(8), word(12));
     let payload = &data[16..];
-    let mut inflated = Vec::with_capacity(payload.len() * 2);
-    let data = match DeflateDecoder::new(payload).read_to_end(&mut inflated) {
-        Ok(_) => inflated,
+    let expected = page_flags_size(sys_flags) as u64 + page_flags_size(gfx_flags) as u64;
+    let data = match inflate(payload, expected) {
+        Ok(d) => d,
+        Err(e @ Error::TooLarge(..)) => return Err(e),
         Err(_) => payload.to_vec(),
     };
     Ok(ResourceData { sys_flags, gfx_flags, version: resource_version(sys_flags, gfx_flags), data })

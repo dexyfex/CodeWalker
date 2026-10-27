@@ -72,7 +72,7 @@ fn resources_expose_flags_and_export_an_rsc7_header() {
     let exported = tree.export(r).unwrap();
     assert_eq!(u32::from_le_bytes(exported[0..4].try_into().unwrap()), RSC7_MAGIC);
     assert_eq!(u32::from_le_bytes(exported[4..8].try_into().unwrap()), res.version);
-    assert_eq!(&inflate(&exported[16..]).unwrap(), b"payload-of-a-drawable");
+    assert_eq!(&inflate(&exported[16..], 0).unwrap(), b"payload-of-a-drawable");
 }
 
 #[test]
@@ -260,4 +260,48 @@ fn scan_budgets_stop_pathological_fan_out() {
     let r =
         RpfTree::scan_blob_with(Blob::from_vec(inner), "t.rpf".into(), "t.rpf".into(), "t.rpf", None, tiny);
     assert!(r.is_err(), "the top-level table alone has two entries");
+}
+
+#[test]
+fn a_small_file_cannot_inflate_past_its_declared_size() {
+    let bomb = vec![0u8; 400_000];
+    let mut bytes = archive(&[Item::packed("bomb.bin", bomb.clone())], None);
+    let tree = scan(bytes.clone(), None).unwrap();
+    let r = tree.find("test.rpf/bomb.bin").unwrap();
+    assert_eq!(tree.extract(r).unwrap(), bomb, "an honest size is accepted");
+
+    // entry 1 is bomb.bin; its uncompressed size sits 8 bytes into the 16-byte record
+    let at = 16 + 16 + 8;
+    bytes[at..at + 4].copy_from_slice(&16u32.to_le_bytes());
+    let tree = scan(bytes, None).unwrap();
+    let r = tree.find("test.rpf/bomb.bin").unwrap();
+    assert!(matches!(tree.extract(r), Err(Error::TooLarge(..))), "lying size must be refused");
+}
+
+#[test]
+fn resources_are_limited_by_their_page_flags() {
+    let flags = (0x6000_0000 | (1 << 17), 0x9000_0000); // 8 KiB system, nothing graphics
+    let tree = scan(archive(&[Item::resource("big.ydr", vec![0u8; 300_000], flags.0, flags.1)], None), None)
+        .unwrap();
+    let r = tree.find("test.rpf/big.ydr").unwrap();
+    assert!(matches!(tree.extract_resource(r), Err(Error::TooLarge(..))));
+
+    let exported = tree.export(r).unwrap();
+    assert!(matches!(crate::resource::parse_loose(&exported), Err(Error::TooLarge(..))));
+
+    let ok =
+        scan(archive(&[Item::resource("ok.ydr", vec![7u8; 6_000], flags.0, flags.1)], None), None).unwrap();
+    assert_eq!(ok.extract_resource(ok.find("test.rpf/ok.ydr").unwrap()).unwrap().data.len(), 6_000);
+}
+
+#[test]
+fn the_absolute_cap_stops_a_stream_with_no_declared_size() {
+    let z = {
+        use std::io::Write;
+        let mut e = flate2::write::DeflateEncoder::new(Vec::new(), flate2::Compression::fast());
+        e.write_all(&vec![0u8; 1 << 20]).unwrap();
+        e.finish().unwrap()
+    };
+    assert_eq!(inflate_capped(&z, 1 << 20).unwrap().len(), 1 << 20);
+    assert!(matches!(inflate_capped(&z, (1 << 20) - 1), Err(Error::TooLarge(..))));
 }

@@ -465,7 +465,7 @@ impl RpfTree {
             return Ok(Vec::new());
         }
         let data = if encrypted { self.decrypt(a, e, raw, uncompressed_size)? } else { raw.to_vec() };
-        if size > 0 { inflate(&data) } else { Ok(data) }
+        if size > 0 { inflate(&data, uncompressed_size as u64) } else { Ok(data) }
     }
 
     pub fn extract_resource(&self, r: EntryRef) -> Result<ResourceData> {
@@ -479,7 +479,12 @@ impl RpfTree {
         let payload = &raw[16..];
         let payload = if encrypted { self.decrypt(a, e, payload, size)? } else { payload.to_vec() };
         // Resources are raw deflate; if that fails the data is stored as-is.
-        let data = inflate(&payload).unwrap_or(payload);
+        let expected = page_flags_size(sys_flags) as u64 + page_flags_size(gfx_flags) as u64;
+        let data = match inflate(&payload, expected) {
+            Ok(d) => d,
+            Err(e @ Error::TooLarge(..)) => return Err(e),
+            Err(_) => payload,
+        };
         Ok(ResourceData { sys_flags, gfx_flags, version: resource_version(sys_flags, gfx_flags), data })
     }
 
@@ -821,9 +826,29 @@ fn is_valid_path(path: &str) -> bool {
     dirs <= 20
 }
 
-fn inflate(data: &[u8]) -> Result<Vec<u8>> {
-    let mut out = Vec::with_capacity(data.len() * 2);
-    DeflateDecoder::new(data).read_to_end(&mut out).map_err(|e| Error::Decompress(e.to_string()))?;
+/// Nothing in a GTA V archive inflates beyond this. A deflate stream can claim
+/// roughly 1000:1, so without a ceiling a 1 MiB file could allocate a gigabyte.
+pub const MAX_INFLATED: u64 = 512 * 1024 * 1024;
+/// Allowed overshoot on a size the file itself declares, for writers that round up.
+const INFLATE_SLACK: u64 = 64 * 1024;
+
+/// Inflates `data`, which the file declares to expand to `expected` bytes
+/// (0 when it does not say). Reading stops one byte past the allowed size.
+pub fn inflate(data: &[u8], expected: u64) -> Result<Vec<u8>> {
+    let limit =
+        if expected == 0 { MAX_INFLATED } else { expected.saturating_add(INFLATE_SLACK).min(MAX_INFLATED) };
+    inflate_capped(data, limit)
+}
+
+fn inflate_capped(data: &[u8], limit: u64) -> Result<Vec<u8>> {
+    let mut out = Vec::with_capacity((data.len() as u64).saturating_mul(2).min(limit) as usize);
+    DeflateDecoder::new(data)
+        .take(limit.saturating_add(1))
+        .read_to_end(&mut out)
+        .map_err(|e| Error::Decompress(e.to_string()))?;
+    if out.len() as u64 > limit {
+        return Err(Error::TooLarge("compressed data".into(), limit));
+    }
     Ok(out)
 }
 

@@ -16,6 +16,8 @@ pub enum Error {
     InvalidKeyData(String),
     #[error("could not decompress: {0}")]
     Decompress(String),
+    #[error("{0} inflates to more than {1} bytes")]
+    TooLarge(String, u64),
     #[error("entry is not a file")]
     NotAFile,
     #[error("entry not found: {0}")]
