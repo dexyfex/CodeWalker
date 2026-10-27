@@ -101,6 +101,11 @@ pub fn parse_i32(s: &str) -> i32 {
     s.trim().parse().unwrap_or(0)
 }
 
+/// `bool.TryParse`: `true` in any case, anything else is false.
+pub fn parse_bool(s: &str) -> bool {
+    s.trim().eq_ignore_ascii_case("true")
+}
+
 pub fn attr_string(n: N, name: &str) -> String {
     n.attribute(name).unwrap_or_default().to_string()
 }
@@ -113,9 +118,26 @@ pub fn attr_i32(n: N, name: &str) -> i32 {
     n.attribute(name).map_or(0, parse_i32)
 }
 
+pub fn attr_bool(n: N, name: &str) -> bool {
+    n.attribute(name).is_some_and(parse_bool)
+}
+
 /// `GetChildFloatAttribute(node, name, "value")`: `<name value="1.5"/>`.
 pub fn value_f32(n: N, name: &str) -> f32 {
     child(n, name).map_or(0.0, |c| attr_f32(c, "value"))
+}
+
+pub fn value_i32(n: N, name: &str) -> i32 {
+    child(n, name).map_or(0, |c| attr_i32(c, "value"))
+}
+
+pub fn value_bool(n: N, name: &str) -> bool {
+    child(n, name).is_some_and(|c| attr_bool(c, "value"))
+}
+
+/// `GetChildVector3Attributes`: `<name x="1" y="2" z="3"/>`.
+pub fn vec3(n: N, name: &str) -> [f32; 3] {
+    child(n, name).map_or([0.0; 3], |c| [attr_f32(c, "x"), attr_f32(c, "y"), attr_f32(c, "z")])
 }
 
 // ---- writing, for the builders that make test files
@@ -165,14 +187,20 @@ mod tests {
 
     #[test]
     fn missing_pieces_read_as_zero_and_numbers_are_forgiving() {
-        let xml = br#"<r><v value="2.5"/><t> one <!-- no --> two </t><bad value="inf"/><nan value="x"/></r>"#;
+        let xml = br#"<r><v value="2.5"/><i value=" 7 "/><b value="TRUE"/><p x="1" y="2" z="3"/>
+            <t> one <!-- no --> two </t><bad value="inf"/><nan value="x"/></r>"#;
         with_root(xml, |r| {
             assert_eq!(value_f32(r, "v"), 2.5);
+            assert_eq!((value_i32(r, "i"), value_bool(r, "b"), vec3(r, "p")), (7, true, [1.0, 2.0, 3.0]));
             assert_eq!(child_string(r, "t"), " one  two ");
             assert_eq!(value_f32(r, "missing"), 0.0);
             assert_eq!((value_f32(r, "bad"), value_f32(r, "nan")), (0.0, 0.0), "not finite, not a number");
             assert_eq!(child_string(r, "missing"), "");
             assert_eq!((parse_i32(" 7 "), parse_i32("x")), (7, 0));
+            assert_eq!(
+                (value_i32(r, "missing"), value_bool(r, "missing"), vec3(r, "missing")),
+                (0, false, [0.0; 3])
+            );
             Ok(())
         })
         .unwrap();
