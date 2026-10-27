@@ -58,6 +58,8 @@ pub struct Session {
     pub root: Option<PathBuf>,
     /// Loose files opened next to the archives (previewed, not part of the tree).
     pub files: Vec<PathBuf>,
+    /// The map being edited (a scratch scene until ymap import lands).
+    pub world: cw_world::World,
 }
 
 /// Something the UI (or any subscriber) may want to react to.
@@ -67,6 +69,7 @@ pub enum Event {
     Progress { task: String, message: String },
     TreeChanged,
     FilesChanged,
+    WorldChanged,
     KeysChanged,
     ConfigChanged,
     Log { message: String },

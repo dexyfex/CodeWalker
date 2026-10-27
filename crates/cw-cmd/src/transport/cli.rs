@@ -49,6 +49,11 @@ pub fn parse_args(spec: &CommandSpec, rest: &[String]) -> Result<Value, CmdError
                     }
                 };
                 match kind {
+                    ParamKind::Number => {
+                        json!(v.parse::<f64>().ok().filter(|f| f.is_finite()).ok_or_else(|| {
+                            CmdError::invalid(format!("--{} must be a number", name.replace('_', "-")))
+                        })?)
+                    }
                     ParamKind::Integer => json!(v.parse::<i64>().map_err(|_| CmdError::invalid(format!(
                         "--{} must be a number",
                         name.replace('_', "-")

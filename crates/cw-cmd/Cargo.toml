@@ -7,6 +7,7 @@ license.workspace = true
 
 [dependencies]
 cw-core = { path = "../cw-core" }
+cw-world = { path = "../cw-world" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

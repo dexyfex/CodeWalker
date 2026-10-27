@@ -7,6 +7,7 @@ mod game;
 mod mods;
 mod rpf;
 mod util;
+mod world;
 
 pub fn register_all(e: &mut Engine) {
     files::register(e);
@@ -14,6 +15,7 @@ pub fn register_all(e: &mut Engine) {
     mods::register(e);
     rpf::register(e);
     util::register(e);
+    world::register(e);
 }
 
 pub(crate) mod args {

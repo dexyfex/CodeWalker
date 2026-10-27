@@ -212,3 +212,51 @@ fn mods_workflow_copy_toggle_remove_through_commands() {
     assert_eq!(ok(&e, "mods.install", json!({ "source": src }))["installed"], 1);
     assert_eq!(e.execute("mods.install", json!({ "source": src })).unwrap_err().code, "already_exists");
 }
+
+#[test]
+fn world_editing_commands_with_undo_redo_and_persistence() {
+    let fx = Fixture::new("world");
+    let e = Engine::ephemeral();
+    let a = ok(
+        &e,
+        "world.add",
+        json!({ "archetype": "prop_bench_01", "x": 10.0, "y": 20.0, "z": 30.0, "rz": 90.0 }),
+    );
+    assert_eq!(a["id"], 1);
+    assert_eq!(a["hash"], format!("0x{:08X}", cw_core::hash::joaat_lower("prop_bench_01")));
+    assert!((a["rz"].as_f64().unwrap() - 90.0).abs() < 1e-3);
+
+    // unspecified fields stay; one edit is one undo step
+    let moved = ok(&e, "world.set", json!({ "id": 1, "x": 11.5 }));
+    assert_eq!(moved["x"], 11.5);
+    assert_eq!(moved["y"], 20.0);
+    assert!((moved["rz"].as_f64().unwrap() - 90.0).abs() < 1e-3, "rotation survives an x-only edit");
+    assert_eq!(ok(&e, "world.undo", json!({}))["undone"], true);
+    assert_eq!(ok(&e, "world.list", json!({}))["entities"][0]["x"], 10.0);
+    ok(&e, "world.redo", json!({}));
+    assert_eq!(ok(&e, "world.list", json!({}))["entities"][0]["x"], 11.5);
+
+    // validation: bad values are rejected and change nothing
+    assert_eq!(e.execute("world.set", json!({ "id": 1, "sx": 0.0 })).unwrap_err().code, "invalid_args");
+    assert_eq!(e.execute("world.set", json!({ "id": 9, "x": 1.0 })).unwrap_err().code, "not_found");
+    assert_eq!(e.execute("world.add", json!({ "archetype": "  " })).unwrap_err().code, "invalid_args");
+    assert_eq!(ok(&e, "world.list", json!({}))["entities"][0]["sx"], 1.0);
+
+    ok(&e, "world.add", json!({ "archetype": "prop_bin_02", "x": -5.0 }));
+    ok(&e, "world.select", json!({ "id": 2 }));
+    assert_eq!(ok(&e, "world.stats", json!({}))["selected"], 1);
+    assert_eq!(e.execute("world.select", json!({ "id": 99 })).unwrap_err().code, "not_found");
+    ok(&e, "world.select", json!({}));
+    assert_eq!(ok(&e, "world.stats", json!({}))["selected"], 0);
+
+    let file = fx.dir.join("scene.json");
+    ok(&e, "world.save", json!({ "path": file }));
+    assert_eq!(ok(&e, "world.stats", json!({}))["dirty"], false);
+    ok(&e, "world.new", json!({ "name": "other" }));
+    assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 0);
+    assert_eq!(ok(&e, "world.load", json!({ "path": file }))["entities"], 2);
+    assert_eq!(ok(&e, "world.list", json!({}))["entities"][1]["archetype"], "prop_bin_02");
+    std::fs::write(&file, "{ broken").unwrap();
+    assert_eq!(e.execute("world.load", json!({ "path": file })).unwrap_err().code, "io");
+    assert_eq!(ok(&e, "world.stats", json!({}))["entities"], 2, "a failed load keeps the scene");
+}

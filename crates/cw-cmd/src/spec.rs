@@ -10,6 +10,7 @@ pub enum ParamKind {
     String,
     Path,
     Integer,
+    Number,
     Boolean,
 }
 
@@ -66,6 +67,7 @@ impl CommandSpec {
                 let ty = match p.kind {
                     ParamKind::String | ParamKind::Path => "string",
                     ParamKind::Integer => "integer",
+                    ParamKind::Number => "number",
                     ParamKind::Boolean => "boolean",
                 };
                 (p.name.to_string(), json!({ "type": ty, "description": p.description }))
