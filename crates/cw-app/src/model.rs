@@ -396,6 +396,36 @@ impl Explorer {
         self.refresh();
     }
 
+    /// Expands `n` if it is not already (clicking a row should not collapse it).
+    pub fn expand(&mut self, n: &NodeId) {
+        if !self.expanded.contains(n) {
+            self.expanded.insert(n.clone());
+            self.refresh();
+        }
+    }
+
+    /// Number of direct children of a folder, archive or directory item.
+    pub fn child_count(&self, item: &Item) -> Option<usize> {
+        match item {
+            Item::Folder(p) => self.fs.get(p).map(|d| d.dirs.len() + d.archives.len()),
+            Item::Entry(r) => {
+                let t = self.tree.as_ref()?;
+                let e = t.entry(*r);
+                let host = match (&e.kind, e.child_archive) {
+                    (_, Some(c)) => EntryRef { archive: c, index: 0 },
+                    (EntryKind::Directory { .. }, None) => *r,
+                    _ => return None,
+                };
+                match t.entry(host).kind {
+                    EntryKind::Directory { .. } => {
+                        Some(t.archive(host.archive).dir_children(host.index).len())
+                    }
+                    _ => None,
+                }
+            }
+        }
+    }
+
     pub fn navigate(&mut self, n: NodeId) {
         if n == self.current && self.search.is_none() {
             return;

@@ -98,7 +98,7 @@ fn visuals() -> egui::Visuals {
 
     w.inactive.bg_fill = RAISED;
     w.inactive.weak_bg_fill = RAISED;
-    w.inactive.bg_stroke = Stroke::new(1.0, BORDER);
+    w.inactive.bg_stroke = Stroke::new(1.0, CONTROL); // text fields need a >= 3:1 outline
     w.inactive.fg_stroke = Stroke::new(1.0, TEXT);
     w.inactive.corner_radius = r;
 

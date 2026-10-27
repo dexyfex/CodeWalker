@@ -243,3 +243,25 @@ fn item_paths_are_what_the_commands_expect() {
     assert_eq!(e.item_path(&e.listing[2].clone()), "common.rpf/levels/prop.ydr");
     assert_eq!(e.item_path(&Item::Folder("update".into())), "update");
 }
+
+#[test]
+fn child_counts_cover_folders_archives_and_directories() {
+    let mut e = sample();
+    assert_eq!(e.child_count(&Item::Folder(String::new())), Some(2), "update + common.rpf");
+    assert_eq!(e.child_count(&Item::Folder("update".into())), Some(2));
+    let common = Item::Entry(EntryRef { archive: 0, index: 0 });
+    assert_eq!(e.child_count(&common), Some(3));
+    let inner = e.tree.as_ref().unwrap().find("common.rpf/inner.rpf").unwrap();
+    assert_eq!(e.child_count(&Item::Entry(inner)), Some(1), "a nested archive counts its root's children");
+    let levels = e.tree.as_ref().unwrap().find("common.rpf/levels").unwrap();
+    assert_eq!(e.child_count(&Item::Entry(levels)), Some(3));
+    let file = e.tree.as_ref().unwrap().find("common.rpf/zeta.txt").unwrap();
+    assert_eq!(e.child_count(&Item::Entry(file)), None);
+
+    // expanding is idempotent, unlike toggling
+    let n = NodeId::Folder("update".into());
+    e.expand(&n);
+    let rows = e.rows.len();
+    e.expand(&n);
+    assert_eq!(e.rows.len(), rows);
+}

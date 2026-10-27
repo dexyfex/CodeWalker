@@ -1,6 +1,6 @@
 //! Loading a file for preview (off the UI thread) and the views that show it.
 
-use std::{ops::Range, path::Path, sync::Arc};
+use std::{ops::Range, sync::Arc};
 
 use cw_core::{EntryKind, EntryRef, RpfTree, filekind::FileKind, resource, rpf::page_flags_size};
 use eframe::egui::{
@@ -233,6 +233,7 @@ pub fn hex_row(offset: usize, chunk: &[u8], per_row: usize) -> (String, String, 
 }
 
 pub fn hex_view(ui: &mut Ui, bytes: &[u8], id: &str) {
+    ui.spacing_mut().item_spacing.y = 0.0;
     let mono = FontId::monospace(12.5);
     let char_w = ui.fonts_mut(|f| f.glyph_width(&mono, '0'));
     // 16 bytes per row needs ~77 columns; below that fall back to 8
@@ -265,6 +266,7 @@ pub fn hex_view(ui: &mut Ui, bytes: &[u8], id: &str) {
 // ------------------------------------------------------------------ text
 
 pub fn text_view(ui: &mut Ui, doc: &TextDoc, id: &str) {
+    ui.spacing_mut().item_spacing.y = 0.0;
     let mono = FontId::monospace(12.5);
     let char_w = ui.fonts_mut(|f| f.glyph_width(&mono, '0'));
     let gutter = char_w * (doc.lines.len().to_string().len() as f32 + 2.0);

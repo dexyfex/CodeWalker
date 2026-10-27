@@ -32,6 +32,7 @@ pub enum Icon {
     Gear,
     Plus,
     Check,
+    Alert,
 }
 
 pub fn for_kind(kind: FileKind) -> Icon {
@@ -203,5 +204,10 @@ pub fn draw(p: &Painter, rect: Rect, icon: Icon, color: Color32) {
             line(&[(3.0, 8.0), (13.0, 8.0)]);
         }
         Icon::Check => line(&[(3.0, 8.5), (6.5, 12.0), (13.0, 4.5)]),
+        Icon::Alert => {
+            closed(&[(8.0, 2.0), (14.5, 13.5), (1.5, 13.5)]);
+            line(&[(8.0, 6.5), (8.0, 9.5)]);
+            line(&[(8.0, 11.5), (8.0, 11.6)]);
+        }
     }
 }

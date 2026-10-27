@@ -843,6 +843,7 @@ dependencies = [
  "aes",
  "base64",
  "flate2",
+ "image",
  "memmap2",
  "rayon",
  "sha1",
