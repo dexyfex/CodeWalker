@@ -1,8 +1,0 @@
-<Project>
-
-  <PropertyGroup>
-    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
-    <GenerateSupportedRuntime>false</GenerateSupportedRuntime>
-  </PropertyGroup>
-
-</Project>
