@@ -16,6 +16,9 @@ pub enum Action {
     ShowInfo,
     ExtractSelected,
     CopyPath,
+    CopyToMods,
+    ShowExplorer,
+    ShowMods,
     Quit,
 }
 
@@ -34,6 +37,9 @@ impl Action {
         Action::ShowInfo,
         Action::ExtractSelected,
         Action::CopyPath,
+        Action::CopyToMods,
+        Action::ShowExplorer,
+        Action::ShowMods,
         Action::Quit,
     ];
 
@@ -52,6 +58,9 @@ impl Action {
             Action::ShowInfo => "Show file information",
             Action::ExtractSelected => "Extract selection…",
             Action::CopyPath => "Copy path",
+            Action::CopyToMods => "Copy archive to mods folder",
+            Action::ShowExplorer => "Go to Explorer",
+            Action::ShowMods => "Go to Mods",
             Action::Quit => "Quit",
         }
     }
@@ -71,6 +80,9 @@ impl Action {
             Action::ShowInfo => "Ctrl+3",
             Action::ExtractSelected => "Ctrl+E",
             Action::CopyPath => "Ctrl+Shift+C",
+            Action::CopyToMods => "Ctrl+M",
+            Action::ShowExplorer => "Alt+1",
+            Action::ShowMods => "Alt+2",
             Action::Quit => "Ctrl+Q",
         }
     }

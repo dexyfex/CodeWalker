@@ -27,6 +27,30 @@ use crate::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Mode {
+    Explorer,
+    Mods,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ModRow {
+    pub path: String,
+    pub size: u64,
+    pub enabled: bool,
+    pub archive: bool,
+    pub overrides_game: bool,
+}
+
+#[derive(Default)]
+pub struct ModsState {
+    pub loaded: bool,
+    pub dir: Option<PathBuf>,
+    pub dir_exists: bool,
+    pub rows: Vec<ModRow>,
+    pub confirm_remove: Option<String>,
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum ViewMode {
     Auto,
     Hex,
@@ -59,6 +83,8 @@ pub enum Pick {
     GameFolder,
     Files,
     ExtractTo,
+    InstallFiles,
+    InstallFolder,
 }
 
 pub enum Msg {
@@ -75,6 +101,8 @@ pub struct App {
     rx: Receiver<Msg>,
     pub ctx: egui::Context,
 
+    pub mode: Mode,
+    pub mods: ModsState,
     pub ex: Explorer,
     pub loose: Vec<PathBuf>,
     pub preview: PreviewSlot,
@@ -97,6 +125,8 @@ pub struct App {
     last_current: Option<crate::model::NodeId>,
     pub quit: bool,
     pub config_game_folder: Option<PathBuf>,
+    /// Set by a context menu: the selection is applied on the next frame.
+    pub pending_mods_copy: bool,
     shot: Option<Shot>,
     script: Option<Script>,
 }
@@ -110,6 +140,7 @@ struct Script {
     palette: bool,
     search: Option<String>,
     everywhere: bool,
+    mods: bool,
 }
 
 impl Script {
@@ -125,8 +156,10 @@ impl Script {
             palette: var("CODEWALKER_PALETTE").is_some(),
             search: var("CODEWALKER_SEARCH"),
             everywhere: var("CODEWALKER_SEARCH_ALL").is_some(),
+            mods: var("CODEWALKER_MODE").as_deref() == Some("mods"),
         };
-        (s.select.is_some() || s.palette || s.search.is_some() || s.view != ViewMode::Auto).then_some(s)
+        (s.select.is_some() || s.palette || s.search.is_some() || s.mods || s.view != ViewMode::Auto)
+            .then_some(s)
     }
 }
 
@@ -150,6 +183,8 @@ impl App {
             tx,
             rx,
             ctx: cc.egui_ctx.clone(),
+            mode: Mode::Explorer,
+            mods: ModsState::default(),
             ex: Explorer::default(),
             loose: Vec::new(),
             preview: PreviewSlot {
@@ -176,6 +211,7 @@ impl App {
             last_current: None,
             quit: false,
             config_game_folder,
+            pending_mods_copy: false,
             script: Script::from_env(),
             shot: std::env::var_os("CODEWALKER_SCREENSHOT").map(|p| Shot {
                 path: PathBuf::from(p),
@@ -232,8 +268,10 @@ impl App {
         self.spawn(move || {
             let dlg = rfd::FileDialog::new();
             let paths = match what {
-                Pick::GameFolder | Pick::ExtractTo => dlg.pick_folder().into_iter().collect(),
-                Pick::Files => dlg.pick_files().unwrap_or_default(),
+                Pick::GameFolder | Pick::ExtractTo | Pick::InstallFolder => {
+                    dlg.pick_folder().into_iter().collect()
+                }
+                Pick::Files | Pick::InstallFiles => dlg.pick_files().unwrap_or_default(),
             };
             Msg::Picked(what, paths)
         });
@@ -327,6 +365,11 @@ impl App {
                     self.open_path(p);
                 }
             }
+            Pick::InstallFiles | Pick::InstallFolder => {
+                for source in paths {
+                    self.run("Installing…", "mods.install", json!({ "source": source }));
+                }
+            }
             Pick::ExtractTo => {
                 let Some(item) = self.ex.selected.clone() else { return };
                 let path = self.ex.item_path(&item);
@@ -375,6 +418,9 @@ impl App {
                 }
                 self.keys_loaded = self.engine.session().keys.is_some();
                 self.config_game_folder = self.engine.session().config.game_folder.clone();
+                if self.mode == Mode::Mods {
+                    self.refresh_mods();
+                }
             }
             "game.detect" => {
                 self.candidates = serde_json::from_value::<Vec<Value>>(v)
@@ -394,6 +440,43 @@ impl App {
                     })
                     .collect();
             }
+            "mods.list" => {
+                self.mods.loaded = true;
+                self.mods.dir = v["mods_dir"].as_str().map(PathBuf::from);
+                self.mods.dir_exists = v["exists"].as_bool().unwrap_or(false);
+                self.mods.rows = v["files"]
+                    .as_array()
+                    .map(|a| {
+                        a.iter()
+                            .map(|f| ModRow {
+                                path: f["path"].as_str().unwrap_or_default().to_string(),
+                                size: f["size"].as_u64().unwrap_or(0),
+                                enabled: f["enabled"].as_bool().unwrap_or(true),
+                                archive: f["archive"].as_bool().unwrap_or(false),
+                                overrides_game: f["overrides_game"].as_bool().unwrap_or(false),
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default();
+            }
+            "mods.copy" => {
+                self.toast(
+                    format!("Copied {} to the mods folder", v["copied"].as_str().unwrap_or("archive")),
+                    ToastKind::Success,
+                );
+                self.refresh_mods();
+            }
+            "mods.install" => {
+                self.toast(
+                    format!(
+                        "Installed {}",
+                        format::plural(v["installed"].as_u64().unwrap_or(0), "file", "files")
+                    ),
+                    ToastKind::Success,
+                );
+                self.refresh_mods();
+            }
+            "mods.enable" | "mods.disable" | "mods.remove" => self.refresh_mods(),
             "rpf.extract" => {
                 let files = v["files"].as_u64().unwrap_or(0);
                 let failed = v["failed"].as_u64().unwrap_or(0);
@@ -419,6 +502,9 @@ impl App {
             self.ex.reveal(r);
         }
         self.preview.view = s.view;
+        if s.mods {
+            self.mode = Mode::Mods;
+        }
         if s.palette {
             self.palette = Some(Palette::default());
         }
@@ -523,6 +609,9 @@ impl App {
             Action::Up => self.ex.parent_of(&self.ex.current).is_some(),
             Action::ExtractSelected => has_sel,
             Action::CopyPath => has_sel || matches!(self.preview.target, Some(Target::Disk(_))),
+            Action::CopyToMods => self.mods_copy_source().is_some(),
+            Action::ShowExplorer => self.mode != Mode::Explorer,
+            Action::ShowMods => self.mode != Mode::Mods,
             Action::SearchEverywhere | Action::FocusSearch => !self.ex.is_empty(),
             Action::ShowPreview | Action::ShowHex | Action::ShowInfo => self.preview.target.is_some(),
             _ => true,
@@ -571,7 +660,56 @@ impl App {
                     self.toast("Path copied", ToastKind::Success);
                 }
             }
+            Action::CopyToMods => {
+                if let Some(path) = self.mods_copy_source() {
+                    self.run("Copying to mods…", "mods.copy", json!({ "path": path }));
+                }
+            }
+            Action::ShowExplorer => self.mode = Mode::Explorer,
+            Action::ShowMods => {
+                self.mode = Mode::Mods;
+                self.refresh_mods();
+            }
             Action::Quit => self.quit = true,
+        }
+    }
+
+    /// The selected archive entry, when it lives in an archive from the game folder.
+    pub fn mods_copy_source(&self) -> Option<String> {
+        self.config_game_folder.as_ref()?;
+        match self.ex.selected.as_ref()? {
+            Item::Entry(r) => {
+                let t = self.ex.tree.as_ref()?;
+                let mut id = r.archive;
+                while let Some(p) = t.archive(id).parent {
+                    id = p;
+                }
+                let top = t.archive(id);
+                let game = self.config_game_folder.as_ref()?;
+                game.join(&top.path).exists().then(|| t.entry(*r).path.clone())
+            }
+            Item::Folder(_) => None,
+        }
+    }
+
+    pub fn refresh_mods(&mut self) {
+        if self.config_game_folder.is_some() {
+            self.run("Reading mods folder…", "mods.list", json!({}));
+        } else {
+            self.mods.loaded = true;
+        }
+    }
+
+    pub fn open_folder(&mut self, path: &std::path::Path) {
+        let cmd = if cfg!(windows) {
+            "explorer"
+        } else if cfg!(target_os = "macos") {
+            "open"
+        } else {
+            "xdg-open"
+        };
+        if std::process::Command::new(cmd).arg(path).spawn().is_err() {
+            self.toast(format!("Could not open {}", path.display()), ToastKind::Error);
         }
     }
 
@@ -594,6 +732,12 @@ impl App {
                 act = Some(Some(Action::CopyPath));
             } else if i.consume_key(Modifiers::COMMAND, Key::E) {
                 act = Some(Some(Action::ExtractSelected));
+            } else if i.consume_key(Modifiers::COMMAND, Key::M) {
+                act = Some(Some(Action::CopyToMods));
+            } else if i.consume_key(Modifiers::ALT, Key::Num1) {
+                act = Some(Some(Action::ShowExplorer));
+            } else if i.consume_key(Modifiers::ALT, Key::Num2) {
+                act = Some(Some(Action::ShowMods));
             } else if i.consume_key(Modifiers::COMMAND, Key::Q) {
                 act = Some(Some(Action::Quit));
             } else if i.consume_key(Modifiers::COMMAND, Key::Num1) {
@@ -666,6 +810,9 @@ impl eframe::App for App {
         self.pump();
         self.handle_drops(ctx);
         self.shortcuts(ctx);
+        if std::mem::take(&mut self.pending_mods_copy) {
+            self.perform(Action::CopyToMods);
+        }
         self.sync_preview();
         self.track_scroll_targets();
         let t = ctx.input(|i| i.time);

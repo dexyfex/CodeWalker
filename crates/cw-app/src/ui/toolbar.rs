@@ -1,7 +1,14 @@
 use eframe::egui::{self, Align, FontId, Layout, Sense, TextEdit, Ui, pos2, vec2};
 
 use super::{Btn, Tone, icon_button, segmented};
-use crate::{actions::Action, app::App, format, icons::Icon, model::NodeId, theme};
+use crate::{
+    actions::Action,
+    app::{App, Mode},
+    format,
+    icons::Icon,
+    model::NodeId,
+    theme,
+};
 
 impl App {
     pub(super) fn show_toolbar(&mut self, ui: &mut Ui) {
@@ -29,11 +36,21 @@ impl App {
                 self.perform(Action::OpenGameFolder);
             }
             ui.add_space(8.0);
-            self.show_search_box(ui);
-            ui.add_space(8.0);
+            if self.mode == Mode::Explorer {
+                self.show_search_box(ui);
+                ui.add_space(8.0);
+            }
 
             ui.with_layout(Layout::left_to_right(Align::Center), |ui| {
                 ui.add_space(8.0);
+                let mode = if self.mode == Mode::Explorer { 0 } else { 1 };
+                if let Some(i) = segmented(ui, &["Explorer", "Mods"], mode) {
+                    self.perform(if i == 0 { Action::ShowExplorer } else { Action::ShowMods });
+                }
+                ui.add_space(8.0);
+                if self.mode != Mode::Explorer {
+                    return;
+                }
                 if icon_button(ui, Icon::Back, "Back (Alt+←)", self.enabled(Action::Back)).clicked() {
                     self.perform(Action::Back);
                 }

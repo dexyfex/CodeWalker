@@ -64,6 +64,7 @@ impl App {
         let mut select: Option<Item> = None;
         let mut extract: Option<Item> = None;
         let mut copy: Option<Item> = None;
+        let mut to_mods = false;
         let mut reveal: Option<cw_core::EntryRef> = None;
 
         let out = area.show_rows(ui, theme::ROW_H, rows, |ui, range| {
@@ -130,6 +131,11 @@ impl App {
                         extract = Some(item.clone());
                         ui.close();
                     }
+                    if ui.add_enabled(self.mods_copy_source().is_some(), egui::Button::new("Copy to mods folder")).clicked() {
+                        select = Some(item.clone());
+                        to_mods = true;
+                        ui.close();
+                    }
                     if ui.button("Copy path").clicked() {
                         copy = Some(item.clone());
                         ui.close();
@@ -158,6 +164,9 @@ impl App {
         }
         if extract.is_some() {
             self.perform(Action::ExtractSelected);
+        }
+        if to_mods {
+            self.pending_mods_copy = true;
         }
         if let Some(i) = copy {
             let text = self.ex.item_path(&i);

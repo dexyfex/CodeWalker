@@ -14,6 +14,7 @@ use crate::{
 pub mod detail;
 pub mod empty;
 pub mod list;
+pub mod mods;
 pub mod palette;
 pub mod status;
 pub mod toasts;
@@ -225,7 +226,7 @@ pub fn faint(ui: &mut Ui, text: impl Into<String>) {
 
 use eframe::egui::{CentralPanel, Frame, Margin, Panel};
 
-use crate::app::App;
+use crate::app::{App, Mode};
 
 fn flat(fill: Color32) -> Frame {
     Frame::new().fill(fill).inner_margin(Margin::ZERO)
@@ -263,7 +264,9 @@ impl App {
             edge(ui, Side::Top);
         });
 
-        if self.ex.is_empty() && self.loose.is_empty() {
+        if self.mode == Mode::Mods {
+            CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_mods(ui));
+        } else if self.ex.is_empty() && self.loose.is_empty() {
             CentralPanel::default().frame(flat(theme::PANEL)).show(ui, |ui| self.show_empty(ui));
         } else {
             Panel::left("tree")
