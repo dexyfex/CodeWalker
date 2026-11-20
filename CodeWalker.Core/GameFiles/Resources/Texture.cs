@@ -1100,11 +1100,27 @@ namespace CodeWalker.GameFiles
                 int Stride = Convert.ToInt32(parameters[4]);
 
                 int fullLength = 0;
-                int length = Stride * Height;
-                for (int i = 0; i < Levels; i++)
+                var dxgifmt = DDSIO.GetDXGIFormat((TextureFormat)format);
+                if (dxgifmt != DDSIO.DXGI_FORMAT.DXGI_FORMAT_UNKNOWN)
                 {
-                    fullLength += length;
-                    length /= 4;
+                    //size each mip from its real dimensions, not from Stride: R* ATI2 textures store
+                    //half the real stride, and mips smaller than 4x4 still take a whole block.
+                    for (int i = 0; i < Levels; i++)
+                    {
+                        var w = Math.Max(1, Width >> i);
+                        var h = Math.Max(1, Height >> i);
+                        DDSIO.DXTex.ComputePitch(dxgifmt, w, h, out var rowPitch, out var slicePitch, 0);
+                        fullLength += slicePitch;
+                    }
+                }
+                else
+                {
+                    int length = Stride * Height;
+                    for (int i = 0; i < Levels; i++)
+                    {
+                        fullLength += length;
+                        length /= 4;
+                    }
                 }
 
                 FullData = reader.ReadBytes(fullLength);
